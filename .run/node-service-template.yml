@@ -1,0 +1,59 @@
+name: 'analytics-next'
+
+labels:
+  team: tooling
+  owner: tools@segment.com
+
+container:
+  image: 'analytics-next'
+  repository: 528451384384.dkr.ecr.us-west-2.amazonaws.com
+
+expose:
+  - name: http
+    port: 3000
+    proto: http
+    health_check_path: /healthcheck
+
+resources:
+  cpu_shares: 256
+  mem_mb: 256
+
+count:
+  production:
+    min: 3
+    max: 100
+    autoscale_policy: cpu_mem
+  stage:
+    min: 1
+    max: 5
+    autoscale_policy: cpu_mem
+  dev:
+    min: 1
+    max: 2
+    autoscale_policy: cpu_mem
+
+# autodeploy:
+#   production:
+#     branch: master
+#   stage:
+#     branch: staging
+
+config-providers:
+  - name: chamber
+    type: chamber
+
+config:
+  production:
+    NODE_ENV: production
+    UV_THREADPOOL_SIZE: 128
+    CONSUL_ADDR: '172.17.42.1:8500'
+    DATADOG_AGENT_ADDR: '172.17.42.1:8125'
+
+  stage: &stage_config
+    NODE_ENV: stage
+    UV_THREADPOOL_SIZE: 128
+    CONSUL_ADDR: '172.17.42.1:8500'
+    DATADOG_AGENT_ADDR: '172.17.42.1:8125'
+
+  dev:
+    <<: *stage_config

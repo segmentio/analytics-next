@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start dev server",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": ["dev"],
+      "restart": true,
+      "console": "integratedTerminal",
+      // Use a random debugger port to avoid conflicts with other Node servers
+      "port": 38093
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to running server",
+      "processId": "${command:PickProcess}"
+    }
+  ]
+}

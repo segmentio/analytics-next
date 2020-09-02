@@ -1,0 +1,88 @@
+env:
+  SEGMENT_CONTEXTS: "snyk,npm,aws-credentials,ecr"
+  SEGMENT_BUILDKITE_IMAGE: "buildkite-agent-node12"
+steps:
+  - label: ":hammer: Build Server"
+    agents:
+      queue: v1
+    commands: |
+      echo '--- Install development dependencies'
+      npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      yarn install --frozen-lockfile
+      echo '--- Build server'
+      yarn build
+    artifact_paths:
+      - "dist/**/*"
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ["node_modules/"]
+          save: true
+
+  - wait: ~
+
+  - label: ":clippy: Test"
+    agents:
+      queue: v1
+    commands: |
+      echo '--- Lint files'
+      yarn lint
+
+      echo '--- Run tests'
+      yarn test
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ["node_modules/"]
+
+  - label: ":mag: Check Production Dependencies"
+    agents:
+      queue: v1
+    commands: |
+      echo '--- Download artifacts'
+      buildkite-agent artifact download dist/* .
+
+      echo '--- Install production dependencies'
+      npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      yarn install --frozen-lockfile --production
+
+      echo '--- Test that the server can boot with just the production dependencies'
+      node -e "require('./dist/src/boot'); process.exit(0)"
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1-cache-prod-{{ checksum 'yarn.lock' }}"
+          paths: ["node_modules/"]
+          save: true
+
+  - label: ":lock: Snyk"
+    agents:
+      queue: v1
+    command: "bk-snyk"
+
+  - wait: ~
+
+  - label: ":hammer: Docker Build and Publish to Trebuchet"
+    agents:
+      queue: v1
+    branches: master staging
+    commands: |
+      echo '--- Download artifacts'
+      buildkite-agent artifact download dist/* .
+
+      echo '--- Build docker image'
+      docker build -t $${TREB_IMAGE_TAG} -t analytics-next:latest . | sed 's/^Step/--- Step/g'
+
+      echo '--- Tag docker image'
+      docker tag $${TREB_IMAGE_TAG} $${TREB_SHORT_IMAGE_TAG}
+      docker tag analytics-next:latest ${ECR_REPOSITORY}/analytics-next:latest
+
+      echo '--- Push docker image'
+      docker push $${TREB_IMAGE_TAG}
+      docker push ${ECR_REPOSITORY}/analytics-next:latest
+
+      echo '--- Publish to Trebuchet'
+      treb-publish .run/node-service-template.yml
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1-cache-prod-{{ checksum 'yarn.lock' }}"
+          paths: ["node_modules/"]
