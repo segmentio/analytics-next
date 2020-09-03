@@ -6,6 +6,7 @@ type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 export class Context {
   private _event: SegmentEvent
+  private sealed: boolean
 
   constructor(event: SegmentEvent) {
     this._event = event
@@ -16,6 +17,10 @@ export class Context {
     throw new Error('Stap!')
   }
 
+  seal = (): void => {
+    this.sealed = true
+  }
+
   log = (level: LogLevel, message: string, extras?: object): void => {
     if (level === 'info' || level === 'debug') {
       console.log(message, extras)
@@ -24,17 +29,16 @@ export class Context {
     }
   }
 
-  page(): unknown {
-    // TODO: import page defaults
-    // https://github.com/segmentio/analytics.js-core/blob/344b9bcbdb575062b4256a5256e332342ca00990/lib/pageDefaults.ts
-    return {}
-  }
-
   public get event(): SegmentEvent {
     return this._event
   }
 
   public set event(evt: SegmentEvent) {
+    if (this.sealed) {
+      this.log('warn', 'Context is sealed')
+      return
+    }
+
     this._event = Object.assign({}, this._event, evt)
   }
 
