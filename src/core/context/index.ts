@@ -24,6 +24,12 @@ export class Context {
     }
   }
 
+  page(): unknown {
+    // TODO: import page defaults
+    // https://github.com/segmentio/analytics.js-core/blob/344b9bcbdb575062b4256a5256e332342ca00990/lib/pageDefaults.ts
+    return {}
+  }
+
   public get event(): SegmentEvent {
     return this._event
   }

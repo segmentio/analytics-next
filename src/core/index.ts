@@ -2,9 +2,11 @@ import { EventQueue } from './queue'
 import { validate } from './validation'
 import { Context } from './context'
 import { SegmentEvent } from './events'
+import { invokeCallback } from './callback'
 
 interface AnalyticsSettings {
   writeKey: string
+  timeout?: number
   // TODO:
   // - custom url endpoint
   // - integrations object
@@ -13,7 +15,7 @@ interface AnalyticsSettings {
   // - events
   // - event level middleware
 }
-type Callback = (ctx: Context) => {}
+type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 export class Analytics {
   queue: EventQueue
@@ -41,6 +43,9 @@ export class Analytics {
   }
 
   async identify(userId?: string, traits?: object, options?: object, callback?: Callback): Promise<Context> {
+    // todo: grab traits from user
+    // todo: grab id from user
+
     const segmentEvent = {
       type: 'identify' as const,
       userId,
@@ -56,11 +61,6 @@ export class Analytics {
     validate(type, ctx.event)
 
     const dispatched = await this.queue.dispatch(ctx)
-
-    if (callback) {
-      callback(dispatched)
-    }
-
-    return dispatched
+    return invokeCallback(dispatched, callback, this.settings.timeout)
   }
 }
