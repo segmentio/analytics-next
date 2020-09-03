@@ -1,4 +1,5 @@
 import { EventStore } from './store'
+import { validate } from './validation'
 
 interface AnalyticsSettings {
   writeKey: string
@@ -19,7 +20,6 @@ export function analytics(settings: AnalyticsSettings): AnalyticsSettings {
 }
 
 // TODO/ideas
-// - validation layer
 // - user id capture
 // - meta timestamps
 // - add callback as part of dispatch
@@ -35,6 +35,8 @@ export async function track(event: string, properties?: object, options?: object
       ...options,
     },
   }
+
+  validate(event, segmentEvent)
 
   await store.dispatch(segmentEvent)
 
@@ -56,6 +58,8 @@ export async function identify(userId?: string, traits?: object, options?: objec
       ...options,
     },
   }
+
+  validate('identify', segmentEvent)
 
   await store.dispatch(segmentEvent)
 
