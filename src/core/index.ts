@@ -1,5 +1,7 @@
-import { EventStore } from './store'
+import { EventQueue } from './queue'
 import { validate } from './validation'
+import { Context } from './context'
+import { SegmentEvent } from './events'
 
 interface AnalyticsSettings {
   writeKey: string
@@ -11,59 +13,54 @@ interface AnalyticsSettings {
   // - events
   // - event level middleware
 }
+type Callback = (ctx: Context) => {}
 
-type Callback = () => {}
-const store = new EventStore()
+export class Analytics {
+  queue: EventQueue
+  settings: AnalyticsSettings
 
-export function analytics(settings: AnalyticsSettings): AnalyticsSettings {
-  return settings
-}
-
-// TODO/ideas
-// - user id capture
-// - meta timestamps
-// - add callback as part of dispatch
-
-export async function track(event: string, properties?: object, options?: object, callback?: Callback): Promise<void> {
-  const segmentEvent = {
-    event,
-    type: 'track',
-    properties: {
-      ...properties,
-    },
-    options: {
-      ...options,
-    },
+  constructor(settings: AnalyticsSettings) {
+    this.queue = new EventQueue()
+    this.settings = settings
   }
 
-  validate(event, segmentEvent)
+  // TODO/ideas
+  // - user id capture
+  // - meta timestamps
+  // - add callback as part of dispatch
 
-  await store.dispatch(segmentEvent)
+  async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context> {
+    const segmentEvent = {
+      event,
+      type: 'track' as const,
+      properties: { ...properties },
+      options: { ...options },
+    }
 
-  if (callback) {
-    callback()
-  }
-}
-
-export async function identify(userId?: string, traits?: object, options?: object, callback?: Callback): Promise<void> {
-  // TODO: validate anon-id
-
-  const segmentEvent = {
-    type: 'identify',
-    userId,
-    traits: {
-      ...traits,
-    },
-    options: {
-      ...options,
-    },
+    return this.dispatch('track', segmentEvent, callback)
   }
 
-  validate('identify', segmentEvent)
+  async identify(userId?: string, traits?: object, options?: object, callback?: Callback): Promise<Context> {
+    const segmentEvent = {
+      type: 'identify' as const,
+      userId,
+      traits: { ...traits },
+      options: { ...options },
+    }
 
-  await store.dispatch(segmentEvent)
+    return this.dispatch('identify', segmentEvent, callback)
+  }
 
-  if (callback) {
-    callback()
+  private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context> {
+    const ctx = new Context(event)
+    validate(type, ctx.event)
+
+    const dispatched = await this.queue.dispatch(ctx)
+
+    if (callback) {
+      callback(dispatched)
+    }
+
+    return dispatched
   }
 }
