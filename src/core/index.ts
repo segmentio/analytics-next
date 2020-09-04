@@ -10,7 +10,7 @@ interface AnalyticsSettings {
   // TODO:
   // - custom url endpoint
   // - integrations object
-  // - plugins
+  // - extensions
   // - reset
   // - events
   // - event level middleware
@@ -22,7 +22,9 @@ export class Analytics {
   settings: AnalyticsSettings
 
   constructor(settings: AnalyticsSettings) {
-    this.queue = new EventQueue()
+    this.queue = new EventQueue({
+      extensions: [],
+    })
     this.settings = settings
   }
 

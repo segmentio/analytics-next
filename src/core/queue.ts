@@ -1,32 +1,32 @@
 import { Context } from './context'
-import { Plugin } from './plugin'
+import { Extension } from './extension'
 import pWhile from 'p-whilst'
 
 interface EventQueueConfig {
-  plugins: Plugin[]
+  extensions: Extension[]
 }
 
-async function attempt(ctx: Context, plugin: Plugin): Promise<Context | undefined> {
-  ctx.log('debug', 'Plugin', { plugin: plugin.name })
+async function attempt(ctx: Context, extension: Extension): Promise<Context | undefined> {
+  ctx.log('debug', 'extension', { extension: extension.name })
   const start = new Date().getTime()
 
-  const newCtx = await plugin[ctx.event.type](ctx)
+  const newCtx = await extension[ctx.event.type](ctx)
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats.gauge('plugin_time', done)
+      ctx.stats.gauge('extension_time', done)
       return ctx
     })
     .catch((err) => {
-      ctx.log('error', 'Plugin Error', { plugin: plugin.name, error: err })
-      ctx.stats.increment('plugin_error', 1, [`${plugin}:${plugin.name}`])
+      ctx.log('error', 'extension Error', { extension: extension.name, error: err })
+      ctx.stats.increment('extension_error', 1, [`${extension}:${extension.name}`])
       return undefined
     })
 
   return newCtx
 }
 
-async function ensure(ctx: Context, plugin: Plugin): Promise<Context | undefined> {
-  const newContext = await attempt(ctx, plugin)
+async function ensure(ctx: Context, extension: Extension): Promise<Context | undefined> {
+  const newContext = await attempt(ctx, extension)
 
   if (newContext === undefined) {
     ctx.log('debug', 'Context canceled')
@@ -44,11 +44,11 @@ export class EventQueue {
     this.queue = []
     this.config = config
 
-    // TODO: load plugins
+    // TODO: load extensions
   }
 
   async dispatch(ctx: Context): Promise<Context> {
-    ctx.log('debug', 'Dispatching', { messageId: ctx.messageId })
+    ctx.log('debug', 'Dispatching')
     this.queue.push(ctx)
     return Promise.resolve(ctx)
   }
@@ -83,7 +83,7 @@ export class EventQueue {
   }
 
   private isReady(): boolean {
-    const allReady = this.config.plugins.every((p) => p.isLoaded && !p.critical)
+    const allReady = this.config.extensions.every((p) => p.isLoaded && !p.critical)
     return allReady
   }
 
@@ -93,10 +93,10 @@ export class EventQueue {
       return
     }
 
-    const utilities = this.config.plugins.filter((p) => p.type === 'utility')
-    const before = this.config.plugins.filter((p) => p.type === 'before')
-    const enrichment = this.config.plugins.filter((p) => p.type === 'enrichment')
-    const destinations = this.config.plugins.filter((p) => p.type === 'destination')
+    const utilities = this.config.extensions.filter((p) => p.type === 'utility')
+    const before = this.config.extensions.filter((p) => p.type === 'before')
+    const enrichment = this.config.extensions.filter((p) => p.type === 'enrichment')
+    const destinations = this.config.extensions.filter((p) => p.type === 'destination')
 
     // TODO: run utilities at different stage
     // these are not event dependent
