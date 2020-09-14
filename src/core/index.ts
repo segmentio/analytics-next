@@ -1,4 +1,4 @@
-import { EventQueue } from './queue'
+import { EventQueue } from './queue/event-queue'
 import { validate } from './validation'
 import { Context } from './context'
 import { SegmentEvent } from './events'
@@ -9,6 +9,7 @@ interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
+  deliverInline?: boolean
   // TODO:
   // - custom url endpoint
   // - integrations object
@@ -17,7 +18,7 @@ interface AnalyticsSettings {
   // - events
   // - event level middleware
 }
-type Callback = (ctx: Context) => Promise<unknown> | unknown
+type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
 
 export class Analytics {
   queue: EventQueue
@@ -26,6 +27,7 @@ export class Analytics {
   constructor(settings: AnalyticsSettings) {
     this.queue = new EventQueue({
       extensions: settings.extensions ?? [],
+      inline: settings.deliverInline,
     })
 
     this.settings = settings
@@ -36,32 +38,40 @@ export class Analytics {
   // - meta timestamps
   // - add callback as part of dispatch
 
-  async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context> {
+  async track(
+    event: string,
+    properties?: object,
+    _options?: object,
+    callback?: Callback
+  ): Promise<Context | undefined> {
     const segmentEvent: SegmentEvent = {
       event,
       type: 'track' as const,
-      properties: { ...properties },
-      options: { ...options },
+      properties,
     }
 
     return this.dispatch('track', segmentEvent, callback)
   }
 
-  async identify(userId?: string, traits?: object, options?: object, callback?: Callback): Promise<Context> {
+  async identify(
+    userId?: string,
+    traits?: object,
+    _options?: object,
+    callback?: Callback
+  ): Promise<Context | undefined> {
     // todo: grab traits from user
     // todo: grab id from user
 
     const segmentEvent = {
       type: 'identify' as const,
       userId,
-      traits: { ...traits },
-      options: { ...options },
+      traits,
     }
 
     return this.dispatch('identify', segmentEvent, callback)
   }
 
-  private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context> {
+  private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
     const ctx = new Context(event)
     validate(type, event.properties ?? event.traits ?? {})
 

@@ -6,9 +6,13 @@ function promisify(fn: Function): Promise<unknown> {
   return Promise.resolve(res)
 }
 
-export type Callback = (ctx: Context) => Promise<unknown> | unknown
+export type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
 
-export function invokeCallback(ctx: Context, callback?: Callback, timeout?: number): Promise<Context> {
+export function invokeCallback(
+  ctx: Context | undefined,
+  callback?: Callback,
+  timeout?: number
+): Promise<Context | undefined> {
   if (!callback) {
     return Promise.resolve(ctx)
   }
@@ -18,8 +22,8 @@ export function invokeCallback(ctx: Context, callback?: Callback, timeout?: numb
     timeout ?? 1000
   )
     .catch((err) => {
-      ctx.log('warn', 'Callback timeout', { error: err })
-      ctx.stats.increment('callback_error')
+      ctx?.log('warn', 'Callback timeout', { error: err })
+      ctx?.stats.increment('callback_error')
     })
     .then(() => ctx)
 }

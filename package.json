@@ -28,6 +28,7 @@
     ]
   },
   "dependencies": {
+    "lodash": "^4.17.20",
     "p-timeout": "^3.2.0",
     "p-whilst": "^2.1.0",
     "source-map-support": "^0.5.16",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
+    "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.14",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",

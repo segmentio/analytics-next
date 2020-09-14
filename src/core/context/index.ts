@@ -1,6 +1,7 @@
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel } from '../logger'
 import Stats from '../stats'
+import { set } from 'lodash'
 
 export interface AbstractContext {
   cancel: () => never
@@ -41,6 +42,15 @@ export class Context implements AbstractContext {
     }
 
     this._event = Object.assign({}, this._event, evt)
+  }
+
+  public updateEvent(path: string, value: any): void {
+    if (this.sealed) {
+      this.log('warn', 'Context is sealed')
+      return
+    }
+
+    set(this._event, path, value)
   }
 
   public flush(): void {

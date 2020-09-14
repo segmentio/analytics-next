@@ -1,44 +1,11 @@
-import { Context } from './context'
-import { Extension } from './extension'
+import { Context } from '../context'
+import { Extension } from '../extension'
 import pWhile from 'p-whilst'
+import { attempt, ensure } from './delivery'
 
 interface EventQueueConfig {
+  inline?: boolean
   extensions: Extension[]
-}
-
-async function attempt(ctx: Context, extension: Extension): Promise<Context | undefined> {
-  ctx.log('debug', 'extension', { extension: extension.name })
-  const start = new Date().getTime()
-
-  const hook = extension[ctx.event.type]
-  if (hook === undefined) {
-    return ctx
-  }
-
-  const newCtx = await hook(ctx)
-    .then((ctx) => {
-      const done = new Date().getTime() - start
-      ctx.stats.gauge('extension_time', done)
-      return ctx
-    })
-    .catch((err) => {
-      ctx.log('error', 'extension Error', { extension: extension.name, error: err })
-      ctx.stats.increment('extension_error', 1, [`${extension}:${extension.name}`])
-      return undefined
-    })
-
-  return newCtx
-}
-
-async function ensure(ctx: Context, extension: Extension): Promise<Context | undefined> {
-  const newContext = await attempt(ctx, extension)
-
-  if (newContext === undefined) {
-    ctx.log('debug', 'Context canceled')
-    ctx.cancel()
-  }
-
-  return newContext
 }
 
 export class EventQueue {
@@ -62,9 +29,15 @@ export class EventQueue {
     await Promise.all(loaders)
   }
 
-  async dispatch(ctx: Context): Promise<Context> {
+  async dispatch(ctx: Context): Promise<Context | undefined> {
     ctx.log('debug', 'Dispatching')
-    this.queue.push(ctx)
+
+    if (this.config.inline) {
+      return this.flushOne(ctx)
+    } else {
+      this.queue.push(ctx)
+    }
+
     return Promise.resolve(ctx)
   }
 
@@ -99,11 +72,10 @@ export class EventQueue {
   }
 
   private isReady(): boolean {
-    const allReady = this.config.extensions.every((p) => p.isLoaded())
-    return allReady
+    return this.config.extensions.every((p) => p.isLoaded())
   }
 
-  private async flushOne(ctx: Context): Promise<void> {
+  private async flushOne(ctx: Context): Promise<Context | undefined> {
     // TODO: check connection
     if (!this.isReady()) {
       return
@@ -138,5 +110,7 @@ export class EventQueue {
     // TODO: timeouts
     const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))
     await Promise.all(deliveryAttempts)
+
+    return ctx
   }
 }
