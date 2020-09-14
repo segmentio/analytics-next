@@ -10,10 +10,13 @@ interface EventQueueConfig {
 
 export class EventQueue {
   queue: Context[]
+  archive: Context[]
+
   config: EventQueueConfig
 
   constructor(config: EventQueueConfig) {
     this.queue = []
+    this.archive = []
     this.config = config
 
     this.init().catch((err) => {
@@ -31,6 +34,7 @@ export class EventQueue {
 
   async dispatch(ctx: Context): Promise<Context | undefined> {
     ctx.log('debug', 'Dispatching')
+    ctx.stats.increment('message_dispatched')
 
     if (this.config.inline) {
       return this.flushOne(ctx)
@@ -57,6 +61,7 @@ export class EventQueue {
           const done = new Date().getTime() - start
           ctx.stats.gauge('delivered', done)
           ctx.log('debug', 'Delivered')
+          this.archive.push(ctx)
         } catch (err) {
           ctx.log('error', 'Failed to deliver')
           ctx.stats.increment('delivery_failed')
@@ -111,6 +116,7 @@ export class EventQueue {
     const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))
     await Promise.all(deliveryAttempts)
 
+    ctx.stats.increment('message_delivered')
     return ctx
   }
 }

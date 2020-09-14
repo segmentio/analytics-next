@@ -1,19 +1,27 @@
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-type LogMessage = {
+export type LogMessage = {
   level: LogLevel
   message: string
   extras?: object
 }
 
 export default class Logger {
-  private logs: LogMessage[] = []
+  private _logs: LogMessage[] = []
 
   log = (level: LogLevel, message: string, extras?: object): void => {
-    this.logs.push({
+    const time = new Date()
+    this._logs.push({
       level,
       message,
-      extras,
+      extras: {
+        ...extras,
+        time,
+      },
     })
+  }
+
+  public get logs(): LogMessage[] {
+    return this._logs
   }
 
   public flush(): void {
@@ -25,6 +33,6 @@ export default class Logger {
         console[level](message, extras ?? '')
       }
     })
-    this.logs = []
+    this._logs = []
   }
 }

@@ -1,5 +1,5 @@
 import { SegmentEvent } from '../events'
-import Logger, { LogLevel } from '../logger'
+import Logger, { LogLevel, LogMessage } from '../logger'
 import Stats from '../stats'
 import { set } from 'lodash'
 
@@ -13,7 +13,7 @@ export interface AbstractContext {
 export class Context implements AbstractContext {
   private _event: SegmentEvent
   private sealed = false
-  private logger = new Logger()
+  public logger = new Logger()
 
   constructor(event: SegmentEvent) {
     this._event = event
@@ -51,6 +51,10 @@ export class Context implements AbstractContext {
     }
 
     set(this._event, path, value)
+  }
+
+  public logs(): LogMessage[] {
+    return this.logger.logs
   }
 
   public flush(): void {

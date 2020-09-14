@@ -30,6 +30,7 @@ export async function ensure(ctx: Context, extension: Extension): Promise<Contex
 
   if (newContext === undefined) {
     ctx.log('debug', 'Context canceled')
+    ctx.stats.increment('context_canceled')
     ctx.cancel()
   }
 

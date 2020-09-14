@@ -1,7 +1,6 @@
 import { Analytics } from '@/core'
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
-import delay from 'delay'
 
 const xt: Extension = {
   name: 'Test Extension',
@@ -33,7 +32,22 @@ const googleAnalytics: Extension = {
   type: 'destination',
 }
 
+const enrichBilling: Extension = {
+  ...xt,
+  name: 'Billing Enrichment',
+  type: 'enrichment',
+
+  track: async (ctx) => {
+    ctx.updateEvent('properties.billingPlan', 'free-99')
+    return ctx
+  },
+}
+
 const writeKey = 'w_123'
+
+beforeAll(() => {
+  jest.useFakeTimers()
+})
 
 describe('Initialization', () => {
   it('loads extensions', () => {
@@ -71,7 +85,7 @@ describe('Initialization', () => {
     expect(onLoad).not.toHaveBeenCalled()
     expect(extensionLoaded).toBe(false)
 
-    await delay(300)
+    jest.advanceTimersByTime(300)
 
     expect(onLoad).toHaveBeenCalled()
     expect(extensionLoaded).toBe(true)
@@ -119,17 +133,6 @@ describe('Dispatch', () => {
   })
 
   it('enriches events before dispatching', async () => {
-    const enrichBilling: Extension = {
-      ...xt,
-      name: 'Billing Enrichment',
-      type: 'enrichment',
-
-      track: async (ctx) => {
-        ctx.updateEvent('properties.billingPlan', 'free-99')
-        return ctx
-      },
-    }
-
     const ajs = new Analytics({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
@@ -151,6 +154,108 @@ describe('Dispatch', () => {
         },
         "type": "track",
       }
+    `)
+  })
+
+  it('logs dispatch actions', async () => {
+    const ajs = new Analytics({
+      writeKey,
+      extensions: [enrichBilling, amplitude, googleAnalytics],
+    })
+
+    await ajs.track('Yeehaw!', {
+      total: 25,
+      userId: '🤠',
+    })
+
+    await ajs.queue.flush()
+
+    const delivered = ajs.queue.archive
+    expect(delivered[0].logs()).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "extras": Object {
+            "time": 2020-09-14T22:00:23.282Z,
+          },
+          "level": "debug",
+          "message": "Dispatching",
+        },
+        Object {
+          "extras": Object {
+            "extension": "Billing Enrichment",
+            "time": 2020-09-14T22:00:23.282Z,
+          },
+          "level": "debug",
+          "message": "extension",
+        },
+        Object {
+          "extras": Object {
+            "extension": "Amplitude",
+            "time": 2020-09-14T22:00:23.282Z,
+          },
+          "level": "debug",
+          "message": "extension",
+        },
+        Object {
+          "extras": Object {
+            "extension": "Google Analytics",
+            "time": 2020-09-14T22:00:23.282Z,
+          },
+          "level": "debug",
+          "message": "extension",
+        },
+        Object {
+          "extras": Object {
+            "time": 2020-09-14T22:00:23.282Z,
+          },
+          "level": "debug",
+          "message": "Delivered",
+        },
+      ]
+    `)
+  })
+
+  it('collects metrics for every event', async () => {
+    const ajs = new Analytics({
+      writeKey,
+      extensions: [amplitude],
+    })
+
+    await ajs.track('Fruit Basket', {
+      items: ['🍌', '🍇', '🍎'],
+      userId: 'Healthy person',
+    })
+
+    await ajs.queue.flush()
+    const metrics = ajs.queue.archive[0].stats.metrics
+
+    expect(metrics).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "metric": "message_dispatched",
+          "tags": Array [],
+          "type": "increment",
+          "value": 1,
+        },
+        Object {
+          "metric": "extension_time",
+          "tags": Array [],
+          "type": "gauge",
+          "value": 0,
+        },
+        Object {
+          "metric": "message_delivered",
+          "tags": Array [],
+          "type": "increment",
+          "value": 1,
+        },
+        Object {
+          "metric": "delivered",
+          "tags": Array [],
+          "type": "gauge",
+          "value": 0,
+        },
+      ]
     `)
   })
 })
