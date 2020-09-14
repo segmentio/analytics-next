@@ -28,5 +28,6 @@ export default class Stats {
 
   flush(): void {
     // TODO: flush stats
+    this.metrics = []
   }
 }

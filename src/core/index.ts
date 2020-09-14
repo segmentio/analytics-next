@@ -8,7 +8,7 @@ import { Extension } from './extension'
 interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  extensions: Extension[]
+  extensions?: Extension[]
   // TODO:
   // - custom url endpoint
   // - integrations object
@@ -25,8 +25,9 @@ export class Analytics {
 
   constructor(settings: AnalyticsSettings) {
     this.queue = new EventQueue({
-      extensions: settings.extensions,
+      extensions: settings.extensions ?? [],
     })
+
     this.settings = settings
   }
 

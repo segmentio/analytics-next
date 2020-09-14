@@ -1,24 +1,18 @@
 import { SegmentEvent } from '../events'
+import Logger, { LogLevel } from '../logger'
 import Stats from '../stats'
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-type LogMessage = {
-  level: LogLevel
-  message: string
-  extras?: object
-}
-
-export interface Ctx {
+export interface AbstractContext {
   cancel: () => never
   seal: () => void
   log: (level: LogLevel, message: string, extras?: object) => void
   stats: Stats
 }
 
-export class Context implements Ctx {
+export class Context implements AbstractContext {
   private _event: SegmentEvent
   private sealed = false
-  private logs: LogMessage[] = []
+  private logger = new Logger()
 
   constructor(event: SegmentEvent) {
     this._event = event
@@ -33,11 +27,7 @@ export class Context implements Ctx {
   }
 
   log = (level: LogLevel, message: string, extras?: object): void => {
-    this.logs.push({
-      level,
-      message,
-      extras,
-    })
+    this.logger.log(level, message, extras)
   }
 
   public get event(): SegmentEvent {
@@ -54,15 +44,7 @@ export class Context implements Ctx {
   }
 
   public flush(): void {
-    this.logs.forEach((logEntry) => {
-      const { level, message, extras } = logEntry
-      if (level === 'info' || level === 'debug') {
-        console.log(message, extras ?? '')
-      } else {
-        console[level](message, extras ?? '')
-      }
-    })
-
+    this.logger.flush()
     this.stats.flush()
   }
 
