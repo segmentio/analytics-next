@@ -10,7 +10,12 @@ async function attempt(ctx: Context, extension: Extension): Promise<Context | un
   ctx.log('debug', 'extension', { extension: extension.name })
   const start = new Date().getTime()
 
-  const newCtx = await extension[ctx.event.type](ctx)
+  const hook = extension[ctx.event.type]
+  if (hook === undefined) {
+    return ctx
+  }
+
+  const newCtx = await hook(ctx)
     .then((ctx) => {
       const done = new Date().getTime() - start
       ctx.stats.gauge('extension_time', done)
@@ -44,7 +49,17 @@ export class EventQueue {
     this.queue = []
     this.config = config
 
-    // TODO: load extensions
+    this.init().catch((err) => {
+      console.error('Error initializing extensions', err)
+    })
+  }
+
+  private async init(): Promise<void> {
+    const ctx = new Context({ type: 'track' })
+    const extensions = this.config.extensions
+
+    const loaders = extensions.map((xt) => xt.load(ctx, {}))
+    await Promise.all(loaders)
   }
 
   async dispatch(ctx: Context): Promise<Context> {
@@ -54,6 +69,7 @@ export class EventQueue {
   }
 
   async flush(): Promise<void> {
+    // prevent multiple calls to `flush()`
     await pWhile(
       () => this.queue.length > 0,
       async () => {
@@ -83,7 +99,7 @@ export class EventQueue {
   }
 
   private isReady(): boolean {
-    const allReady = this.config.extensions.every((p) => p.isLoaded && !p.critical)
+    const allReady = this.config.extensions.every((p) => p.isLoaded())
     return allReady
   }
 
@@ -93,19 +109,9 @@ export class EventQueue {
       return
     }
 
-    const utilities = this.config.extensions.filter((p) => p.type === 'utility')
     const before = this.config.extensions.filter((p) => p.type === 'before')
     const enrichment = this.config.extensions.filter((p) => p.type === 'enrichment')
     const destinations = this.config.extensions.filter((p) => p.type === 'destination')
-
-    // TODO: run utilities at different stage
-    // these are not event dependent
-    for (const utility of utilities) {
-      const temp: Context | undefined = await attempt(ctx, utility)
-      if (temp !== undefined) {
-        ctx = temp
-      }
-    }
 
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)

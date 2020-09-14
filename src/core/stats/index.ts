@@ -25,4 +25,8 @@ export default class Stats {
       type: 'gauge',
     })
   }
+
+  flush(): void {
+    // TODO: flush stats
+  }
 }

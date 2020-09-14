@@ -1,3 +1,5 @@
+import { SegmentEvent } from '../events'
+
 function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
 }
@@ -22,16 +24,16 @@ class ValidationError extends Error {
   }
 }
 
-export function validate(event?: unknown, properties?: unknown): void {
-  if (!isString(event)) {
+export function validate(eventType?: unknown, event?: unknown | SegmentEvent): void {
+  if (!isString(eventType)) {
     throw new ValidationError('event', 'Event is not a string')
   }
 
-  if (!isPlainObject(properties)) {
-    throw new ValidationError('properties', 'Properties is not an object')
+  if (!isPlainObject(event)) {
+    throw new ValidationError('properties', 'properties is not an object')
   }
 
-  if (!hasUser(properties)) {
+  if (!hasUser(event)) {
     throw new ValidationError('userId', 'Missing userId or anonymousId')
   }
 }

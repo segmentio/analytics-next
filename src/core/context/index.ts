@@ -1,16 +1,27 @@
 import { SegmentEvent } from '../events'
 import Stats from '../stats'
-import uuid from 'uuid-random'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+type LogMessage = {
+  level: LogLevel
+  message: string
+  extras?: object
+}
 
-export class Context {
+export interface Ctx {
+  cancel: () => never
+  seal: () => void
+  log: (level: LogLevel, message: string, extras?: object) => void
+  stats: Stats
+}
+
+export class Context implements Ctx {
   private _event: SegmentEvent
-  private sealed: boolean
+  private sealed = false
+  private logs: LogMessage[] = []
 
   constructor(event: SegmentEvent) {
     this._event = event
-    this.event.messageId = event.messageId ?? uuid()
   }
 
   cancel = (): never => {
@@ -22,11 +33,11 @@ export class Context {
   }
 
   log = (level: LogLevel, message: string, extras?: object): void => {
-    if (level === 'info' || level === 'debug') {
-      console.log(message, extras)
-    } else {
-      console[level](message, extras)
-    }
+    this.logs.push({
+      level,
+      message,
+      extras,
+    })
   }
 
   public get event(): SegmentEvent {
@@ -42,8 +53,17 @@ export class Context {
     this._event = Object.assign({}, this._event, evt)
   }
 
-  public get messageId(): string | undefined {
-    return this.event.messageId
+  public flush(): void {
+    this.logs.forEach((logEntry) => {
+      const { level, message, extras } = logEntry
+      if (level === 'info' || level === 'debug') {
+        console.log(message, extras ?? '')
+      } else {
+        console[level](message, extras ?? '')
+      }
+    })
+
+    this.stats.flush()
   }
 
   stats = new Stats()

@@ -18,7 +18,7 @@ export function invokeCallback(ctx: Context, callback?: Callback, timeout?: numb
     timeout ?? 1000
   )
     .catch((err) => {
-      ctx.log('warn', 'Callback timeout', { messageId: ctx.event.messageId, error: err })
+      ctx.log('warn', 'Callback timeout', { error: err })
       ctx.stats.increment('callback_error')
     })
     .then(() => ctx)

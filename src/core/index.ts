@@ -3,10 +3,12 @@ import { validate } from './validation'
 import { Context } from './context'
 import { SegmentEvent } from './events'
 import { invokeCallback } from './callback'
+import { Extension } from './extension'
 
 interface AnalyticsSettings {
   writeKey: string
   timeout?: number
+  extensions: Extension[]
   // TODO:
   // - custom url endpoint
   // - integrations object
@@ -23,7 +25,7 @@ export class Analytics {
 
   constructor(settings: AnalyticsSettings) {
     this.queue = new EventQueue({
-      extensions: [],
+      extensions: settings.extensions,
     })
     this.settings = settings
   }
@@ -34,7 +36,7 @@ export class Analytics {
   // - add callback as part of dispatch
 
   async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context> {
-    const segmentEvent = {
+    const segmentEvent: SegmentEvent = {
       event,
       type: 'track' as const,
       properties: { ...properties },
@@ -60,7 +62,7 @@ export class Analytics {
 
   private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context> {
     const ctx = new Context(event)
-    validate(type, ctx.event)
+    validate(type, event.properties ?? event.traits ?? {})
 
     const dispatched = await this.queue.dispatch(ctx)
     return invokeCallback(dispatched, callback, this.settings.timeout)

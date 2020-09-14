@@ -6,7 +6,9 @@ export interface SegmentEvent {
   properties?: object
   traits?: object
   context?: object
+  options?: object
 
   userId?: string
   anonymousId?: string
+  event?: string
 }
