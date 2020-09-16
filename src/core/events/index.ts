@@ -16,28 +16,29 @@ export interface SegmentEvent {
   event?: string
 }
 
-export function eventFactory(user: User) {
-  function track(event: string, properties: object): SegmentEvent {
+export class EventFactory {
+  user: User
+
+  constructor(user: User) {
+    this.user = user
+  }
+
+  track(event: string, properties: object): SegmentEvent {
     return {
       event,
       type: 'track' as const,
       properties,
-      userId: user.id(),
-      anonymousId: user.anonymousId(),
+      userId: this.user.id(),
+      anonymousId: this.user.anonymousId(),
     }
   }
 
-  function identify(userId: ID, traits: object): SegmentEvent {
+  identify(userId: ID, traits: object): SegmentEvent {
     return {
       type: 'identify' as const,
       userId,
       traits,
-      anonymousId: user.anonymousId(),
+      anonymousId: this.user.anonymousId(),
     }
-  }
-
-  return {
-    track,
-    identify,
   }
 }
