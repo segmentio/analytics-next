@@ -71,6 +71,16 @@ export class Analytics {
     return this.dispatch('identify', segmentEvent, callback)
   }
 
+  // TODO: Add emitter
+
+  ready(): void {
+    // TODO: on ready
+  }
+
+  reset(): void {
+    // TODO: reset user
+  }
+
   private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
     const ctx = new Context(event)
     validate(type, event.properties ?? event.traits ?? {})
