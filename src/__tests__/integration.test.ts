@@ -50,8 +50,8 @@ beforeAll(() => {
 })
 
 describe('Initialization', () => {
-  it('loads extensions', () => {
-    new Analytics({
+  it('loads extensions', async () => {
+    await Analytics.load({
       writeKey,
       extensions: [xt],
     })
@@ -79,7 +79,7 @@ describe('Initialization', () => {
     }
 
     jest.spyOn(lazyExtension, 'load')
-    new Analytics({ writeKey, extensions: [lazyExtension] })
+    await Analytics.load({ writeKey, extensions: [lazyExtension] })
 
     expect(lazyExtension.load).toHaveBeenCalled()
     expect(onLoad).not.toHaveBeenCalled()
@@ -94,7 +94,7 @@ describe('Initialization', () => {
 
 describe('Dispatch', () => {
   it('dispatches events', async () => {
-    const ajs = new Analytics({
+    const ajs = await Analytics.load({
       writeKey,
       extensions: [],
     })
@@ -112,7 +112,7 @@ describe('Dispatch', () => {
   })
 
   it('dispatches events to destinations', async () => {
-    const ajs = new Analytics({
+    const ajs = await Analytics.load({
       writeKey,
       extensions: [amplitude, googleAnalytics],
       deliverInline: true,
@@ -133,7 +133,7 @@ describe('Dispatch', () => {
   })
 
   it('enriches events before dispatching', async () => {
-    const ajs = new Analytics({
+    const ajs = await Analytics.load({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
       deliverInline: true,
@@ -158,7 +158,7 @@ describe('Dispatch', () => {
   })
 
   it('logs dispatch actions', async () => {
-    const ajs = new Analytics({
+    const ajs = await Analytics.load({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
     })
@@ -175,7 +175,7 @@ describe('Dispatch', () => {
       Array [
         Object {
           "extras": Object {
-            "time": 2020-09-14T22:00:23.282Z,
+            "time": 2020-09-16T17:58:27.945Z,
           },
           "level": "debug",
           "message": "Dispatching",
@@ -183,7 +183,7 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Billing Enrichment",
-            "time": 2020-09-14T22:00:23.282Z,
+            "time": 2020-09-16T17:58:27.945Z,
           },
           "level": "debug",
           "message": "extension",
@@ -191,7 +191,7 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Amplitude",
-            "time": 2020-09-14T22:00:23.282Z,
+            "time": 2020-09-16T17:58:27.945Z,
           },
           "level": "debug",
           "message": "extension",
@@ -199,14 +199,14 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Google Analytics",
-            "time": 2020-09-14T22:00:23.282Z,
+            "time": 2020-09-16T17:58:27.945Z,
           },
           "level": "debug",
           "message": "extension",
         },
         Object {
           "extras": Object {
-            "time": 2020-09-14T22:00:23.282Z,
+            "time": 2020-09-16T17:58:27.945Z,
           },
           "level": "debug",
           "message": "Delivered",
@@ -216,7 +216,7 @@ describe('Dispatch', () => {
   })
 
   it('collects metrics for every event', async () => {
-    const ajs = new Analytics({
+    const ajs = await Analytics.load({
       writeKey,
       extensions: [amplitude],
     })

@@ -14,22 +14,22 @@ export class EventQueue {
 
   config: EventQueueConfig
 
-  constructor(config: EventQueueConfig) {
+  private constructor(config: EventQueueConfig) {
     this.queue = []
     this.archive = []
     this.config = config
-
-    this.init().catch((err) => {
-      console.error('Error initializing extensions', err)
-    })
   }
 
-  private async init(): Promise<void> {
+  public static async init(config: EventQueueConfig): Promise<EventQueue> {
+    const queue = new EventQueue(config)
+
     const ctx = Context.system()
-    const extensions = this.config.extensions
+    const extensions = queue.config.extensions
 
     const loaders = extensions.map((xt) => xt.load(ctx, {}))
     await Promise.all(loaders)
+
+    return queue
   }
 
   async register(extension: Extension): Promise<void> {

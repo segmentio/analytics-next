@@ -23,13 +23,18 @@ export class Analytics {
   queue: EventQueue
   settings: AnalyticsSettings
 
-  constructor(settings: AnalyticsSettings) {
-    this.queue = new EventQueue({
+  private constructor(settings: AnalyticsSettings, queue: EventQueue) {
+    this.settings = settings
+    this.queue = queue
+  }
+
+  static async load(settings: AnalyticsSettings): Promise<Analytics> {
+    const queue = await EventQueue.init({
       extensions: settings.extensions ?? [],
       inline: settings.deliverInline,
     })
 
-    this.settings = settings
+    return new Analytics(settings, queue)
   }
 
   // TODO/ideas
@@ -37,12 +42,7 @@ export class Analytics {
   // - meta timestamps
   // - add callback as part of dispatch
 
-  async track(
-    event: string,
-    properties?: object,
-    _options?: object,
-    callback?: Callback
-  ): Promise<Context | undefined> {
+  async track(event: string, properties?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
     const segmentEvent: SegmentEvent = {
       event,
       type: 'track' as const,
@@ -52,12 +52,7 @@ export class Analytics {
     return this.dispatch('track', segmentEvent, callback)
   }
 
-  async identify(
-    userId?: string,
-    traits?: object,
-    _options?: object,
-    callback?: Callback
-  ): Promise<Context | undefined> {
+  async identify(userId?: string, traits?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
     // todo: grab traits from user
     // todo: grab id from user
 

@@ -20,7 +20,7 @@ export class Context implements AbstractContext {
   }
 
   static system(): Context {
-    return new Context({ type: 'system' })
+    return new Context({ type: 'track', event: 'init' })
   }
 
   cancel = (): never => {
