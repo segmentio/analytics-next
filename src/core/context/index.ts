@@ -19,6 +19,10 @@ export class Context implements AbstractContext {
     this._event = event
   }
 
+  static system(): Context {
+    return new Context({ type: 'system' })
+  }
+
   cancel = (): never => {
     throw new Error('Stap!')
   }

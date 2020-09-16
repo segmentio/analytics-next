@@ -25,11 +25,17 @@ export class EventQueue {
   }
 
   private async init(): Promise<void> {
-    const ctx = new Context({ type: 'track' })
+    const ctx = Context.system()
     const extensions = this.config.extensions
 
     const loaders = extensions.map((xt) => xt.load(ctx, {}))
     await Promise.all(loaders)
+  }
+
+  async register(extension: Extension): Promise<void> {
+    this.config.extensions.push(extension)
+    const ctx = Context.system()
+    await extension.load(ctx, {})
   }
 
   async dispatch(ctx: Context): Promise<Context | undefined> {

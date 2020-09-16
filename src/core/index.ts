@@ -14,7 +14,6 @@ interface AnalyticsSettings {
   // - custom url endpoint
   // - integrations object
   // - extensions
-  // - reset
   // - events
   // - event level middleware
 }
@@ -69,6 +68,10 @@ export class Analytics {
     }
 
     return this.dispatch('identify', segmentEvent, callback)
+  }
+
+  async register(extension: Extension): Promise<void> {
+    return this.queue.register(extension)
   }
 
   // TODO: Add emitter

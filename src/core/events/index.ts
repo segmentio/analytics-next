@@ -1,7 +1,7 @@
 export interface SegmentEvent {
   messageId?: string
 
-  type: 'track' | 'page' | 'identify' | 'group'
+  type: 'track' | 'page' | 'identify' | 'group' | 'system'
 
   properties?: object
   traits?: object
