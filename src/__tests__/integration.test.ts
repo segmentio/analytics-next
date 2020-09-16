@@ -146,6 +146,7 @@ describe('Dispatch', () => {
 
     expect(boo?.event).toMatchInlineSnapshot(`
       Object {
+        "anonymousId": "8a34abdb-c48b-4fde-a325-ef2ab4ddfb46",
         "event": "Boo!",
         "properties": Object {
           "billingPlan": "free-99",
@@ -153,6 +154,7 @@ describe('Dispatch', () => {
           "userId": "👻",
         },
         "type": "track",
+        "userId": undefined,
       }
     `)
   })
@@ -175,7 +177,7 @@ describe('Dispatch', () => {
       Array [
         Object {
           "extras": Object {
-            "time": 2020-09-16T17:58:27.945Z,
+            "time": 2020-09-16T21:55:41.320Z,
           },
           "level": "debug",
           "message": "Dispatching",
@@ -183,7 +185,7 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Billing Enrichment",
-            "time": 2020-09-16T17:58:27.945Z,
+            "time": 2020-09-16T21:55:41.320Z,
           },
           "level": "debug",
           "message": "extension",
@@ -191,7 +193,7 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Amplitude",
-            "time": 2020-09-16T17:58:27.945Z,
+            "time": 2020-09-16T21:55:41.320Z,
           },
           "level": "debug",
           "message": "extension",
@@ -199,14 +201,14 @@ describe('Dispatch', () => {
         Object {
           "extras": Object {
             "extension": "Google Analytics",
-            "time": 2020-09-16T17:58:27.945Z,
+            "time": 2020-09-16T21:55:41.320Z,
           },
           "level": "debug",
           "message": "extension",
         },
         Object {
           "extras": Object {
-            "time": 2020-09-16T17:58:27.945Z,
+            "time": 2020-09-16T21:55:41.320Z,
           },
           "level": "debug",
           "message": "Delivered",

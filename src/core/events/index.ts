@@ -1,3 +1,5 @@
+import { ID, User } from '../user'
+
 export interface SegmentEvent {
   messageId?: string
 
@@ -8,7 +10,34 @@ export interface SegmentEvent {
   context?: object
   options?: object
 
-  userId?: string
-  anonymousId?: string
+  userId?: ID
+  anonymousId?: ID
+
   event?: string
+}
+
+export function eventFactory(user: User) {
+  function track(event: string, properties: object): SegmentEvent {
+    return {
+      event,
+      type: 'track' as const,
+      properties,
+      userId: user.id(),
+      anonymousId: user.anonymousId(),
+    }
+  }
+
+  function identify(userId: ID, traits: object): SegmentEvent {
+    return {
+      type: 'identify' as const,
+      userId,
+      traits,
+      anonymousId: user.anonymousId(),
+    }
+  }
+
+  return {
+    track,
+    identify,
+  }
 }

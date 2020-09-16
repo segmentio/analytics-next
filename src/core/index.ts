@@ -1,31 +1,31 @@
 import { EventQueue } from './queue/event-queue'
 import { validate } from './validation'
 import { Context } from './context'
-import { SegmentEvent } from './events'
+import { eventFactory, SegmentEvent } from './events'
 import { invokeCallback } from './callback'
 import { Extension } from './extension'
+import { User } from './user'
 
 interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
   deliverInline?: boolean
-  // TODO:
-  // - custom url endpoint
-  // - integrations object
-  // - extensions
-  // - events
-  // - event level middleware
 }
+
 type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
 
 export class Analytics {
   queue: EventQueue
   settings: AnalyticsSettings
+  private _user: User
+  eventFactory: ReturnType<typeof eventFactory>
 
-  private constructor(settings: AnalyticsSettings, queue: EventQueue) {
+  private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User) {
     this.settings = settings
     this.queue = queue
+    this._user = user
+    this.eventFactory = eventFactory(user)
   }
 
   static async load(settings: AnalyticsSettings): Promise<Analytics> {
@@ -34,34 +34,29 @@ export class Analytics {
       inline: settings.deliverInline,
     })
 
-    return new Analytics(settings, queue)
+    const user = new User().load()
+    return new Analytics(settings, queue, user)
   }
 
-  // TODO/ideas
-  // - user id capture
-  // - meta timestamps
-  // - add callback as part of dispatch
+  user(): User {
+    return this._user
+  }
 
   async track(event: string, properties?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
-    const segmentEvent: SegmentEvent = {
-      event,
-      type: 'track' as const,
-      properties,
-    }
-
+    const segmentEvent = this.eventFactory.track(event, properties ?? {})
     return this.dispatch('track', segmentEvent, callback)
   }
 
   async identify(userId?: string, traits?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
-    // todo: grab traits from user
-    // todo: grab id from user
-
-    const segmentEvent = {
-      type: 'identify' as const,
-      userId,
-      traits,
+    if (userId) {
+      this._user.id(userId)
     }
 
+    if (traits) {
+      this._user.traits(traits)
+    }
+
+    const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits())
     return this.dispatch('identify', segmentEvent, callback)
   }
 
@@ -76,7 +71,7 @@ export class Analytics {
   }
 
   reset(): void {
-    // TODO: reset user
+    this._user.reset()
   }
 
   private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
