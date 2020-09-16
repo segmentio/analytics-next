@@ -42,16 +42,16 @@ export class Analytics {
     return this._user
   }
 
-  async track(event: string, properties?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
-    const segmentEvent = this.eventFactory.track(event, properties ?? {})
+  async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
+    const segmentEvent = this.eventFactory.track(event, properties, options)
     return this.dispatch('track', segmentEvent, callback)
   }
 
-  async identify(userId?: ID, traits?: object, _options?: object, callback?: Callback): Promise<Context | undefined> {
+  async identify(userId?: ID, traits?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
     userId = this._user.id(userId)
     traits = this._user.traits(traits)
 
-    const segmentEvent = this.eventFactory.identify(userId, traits)
+    const segmentEvent = this.eventFactory.identify(userId, traits, options)
     return this.dispatch('identify', segmentEvent, callback)
   }
 

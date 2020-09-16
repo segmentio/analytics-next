@@ -23,22 +23,24 @@ export class EventFactory {
     this.user = user
   }
 
-  track(event: string, properties: object): SegmentEvent {
+  track(event: string, properties?: object, options?: object): SegmentEvent {
     return {
       event,
       type: 'track' as const,
       properties,
       userId: this.user.id(),
       anonymousId: this.user.anonymousId(),
+      options,
     }
   }
 
-  identify(userId: ID, traits: object): SegmentEvent {
+  identify(userId: ID, traits?: object, options?: object): SegmentEvent {
     return {
       type: 'identify' as const,
       userId,
       traits,
       anonymousId: this.user.anonymousId(),
+      options,
     }
   }
 }
