@@ -11,7 +11,6 @@ interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
-  deliverInline?: boolean
 }
 
 type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
@@ -32,7 +31,6 @@ export class Analytics {
   static async load(settings: AnalyticsSettings): Promise<Analytics> {
     const queue = await EventQueue.init({
       extensions: settings.extensions ?? [],
-      inline: settings.deliverInline,
     })
 
     const user = new User().load()

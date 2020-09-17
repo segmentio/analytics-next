@@ -175,7 +175,7 @@ describe('Dispatch', () => {
           "metric": "extension_time",
           "tags": Array [],
           "type": "gauge",
-          "value": 1,
+          "value": 0,
         },
         Object {
           "metric": "extension_error",
@@ -195,7 +195,7 @@ describe('Dispatch', () => {
           "metric": "delivered",
           "tags": Array [],
           "type": "gauge",
-          "value": 1,
+          "value": 0,
         },
       ]
     `)

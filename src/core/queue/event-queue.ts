@@ -4,13 +4,13 @@ import pWhile from 'p-whilst'
 import { attempt, ensure } from './delivery'
 
 interface EventQueueConfig {
-  inline?: boolean
   extensions: Extension[]
 }
 
 export class EventQueue {
   queue: Context[]
   archive: Context[]
+  private flushing = false
 
   config: EventQueueConfig
 
@@ -42,13 +42,26 @@ export class EventQueue {
     ctx.log('debug', 'Dispatching')
     ctx.stats.increment('message_dispatched')
 
-    if (this.config.inline) {
-      return this.flushOne(ctx)
-    } else {
-      this.queue.push(ctx)
-    }
+    this.queue.push(ctx)
+    this.scheduleFlush()
 
     return Promise.resolve(ctx)
+  }
+
+  private scheduleFlush(): void {
+    if (this.flushing) {
+      return
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    setTimeout(async () => {
+      this.flushing = true
+
+      await this.flush()
+      this.flushing = false
+
+      this.scheduleFlush()
+    }, 3000)
   }
 
   async flush(): Promise<Context[]> {
