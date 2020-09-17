@@ -51,7 +51,8 @@ export class EventQueue {
     return Promise.resolve(ctx)
   }
 
-  async flush(): Promise<void> {
+  async flush(): Promise<Context[]> {
+    const flushed: Context[] = []
     // prevent multiple calls to `flush()`
     await pWhile(
       () => this.queue.length > 0,
@@ -67,7 +68,7 @@ export class EventQueue {
           const done = new Date().getTime() - start
           ctx.stats.gauge('delivered', done)
           ctx.log('debug', 'Delivered')
-          this.archive.push(ctx)
+          flushed.push(ctx)
         } catch (err) {
           ctx.log('error', 'Failed to deliver')
           ctx.stats.increment('delivery_failed')
@@ -80,6 +81,8 @@ export class EventQueue {
         }
       }
     )
+
+    return flushed
   }
 
   private isReady(): boolean {

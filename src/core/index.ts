@@ -5,6 +5,7 @@ import { EventFactory, SegmentEvent } from './events'
 import { invokeCallback } from './callback'
 import { Extension } from './extension'
 import { User, ID } from './user'
+import { segment } from '@/extensions/segment'
 
 interface AnalyticsSettings {
   writeKey: string
@@ -35,7 +36,10 @@ export class Analytics {
     })
 
     const user = new User().load()
-    return new Analytics(settings, queue, user)
+    const analytics = new Analytics(settings, queue, user)
+    await analytics.register(segment(settings.writeKey))
+
+    return analytics
   }
 
   user(): User {
@@ -71,7 +75,8 @@ export class Analytics {
 
   private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
     const ctx = new Context(event)
-    validate(type, event.properties ?? event.traits ?? {})
+    validate(type, event)
+
     const dispatched = await this.queue.dispatch(ctx)
     return invokeCallback(dispatched, callback, this.settings.timeout)
   }

@@ -170,9 +170,7 @@ describe('Dispatch', () => {
       userId: '🤠',
     })
 
-    await ajs.queue.flush()
-
-    const delivered = ajs.queue.archive
+    const delivered = await ajs.queue.flush()
     expect(delivered[0].logs()).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -228,8 +226,8 @@ describe('Dispatch', () => {
       userId: 'Healthy person',
     })
 
-    await ajs.queue.flush()
-    const metrics = ajs.queue.archive[0].stats.metrics
+    const delivered = await ajs.queue.flush()
+    const metrics = delivered[0].stats.metrics
 
     expect(metrics).toMatchInlineSnapshot(`
       Array [
