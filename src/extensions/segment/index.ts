@@ -1,4 +1,4 @@
-import { Extension } from '@/core/extension'
+import { Extension } from '../../core/extension'
 
 const path = 'https://api.segment.io/v1'
 

@@ -1,5 +1,5 @@
-import { Extension } from '@/core/extension'
-import { SegmentEvent } from '@/core/events'
+import { Extension } from '../../core/extension'
+import { SegmentEvent } from '../../core/events'
 
 function isString(obj: unknown): obj is string {
   return typeof obj === 'string'

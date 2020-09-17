@@ -4,10 +4,10 @@ import { EventFactory, SegmentEvent } from './events'
 import { invokeCallback } from './callback'
 import { Extension } from './extension'
 import { User, ID } from './user'
-import { segment } from '@/extensions/segment'
-import { validation } from '@/extensions/validation'
+import { validation } from '../extensions/validation'
+import { segment } from '../extensions/segment'
 
-interface AnalyticsSettings {
+export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]

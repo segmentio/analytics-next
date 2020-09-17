@@ -4,6 +4,8 @@
   "repository": "segmentio/analytics-next",
   "license": "UNLICENSED",
   "private": true,
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
   "scripts": {
     "build": "yarn clean && tsc",
     "clean": "rm -rf dist",
@@ -39,7 +41,6 @@
     "@types/jest": "^25.1.4",
     "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.14",
-    "@types/whatwg-fetch": "^0.0.33",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "delay": "^4.4.0",
