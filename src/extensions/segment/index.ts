@@ -1,5 +1,4 @@
 import { Extension } from '@/core/extension'
-import 'whatwg-fetch'
 
 const path = 'https://api.segment.io/v1'
 
@@ -18,11 +17,13 @@ export function segment(writeKey: string): Extension {
     },
 
     track: async (ctx) => {
+      const body = JSON.stringify({
+        ...ctx.event,
+        writeKey,
+      })
+
       await fetch(`${path}/t`, {
-        body: JSON.stringify({
-          ...ctx.event,
-          writeKey,
-        }),
+        body,
         method: 'POST',
         mode: 'cors',
       })

@@ -43,7 +43,7 @@ const enrichBilling: Extension = {
   },
 }
 
-const writeKey = 'w_123'
+const writeKey = '***REMOVED***'
 
 beforeAll(() => {
   jest.useFakeTimers()
@@ -96,12 +96,10 @@ describe('Dispatch', () => {
   it('dispatches events', async () => {
     const ajs = await Analytics.load({
       writeKey,
-      extensions: [],
     })
 
     await ajs.track('Boo!', {
       total: 25,
-      userId: '👻',
     })
 
     const dispatchQueue = ajs.queue.queue
@@ -115,7 +113,6 @@ describe('Dispatch', () => {
     const ajs = await Analytics.load({
       writeKey,
       extensions: [amplitude, googleAnalytics],
-      deliverInline: true,
     })
 
     const ampSpy = jest.spyOn(amplitude, 'track')
@@ -136,82 +133,19 @@ describe('Dispatch', () => {
     const ajs = await Analytics.load({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
-      deliverInline: true,
     })
 
-    const boo = await ajs.track('Boo!', {
+    await ajs.track('Boo!', {
       total: 25,
-      userId: '👻',
     })
 
-    expect(boo?.event).toMatchInlineSnapshot(`
+    const [boo] = await ajs.queue.flush()
+
+    expect(boo?.event.properties).toMatchInlineSnapshot(`
       Object {
-        "anonymousId": "8a34abdb-c48b-4fde-a325-ef2ab4ddfb46",
-        "event": "Boo!",
-        "properties": Object {
-          "billingPlan": "free-99",
-          "total": 25,
-          "userId": "👻",
-        },
-        "type": "track",
-        "userId": undefined,
+        "billingPlan": "free-99",
+        "total": 25,
       }
-    `)
-  })
-
-  it('logs dispatch actions', async () => {
-    const ajs = await Analytics.load({
-      writeKey,
-      extensions: [enrichBilling, amplitude, googleAnalytics],
-    })
-
-    await ajs.track('Yeehaw!', {
-      total: 25,
-      userId: '🤠',
-    })
-
-    const delivered = await ajs.queue.flush()
-    expect(delivered[0].logs()).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "extras": Object {
-            "time": 2020-09-16T21:55:41.320Z,
-          },
-          "level": "debug",
-          "message": "Dispatching",
-        },
-        Object {
-          "extras": Object {
-            "extension": "Billing Enrichment",
-            "time": 2020-09-16T21:55:41.320Z,
-          },
-          "level": "debug",
-          "message": "extension",
-        },
-        Object {
-          "extras": Object {
-            "extension": "Amplitude",
-            "time": 2020-09-16T21:55:41.320Z,
-          },
-          "level": "debug",
-          "message": "extension",
-        },
-        Object {
-          "extras": Object {
-            "extension": "Google Analytics",
-            "time": 2020-09-16T21:55:41.320Z,
-          },
-          "level": "debug",
-          "message": "extension",
-        },
-        Object {
-          "extras": Object {
-            "time": 2020-09-16T21:55:41.320Z,
-          },
-          "level": "debug",
-          "message": "Delivered",
-        },
-      ]
     `)
   })
 
@@ -241,7 +175,15 @@ describe('Dispatch', () => {
           "metric": "extension_time",
           "tags": Array [],
           "type": "gauge",
-          "value": 0,
+          "value": 1,
+        },
+        Object {
+          "metric": "extension_error",
+          "tags": Array [
+            "extension:Segment",
+          ],
+          "type": "increment",
+          "value": 1,
         },
         Object {
           "metric": "message_delivered",
@@ -253,7 +195,7 @@ describe('Dispatch', () => {
           "metric": "delivered",
           "tags": Array [],
           "type": "gauge",
-          "value": 0,
+          "value": 1,
         },
       ]
     `)

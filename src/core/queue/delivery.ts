@@ -18,7 +18,7 @@ export async function attempt(ctx: Context, extension: Extension): Promise<Conte
     })
     .catch((err) => {
       ctx.log('error', 'extension Error', { extension: extension.name, error: err })
-      ctx.stats.increment('extension_error', 1, [`${extension}:${extension.name}`])
+      ctx.stats.increment('extension_error', 1, [`extension:${extension.name}`])
       return undefined
     })
 
