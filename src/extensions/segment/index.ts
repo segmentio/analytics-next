@@ -22,6 +22,10 @@ export function segment(writeKey: string): Extension {
         writeKey,
       })
 
+      if (process.env.NODE_ENV === 'test') {
+        return ctx
+      }
+
       await fetch(`${path}/t`, {
         body,
         method: 'POST',

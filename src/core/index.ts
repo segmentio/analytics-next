@@ -1,11 +1,11 @@
 import { EventQueue } from './queue/event-queue'
-import { validate } from './validation'
 import { Context } from './context'
 import { EventFactory, SegmentEvent } from './events'
 import { invokeCallback } from './callback'
 import { Extension } from './extension'
 import { User, ID } from './user'
 import { segment } from '@/extensions/segment'
+import { validation } from '@/extensions/validation'
 
 interface AnalyticsSettings {
   writeKey: string
@@ -35,6 +35,8 @@ export class Analytics {
 
     const user = new User().load()
     const analytics = new Analytics(settings, queue, user)
+
+    await analytics.register(validation)
     await analytics.register(segment(settings.writeKey))
 
     return analytics
@@ -46,7 +48,7 @@ export class Analytics {
 
   async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
     const segmentEvent = this.eventFactory.track(event, properties, options)
-    return this.dispatch('track', segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback)
   }
 
   async identify(userId?: ID, traits?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
@@ -54,7 +56,7 @@ export class Analytics {
     traits = this._user.traits(traits)
 
     const segmentEvent = this.eventFactory.identify(userId, traits, options)
-    return this.dispatch('identify', segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback)
   }
 
   async register(extension: Extension): Promise<void> {
@@ -71,10 +73,8 @@ export class Analytics {
     this._user.reset()
   }
 
-  private async dispatch(type: string, event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
+  private async dispatch(event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
     const ctx = new Context(event)
-    validate(type, event)
-
     const dispatched = await this.queue.dispatch(ctx)
     return invokeCallback(dispatched, callback, this.settings.timeout)
   }

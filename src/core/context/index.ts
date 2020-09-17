@@ -23,7 +23,11 @@ export class Context implements AbstractContext {
     return new Context({ type: 'track', event: 'init' })
   }
 
-  cancel = (): never => {
+  cancel = (error?: Error): never => {
+    if (error) {
+      throw error
+    }
+
     throw new Error('Stap!')
   }
 

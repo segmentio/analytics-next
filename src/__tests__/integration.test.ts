@@ -178,12 +178,16 @@ describe('Dispatch', () => {
           "value": 0,
         },
         Object {
-          "metric": "extension_error",
-          "tags": Array [
-            "extension:Segment",
-          ],
-          "type": "increment",
-          "value": 1,
+          "metric": "extension_time",
+          "tags": Array [],
+          "type": "gauge",
+          "value": 0,
+        },
+        Object {
+          "metric": "extension_time",
+          "tags": Array [],
+          "type": "gauge",
+          "value": 0,
         },
         Object {
           "metric": "message_delivered",
