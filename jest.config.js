@@ -5,4 +5,9 @@ module.exports = {
   moduleNameMapper: {
     '@/(.+)': '<rootdir>/../../src/$1',
   },
+  globals: {
+    'ts-jest': {
+      isolatedModules: true,
+    },
+  },
 }
