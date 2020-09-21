@@ -6,6 +6,7 @@ import { Extension } from './extension'
 import { User, ID } from './user'
 import { validation } from '../extensions/validation'
 import { segment } from '../extensions/segment'
+import { ajsDestinations } from '../extensions/ajs-destination'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -40,6 +41,11 @@ export class Analytics {
     await analytics.register(segment(settings.writeKey))
 
     return analytics
+  }
+
+  async loadRemoteExtensions(): Promise<void> {
+    const extensions = await ajsDestinations(this.settings.writeKey)
+    await Promise.all(extensions.map((xt) => this.register(xt)))
   }
 
   user(): User {
