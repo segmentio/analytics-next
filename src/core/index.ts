@@ -57,6 +57,11 @@ export class Analytics {
     return this.dispatch(segmentEvent, callback)
   }
 
+  async page(page: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
+    const segmentEvent = this.eventFactory.page(page, properties, options)
+    return this.dispatch(segmentEvent, callback)
+  }
+
   async identify(userId?: ID, traits?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
     userId = this._user.id(userId)
     traits = this._user.traits(traits)

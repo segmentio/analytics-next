@@ -1,5 +1,9 @@
 import { ID, User } from '../user'
 
+interface AnalyticsContext {
+  page?: object
+}
+
 export interface SegmentEvent {
   messageId?: string
 
@@ -7,7 +11,7 @@ export interface SegmentEvent {
 
   properties?: object
   traits?: object
-  context?: object
+  context?: AnalyticsContext
   options?: object
 
   userId?: ID
@@ -27,6 +31,17 @@ export class EventFactory {
     return {
       event,
       type: 'track' as const,
+      properties,
+      userId: this.user.id(),
+      anonymousId: this.user.anonymousId(),
+      options,
+    }
+  }
+
+  page(_name: string, properties?: object, options?: object): SegmentEvent {
+    return {
+      event: 'page',
+      type: 'page' as const,
       properties,
       userId: this.user.id(),
       anonymousId: this.user.anonymousId(),
