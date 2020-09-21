@@ -12,7 +12,7 @@ declare global {
 
 const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
-function ajsDestination(name: string, version: string, settings?: any): Extension {
+export function ajsDestination(name: string, version: string, settings?: any): Extension {
   let integration: any
 
   const xt: Extension = {
@@ -54,7 +54,6 @@ export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
   const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
   const settings = await settingsResponse.json()
 
-  const integrationSettings = settings.integrations['Amplitude']
-  const version = '9d8f8fd72beb6fb21580'
-  return [ajsDestination('amplitude', version, integrationSettings)]
+  const integrations = Object.keys(settings.integrations)
+  return integrations.map((i) => ajsDestination(i.toLowerCase(), 'latest', settings.integrations[i]))
 }
