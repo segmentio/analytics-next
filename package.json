@@ -9,6 +9,8 @@
   "scripts": {
     "build": "yarn clean && tsc",
     "watch": "tsc -w",
+    "example": "concurrently \"yarn watch\" \"yarn run-example\"",
+    "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'"
@@ -32,6 +34,7 @@
   },
   "dependencies": {
     "@lukeed/uuid": "^1.0.1",
+    "segmentio-facade": "github://segmentio/facade",
     "lodash": "^4.17.20",
     "p-timeout": "^3.2.0",
     "p-whilst": "^2.1.0",
@@ -39,6 +42,7 @@
     "whatwg-fetch": "^3.4.1"
   },
   "devDependencies": {
+    "concurrently": "^5.3.0",
     "@types/jest": "^25.1.4",
     "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.14",

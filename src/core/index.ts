@@ -30,15 +30,27 @@ export class Analytics {
   }
 
   static async load(settings: AnalyticsSettings): Promise<Analytics> {
-    const queue = await EventQueue.init({
-      extensions: settings.extensions ?? [],
-    })
+    const queue = new EventQueue()
 
     const user = new User().load()
     const analytics = new Analytics(settings, queue, user)
 
     await analytics.register(validation)
-    await analytics.register(segment(settings.writeKey))
+
+    // TODO: make loadScript work in test
+    if (process.env.NODE_ENV !== 'test') {
+      await analytics.register(
+        segment({
+          apiKey: settings.writeKey,
+        })
+      )
+    }
+
+    const registrations = (settings.extensions ?? []).map(async (extension) => {
+      await analytics.register(extension)
+    })
+
+    await Promise.all(registrations)
 
     return analytics
   }
@@ -71,10 +83,13 @@ export class Analytics {
   }
 
   async register(extension: Extension): Promise<void> {
-    return this.queue.register(extension)
+    return this.queue.register(extension, this)
   }
 
   // TODO: Add emitter
+  on(): void {
+    // todo
+  }
 
   ready(): void {
     // TODO: on ready

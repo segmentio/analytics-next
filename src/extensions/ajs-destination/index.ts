@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Extension } from '../../core/extension'
 import { loadScript } from '../../lib/load-script'
+
+import facade from 'segmentio-facade'
 
 declare global {
   interface Window {
     [integration: string]: any
   }
 }
+
+const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
 function ajsDestination(name: string, version: string, settings?: any): Extension {
   let integration: any
@@ -19,22 +24,24 @@ function ajsDestination(name: string, version: string, settings?: any): Extensio
       return integration.loaded()
     },
 
-    load: async (_ctx) => {
-      await loadScript(`https://ajs-next-integrations.s3-us-west-2.amazonaws.com/${name}/${version}/bundle.js`)
+    load: async (_ctx, analyticsInstance) => {
+      await loadScript(`${path}/${name}/${version}/bundle.js`)
 
-      const constructor = window[`${name}Integration`]
+      const constructor = window[`${name}Integration`] as any
       integration = new constructor(settings)
+      integration.analytics = analyticsInstance
       integration.initialize()
     },
 
     async track(ctx) {
-      integration.track({
-        event: () => ctx.event.event,
-        properties: () => ctx.event.properties,
-        options: () => ctx.event.options,
-        proxy: () => undefined,
-        revenue: () => undefined,
-      })
+      const trackEvent = new facade.Track(ctx.event)
+      if (integration.ontrack) {
+        integration.ontrack(trackEvent)
+      }
+
+      if (integration.track) {
+        integration.track(trackEvent)
+      }
 
       return ctx
     },

@@ -52,7 +52,7 @@ export class Context implements AbstractContext {
     this._event = Object.assign({}, this._event, evt)
   }
 
-  public updateEvent(path: string, value: any): void {
+  public updateEvent(path: string, value: unknown): void {
     if (this.sealed) {
       this.log('warn', 'Context is sealed')
       return

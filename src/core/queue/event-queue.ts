@@ -2,40 +2,23 @@ import { Context } from '../context'
 import { Extension } from '../extension'
 import pWhile from 'p-whilst'
 import { attempt, ensure } from './delivery'
-
-interface EventQueueConfig {
-  extensions: Extension[]
-}
+import { Analytics } from '..'
 
 export class EventQueue {
   queue: Context[]
   archive: Context[]
+  extensions: Extension[] = []
   private flushing = false
 
-  config: EventQueueConfig
-
-  private constructor(config: EventQueueConfig) {
+  constructor() {
     this.queue = []
     this.archive = []
-    this.config = config
   }
 
-  public static async init(config: EventQueueConfig): Promise<EventQueue> {
-    const queue = new EventQueue(config)
-
+  async register(extension: Extension, instance: Analytics): Promise<void> {
+    this.extensions.push(extension)
     const ctx = Context.system()
-    const extensions = queue.config.extensions
-
-    const loaders = extensions.map((xt) => xt.load(ctx, {}))
-    await Promise.all(loaders)
-
-    return queue
-  }
-
-  async register(extension: Extension): Promise<void> {
-    this.config.extensions.push(extension)
-    const ctx = Context.system()
-    await extension.load(ctx, {})
+    await extension.load(ctx, instance)
   }
 
   async dispatch(ctx: Context): Promise<Context | undefined> {
@@ -99,7 +82,7 @@ export class EventQueue {
   }
 
   private isReady(): boolean {
-    return this.config.extensions.every((p) => p.isLoaded())
+    return this.extensions.every((p) => p.isLoaded())
   }
 
   private async flushOne(ctx: Context): Promise<Context | undefined> {
@@ -108,9 +91,9 @@ export class EventQueue {
       return
     }
 
-    const before = this.config.extensions.filter((p) => p.type === 'before')
-    const enrichment = this.config.extensions.filter((p) => p.type === 'enrichment')
-    const destinations = this.config.extensions.filter((p) => p.type === 'destination')
+    const before = this.extensions.filter((p) => p.type === 'before')
+    const enrichment = this.extensions.filter((p) => p.type === 'enrichment')
+    const destinations = this.extensions.filter((p) => p.type === 'destination')
 
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)

@@ -1,6 +1,8 @@
+import { Analytics } from '..'
 import { Context } from '../context'
 
 interface ExtensionConfig {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any
   priority: 'critical' | 'non-critical' // whether AJS should expect this extension to be loaded before starting event delivery
 }
@@ -15,7 +17,7 @@ export interface Extension {
   type: 'before' | 'destination' | 'enrichment' | 'utility'
 
   isLoaded: () => boolean
-  load: (ctx: Context, options: ExtensionConfig['options']) => Promise<unknown>
+  load: (ctx: Context, instance: Analytics, config?: ExtensionConfig) => Promise<unknown>
 
   track?: (ctx: Context) => Promise<Context>
   identify?: (ctx: Context) => Promise<Context>
