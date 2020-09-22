@@ -6,19 +6,29 @@ import { Analytics } from '..'
 
 export class EventQueue {
   queue: Context[]
-  archive: Context[]
   extensions: Extension[] = []
   private flushing = false
 
   constructor() {
     this.queue = []
-    this.archive = []
   }
 
   async register(extension: Extension, instance: Analytics): Promise<void> {
-    this.extensions.push(extension)
     const ctx = Context.system()
-    await extension.load(ctx, instance)
+
+    await extension
+      .load(ctx, instance)
+      .then(() => {
+        this.extensions.push(extension)
+      })
+      .catch((err) => {
+        if (extension.type === 'destination') {
+          ctx.log('warn', 'Failed to load destination', { extension: extension.name })
+          return
+        }
+
+        throw err
+      })
   }
 
   async dispatch(ctx: Context): Promise<Context | undefined> {

@@ -35,7 +35,7 @@ export default function Home(): React.ReactElement {
     })
 
     const [ctx] = await analytics.queue.flush()
-    ctx.logger.flush()
+    ctx?.logger.flush()
   }
 
   return (
