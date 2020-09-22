@@ -59,7 +59,7 @@ export class EventQueue {
 
   async flush(): Promise<Context[]> {
     const flushed: Context[] = []
-    // prevent multiple calls to `flush()`
+
     await pWhile(
       () => this.queue.length > 0,
       async () => {
@@ -123,8 +123,6 @@ export class EventQueue {
 
     // No more changes to ctx from now on
     ctx.seal()
-
-    // TODO: send to Segment
 
     // TODO: concurrency control
     // TODO: timeouts
