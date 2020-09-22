@@ -47,12 +47,10 @@ export class Analytics {
     }
 
     await analytics.register(...(settings.extensions ?? []))
-    return analytics
-  }
+    const remoteExtensions = await ajsDestinations(settings.writeKey)
+    await analytics.register(...remoteExtensions)
 
-  async loadRemoteExtensions(): Promise<void> {
-    const extensions = await ajsDestinations(this.settings.writeKey)
-    await this.register(...extensions)
+    return analytics
   }
 
   user(): User {

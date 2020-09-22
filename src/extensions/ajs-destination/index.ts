@@ -3,6 +3,7 @@ import { Extension } from '../../core/extension'
 import { loadScript } from '../../lib/load-script'
 
 import facade from 'segmentio-facade'
+import { Analytics } from '@/core'
 
 declare global {
   interface Window {
@@ -10,10 +11,22 @@ declare global {
   }
 }
 
+interface LegacyIntegration {
+  analytics?: Analytics
+  initialize: () => void
+  loaded: () => boolean
+
+  ontrack?: (event: Facade.Track) => void
+  track?: (event: Facade.Track) => void
+
+  onidentify?: (event: Facade.Identify) => void
+  identify?: (event: Facade.Identify) => void
+}
+
 const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
 export function ajsDestination(name: string, version: string, settings?: any): Extension {
-  let integration: any
+  let integration: LegacyIntegration
 
   const xt: Extension = {
     name,
@@ -35,12 +48,27 @@ export function ajsDestination(name: string, version: string, settings?: any): E
 
     async track(ctx) {
       const trackEvent = new facade.Track(ctx.event)
+
       if (integration.ontrack) {
         integration.ontrack(trackEvent)
       }
 
       if (integration.track) {
         integration.track(trackEvent)
+      }
+
+      return ctx
+    },
+
+    async identify(ctx) {
+      const trackEvent = new facade.Identify(ctx.event)
+
+      if (integration.onidentify) {
+        integration.onidentify(trackEvent)
+      }
+
+      if (integration.identify) {
+        integration.identify(trackEvent)
       }
 
       return ctx
@@ -54,6 +82,7 @@ export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
   const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
   const settings = await settingsResponse.json()
 
-  const integrations = Object.keys(settings.integrations)
-  return integrations.map((i) => ajsDestination(i.toLowerCase(), 'latest', settings.integrations[i]))
+  return Object.entries(settings.integrations).map(([name, settings]) => {
+    return ajsDestination(name.toLowerCase(), 'latest', settings)
+  })
 }
