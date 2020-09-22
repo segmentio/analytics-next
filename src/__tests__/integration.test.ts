@@ -1,4 +1,4 @@
-import { Analytics } from '@/core'
+import { Analytics } from '@/index'
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
 
@@ -38,7 +38,10 @@ const enrichBilling: Extension = {
   type: 'enrichment',
 
   track: async (ctx) => {
-    ctx.updateEvent('properties.billingPlan', 'free-99')
+    ctx.event.properties = {
+      ...ctx.event.properties,
+      billingPlan: 'free-99',
+    }
     return ctx
   },
 }

@@ -3,7 +3,7 @@ import { Extension } from '../../core/extension'
 import { loadScript } from '../../lib/load-script'
 
 import facade from 'segmentio-facade'
-import { Analytics } from '@/core'
+import { Analytics } from '@/index'
 
 declare global {
   interface Window {

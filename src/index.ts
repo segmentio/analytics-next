@@ -1,12 +1,12 @@
-import { EventQueue } from './queue/event-queue'
-import { Context } from './context'
-import { EventFactory, SegmentEvent } from './events'
-import { invokeCallback } from './callback'
-import { Extension } from './extension'
-import { User, ID } from './user'
-import { validation } from '../extensions/validation'
-import { segment } from '../extensions/segment'
-import { ajsDestinations } from '../extensions/ajs-destination'
+import { EventQueue } from './core/queue/event-queue'
+import { Context } from './core/context'
+import { EventFactory, SegmentEvent } from './core/events'
+import { invokeCallback } from './core/callback'
+import { Extension } from './core/extension'
+import { User, ID } from './core/user'
+import { validation } from './extensions/validation'
+import { segment } from './extensions/segment'
+import { ajsDestinations } from './extensions/ajs-destination'
 
 export interface AnalyticsSettings {
   writeKey: string
