@@ -9,9 +9,9 @@ export function loadScript(src: string): Promise<void> {
     s.onerror = (err): void => {
       reject(err)
     }
+
     // @ts-ignore
     s.onload = s.onreadystatechange = function (): void {
-      // console.log(this.readyState); // uncomment this line to see which ready states are called.
       // @ts-ignore
       if (!r && (!this.readyState || this.readyState == 'complete')) {
         r = true
