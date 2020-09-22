@@ -46,18 +46,13 @@ export class Analytics {
       )
     }
 
-    const registrations = (settings.extensions ?? []).map(async (extension) => {
-      await analytics.register(extension)
-    })
-
-    await Promise.all(registrations)
-
+    await analytics.register(...(settings.extensions ?? []))
     return analytics
   }
 
   async loadRemoteExtensions(): Promise<void> {
     const extensions = await ajsDestinations(this.settings.writeKey)
-    await Promise.all(extensions.map((xt) => this.register(xt)))
+    await this.register(...extensions)
   }
 
   user(): User {
@@ -82,8 +77,9 @@ export class Analytics {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async register(extension: Extension): Promise<void> {
-    return this.queue.register(extension, this)
+  async register(...extensions: Extension[]): Promise<void> {
+    const registrations = extensions.map((extension) => this.queue.register(extension, this))
+    await Promise.all(registrations)
   }
 
   // TODO: Add emitter
