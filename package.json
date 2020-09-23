@@ -37,7 +37,7 @@
     "@lukeed/uuid": "^1.0.1",
     "p-timeout": "^3.2.0",
     "p-whilst": "^2.1.0",
-    "segmentio-facade": "github://segmentio/facade"
+    "@segment/facade": "^3.3.1"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
@@ -53,6 +53,7 @@
     "jest": "^25.2.3",
     "lint-staged": "^10.0.9",
     "prettier": "^2.0.2",
+    "terser-webpack-plugin": "^4.2.2",
     "ts-jest": "^25.2.1",
     "ts-loader": "^8.0.4",
     "typescript": "^3.8.3",

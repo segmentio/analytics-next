@@ -1,5 +1,6 @@
 const path = require('path')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const TerserPlugin = require('terser-webpack-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -32,6 +33,18 @@ module.exports = {
   optimization: {
     moduleIds: 'hashed',
     minimize: isProd,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          ecma: '2015',
+          mangle: true,
+          compress: true,
+          output: {
+            comments: false,
+          },
+        },
+      }),
+    ],
   },
   plugins: [new BundleAnalyzerPlugin()],
 }

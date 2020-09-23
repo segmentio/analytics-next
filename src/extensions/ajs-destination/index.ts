@@ -1,31 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Extension } from '../../core/extension'
 import { loadScript } from '../../lib/load-script'
 
-import facade from 'segmentio-facade'
+import { Track } from '@segment/facade/dist/track'
+import { Identify } from '@segment/facade/dist/identify'
 import { Analytics } from '@/index'
-
-declare global {
-  interface Window {
-    [integration: string]: any
-  }
-}
 
 export interface LegacyIntegration {
   analytics?: Analytics
   initialize: () => void
   loaded: () => boolean
 
-  ontrack?: (event: Facade.Track) => void
-  track?: (event: Facade.Track) => void
+  ontrack?: (event: typeof Track) => void
+  track?: (event: typeof Track) => void
 
-  onidentify?: (event: Facade.Identify) => void
-  identify?: (event: Facade.Identify) => void
+  onidentify?: (event: typeof Identify) => void
+  identify?: (event: typeof Identify) => void
 }
 
 const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
-export function ajsDestination(name: string, version: string, settings?: any): Extension {
+export function ajsDestination(name: string, version: string, settings?: object): Extension {
   let integration: LegacyIntegration
 
   const xt: Extension = {
@@ -40,6 +35,7 @@ export function ajsDestination(name: string, version: string, settings?: any): E
     load: async (_ctx, analyticsInstance) => {
       await loadScript(`${path}/${name}/${version}/bundle.js`)
 
+      // @ts-ignore
       const constructor = window[`${name}Integration`]
       integration = new constructor(settings)
       integration.analytics = analyticsInstance
@@ -47,7 +43,8 @@ export function ajsDestination(name: string, version: string, settings?: any): E
     },
 
     async track(ctx) {
-      const trackEvent = new facade.Track(ctx.event)
+      // @ts-ignore
+      const trackEvent = new Track(ctx.event, {})
 
       if (integration.ontrack) {
         integration.ontrack(trackEvent)
@@ -61,7 +58,8 @@ export function ajsDestination(name: string, version: string, settings?: any): E
     },
 
     async identify(ctx) {
-      const trackEvent = new facade.Identify(ctx.event)
+      // @ts-ignore
+      const trackEvent = new Identify(ctx.event, {})
 
       if (integration.onidentify) {
         integration.onidentify(trackEvent)
@@ -79,10 +77,11 @@ export function ajsDestination(name: string, version: string, settings?: any): E
 }
 
 export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
+  // TODO: should this be cached temporarily?
   const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
   const settings = await settingsResponse.json()
 
   return Object.entries(settings.integrations).map(([name, settings]) => {
-    return ajsDestination(name.toLowerCase(), 'latest', settings)
+    return ajsDestination(name.toLowerCase(), 'latest', settings as object)
   })
 }
