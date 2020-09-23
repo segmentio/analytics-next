@@ -14,7 +14,8 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
-    "lint": "eslint '**/*.{js,jsx,ts,tsx}'"
+    "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
+    "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json"
   },
   "engines": {
     "node": ">=12.16"
