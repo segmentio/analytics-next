@@ -27,6 +27,7 @@ export default class Logger {
   public flush(): void {
     this.logs.forEach((logEntry) => {
       const { level, message, extras } = logEntry
+
       if (level === 'info' || level === 'debug') {
         console.log(message, extras ?? '')
       } else {

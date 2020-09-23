@@ -11,10 +11,7 @@ export interface LegacyIntegration {
   initialize: () => void
   loaded: () => boolean
 
-  ontrack?: (event: typeof Track) => void
   track?: (event: typeof Track) => void
-
-  onidentify?: (event: typeof Identify) => void
   identify?: (event: typeof Identify) => void
 }
 
@@ -46,10 +43,6 @@ export function ajsDestination(name: string, version: string, settings?: object)
       // @ts-ignore
       const trackEvent = new Track(ctx.event, {})
 
-      if (integration.ontrack) {
-        integration.ontrack(trackEvent)
-      }
-
       if (integration.track) {
         integration.track(trackEvent)
       }
@@ -60,10 +53,6 @@ export function ajsDestination(name: string, version: string, settings?: object)
     async identify(ctx) {
       // @ts-ignore
       const trackEvent = new Identify(ctx.event, {})
-
-      if (integration.onidentify) {
-        integration.onidentify(trackEvent)
-      }
 
       if (integration.identify) {
         integration.identify(trackEvent)

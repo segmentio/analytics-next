@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { EventQueue } from './core/queue/event-queue'
 import { Context } from './core/context'
 import { EventFactory, SegmentEvent } from './core/events'
@@ -6,6 +7,11 @@ import { Extension } from './core/extension'
 import { User, ID } from './core/user'
 import { validation } from './extensions/validation'
 import { ajsDestinations } from './extensions/ajs-destination'
+import { Emmitter } from './core/emmitter'
+
+import { Track } from '@segment/facade/dist/track'
+import { Identify } from '@segment/facade/dist/identify'
+import { Page } from '@segment/facade/dist/page'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -15,13 +21,14 @@ export interface AnalyticsSettings {
 
 type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
 
-export class Analytics {
+export class Analytics extends Emmitter {
   queue: EventQueue
   settings: AnalyticsSettings
   private _user: User
   private eventFactory: EventFactory
 
   private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User) {
+    super()
     this.settings = settings
     this.queue = queue
     this._user = user
@@ -34,10 +41,20 @@ export class Analytics {
     const user = new User().load()
     const analytics = new Analytics(settings, queue, user)
 
+    const extensions = settings.extensions ?? []
+
     await analytics.register(validation)
-    await analytics.register(...(settings.extensions ?? []))
+    await analytics.register(...extensions)
+
     const remoteExtensions = await ajsDestinations(settings.writeKey)
     await analytics.register(...remoteExtensions)
+
+    analytics.emit(
+      'initialize',
+      settings,
+      // TODO: options
+      {}
+    )
 
     return analytics
   }
@@ -48,11 +65,32 @@ export class Analytics {
 
   async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
     const segmentEvent = this.eventFactory.track(event, properties, options)
+    this.emit('track', event, properties, options)
+
+    this.emit(
+      'invoke',
+      // @ts-ignore
+      new Track(segmentEvent)
+    )
     return this.dispatch(segmentEvent, callback)
   }
 
   async page(page: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
     const segmentEvent = this.eventFactory.page(page, properties, options)
+    this.emit(
+      'page',
+      // TODO: category
+      null,
+      name,
+      properties,
+      options
+    )
+
+    this.emit(
+      'invoke',
+      // @ts-ignore
+      new Page(segmentEvent)
+    )
     return this.dispatch(segmentEvent, callback)
   }
 
@@ -61,6 +99,13 @@ export class Analytics {
     traits = this._user.traits(traits)
 
     const segmentEvent = this.eventFactory.identify(userId, traits, options)
+
+    this.emit('identify', userId, traits, options)
+    this.emit(
+      'invoke',
+      // @ts-ignore
+      new Identify(segmentEvent)
+    )
     return this.dispatch(segmentEvent, callback)
   }
 
@@ -69,13 +114,9 @@ export class Analytics {
     await Promise.all(registrations)
   }
 
-  // TODO: Add emitter
-  on(): void {
-    // todo
-  }
-
-  ready(): void {
-    // TODO: on ready
+  ready(fn: Function): Analytics {
+    this.once('ready', fn)
+    return this
   }
 
   reset(): void {

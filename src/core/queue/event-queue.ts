@@ -29,6 +29,8 @@ export class EventQueue {
 
         throw err
       })
+
+    ctx.logger.flush()
   }
 
   async dispatch(ctx: Context): Promise<Context | undefined> {
