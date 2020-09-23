@@ -5,8 +5,9 @@ import { loadScript } from '../../lib/load-script'
 import { Track } from '@segment/facade/dist/track'
 import { Identify } from '@segment/facade/dist/identify'
 import { Analytics } from '@/index'
+import { Emmitter } from '@/core/emmitter'
 
-export interface LegacyIntegration {
+export interface LegacyIntegration extends Emmitter {
   analytics?: Analytics
   initialize: () => void
   loaded: () => boolean
@@ -19,6 +20,7 @@ const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
   let integration: LegacyIntegration
+  let ready = false
 
   const xt: Extension = {
     name,
@@ -26,7 +28,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
     version,
 
     isLoaded: () => {
-      return Boolean(integration?.loaded())
+      return ready
     },
 
     load: async (_ctx, analyticsInstance) => {
@@ -36,6 +38,11 @@ export function ajsDestination(name: string, version: string, settings?: object)
       const constructor = window[`${name}Integration`]
       integration = new constructor(settings)
       integration.analytics = analyticsInstance
+
+      integration.once('ready', () => {
+        ready = true
+      })
+
       integration.initialize()
     },
 
@@ -74,7 +81,7 @@ export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
   const settings = await settingsResponse.json()
 
   return Object.entries(settings.integrations).map(([name, settings]) => {
-    const integrationName = name.toLowerCase().replace('.', '')
+    const integrationName = name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
     return ajsDestination(integrationName, 'latest', settings as object)
   })
 }

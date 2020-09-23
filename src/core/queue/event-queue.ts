@@ -23,7 +23,7 @@ export class EventQueue {
       })
       .catch((err) => {
         if (extension.type === 'destination') {
-          ctx.log('warn', 'Failed to load destination', { extension: extension.name })
+          ctx.log('warn', 'Failed to load destination', { extension: extension.name, error: err })
           return
         }
 
@@ -56,7 +56,7 @@ export class EventQueue {
       this.flushing = false
 
       this.scheduleFlush()
-    }, 3000)
+    }, 1000)
   }
 
   async flush(): Promise<Context[]> {
@@ -94,7 +94,9 @@ export class EventQueue {
   }
 
   private isReady(): boolean {
-    return this.extensions.every((p) => p.isLoaded())
+    // return this.extensions.every((p) => p.isLoaded())
+    // should we wait for every extension to load?
+    return true
   }
 
   private async flushOne(ctx: Context): Promise<Context | undefined> {

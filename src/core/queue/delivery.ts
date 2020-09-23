@@ -5,6 +5,11 @@ export async function attempt(ctx: Context, extension: Extension): Promise<Conte
   ctx.log('debug', 'extension', { extension: extension.name })
   const start = new Date().getTime()
 
+  // ignore unloaded destinations for now
+  if (!extension.isLoaded()) {
+    return ctx
+  }
+
   const hook = extension[ctx.event.type]
   if (hook === undefined) {
     return ctx

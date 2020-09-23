@@ -114,9 +114,15 @@ export class Analytics extends Emmitter {
     await Promise.all(registrations)
   }
 
+  // TODO: send ready from every integration
   ready(fn: Function): Analytics {
     this.once('ready', fn)
     return this
+  }
+
+  addIntegration(...args: unknown[]): void {
+    // TODO
+    console.log('adding!', args)
   }
 
   reset(): void {

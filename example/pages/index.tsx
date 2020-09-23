@@ -38,6 +38,21 @@ export default function Home(): React.ReactElement {
     ctx?.logger.flush()
   }
 
+  const identify = async (e) => {
+    e.preventDefault()
+
+    if (!analyticsReady) {
+      console.log('not ready yet')
+    }
+
+    await analytics.identify('Test User', {
+      banana: 'phone',
+    })
+
+    const [ctx] = await analytics.queue.flush()
+    ctx?.logger.flush()
+  }
+
   return (
     <div>
       <Head>
@@ -47,6 +62,7 @@ export default function Home(): React.ReactElement {
       <main>
         <form>
           <button onClick={(e) => track(e)}>Track</button>
+          <button onClick={(e) => identify(e)}>Identify</button>
         </form>
       </main>
     </div>
