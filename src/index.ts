@@ -5,7 +5,6 @@ import { invokeCallback } from './core/callback'
 import { Extension } from './core/extension'
 import { User, ID } from './core/user'
 import { validation } from './extensions/validation'
-import { segment } from './extensions/segment'
 import { ajsDestinations } from './extensions/ajs-destination'
 
 export interface AnalyticsSettings {
@@ -36,16 +35,6 @@ export class Analytics {
     const analytics = new Analytics(settings, queue, user)
 
     await analytics.register(validation)
-
-    // TODO: make loadScript work in test
-    if (process.env.NODE_ENV !== 'test') {
-      await analytics.register(
-        segment({
-          apiKey: settings.writeKey,
-        })
-      )
-    }
-
     await analytics.register(...(settings.extensions ?? []))
     const remoteExtensions = await ajsDestinations(settings.writeKey)
     await analytics.register(...remoteExtensions)

@@ -33,7 +33,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
     },
 
     load: async (_ctx, analyticsInstance) => {
-      await loadScript(`${path}/${name}/${version}/bundle.js`)
+      await loadScript(`${path}/${name}/${version}/${name}.js`)
 
       // @ts-ignore
       const constructor = window[`${name}Integration`]
@@ -77,11 +77,15 @@ export function ajsDestination(name: string, version: string, settings?: object)
 }
 
 export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
-  // TODO: should this be cached temporarily?
-  const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
+  const [settingsResponse] = await Promise.all([
+    fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`),
+    loadScript(`${path}/commons/latest/commons.js`),
+  ])
+
   const settings = await settingsResponse.json()
 
   return Object.entries(settings.integrations).map(([name, settings]) => {
-    return ajsDestination(name.toLowerCase(), 'latest', settings as object)
+    const integrationName = name.toLowerCase().replace('.', '')
+    return ajsDestination(integrationName, 'latest', settings as object)
   })
 }
