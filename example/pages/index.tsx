@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
-import { Analytics, AnalyticsSettings } from '../../dist/core/index'
+import { Analytics, AnalyticsSettings } from '../../dist'
 
 const settings: AnalyticsSettings = {
   writeKey: '***REMOVED***',
