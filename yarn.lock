@@ -1729,6 +1729,17 @@ component-type@^1.2.1:
   resolved "https://registry.yarnpkg.com/component-type/-/component-type-1.2.1.tgz#8a47901700238e4fc32269771230226f24b415a9"
   integrity sha1-ikeQFwAjjk/DIml3EjAibyS0Fak=
 
+compression-webpack-plugin@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/compression-webpack-plugin/-/compression-webpack-plugin-6.0.2.tgz#13482bfa81e0472e5d6af1165b6ee9f29f98178b"
+  integrity sha512-WUv7fTy2uCZKJ4iFMKJG42GDepCEocS5eqsEi8uIJZy97k/WvzxGz9dwE4+pIAkcrK4B7k+teKo71IrLu+tbqw==
+  dependencies:
+    cacache "^15.0.5"
+    find-cache-dir "^3.3.1"
+    schema-utils "^2.7.1"
+    serialize-javascript "^5.0.1"
+    webpack-sources "^1.4.3"
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
