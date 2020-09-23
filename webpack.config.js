@@ -1,6 +1,17 @@
 const path = require('path')
 const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
+const plugins = [
+  new CompressionPlugin({
+    cache: true,
+  }),
+]
+
+if (process.env.ANALYZE) {
+  plugins.push(new BundleAnalyzerPlugin())
+}
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -46,5 +57,5 @@ module.exports = {
       }),
     ],
   },
-  plugins: [new CompressionPlugin()],
+  plugins,
 }
