@@ -6,6 +6,7 @@ import { Track } from '@segment/facade/dist/track'
 import { Identify } from '@segment/facade/dist/identify'
 import { Analytics } from '@/index'
 import { Emmitter } from '@/core/emmitter'
+import { User } from '@/core/user'
 
 export interface LegacyIntegration extends Emmitter {
   analytics?: Analytics
@@ -35,10 +36,21 @@ export function ajsDestination(name: string, version: string, settings?: object)
       await loadScript(`${path}/${name}/${version}/${name}.js`)
 
       // @ts-ignore
-      const constructor = window[`${name}Integration`]
-      integration = new constructor(settings)
-      integration.analytics = analyticsInstance
+      let integrationBuilder = window[`${name}Integration`]
 
+      // GA and Appcues use a different interface to instantiating integrations
+      if (integrationBuilder.Integration) {
+        const analyticsStub = {
+          user: (): User => analyticsInstance.user(),
+          addIntegration: (): void => {},
+        }
+
+        integrationBuilder(analyticsStub)
+        integrationBuilder = integrationBuilder.Integration
+      }
+
+      integration = new integrationBuilder(settings)
+      integration.analytics = analyticsInstance
       integration.once('ready', () => {
         ready = true
       })
@@ -79,7 +91,6 @@ export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
   ])
 
   const settings = await settingsResponse.json()
-
   return Object.entries(settings.integrations).map(([name, settings]) => {
     const integrationName = name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
     return ajsDestination(integrationName, 'latest', settings as object)

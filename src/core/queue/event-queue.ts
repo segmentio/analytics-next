@@ -1,8 +1,8 @@
+import pWhile from 'p-whilst'
+import { Analytics } from '../..'
 import { Context } from '../context'
 import { Extension } from '../extension'
-import pWhile from 'p-whilst'
 import { attempt, ensure } from './delivery'
-import { Analytics } from '../..'
 
 export class EventQueue {
   queue: Context[]

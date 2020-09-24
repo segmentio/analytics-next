@@ -6,7 +6,7 @@ import { invokeCallback } from './core/callback'
 import { Extension } from './core/extension'
 import { User, ID } from './core/user'
 import { validation } from './extensions/validation'
-import { ajsDestinations } from './extensions/ajs-destination'
+import { ajsDestinations, LegacyIntegration } from './extensions/ajs-destination'
 import { Emmitter } from './core/emmitter'
 
 import { Track } from '@segment/facade/dist/track'
@@ -112,17 +112,6 @@ export class Analytics extends Emmitter {
   async register(...extensions: Extension[]): Promise<void> {
     const registrations = extensions.map((extension) => this.queue.register(extension, this))
     await Promise.all(registrations)
-  }
-
-  // TODO: send ready from every integration
-  ready(fn: Function): Analytics {
-    this.once('ready', fn)
-    return this
-  }
-
-  addIntegration(...args: unknown[]): void {
-    // TODO
-    console.log('adding!', args)
   }
 
   reset(): void {

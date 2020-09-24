@@ -4,6 +4,10 @@ import Head from 'next/head'
 import { AnalyticsSettings, Analytics } from '../../dist/commonjs'
 
 const settings: AnalyticsSettings = {
+  // segment.com
+  // writeKey: '***REMOVED***',
+
+  // segment app
   writeKey: '***REMOVED***',
 }
 
