@@ -9,7 +9,7 @@
     "strict": true,
     "sourceMap": true,
     "incremental": true,
-    "outDir": "dist",
+    "outDir": "dist/commonjs",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "lib": ["es2020", "DOM"],

@@ -8,9 +8,10 @@
   "types": "dist/core/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build": "yarn clean && webpack",
-    "watch": "tsc -w",
-    "example": "concurrently \"yarn watch\" \"yarn run-example\"",
+    "build-umd": "webpack",
+    "build-commonjs": "tsc",
+    "build-all": "yarn clean && yarn build-umd && yarn build-commonjs",
+    "example": "yarn build-commonjs && yarn concurrently \"yarn run-example\" \"yarn build-commonjs -w\" ",
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",

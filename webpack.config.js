@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
@@ -6,6 +7,10 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const plugins = [
   new CompressionPlugin({
     cache: true,
+  }),
+  new webpack.EnvironmentPlugin({
+    LEGACY_INTEGRATIONS_PATH: 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com',
+    DEBUG: false,
   }),
 ]
 
@@ -15,14 +20,15 @@ if (process.env.ANALYZE) {
 
 const isProd = process.env.NODE_ENV === 'production'
 
-module.exports = {
+const config = {
   mode: process.env.NODE_ENV || 'development',
+  devtool: 'source-map',
   entry: {
     analytics: path.resolve(__dirname, 'src/index.ts'),
   },
   output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.js',
+    path: path.resolve(__dirname, 'dist/umd'),
     library: 'analytics',
     libraryTarget: 'umd',
   },
@@ -39,7 +45,7 @@ module.exports = {
     extensions: ['.ts', '.js'],
   },
   devServer: {
-    contentBase: path.resolve(__dirname, 'dist'),
+    contentBase: path.resolve(__dirname, 'dist/umd'),
   },
   optimization: {
     moduleIds: 'hashed',
@@ -59,3 +65,5 @@ module.exports = {
   },
   plugins,
 }
+
+module.exports = config

@@ -16,7 +16,7 @@ export interface LegacyIntegration extends Emmitter {
   identify?: (event: typeof Identify) => void
 }
 
-const path = 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
+const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
 
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
   let integration: LegacyIntegration
