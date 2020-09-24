@@ -13,9 +13,7 @@ export class EventQueue {
     this.queue = []
   }
 
-  async register(extension: Extension, instance: Analytics): Promise<void> {
-    const ctx = Context.system()
-
+  async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
     await extension
       .load(ctx, instance)
       .then(() => {
@@ -29,8 +27,6 @@ export class EventQueue {
 
         throw err
       })
-
-    ctx.logger.flush()
   }
 
   async dispatch(ctx: Context): Promise<Context | undefined> {

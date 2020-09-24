@@ -2,39 +2,46 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 export type LogMessage = {
   level: LogLevel
   message: string
+  time?: Date
   extras?: object
 }
 
 export default class Logger {
-  private _logs: LogMessage[] = []
+  private _logs: Record<string, LogMessage> = {}
 
   log = (level: LogLevel, message: string, extras?: object): void => {
     const time = new Date()
-    this._logs.push({
+    this._logs[time.toISOString()] = {
       level,
       message,
-      extras: {
-        ...extras,
-        time,
-      },
-    })
+      time,
+      extras,
+    }
   }
 
   public get logs(): LogMessage[] {
-    return this._logs
+    return Object.values(this._logs)
   }
 
   public flush(): void {
-    if (this.logs.length >= 2) {
-      console.table(
-        this.logs.map((log) => {
-          return {
-            ...log,
-            extras: JSON.stringify(log.extras),
-          }
-        }),
-        ['message', 'extras']
-      )
+    if (this.logs.length > 1) {
+      const formatted = Object.values(this._logs).reduce((logs, log) => {
+        const line = {
+          ...log,
+          ...log.extras,
+          data: JSON.stringify(log.extras, null, ' '),
+        }
+
+        delete line['time']
+        delete line['extras']
+
+        return {
+          ...logs,
+          [log.time?.toISOString() ?? '']: line,
+        }
+      }, {})
+
+      console.table(formatted)
     } else {
       this.logs.forEach((logEntry) => {
         const { level, message, extras } = logEntry
@@ -47,6 +54,6 @@ export default class Logger {
       })
     }
 
-    this._logs = []
+    this._logs = {}
   }
 }

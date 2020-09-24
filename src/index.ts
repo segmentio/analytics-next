@@ -42,12 +42,9 @@ export class Analytics extends Emmitter {
     const analytics = new Analytics(settings, queue, user)
 
     const extensions = settings.extensions ?? []
-
-    await analytics.register(validation)
-    await analytics.register(...extensions)
-
     const remoteExtensions = await ajsDestinations(settings.writeKey)
-    await analytics.register(...remoteExtensions)
+
+    await analytics.register(...[validation, ...extensions, ...remoteExtensions])
 
     analytics.emit(
       'initialize',
@@ -110,8 +107,12 @@ export class Analytics extends Emmitter {
   }
 
   async register(...extensions: Extension[]): Promise<void> {
-    const registrations = extensions.map((extension) => this.queue.register(extension, this))
+    const ctx = Context.system()
+
+    const registrations = extensions.map((extension) => this.queue.register(ctx, extension, this))
     await Promise.all(registrations)
+
+    ctx.logger.flush()
   }
 
   reset(): void {
