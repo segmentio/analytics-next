@@ -25,15 +25,28 @@ export default class Logger {
   }
 
   public flush(): void {
-    this.logs.forEach((logEntry) => {
-      const { level, message, extras } = logEntry
+    if (this.logs.length >= 2) {
+      console.table(
+        this.logs.map((log) => {
+          return {
+            ...log,
+            extras: JSON.stringify(log.extras),
+          }
+        }),
+        ['message', 'extras']
+      )
+    } else {
+      this.logs.forEach((logEntry) => {
+        const { level, message, extras } = logEntry
 
-      if (level === 'info' || level === 'debug') {
-        console.log(message, extras ?? '')
-      } else {
-        console[level](message, extras ?? '')
-      }
-    })
+        if (level === 'info' || level === 'debug') {
+          console.log(message, extras ?? '')
+        } else {
+          console[level](message, extras ?? '')
+        }
+      })
+    }
+
     this._logs = []
   }
 }
