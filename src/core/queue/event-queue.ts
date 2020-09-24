@@ -71,7 +71,7 @@ export class EventQueue {
           await this.flushOne(ctx)
           const done = new Date().getTime() - start
           ctx.stats.gauge('delivered', done)
-          ctx.log('debug', 'Delivered')
+          ctx.log('debug', 'Delivered', ctx.event)
           flushed.push(ctx)
         } catch (err) {
           ctx.log('error', 'Failed to deliver')

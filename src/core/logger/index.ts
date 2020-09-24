@@ -28,12 +28,11 @@ export default class Logger {
       const formatted = Object.values(this._logs).reduce((logs, log) => {
         const line = {
           ...log,
-          ...log.extras,
-          data: JSON.stringify(log.extras, null, ' '),
+          json: JSON.stringify(log.extras, null, ' '),
+          extras: log.extras,
         }
 
         delete line['time']
-        delete line['extras']
 
         return {
           ...logs,
