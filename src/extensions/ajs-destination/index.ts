@@ -75,7 +75,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
 export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
   const [settingsResponse] = await Promise.all([
     fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`),
-    loadScript(`${path}/commons/latest/commons.js`),
+    // loadScript(`${path}/commons/latest/commons.js`),
   ])
 
   const settings = await settingsResponse.json()
