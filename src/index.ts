@@ -6,7 +6,7 @@ import { invokeCallback } from './core/callback'
 import { Extension } from './core/extension'
 import { User, ID } from './core/user'
 import { validation } from './extensions/validation'
-import { ajsDestinations, LegacyIntegration } from './extensions/ajs-destination'
+import { ajsDestinations } from './extensions/ajs-destination'
 import { Emmitter } from './core/emmitter'
 
 import { Track } from '@segment/facade/dist/track'
