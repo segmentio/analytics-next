@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Extension } from '../../core/extension'
 import { loadScript } from '../../lib/load-script'
+import fetch from 'unfetch'
 
 import { Track } from '@segment/facade/dist/track'
 import { Identify } from '@segment/facade/dist/identify'

@@ -39,7 +39,8 @@
     "@lukeed/uuid": "^1.0.1",
     "@segment/facade": "^3.3.1",
     "p-timeout": "^3.2.0",
-    "p-whilst": "^2.1.0"
+    "p-whilst": "^2.1.0",
+    "unfetch": "^4.1.0"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
