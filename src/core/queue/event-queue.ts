@@ -1,5 +1,6 @@
 import pWhile from 'p-whilst'
 import { Analytics } from '../..'
+import { isOnline } from '../connection'
 import { Context } from '../context'
 import { Emmitter } from '../emmitter'
 import { Extension } from '../extension'
@@ -69,7 +70,7 @@ export class EventQueue extends Emmitter {
     const flushed: Context[] = []
 
     await pWhile(
-      () => this.queue.length > 0,
+      () => this.queue.length > 0 && isOnline(),
       async () => {
         const start = new Date().getTime()
         const ctx = this.queue.shift()
@@ -91,7 +92,7 @@ export class EventQueue extends Emmitter {
 
           // Retrying...
           // How many times until discard?
-          // this.queue.push(ctx)
+          this.queue.push(ctx)
 
           // TODO: sleep?
         }
@@ -108,9 +109,8 @@ export class EventQueue extends Emmitter {
   }
 
   private async flushOne(ctx: Context): Promise<Context | undefined> {
-    // TODO: check connection
     if (!this.isReady()) {
-      return
+      throw new Error('Not ready')
     }
 
     const before = this.extensions.filter((p) => p.type === 'before')
