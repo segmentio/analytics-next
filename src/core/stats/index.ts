@@ -27,6 +27,7 @@ export default class Stats {
   }
 
   flush(): void {
+    console.table(this.metrics)
     // TODO: flush stats
     this.metrics = []
   }
