@@ -49,7 +49,7 @@ export class EventQueue extends Emmitter {
     })
   }
 
-  private scheduleFlush(timeout = 1000): void {
+  private scheduleFlush(timeout = 500): void {
     if (this.flushing) {
       return
     }
