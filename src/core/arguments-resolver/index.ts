@@ -46,4 +46,4 @@ type ResolveUser = (
 export type UserParams = Parameters<ResolveUser>
 export type EventParams = Parameters<typeof resolveArguments>
 
-export type DispatchedEvent = Promise<Context | undefined>
+export type DispatchedEvent = Promise<Context>

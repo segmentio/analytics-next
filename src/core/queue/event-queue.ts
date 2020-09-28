@@ -32,7 +32,7 @@ export class EventQueue extends Emmitter {
       })
   }
 
-  async dispatch(ctx: Context): Promise<Context | undefined> {
+  async dispatch(ctx: Context): Promise<Context> {
     ctx.log('debug', 'Dispatching')
     ctx.stats.increment('message_dispatched')
 

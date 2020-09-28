@@ -12,6 +12,7 @@ import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { ID, User } from './core/user'
 import { ajsDestinations } from './extensions/ajs-destination'
+import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
 
 export interface AnalyticsSettings {
@@ -41,9 +42,8 @@ export class Analytics extends Emmitter {
     const analytics = new Analytics(settings, queue, user)
 
     const extensions = settings.extensions ?? []
-    const remoteExtensions = await ajsDestinations(settings.writeKey)
-
-    await analytics.register(...[validation, ...extensions, ...remoteExtensions])
+    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey) : []
+    await analytics.register(...[validation, pageEnrichment, ...extensions, ...remoteExtensions])
 
     analytics.emit(
       'initialize',

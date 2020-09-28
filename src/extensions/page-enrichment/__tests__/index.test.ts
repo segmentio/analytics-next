@@ -1,5 +1,4 @@
 import { Analytics } from '@/index'
-import { pageEnrichment } from '../index'
 
 let ajs: Analytics
 
@@ -7,13 +6,11 @@ describe('Page Enrichment', () => {
   beforeEach(async () => {
     ajs = await Analytics.load({
       writeKey: 'abc_123',
-      extensions: [pageEnrichment],
     })
   })
 
   test('enriches page calls', async () => {
-    await ajs.page('Checkout', {})
-    const [ctx] = await ajs.queue.flush()
+    const ctx = await ajs.page('Checkout', {})
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
       Object {
@@ -27,11 +24,9 @@ describe('Page Enrichment', () => {
   })
 
   test('enriches track events with the page context', async () => {
-    await ajs.track('My event', {
+    const ctx = await ajs.track('My event', {
       banana: 'phone',
     })
-
-    const [ctx] = await ajs.queue.flush()
 
     expect(ctx.event.context).toMatchInlineSnapshot(`
       Object {
@@ -47,11 +42,9 @@ describe('Page Enrichment', () => {
   })
 
   test('enriches identify events with the page context', async () => {
-    await ajs.identify('Netto', {
+    const ctx = await ajs.identify('Netto', {
       banana: 'phone',
     })
-
-    const [ctx] = await ajs.queue.flush()
 
     expect(ctx.event.context).toMatchInlineSnapshot(`
       Object {
