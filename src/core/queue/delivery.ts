@@ -18,13 +18,13 @@ export async function attempt(ctx: Context, extension: Extension): Promise<Conte
   const newCtx = await hook(ctx)
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats.gauge('extension_time', done)
+      ctx.stats.gauge('extension_time', done, [`extension:${extension}`])
       return ctx
     })
     .catch((err) => {
       ctx.log('error', 'extension Error', { extension: extension.name, error: err })
       ctx.stats.increment('extension_error', 1, [`extension:${extension.name}`])
-      return err
+      return err as Error
     })
 
   return newCtx

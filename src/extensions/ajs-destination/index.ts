@@ -14,8 +14,8 @@ export interface LegacyIntegration extends Emitter {
   initialize: () => void
   loaded: () => boolean
 
-  track?: (event: typeof Track) => void
-  identify?: (event: typeof Identify) => void
+  track?: (event: typeof Track) => void | Promise<void>
+  identify?: (event: typeof Identify) => void | Promise<void>
 }
 
 const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
@@ -64,7 +64,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
       const trackEvent = new Track(ctx.event, {})
 
       if (integration.track) {
-        integration.track(trackEvent)
+        await integration.track(trackEvent)
       }
 
       return ctx
@@ -75,7 +75,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
       const trackEvent = new Identify(ctx.event, {})
 
       if (integration.identify) {
-        integration.identify(trackEvent)
+        await integration.identify(trackEvent)
       }
 
       return ctx
