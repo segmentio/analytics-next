@@ -6,10 +6,10 @@ import fetch from 'unfetch'
 import { Track } from '@segment/facade/dist/track'
 import { Identify } from '@segment/facade/dist/identify'
 import { Analytics } from '@/index'
-import { Emmitter } from '@/core/emmitter'
+import { Emitter } from '@/core/emitter'
 import { User } from '@/core/user'
 
-export interface LegacyIntegration extends Emmitter {
+export interface LegacyIntegration extends Emitter {
   analytics?: Analytics
   initialize: () => void
   loaded: () => boolean

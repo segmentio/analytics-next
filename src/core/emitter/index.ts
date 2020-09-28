@@ -1,4 +1,4 @@
-export class Emmitter {
+export class Emitter {
   private callbacks: Record<string, Function[]> = {}
 
   on(event: string, callback: Function): this {

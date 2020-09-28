@@ -2,11 +2,11 @@ import pWhile from 'p-whilst'
 import { Analytics } from '../..'
 import { isOnline } from '../connection'
 import { Context } from '../context'
-import { Emmitter } from '../emmitter'
+import { Emitter } from '../emitter'
 import { Extension } from '../extension'
 import { attempt, ensure } from './delivery'
 
-export class EventQueue extends Emmitter {
+export class EventQueue extends Emitter {
   queue: Context[]
   extensions: Extension[] = []
   private flushing = false

@@ -6,7 +6,7 @@ import { Track } from '@segment/facade/dist/track'
 import { DispatchedEvent, EventParams, resolveArguments, resolveUserArguments, UserParams } from './core/arguments-resolver'
 import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
-import { Emmitter } from './core/emmitter'
+import { Emitter } from './core/emitter'
 import { EventFactory, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
@@ -21,7 +21,7 @@ export interface AnalyticsSettings {
   extensions?: Extension[]
 }
 
-export class Analytics extends Emmitter {
+export class Analytics extends Emitter {
   queue: EventQueue
   settings: AnalyticsSettings
   private _user: User
