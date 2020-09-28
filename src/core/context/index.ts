@@ -1,3 +1,4 @@
+import uuid from '@lukeed/uuid'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'
 import Stats from '../stats'
@@ -13,13 +14,19 @@ export class Context implements AbstractContext {
   private _event: SegmentEvent
   private sealed = false
   public logger = new Logger()
+  private _id: string
 
   constructor(event: SegmentEvent) {
     this._event = event
+    this._id = uuid()
   }
 
   static system(): Context {
     return new Context({ type: 'track', event: 'init' })
+  }
+
+  isSame(other: Context): boolean {
+    return other._id === this._id
   }
 
   cancel = (error?: Error): never => {

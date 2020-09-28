@@ -35,12 +35,11 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    await analytics.track('Track Event', {
+    const ctx = await analytics.track('Track Event', {
       banana: 'phone',
     })
 
-    const [ctx] = await analytics.queue.flush()
-    ctx?.logger.flush()
+    ctx.flush()
   }
 
   const identify = async (e) => {
@@ -50,12 +49,11 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    await analytics.identify('Test User', {
+    const ctx = await analytics.identify('Test User', {
       banana: 'phone',
     })
 
-    const [ctx] = await analytics.queue.flush()
-    ctx?.logger.flush()
+    ctx.flush()
   }
 
   return (
@@ -66,8 +64,12 @@ export default function Home(): React.ReactElement {
 
       <main>
         <form>
-          <button onClick={(e) => track(e)}>Track</button>
-          <button onClick={(e) => identify(e)}>Identify</button>
+          <button disabled={!analyticsReady} onClick={(e) => track(e)}>
+            Track
+          </button>
+          <button disabled={!analyticsReady} onClick={(e) => identify(e)}>
+            Identify
+          </button>
         </form>
       </main>
     </div>

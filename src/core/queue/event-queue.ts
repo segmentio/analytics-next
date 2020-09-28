@@ -1,15 +1,17 @@
 import pWhile from 'p-whilst'
 import { Analytics } from '../..'
 import { Context } from '../context'
+import { Emmitter } from '../emmitter'
 import { Extension } from '../extension'
 import { attempt, ensure } from './delivery'
 
-export class EventQueue {
+export class EventQueue extends Emmitter {
   queue: Context[]
   extensions: Extension[] = []
   private flushing = false
 
   constructor() {
+    super()
     this.queue = []
   }
 
@@ -34,12 +36,20 @@ export class EventQueue {
     ctx.stats.increment('message_dispatched')
 
     this.queue.push(ctx)
-    this.scheduleFlush()
+    this.scheduleFlush(0)
 
-    return Promise.resolve(ctx)
+    return new Promise((resolve, _reject) => {
+      const onDeliver = (flushed: Context): void => {
+        if (flushed.isSame(ctx)) {
+          this.off('flush', onDeliver)
+          resolve(flushed)
+        }
+      }
+      this.on('flush', onDeliver)
+    })
   }
 
-  private scheduleFlush(): void {
+  private scheduleFlush(timeout = 1000): void {
     if (this.flushing) {
       return
     }
@@ -52,7 +62,7 @@ export class EventQueue {
       this.flushing = false
 
       this.scheduleFlush()
-    }, 1000)
+    }, timeout)
   }
 
   async flush(): Promise<Context[]> {
@@ -72,14 +82,16 @@ export class EventQueue {
           const done = new Date().getTime() - start
           ctx.stats.gauge('delivered', done)
           ctx.log('debug', 'Delivered', ctx.event)
+
           flushed.push(ctx)
+          this.emit('flush', ctx)
         } catch (err) {
           ctx.log('error', 'Failed to deliver')
           ctx.stats.increment('delivery_failed')
 
           // Retrying...
           // How many times until discard?
-          this.queue.push(ctx)
+          // this.queue.push(ctx)
 
           // TODO: sleep?
         }
