@@ -2,6 +2,7 @@ import uuid from '@lukeed/uuid'
 
 export type ID = string | null | undefined
 
+// TODO: add storage support
 export class User {
   private _id: ID
   private _anonymousId: ID
@@ -26,7 +27,7 @@ export class User {
     return this._traits
   }
 
-  identify(id?: string, traits?: object): void {
+  identify(id?: ID, traits?: object): void {
     traits = traits ?? {}
     const currentId = this.id()
 

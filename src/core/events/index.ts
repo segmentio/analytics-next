@@ -60,6 +60,16 @@ export class EventFactory {
     })
   }
 
+  group(userId: ID, traits?: object, options?: object): SegmentEvent {
+    return this.normalize({
+      ...this.baseEvent(),
+      type: 'group' as const,
+      userId,
+      traits,
+      options,
+    })
+  }
+
   private baseEvent(): Partial<SegmentEvent> {
     const base: Partial<SegmentEvent> = {
       properties: {},

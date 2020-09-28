@@ -1,25 +1,24 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { EventQueue } from './core/queue/event-queue'
-import { Context } from './core/context'
-import { EventFactory, SegmentEvent } from './core/events'
-import { invokeCallback } from './core/callback'
-import { Extension } from './core/extension'
-import { User, ID } from './core/user'
-import { validation } from './extensions/validation'
-import { ajsDestinations } from './extensions/ajs-destination'
-import { Emmitter } from './core/emmitter'
-
-import { Track } from '@segment/facade/dist/track'
+import { Group } from '@segment/facade/dist/group'
 import { Identify } from '@segment/facade/dist/identify'
 import { Page } from '@segment/facade/dist/page'
+import { Track } from '@segment/facade/dist/track'
+import { DispatchedEvent, EventParams, resolveArguments, resolveUserArguments, UserParams } from './core/arguments-resolver'
+import { Callback, invokeCallback } from './core/callback'
+import { Context } from './core/context'
+import { Emmitter } from './core/emmitter'
+import { EventFactory, SegmentEvent } from './core/events'
+import { Extension } from './core/extension'
+import { EventQueue } from './core/queue/event-queue'
+import { ID, User } from './core/user'
+import { ajsDestinations } from './extensions/ajs-destination'
+import { validation } from './extensions/validation'
 
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
 }
-
-type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
 
 export class Analytics extends Emmitter {
   queue: EventQueue
@@ -60,19 +59,30 @@ export class Analytics extends Emmitter {
     return this._user
   }
 
-  async track(event: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
-    const segmentEvent = this.eventFactory.track(event, properties, options)
-    this.emit('track', event, properties, options)
+  async track(...args: EventParams): DispatchedEvent
+  async track(event: string, properties: object): DispatchedEvent
+  async track(event: string, properties: object, options: object): DispatchedEvent
+  async track(event: string, properties: object, options: object, callback: Callback): DispatchedEvent
+  async track(event: string, properties: object, callback: Callback): DispatchedEvent
+  async track(event: string, callback: Callback): DispatchedEvent
+  async track(event: string): DispatchedEvent
+  async track(...args: EventParams): DispatchedEvent {
+    const [name, data, opts, cb] = resolveArguments(...args)
+
+    const segmentEvent = this.eventFactory.track(name, data, opts)
+    this.emit('track', name, data, opts)
 
     this.emit(
       'invoke',
       // @ts-ignore
       new Track(segmentEvent)
     )
-    return this.dispatch(segmentEvent, callback)
+    return this.dispatch(segmentEvent, cb)
   }
 
-  async page(page: string, properties?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
+  async page(...args: EventParams): DispatchedEvent {
+    const [page, properties, options, callback] = resolveArguments(...args)
+
     const segmentEvent = this.eventFactory.page(page, properties, options)
     this.emit(
       'page',
@@ -91,13 +101,22 @@ export class Analytics extends Emmitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async identify(userId?: ID, traits?: object, options?: object, callback?: Callback): Promise<Context | undefined> {
-    userId = this._user.id(userId)
-    traits = this._user.traits(traits)
+  async identify(...args: UserParams): DispatchedEvent
+  async identify(id: ID, traits: object): DispatchedEvent
+  async identify(id: ID, traits: object, options: object): DispatchedEvent
+  async identify(id: ID, traits: object, options: object, callback: Callback): DispatchedEvent
+  async identify(traits: object, callback: Callback): DispatchedEvent
+  async identify(traits: object, options: object, callback: Callback): DispatchedEvent
+  async identify(id: ID): DispatchedEvent
+  async identify(id: ID, traits: object, callback: Callback): DispatchedEvent
+  async identify(id: ID, callback: Callback): DispatchedEvent
+  async identify(...args: UserParams): DispatchedEvent {
+    const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
-    const segmentEvent = this.eventFactory.identify(userId, traits, options)
+    this._user.identify(id, _traits)
+    const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits(), options)
 
-    this.emit('identify', userId, traits, options)
+    this.emit('identify', this._user.id(), this._user.traits(), options)
     this.emit(
       'invoke',
       // @ts-ignore
@@ -106,10 +125,27 @@ export class Analytics extends Emmitter {
     return this.dispatch(segmentEvent, callback)
   }
 
+  async group(...args: UserParams): DispatchedEvent {
+    const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
+
+    this._user.identify(id, _traits)
+    const segmentEvent = this.eventFactory.group(this._user.id(), this._user.traits(), options)
+
+    this.emit('group', this._user.id(), this._user.traits(), options)
+    this.emit(
+      'invoke',
+      // @ts-ignore
+      new Group(segmentEvent)
+    )
+    return this.dispatch(segmentEvent, callback)
+  }
+
+  // TODO: alias
+
   async register(...extensions: Extension[]): Promise<void> {
     const ctx = Context.system()
 
-    const registrations = extensions.map((extension) => this.queue.register(ctx, extension, this))
+    const registrations = extensions.map((xt) => this.queue.register(ctx, xt, this))
     await Promise.all(registrations)
 
     ctx.logger.flush()
@@ -119,7 +155,7 @@ export class Analytics extends Emmitter {
     this._user.reset()
   }
 
-  private async dispatch(event: SegmentEvent, callback?: Callback): Promise<Context | undefined> {
+  private async dispatch(event: SegmentEvent, callback?: Callback): DispatchedEvent {
     const ctx = new Context(event)
     const dispatched = await this.queue.dispatch(ctx)
     return invokeCallback(dispatched, callback, this.settings.timeout)

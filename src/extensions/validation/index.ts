@@ -1,11 +1,15 @@
 import { Extension } from '../../core/extension'
 import { SegmentEvent } from '../../core/events'
 
-function isString(obj: unknown): obj is string {
+export function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
 }
 
-function isPlainObject(obj: unknown): obj is object {
+export function isFunction(obj: unknown): obj is Function {
+  return typeof obj === 'function'
+}
+
+export function isPlainObject(obj: unknown): obj is object {
   return typeof obj == 'object' && obj !== null && obj.constructor == Object
 }
 
