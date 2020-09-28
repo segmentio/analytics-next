@@ -59,13 +59,6 @@ export class Analytics extends Emmitter {
     return this._user
   }
 
-  async track(...args: EventParams): DispatchedEvent
-  async track(event: string, properties: object): DispatchedEvent
-  async track(event: string, properties: object, options: object): DispatchedEvent
-  async track(event: string, properties: object, options: object, callback: Callback): DispatchedEvent
-  async track(event: string, properties: object, callback: Callback): DispatchedEvent
-  async track(event: string, callback: Callback): DispatchedEvent
-  async track(event: string): DispatchedEvent
   async track(...args: EventParams): DispatchedEvent {
     const [name, data, opts, cb] = resolveArguments(...args)
 
@@ -101,15 +94,6 @@ export class Analytics extends Emmitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async identify(...args: UserParams): DispatchedEvent
-  async identify(id: ID, traits: object): DispatchedEvent
-  async identify(id: ID, traits: object, options: object): DispatchedEvent
-  async identify(id: ID, traits: object, options: object, callback: Callback): DispatchedEvent
-  async identify(traits: object, callback: Callback): DispatchedEvent
-  async identify(traits: object, options: object, callback: Callback): DispatchedEvent
-  async identify(id: ID): DispatchedEvent
-  async identify(id: ID, traits: object, callback: Callback): DispatchedEvent
-  async identify(id: ID, callback: Callback): DispatchedEvent
   async identify(...args: UserParams): DispatchedEvent {
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
