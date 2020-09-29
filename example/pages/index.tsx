@@ -9,6 +9,18 @@ const settings: AnalyticsSettings = {
 
   // segment app
   writeKey: '***REMOVED***',
+  integrations: {
+    Intercom: false,
+    Zapier: false,
+    Repeater: false,
+    'Amazon Kinesis': false,
+    Slack: false,
+    'Amazon S3': false,
+    Indicative: false,
+    Sherlock: false,
+    Vitally: false,
+    Webhooks: false,
+  },
 }
 
 export default function Home(): React.ReactElement {
@@ -49,9 +61,17 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    const ctx = await analytics.identify('Test User', {
-      banana: 'phone',
-    })
+    const ctx = await analytics.identify(
+      'Test User',
+      {
+        banana: 'phone',
+      },
+      {
+        integrations: {
+          'Twitter Ads': false,
+        },
+      }
+    )
 
     ctx.flush()
   }

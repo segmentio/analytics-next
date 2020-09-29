@@ -18,7 +18,7 @@ export async function attempt(ctx: Context, extension: Extension): Promise<Conte
   const newCtx = await hook(ctx)
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats.gauge('extension_time', done, [`extension:${extension}`])
+      ctx.stats.gauge('extension_time', done, [`extension:${extension.name}`])
       return ctx
     })
     .catch((err) => {

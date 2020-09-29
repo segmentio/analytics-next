@@ -7,7 +7,7 @@ import { DispatchedEvent, EventParams, resolveArguments, resolveUserArguments, U
 import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
 import { Emitter } from './core/emitter'
-import { EventFactory, SegmentEvent } from './core/events'
+import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { User } from './core/user'
@@ -19,13 +19,15 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
+  integrations?: Integrations
 }
 
 export class Analytics extends Emitter {
   queue: EventQueue
-  settings: AnalyticsSettings
+  private settings: AnalyticsSettings
   private _user: User
   private eventFactory: EventFactory
+  private integrations: Integrations
 
   private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User) {
     super()
@@ -33,6 +35,7 @@ export class Analytics extends Emitter {
     this.queue = queue
     this._user = user
     this.eventFactory = new EventFactory(user)
+    this.integrations = settings.integrations ?? {}
   }
 
   static async load(settings: AnalyticsSettings): Promise<Analytics> {
@@ -42,7 +45,7 @@ export class Analytics extends Emitter {
     const analytics = new Analytics(settings, queue, user)
 
     const extensions = settings.extensions ?? []
-    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey) : []
+    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey, analytics.integrations) : []
     await analytics.register(...[validation, pageEnrichment, ...extensions, ...remoteExtensions])
 
     analytics.emit(
@@ -62,7 +65,7 @@ export class Analytics extends Emitter {
   async track(...args: EventParams): DispatchedEvent {
     const [name, data, opts, cb] = resolveArguments(...args)
 
-    const segmentEvent = this.eventFactory.track(name, data, opts)
+    const segmentEvent = this.eventFactory.track(name, data, opts, this.integrations)
     this.emit('track', name, data, opts)
 
     this.emit(
@@ -76,7 +79,7 @@ export class Analytics extends Emitter {
   async page(...args: EventParams): DispatchedEvent {
     const [page, properties, options, callback] = resolveArguments(...args)
 
-    const segmentEvent = this.eventFactory.page(page, properties, options)
+    const segmentEvent = this.eventFactory.page(page, properties, options, this.integrations)
     this.emit(
       'page',
       // TODO: category
@@ -98,7 +101,7 @@ export class Analytics extends Emitter {
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
     this._user.identify(id, _traits)
-    const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits(), options)
+    const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits(), options, this.integrations)
 
     this.emit('identify', this._user.id(), this._user.traits(), options)
     this.emit(
@@ -113,7 +116,7 @@ export class Analytics extends Emitter {
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
     this._user.identify(id, _traits)
-    const segmentEvent = this.eventFactory.group(this._user.id(), this._user.traits(), options)
+    const segmentEvent = this.eventFactory.group(this._user.id(), this._user.traits(), options, this.integrations)
 
     this.emit('group', this._user.id(), this._user.traits(), options)
     this.emit(

@@ -1,6 +1,13 @@
 import uuid from '@lukeed/uuid'
 import { ID, User } from '../user'
 
+export type Integrations = Record<string, boolean>
+
+export type Options = {
+  integrations?: Integrations
+  [key: string]: any
+}
+
 interface AnalyticsContext {
   page?: object
 }
@@ -11,11 +18,12 @@ export interface SegmentEvent {
   type: 'track' | 'page' | 'identify' | 'group' | 'alias'
 
   properties?: object
+  // TODO: Narrow types (i.e. only show traits for `track` and `group`)
   traits?: object
 
-  integrations?: Record<string, string>
+  integrations?: Record<string, boolean>
   context?: AnalyticsContext
-  options?: object
+  options?: Options
 
   userId?: ID
   anonymousId?: ID
@@ -30,43 +38,47 @@ export class EventFactory {
     this.user = user
   }
 
-  track(event: string, properties?: object, options?: object): SegmentEvent {
+  track(event: string, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       event,
       type: 'track' as const,
       properties,
       options,
+      integrations,
     })
   }
 
-  page(_name: string, properties?: object, options?: object): SegmentEvent {
+  page(_name: string, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       event: 'page',
       type: 'page' as const,
       properties,
       options,
+      integrations,
     })
   }
 
-  identify(userId: ID, traits?: object, options?: object): SegmentEvent {
+  identify(userId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify' as const,
       userId,
       traits,
       options,
+      integrations,
     })
   }
 
-  group(userId: ID, traits?: object, options?: object): SegmentEvent {
+  group(userId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,
       userId,
       traits,
       options,
+      integrations,
     })
   }
 
@@ -87,8 +99,16 @@ export class EventFactory {
   }
 
   private normalize(event: SegmentEvent): SegmentEvent {
+    const allIntegrations = {
+      // Base config integrations object
+      ...event.integrations,
+      // Per event overrides
+      ...event.options?.integrations,
+    }
+
     return {
       ...event,
+      integrations: allIntegrations,
       messageId: 'ajs-next-' + uuid(),
     }
   }

@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Extension } from '../../core/extension'
-import { loadScript } from '../../lib/load-script'
-import fetch from 'unfetch'
-
-import { Track } from '@segment/facade/dist/track'
+import { Integrations } from '@/core/events'
 import { Identify } from '@segment/facade/dist/identify'
-import { Analytics } from '../../index'
-import { Emitter } from '../../core/emitter'
-import { User } from '../../core/user'
+import { Track } from '@segment/facade/dist/track'
+import fetch from 'unfetch'
+import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
+import { Emitter } from '../../core/emitter'
+import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
-import { isOffline } from '@/core/connection'
+import { User } from '../../core/user'
+import { Analytics } from '../../index'
+import { loadScript } from '../../lib/load-script'
 
 export interface LegacyIntegration extends Emitter {
   analytics?: Analytics
@@ -38,6 +38,10 @@ async function flushQueue(xt: Extension, queue: Context[]): Promise<Context[]> {
   return failedQueue
 }
 
+function normalizeName(name: string): string {
+  return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
+}
+
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
   let buffer: Context[] = []
   let flushing = false
@@ -55,10 +59,11 @@ export function ajsDestination(name: string, version: string, settings?: object)
     },
 
     load: async (_ctx, analyticsInstance) => {
-      await loadScript(`${path}/${name}/${version}/${name}.js`)
+      const pathName = normalizeName(name)
+      await loadScript(`${path}/${pathName}/${version}/${pathName}.js`)
 
       // @ts-ignore
-      let integrationBuilder = window[`${name}Integration`]
+      let integrationBuilder = window[`${pathName}Integration`]
 
       // GA and Appcues use a different interface to instantiating integrations
       if (integrationBuilder.Integration) {
@@ -131,15 +136,21 @@ export function ajsDestination(name: string, version: string, settings?: object)
   return xt
 }
 
-export async function ajsDestinations(writeKey: string): Promise<Extension[]> {
+export async function ajsDestinations(writeKey: string, integrations: Integrations = {}): Promise<Extension[]> {
   const [settingsResponse] = await Promise.all([
     fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`),
     // loadScript(`${path}/commons/latest/commons.js`),
   ])
 
   const settings = await settingsResponse.json()
-  return Object.entries(settings.integrations).map(([name, settings]) => {
-    const integrationName = name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
-    return ajsDestination(integrationName, 'latest', settings as object)
-  })
+
+  return Object.entries(settings.integrations)
+    .map(([name, settings]) => {
+      if (integrations[name] === false || integrations['All'] === false) {
+        return
+      }
+
+      return ajsDestination(name, 'latest', settings as object)
+    })
+    .filter((xt) => xt !== undefined) as Extension[]
 }

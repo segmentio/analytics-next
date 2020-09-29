@@ -158,13 +158,12 @@ describe('Dispatch', () => {
       extensions: [amplitude],
     })
 
-    await ajs.track('Fruit Basket', {
+    const delivered = await ajs.track('Fruit Basket', {
       items: ['🍌', '🍇', '🍎'],
       userId: 'Healthy person',
     })
 
-    const delivered = await ajs.queue.flush()
-    const metrics = delivered[0].stats.metrics
+    const metrics = delivered.stats.metrics
 
     expect(metrics).toMatchInlineSnapshot(`
       Array [

@@ -113,9 +113,12 @@ export class EventQueue extends Emitter {
       throw new Error('Not ready')
     }
 
-    const before = this.extensions.filter((p) => p.type === 'before')
-    const enrichment = this.extensions.filter((p) => p.type === 'enrichment')
-    const destinations = this.extensions.filter((p) => p.type === 'destination')
+    const denyList = ctx.event.options?.integrations ?? {}
+    const availableExtensions = this.extensions.filter((p) => denyList[p.name] !== false)
+
+    const before = availableExtensions.filter((p) => p.type === 'before')
+    const enrichment = availableExtensions.filter((p) => p.type === 'enrichment')
+    const destinations = availableExtensions.filter((p) => p.type === 'destination' && denyList[p.name] !== false)
 
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)
