@@ -16,11 +16,18 @@
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json"
+    "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json",
+    "size": "NODE_ENV=production yarn build-umd > /dev/null && size-limit"
   },
   "engines": {
     "node": ">=12.16"
   },
+  "size-limit": [
+    {
+      "path": "dist/umd/index.js",
+      "limit": "12 KB"
+    }
+  ],
   "prettier": {
     "semi": false,
     "singleQuote": true,
@@ -44,6 +51,7 @@
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
+    "@size-limit/preset-big-lib": "^4.6.0",
     "@types/jest": "^25.1.4",
     "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.14",
@@ -60,6 +68,7 @@
     "lint-staged": "^10.0.9",
     "node-fetch": "^2.6.1",
     "prettier": "^2.0.2",
+    "size-limit": "^4.6.0",
     "terser-webpack-plugin": "^4.2.2",
     "ts-jest": "^25.2.1",
     "ts-loader": "^8.0.4",
