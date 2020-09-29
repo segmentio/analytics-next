@@ -1,6 +1,6 @@
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
-import url from 'url'
+import url from 'component-url'
 
 /**
  * Get the current page's canonical URL.

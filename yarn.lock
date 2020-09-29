@@ -1737,6 +1737,10 @@ component-type@^1.2.1:
   resolved "https://registry.yarnpkg.com/component-type/-/component-type-1.2.1.tgz#8a47901700238e4fc32269771230226f24b415a9"
   integrity sha1-ikeQFwAjjk/DIml3EjAibyS0Fak=
 
+component-url@component/url:
+  version "0.2.1"
+  resolved "https://codeload.github.com/component/url/tar.gz/00fb08f25edc2ed657ac2aa07ae3851ac68dca80"
+
 compression-webpack-plugin@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/compression-webpack-plugin/-/compression-webpack-plugin-6.0.2.tgz#13482bfa81e0472e5d6af1165b6ee9f29f98178b"
