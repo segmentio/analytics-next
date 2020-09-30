@@ -21,7 +21,7 @@ export interface LegacyIntegration extends Emitter {
   identify?: (event: typeof Identify) => void | Promise<void>
 }
 
-const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com'
+const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
 
 async function flushQueue(xt: Extension, queue: Context[]): Promise<Context[]> {
   const failedQueue: Context[] = []

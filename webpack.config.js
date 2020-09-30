@@ -9,7 +9,7 @@ const plugins = [
     cache: true,
   }),
   new webpack.EnvironmentPlugin({
-    LEGACY_INTEGRATIONS_PATH: 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com',
+    LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.build/next-integrations',
     DEBUG: false,
   }),
 ]
