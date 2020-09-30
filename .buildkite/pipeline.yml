@@ -11,7 +11,7 @@ steps:
       yarn install --frozen-lockfile
 
       echo '--- Build server'
-      yarn build-all
+      NODE_ENV=production yarn build-all
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1-cache-dev-{{ checksum 'yarn.lock' }}"
