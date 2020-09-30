@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Integrations } from '@/core/events'
 import { Identify } from '@segment/facade/dist/identify'
 import { Track } from '@segment/facade/dist/track'
 import fetch from 'unfetch'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Emitter } from '../../core/emitter'
+import { Integrations } from '../../core/events'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { User } from '../../core/user'
