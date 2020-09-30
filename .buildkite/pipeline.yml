@@ -2,17 +2,16 @@ env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr'
   SEGMENT_BUILDKITE_IMAGE: 'buildkite-agent-node12'
 steps:
-  - label: ':hammer: Build Server'
+  - label: ':hammer: Build Libraries'
     agents:
       queue: v1
     commands: |
       echo '--- Install development dependencies'
       npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       yarn install --frozen-lockfile
+
       echo '--- Build server'
-      yarn build
-    artifact_paths:
-      - 'dist/**/*'
+      yarn build-all
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1-cache-dev-{{ checksum 'yarn.lock' }}"

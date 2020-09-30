@@ -2,6 +2,11 @@ import { Analytics } from '@/index'
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
 
+const sleep = (time: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, time)
+  })
+
 const xt: Extension = {
   name: 'Test Extension',
   type: 'utility',
@@ -48,10 +53,6 @@ const enrichBilling: Extension = {
 
 const writeKey = '***REMOVED***'
 
-beforeAll(() => {
-  jest.useFakeTimers()
-})
-
 describe('Initialization', () => {
   it('loads extensions', async () => {
     await Analytics.load({
@@ -88,7 +89,7 @@ describe('Initialization', () => {
     expect(onLoad).not.toHaveBeenCalled()
     expect(extensionLoaded).toBe(false)
 
-    jest.advanceTimersByTime(300)
+    await sleep(300)
 
     expect(onLoad).toHaveBeenCalled()
     expect(extensionLoaded).toBe(true)
@@ -101,9 +102,11 @@ describe('Dispatch', () => {
       writeKey,
     })
 
-    await ajs.track('Boo!', {
-      total: 25,
-    })
+    ajs
+      .track('Boo!', {
+        total: 25,
+      })
+      .catch(console.error)
 
     const dispatchQueue = ajs.queue.queue
     expect(dispatchQueue.length).toBe(1)
@@ -126,8 +129,6 @@ describe('Dispatch', () => {
       userId: '👻',
     })
 
-    await ajs.queue.flush()
-
     expect(ampSpy).toHaveBeenCalledWith(boo)
     expect(gaSpy).toHaveBeenCalledWith(boo)
   })
@@ -138,13 +139,11 @@ describe('Dispatch', () => {
       extensions: [enrichBilling, amplitude, googleAnalytics],
     })
 
-    await ajs.track('Boo!', {
+    const boo = await ajs.track('Boo!', {
       total: 25,
     })
 
-    const [boo] = await ajs.queue.flush()
-
-    expect(boo?.event.properties).toMatchInlineSnapshot(`
+    expect(boo.event.properties).toMatchInlineSnapshot(`
       Object {
         "billingPlan": "free-99",
         "total": 25,
@@ -165,38 +164,14 @@ describe('Dispatch', () => {
 
     const metrics = delivered.stats.metrics
 
-    expect(metrics).toMatchInlineSnapshot(`
+    expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       Array [
-        Object {
-          "metric": "message_dispatched",
-          "tags": Array [],
-          "type": "increment",
-          "value": 1,
-        },
-        Object {
-          "metric": "extension_time",
-          "tags": Array [],
-          "type": "gauge",
-          "value": 0,
-        },
-        Object {
-          "metric": "extension_time",
-          "tags": Array [],
-          "type": "gauge",
-          "value": 0,
-        },
-        Object {
-          "metric": "message_delivered",
-          "tags": Array [],
-          "type": "increment",
-          "value": 1,
-        },
-        Object {
-          "metric": "delivered",
-          "tags": Array [],
-          "type": "gauge",
-          "value": 0,
-        },
+        "message_dispatched",
+        "extension_time",
+        "extension_time",
+        "extension_time",
+        "message_delivered",
+        "delivered",
       ]
     `)
   })
