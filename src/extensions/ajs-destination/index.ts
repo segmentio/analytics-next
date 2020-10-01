@@ -70,7 +70,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
         metric &&
           _ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [name, ...(metric.duration < 100 ? ['cached'] : [])])
       } catch (err) {
-        _ctx.stats.gauge('extension_load_time', -1, [`extension:${name}`, `failed`])
+        _ctx.stats.gauge('legacy_destination_time', -1, [`extension:${name}`, `failed`])
         throw err
       }
 
