@@ -17,8 +17,7 @@ export class EventQueue extends Emitter {
   }
 
   async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
-    await extension
-      .load(ctx, instance)
+    await Promise.resolve(extension.load(ctx, instance))
       .then(() => {
         this.extensions.push(extension)
       })
