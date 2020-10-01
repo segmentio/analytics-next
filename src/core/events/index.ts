@@ -1,6 +1,6 @@
 import uuid from '@lukeed/uuid'
 import { ID, User } from '../user'
-
+import { CompactMetric } from '../stats'
 export type Integrations = Record<string, boolean>
 
 export type Options = {
@@ -10,6 +10,7 @@ export type Options = {
 
 interface AnalyticsContext {
   page?: object
+  metrics?: CompactMetric[]
 }
 
 export interface SegmentEvent {

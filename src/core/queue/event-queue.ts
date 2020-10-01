@@ -117,8 +117,11 @@ export class EventQueue extends Emitter {
 
     const before = availableExtensions.filter((p) => p.type === 'before')
     const enrichment = availableExtensions.filter((p) => p.type === 'enrichment')
-    const destinations = availableExtensions.filter((p) => p.type === 'destination' && denyList[p.name] !== false)
-
+    const destinations = availableExtensions.filter(
+      (p) => p.type === 'destination' && denyList[p.name] !== false && p.name !== 'Segment.io'
+    )
+    // Segment.io needs to run last so that other destinations have a chance to run in order to collect metrics
+    const segmentio = availableExtensions.filter((p) => p.type === 'destination' && denyList[p.name] !== false && p.name === 'Segment.io')
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)
       if (temp !== undefined) {
@@ -136,14 +139,25 @@ export class EventQueue extends Emitter {
     }
 
     // No more changes to ctx from now on
+
     ctx.seal()
 
     // TODO: concurrency control
     // TODO: timeouts
     const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))
-    await Promise.all(deliveryAttempts)
 
+    await Promise.all(deliveryAttempts)
     ctx.stats.increment('message_delivered')
+    // embed metrics into segment event context
+    // TODO: should this be an enrichment ext that only applies to segmentio?
+    // It could be an enrichment with a before/after flag, and the 'after' type would run here.
+    if (segmentio.length === 1) {
+      if (ctx.event.context == null) {
+        ctx.event.context = {}
+      }
+      ctx.event.context.metrics = ctx.stats.serialize()
+      await ensure(ctx, segmentio[0])
+    }
     return ctx
   }
 }

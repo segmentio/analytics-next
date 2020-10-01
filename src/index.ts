@@ -1,8 +1,4 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Group } from '@segment/facade/dist/group'
-import { Identify } from '@segment/facade/dist/identify'
-import { Page } from '@segment/facade/dist/page'
-import { Track } from '@segment/facade/dist/track'
 import { DispatchedEvent, EventParams, resolveArguments, resolveUserArguments, UserParams } from './core/arguments-resolver'
 import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
@@ -67,12 +63,6 @@ export class Analytics extends Emitter {
 
     const segmentEvent = this.eventFactory.track(name, data, opts, this.integrations)
     this.emit('track', name, data, opts)
-
-    this.emit(
-      'invoke',
-      // @ts-ignore
-      new Track(segmentEvent)
-    )
     return this.dispatch(segmentEvent, cb)
   }
 
@@ -88,12 +78,6 @@ export class Analytics extends Emitter {
       properties,
       options
     )
-
-    this.emit(
-      'invoke',
-      // @ts-ignore
-      new Page(segmentEvent)
-    )
     return this.dispatch(segmentEvent, callback)
   }
 
@@ -104,11 +88,6 @@ export class Analytics extends Emitter {
     const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits(), options, this.integrations)
 
     this.emit('identify', this._user.id(), this._user.traits(), options)
-    this.emit(
-      'invoke',
-      // @ts-ignore
-      new Identify(segmentEvent)
-    )
     return this.dispatch(segmentEvent, callback)
   }
 
@@ -119,11 +98,6 @@ export class Analytics extends Emitter {
     const segmentEvent = this.eventFactory.group(this._user.id(), this._user.traits(), options, this.integrations)
 
     this.emit('group', this._user.id(), this._user.traits(), options)
-    this.emit(
-      'invoke',
-      // @ts-ignore
-      new Group(segmentEvent)
-    )
     return this.dispatch(segmentEvent, callback)
   }
 

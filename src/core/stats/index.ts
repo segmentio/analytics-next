@@ -1,8 +1,27 @@
+type MetricType = 'gauge' | 'counter'
+type CompactMetricType = 'g' | 'c'
 interface Metric {
   metric: string
   value: number
-  type: 'gauge' | 'increment'
+  type: MetricType
   tags: string[]
+  timestamp: number // unit milliseconds
+}
+
+export interface CompactMetric {
+  m: string // metric name
+  v: number // value
+  k: CompactMetricType
+  t: string[] // tags
+  e: number // timestamp in unit milliseconds
+}
+
+const compactMetricType = (type: MetricType): CompactMetricType => {
+  const enums: Record<MetricType, CompactMetricType> = {
+    gauge: 'g',
+    counter: 'c',
+  }
+  return enums[type]
 }
 
 export default class Stats {
@@ -13,7 +32,8 @@ export default class Stats {
       metric,
       value: by,
       tags: tags ?? [],
-      type: 'increment',
+      type: 'counter',
+      timestamp: Date.now(),
     })
   }
 
@@ -23,6 +43,7 @@ export default class Stats {
       value,
       tags: tags ?? [],
       type: 'gauge',
+      timestamp: Date.now(),
     })
   }
 
@@ -31,5 +52,20 @@ export default class Stats {
     console.table(formatted)
     // TODO: flush stats
     this.metrics = []
+  }
+
+  /**
+   * compact keys for smaller payload
+   */
+  serialize(): CompactMetric[] {
+    return this.metrics.map((m) => {
+      return {
+        m: m.metric,
+        v: m.value,
+        t: m.tags,
+        k: compactMetricType(m.type),
+        e: m.timestamp,
+      }
+    })
   }
 }

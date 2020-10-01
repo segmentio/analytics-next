@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+import { Integrations } from '@/core/events'
 import { Identify } from '@segment/facade/dist/identify'
 import { Track } from '@segment/facade/dist/track'
 import fetch from 'unfetch'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Emitter } from '../../core/emitter'
-import { Integrations } from '../../core/events'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { User } from '../../core/user'
@@ -19,6 +19,9 @@ export interface LegacyIntegration extends Emitter {
 
   track?: (event: typeof Track) => void | Promise<void>
   identify?: (event: typeof Identify) => void | Promise<void>
+  // Segment.io specific
+  ontrack?: (event: typeof Track) => void | Promise<void>
+  onidentify?: (event: typeof Identify) => void | Promise<void>
 }
 
 const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
@@ -106,7 +109,10 @@ export function ajsDestination(name: string, version: string, settings?: object)
       // @ts-ignore
       const trackEvent = new Track(ctx.event, {})
 
-      if (integration.track) {
+      // Not sure why Segment.io use a different name than every other integration
+      if (name === 'Segment.io' && integration.ontrack) {
+        await integration.ontrack(trackEvent)
+      } else if (integration.track) {
         await integration.track(trackEvent)
       }
 
@@ -121,7 +127,9 @@ export function ajsDestination(name: string, version: string, settings?: object)
       // @ts-ignore
       const trackEvent = new Identify(ctx.event, {})
 
-      if (integration.identify) {
+      if (name === 'Segment.io' && integration.onidentify) {
+        await integration.onidentify(trackEvent)
+      } else if (integration.identify) {
         await integration.identify(trackEvent)
       }
 
