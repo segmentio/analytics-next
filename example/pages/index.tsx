@@ -33,6 +33,8 @@ export default function Home(): React.ReactElement {
       if (response) {
         setAnalytics(response)
         setAnalyticsReady(true)
+        // @ts-ignore
+        window.analytics = response
       }
     }
     if (!analyticsReady && !analytics) {
