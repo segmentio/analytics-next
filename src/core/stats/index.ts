@@ -27,7 +27,8 @@ export default class Stats {
   }
 
   flush(): void {
-    console.table(this.metrics)
+    const formatted = this.metrics.map((m) => ({ ...m, tags: m.tags.join(',') }))
+    console.table(formatted)
     // TODO: flush stats
     this.metrics = []
   }

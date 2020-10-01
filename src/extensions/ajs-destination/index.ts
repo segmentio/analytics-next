@@ -60,7 +60,19 @@ export function ajsDestination(name: string, version: string, settings?: object)
 
     load: async (_ctx, analyticsInstance) => {
       const pathName = normalizeName(name)
-      await loadScript(`${path}/${pathName}/${version}/${pathName}.js`)
+      const fullPath = `${path}/${pathName}/${version}/${pathName}.js`
+
+      try {
+        await loadScript(fullPath)
+        const [metric] = window?.performance.getEntriesByName(fullPath, 'resource') ?? []
+
+        // we assume everything that took under 100ms is cached
+        metric &&
+          _ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [name, ...(metric.duration < 100 ? ['cached'] : [])])
+      } catch (err) {
+        _ctx.stats.gauge('extension_load_time', -1, [`extension:${name}`, `failed`])
+        throw err
+      }
 
       // @ts-ignore
       let integrationBuilder = window[`${pathName}Integration`]

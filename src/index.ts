@@ -136,6 +136,7 @@ export class Analytics extends Emitter {
     await Promise.all(registrations)
 
     ctx.logger.flush()
+    ctx.stats.flush()
   }
 
   reset(): void {
