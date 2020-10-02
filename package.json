@@ -16,6 +16,7 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
+    "tdd": "jest --watch --notify",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json",
     "size": "NODE_ENV=production yarn build-umd > /dev/null && size-limit"

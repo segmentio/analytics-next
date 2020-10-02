@@ -186,17 +186,29 @@ export function ajsDestination(name: string, version: string, settings?: object)
   return xt
 }
 
+interface LegacySettings {
+  integrations: {
+    [name: string]: {
+      type?: string
+    }
+  }
+}
+
 export async function ajsDestinations(writeKey: string, integrations: Integrations = {}): Promise<Extension[]> {
   const [settingsResponse] = await Promise.all([
     fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`),
     // loadScript(`${path}/commons/latest/commons.js`),
   ])
 
-  const settings = await settingsResponse.json()
+  const settings: LegacySettings = await settingsResponse.json()
 
   return Object.entries(settings.integrations)
     .map(([name, settings]) => {
       if (integrations[name] === false || integrations['All'] === false) {
+        return
+      }
+
+      if (settings.type !== 'browser') {
         return
       }
 
