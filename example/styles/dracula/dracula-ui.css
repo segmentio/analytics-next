@@ -1,0 +1,21 @@
+@import './sizes.css';
+@import './colors.css';
+@import './typography.css';
+@import './button.css';
+@import './badge.css';
+@import './input.css';
+@import './select.css';
+@import './avatar.css';
+@import './radio-checkbox-switch.css';
+@import './card.css';
+
+.drac {
+  /* 1rem = 10px */
+  font-size: 62.5%;
+}
+
+.drac *,
+.drac *::before,
+.drac *::after {
+  box-sizing: border-box;
+}
