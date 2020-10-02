@@ -2,8 +2,9 @@
 import { Integrations } from '@/core/events'
 import { Identify } from '@segment/facade/dist/identify'
 import { Track } from '@segment/facade/dist/track'
+import pWhilst from 'p-whilst'
 import fetch from 'unfetch'
-import { isOffline } from '../../core/connection'
+import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Emitter } from '../../core/emitter'
 import { Extension } from '../../core/extension'
@@ -12,6 +13,7 @@ import { User } from '../../core/user'
 import { Analytics } from '../../index'
 import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
+import { PriorityQueue } from '../../lib/priority-queue'
 
 export interface LegacyIntegration extends Emitter {
   analytics?: Analytics
@@ -28,18 +30,25 @@ export interface LegacyIntegration extends Emitter {
 
 const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
 
-async function flushQueue(xt: Extension, queue: Context[]): Promise<Context[]> {
-  const failedQueue: Context[] = []
+async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
+  const failedQueue = queue
 
-  const attempts = queue.map(async (ctx) => {
-    const result = await attempt(ctx, xt)
-    const success = result instanceof Context
-    if (!success) {
-      failedQueue.push(ctx)
+  await pWhilst(
+    () => failedQueue.length > 0 && isOnline(),
+    async () => {
+      const ctx = failedQueue.pop()
+      if (!ctx) {
+        return
+      }
+
+      const result = await attempt(ctx, xt)
+      const success = result instanceof Context
+      if (!success) {
+        failedQueue.push(ctx)
+      }
     }
-  })
+  )
 
-  await Promise.all(attempts)
   return failedQueue
 }
 
@@ -54,19 +63,14 @@ function embedMetrics(name: string, ctx: Context): Context {
 
   // embed metrics into segment event context
   // It could be an enrichment with a before/after flag, and the 'after' type would run here.
-  const evtContext = ctx.event.context ?? {}
   const metrics = ctx.stats.serialize()
-
-  ctx.event.context = {
-    ...evtContext,
-    metrics,
-  }
+  ctx.updateEvent('context.metrics', metrics)
 
   return ctx
 }
 
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
-  let buffer: Context[] = []
+  let buffer: PriorityQueue<Context> = new PriorityQueue(3, [])
   let flushing = false
 
   let integration: LegacyIntegration

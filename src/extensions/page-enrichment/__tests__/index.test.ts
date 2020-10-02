@@ -30,6 +30,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context).toMatchInlineSnapshot(`
       Object {
+        "attempts": 1,
         "page": Object {
           "path": "/",
           "referrer": "",
@@ -48,6 +49,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.context).toMatchInlineSnapshot(`
       Object {
+        "attempts": 1,
         "page": Object {
           "path": "/",
           "referrer": "",

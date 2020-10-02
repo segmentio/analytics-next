@@ -1,4 +1,5 @@
 import uuid from '@lukeed/uuid'
+import dset from 'dset'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'
 import Stats from '../stats'
@@ -45,6 +46,10 @@ export class Context implements AbstractContext {
     this.logger.log(level, message, extras)
   }
 
+  public get id(): string {
+    return this._id
+  }
+
   public get event(): SegmentEvent {
     return this._event
   }
@@ -56,6 +61,11 @@ export class Context implements AbstractContext {
     }
 
     this._event = Object.assign({}, this._event, evt)
+  }
+
+  public updateEvent(path: string, val: unknown): SegmentEvent {
+    dset(this._event, path, val)
+    return this._event
   }
 
   public logs(): LogMessage[] {

@@ -11,6 +11,7 @@ export type Options = {
 interface AnalyticsContext {
   page?: object
   metrics?: CompactMetric[]
+  [key: string]: any
 }
 
 export interface SegmentEvent {

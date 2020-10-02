@@ -1,6 +1,7 @@
 import pWhile from 'p-whilst'
 import { Analytics } from '../..'
 import { groupBy } from '../../lib/group-by'
+import { PriorityQueue } from '../../lib/priority-queue'
 import { isOnline } from '../connection'
 import { Context } from '../context'
 import { Emitter } from '../emitter'
@@ -15,13 +16,13 @@ type ExtensionsByType = {
 }
 
 export class EventQueue extends Emitter {
-  queue: Context[]
+  queue: PriorityQueue<Context>
   extensions: Extension[] = []
   private flushing = false
 
   constructor() {
     super()
-    this.queue = []
+    this.queue = new PriorityQueue(3, [])
   }
 
   async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
@@ -80,7 +81,9 @@ export class EventQueue extends Emitter {
       () => this.queue.length > 0 && isOnline(),
       async () => {
         const start = new Date().getTime()
-        const ctx = this.queue.shift()
+        const ctx = this.queue.pop()
+        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx))
+
         if (!ctx) {
           return
         }
@@ -97,11 +100,7 @@ export class EventQueue extends Emitter {
           ctx.log('error', 'Failed to deliver')
           ctx.stats.increment('delivery_failed')
 
-          // Retrying...
-          // How many times until discard?
           this.queue.push(ctx)
-
-          // TODO: sleep?
         }
       }
     )
