@@ -52,19 +52,6 @@ export default function Home(): React.ReactElement {
     }, {})
 
     return JSON.stringify(event, null, '  ')
-
-    // return JSON.stringify(
-    //   {
-    //     name: faker.name.firstName(),
-    //     lastName: faker.name.lastName(),
-    //     email: faker.internet.email(),
-    //     company: faker.company.companyName(),
-    //     transaction: faker.helpers.createTransaction(),
-    //     product: faker.commerce.product(),
-    //   },
-    //   null,
-    //   '  '
-    // )
   }
 
   const [event, setEvent] = React.useState(newEvent)
