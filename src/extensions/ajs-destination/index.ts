@@ -10,6 +10,7 @@ import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { User } from '../../core/user'
 import { Analytics } from '../../index'
+import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
 
 export interface LegacyIntegration extends Emitter {
@@ -19,6 +20,7 @@ export interface LegacyIntegration extends Emitter {
 
   track?: (event: typeof Track) => void | Promise<void>
   identify?: (event: typeof Identify) => void | Promise<void>
+
   // Segment.io specific
   ontrack?: (event: typeof Track) => void | Promise<void>
   onidentify?: (event: typeof Identify) => void | Promise<void>
@@ -45,6 +47,24 @@ function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
 }
 
+function embedMetrics(name: string, ctx: Context): Context {
+  if (name !== 'Segment.io') {
+    return ctx
+  }
+
+  // embed metrics into segment event context
+  // It could be an enrichment with a before/after flag, and the 'after' type would run here.
+  const evtContext = ctx.event.context ?? {}
+  const metrics = ctx.stats.serialize()
+
+  ctx.event.context = {
+    ...evtContext,
+    metrics,
+  }
+
+  return ctx
+}
+
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
   let buffer: Context[] = []
   let flushing = false
@@ -52,9 +72,11 @@ export function ajsDestination(name: string, version: string, settings?: object)
   let integration: LegacyIntegration
   let ready = false
 
+  const type = name === 'Segment.io' ? 'after' : 'destination'
+
   const xt: Extension = {
     name,
-    type: 'destination',
+    type,
     version,
 
     isLoaded: () => {
@@ -101,6 +123,8 @@ export function ajsDestination(name: string, version: string, settings?: object)
     },
 
     async track(ctx) {
+      ctx = embedMetrics(name, ctx)
+
       if (!ready || isOffline()) {
         buffer.push(ctx)
         return ctx
@@ -110,16 +134,18 @@ export function ajsDestination(name: string, version: string, settings?: object)
       const trackEvent = new Track(ctx.event, {})
 
       // Not sure why Segment.io use a different name than every other integration
-      if (name === 'Segment.io' && integration.ontrack) {
-        await integration.ontrack(trackEvent)
+      if (integration.ontrack) {
+        await asPromise(integration.ontrack(trackEvent))
       } else if (integration.track) {
-        await integration.track(trackEvent)
+        await asPromise(integration.track(trackEvent))
       }
 
       return ctx
     },
 
     async identify(ctx) {
+      ctx = embedMetrics(name, ctx)
+
       if (!ready || isOffline()) {
         buffer.push(ctx)
         return ctx
@@ -127,10 +153,10 @@ export function ajsDestination(name: string, version: string, settings?: object)
       // @ts-ignore
       const trackEvent = new Identify(ctx.event, {})
 
-      if (name === 'Segment.io' && integration.onidentify) {
-        await integration.onidentify(trackEvent)
+      if (integration.onidentify) {
+        await asPromise(integration.onidentify(trackEvent))
       } else if (integration.identify) {
-        await integration.identify(trackEvent)
+        await asPromise(integration.identify(trackEvent))
       }
 
       return ctx

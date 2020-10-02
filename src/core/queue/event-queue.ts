@@ -1,10 +1,18 @@
 import pWhile from 'p-whilst'
 import { Analytics } from '../..'
+import { groupBy } from '../../lib/group-by'
 import { isOnline } from '../connection'
 import { Context } from '../context'
 import { Emitter } from '../emitter'
 import { Extension } from '../extension'
 import { attempt, ensure } from './delivery'
+
+type ExtensionsByType = {
+  before: Extension[]
+  after: Extension[]
+  enrichment: Extension[]
+  destinations: Extension[]
+}
 
 export class EventQueue extends Emitter {
   queue: Context[]
@@ -107,21 +115,26 @@ export class EventQueue extends Emitter {
     return true
   }
 
+  private availableExtensios(denyList: Record<string, boolean>): ExtensionsByType {
+    const available = this.extensions.filter((p) => denyList[p.name] !== false)
+    const { before = [], enrichment = [], destination = [], after = [] } = groupBy(available, 'type')
+
+    return {
+      before,
+      enrichment,
+      destinations: destination,
+      after,
+    }
+  }
+
   private async flushOne(ctx: Context): Promise<Context | undefined> {
     if (!this.isReady()) {
       throw new Error('Not ready')
     }
 
     const denyList = ctx.event.options?.integrations ?? {}
-    const availableExtensions = this.extensions.filter((p) => denyList[p.name] !== false)
+    const { before, enrichment, destinations, after } = this.availableExtensios(denyList)
 
-    const before = availableExtensions.filter((p) => p.type === 'before')
-    const enrichment = availableExtensions.filter((p) => p.type === 'enrichment')
-    const destinations = availableExtensions.filter(
-      (p) => p.type === 'destination' && denyList[p.name] !== false && p.name !== 'Segment.io'
-    )
-    // Segment.io needs to run last so that other destinations have a chance to run in order to collect metrics
-    const segmentio = availableExtensions.filter((p) => p.type === 'destination' && denyList[p.name] !== false && p.name === 'Segment.io')
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)
       if (temp !== undefined) {
@@ -138,26 +151,16 @@ export class EventQueue extends Emitter {
       }
     }
 
-    // No more changes to ctx from now on
-
-    ctx.seal()
-
     // TODO: concurrency control
     // TODO: timeouts
     const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))
-
     await Promise.all(deliveryAttempts)
+
     ctx.stats.increment('message_delivered')
-    // embed metrics into segment event context
-    // TODO: should this be an enrichment ext that only applies to segmentio?
-    // It could be an enrichment with a before/after flag, and the 'after' type would run here.
-    if (segmentio.length === 1) {
-      if (ctx.event.context == null) {
-        ctx.event.context = {}
-      }
-      ctx.event.context.metrics = ctx.stats.serialize()
-      await ensure(ctx, segmentio[0])
-    }
+
+    const afterCalls = after.map((after) => attempt(ctx, after))
+    await Promise.all(afterCalls)
+
     return ctx
   }
 }

@@ -14,7 +14,7 @@ interface ExtensionConfig {
 export interface Extension {
   name: string
   version: string
-  type: 'before' | 'destination' | 'enrichment' | 'utility'
+  type: 'before' | 'after' | 'destination' | 'enrichment' | 'utility'
 
   isLoaded: () => boolean
   load: (ctx: Context, instance: Analytics, config?: ExtensionConfig) => Promise<unknown>
