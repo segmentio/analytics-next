@@ -60,6 +60,7 @@
     "@types/node-fetch": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
+    "add": "^2.0.6",
     "compression-webpack-plugin": "^6.0.2",
     "concurrently": "^5.3.0",
     "delay": "^4.4.0",
@@ -77,7 +78,8 @@
     "typescript": "^3.8.3",
     "webpack": "^4.44.2",
     "webpack-bundle-analyzer": "^3.9.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "yarn": "^1.22.10"
   },
   "husky": {
     "hooks": {

@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
+import Editor from 'react-simple-code-editor'
+import { highlight, languages } from 'prismjs/components/prism-core'
+import 'prismjs/components/prism-clike'
+import 'prismjs/components/prism-javascript'
+import JSONTree from 'react-json-tree'
 
 import { AnalyticsSettings, Analytics } from '../../dist/commonjs'
+import { Context } from '../../dist/commonjs/core/context'
 
 const settings: AnalyticsSettings = {
   // segment.com
@@ -26,6 +32,11 @@ const settings: AnalyticsSettings = {
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
+  const [event, setEvent] = React.useState(`{
+  "banana": "phone"
+}`)
+
+  const [ctx, setCtx] = React.useState<Context>()
 
   useEffect(() => {
     async function fetchAnalytics() {
@@ -49,9 +60,8 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    const ctx = await analytics.track('Track Event', {
-      banana: 'phone',
-    })
+    const ctx = await analytics.track('Track Event', JSON.parse(event))
+    setCtx(ctx)
 
     ctx.flush()
   }
@@ -63,17 +73,9 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    const ctx = await analytics.identify(
-      'Test User',
-      {
-        banana: 'phone',
-      },
-      {
-        integrations: {
-          'Twitter Ads': false,
-        },
-      }
-    )
+    const ctx = await analytics.identify('Test User', JSON.parse(event))
+
+    setCtx(ctx)
 
     ctx.flush()
   }
@@ -85,7 +87,18 @@ export default function Home(): React.ReactElement {
       </Head>
 
       <main>
+        <h2>Event</h2>
         <form>
+          <Editor
+            value={event}
+            onValueChange={(event) => setEvent(event)}
+            highlight={(code) => highlight(code, languages.js)}
+            padding={10}
+            style={{
+              fontFamily: '"Fira code", "Fira Mono", monospace',
+              fontSize: 12,
+            }}
+          />
           <button disabled={!analyticsReady} onClick={(e) => track(e)}>
             Track
           </button>
@@ -93,6 +106,17 @@ export default function Home(): React.ReactElement {
             Identify
           </button>
         </form>
+
+        <h2>Result</h2>
+        {ctx && (
+          <JSONTree
+            data={{
+              event: ctx.event,
+              logs: ctx.logger.logs,
+              stats: ctx.stats.metrics,
+            }}
+          />
+        )}
       </main>
     </div>
   )

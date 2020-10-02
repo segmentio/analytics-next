@@ -9,8 +9,11 @@
   },
   "dependencies": {
     "next": "9.5.3",
+    "prismjs": "^1.21.0",
     "react": "16.13.1",
-    "react-dom": "16.13.1"
+    "react-dom": "16.13.1",
+    "react-json-tree": "^0.13.0",
+    "react-simple-code-editor": "^0.11.0"
   },
   "devDependencies": {
     "@types/react": "^16.9.49"
