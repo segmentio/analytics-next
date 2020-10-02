@@ -23,11 +23,11 @@ const jsontheme = {
   base06: '#e0e0e0',
   base07: '#ffffff',
   base08: '#cc6666',
-  base09: '#de935f',
+  base09: '#9580FF',
   base0A: '#f0c674',
-  base0B: '#b5bd68',
+  base0B: '#8AFF80',
   base0C: '#8abeb7',
-  base0D: '#81a2be',
+  base0D: '#FF80BF',
   base0E: '#b294bb',
   base0F: '#a3685a',
 }
@@ -214,17 +214,10 @@ export default function Home(): React.ReactElement {
                 key: 'message',
               },
               {
-                title: 'Time',
-                dataIndex: 'time',
-                key: 'time',
-                render(_val, logMessage) {
-                  return logMessage.time?.toISOString()
-                },
-              },
-              {
                 title: 'Extras',
                 dataIndex: 'extras',
                 key: 'extras',
+                width: '100%',
                 render(_val, logMessage) {
                   const json = logMessage.extras ?? {}
                   return (
@@ -260,6 +253,7 @@ export default function Home(): React.ReactElement {
                 title: 'Tags',
                 dataIndex: 'tags',
                 key: 'tags',
+                width: '100%',
                 render(_val, metric) {
                   return JSON.stringify(metric.tags)
                 },
