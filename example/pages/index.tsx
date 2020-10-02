@@ -178,18 +178,8 @@ export default function Home(): React.ReactElement {
         </div>
 
         <div className="drac-box drac-spacing-lg-x" style={{ flex: 1 }}>
-          <h2>Result</h2>
-          {ctx && (
-            <JSONTree
-              theme={jsontheme}
-              data={{
-                event: ctx.event,
-                logs: ctx.logger.logs,
-                stats: ctx.stats.metrics,
-              }}
-              invertTheme={false}
-            />
-          )}
+          <h2 className="drac-text">Result</h2>
+          {ctx && <JSONTree theme={jsontheme} sortObjectKeys data={ctx.event} invertTheme={false} />}
         </div>
       </main>
 
