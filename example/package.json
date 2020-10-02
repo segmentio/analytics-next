@@ -12,6 +12,7 @@
     "lodash": "^4.17.20",
     "next": "9.5.3",
     "prismjs": "^1.21.0",
+    "rc-table": "^7.10.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
     "react-json-tree": "^0.13.0",

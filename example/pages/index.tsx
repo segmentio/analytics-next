@@ -6,9 +6,31 @@ import 'prismjs/components/prism-json'
 import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
+import Table from 'rc-table'
 
 import { AnalyticsSettings, Analytics } from '../../dist/commonjs'
 import { Context } from '../../dist/commonjs/core/context'
+
+const jsontheme = {
+  scheme: 'tomorrow',
+  author: 'chris kempson (http://chriskempson.com)',
+  base00: '#1d1f21',
+  base01: '#282a2e',
+  base02: '#373b41',
+  base03: '#969896',
+  base04: '#b4b7b4',
+  base05: '#c5c8c6',
+  base06: '#e0e0e0',
+  base07: '#ffffff',
+  base08: '#cc6666',
+  base09: '#de935f',
+  base0A: '#f0c674',
+  base0B: '#b5bd68',
+  base0C: '#8abeb7',
+  base0D: '#81a2be',
+  base0E: '#b294bb',
+  base0F: '#a3685a',
+}
 
 const settings: AnalyticsSettings = {
   // segment.com
@@ -106,13 +128,13 @@ export default function Home(): React.ReactElement {
         <title>Tester App</title>
       </Head>
 
-      <h1>
+      <h1 className="drac-text">
         <span className="drac-text-purple-cyan">Analytics Next</span> Tester
       </h1>
 
       <main className="drac-box" style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>
-          <h2>Event</h2>
+          <h2 className="drac-text">Event</h2>
           <form>
             <div
               style={{
@@ -171,26 +193,7 @@ export default function Home(): React.ReactElement {
           <h2>Result</h2>
           {ctx && (
             <JSONTree
-              theme={{
-                scheme: 'tomorrow',
-                author: 'chris kempson (http://chriskempson.com)',
-                base00: '#1d1f21',
-                base01: '#282a2e',
-                base02: '#373b41',
-                base03: '#969896',
-                base04: '#b4b7b4',
-                base05: '#c5c8c6',
-                base06: '#e0e0e0',
-                base07: '#ffffff',
-                base08: '#cc6666',
-                base09: '#de935f',
-                base0A: '#f0c674',
-                base0B: '#b5bd68',
-                base0C: '#8abeb7',
-                base0D: '#81a2be',
-                base0E: '#b294bb',
-                base0F: '#a3685a',
-              }}
+              theme={jsontheme}
               data={{
                 event: ctx.event,
                 logs: ctx.logger.logs,
@@ -201,6 +204,83 @@ export default function Home(): React.ReactElement {
           )}
         </div>
       </main>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+        }}
+      >
+        <div className="drac-box drac-spacing-md-y" style={{ flex: 1 }}>
+          <h2 className="drac-text">Logs</h2>
+          <Table
+            columns={[
+              {
+                title: 'Level',
+                dataIndex: 'level',
+                key: 'level',
+              },
+              {
+                title: 'Message',
+                dataIndex: 'message',
+                key: 'message',
+              },
+              {
+                title: 'Time',
+                dataIndex: 'time',
+                key: 'time',
+                render(_val, logMessage) {
+                  return logMessage.time?.toISOString()
+                },
+              },
+              {
+                title: 'Extras',
+                dataIndex: 'extras',
+                key: 'extras',
+                render(_val, logMessage) {
+                  const json = logMessage.extras
+                  return (
+                    <JSONTree shouldExpandNode={(_keyName, _data, level) => level > 0} theme={jsontheme} data={json} invertTheme={false} />
+                  )
+                },
+              },
+            ]}
+            data={ctx?.logs() ?? []}
+          />
+        </div>
+
+        <div className="drac-box drac-spacing-md-y" style={{ flex: 1 }}>
+          <h2 className="drac-text">Stats</h2>
+          <Table
+            columns={[
+              {
+                title: 'Metric',
+                dataIndex: 'metric',
+                key: 'metric',
+              },
+              {
+                title: 'Value',
+                dataIndex: 'value',
+                key: 'value',
+              },
+              {
+                title: 'Type',
+                dataIndex: 'type',
+                key: 'type',
+              },
+              {
+                title: 'Tags',
+                dataIndex: 'tags',
+                key: 'tags',
+                render(_val, metric) {
+                  return JSON.stringify(metric.tags)
+                },
+              },
+            ]}
+            data={ctx?.stats.metrics ?? []}
+          />
+        </div>
+      </div>
     </div>
   )
 }

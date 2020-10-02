@@ -1,0 +1,19 @@
+@import './dracula/colors.css';
+@import './dracula/sizes.css';
+
+td {
+  vertical-align: baseline;
+}
+
+.rc-table-thead {
+  color: var(--purple);
+  text-align: left;
+}
+
+.rc-table-cell {
+  padding-right: var(--spacing-sm);
+}
+
+.rc-table-cell:first-child {
+  color: var(--pink);
+}
