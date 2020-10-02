@@ -38,18 +38,6 @@ const settings: AnalyticsSettings = {
 
   // segment app
   writeKey: '***REMOVED***',
-  integrations: {
-    Intercom: false,
-    Zapier: false,
-    Repeater: false,
-    'Amazon Kinesis': false,
-    Slack: false,
-    'Amazon S3': false,
-    Indicative: false,
-    Sherlock: false,
-    Vitally: false,
-    Webhooks: false,
-  },
 }
 
 export default function Home(): React.ReactElement {
@@ -76,8 +64,7 @@ export default function Home(): React.ReactElement {
     return JSON.stringify(event, null, '  ')
   }
 
-  const [event, setEvent] = React.useState(newEvent)
-
+  const [event, setEvent] = React.useState('')
   const [ctx, setCtx] = React.useState<Context>()
 
   useEffect(() => {
@@ -86,6 +73,7 @@ export default function Home(): React.ReactElement {
       if (response) {
         setAnalytics(response)
         setAnalyticsReady(true)
+        setEvent(newEvent())
         // @ts-ignore
         window.analytics = response
       }
@@ -238,7 +226,7 @@ export default function Home(): React.ReactElement {
                 dataIndex: 'extras',
                 key: 'extras',
                 render(_val, logMessage) {
-                  const json = logMessage.extras
+                  const json = logMessage.extras ?? {}
                   return (
                     <JSONTree shouldExpandNode={(_keyName, _data, level) => level > 0} theme={jsontheme} data={json} invertTheme={false} />
                   )
