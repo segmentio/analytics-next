@@ -8,11 +8,11 @@ const cdnResponse = {
     Zapier: {
       type: 'server',
     },
-    'Amazon S3': {},
     'Marketo V2': {
       version: '3.0.7',
       type: 'browser',
     },
+    'Amazon S3': {},
   },
 }
 
@@ -35,16 +35,16 @@ beforeEach(async () => {
 })
 
 describe('ajsDestinations', () => {
-  it('loads only type:browser legacy ajs destinations from cdn', () => {
-    expect(destinations.length).toBe(1)
+  it('loads type:browser legacy ajs destinations from cdn', () => {
     expect(destinations[0].name).toBe('Marketo V2')
+    expect(destinations.length).toBe(2)
   })
 
   it('ignores destinations of type:server', () => {
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
-  it('ignores destinations with empty settings', () => {
-    expect(destinations.find((d) => d.name === 'Amazon S3')).toBe(undefined)
+  it('does not ignore destinations with empty settings', () => {
+    expect(destinations.find((d) => d.name === 'Amazon S3')?.name).toBe('Amazon S3')
   })
 })
