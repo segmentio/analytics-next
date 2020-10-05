@@ -195,8 +195,16 @@ interface LegacySettings {
 }
 
 export async function ajsDestinations(writeKey: string, integrations: Integrations = {}): Promise<Extension[]> {
-  const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
-  const settings: LegacySettings = await settingsResponse.json()
+  let settings: LegacySettings = {
+    integrations: {},
+  }
+
+  try {
+    const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
+    settings = await settingsResponse.json()
+  } catch (err) {
+    console.warn('Failed to load integrations', err)
+  }
 
   return Object.entries(settings.integrations)
     .map(([name, settings]) => {
