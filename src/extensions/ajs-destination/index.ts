@@ -195,11 +195,7 @@ interface LegacySettings {
 }
 
 export async function ajsDestinations(writeKey: string, integrations: Integrations = {}): Promise<Extension[]> {
-  const [settingsResponse] = await Promise.all([
-    fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`),
-    // loadScript(`${path}/commons/latest/commons.js`),
-  ])
-
+  const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
   const settings: LegacySettings = await settingsResponse.json()
 
   return Object.entries(settings.integrations)

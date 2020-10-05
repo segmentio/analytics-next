@@ -3,7 +3,9 @@ export type LogMessage = {
   level: LogLevel
   message: string
   time?: Date
-  extras?: object
+  extras?: object & {
+    [key: string]: any
+  }
 }
 
 export default class Logger {
