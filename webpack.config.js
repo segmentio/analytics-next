@@ -29,7 +29,7 @@ const config = {
   output: {
     filename: 'index.js',
     path: path.resolve(__dirname, 'dist/umd'),
-    library: 'analytics',
+    library: 'AnalyticsNext',
     libraryTarget: 'umd',
   },
   module: {

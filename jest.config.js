@@ -10,4 +10,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  globalTeardown: './jest.teardown.js',
 }

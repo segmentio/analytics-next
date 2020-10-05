@@ -2,7 +2,7 @@ import uuid from '@lukeed/uuid'
 import dset from 'dset'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'
-import Stats from '../stats'
+import Stats, { Metric } from '../stats'
 
 export interface AbstractContext {
   cancel: () => never
@@ -11,10 +11,18 @@ export interface AbstractContext {
   stats: Stats
 }
 
+export interface SerializedContext {
+  id: string
+  event: SegmentEvent
+  logs: LogMessage[]
+  metrics: Metric[]
+}
+
 export class Context implements AbstractContext {
   private _event: SegmentEvent
   private sealed = false
   public logger = new Logger()
+  public stats = new Stats()
   private _id: string
 
   constructor(event: SegmentEvent) {
@@ -77,5 +85,12 @@ export class Context implements AbstractContext {
     this.stats.flush()
   }
 
-  stats = new Stats()
+  toJSON(): SerializedContext {
+    return {
+      id: this._id,
+      event: this._event,
+      logs: this.logger.logs,
+      metrics: this.stats.metrics,
+    }
+  }
 }

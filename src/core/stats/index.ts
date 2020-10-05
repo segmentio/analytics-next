@@ -1,6 +1,7 @@
 type MetricType = 'gauge' | 'counter'
 type CompactMetricType = 'g' | 'c'
-interface Metric {
+
+export interface Metric {
   metric: string
   value: number
   type: MetricType
