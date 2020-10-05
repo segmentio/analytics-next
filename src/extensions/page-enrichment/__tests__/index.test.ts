@@ -4,7 +4,7 @@ let ajs: Analytics
 
 describe('Page Enrichment', () => {
   beforeEach(async () => {
-    ajs = await Analytics.load({
+    ;[ajs] = await Analytics.load({
       writeKey: 'abc_123',
     })
   })

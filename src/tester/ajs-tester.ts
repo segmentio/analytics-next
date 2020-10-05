@@ -71,7 +71,7 @@ export async function tester(_writeKey: string): Promise<ReturnType<typeof makeS
   await page.evaluate(`
     window.AnalyticsNext.Analytics.load({
       writeKey: '${_writeKey}',
-    }).then(ajs => {
+    }).then(([ajs]) => {
       window.analytics = ajs
     })
   `)

@@ -69,8 +69,9 @@ export default function Home(): React.ReactElement {
 
   useEffect(() => {
     async function fetchAnalytics() {
-      const response = await Analytics.load(settings)
+      const [response, ctx] = await Analytics.load(settings)
       if (response) {
+        setCtx(ctx)
         setAnalytics(response)
         setAnalyticsReady(true)
         setEvent(newEvent())

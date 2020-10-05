@@ -98,7 +98,7 @@ describe('Initialization', () => {
 
 describe('Dispatch', () => {
   it('dispatches events', async () => {
-    const ajs = await Analytics.load({
+    const [ajs] = await Analytics.load({
       writeKey,
     })
 
@@ -116,7 +116,7 @@ describe('Dispatch', () => {
   })
 
   it('dispatches events to destinations', async () => {
-    const ajs = await Analytics.load({
+    const [ajs] = await Analytics.load({
       writeKey,
       extensions: [amplitude, googleAnalytics],
     })
@@ -134,7 +134,7 @@ describe('Dispatch', () => {
   })
 
   it('enriches events before dispatching', async () => {
-    const ajs = await Analytics.load({
+    const [ajs] = await Analytics.load({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
     })
@@ -152,7 +152,7 @@ describe('Dispatch', () => {
   })
 
   it('collects metrics for every event', async () => {
-    const ajs = await Analytics.load({
+    const [ajs] = await Analytics.load({
       writeKey,
       extensions: [amplitude],
     })

@@ -34,7 +34,7 @@ export class Analytics extends Emitter {
     this.integrations = settings.integrations ?? {}
   }
 
-  static async load(settings: AnalyticsSettings): Promise<Analytics> {
+  static async load(settings: AnalyticsSettings): Promise<[Analytics, Context]> {
     const queue = new EventQueue()
 
     const user = new User().load()
@@ -42,7 +42,7 @@ export class Analytics extends Emitter {
 
     const extensions = settings.extensions ?? []
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey, analytics.integrations) : []
-    await analytics.register(...[validation, pageEnrichment, ...extensions, ...remoteExtensions])
+    const ctx = await analytics.register(...[validation, pageEnrichment, ...extensions, ...remoteExtensions])
 
     analytics.emit(
       'initialize',
@@ -51,7 +51,7 @@ export class Analytics extends Emitter {
       {}
     )
 
-    return analytics
+    return [analytics, ctx]
   }
 
   user(): User {
@@ -103,14 +103,13 @@ export class Analytics extends Emitter {
 
   // TODO: alias
 
-  async register(...extensions: Extension[]): Promise<void> {
+  async register(...extensions: Extension[]): Promise<Context> {
     const ctx = Context.system()
 
     const registrations = extensions.map((xt) => this.queue.register(ctx, xt, this))
     await Promise.all(registrations)
 
-    ctx.logger.flush()
-    ctx.stats.flush()
+    return ctx
   }
 
   reset(): void {
