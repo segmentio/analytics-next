@@ -1,4 +1,4 @@
-type Grouper<T> = (obj: T) => string
+type Grouper<T> = (obj: T) => string | number
 
 export function groupBy<T>(collection: T[], grouper: keyof T | Grouper<T>): Record<string, T[]> {
   const results: Record<string, T[]> = {}
