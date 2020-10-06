@@ -4,7 +4,7 @@ export function groupBy<T>(collection: T[], grouper: keyof T | Grouper<T>): Reco
   const results: Record<string, T[]> = {}
 
   collection.forEach((item) => {
-    let key: string | undefined = undefined
+    let key: string | number | undefined = undefined
 
     if (typeof grouper === 'string') {
       const suggestedKey = item[grouper]
