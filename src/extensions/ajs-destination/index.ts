@@ -190,6 +190,7 @@ interface LegacySettings {
   integrations: {
     [name: string]: {
       type?: string
+      version?: string
     }
   }
 }
@@ -216,7 +217,7 @@ export async function ajsDestinations(writeKey: string, integrations: Integratio
         return
       }
 
-      return ajsDestination(name, 'latest', settings as object)
+      return ajsDestination(name, settings.version ?? 'latest', settings as object)
     })
     .filter((xt) => xt !== undefined) as Extension[]
 }
