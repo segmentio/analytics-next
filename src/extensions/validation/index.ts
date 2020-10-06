@@ -36,6 +36,10 @@ function validate(eventType?: unknown, event?: SegmentEvent): void {
     throw new ValidationError('event', 'Event is not a string')
   }
 
+  if (!isString(event.event)) {
+    throw new ValidationError('event', 'Event is not a string')
+  }
+
   const props = event.properties ?? event.traits
   if (!isPlainObject(props)) {
     throw new ValidationError('properties', 'properties is not an object')
