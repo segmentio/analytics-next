@@ -97,7 +97,7 @@ export class EventQueue extends Emitter {
           flushed.push(ctx)
           this.emit('flush', ctx)
         } catch (err) {
-          ctx.log('error', 'Failed to deliver')
+          ctx.log('error', 'Failed to deliver', err)
           ctx.stats.increment('delivery_failed')
 
           this.queue.push(ctx)

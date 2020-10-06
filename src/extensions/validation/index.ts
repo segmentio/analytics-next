@@ -36,7 +36,7 @@ function validate(eventType?: unknown, event?: SegmentEvent): void {
     throw new ValidationError('event', 'Event is not a string')
   }
 
-  if (!isString(event.event)) {
+  if (eventType === 'track' && !isString(event.event)) {
     throw new ValidationError('event', 'Event is not a string')
   }
 

@@ -33,7 +33,9 @@ describe('validation', () => {
           })
         )
 
-        await expect(val).rejects.toMatchInlineSnapshot(`[Error: Event is not a string]`)
+        if (method === 'track') {
+          await expect(val).rejects.toMatchInlineSnapshot(`[Error: Event is not a string]`)
+        }
       })
 
       it('validates that `properties` or `traits` are objects', async () => {
