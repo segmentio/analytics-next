@@ -39,15 +39,11 @@ beforeEach(async () => {
 describe('ajsDestinations', () => {
   it('loads type:browser legacy ajs destinations from cdn', () => {
     expect(destinations[0].name).toBe('Marketo V2')
-    expect(destinations.length).toBe(2)
+    expect(destinations.length).toBe(1)
   })
 
   it('ignores destinations of type:server', () => {
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
-  })
-
-  it('does not ignore destinations with empty settings', () => {
-    expect(destinations.find((d) => d.name === 'Amazon S3')?.name).toBe('Amazon S3')
   })
 })
 
