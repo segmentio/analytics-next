@@ -31,12 +31,12 @@ export interface LegacyIntegration extends Emitter {
 const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
 
 async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
-  const failedQueue = queue
+  const failedQueue: Context[] = []
 
   await pWhilst(
-    () => failedQueue.length > 0 && isOnline(),
+    () => queue.length > 0 && isOnline(),
     async () => {
-      const ctx = failedQueue.pop()
+      const ctx = queue.pop()
       if (!ctx) {
         return
       }
@@ -49,7 +49,9 @@ async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise
     }
   )
 
-  return failedQueue
+  // re-add failed tasks
+  failedQueue.map((failed) => queue.push(failed))
+  return queue
 }
 
 function normalizeName(name: string): string {

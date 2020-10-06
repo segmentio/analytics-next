@@ -76,6 +76,7 @@ export class EventQueue extends Emitter {
 
   async flush(): Promise<Context[]> {
     const flushed: Context[] = []
+    const failed: Context[] = []
 
     await pWhile(
       () => this.queue.length > 0 && isOnline(),
@@ -99,12 +100,13 @@ export class EventQueue extends Emitter {
         } catch (err) {
           ctx.log('error', 'Failed to deliver', err)
           ctx.stats.increment('delivery_failed')
-
-          this.queue.push(ctx)
+          failed.push(ctx)
         }
       }
     )
 
+    // re-queue all failed
+    failed.map((f) => this.queue.push(f))
     return flushed
   }
 
