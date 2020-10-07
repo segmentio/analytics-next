@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { DispatchedEvent, EventParams, resolveArguments, resolveUserArguments, UserParams } from './core/arguments-resolver'
+import {
+  DispatchedEvent,
+  EventParams,
+  PageParams,
+  resolveArguments,
+  resolvePageArguments,
+  resolveUserArguments,
+  UserParams,
+} from './core/arguments-resolver'
 import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
 import { Emitter } from './core/emitter'
@@ -68,18 +76,11 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, cb)
   }
 
-  async page(...args: EventParams): DispatchedEvent {
-    const [page, properties, options, callback] = resolveArguments(...args)
+  async page(...args: PageParams): DispatchedEvent {
+    const [category, page, properties, options, callback] = resolvePageArguments(...args)
 
     const segmentEvent = this.eventFactory.page(page, properties, options, this.integrations)
-    this.emit(
-      'page',
-      // TODO: category
-      null,
-      name,
-      properties,
-      options
-    )
+    this.emit('page', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
   }
 

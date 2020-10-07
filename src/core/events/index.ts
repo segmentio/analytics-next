@@ -51,7 +51,8 @@ export class EventFactory {
     })
   }
 
-  page(_name: string, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  // TODO: verify this
+  page(_name: string | null, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       event: 'page',
