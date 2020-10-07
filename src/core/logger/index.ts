@@ -9,25 +9,25 @@ export type LogMessage = {
 }
 
 export default class Logger {
-  private _logs: Record<string, LogMessage> = {}
+  private _logs: LogMessage[] = []
 
   log = (level: LogLevel, message: string, extras?: object): void => {
     const time = new Date()
-    this._logs[time.toISOString()] = {
+    this._logs.push({
       level,
       message,
       time,
       extras,
-    }
+    })
   }
 
   public get logs(): LogMessage[] {
-    return Object.values(this._logs)
+    return this._logs
   }
 
   public flush(): void {
     if (this.logs.length > 1) {
-      const formatted = Object.values(this._logs).reduce((logs, log) => {
+      const formatted = this._logs.reduce((logs, log) => {
         const line = {
           ...log,
           json: JSON.stringify(log.extras, null, ' '),
@@ -36,11 +36,16 @@ export default class Logger {
 
         delete line['time']
 
+        let key = log.time?.toISOString() ?? ''
+        if (logs[key]) {
+          key = `${key}-${Math.random()}`
+        }
+
         return {
           ...logs,
-          [log.time?.toISOString() ?? '']: line,
+          [key]: line,
         }
-      }, {})
+      }, {} as Record<string, LogMessage>)
 
       console.table(formatted)
     } else {
@@ -55,6 +60,6 @@ export default class Logger {
       })
     }
 
-    this._logs = {}
+    this._logs = []
   }
 }

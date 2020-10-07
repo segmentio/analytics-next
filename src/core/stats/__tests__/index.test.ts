@@ -87,7 +87,7 @@ describe(Stats, () => {
   })
 
   test('flushes metrics', () => {
-    jest.spyOn(console, 'table')
+    jest.spyOn(console, 'table').mockImplementationOnce(() => {})
 
     const stats = new Stats()
     stats.gauge('some_gauge', 31, ['test:env'])
