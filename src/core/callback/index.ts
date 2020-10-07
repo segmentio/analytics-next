@@ -1,10 +1,6 @@
 import { Context } from '../context'
 import pTimeout from 'p-timeout'
-
-function promisify(fn: Function): Promise<unknown> {
-  const res = fn()
-  return Promise.resolve(res)
-}
+import { asPromise } from '../../lib/as-promise'
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
@@ -13,12 +9,11 @@ export function invokeCallback(ctx: Context, callback?: Callback, timeout?: numb
     return Promise.resolve(ctx)
   }
 
-  return pTimeout(
-    promisify(() => callback(ctx)),
-    timeout ?? 1000
-  )
+  const cb = async () => await asPromise(callback(ctx))
+
+  return pTimeout(cb(), timeout ?? 1000)
     .catch((err) => {
-      ctx?.log('warn', 'Callback timeout', { error: err })
+      ctx?.log('warn', 'Callback Error', { error: err })
       ctx?.stats.increment('callback_error')
     })
     .then(() => ctx)
