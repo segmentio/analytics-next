@@ -6,12 +6,10 @@ export class Emitter {
     return this
   }
 
-  addEventListener = (event: string, callback: Function): this => this.on(event, callback)
-
   once(event: string, fn: Function): this {
     const on = (...args: unknown[]): void => {
       this.off(event, on)
-      fn.apply(this, ...args)
+      fn.apply(this, args)
     }
 
     this.on(event, on)
@@ -31,20 +29,5 @@ export class Emitter {
       callback.apply(this, args)
     })
     return this
-  }
-
-  removeListener = (event: string, callback: Function): this => this.off(event, callback)
-  removeEventListener = (event: string, callback: Function): this => this.off(event, callback)
-  removeAllListeners(event: string): this {
-    this.callbacks[event] = []
-    return this
-  }
-
-  listeners(event: string): Function[] {
-    return this.callbacks[event]
-  }
-
-  hasListeners(event: string): boolean {
-    return this.listeners(event).length > 0
   }
 }
