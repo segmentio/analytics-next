@@ -31,7 +31,7 @@ export class Context implements AbstractContext {
   }
 
   static system(): Context {
-    return new Context({ type: 'track', event: 'init' })
+    return new Context({ type: 'track', event: 'system' })
   }
 
   isSame(other: Context): boolean {
@@ -50,7 +50,7 @@ export class Context implements AbstractContext {
     this.sealed = true
   }
 
-  log = (level: LogLevel, message: string, extras?: object): void => {
+  log(level: LogLevel, message: string, extras?: object): void {
     this.logger.log(level, message, extras)
   }
 
@@ -68,10 +68,15 @@ export class Context implements AbstractContext {
       return
     }
 
-    this._event = Object.assign({}, this._event, evt)
+    this._event = evt
   }
 
   public updateEvent(path: string, val: unknown): SegmentEvent {
+    if (this.sealed) {
+      this.log('warn', 'Context is sealed')
+      return this._event
+    }
+
     dset(this._event, path, val)
     return this._event
   }
