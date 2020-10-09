@@ -27,7 +27,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "11 KB"
+      "limit": "12.5 KB"
     }
   ],
   "prettier": {
@@ -49,6 +49,7 @@
     "@segment/facade": "^3.3.1",
     "component-url": "component/url",
     "dset": "^2.0.1",
+    "js-cookie": "^2.2.1",
     "p-timeout": "^3.2.0",
     "p-whilst": "^2.1.0",
     "unfetch": "^4.1.0"
@@ -56,6 +57,7 @@
   "devDependencies": {
     "@size-limit/preset-small-lib": "^4.6.0",
     "@types/jest": "^25.1.4",
+    "@types/js-cookie": "^2.2.6",
     "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.14",
     "@types/node-fetch": "^2.5.7",
