@@ -22,8 +22,6 @@ interface AnalyticsContext {
   }
   metrics?: CompactMetric[]
 
-  [key: string]: any
-
   /**
    *  {@link https://github.com/segmentio/analytics.js-integrations/blob/2d5c637c022d2661c23449aed237d0d546bf062d/integrations/segmentio/lib/index.js#L285}
    */
@@ -81,6 +79,8 @@ interface AnalyticsContext {
   amp?: {
     id: string
   }
+
+  [key: string]: any
 }
 
 export interface SegmentEvent {

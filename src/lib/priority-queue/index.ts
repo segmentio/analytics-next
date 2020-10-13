@@ -13,17 +13,20 @@ export class PriorityQueue<T extends WithID> {
     this.seen = {}
   }
 
-  push(...operations: T[]): void {
-    operations.forEach((operation) => {
+  push(...operations: T[]): boolean[] {
+    const accepted = operations.map((operation) => {
       const attempts = this.updateAttempts(operation)
+
       if (attempts > this.maxAttempts || this.includes(operation)) {
-        return
+        return false
       }
 
       this.queue.push(operation)
+      return true
     })
 
     this.queue = this.queue.sort((a, b) => this.getAttempts(a) - this.getAttempts(b))
+    return accepted
   }
 
   public getAttempts(operation: T): number {

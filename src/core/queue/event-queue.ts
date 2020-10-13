@@ -22,7 +22,7 @@ export class EventQueue extends Emitter {
 
   constructor() {
     super()
-    this.queue = new PriorityQueue(3, [])
+    this.queue = new PriorityQueue(2, [])
   }
 
   async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
@@ -47,13 +47,18 @@ export class EventQueue extends Emitter {
     this.queue.push(ctx)
     this.scheduleFlush(0)
 
-    return new Promise((resolve, _reject) => {
-      const onDeliver = (flushed: Context): void => {
+    return new Promise((resolve, reject) => {
+      const onDeliver = (flushed: Context, delivered: boolean): void => {
         if (flushed.isSame(ctx)) {
           this.off('flush', onDeliver)
-          resolve(flushed)
+          if (delivered) {
+            resolve(flushed)
+          } else {
+            reject(flushed)
+          }
         }
       }
+
       this.on('flush', onDeliver)
     })
   }
@@ -63,10 +68,10 @@ export class EventQueue extends Emitter {
       return
     }
 
+    this.flushing = true
+
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
-      this.flushing = true
-
       await this.flush()
       this.flushing = false
 
@@ -83,7 +88,7 @@ export class EventQueue extends Emitter {
       async () => {
         const start = new Date().getTime()
         const ctx = this.queue.pop()
-        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx))
+        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx) + 1)
 
         if (!ctx) {
           return
@@ -96,7 +101,7 @@ export class EventQueue extends Emitter {
           ctx.log('debug', 'Delivered', ctx.event)
 
           flushed.push(ctx)
-          this.emit('flush', ctx)
+          this.emit('flush', ctx, true)
         } catch (err) {
           ctx.log('error', 'Failed to deliver', err)
           ctx.stats.increment('delivery_failed')
@@ -106,7 +111,13 @@ export class EventQueue extends Emitter {
     )
 
     // re-queue all failed
-    failed.map((f) => this.queue.push(f))
+    failed.forEach((ctx) => {
+      const [accepted] = this.queue.push(ctx)
+      if (!accepted) {
+        this.emit('flush', ctx, false)
+      }
+    })
+
     return flushed
   }
 
@@ -151,6 +162,8 @@ export class EventQueue extends Emitter {
         ctx = temp
       }
     }
+
+    ctx.seal()
 
     // TODO: concurrency control
     // TODO: timeouts

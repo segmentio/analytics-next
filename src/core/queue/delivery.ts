@@ -1,22 +1,24 @@
-import { asPromise } from '../../lib/as-promise'
 import { Context } from '../context'
 import { Extension } from '../extension'
+
+async function tryOperation(op: () => Context | Promise<Context>): Promise<Context> {
+  try {
+    return await op()
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
 
 export async function attempt(ctx: Context, extension: Extension): Promise<Context | Error> {
   ctx.log('debug', 'extension', { extension: extension.name })
   const start = new Date().getTime()
-
-  // ignore unloaded destinations for now
-  if (!extension.isLoaded()) {
-    return ctx
-  }
 
   const hook = extension[ctx.event.type]
   if (hook === undefined) {
     return ctx
   }
 
-  const newCtx = await asPromise(hook(ctx))
+  const newCtx = await tryOperation(() => hook(ctx))
     .then((ctx) => {
       const done = new Date().getTime() - start
       ctx.stats.gauge('extension_time', done, [`extension:${extension.name}`])
