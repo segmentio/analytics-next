@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import {
+  AliasParams,
   DispatchedEvent,
   EventParams,
   PageParams,
+  resolveAliasArguments,
   resolveArguments,
   resolvePageArguments,
   resolveUserArguments,
@@ -114,7 +116,12 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  // TODO: alias
+  async alias(...args: AliasParams): DispatchedEvent {
+    const [to, from, options, callback] = resolveAliasArguments(...args)
+    const segmentEvent = this.eventFactory.alias(to, from, options, this.integrations)
+    this.emit('alias', to, from, options)
+    return this.dispatch(segmentEvent, callback)
+  }
 
   async register(...extensions: Extension[]): Promise<Context> {
     const ctx = Context.system()

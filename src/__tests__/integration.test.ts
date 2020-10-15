@@ -24,6 +24,8 @@ const xt: Extension = {
   track: async (ctx) => ctx,
   identify: async (ctx) => ctx,
   page: async (ctx) => ctx,
+  group: async (ctx) => ctx,
+  alias: async (ctx) => ctx,
 }
 
 const amplitude: Extension = {
@@ -195,5 +197,23 @@ describe('Group', () => {
 
     expect(group.id()).toEqual('coolKids')
     expect(group.traits()).toEqual({ coolKids: true })
+  })
+})
+
+describe('Alias', () => {
+  it('generates alias events', async () => {
+    const [analytics] = await Analytics.load({
+      writeKey,
+      extensions: [amplitude],
+    })
+
+    jest.spyOn(amplitude, 'alias')
+
+    const ctx = await analytics.alias('netto farah', 'netto')
+
+    expect(ctx.event.userId).toEqual('netto farah')
+    expect(ctx.event.previousId).toEqual('netto')
+
+    expect(amplitude.alias).toHaveBeenCalled()
   })
 })

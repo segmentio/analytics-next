@@ -39,6 +39,9 @@ describe('validation', () => {
       })
 
       it('validates that `properties` or `traits` are objects', async () => {
+        if (method === 'alias') {
+          return
+        }
         // @ts-ignore
         const val = validation[method](
           new Context({

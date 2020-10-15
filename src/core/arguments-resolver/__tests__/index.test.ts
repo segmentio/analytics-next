@@ -1,4 +1,4 @@
-import { resolveArguments, resolvePageArguments, resolveUserArguments, Callback } from '../'
+import { resolveArguments, resolvePageArguments, resolveUserArguments, Callback, resolveAliasArguments } from '../'
 import { User } from '../../user'
 
 const bananaPhone = {
@@ -325,5 +325,72 @@ describe(resolveUserArguments, () => {
     expect(cb).toEqual(fn)
 
     expect(options).toEqual({})
+  })
+})
+
+describe(resolveAliasArguments, () => {
+  it('should accept (to, from, options, callback)', () => {
+    const fn = jest.fn()
+    const [to, from, options, cb] = resolveAliasArguments(
+      'to',
+      'from',
+      {
+        integrations: {
+          intercom: false,
+        },
+      },
+      fn
+    )
+
+    expect(to).toEqual('to')
+    expect(from).toEqual('from')
+    expect(options).toEqual({
+      integrations: {
+        intercom: false,
+      },
+    })
+    expect(cb).toBe(fn)
+  })
+
+  it('should accept (to, options, callback)', () => {
+    const fn = jest.fn()
+    const [to, from, options, cb] = resolveAliasArguments(
+      'to',
+      {
+        integrations: {
+          intercom: false,
+        },
+      },
+      fn
+    )
+
+    expect(to).toEqual('to')
+    expect(from).toBeNull()
+    expect(options).toEqual({
+      integrations: {
+        intercom: false,
+      },
+    })
+    expect(cb).toBe(fn)
+  })
+
+  it('should accept (to, callback)', () => {
+    const fn = jest.fn()
+    const [to, from, options, cb] = resolveAliasArguments('to', fn)
+
+    expect(to).toEqual('to')
+    expect(from).toBeNull()
+    expect(options).toEqual({})
+    expect(cb).toBe(fn)
+  })
+
+  it('should accept (to, from, callback)', () => {
+    const fn = jest.fn()
+    const [to, from, options, cb] = resolveAliasArguments('to', 'from', fn)
+
+    expect(to).toEqual('to')
+    expect(from).toEqual('from')
+    expect(options).toEqual({})
+    expect(cb).toBe(fn)
   })
 })

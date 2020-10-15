@@ -14,7 +14,7 @@ export function isPlainObject(obj: unknown): obj is object {
 }
 
 function hasUser(event: SegmentEvent): boolean {
-  const id = event.userId ?? event.anonymousId
+  const id = event.userId ?? event.anonymousId ?? event.groupId ?? event.previousId
   return isString(id)
 }
 
@@ -41,7 +41,7 @@ function validate(eventType?: unknown, event?: SegmentEvent): void {
   }
 
   const props = event.properties ?? event.traits
-  if (!isPlainObject(props)) {
+  if (eventType !== 'alias' && !isPlainObject(props)) {
     throw new ValidationError('properties', 'properties is not an object')
   }
 

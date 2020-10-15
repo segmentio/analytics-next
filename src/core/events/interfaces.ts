@@ -108,6 +108,7 @@ export interface SegmentEvent {
   userId?: ID
   anonymousId?: ID
   groupId?: ID
+  previousId?: ID
 
   event?: string
 

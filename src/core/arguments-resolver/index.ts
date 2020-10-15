@@ -75,6 +75,21 @@ export const resolveUserArguments = (user: User): ResolveUser => {
   }
 }
 
+export function resolveAliasArguments(
+  to: string,
+  from?: string | Options,
+  options?: Options | Callback,
+  callback?: Callback
+): [string, string | null, Options, Callback | undefined] {
+  const args = [to, from, options, callback]
+
+  const [aliasTo = to, aliasFrom = null] = args.filter(isString)
+  const [opts = {}] = args.filter(isPlainObject)
+  const resolvedCallback = args.find(isFunction) as Callback | undefined
+
+  return [aliasTo, aliasFrom, opts, resolvedCallback]
+}
+
 type ResolveUser = (
   id?: ID | object,
   traits?: object | Callback,
@@ -85,5 +100,6 @@ type ResolveUser = (
 export type UserParams = Parameters<ResolveUser>
 export type EventParams = Parameters<typeof resolveArguments>
 export type PageParams = Parameters<typeof resolvePageArguments>
+export type AliasParams = Parameters<typeof resolveAliasArguments>
 
 export type DispatchedEvent = Promise<Context>

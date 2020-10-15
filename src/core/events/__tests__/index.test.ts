@@ -14,6 +14,24 @@ describe('Event Factory', () => {
     factory = new EventFactory(user)
   })
 
+  describe('alias', () => {
+    test('creates alias events', () => {
+      const alias = factory.alias('netto', 'netto farah')
+
+      expect(alias.type).toEqual('alias')
+      expect(alias.event).toBeUndefined()
+
+      expect(alias.userId).toEqual('netto')
+      expect(alias.previousId).toEqual('netto farah')
+    })
+
+    it('does not accept traits or properties', () => {
+      const alias = factory.alias('netto', 'netto farah')
+      expect(alias.traits).toBeUndefined()
+      expect(alias.properties).toBeUndefined()
+    })
+  })
+
   describe('group', () => {
     test('creates group events', () => {
       const group = factory.group('userId', { coolkids: true })

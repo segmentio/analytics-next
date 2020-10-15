@@ -66,6 +66,24 @@ export class EventFactory {
     })
   }
 
+  alias(to: string, from: string | null, options?: Options, integrations?: Integrations): SegmentEvent {
+    const base: Partial<SegmentEvent> = {
+      userId: to,
+      type: 'alias' as const,
+      options: { ...options },
+      integrations: { ...integrations },
+    }
+
+    if (from !== null) {
+      base.previousId = from
+    }
+
+    return this.normalize({
+      ...this.baseEvent(),
+      ...base,
+    } as SegmentEvent)
+  }
+
   private baseEvent(): Partial<SegmentEvent> {
     const base: Partial<SegmentEvent> = {
       integrations: {},
