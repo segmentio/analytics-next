@@ -257,3 +257,23 @@ export class User {
     return true
   }
 }
+
+const groupDefaults: UserOptions = {
+  persist: true,
+  cookie: {
+    key: 'ajs_group_id',
+  },
+  localStorage: {
+    key: 'ajs_group_properties',
+  },
+}
+
+export class Group extends User {
+  constructor(options: UserOptions = groupDefaults) {
+    super(options)
+  }
+
+  anonymousId(_id?: ID): ID {
+    return undefined
+  }
+}

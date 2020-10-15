@@ -14,7 +14,7 @@ import { Emitter } from './core/emitter'
 import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
-import { User } from './core/user'
+import { Group, User } from './core/user'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
@@ -32,14 +32,16 @@ export class Analytics extends Emitter {
   queue: EventQueue
   private settings: AnalyticsSettings
   private _user: User
+  private _group: Group
   private eventFactory: EventFactory
   private integrations: Integrations
 
-  private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User) {
+  private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User, group: Group) {
     super()
     this.settings = settings
     this.queue = queue
     this._user = user
+    this._group = group
     this.eventFactory = new EventFactory(user)
     this.integrations = settings.integrations ?? {}
   }
@@ -48,7 +50,8 @@ export class Analytics extends Emitter {
     const queue = new EventQueue()
 
     const user = new User().load()
-    const analytics = new Analytics(settings, queue, user)
+    const group = new Group().load()
+    const analytics = new Analytics(settings, queue, user, group)
 
     const extensions = settings.extensions ?? []
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey, analytics.integrations) : []
@@ -94,17 +97,20 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async group(...args: UserParams): DispatchedEvent {
-    // TODO: return group if args.length === 0
-    // TODO: groupId
-    // TODO: access group
+  group(...args: UserParams): DispatchedEvent | Group {
+    if (args.length === 0) {
+      return this._group
+    }
 
-    const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
+    const [id, _traits, options, callback] = resolveUserArguments(this._group)(...args)
 
-    this._user.identify(id, _traits)
-    const segmentEvent = this.eventFactory.group(this._user.id(), this._user.traits(), options, this.integrations)
+    this._group.identify(id, _traits)
+    const groupId = this._group.id()
+    const groupdTraits = this._group.traits()
 
-    this.emit('group', this._user.id(), this._user.traits(), options)
+    const segmentEvent = this.eventFactory.group(groupId, groupdTraits, options, this.integrations)
+
+    this.emit('group', groupId, groupdTraits, options)
     return this.dispatch(segmentEvent, callback)
   }
 

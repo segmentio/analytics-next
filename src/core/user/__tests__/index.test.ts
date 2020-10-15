@@ -1,4 +1,4 @@
-import { User, LocalStorage, Cookie } from '..'
+import { User, LocalStorage, Cookie, Group } from '..'
 import jar from 'js-cookie'
 import assert from 'assert'
 
@@ -356,26 +356,10 @@ describe('user', () => {
     })
   })
 
-  // describe('#options', () => {
-  //   it('should get options', () => {
-  //     // assert(user.options() === user.options)
-  //   })
-
-  //   it('should set options with defaults', () => {
-  //     // user.options({ option: true })
-  //     // assert.deepEqual(user.options, {
-  //     //   option: true,
-  //     //   persist: true,
-  //     //   cookie: {
-  //     //     key: 'ajs_user_id',
-  //     //     oldKey: 'ajs_user',
-  //     //   },
-  //     //   localStorage: {
-  //     //     key: 'ajs_user_traits',
-  //     //   },
-  //     // })
-  //   })
-  // })
+  describe('#options', () => {
+    it.todo('should get options')
+    it.todo('should set options with defaults')
+  })
 
   describe('#save', () => {
     let user: User
@@ -561,5 +545,48 @@ describe('user', () => {
       expect(user.id()).toEqual('old')
       expect(user.traits()).toEqual({ trait: true })
     })
+  })
+})
+
+describe('group', () => {
+  const store = new LocalStorage()
+
+  beforeEach(() => {
+    clear()
+  })
+
+  it('behaves the same as user', () => {
+    const user = new User()
+    const group = new Group()
+
+    user.id('uid')
+    group.id('gid')
+
+    expect(user.id()).toEqual('uid')
+    expect(group.id()).toEqual('gid')
+  })
+
+  it('always ignores anonymous ids', () => {
+    const group = new Group()
+    expect(group.anonymousId()).toBeUndefined()
+
+    group.anonymousId('bla')
+    expect(group.anonymousId()).toBeUndefined()
+  })
+
+  it('uses a different cookie from user', () => {
+    const group = new Group()
+    group.id('gid')
+
+    expect(jar.get(group.options.cookie?.key ?? '')).toEqual('gid')
+    expect(jar.get(User.defaults.cookie.key)).not.toEqual('gid')
+  })
+
+  it('uses a different local storage key', () => {
+    const group = new Group()
+    group.identify('gid', { coolkids: true })
+
+    expect(store.get(group.options.localStorage?.key ?? '')).toEqual({ coolkids: true })
+    expect(store.get(User.defaults.localStorage.key)).not.toEqual({ coolkids: true })
   })
 })

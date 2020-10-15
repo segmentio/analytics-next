@@ -27,6 +27,11 @@ describe('Event Factory', () => {
       const group = factory.group('netto', shopper)
       expect(group.traits).toEqual(shopper)
     })
+
+    it('sets the groupId to the message', () => {
+      const group = factory.group('coolKidsId', { coolkids: true })
+      expect(group.groupId).toEqual('coolKidsId')
+    })
   })
 
   describe('page', () => {

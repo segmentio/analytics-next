@@ -76,7 +76,7 @@ export const resolveUserArguments = (user: User): ResolveUser => {
 }
 
 type ResolveUser = (
-  id: ID | object,
+  id?: ID | object,
   traits?: object | Callback,
   options?: Options | Callback,
   callback?: Callback

@@ -1,6 +1,7 @@
-import { Analytics } from '@/index'
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
+import { Analytics } from '@/index'
+import { Group } from '../core/user'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -174,5 +175,25 @@ describe('Dispatch', () => {
         "delivered",
       ]
     `)
+  })
+})
+
+describe('Group', () => {
+  it('manages Group state', async () => {
+    const [analytics] = await Analytics.load({
+      writeKey,
+    })
+
+    const group = analytics.group() as Group
+
+    const ctx = (await analytics.group('coolKids', {
+      coolKids: true,
+    })) as Context
+
+    expect(ctx.event.groupId).toEqual('coolKids')
+    expect(ctx.event.traits).toEqual({ coolKids: true })
+
+    expect(group.id()).toEqual('coolKids')
+    expect(group.traits()).toEqual({ coolKids: true })
   })
 })

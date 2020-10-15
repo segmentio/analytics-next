@@ -55,14 +55,14 @@ export class EventFactory {
     })
   }
 
-  group(userId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  group(groupId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,
-      userId,
       traits,
       options: { ...options },
       integrations: { ...integrations },
+      groupId,
     })
   }
 

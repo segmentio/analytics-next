@@ -97,6 +97,7 @@ export interface SegmentEvent {
   name?: string
 
   properties?: object
+
   // TODO: Narrow types (i.e. only show traits for `track` and `group`)
   traits?: object
 
@@ -106,6 +107,7 @@ export interface SegmentEvent {
 
   userId?: ID
   anonymousId?: ID
+  groupId?: ID
 
   event?: string
 
