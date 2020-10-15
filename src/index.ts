@@ -79,7 +79,7 @@ export class Analytics extends Emitter {
   async page(...args: PageParams): DispatchedEvent {
     const [category, page, properties, options, callback] = resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.page(page, properties, options, this.integrations)
+    const segmentEvent = this.eventFactory.page(category, page, properties, options, this.integrations)
     this.emit('page', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
   }
@@ -95,6 +95,10 @@ export class Analytics extends Emitter {
   }
 
   async group(...args: UserParams): DispatchedEvent {
+    // TODO: return group if args.length === 0
+    // TODO: groupId
+    // TODO: access group
+
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
     this._user.identify(id, _traits)
