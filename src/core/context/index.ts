@@ -71,8 +71,8 @@ export class Context implements AbstractContext {
     this._event = evt
   }
 
-  public updateEvent(path: string, val: unknown): SegmentEvent {
-    if (this.sealed) {
+  public updateEvent(path: string, val: unknown, force = false): SegmentEvent {
+    if (this.sealed && !force) {
       this.log('warn', 'Context is sealed')
       return this._event
     }

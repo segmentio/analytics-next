@@ -136,6 +136,25 @@ describe(Context, () => {
         ]
       `)
     })
+
+    it('force an update event even when ctx is sealed', () => {
+      const ctx = new Context({
+        type: 'identify',
+        traits: {
+          banana: 'phone',
+        },
+      })
+      ctx.seal()
+
+      ctx.updateEvent('traits.lastName', 'Farah', true)
+      expect(ctx.event).toEqual({
+        type: 'identify',
+        traits: {
+          banana: 'phone',
+          lastName: 'Farah',
+        },
+      })
+    })
   })
 
   it('serializes a context to JSON', () => {
