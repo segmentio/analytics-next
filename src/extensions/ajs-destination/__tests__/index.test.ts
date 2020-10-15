@@ -10,8 +10,24 @@ const cdnResponse = {
     Zapier: {
       type: 'server',
     },
-    'Marketo V2': {
+    WithNoVersion: {
+      type: 'browser',
+    },
+    WithLegacyVersion: {
       version: '3.0.7',
+      type: 'browser',
+    },
+    WithVersionSettings: {
+      versionSettings: {
+        version: '1.2.3',
+      },
+      type: 'browser',
+    },
+    WithVersionOverrides: {
+      versionSettings: {
+        version: '1.2.3',
+        override: '9.9.9',
+      },
       type: 'browser',
     },
     'Amazon S3': {},
@@ -37,9 +53,22 @@ beforeEach(async () => {
 })
 
 describe('ajsDestinations', () => {
+  // This test should temporary. Once we deprecate `version`, we can change it
+  // to `it('loads version overrides')`
+  it('considers both legacy and new version formats', () => {
+    const withLegacyVersion = destinations.find((d) => d.name === 'WithLegacyVersion')
+    const withVersionSettings = destinations.find((d) => d.name === 'WithVersionSettings')
+    const withVersionOverrides = destinations.find((d) => d.name === 'WithVersionOverrides')
+    const withNoVersion = destinations.find((d) => d.name === 'WithNoVersion')
+
+    expect(withLegacyVersion?.version).toBe('3.0.7')
+    expect(withVersionSettings?.version).toBe('1.2.3')
+    expect(withVersionOverrides?.version).toBe('9.9.9')
+    expect(withNoVersion?.version).toBe('latest')
+  })
+
   it('loads type:browser legacy ajs destinations from cdn', () => {
-    expect(destinations[0].name).toBe('Marketo V2')
-    expect(destinations.length).toBe(1)
+    expect(destinations.length).toBe(4)
   })
 
   it('ignores destinations of type:server', () => {
