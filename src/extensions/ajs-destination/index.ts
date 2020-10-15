@@ -215,7 +215,7 @@ export async function ajsDestinations(writeKey: string, integrations: Integratio
         return
       }
 
-      if (settings.type !== 'browser') {
+      if (settings.type !== 'browser' && name !== 'Segment.io') {
         return
       }
 
