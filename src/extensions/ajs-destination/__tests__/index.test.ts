@@ -2,7 +2,6 @@
 import { ajsDestinations } from '..'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { Extension } from '../../../core/extension'
 import { tester } from '../../../tester/ajs-tester'
 
 const cdnResponse = {
