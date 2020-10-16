@@ -18,6 +18,7 @@ import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { Group, User } from './core/user'
 import { ajsDestinations } from './extensions/ajs-destination'
+import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
 
@@ -57,7 +58,8 @@ export class Analytics extends Emitter {
 
     const extensions = settings.extensions ?? []
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey, analytics.integrations) : []
-    const ctx = await analytics.register(...[validation, pageEnrichment, ...extensions, ...remoteExtensions])
+    const edgeFuncs = await edgeFunctions(settings.writeKey)
+    const ctx = await analytics.register(...[validation, pageEnrichment, ...edgeFuncs, ...extensions, ...remoteExtensions])
 
     analytics.emit(
       'initialize',
