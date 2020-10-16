@@ -14,6 +14,6 @@ describe('Tester', () => {
       test: 'prop',
     })
 
-    await analyticsStub.puppeteerPage.close()
+    await analyticsStub.browserPage.close()
   })
 })

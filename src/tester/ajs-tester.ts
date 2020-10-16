@@ -1,60 +1,66 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Analytics } from '..'
-import puppeteer from 'puppeteer'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
+import playwright from 'playwright'
 
-function makeStub(page: puppeteer.Page) {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function makeStub(page: playwright.Page) {
   const stub = {
     async register(...args: Parameters<Analytics['register']>): Promise<void> {
-      return await page.evaluate((...innerArgs) => {
+      return await page.evaluate((innerArgs) => {
         // @ts-ignore
         return window.analytics.register(...innerArgs)
         // @ts-ignore
-      }, ...args)
+      }, args)
     },
     async track(...args: Parameters<Analytics['track']>): Promise<SerializedContext> {
-      const ctx = await page.evaluate((...innerArgs) => {
+      const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
         return window.analytics.track(...innerArgs).then((ctx) => {
           return ctx.toJSON()
         })
         // @ts-ignore
-      }, ...args)
+      }, args)
 
-      return ctx
+      return ctx as SerializedContext
     },
     async page(...args: Parameters<Analytics['page']>): Promise<SerializedContext> {
-      const ctx = await page.evaluate(async (...innerArgs) => {
+      const ctx = await page.evaluate(async (innerArgs) => {
         // @ts-ignore
         return window.analytics.page(...innerArgs).then((ctx) => {
           return ctx.toJSON()
         })
         // @ts-ignore
-      }, ...args)
-      return ctx
+      }, args)
+
+      return ctx as SerializedContext
     },
 
     async identify(...args: Parameters<Analytics['identify']>): Promise<SerializedContext> {
-      const ctx = await page.evaluate((...innerArgs) => {
+      const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
         return window.analytics.identify(...innerArgs).then((ctx) => {
           return ctx.toJSON()
         })
         // @ts-ignore
-      }, ...args)
+      }, args)
 
-      return ctx
+      return ctx as SerializedContext
     },
 
-    puppeteerPage: page,
+    browserPage: page,
   }
 
   return stub
 }
 
-const getBrowser = mem(async () => {
-  const browser = await puppeteer.launch({ headless: true, devtools: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+const getBrowser = mem(async (browserType?: 'chromium' | 'firefox' | 'webkit') => {
+  const browser = await playwright[browserType ?? 'chromium'].launch({
+    headless: true,
+    devtools: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
 
   process.on('unhandledRejection', () => {
     browser && browser.close()

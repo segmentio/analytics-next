@@ -79,16 +79,13 @@ describe('ajsDestinations', () => {
 describe('ajsDestination', () => {
   it('loads integrations from the Segment CDN', async () => {
     const ajs = await tester('test')
-    const page = ajs.puppeteerPage
+    const page = ajs.browserPage
 
     const allReqs: string[] = []
 
     page.on('request', (request) => {
       allReqs.push(request.url())
-      request.continue()
     })
-
-    await page.setRequestInterception(true)
 
     await page.evaluate(`
       const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {})
@@ -107,16 +104,12 @@ describe('ajsDestination', () => {
 
   it('executes and loads the third party integration', async () => {
     const ajs = await tester('test')
-    const page = ajs.puppeteerPage
+    const page = ajs.browserPage
 
     const allReqs: string[] = []
     page.on('request', (request) => {
       allReqs.push(request.url())
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      request.continue()
     })
-
-    await page.setRequestInterception(true)
 
     await page.evaluate(`
       const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
@@ -139,15 +132,12 @@ describe('ajsDestination', () => {
 
   it('forwards identify calls to integration', async () => {
     const ajs = await tester('test')
-    const page = ajs.puppeteerPage
+    const page = ajs.browserPage
 
     const allReqs: string[] = []
     page.on('request', (request) => {
       allReqs.push(request.url())
-      request.continue()
     })
-
-    await page.setRequestInterception(true)
 
     await page.evaluate(`
       const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
@@ -171,15 +161,12 @@ describe('ajsDestination', () => {
 
   it('forwards track calls to integration', async () => {
     const ajs = await tester('test')
-    const page = ajs.puppeteerPage
+    const page = ajs.browserPage
 
     const allReqs: string[] = []
     page.on('request', (request) => {
       allReqs.push(request.url())
-      request.continue()
     })
-
-    await page.setRequestInterception(true)
 
     await page.evaluate(`
       const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
