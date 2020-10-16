@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { EdgeFunction } from '..'
 import { Analytics } from '../../../index'
 import { SegmentEvent } from '../../../core/events'
@@ -81,6 +81,7 @@ describe('Edge Functions', () => {
       employees: 329,
     })
 
+    // @ts-ignore
     expect(ctx.event.context).toEqual(
       expect.objectContaining({
         foo: 'bar',
