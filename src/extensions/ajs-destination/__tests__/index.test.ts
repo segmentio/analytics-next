@@ -38,24 +38,21 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
-const jsonPromise = Promise.resolve(cdnResponse)
 const fetchSettings = Promise.resolve({
-  json: () => jsonPromise,
-})
-
-let destinations: Extension[]
-
-beforeEach(async () => {
-  /* eslint-disable @typescript-eslint/ban-ts-ignore */
-  // @ts-ignore: ignore Response required fields
-  mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
-  destinations = await ajsDestinations('fakeWriteKey', {})
+  json: () => Promise.resolve(cdnResponse),
 })
 
 describe('ajsDestinations', () => {
+  beforeEach(async () => {
+    jest.resetAllMocks()
+    /* eslint-disable @typescript-eslint/ban-ts-ignore */
+    // @ts-ignore: ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+  })
   // This test should temporary. Once we deprecate `version`, we can change it
   // to `it('loads version overrides')`
-  it('considers both legacy and new version formats', () => {
+  it('considers both legacy and new version formats', async () => {
+    const destinations = await ajsDestinations('fakeWriteKey', {})
     const withLegacyVersion = destinations.find((d) => d.name === 'WithLegacyVersion')
     const withVersionSettings = destinations.find((d) => d.name === 'WithVersionSettings')
     const withVersionOverrides = destinations.find((d) => d.name === 'WithVersionOverrides')
@@ -67,12 +64,22 @@ describe('ajsDestinations', () => {
     expect(withNoVersion?.version).toBe('latest')
   })
 
-  it('loads type:browser legacy ajs destinations from cdn', () => {
+  it('loads type:browser legacy ajs destinations from cdn', async () => {
+    const destinations = await ajsDestinations('fakeWriteKey', {})
     expect(destinations.length).toBe(4)
   })
 
-  it('ignores destinations of type:server', () => {
+  it('ignores destinations of type:server', async () => {
+    const destinations = await ajsDestinations('fakeWriteKey', {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
+  })
+
+  it('does not load integrations on All:false', async () => {
+    const destinations = await ajsDestinations('fakeWriteKey', {
+      All: false,
+    })
+    expect(unfetch).not.toHaveBeenCalled()
+    expect(destinations.length).toBe(0)
   })
 })
 

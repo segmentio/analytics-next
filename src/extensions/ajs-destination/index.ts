@@ -221,7 +221,11 @@ interface LegacySettings {
   }
 }
 
-export async function ajsDestinations(writeKey: string, integrations: Integrations = {}): Promise<Extension[]> {
+export async function ajsDestinations(writeKey: string, globalIntegrations: Integrations = {}): Promise<Extension[]> {
+  if (globalIntegrations['All'] === false) {
+    return []
+  }
+
   let settings: LegacySettings = {
     integrations: {},
   }
@@ -235,7 +239,7 @@ export async function ajsDestinations(writeKey: string, integrations: Integratio
 
   return Object.entries(settings.integrations)
     .map(([name, settings]) => {
-      if (integrations[name] === false || integrations['All'] === false) {
+      if (globalIntegrations[name] === false) {
         return
       }
 
