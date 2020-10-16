@@ -1,9 +1,10 @@
 import uuid from '@lukeed/uuid'
 import jar from 'js-cookie'
+import { tld } from './tld'
 
 export type ID = string | null | undefined
 
-interface UserOptions {
+export interface UserOptions {
   localStorageFallbackDisabled?: boolean
   persist?: boolean
 
@@ -45,6 +46,9 @@ class Store {
   }
 }
 
+const domain = tld(new URL(window.location.href))
+const ONE_YEAR = 365
+
 export class Cookie extends Store {
   static available(): boolean {
     let cookieEnabled = navigator.cookieEnabled
@@ -58,23 +62,49 @@ export class Cookie extends Store {
     return cookieEnabled
   }
 
+  static defaults: CookieOptions = {
+    maxage: ONE_YEAR,
+    domain,
+    path: '/',
+    sameSite: 'Lax',
+  }
+
+  private options: Required<CookieOptions>
+
+  constructor(options: CookieOptions = Cookie.defaults) {
+    super()
+    this.options = {
+      ...Cookie.defaults,
+      ...options,
+    } as Required<CookieOptions>
+  }
+
+  private opts(): jar.CookieAttributes {
+    return {
+      sameSite: this.options.sameSite as jar.CookieAttributes['sameSite'],
+      expires: this.options.maxage,
+      domain: this.options.domain,
+      path: this.options.path,
+    }
+  }
+
   get<T>(key: string): T | null {
     return jar.getJSON(key)
   }
 
   set<T>(key: string, value: T): T | null {
     if (typeof value === 'string') {
-      jar.set(key, value)
+      jar.set(key, value, this.opts())
     } else if (value === null) {
-      jar.remove(key)
+      jar.remove(key, this.opts())
     } else {
-      jar.set(key, JSON.stringify(value))
+      jar.set(key, JSON.stringify(value), this.opts())
     }
     return value
   }
 
   remove(key: string): void {
-    return jar.remove(key)
+    return jar.remove(key, this.opts())
   }
 }
 
@@ -111,11 +141,19 @@ export class LocalStorage extends Store {
   }
 }
 
+export interface CookieOptions {
+  maxage?: number
+  domain?: string
+  path?: string
+  secure?: boolean
+  sameSite?: string
+}
+
 export class User {
   static defaults = defaults
 
-  private cookies: Cookie
-  private localStorage: LocalStorage
+  private cookies: Store
+  private localStorage: Store
   private mem = new Store()
 
   private idKey: string
@@ -124,7 +162,7 @@ export class User {
 
   options: UserOptions = {}
 
-  constructor(options: UserOptions = defaults) {
+  constructor(options: UserOptions = defaults, cookieOptions?: CookieOptions) {
     this.options = options
 
     this.idKey = options.cookie?.key ?? defaults.cookie.key
@@ -136,7 +174,7 @@ export class User {
     this.localStorage =
       options.localStorageFallbackDisabled || !shouldPersist || !LocalStorage.available() ? new NullStorage() : new LocalStorage()
 
-    this.cookies = shouldPersist && Cookie.available() ? new Cookie() : new NullStorage()
+    this.cookies = shouldPersist && Cookie.available() ? new Cookie(cookieOptions) : new NullStorage()
 
     const legacyUser = this.cookies.get<{ id?: string; traits?: object }>(defaults.cookie.oldKey)
     if (legacyUser) {
@@ -269,8 +307,8 @@ const groupDefaults: UserOptions = {
 }
 
 export class Group extends User {
-  constructor(options: UserOptions = groupDefaults) {
-    super(options)
+  constructor(options: UserOptions = groupDefaults, cookie?: CookieOptions) {
+    super(options, cookie)
   }
 
   anonymousId(_id?: ID): ID {

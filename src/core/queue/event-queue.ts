@@ -5,6 +5,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { isOnline } from '../connection'
 import { Context } from '../context'
 import { Emitter } from '../emitter'
+import { Integrations } from '../events'
 import { Extension } from '../extension'
 import { attempt, ensure } from './delivery'
 
@@ -127,7 +128,7 @@ export class EventQueue extends Emitter {
     return true
   }
 
-  private availableExtensios(denyList: Record<string, boolean>): ExtensionsByType {
+  private availableExtensios(denyList: Integrations): ExtensionsByType {
     const available = this.extensions.filter((p) => denyList[p.name] !== false)
     const { before = [], enrichment = [], destination = [], after = [] } = groupBy(available, 'type')
 

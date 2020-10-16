@@ -590,3 +590,25 @@ describe('group', () => {
     expect(store.get(User.defaults.localStorage.key)).not.toEqual({ coolkids: true })
   })
 })
+
+describe('Custom cookie params', () => {
+  beforeEach(() => {
+    clear()
+  })
+
+  it('allows for overriding keys', () => {
+    const customUser = new User(
+      {},
+      {
+        maxage: 200,
+        path: '/',
+        sameSite: 'Lax',
+      }
+    )
+    customUser.identify('some_id', { trait: true })
+
+    expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id; ajs_user_traits={%22trait%22:true}"`)
+    expect(customUser.id()).toBe('some_id')
+    expect(customUser.traits()).toEqual({ trait: true })
+  })
+})

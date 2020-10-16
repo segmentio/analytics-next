@@ -16,7 +16,7 @@ import { Emitter } from './core/emitter'
 import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
-import { Group, User } from './core/user'
+import { Group, User, UserOptions, CookieOptions } from './core/user'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
@@ -26,6 +26,14 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   extensions?: Extension[]
+  [key: string]: unknown
+}
+
+export interface InitOptions {
+  initialPageview?: boolean
+  cookie?: CookieOptions
+  user?: UserOptions
+  group?: UserOptions
   integrations?: Integrations
 }
 
@@ -39,34 +47,30 @@ export class Analytics extends Emitter {
   private eventFactory: EventFactory
   private integrations: Integrations
 
-  private constructor(settings: AnalyticsSettings, queue: EventQueue, user: User, group: Group) {
+  private constructor(settings: AnalyticsSettings, options: InitOptions, queue: EventQueue, user: User, group: Group) {
     super()
     this.settings = settings
     this.queue = queue
     this._user = user
     this._group = group
     this.eventFactory = new EventFactory(user)
-    this.integrations = settings.integrations ?? {}
+    this.integrations = options?.integrations ?? {}
   }
 
-  static async load(settings: AnalyticsSettings): Promise<[Analytics, Context]> {
+  static async load(settings: AnalyticsSettings, options?: InitOptions): Promise<[Analytics, Context]> {
     const queue = new EventQueue()
 
-    const user = new User().load()
-    const group = new Group().load()
-    const analytics = new Analytics(settings, queue, user, group)
+    const user = new User(options?.user, options?.cookie).load()
+    const group = new Group(options?.group, options?.cookie).load()
+
+    const analytics = new Analytics(settings, options ?? {}, queue, user, group)
 
     const extensions = settings.extensions ?? []
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(settings.writeKey, analytics.integrations) : []
     const edgeFuncs = await edgeFunctions(settings.writeKey)
     const ctx = await analytics.register(...[validation, pageEnrichment, ...edgeFuncs, ...extensions, ...remoteExtensions])
 
-    analytics.emit(
-      'initialize',
-      settings,
-      // TODO: options
-      {}
-    )
+    analytics.emit('initialize', settings, options ?? {})
 
     return [analytics, ctx]
   }

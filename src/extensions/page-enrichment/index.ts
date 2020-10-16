@@ -37,7 +37,7 @@ function canonicalPath(): string {
  * and strip the hash.
  */
 
-function canonicalUrl(search: string): string {
+export function canonicalUrl(search = ''): string {
   const canon = canonical()
   if (canon) {
     return canon.includes('?') ? canon : `${canon}${search}`

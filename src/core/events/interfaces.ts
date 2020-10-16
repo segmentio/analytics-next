@@ -1,7 +1,10 @@
 import { CompactMetric } from '../stats'
 import { ID } from '../user'
 
-export type Integrations = Record<string, boolean>
+export type Integrations = {
+  All?: boolean
+  [integration: string]: boolean | undefined
+}
 
 export type Options = {
   integrations?: Integrations
@@ -101,7 +104,7 @@ export interface SegmentEvent {
   // TODO: Narrow types (i.e. only show traits for `track` and `group`)
   traits?: object
 
-  integrations?: Record<string, boolean>
+  integrations?: Integrations
   context?: AnalyticsContext
   options?: Options
 
