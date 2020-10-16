@@ -4,6 +4,8 @@ import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
 import playwright from 'playwright'
 
+type BrowserType = 'chromium' | 'firefox' | 'webkit'
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function makeStub(page: playwright.Page) {
   const stub = {
@@ -55,11 +57,11 @@ function makeStub(page: playwright.Page) {
   return stub
 }
 
-const getBrowser = mem(async (browserType?: 'chromium' | 'firefox' | 'webkit') => {
+const getBrowser = mem(async (browserType?: BrowserType, remoteDebug?: boolean) => {
   const browser = await playwright[browserType ?? 'chromium'].launch({
     headless: true,
     devtools: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox', remoteDebug ? '--remote-debugging-port=9222' : ''],
   })
 
   process.on('unhandledRejection', () => {
@@ -69,11 +71,21 @@ const getBrowser = mem(async (browserType?: 'chromium' | 'firefox' | 'webkit') =
   return browser
 })
 
-export async function tester(_writeKey: string): Promise<ReturnType<typeof makeStub>> {
+export async function testerTeardown() {
   const browser = await getBrowser()
+  await browser.close()
+}
+
+export async function tester(
+  _writeKey: string,
+  url?: string,
+  browserType?: BrowserType,
+  remoteDebug?: boolean
+): Promise<ReturnType<typeof makeStub>> {
+  const browser = await getBrowser(browserType, remoteDebug)
   const page = await browser.newPage()
 
-  await page.goto(`file://${process.cwd()}/src/tester/__fixtures__/index.html`)
+  await page.goto(url || `file://${process.cwd()}/src/tester/__fixtures__/index.html`)
   await page.evaluate(`
     window.AnalyticsNext.Analytics.load({
       writeKey: '${_writeKey}',

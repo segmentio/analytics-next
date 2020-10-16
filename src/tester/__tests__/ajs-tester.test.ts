@@ -1,6 +1,10 @@
-import { tester } from '../ajs-tester'
+import { tester, testerTeardown } from '../ajs-tester'
 
 describe('Tester', () => {
+  afterAll(async () => {
+    await testerTeardown()
+  })
+
   it('loads ajs in a browser', async () => {
     jest.setTimeout(10000)
     const analyticsStub = await tester('***REMOVED***')
