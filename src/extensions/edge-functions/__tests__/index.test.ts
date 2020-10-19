@@ -3,8 +3,8 @@ import { EdgeFunction } from '..'
 import { Analytics } from '../../../index'
 import { SegmentEvent } from '../../../core/events'
 import * as loadScriptHelper from '../../../lib/load-script'
-
-let ajs: Analytics
+import { mocked } from 'ts-jest/utils'
+import unfetch from 'unfetch'
 
 function addFooContext(event: SegmentEvent): SegmentEvent | null {
   if (event.context) {
@@ -22,15 +22,40 @@ function addGurdasContext(event: SegmentEvent): SegmentEvent | null {
 
 const sourceMiddlewareFunc = [addFooContext, addGurdasContext]
 
+const cdnResponse = {
+  integrations: {},
+  edgeFunction: {
+    downloadURL: 'edge-fn.segment.com',
+  },
+}
+
+jest.mock('unfetch', () => {
+  return jest.fn()
+})
+
+const fetchSettings = Promise.resolve({
+  json: () => Promise.resolve(cdnResponse),
+})
+
 describe('Edge Functions', () => {
+  let ajs: Analytics
+
   beforeEach(async () => {
+    /* eslint-disable @typescript-eslint/ban-ts-ignore */
+    // @ts-ignore: ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+
     const spy = jest.spyOn(loadScriptHelper, 'loadScript')
+
     spy.mockImplementation(async () => {
       ;(window as { [key: string]: any })['edge_function'] = { sourceMiddleware: sourceMiddlewareFunc } as EdgeFunction
     })
-    ;[ajs] = await Analytics.load({
+
+    const [analytics] = await Analytics.load({
       writeKey: 'abc123',
     })
+
+    ajs = analytics
   })
 
   afterEach(() => {
