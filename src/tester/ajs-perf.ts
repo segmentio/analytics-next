@@ -6,7 +6,7 @@ import lighthouse from 'lighthouse/lighthouse-core'
 // @ts-ignore
 import reportGenerator from 'lighthouse/lighthouse-core/report/report-generator'
 
-export async function gatherLighthouseMetrics(page: playwright.Page) {
+export async function gatherLighthouseMetrics(page: playwright.Page): Promise<any> {
   return lighthouse(page.url(), {
     port: 9222,
     logLevel: 'error',
@@ -15,7 +15,7 @@ export async function gatherLighthouseMetrics(page: playwright.Page) {
   })
 }
 
-export async function globalSetup() {
+export async function globalSetup(): Promise<void> {
   await setup({
     command: `node src/tester/server.js --port=3001`,
     launchTimeout: 5000,
@@ -23,6 +23,6 @@ export async function globalSetup() {
   })
 }
 
-export async function globalTeardown() {
+export async function globalTeardown(): Promise<void> {
   await teardown()
 }

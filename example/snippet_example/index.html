@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: monospace;
+      }
+
+      #event {
+        margin: 2em 0;
+        min-height: 200px;
+        min-width: 700px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      ;(function () {
+        var ajsClassic = 'https://cdn.segment.com/analytics.js/v1/***REMOVED***/analytics.min.js'
+        var ajsNext = 'http://localhost:5000/dist/umd/standalone.js'
+
+        var path = ajsNext
+
+        var analytics = (window.analytics = window.analytics || [])
+        if (analytics.initialize) return
+
+        if (analytics.invoked) {
+          if (window.console && console.error) {
+            console.error('Segment snippet included twice.')
+          }
+          return
+        }
+
+        analytics.invoked = true
+        analytics.methods = ['identify', 'reset', 'group', 'track', 'ready', 'alias', 'page', 'once', 'off', 'on']
+        analytics.factory = function (method) {
+          return function () {
+            var args = Array.prototype.slice.call(arguments)
+            args.unshift(method)
+            analytics.push(args)
+            return analytics
+          }
+        }
+
+        for (var i = 0; i < analytics.methods.length; i++) {
+          var key = analytics.methods[i]
+          analytics[key] = analytics.factory(key)
+        }
+
+        analytics.load = function (key, options) {
+          var script = document.createElement('script')
+          script.type = 'text/javascript'
+          script.async = true
+          script.src = path
+
+          var first = document.getElementsByTagName('script')[0]
+          first.parentNode.insertBefore(script, first)
+          analytics._loadOptions = options
+          analytics._writeKey = key
+        }
+
+        analytics.load('***REMOVED***')
+      })()
+    </script>
+  </head>
+  <body>
+    <form>
+      <textarea name="event" id="event">
+{
+  "name": "hi",
+  "properties": { },
+  "traits": { },
+  "options": { }
+}
+    </textarea
+      >
+      <div>
+        <button id="track">Track</button>
+        <button id="identify">Identify</button>
+      </div>
+    </form>
+
+    <pre id="logs"></pre>
+
+    <script type="text/javascript">
+      document.querySelector('#track').addEventListener('click', async (e) => {
+        e.preventDefault()
+        const contents = document.querySelector('#event').value
+        const evt = JSON.parse(contents)
+        const promise = window.analytics.track(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
+
+        promise?.then((ctx) => {
+          ctx.flush()
+          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+        })
+      })
+
+      document.querySelector('#identify').addEventListener('click', async (e) => {
+        e.preventDefault()
+        const contents = document.querySelector('#event').value
+        const evt = JSON.parse(contents)
+        const promise = window.analytics.identify(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
+
+        promise?.then((ctx) => {
+          ctx.flush()
+          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+        })
+      })
+    </script>
+  </body>
+</html>

@@ -24,10 +24,11 @@ const config = {
   mode: process.env.NODE_ENV || 'development',
   devtool: 'source-map',
   entry: {
-    analytics: path.resolve(__dirname, 'src/index.ts'),
+    index: path.resolve(__dirname, 'src/index.ts'),
+    standalone: path.resolve(__dirname, 'src/standalone.ts'),
   },
   output: {
-    filename: 'index.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, 'dist/umd'),
     library: 'AnalyticsNext',
     libraryTarget: 'umd',

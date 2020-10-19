@@ -75,6 +75,11 @@ export class Analytics extends Emitter {
     return [analytics, ctx]
   }
 
+  static async standalone(writeKey: string, options?: InitOptions): Promise<Analytics> {
+    const [analytics] = await Analytics.load({ writeKey }, options)
+    return analytics
+  }
+
   user(): User {
     return this._user
   }

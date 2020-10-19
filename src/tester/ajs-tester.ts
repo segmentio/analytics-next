@@ -9,10 +9,10 @@ type BrowserType = 'chromium' | 'firefox' | 'webkit'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function makeStub(page: playwright.Page) {
   const stub = {
-    async register(...args: Parameters<Analytics['register']>): Promise<void> {
+    async register(...args: Parameters<Analytics['register']>): Promise<SerializedContext> {
       return await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return window.analytics.register(...innerArgs)
+        return window.analytics.register(...innerArgs).then((ctx) => ctx.toJSON())
         // @ts-ignore
       }, args)
     },
@@ -25,7 +25,7 @@ function makeStub(page: playwright.Page) {
         // @ts-ignore
       }, args)
 
-      return ctx as SerializedContext
+      return ctx
     },
     async page(...args: Parameters<Analytics['page']>): Promise<SerializedContext> {
       const ctx = await page.evaluate(async (innerArgs) => {
@@ -36,7 +36,7 @@ function makeStub(page: playwright.Page) {
         // @ts-ignore
       }, args)
 
-      return ctx as SerializedContext
+      return ctx
     },
 
     async identify(...args: Parameters<Analytics['identify']>): Promise<SerializedContext> {
@@ -48,7 +48,7 @@ function makeStub(page: playwright.Page) {
         // @ts-ignore
       }, args)
 
-      return ctx as SerializedContext
+      return ctx
     },
 
     browserPage: page,

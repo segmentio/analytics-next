@@ -7,7 +7,7 @@ import { loadScript } from '../../lib/load-script'
 
 interface LegacySettings {
   edgeFunction: {
-    downloadURL: string
+    downloadURL?: string
   }
 }
 
@@ -47,7 +47,7 @@ function edgeFunction(func: SourceMiddlewareFunc): Extension {
 export async function edgeFunctions(writeKey: string): Promise<Extension[]> {
   let settings: LegacySettings = {
     edgeFunction: {
-      downloadURL: '',
+      downloadURL: undefined,
     },
   }
 
@@ -60,7 +60,7 @@ export async function edgeFunctions(writeKey: string): Promise<Extension[]> {
 
   let sourceMiddlewareFuncs: SourceMiddlewareFunc[] = []
 
-  if (settings.edgeFunction) {
+  if (settings.edgeFunction.downloadURL) {
     try {
       await loadScript(settings.edgeFunction.downloadURL)
       const edgeFunction = (window as { [key: string]: any })['edge_function'] as EdgeFunction
