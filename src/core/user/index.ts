@@ -46,7 +46,13 @@ class Store {
   }
 }
 
-const domain = tld(new URL(window.location.href))
+let domain: string | undefined = undefined
+try {
+  domain = tld(new URL(window.location.href))
+} catch (_) {
+  domain = undefined
+}
+
 const ONE_YEAR = 365
 
 export class Cookie extends Store {
