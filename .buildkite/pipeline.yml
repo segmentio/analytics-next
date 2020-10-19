@@ -1,6 +1,6 @@
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr'
-  SEGMENT_BUILDKITE_IMAGE: 'buildkite-agent-node12'
+  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
   - label: ':hammer: Build Libraries'
     agents:
@@ -9,6 +9,7 @@ steps:
       echo '--- Install development dependencies'
       npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       yarn install --frozen-lockfile
+      yarn add playwright
 
       echo '--- Build server'
       NODE_ENV=production yarn build-all
