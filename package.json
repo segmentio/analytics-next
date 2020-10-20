@@ -17,6 +17,7 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
+    "coverage": "jest ----testPathIgnorePatterns=\"browser.test.ts\" --forceExit --collectCoverage && open coverage/lcov-report/index.html",
     "tdd": "jest --watch --notify",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json",
