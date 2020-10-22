@@ -14,4 +14,4 @@ const faultyLoad = {
   isLoaded: () => false,
 }
 
-await window.analytics.register(faultyLoad)
+window.analytics.register(faultyLoad)

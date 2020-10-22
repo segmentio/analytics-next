@@ -13,4 +13,4 @@ const signals = {
   isLoaded: () => true,
 }
 
-await window.analytics.register(signals)
+window.analytics.register(signals)

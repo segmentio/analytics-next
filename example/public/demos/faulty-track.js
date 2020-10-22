@@ -11,4 +11,4 @@ const faultyTrack = {
   },
 }
 
-await window.analytics.register(faultyTrack)
+window.analytics.register(faultyTrack)

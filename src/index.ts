@@ -21,6 +21,7 @@ import { ajsDestinations } from './extensions/ajs-destination'
 import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
+import { loadScript } from './lib/load-script'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -141,6 +142,12 @@ export class Analytics extends Emitter {
     await Promise.all(registrations)
 
     return ctx
+  }
+
+  async dangerouslyRegisterScript(src: string): Promise<void> {
+    await loadScript(src).catch((err) => {
+      console.error(err)
+    })
   }
 
   reset(): void {

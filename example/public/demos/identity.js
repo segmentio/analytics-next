@@ -26,4 +26,4 @@ const identityStiching = () => {
   return identity
 }
 
-await window.analytics.register(identifier())
+window.analytics.register(identifier())
