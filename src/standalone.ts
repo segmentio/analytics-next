@@ -2,7 +2,7 @@ import { Analytics, InitOptions } from './index'
 
 type StandaloneAnalytics = Analytics & {
   _loadOptions?: InitOptions
-  _writeKey: string
+  _writeKey?: string
 }
 
 declare global {
@@ -11,10 +11,34 @@ declare global {
   }
 }
 
-Analytics.standalone(window.analytics._writeKey, window.analytics._loadOptions ?? {})
-  .then((analytics) => {
-    window.analytics = analytics as StandaloneAnalytics
+function getWriteKey(): string | undefined {
+  const regex = /.*\/analytics\.js\/v1\/([^/]*)(\/platform)?\/analytics.*/
+  const scripts = Array.from(document.querySelectorAll('script'))
+  let writeKey: string | undefined = undefined
+
+  scripts.forEach((s) => {
+    const src = s.getAttribute('src') ?? ''
+    const result = regex.exec(src)
+
+    if (result && result[1]) {
+      writeKey = result[1]
+    }
   })
-  .catch((err) => {
-    console.error(err)
-  })
+
+  return writeKey ?? window.analytics._writeKey
+}
+
+const writeKey = getWriteKey()
+if (!writeKey) {
+  console.error('Failed to load Write Key')
+}
+
+if (writeKey) {
+  Analytics.standalone(writeKey, window.analytics._loadOptions ?? {})
+    .then((analytics) => {
+      window.analytics = analytics as StandaloneAnalytics
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+}
