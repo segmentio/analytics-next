@@ -104,7 +104,9 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    const ctx = await analytics.identify('Test User', JSON.parse(event))
+    const evt = JSON.parse(event)
+    const { userId = 'Test User', ...traits } = evt
+    const ctx = await analytics.identify(userId, traits)
 
     setCtx(ctx)
 
@@ -167,6 +169,7 @@ export default function Home(): React.ReactElement {
             </button>
 
             <button
+              id="shuffle"
               className="drac-btn drac-bg-purple"
               onClick={(e) => {
                 e.preventDefault()

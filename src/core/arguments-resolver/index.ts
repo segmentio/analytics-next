@@ -1,4 +1,4 @@
-import { isFunction, isPlainObject, isString } from '../../extensions/validation'
+import { isFunction, isPlainObject, isString, isNumber } from '../../extensions/validation'
 import { Context } from '../context'
 import { Options, SegmentEvent } from '../events'
 import { ID, User } from '../user'
