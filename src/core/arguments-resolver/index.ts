@@ -67,7 +67,7 @@ export function resolvePageArguments(
 
 export const resolveUserArguments = (user: User): ResolveUser => {
   return (...args): ReturnType<ResolveUser> => {
-    const id = args.find(isString) ?? user.id()
+    const id = args.find(isString) ?? args.find(isNumber) ?? user.id()
     const [data = {}, opts = {}] = args.filter(isPlainObject)
     const resolvedCallback = args.find(isFunction) as Callback | undefined
 

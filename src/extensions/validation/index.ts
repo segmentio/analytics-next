@@ -5,6 +5,10 @@ export function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
 }
 
+export function isNumber(obj: unknown): obj is number {
+  return typeof obj === 'number'
+}
+
 export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
