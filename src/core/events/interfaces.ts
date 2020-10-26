@@ -43,7 +43,7 @@ interface AnalyticsContext {
    * {@link https://github.com/segmentio/analytics.js-integrations/blob/2d5c637c022d2661c23449aed237d0d546bf062d/integrations/segmentio/lib/index.js#L290-L291}
    */
   library?: {
-    name: 'ajs-next'
+    name: string
     version: string
   }
 
@@ -93,7 +93,7 @@ interface AnalyticsContext {
 export interface SegmentEvent {
   messageId?: string
 
-  type: 'track' | 'page' | 'identify' | 'group' | 'alias'
+  type: 'track' | 'page' | 'identify' | 'group' | 'alias' | 'screen'
 
   // page specific
   category?: string
@@ -130,8 +130,9 @@ export interface SegmentEvent {
    */
   _metadata?: {
     failedInitializations?: unknown[]
-    bundled: string[]
-    unbundledIntegrations: string[]
+    bundled?: string[]
+    unbundledIntegrations?: string[]
+    nodeVersion?: string
   }
 
   timestamp?: Date | string

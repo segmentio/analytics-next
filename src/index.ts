@@ -48,7 +48,7 @@ export class Analytics extends Emitter {
   private eventFactory: EventFactory
   private integrations: Integrations
 
-  private constructor(settings: AnalyticsSettings, options: InitOptions, queue: EventQueue, user: User, group: Group) {
+  constructor(settings: AnalyticsSettings, options: InitOptions, queue: EventQueue, user: User, group: Group) {
     super()
     this.settings = settings
     this.queue = queue
@@ -132,6 +132,14 @@ export class Analytics extends Emitter {
     const [to, from, options, callback] = resolveAliasArguments(...args)
     const segmentEvent = this.eventFactory.alias(to, from, options, this.integrations)
     this.emit('alias', to, from, options)
+    return this.dispatch(segmentEvent, callback)
+  }
+
+  async screen(...args: PageParams): DispatchedEvent {
+    const [category, page, properties, options, callback] = resolvePageArguments(...args)
+
+    const segmentEvent = this.eventFactory.screen(category, page, properties, options, this.integrations)
+    this.emit('screen', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
   }
 

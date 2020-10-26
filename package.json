@@ -52,6 +52,7 @@
     "component-url": "component/url",
     "dset": "^2.0.1",
     "js-cookie": "^2.2.1",
+    "md5": "^2.3.0",
     "p-timeout": "^3.2.0",
     "p-whilst": "^2.1.0",
     "unfetch": "^4.1.0"
@@ -62,6 +63,7 @@
     "@types/jest-dev-server": "^4.2.0",
     "@types/js-cookie": "^2.2.6",
     "@types/lodash": "^4.14.161",
+    "@types/md5": "^2.2.0",
     "@types/node": "^12.12.14",
     "@types/node-fetch": "^2.5.7",
     "@typescript-eslint/eslint-plugin": "^2.25.0",

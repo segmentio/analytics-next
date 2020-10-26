@@ -7,6 +7,7 @@ import fetch from 'unfetch'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Emitter } from '../../core/emitter'
+import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { User } from '../../core/user'
@@ -231,7 +232,7 @@ interface LegacySettings {
 }
 
 export async function ajsDestinations(writeKey: string, globalIntegrations: Integrations = {}): Promise<Extension[]> {
-  if (globalIntegrations['All'] === false) {
+  if (globalIntegrations['All'] === false || isServer()) {
     return []
   }
 

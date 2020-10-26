@@ -1,5 +1,8 @@
+import { isBrowser } from '../environment'
+
 export function isOnline(): boolean {
-  return window.navigator.onLine
+  if (isBrowser()) return window.navigator.onLine
+  return true
 }
 
 export function isOffline(): boolean {

@@ -47,6 +47,7 @@ describe('ajsDestinations', () => {
     // @ts-ignore: ignore Response required fields
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
   })
+
   // This test should temporary. Once we deprecate `version`, we can change it
   // to `it('loads version overrides')`
   it('considers both legacy and new version formats', async () => {

@@ -44,6 +44,34 @@ export class EventFactory {
     } as SegmentEvent)
   }
 
+  screen(
+    category: string | null,
+    screen: string | null,
+    properties?: object,
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
+    const event: Partial<SegmentEvent> = {
+      type: 'screen' as const,
+      properties: { ...properties },
+      options: { ...options },
+      integrations: { ...integrations },
+    }
+
+    if (category !== null) {
+      event.category = category
+    }
+
+    if (screen !== null) {
+      event.name = screen
+    }
+
+    return this.normalize({
+      ...this.baseEvent(),
+      ...event,
+    } as SegmentEvent)
+  }
+
   identify(userId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),

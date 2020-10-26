@@ -25,4 +25,5 @@ export interface Extension {
   page?: (ctx: Context) => Promise<Context>
   group?: (ctx: Context) => Promise<Context>
   alias?: (ctx: Context) => Promise<Context>
+  screen?: (ctx: Context) => Promise<Context>
 }
