@@ -19,6 +19,7 @@ export interface Extension {
   isLoaded: () => boolean
   load: (ctx: Context, instance: Analytics, config?: ExtensionConfig) => Promise<unknown>
 
+  ready?: () => Promise<unknown>
   track?: (ctx: Context) => Promise<Context>
   identify?: (ctx: Context) => Promise<Context>
   page?: (ctx: Context) => Promise<Context>

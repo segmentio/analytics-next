@@ -97,6 +97,50 @@ describe('Initialization', () => {
     expect(onLoad).toHaveBeenCalled()
     expect(extensionLoaded).toBe(true)
   })
+
+  it('ready method is called only when all extensions with ready have declared themselves as ready', async () => {
+    const ready = jest.fn()
+
+    const lazyExtension1: Extension = {
+      name: 'Test 2',
+      type: 'destination',
+      version: '1.0',
+
+      load: async (_ctx) => {},
+      ready: async () => {
+        return new Promise((resolve) => setTimeout(resolve, 300))
+      },
+      isLoaded: () => true,
+    }
+
+    const lazyExtension2: Extension = {
+      name: 'Test 2',
+      type: 'destination',
+      version: '1.0',
+
+      load: async (_ctx) => {},
+      ready: async () => {
+        return new Promise((resolve) => setTimeout(resolve, 100))
+      },
+      isLoaded: () => true,
+    }
+
+    jest.spyOn(lazyExtension1, 'load')
+    jest.spyOn(lazyExtension2, 'load')
+    const [analytics] = await Analytics.load({ writeKey, extensions: [lazyExtension1, lazyExtension2, xt] })
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    analytics.ready(ready)
+    expect(lazyExtension1.load).toHaveBeenCalled()
+    expect(lazyExtension2.load).toHaveBeenCalled()
+    expect(ready).not.toHaveBeenCalled()
+
+    await sleep(100)
+    expect(ready).not.toHaveBeenCalled()
+
+    await sleep(200)
+    expect(ready).toHaveBeenCalled()
+  })
 })
 
 describe('Dispatch', () => {
@@ -215,5 +259,23 @@ describe('Alias', () => {
     expect(ctx.event.previousId).toEqual('netto')
 
     expect(amplitude.alias).toHaveBeenCalled()
+  })
+})
+
+describe('setAnonymousId', () => {
+  it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
+    const [analytics] = await Analytics.load({
+      writeKey,
+      extensions: [amplitude],
+    })
+
+    const currentAnonymousId = analytics.user().anonymousId()
+    expect(currentAnonymousId).toBeDefined()
+    expect(currentAnonymousId).toHaveLength(36)
+
+    const newAnonymousId = analytics.setAnonymousId('🦹‍♀️')
+
+    expect(analytics.user().anonymousId()).toEqual('🦹‍♀️')
+    expect(newAnonymousId).toEqual('🦹‍♀️')
   })
 })

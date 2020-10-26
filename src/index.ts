@@ -16,7 +16,7 @@ import { Emitter } from './core/emitter'
 import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
-import { Group, User, UserOptions, CookieOptions } from './core/user'
+import { Group, User, UserOptions, CookieOptions, ID } from './core/user'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
@@ -158,5 +158,28 @@ export class Analytics extends Emitter {
     const ctx = new Context(event)
     const dispatched = await this.queue.dispatch(ctx)
     return invokeCallback(dispatched, callback, this.settings.timeout)
+  }
+
+  // TODO: Just a stub, implement in the future
+  async addSourceMiddleware(): Promise<Context> {
+    const ctx = Context.system()
+    return ctx
+  }
+
+  // TODO: Just a stub, implement in the future
+  async addDestinationMiddleware(): Promise<Context> {
+    const ctx = Context.system()
+    return ctx
+  }
+
+  setAnonymousId(id?: string): ID {
+    return this._user.anonymousId(id)
+  }
+
+  async ready(callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res): Promise<unknown> {
+    return Promise.all(this.queue.extensions.map((i) => (i.ready ? i.ready() : Promise.resolve()))).then((res) => {
+      callback(res)
+      return res
+    })
   }
 }

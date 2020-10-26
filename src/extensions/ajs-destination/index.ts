@@ -77,6 +77,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
 
   let integration: LegacyIntegration
   let ready = false
+  let _readyPromise = Promise.resolve()
 
   const type = name === 'Segment.io' ? 'after' : 'destination'
 
@@ -87,6 +88,10 @@ export function ajsDestination(name: string, version: string, settings?: object)
 
     isLoaded: () => {
       return ready
+    },
+
+    ready: async () => {
+      return _readyPromise
     },
 
     load: async (_ctx, analyticsInstance) => {
@@ -121,8 +126,12 @@ export function ajsDestination(name: string, version: string, settings?: object)
 
       integration = new integrationBuilder(settings)
       integration.analytics = analyticsInstance
-      integration.once('ready', () => {
-        ready = true
+
+      _readyPromise = new Promise((resolve) => {
+        integration.once('ready', () => {
+          ready = true
+          resolve()
+        })
       })
 
       integration.initialize()
