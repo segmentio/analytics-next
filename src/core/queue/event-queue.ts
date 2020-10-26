@@ -164,8 +164,6 @@ export class EventQueue extends Emitter {
       }
     }
 
-    ctx.seal()
-
     // TODO: concurrency control
     // TODO: timeouts
     const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))

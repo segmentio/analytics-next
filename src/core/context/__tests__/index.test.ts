@@ -111,50 +111,6 @@ describe(Context, () => {
         lastName: 'Farah',
       })
     })
-
-    it('cannot update event when ctx is sealed', () => {
-      const ctx = new Context(evt)
-      ctx.seal()
-
-      ctx.updateEvent('traits.lastName', 'Farah')
-      expect(ctx.event).toEqual(evt)
-
-      ctx.event = anothaOne
-      expect(ctx.event).toEqual(evt)
-
-      const logs = ctx.logs().map((l) => ({ message: l.message, level: l.level }))
-      expect(logs).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "level": "warn",
-            "message": "Context is sealed",
-          },
-          Object {
-            "level": "warn",
-            "message": "Context is sealed",
-          },
-        ]
-      `)
-    })
-
-    it('force an update event even when ctx is sealed', () => {
-      const ctx = new Context({
-        type: 'identify',
-        traits: {
-          banana: 'phone',
-        },
-      })
-      ctx.seal()
-
-      ctx.updateEvent('traits.lastName', 'Farah', true)
-      expect(ctx.event).toEqual({
-        type: 'identify',
-        traits: {
-          banana: 'phone',
-          lastName: 'Farah',
-        },
-      })
-    })
   })
 
   it('serializes a context to JSON', () => {

@@ -6,7 +6,6 @@ import Stats, { Metric } from '../stats'
 
 export interface AbstractContext {
   cancel: () => never
-  seal: () => void
   log: (level: LogLevel, message: string, extras?: object) => void
   stats: Stats
 }
@@ -20,7 +19,6 @@ export interface SerializedContext {
 
 export class Context implements AbstractContext {
   private _event: SegmentEvent
-  private sealed = false
   public logger = new Logger()
   public stats = new Stats()
   private _id: string
@@ -46,10 +44,6 @@ export class Context implements AbstractContext {
     throw new Error('Stap!')
   }
 
-  seal = (): void => {
-    this.sealed = true
-  }
-
   log(level: LogLevel, message: string, extras?: object): void {
     this.logger.log(level, message, extras)
   }
@@ -63,20 +57,10 @@ export class Context implements AbstractContext {
   }
 
   public set event(evt: SegmentEvent) {
-    if (this.sealed) {
-      this.log('warn', 'Context is sealed')
-      return
-    }
-
     this._event = evt
   }
 
-  public updateEvent(path: string, val: unknown, force = false): SegmentEvent {
-    if (this.sealed && !force) {
-      this.log('warn', 'Context is sealed')
-      return this._event
-    }
-
+  public updateEvent(path: string, val: unknown): SegmentEvent {
     dset(this._event, path, val)
     return this._event
   }

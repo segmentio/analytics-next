@@ -13,7 +13,7 @@ import { postToTrackingAPI } from './api'
 
 const embedMetrics = (ctx: Context): Context => {
   const metrics = ctx.stats.serialize()
-  ctx.updateEvent('context.metrics', metrics, true)
+  ctx.updateEvent('context.metrics', metrics)
 
   return ctx
 }

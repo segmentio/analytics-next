@@ -67,7 +67,7 @@ function embedMetrics(name: string, ctx: Context): Context {
   // embed metrics into segment event context
   // It could be an enrichment with a before/after flag, and the 'after' type would run here.
   const metrics = ctx.stats.serialize()
-  ctx.updateEvent('context.metrics', metrics, true)
+  ctx.updateEvent('context.metrics', metrics)
 
   return ctx
 }
