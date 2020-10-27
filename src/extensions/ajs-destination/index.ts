@@ -91,10 +91,6 @@ export function ajsDestination(name: string, version: string, settings?: object)
       return ready
     },
 
-    ready: async () => {
-      return _readyPromise
-    },
-
     load: async (_ctx, analyticsInstance) => {
       const pathName = normalizeName(name)
       const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
