@@ -139,6 +139,8 @@ export function ajsDestination(name: string, version: string, settings?: object)
       })
 
       integration.initialize()
+
+      return _readyPromise
     },
 
     async track(ctx) {

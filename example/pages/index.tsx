@@ -34,10 +34,10 @@ const jsontheme = {
 
 const settings: AnalyticsSettings = {
   // segment.com
-  // writeKey: '***REMOVED***',
+  writeKey: '***REMOVED***',
 
   // segment app
-  writeKey: '***REMOVED***',
+  // writeKey: '***REMOVED***',
 }
 
 export default function Home(): React.ReactElement {
