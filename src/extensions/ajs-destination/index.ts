@@ -97,7 +97,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
 
     load: async (_ctx, analyticsInstance) => {
       const pathName = normalizeName(name)
-      const fullPath = `${path}/${pathName}/${version}/${pathName}.js`
+      const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
 
       try {
         await loadScript(fullPath)
@@ -110,6 +110,13 @@ export function ajsDestination(name: string, version: string, settings?: object)
         _ctx.stats.gauge('legacy_destination_time', -1, [`extension:${name}`, `failed`])
         throw err
       }
+
+      // @ts-ignore
+      const deps: string[] = window[`${pathName}Deps`]
+      await Promise.all(deps.map((dep) => loadScript(path + dep + '.gz')))
+
+      // @ts-ignore
+      window[`${pathName}Loader`]()
 
       // @ts-ignore
       let integrationBuilder = window[`${pathName}Integration`]
