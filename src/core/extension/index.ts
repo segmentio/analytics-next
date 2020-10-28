@@ -1,4 +1,4 @@
-import { Analytics } from '../..'
+import { Analytics } from '../../analytics'
 import { Context } from '../context'
 
 interface ExtensionConfig {

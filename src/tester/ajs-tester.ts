@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import { Analytics } from '..'
+import { Analytics } from '../analytics'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
 import playwright from 'playwright'
@@ -71,7 +71,7 @@ const getBrowser = mem(async (browserType?: BrowserType, remoteDebug?: boolean) 
   return browser
 })
 
-export async function testerTeardown() {
+export async function testerTeardown(): Promise<void> {
   const browser = await getBrowser()
   await browser.close()
 }

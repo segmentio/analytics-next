@@ -1,5 +1,5 @@
 import pWhile from 'p-whilst'
-import { Analytics } from '../..'
+import { Analytics } from '../../analytics'
 import { groupBy } from '../../lib/group-by'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { isOnline } from '../connection'

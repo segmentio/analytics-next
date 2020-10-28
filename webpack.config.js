@@ -24,7 +24,7 @@ const config = {
   mode: process.env.NODE_ENV || 'development',
   devtool: 'source-map',
   entry: {
-    index: path.resolve(__dirname, 'src/index.ts'),
+    index: path.resolve(__dirname, 'src/browser.ts'),
     standalone: path.resolve(__dirname, 'src/standalone.ts'),
   },
   output: {

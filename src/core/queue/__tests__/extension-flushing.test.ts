@@ -1,5 +1,5 @@
 import { shuffle } from 'lodash'
-import { Analytics } from '../../..'
+import { Analytics } from '../../../analytics'
 import { Context } from '../../context'
 import { Extension } from '../../extension'
 import { EventQueue } from '../event-queue'

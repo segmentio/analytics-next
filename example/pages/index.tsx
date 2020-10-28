@@ -8,7 +8,7 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import { AnalyticsSettings, Analytics } from '../../dist/commonjs'
+import { AnalyticsSettings, AnalyticsBrowser, Analytics } from '../../dist/commonjs'
 import { Context } from '../../dist/commonjs/core/context'
 
 const jsontheme = {
@@ -69,7 +69,7 @@ export default function Home(): React.ReactElement {
 
   useEffect(() => {
     async function fetchAnalytics() {
-      const [response, ctx] = await Analytics.load(settings)
+      const [response, ctx] = await AnalyticsBrowser.load(settings)
       if (response) {
         setCtx(ctx)
         setAnalytics(response)

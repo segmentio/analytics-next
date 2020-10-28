@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { EdgeFunction } from '..'
-import { Analytics } from '../../../index'
+import { Analytics } from '../../../analytics'
 import { SegmentEvent } from '../../../core/events'
 import * as loadScriptHelper from '../../../lib/load-script'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
+import { AnalyticsBrowser } from '../../../browser'
 
 function addFooContext(event: SegmentEvent): SegmentEvent | null {
   if (event.context) {
@@ -51,7 +52,7 @@ describe('Edge Functions', () => {
       ;(window as { [key: string]: any })['edge_function'] = { sourceMiddleware: sourceMiddlewareFunc } as EdgeFunction
     })
 
-    const [analytics] = await Analytics.load({
+    const [analytics] = await AnalyticsBrowser.load({
       writeKey: 'abc123',
     })
 

@@ -1,5 +1,5 @@
 import { hydrateMessage } from '..'
-import { Analytics } from '../../../index'
+import { Analytics } from '../../../analytics'
 import { AnalyticsNode } from '../../../node'
 import { postToTrackingAPI } from '../api'
 

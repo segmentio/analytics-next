@@ -1,4 +1,4 @@
-import { Analytics } from './index'
+import { Analytics } from './analytics'
 import { Context } from './core/context'
 import { Group, User } from './core/user'
 import { EventQueue } from './core/queue/event-queue'

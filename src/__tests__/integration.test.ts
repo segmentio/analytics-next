@@ -1,6 +1,6 @@
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
-import { Analytics } from '@/index'
+import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
 
 const sleep = (time: number): Promise<void> =>
@@ -58,7 +58,7 @@ const writeKey = '***REMOVED***'
 
 describe('Initialization', () => {
   it('loads extensions', async () => {
-    await Analytics.load({
+    await AnalyticsBrowser.load({
       writeKey,
       extensions: [xt],
     })
@@ -86,7 +86,7 @@ describe('Initialization', () => {
     }
 
     jest.spyOn(lazyExtension, 'load')
-    await Analytics.load({ writeKey, extensions: [lazyExtension] })
+    await AnalyticsBrowser.load({ writeKey, extensions: [lazyExtension] })
 
     expect(lazyExtension.load).toHaveBeenCalled()
     expect(onLoad).not.toHaveBeenCalled()
@@ -127,7 +127,7 @@ describe('Initialization', () => {
 
     jest.spyOn(lazyExtension1, 'load')
     jest.spyOn(lazyExtension2, 'load')
-    const [analytics] = await Analytics.load({ writeKey, extensions: [lazyExtension1, lazyExtension2, xt] })
+    const [analytics] = await AnalyticsBrowser.load({ writeKey, extensions: [lazyExtension1, lazyExtension2, xt] })
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     analytics.ready(ready)
@@ -145,7 +145,7 @@ describe('Initialization', () => {
 
 describe('Dispatch', () => {
   it('dispatches events', async () => {
-    const [ajs] = await Analytics.load({
+    const [ajs] = await AnalyticsBrowser.load({
       writeKey,
     })
 
@@ -163,7 +163,7 @@ describe('Dispatch', () => {
   })
 
   it('dispatches events to destinations', async () => {
-    const [ajs] = await Analytics.load({
+    const [ajs] = await AnalyticsBrowser.load({
       writeKey,
       extensions: [amplitude, googleAnalytics],
     })
@@ -181,7 +181,7 @@ describe('Dispatch', () => {
   })
 
   it('enriches events before dispatching', async () => {
-    const [ajs] = await Analytics.load({
+    const [ajs] = await AnalyticsBrowser.load({
       writeKey,
       extensions: [enrichBilling, amplitude, googleAnalytics],
     })
@@ -199,7 +199,7 @@ describe('Dispatch', () => {
   })
 
   it('collects metrics for every event', async () => {
-    const [ajs] = await Analytics.load({
+    const [ajs] = await AnalyticsBrowser.load({
       writeKey,
       extensions: [amplitude],
     })
@@ -226,7 +226,7 @@ describe('Dispatch', () => {
 
 describe('Group', () => {
   it('manages Group state', async () => {
-    const [analytics] = await Analytics.load({
+    const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
 
@@ -246,7 +246,7 @@ describe('Group', () => {
 
 describe('Alias', () => {
   it('generates alias events', async () => {
-    const [analytics] = await Analytics.load({
+    const [analytics] = await AnalyticsBrowser.load({
       writeKey,
       extensions: [amplitude],
     })
@@ -264,7 +264,7 @@ describe('Alias', () => {
 
 describe('setAnonymousId', () => {
   it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
-    const [analytics] = await Analytics.load({
+    const [analytics] = await AnalyticsBrowser.load({
       writeKey,
       extensions: [amplitude],
     })

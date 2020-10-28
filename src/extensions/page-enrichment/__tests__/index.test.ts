@@ -1,10 +1,11 @@
-import { Analytics } from '@/index'
+import { Analytics } from '@/analytics'
+import { AnalyticsBrowser } from '../../../browser'
 
 let ajs: Analytics
 
 describe('Page Enrichment', () => {
   beforeEach(async () => {
-    ;[ajs] = await Analytics.load({
+    ;[ajs] = await AnalyticsBrowser.load({
       writeKey: 'abc_123',
     })
   })

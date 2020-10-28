@@ -1,4 +1,5 @@
-import { Analytics, InitOptions } from './index'
+import { Analytics, InitOptions } from './analytics'
+import { AnalyticsBrowser } from './browser'
 
 type StandaloneAnalytics = Analytics & {
   _loadOptions?: InitOptions
@@ -34,7 +35,7 @@ if (!writeKey) {
 }
 
 if (writeKey) {
-  Analytics.standalone(writeKey, window.analytics._loadOptions ?? {})
+  AnalyticsBrowser.standalone(writeKey, window.analytics._loadOptions ?? {})
     .then((analytics) => {
       window.analytics = analytics as StandaloneAnalytics
     })
