@@ -1,15 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-import fetch from 'unfetch'
 import { Context } from '../../core/context'
 import { Extension } from '../../core/extension'
 import { SegmentEvent } from '../../core/events'
 import { loadScript } from '../../lib/load-script'
-
-interface LegacySettings {
-  edgeFunction: {
-    downloadURL?: string
-  }
-}
+import { LegacySettings } from '../../browser'
 
 interface SourceMiddlewareFunc {
   // Signature for edge function
@@ -44,20 +38,7 @@ function edgeFunction(func: SourceMiddlewareFunc): Extension {
   } as Extension
 }
 
-export async function edgeFunctions(writeKey: string): Promise<Extension[]> {
-  let settings: LegacySettings = {
-    edgeFunction: {
-      downloadURL: undefined,
-    },
-  }
-
-  try {
-    const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
-    settings = await settingsResponse.json()
-  } catch (_) {
-    // continue regardless of error
-  }
-
+export async function edgeFunctions(settings: LegacySettings): Promise<Extension[]> {
   let sourceMiddlewareFuncs: SourceMiddlewareFunc[] = []
 
   if (settings.edgeFunction.downloadURL) {

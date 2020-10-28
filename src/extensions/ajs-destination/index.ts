@@ -3,7 +3,6 @@ import { Integrations } from '@/core/events'
 import { Identify } from '@segment/facade/dist/identify'
 import { Track } from '@segment/facade/dist/track'
 import pWhilst from 'p-whilst'
-import fetch from 'unfetch'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Emitter } from '../../core/emitter'
@@ -15,6 +14,7 @@ import { Analytics } from '../../analytics'
 import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
 import { PriorityQueue } from '../../lib/priority-queue'
+import { LegacySettings, LegacyIntegrationConfiguration } from '../../browser'
 
 export interface LegacyIntegration extends Emitter {
   analytics?: Analytics
@@ -222,36 +222,9 @@ function resolveVersion(settings: LegacyIntegrationConfiguration): string {
   return version
 }
 
-interface LegacyIntegrationConfiguration {
-  type?: string
-  // The version field is temporary as some sources were not rebuilt yet.
-  version?: string
-  versionSettings?: {
-    version?: string
-    override?: string
-  }
-}
-
-interface LegacySettings {
-  integrations: {
-    [name: string]: LegacyIntegrationConfiguration
-  }
-}
-
-export async function ajsDestinations(writeKey: string, globalIntegrations: Integrations = {}): Promise<Extension[]> {
+export async function ajsDestinations(settings: LegacySettings, globalIntegrations: Integrations = {}): Promise<Extension[]> {
   if (globalIntegrations['All'] === false || isServer()) {
     return []
-  }
-
-  let settings: LegacySettings = {
-    integrations: {},
-  }
-
-  try {
-    const settingsResponse = await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`)
-    settings = await settingsResponse.json()
-  } catch (err) {
-    console.warn('Failed to load integrations', err)
   }
 
   return Object.entries(settings.integrations)

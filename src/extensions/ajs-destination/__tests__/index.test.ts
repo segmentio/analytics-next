@@ -30,6 +30,7 @@ const cdnResponse = {
     },
     'Amazon S3': {},
   },
+  edgeFunction: {},
 }
 
 jest.mock('unfetch', () => {
@@ -51,7 +52,7 @@ describe('ajsDestinations', () => {
   // This test should temporary. Once we deprecate `version`, we can change it
   // to `it('loads version overrides')`
   it('considers both legacy and new version formats', async () => {
-    const destinations = await ajsDestinations('fakeWriteKey', {})
+    const destinations = await ajsDestinations(cdnResponse, {})
     const withLegacyVersion = destinations.find((d) => d.name === 'WithLegacyVersion')
     const withVersionSettings = destinations.find((d) => d.name === 'WithVersionSettings')
     const withVersionOverrides = destinations.find((d) => d.name === 'WithVersionOverrides')
@@ -64,20 +65,19 @@ describe('ajsDestinations', () => {
   })
 
   it('loads type:browser legacy ajs destinations from cdn', async () => {
-    const destinations = await ajsDestinations('fakeWriteKey', {})
+    const destinations = await ajsDestinations(cdnResponse, {})
     expect(destinations.length).toBe(4)
   })
 
   it('ignores destinations of type:server', async () => {
-    const destinations = await ajsDestinations('fakeWriteKey', {})
+    const destinations = await ajsDestinations(cdnResponse, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
   it('does not load integrations on All:false', async () => {
-    const destinations = await ajsDestinations('fakeWriteKey', {
+    const destinations = await ajsDestinations(cdnResponse, {
       All: false,
     })
-    expect(unfetch).not.toHaveBeenCalled()
     expect(destinations.length).toBe(0)
   })
 })
