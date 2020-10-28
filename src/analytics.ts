@@ -34,8 +34,6 @@ export interface InitOptions {
   integrations?: Integrations
 }
 
-export { ajsDestination } from './extensions/ajs-destination'
-
 export class Analytics extends Emitter {
   queue: EventQueue
   private settings: AnalyticsSettings

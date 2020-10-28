@@ -87,7 +87,7 @@ export async function tester(
 
   await page.goto(url || `file://${process.cwd()}/src/tester/__fixtures__/index.html`)
   await page.evaluate(`
-    window.AnalyticsNext.Analytics.load({
+    window.AnalyticsNext.AnalyticsBrowser.load({
       writeKey: '${_writeKey}',
     }).then(loaded => {
       window.analytics = loaded[0]

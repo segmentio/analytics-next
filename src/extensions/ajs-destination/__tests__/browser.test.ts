@@ -12,9 +12,12 @@ describe('ajsDestination', () => {
     })
 
     await page.evaluate(`
-        const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {})
-        window.analytics.register(amplitude)
-      `)
+      const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {})
+      window.analytics.register(amplitude)
+    `)
+
+    // loads remote integration as an umd function
+    await page.waitForFunction('window.amplitudeIntegration !== undefined')
 
     expect(allReqs).toMatchInlineSnapshot(`
       Array [
@@ -23,9 +26,6 @@ describe('ajsDestination', () => {
         "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
       ]
     `)
-
-    // loads remote integration as an umd function
-    await page.waitForFunction('window.amplitudeIntegration !== undefined')
   })
 
   it('executes and loads the third party integration', async () => {
