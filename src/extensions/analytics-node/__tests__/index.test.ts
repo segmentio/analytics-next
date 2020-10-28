@@ -41,7 +41,7 @@ describe('Analytics Node', () => {
 
       expect(hydrated).toEqual({
         _metadata: {
-          nodeVersion: '12.16.1',
+          nodeVersion: process.versions.node,
         },
         context: {
           library: {
