@@ -17,10 +17,12 @@ describe('ajsDestination', () => {
       `)
 
     expect(allReqs).toMatchInlineSnapshot(`
-        Array [
-          "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.js",
-        ]
-      `)
+      Array [
+        "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz",
+        "https://cdn.segment.build/next-integrations/vendor/commons.467358d1e4cc7b7381a0.js.gz",
+        "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
+      ]
+    `)
 
     // loads remote integration as an umd function
     await page.waitForFunction('window.amplitudeIntegration !== undefined')
@@ -47,11 +49,12 @@ describe('ajsDestination', () => {
 
     // loads remote amplitude
     expect(allReqs).toMatchInlineSnapshot(`
-        Array [
-          "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.js",
-          "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
-        ]
-      `)
+      Array [
+        "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz",
+        "https://cdn.segment.build/next-integrations/vendor/commons.467358d1e4cc7b7381a0.js.gz",
+        "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
+      ]
+    `)
   })
 
   it('forwards identify calls to integration', async () => {
@@ -75,12 +78,13 @@ describe('ajsDestination', () => {
 
     // loads remote amplitude
     expect(allReqs).toMatchInlineSnapshot(`
-        Array [
-          "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.js",
-          "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
-          "http://api.amplitude.com/",
-        ]
-      `)
+      Array [
+        "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz",
+        "https://cdn.segment.build/next-integrations/vendor/commons.467358d1e4cc7b7381a0.js.gz",
+        "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
+        "http://api.amplitude.com/",
+      ]
+    `)
   })
 
   it('forwards track calls to integration', async () => {
@@ -104,11 +108,12 @@ describe('ajsDestination', () => {
 
     // loads remote amplitude
     expect(allReqs).toMatchInlineSnapshot(`
-        Array [
-          "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.js",
-          "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
-          "http://api.amplitude.com/",
-        ]
-      `)
+      Array [
+        "https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz",
+        "https://cdn.segment.build/next-integrations/vendor/commons.467358d1e4cc7b7381a0.js.gz",
+        "https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js",
+        "http://api.amplitude.com/",
+      ]
+    `)
   })
 })
