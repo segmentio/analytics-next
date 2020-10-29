@@ -57,7 +57,7 @@ async function upload(meta: Meta): Promise<void> {
       Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
       Body: await fs.readFile(filePath),
       ACL: 'public-read',
-      ContentType: mime.getType(filePath) ?? 'application/javascript',
+      ContentType: mime.getType(filePath.replace('.gz', '')) ?? 'application/javascript',
     }
 
     if (meta.branch !== 'master') {
