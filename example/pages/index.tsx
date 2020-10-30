@@ -8,8 +8,8 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import { AnalyticsSettings, AnalyticsBrowser, Analytics } from '../../dist/commonjs'
-import { Context } from '../../dist/commonjs/core/context'
+import { AnalyticsSettings, AnalyticsBrowser, Analytics } from '../../dist/commonjs/src'
+import { Context } from '../../dist/commonjs/src/core/context'
 
 const jsontheme = {
   scheme: 'tomorrow',
