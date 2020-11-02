@@ -1,13 +1,15 @@
 import { Analytics } from '@/analytics'
-import { AnalyticsBrowser } from '../../../browser'
+import { pageEnrichment } from '..'
 
 let ajs: Analytics
 
 describe('Page Enrichment', () => {
   beforeEach(async () => {
-    ;[ajs] = await AnalyticsBrowser.load({
+    ajs = new Analytics({
       writeKey: 'abc_123',
     })
+
+    await ajs.register(pageEnrichment)
   })
 
   test('enriches page calls', async () => {

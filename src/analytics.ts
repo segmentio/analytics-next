@@ -42,13 +42,14 @@ export class Analytics extends Emitter {
   private eventFactory: EventFactory
   integrations: Integrations
 
-  constructor(settings: AnalyticsSettings, options: InitOptions, queue: EventQueue, user: User, group: Group) {
+  constructor(settings: AnalyticsSettings, options?: InitOptions, queue?: EventQueue, user?: User, group?: Group) {
     super()
+    const cookieOptions = options?.cookie
     this.settings = settings
-    this.queue = queue
-    this._user = user
-    this._group = group
-    this.eventFactory = new EventFactory(user)
+    this.queue = queue ?? new EventQueue()
+    this._user = user ?? new User(options?.user, cookieOptions).load()
+    this._group = group ?? new Group(options?.group, cookieOptions).load()
+    this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
   }
 
