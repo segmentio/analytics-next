@@ -14,7 +14,7 @@ interface Meta {
   version: string
 }
 
-const bucket = process.env.S3_BUCKET_NAME ?? 'segment-ajs-renderer-compiled-qa'
+const bucket = process.env.NODE_ENV == 'production' ? 'segment-ajs-renderer-compiled-production' : 'segment-ajs-renderer-compiled-qa'
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
