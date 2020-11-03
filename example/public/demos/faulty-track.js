@@ -6,8 +6,12 @@ const faultyTrack = {
   load: async () => {},
   isLoaded: () => true,
 
-  track(_ctx) {
-    throw new Error('aaay')
+  track(ctx) {
+    if (ctx.event.context?.attempts < 2) {
+      throw new Error('aaay')
+    }
+
+    return ctx
   },
 }
 

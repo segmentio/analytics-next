@@ -1,5 +1,6 @@
 import { shuffle } from 'lodash'
 import { Analytics } from '../../../analytics'
+import { PriorityQueue } from '../../../lib/priority-queue'
 import { Context } from '../../context'
 import { Extension } from '../../extension'
 import { EventQueue } from '../event-queue'
@@ -80,6 +81,9 @@ describe('Registration', () => {
 describe('Extension flushing', () => {
   test('ensures `before` extensions are run', async () => {
     const eq = new EventQueue()
+    const queue = new PriorityQueue(1, [])
+
+    eq.queue = queue
 
     await eq.register(
       Context.system(),

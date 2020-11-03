@@ -162,6 +162,9 @@ describe('Flushing', () => {
     // delivered both basket and shopper
     expect(flushed).toEqual([basketView, shopper])
 
+    // advance the exponential backoff
+    jest.advanceTimersByTime(10000)
+
     // second try
     flushed = await eq.flush()
     expect(eq.queue.length).toBe(0)

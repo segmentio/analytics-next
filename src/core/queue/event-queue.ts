@@ -23,7 +23,7 @@ export class EventQueue extends Emitter {
 
   constructor() {
     super()
-    this.queue = new PriorityQueue(2, [])
+    this.queue = new PriorityQueue(4, [])
   }
 
   async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
@@ -113,7 +113,7 @@ export class EventQueue extends Emitter {
 
     // re-queue all failed
     failed.forEach((ctx) => {
-      const [accepted] = this.queue.push(ctx)
+      const accepted = this.queue.pushWithBackoff(ctx)
       if (!accepted) {
         this.emit('flush', ctx, false)
       }

@@ -36,7 +36,7 @@ async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise
   )
 
   // re-add failed tasks
-  failedQueue.map((failed) => queue.push(failed))
+  failedQueue.map((failed) => queue.pushWithBackoff(failed))
   return queue
 }
 
@@ -183,7 +183,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
   }
 
   const scheduleFlush = (): void => {
-    if (flushing || isOffline()) {
+    if (flushing) {
       return
     }
 
@@ -193,7 +193,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
       buffer = await flushQueue(xt, buffer)
       flushing = false
       scheduleFlush()
-    }, Math.random() * 10000)
+    }, Math.random() * 5000)
   }
 
   scheduleFlush()
