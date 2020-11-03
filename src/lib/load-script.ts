@@ -1,49 +1,46 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
-type ResolveFn = (value?: void | PromiseLike<void> | undefined) => void
-const loadedScripts: Record<string, 'not-loaded' | 'loaded' | 'loading'> = {}
-const consumers: Record<string, ResolveFn[]> = {}
 
-export function loadScript(src: string): Promise<void> {
-  if (loadedScripts[src] === 'loaded') {
-    return Promise.resolve()
-  }
+export async function loadScript(src: string, attributes?: Record<string, string>): Promise<HTMLScriptElement> {
+  const scripts = Array.from(window.document.querySelectorAll('script'))
+  const found = scripts.find((s) => s.src === src)
 
-  if (loadedScripts[src] === 'loading') {
-    const scriptConsumers = consumers[src] ?? []
+  if (found !== undefined) {
+    const status = found?.getAttribute('status')
 
-    return new Promise((resolve) => {
-      scriptConsumers.push(resolve)
-      consumers[src] = scriptConsumers
-    })
+    if (status === 'loaded') {
+      return found
+    }
+
+    if (status === 'loading') {
+      return new Promise((resolve, reject) => {
+        found.addEventListener('load', () => resolve(found))
+        found.addEventListener('error', (err) => reject(err))
+      })
+    }
   }
 
   return new Promise((resolve, reject) => {
-    let ready = false
-
     const script = window.document.createElement('script')
+
     script.type = 'text/javascript'
     script.src = src
     script.async = true
-    script.onerror = (err): void => {
-      reject(err)
+
+    script.setAttribute('status', 'loading')
+    for (const [k, v] of Object.entries(attributes ?? {})) {
+      script.setAttribute(k, v)
     }
 
-    loadedScripts[src] = 'loading'
+    script.onload = (): void => {
+      script.onerror = script.onload = null
+      script.setAttribute('status', 'loaded')
+      resolve(script)
+    }
 
-    // @ts-ignore
-    script.onload = script.onreadystatechange = function (): void {
-      // @ts-ignore
-      if (!ready && (!this.readyState || this.readyState == 'complete')) {
-        loadedScripts[src] = 'loaded'
-        ready = true
-
-        resolve()
-        ;(consumers[src] ?? []).forEach((consumer) => {
-          consumer()
-        })
-
-        consumers[src] = []
-      }
+    script.onerror = (): void => {
+      script.onerror = script.onload = null
+      script.setAttribute('status', 'error')
+      reject(new Error(`Failed to load ${src}`))
     }
 
     const tag = window.document.getElementsByTagName('script')[0]

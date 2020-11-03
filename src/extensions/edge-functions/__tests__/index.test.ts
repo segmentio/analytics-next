@@ -48,6 +48,7 @@ describe('Edge Functions', () => {
 
     const spy = jest.spyOn(loadScriptHelper, 'loadScript')
 
+    // @ts-ignore
     spy.mockImplementation(async () => {
       ;(window as { [key: string]: any })['edge_function'] = { sourceMiddleware: sourceMiddlewareFunc } as EdgeFunction
     })

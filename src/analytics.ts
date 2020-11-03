@@ -17,7 +17,6 @@ import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import { loadScript } from './lib/load-script'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -122,12 +121,6 @@ export class Analytics extends Emitter {
     await Promise.all(registrations)
 
     return ctx
-  }
-
-  async dangerouslyRegisterScript(src: string): Promise<void> {
-    await loadScript(src).catch((err) => {
-      console.error(err)
-    })
   }
 
   reset(): void {
