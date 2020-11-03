@@ -67,24 +67,17 @@ describe('ajsDestination', () => {
     })
 
     await page.evaluate(`
-        const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
-          apiKey: "***REMOVED***"
-        })
-        window.analytics.register(amplitude)
-        window.amplitudeInstance = amplitude
-      `)
+      const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
+        apiKey: "***REMOVED***"
+      })
+      window.analytics.register(amplitude)
+      window.amplitudeInstance = amplitude
+    `)
     await page.waitForFunction('window.amplitudeInstance.isLoaded() === true')
     await ajs.identify('Test User', { banana: 'phone' })
 
     // loads remote amplitude
-    expect(allReqs).toMatchObject(
-      expect.arrayContaining([
-        'https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz',
-        expect.stringContaining('https://cdn.segment.build/next-integrations/vendor/commons'),
-        'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
-        'http://api.amplitude.com/',
-      ])
-    )
+    expect(allReqs).toMatchObject(expect.arrayContaining(['http://api.amplitude.com/']))
   })
 
   it('forwards track calls to integration', async () => {
@@ -104,15 +97,32 @@ describe('ajsDestination', () => {
         window.amplitudeInstance = amplitude
       `)
     await page.waitForFunction('window.amplitudeInstance.isLoaded() === true')
-    await ajs.identify('Test User', { banana: 'phone' })
+    await ajs.track('Test Event', { banana: 'phone' })
 
-    expect(allReqs).toMatchObject(
-      expect.arrayContaining([
-        'https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz',
-        expect.stringContaining('https://cdn.segment.build/next-integrations/vendor/commons'),
-        'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
-        'http://api.amplitude.com/',
-      ])
-    )
+    expect(allReqs).toMatchObject(expect.arrayContaining(['http://api.amplitude.com/']))
+  })
+
+  it('forwards page calls to integration', async () => {
+    const ajs = await tester('test')
+    const page = ajs.browserPage
+
+    const allReqs: string[] = []
+
+    page.on('request', (request) => {
+      allReqs.push(request.url())
+    })
+
+    await page.evaluate(`
+      const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
+        apiKey: "***REMOVED***"
+      })
+      window.analytics.register(amplitude)
+      window.amplitudeInstance = amplitude
+    `)
+
+    await page.waitForFunction('window.amplitudeInstance.isLoaded() === true')
+    await ajs.page('Test Page', { banana: 'phone' })
+
+    expect(allReqs).toMatchObject(expect.arrayContaining(['http://api.amplitude.com/']))
   })
 })

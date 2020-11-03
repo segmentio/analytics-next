@@ -1,35 +1,20 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Integrations } from '@/core/events'
+import { Group } from '@segment/facade/dist/group'
 import { Identify } from '@segment/facade/dist/identify'
+import { Page } from '@segment/facade/dist/page'
 import { Track } from '@segment/facade/dist/track'
 import pWhilst from 'p-whilst'
+import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
-import { Emitter } from '../../core/emitter'
 import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
-import { User } from '../../core/user'
-import { Analytics } from '../../analytics'
 import { asPromise } from '../../lib/as-promise'
-import { loadScript } from '../../lib/load-script'
 import { PriorityQueue } from '../../lib/priority-queue'
-import { LegacySettings, LegacyIntegrationConfiguration } from '../../browser'
-
-export interface LegacyIntegration extends Emitter {
-  analytics?: Analytics
-  initialize: () => void
-  loaded: () => boolean
-
-  track?: (event: typeof Track) => void | Promise<void>
-  identify?: (event: typeof Identify) => void | Promise<void>
-
-  // Segment.io specific
-  ontrack?: (event: typeof Track) => void | Promise<void>
-  onidentify?: (event: typeof Identify) => void | Promise<void>
-}
-
-const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
+import { loadIntegration, resolveVersion } from './loader'
+import { LegacyIntegration } from './types'
 
 async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
@@ -53,10 +38,6 @@ async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise
   // re-add failed tasks
   failedQueue.map((failed) => queue.push(failed))
   return queue
-}
-
-function normalizeName(name: string): string {
-  return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
 }
 
 function embedMetrics(name: string, ctx: Context): Context {
@@ -87,53 +68,11 @@ export function ajsDestination(name: string, version: string, settings?: object)
     type,
     version,
 
-    isLoaded: () => {
-      return ready
-    },
+    isLoaded: () => ready,
+    ready: () => onReady,
 
-    ready: async () => {
-      return onReady
-    },
-
-    load: async (_ctx, analyticsInstance) => {
-      const pathName = normalizeName(name)
-      const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
-
-      try {
-        await loadScript(fullPath)
-        const [metric] = window?.performance.getEntriesByName(fullPath, 'resource') ?? []
-
-        // we assume everything that took under 100ms is cached
-        metric &&
-          _ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [name, ...(metric.duration < 100 ? ['cached'] : [])])
-      } catch (err) {
-        _ctx.stats.gauge('legacy_destination_time', -1, [`extension:${name}`, `failed`])
-        throw err
-      }
-
-      // @ts-ignore
-      const deps: string[] = window[`${pathName}Deps`]
-      await Promise.all(deps.map((dep) => loadScript(path + dep + '.gz')))
-
-      // @ts-ignore
-      window[`${pathName}Loader`]()
-
-      // @ts-ignore
-      let integrationBuilder = window[`${pathName}Integration`]
-
-      // GA and Appcues use a different interface to instantiating integrations
-      if (integrationBuilder.Integration) {
-        const analyticsStub = {
-          user: (): User => analyticsInstance.user(),
-          addIntegration: (): void => {},
-        }
-
-        integrationBuilder(analyticsStub)
-        integrationBuilder = integrationBuilder.Integration
-      }
-
-      integration = new integrationBuilder(settings)
-      integration.analytics = analyticsInstance
+    load: async (ctx, analyticsInstance) => {
+      integration = await loadIntegration(ctx, analyticsInstance, name, version, settings)
 
       onReady = new Promise((resolve) => {
         integration.once('ready', () => {
@@ -154,13 +93,13 @@ export function ajsDestination(name: string, version: string, settings?: object)
       }
 
       // @ts-ignore
-      const trackEvent = new Track(ctx.event, {})
+      const event = new Track(ctx.event, {})
 
       // Not sure why Segment.io use a different name than every other integration
       if (integration.ontrack) {
-        await asPromise(integration.ontrack(trackEvent))
+        await asPromise(integration.ontrack(event))
       } else if (integration.track) {
-        await asPromise(integration.track(trackEvent))
+        await asPromise(integration.track(event))
       }
 
       return ctx
@@ -174,12 +113,69 @@ export function ajsDestination(name: string, version: string, settings?: object)
         return ctx
       }
       // @ts-ignore
-      const trackEvent = new Identify(ctx.event, {})
+      const event = new Identify(ctx.event, {})
 
       if (integration.onidentify) {
-        await asPromise(integration.onidentify(trackEvent))
+        await asPromise(integration.onidentify(event))
       } else if (integration.identify) {
-        await asPromise(integration.identify(trackEvent))
+        await asPromise(integration.identify(event))
+      }
+
+      return ctx
+    },
+
+    async page(ctx) {
+      ctx = embedMetrics(name, ctx)
+
+      if (!ready || isOffline()) {
+        buffer.push(ctx)
+        return ctx
+      }
+      // @ts-ignore
+      const event = new Page(ctx.event, {})
+
+      if (integration.onpage) {
+        await asPromise(integration.onpage(event))
+      } else if (integration.page) {
+        await asPromise(integration.page(event))
+      }
+
+      return ctx
+    },
+
+    async alias(ctx) {
+      ctx = embedMetrics(name, ctx)
+
+      if (!ready || isOffline()) {
+        buffer.push(ctx)
+        return ctx
+      }
+      // @ts-ignore
+      const event = new Alias(ctx.event, {})
+
+      if (integration.onalias) {
+        await asPromise(integration.onalias(event))
+      } else if (integration.alias) {
+        await asPromise(integration.alias(event))
+      }
+
+      return ctx
+    },
+
+    async group(ctx) {
+      ctx = embedMetrics(name, ctx)
+
+      if (!ready || isOffline()) {
+        buffer.push(ctx)
+        return ctx
+      }
+      // @ts-ignore
+      const event = new Group(ctx.event, {})
+
+      if (integration.ongroup) {
+        await asPromise(integration.ongroup(event))
+      } else if (integration.group) {
+        await asPromise(integration.group(event))
       }
 
       return ctx
@@ -203,23 +199,6 @@ export function ajsDestination(name: string, version: string, settings?: object)
   scheduleFlush()
 
   return xt
-}
-
-/**
- * resolveVersion should be a temporary function. As not all sources have been
- * rebuilt and we're constantly changing the CDN settings file, we cannot
- * guarantee which `version` field (`version` or `versionSettings`) will be
- * available.
- */
-function resolveVersion(settings: LegacyIntegrationConfiguration): string {
-  let version = 'latest'
-  if (settings.version) version = settings.version
-
-  if (settings.versionSettings) {
-    version = settings.versionSettings.override ?? settings.versionSettings.version ?? 'latest'
-  }
-
-  return version
 }
 
 export async function ajsDestinations(settings: LegacySettings, globalIntegrations: Integrations = {}): Promise<Extension[]> {
