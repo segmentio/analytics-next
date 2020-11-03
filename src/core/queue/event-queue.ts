@@ -89,7 +89,7 @@ export class EventQueue extends Emitter {
       async () => {
         const start = new Date().getTime()
         const ctx = this.queue.pop()
-        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx) + 1)
+        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx))
 
         if (!ctx) {
           return

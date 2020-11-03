@@ -200,7 +200,7 @@ describe('Extension flushing', () => {
         Object {
           "extras": Object {
             "context": Object {
-              "attempts": 2,
+              "attempts": 1,
             },
             "type": "track",
           },
@@ -266,7 +266,7 @@ describe('Extension flushing', () => {
         Object {
           "extras": Object {
             "context": Object {
-              "attempts": 2,
+              "attempts": 1,
             },
             "type": "track",
           },

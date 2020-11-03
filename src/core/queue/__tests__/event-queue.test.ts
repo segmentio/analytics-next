@@ -158,10 +158,50 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    const flushed = await eq.flush()
+    let flushed = await eq.flush()
+    // delivered both basket and shopper
+    expect(flushed).toEqual([basketView, shopper])
+
+    // second try
+    flushed = await eq.flush()
+    expect(eq.queue.length).toBe(0)
+
+    expect(flushed).toEqual([fruitBasket])
+    expect(flushed[0].event.context?.attempts).toEqual(2)
+  })
+
+  test('client: can block on delivery', async () => {
+    jest.useRealTimers()
+    const eq = new EventQueue()
+
+    await eq.register(
+      Context.system(),
+      {
+        ...testExtension,
+        track: (ctx) => {
+          // only fail first attempt
+          if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
+            throw new Error('aaay')
+          }
+
+          return Promise.resolve(ctx)
+        },
+      },
+      ajs
+    )
+
+    const fruitBasketDelivery = eq.dispatch(fruitBasket)
+    const basketViewDelivery = eq.dispatch(basketView)
+    const shopperDelivery = eq.dispatch(shopper)
+
+    expect(eq.queue.length).toBe(3)
+
+    const [fruitBasketCtx, basketViewCtx, shopperCtx] = await Promise.all([fruitBasketDelivery, basketViewDelivery, shopperDelivery])
 
     expect(eq.queue.length).toBe(0)
-    expect(flushed).toEqual([fruitBasket, basketView, shopper])
-    expect(flushed[0].event.context?.attempts).toEqual(2)
+
+    expect(fruitBasketCtx.event.context?.attempts).toBe(2)
+    expect(basketViewCtx.event.context?.attempts).toBe(1)
+    expect(shopperCtx.event.context?.attempts).toBe(1)
   })
 })

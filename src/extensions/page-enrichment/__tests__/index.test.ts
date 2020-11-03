@@ -31,16 +31,13 @@ describe('Page Enrichment', () => {
       banana: 'phone',
     })
 
-    expect(ctx.event.context).toMatchInlineSnapshot(`
+    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "attempts": 2,
-        "page": Object {
-          "path": "/",
-          "referrer": "",
-          "search": "",
-          "title": "",
-          "url": "http://localhost/",
-        },
+        "path": "/",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost/",
       }
     `)
   })
@@ -50,16 +47,13 @@ describe('Page Enrichment', () => {
       banana: 'phone',
     })
 
-    expect(ctx.event.context).toMatchInlineSnapshot(`
+    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
-        "attempts": 2,
-        "page": Object {
-          "path": "/",
-          "referrer": "",
-          "search": "",
-          "title": "",
-          "url": "http://localhost/",
-        },
+        "path": "/",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost/",
       }
     `)
   })
