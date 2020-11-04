@@ -203,13 +203,15 @@ export function ajsDestination(name: string, version: string, settings?: object)
 }
 
 export async function ajsDestinations(settings: LegacySettings, globalIntegrations: Integrations = {}): Promise<Extension[]> {
-  if (globalIntegrations['All'] === false || isServer()) {
+  if (isServer()) {
     return []
   }
 
   return Object.entries(settings.integrations)
     .map(([name, settings]) => {
-      if (globalIntegrations[name] === false) {
+      const allDisableAndNotDefined = globalIntegrations.All === false && globalIntegrations[name] === undefined
+
+      if (globalIntegrations[name] === false || allDisableAndNotDefined) {
         return
       }
 
