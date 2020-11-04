@@ -3,14 +3,18 @@ import { Context } from './core/context'
 import { validation } from './extensions/validation'
 import { analyticsNode } from './extensions/analytics-node'
 import { Extension } from './core/extension'
+import { EventQueue } from './core/queue/event-queue'
+import { PriorityQueue } from './lib/priority-queue'
 
 export class AnalyticsNode {
   static async load(settings: { writeKey: string }): Promise<[Analytics, Context]> {
-    const options = {
+    const cookieOptions = {
       persist: false,
     }
 
-    const analytics = new Analytics(settings, { user: options, group: options })
+    const queue = new EventQueue(new PriorityQueue(3, []))
+    const options = { user: cookieOptions, group: cookieOptions }
+    const analytics = new Analytics(settings, options, queue)
 
     const nodeSettings = {
       writeKey: settings.writeKey,
@@ -20,7 +24,7 @@ export class AnalyticsNode {
     }
 
     const ctx = await analytics.register(...[validation, analyticsNode(nodeSettings)])
-    analytics.emit('initialize', settings, options ?? {})
+    analytics.emit('initialize', settings, cookieOptions ?? {})
 
     return [analytics, ctx]
   }

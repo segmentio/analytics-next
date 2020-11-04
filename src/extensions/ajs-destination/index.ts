@@ -13,6 +13,7 @@ import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
 import { PriorityQueue } from '../../lib/priority-queue'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { loadIntegration, resolveVersion } from './loader'
 import { LegacyIntegration } from './types'
 
@@ -54,7 +55,7 @@ function embedMetrics(name: string, ctx: Context): Context {
 }
 
 export function ajsDestination(name: string, version: string, settings?: object): Extension {
-  let buffer: PriorityQueue<Context> = new PriorityQueue(3, [])
+  let buffer: PriorityQueue<Context> = new PersistedPriorityQueue(4, `dest-${name}`)
   let flushing = false
 
   let integration: LegacyIntegration

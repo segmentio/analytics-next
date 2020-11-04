@@ -1,19 +1,20 @@
 import { backoff } from './backoff'
 
-type WithID = {
+export type WithID = {
   id: string
 }
 
 export class PriorityQueue<T extends WithID> {
-  private future: T[] = []
-  private queue: T[]
-  private maxAttempts: number
-  private seen: Record<string, number>
+  protected future: T[] = []
+  protected queue: T[]
+  protected seen: Record<string, number>
 
-  constructor(maxAttempts: number, queue: T[]) {
+  private maxAttempts: number
+
+  constructor(maxAttempts: number, queue: T[], seen?: Record<string, number>) {
     this.maxAttempts = maxAttempts
     this.queue = queue
-    this.seen = {}
+    this.seen = seen ?? {}
   }
 
   push(...operations: T[]): boolean[] {

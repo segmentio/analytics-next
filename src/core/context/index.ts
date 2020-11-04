@@ -23,9 +23,9 @@ export class Context implements AbstractContext {
   public stats = new Stats()
   private _id: string
 
-  constructor(event: SegmentEvent) {
+  constructor(event: SegmentEvent, id?: string) {
     this._event = event
-    this._id = uuid()
+    this._id = id ?? uuid()
   }
 
   static system(): Context {

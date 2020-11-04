@@ -2,6 +2,7 @@ import pWhile from 'p-whilst'
 import { Analytics } from '../../analytics'
 import { groupBy } from '../../lib/group-by'
 import { PriorityQueue } from '../../lib/priority-queue'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { isOnline } from '../connection'
 import { Context } from '../context'
 import { Emitter } from '../emitter'
@@ -21,9 +22,11 @@ export class EventQueue extends Emitter {
   extensions: Extension[] = []
   private flushing = false
 
-  constructor() {
+  constructor(priorityQueue?: PriorityQueue<Context>) {
     super()
-    this.queue = new PriorityQueue(4, [])
+    // todo: should the persisted queue be namespaced with the write key?
+    this.queue = priorityQueue ?? new PersistedPriorityQueue(4, 'event-queue')
+    this.scheduleFlush()
   }
 
   async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
