@@ -55,7 +55,7 @@ function mutex(key: string, onUnlock: Function, attempt = 0): void {
 
   const allowed = lock === null || expired(lock)
   if (allowed) {
-    loc.setItem(lockKey, JSON.stringify(now()))
+    loc.setItem(lockKey, JSON.stringify(now() + lockTimeout))
     onUnlock()
     loc.removeItem(lockKey)
     return
