@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { EdgeFunction } from '..'
 import { Analytics } from '../../../analytics'
 import { SegmentEvent } from '../../../core/events'
@@ -42,7 +41,6 @@ describe('Edge Functions', () => {
   let ajs: Analytics
 
   beforeEach(async () => {
-    /* eslint-disable @typescript-eslint/ban-ts-ignore */
     // @ts-ignore: ignore Response required fields
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
 

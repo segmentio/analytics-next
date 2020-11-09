@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import cookie from 'js-cookie'
 import { tld } from '../tld'
 import assert from 'assert'

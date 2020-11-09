@@ -52,37 +52,31 @@ export function analyticsNode(settings: AnalyticsNodeSettings): Extension {
 
     let event
     if (type === 'track') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Track(hydratedMessage, {})
     }
 
     if (type === 'identify') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Identify(hydratedMessage, {})
     }
 
     if (type === 'page') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Page(hydratedMessage, {})
     }
 
     if (type === 'group') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Group(hydratedMessage, {})
     }
 
     if (type === 'alias') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Alias(hydratedMessage, {})
     }
 
     if (type === 'screen') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       event = new Screen(hydratedMessage, {})
     }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import {
   AliasParams,
   DispatchedEvent,
@@ -17,6 +16,7 @@ import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
+import { MiddlewareFunction, sourceMiddlewareExtension } from './extensions/middleware'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -59,7 +59,7 @@ export class Analytics extends Emitter {
   async track(...args: EventParams): DispatchedEvent {
     const [name, data, opts, cb] = resolveArguments(...args)
 
-    const segmentEvent = this.eventFactory.track(name, data, opts, this.integrations)
+    const segmentEvent = this.eventFactory.track(name, data as SegmentEvent['properties'], opts, this.integrations)
     this.emit('track', name, data, opts)
     return this.dispatch(segmentEvent, cb)
   }
@@ -133,10 +133,9 @@ export class Analytics extends Emitter {
     return invokeCallback(dispatched, callback, this.settings.timeout)
   }
 
-  // TODO: Just a stub, implement in the future
-  async addSourceMiddleware(): Promise<Context> {
-    const ctx = Context.system()
-    return ctx
+  async addSourceMiddleware(fn: MiddlewareFunction): Promise<Context> {
+    const extension = sourceMiddlewareExtension(fn)
+    return this.register(extension)
   }
 
   // TODO: Just a stub, implement in the future

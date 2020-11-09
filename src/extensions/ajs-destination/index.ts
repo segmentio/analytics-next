@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Integrations } from '@/core/events'
 import { Group } from '@segment/facade/dist/group'
 import { Identify } from '@segment/facade/dist/identify'

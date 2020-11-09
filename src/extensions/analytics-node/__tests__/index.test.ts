@@ -20,7 +20,6 @@ describe('Analytics Node', () => {
 
     ajs = analytics
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     global.Date = jest.fn(() => myDate)
     /* eslint-disable @typescript-eslint/unbound-method */

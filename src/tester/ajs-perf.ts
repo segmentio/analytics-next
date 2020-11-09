@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import playwright from 'playwright'
 import { setup, teardown } from 'jest-dev-server'
 // @ts-ignore

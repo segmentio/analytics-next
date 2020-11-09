@@ -15,7 +15,6 @@ describe(postToTrackingAPI, () => {
     jest.resetAllMocks()
   })
 
-  /* eslint-disable @typescript-eslint/ban-ts-ignore */
   // @ts-ignore: ignore Response required fields
   mocked(nodefetch).mockImplementation((): Promise<Response> => postMessage)
 

@@ -279,3 +279,24 @@ describe('setAnonymousId', () => {
     expect(newAnonymousId).toEqual('🦹‍♀️')
   })
 })
+
+describe('addSourceMiddleware', () => {
+  it('supports registering source middlewares', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    await analytics.addSourceMiddleware(({ next, payload }) => {
+      payload.obj.context = {
+        hello: 'from the other side',
+      }
+      next(payload)
+    })
+
+    const ctx = await analytics.track('Hello!')
+
+    expect(ctx.event.context).toEqual({
+      hello: 'from the other side',
+    })
+  })
+})

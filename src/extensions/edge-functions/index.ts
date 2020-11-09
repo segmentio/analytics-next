@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { Context } from '../../core/context'
 import { Extension } from '../../core/extension'
 import { SegmentEvent } from '../../core/events'

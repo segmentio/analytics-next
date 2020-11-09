@@ -1,6 +1,11 @@
 import { CompactMetric } from '../stats'
 import { ID } from '../user'
 
+export type JSONPrimitive = string | number | boolean | null
+export type JSONValue = JSONPrimitive | JSONObject | JSONArray
+export type JSONObject = { [member: string]: JSONValue }
+export type JSONArray = Array<JSONValue>
+
 export type Integrations = {
   All?: boolean
   [integration: string]: boolean | undefined
@@ -99,10 +104,14 @@ export interface SegmentEvent {
   category?: string
   name?: string
 
-  properties?: object
+  properties?: object & {
+    [k: string]: JSONValue
+  }
 
   // TODO: Narrow types (i.e. only show traits for `track` and `group`)
-  traits?: object
+  traits?: object & {
+    [k: string]: JSONValue
+  }
 
   integrations?: Integrations
   context?: AnalyticsContext

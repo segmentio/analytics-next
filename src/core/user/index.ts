@@ -1,5 +1,6 @@
 import uuid from '@lukeed/uuid'
 import jar from 'js-cookie'
+import { SegmentEvent } from '../events'
 import { tld } from './tld'
 
 export type ID = string | null | undefined
@@ -250,7 +251,7 @@ export class User {
   }
 
   // TODO: should traits be stored in cookies?
-  traits(traits?: object | null): object {
+  traits(traits?: object | null): SegmentEvent['traits'] {
     if (traits === null) {
       traits = {}
     }

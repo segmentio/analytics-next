@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
-
 import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
 import { Context } from '../../core/context'

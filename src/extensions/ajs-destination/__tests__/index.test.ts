@@ -50,7 +50,6 @@ const fetchSettings = Promise.resolve({
 describe('ajsDestinations', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
-    /* eslint-disable @typescript-eslint/ban-ts-ignore */
     // @ts-ignore: ignore Response required fields
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
   })

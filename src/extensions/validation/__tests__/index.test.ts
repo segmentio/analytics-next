@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import { validation } from '..'
 import { Context } from '../../../core/context'
 import { SegmentEvent } from '../../../core/events'

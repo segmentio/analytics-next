@@ -1,7 +1,14 @@
 import { PriorityQueue } from '.'
 import { Context, SerializedContext } from '../../core/context'
+import { isBrowser } from '../../core/environment'
 
-const loc = window.localStorage
+const loc = isBrowser()
+  ? window.localStorage
+  : {
+      getItem() {},
+      setItem() {},
+      removeItem() {},
+    }
 
 function persisted(key: string): Context[] {
   const items = loc.getItem(key)

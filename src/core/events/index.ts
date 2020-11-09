@@ -11,7 +11,7 @@ export class EventFactory {
     this.user = user
   }
 
-  track(event: string, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  track(event: string, properties?: SegmentEvent['properties'], options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -72,7 +72,7 @@ export class EventFactory {
     } as SegmentEvent)
   }
 
-  identify(userId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  identify(userId: ID, traits?: SegmentEvent['traits'], options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify' as const,
@@ -83,7 +83,7 @@ export class EventFactory {
     })
   }
 
-  group(groupId: ID, traits?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  group(groupId: ID, traits?: SegmentEvent['traits'], options?: Options, integrations?: Integrations): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,

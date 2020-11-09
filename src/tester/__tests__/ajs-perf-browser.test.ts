@@ -29,8 +29,8 @@ describe('Performance', () => {
     expect(audits['total-blocking-time'].numericValue).toBeLessThan(100)
     // main thread work less than 100ms
     expect(audits['mainthread-work-breakdown'].numericValue).toBeLessThan(200)
-    // UMD bundle size less than ~30kb
-    expect(audits['total-byte-weight'].numericValue).toBeLessThan(31000)
+    // UMD bundle size less than ~31kb
+    expect(audits['total-byte-weight'].numericValue).toBeLessThanOrEqual(31187)
 
     console.log('⚡️ AJS is blazing fast ⚡')
     console.table(
