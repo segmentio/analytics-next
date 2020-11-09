@@ -1,4 +1,3 @@
-import { EdgeFunction } from '..'
 import { Analytics } from '../../../analytics'
 import { SegmentEvent } from '../../../core/events'
 import * as loadScriptHelper from '../../../lib/load-script'
@@ -20,7 +19,7 @@ function addGurdasContext(event: SegmentEvent): SegmentEvent | null {
   return event
 }
 
-const sourceMiddlewareFunc = [addFooContext, addGurdasContext]
+const sourceMiddleware = [addFooContext, addGurdasContext]
 
 const cdnResponse = {
   integrations: {},
@@ -38,80 +37,83 @@ const fetchSettings = Promise.resolve({
 })
 
 describe('Edge Functions', () => {
-  let ajs: Analytics
+  describe('source edge functions', () => {
+    let ajs: Analytics
+    
+    beforeEach(async () => {
+      // @ts-ignore: ignore Response required fields
+      mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
 
-  beforeEach(async () => {
-    // @ts-ignore: ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+      const spy = jest.spyOn(loadScriptHelper, 'loadScript')
 
-    const spy = jest.spyOn(loadScriptHelper, 'loadScript')
-
-    // @ts-ignore
-    spy.mockImplementation(async () => {
-      ;(window as { [key: string]: any })['edge_function'] = { sourceMiddleware: sourceMiddlewareFunc } as EdgeFunction
-    })
-
-    const [analytics] = await AnalyticsBrowser.load({
-      writeKey: 'abc123',
-    })
-
-    ajs = analytics
-  })
-
-  afterEach(() => {
-    delete (window as { [key: string]: any })['edge_function']
-  })
-
-  test('enriches page events', async () => {
-    const ctx = await ajs.page('Checkout Completed', {})
-
-    expect(ctx.event.context).toEqual(
-      expect.objectContaining({
-        foo: 'bar',
-        gurdasEmoji: 'party',
+      // @ts-ignore
+      spy.mockImplementation(async () => {
+        // @ts-ignore
+        ;(window as { [key: string]: any })['edge_function'] = { sourceMiddleware }
       })
-    )
-  })
 
-  test('enriches track events', async () => {
-    const ctx = await ajs.track('Button Clicked', {
-      banana: 'phone',
+      const [analytics] = await AnalyticsBrowser.load({
+        writeKey: 'abc123',
+      })
+
+      ajs = analytics
     })
 
-    expect(ctx.event.context).toEqual(
-      expect.objectContaining({
-        foo: 'bar',
-        gurdasEmoji: 'party',
-      })
-    )
-  })
-
-  test('enriches identify events', async () => {
-    const ctx = await ajs.identify('Netto', {
-      banana: 'phone',
+    afterEach(() => {
+      delete (window as { [key: string]: any })['edge_function']
     })
 
-    expect(ctx.event.context).toEqual(
-      expect.objectContaining({
-        foo: 'bar',
-        gurdasEmoji: 'party',
-      })
-    )
-  })
+    test('enriches page events', async () => {
+      const ctx = await ajs.page('Checkout Completed', {})
 
-  test('enriches group events', async () => {
-    const ctx = await ajs.group('123', {
-      name: 'Initech',
-      plan: 'enterprise',
-      employees: 329,
+      expect(ctx.event.context).toEqual(
+        expect.objectContaining({
+          foo: 'bar',
+          gurdasEmoji: 'party',
+        })
+      )
     })
 
-    // @ts-ignore
-    expect(ctx.event.context).toEqual(
-      expect.objectContaining({
-        foo: 'bar',
-        gurdasEmoji: 'party',
+    test('enriches track events', async () => {
+      const ctx = await ajs.track('Button Clicked', {
+        banana: 'phone',
       })
-    )
+
+      expect(ctx.event.context).toEqual(
+        expect.objectContaining({
+          foo: 'bar',
+          gurdasEmoji: 'party',
+        })
+      )
+    })
+
+    test('enriches identify events', async () => {
+      const ctx = await ajs.identify('Netto', {
+        banana: 'phone',
+      })
+
+      expect(ctx.event.context).toEqual(
+        expect.objectContaining({
+          foo: 'bar',
+          gurdasEmoji: 'party',
+        })
+      )
+    })
+
+    test('enriches group events', async () => {
+      const ctx = await ajs.group('123', {
+        name: 'Initech',
+        plan: 'enterprise',
+        employees: 329,
+      })
+
+      // @ts-ignore
+      expect(ctx.event.context).toEqual(
+        expect.objectContaining({
+          foo: 'bar',
+          gurdasEmoji: 'party',
+        })
+      )
+    })
   })
 })

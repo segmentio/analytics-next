@@ -9,6 +9,7 @@ import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
+import { EdgeFunction, DestinationEdgeFunction, applyEdgeFns } from '../../extensions/edge-functions/index'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
 import { PriorityQueue } from '../../lib/priority-queue'
@@ -53,7 +54,7 @@ function embedMetrics(name: string, ctx: Context): Context {
   return ctx
 }
 
-export function ajsDestination(name: string, version: string, settings?: object): Extension {
+export function ajsDestination(name: string, version: string, settings?: object, edgeFns: EdgeFunction[] = []): Extension {
   let buffer: PriorityQueue<Context> = new PersistedPriorityQueue(4, `dest-${name}`)
   let flushing = false
 
@@ -93,7 +94,7 @@ export function ajsDestination(name: string, version: string, settings?: object)
       }
 
       // @ts-ignore
-      const event = new Track(ctx.event, {})
+      const event = new Track(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       // Not sure why Segment.io use a different name than every other integration
       if (integration.ontrack) {
@@ -112,8 +113,9 @@ export function ajsDestination(name: string, version: string, settings?: object)
         buffer.push(ctx)
         return ctx
       }
+
       // @ts-ignore
-      const event = new Identify(ctx.event, {})
+      const event = new Identify(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onidentify) {
         await asPromise(integration.onidentify(event))
@@ -131,8 +133,9 @@ export function ajsDestination(name: string, version: string, settings?: object)
         buffer.push(ctx)
         return ctx
       }
+
       // @ts-ignore
-      const event = new Page(ctx.event, {})
+      const event = new Page(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onpage) {
         await asPromise(integration.onpage(event))
@@ -150,8 +153,9 @@ export function ajsDestination(name: string, version: string, settings?: object)
         buffer.push(ctx)
         return ctx
       }
+
       // @ts-ignore
-      const event = new Alias(ctx.event, {})
+      const event = new Alias(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onalias) {
         await asPromise(integration.onalias(event))
@@ -169,8 +173,9 @@ export function ajsDestination(name: string, version: string, settings?: object)
         buffer.push(ctx)
         return ctx
       }
+
       // @ts-ignore
-      const event = new Group(ctx.event, {})
+      const event = new Group(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.ongroup) {
         await asPromise(integration.ongroup(event))
@@ -201,7 +206,11 @@ export function ajsDestination(name: string, version: string, settings?: object)
   return xt
 }
 
-export async function ajsDestinations(settings: LegacySettings, globalIntegrations: Integrations = {}): Promise<Extension[]> {
+export async function ajsDestinations(
+  settings: LegacySettings,
+  globalIntegrations: Integrations = {},
+  destinationEdgeFns: DestinationEdgeFunction = {}
+): Promise<Extension[]> {
   if (isServer()) {
     return []
   }
@@ -218,8 +227,9 @@ export async function ajsDestinations(settings: LegacySettings, globalIntegratio
         return
       }
 
+      const edgeFns = destinationEdgeFns[name]
       const version = resolveVersion(settings)
-      return ajsDestination(name, version, settings as object)
+      return ajsDestination(name, version, settings as object, edgeFns)
     })
     .filter((xt) => xt !== undefined) as Extension[]
 }

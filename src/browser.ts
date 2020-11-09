@@ -52,10 +52,11 @@ export class AnalyticsBrowser {
     const extensions = settings.extensions ?? []
     const legacySettings = await loadLegacySettings(settings.writeKey)
 
-    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations) : []
-    const edgeFuncs = await edgeFunctions(legacySettings)
+    const { sourceEdgeFns, destinationEdgeFns } = await edgeFunctions(legacySettings)
+    const remoteExtensions =
+      process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, destinationEdgeFns) : []
 
-    const toRegister = [validation, pageEnrichment, ...edgeFuncs, ...extensions, ...remoteExtensions]
+    const toRegister = [validation, pageEnrichment, ...sourceEdgeFns, ...extensions, ...remoteExtensions]
     const ctx = await analytics.register(...toRegister)
 
     analytics.emit('initialize', settings, options)

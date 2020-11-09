@@ -57,7 +57,7 @@ describe('ajsDestinations', () => {
   // This test should temporary. Once we deprecate `version`, we can change it
   // to `it('loads version overrides')`
   it('considers both legacy and new version formats', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {})
+    const destinations = await ajsDestinations(cdnResponse, {}, {})
     const withLegacyVersion = destinations.find((d) => d.name === 'WithLegacyVersion')
     const withVersionSettings = destinations.find((d) => d.name === 'WithVersionSettings')
     const withVersionOverrides = destinations.find((d) => d.name === 'WithVersionOverrides')
@@ -70,28 +70,36 @@ describe('ajsDestinations', () => {
   })
 
   it('loads type:browser legacy ajs destinations from cdn', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {})
+    const destinations = await ajsDestinations(cdnResponse, {}, {})
     expect(destinations.length).toBe(6)
   })
 
   it('ignores destinations of type:server', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {})
+    const destinations = await ajsDestinations(cdnResponse, {}, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
   it('does not load integrations when All:false', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {
-      All: false,
-    })
+    const destinations = await ajsDestinations(
+      cdnResponse,
+      {
+        All: false,
+      },
+      {}
+    )
     expect(destinations.length).toBe(0)
   })
 
   it('loads integrations when All:false, <integration>: true', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {
-      All: false,
-      Amplitude: true,
-      Segmentio: false,
-    })
+    const destinations = await ajsDestinations(
+      cdnResponse,
+      {
+        All: false,
+        Amplitude: true,
+        Segmentio: false,
+      },
+      {}
+    )
     expect(destinations.length).toBe(1)
     expect(destinations[0].name).toEqual('Amplitude')
   })
