@@ -3,12 +3,6 @@ import { Context } from '../../core/context'
 import uuid from '@lukeed/uuid'
 import md5 from 'md5'
 import { SegmentEvent } from '../../core/events'
-import { Track } from '@segment/facade/dist/track'
-import { Identify } from '@segment/facade/dist/identify'
-import { Page } from '@segment/facade/dist/page'
-import { Group } from '@segment/facade/dist/group'
-import { Alias } from '@segment/facade/dist/alias'
-import { Screen } from '@segment/facade/dist/screen'
 import { postToTrackingAPI } from './api'
 
 const embedMetrics = (ctx: Context): Context => {
@@ -45,43 +39,12 @@ interface AnalyticsNodeSettings {
 }
 
 export function analyticsNode(settings: AnalyticsNodeSettings): Extension {
-  const fireEvent = async (ctx: Context, type: string): Promise<Context> => {
+  const fireEvent = async (ctx: Context): Promise<Context> => {
     ctx = embedMetrics(ctx)
 
     const hydratedMessage = hydrateMessage(ctx.event)
+    await postToTrackingAPI(hydratedMessage, settings.writeKey)
 
-    let event
-    if (type === 'track') {
-      // @ts-ignore
-      event = new Track(hydratedMessage, {})
-    }
-
-    if (type === 'identify') {
-      // @ts-ignore
-      event = new Identify(hydratedMessage, {})
-    }
-
-    if (type === 'page') {
-      // @ts-ignore
-      event = new Page(hydratedMessage, {})
-    }
-
-    if (type === 'group') {
-      // @ts-ignore
-      event = new Group(hydratedMessage, {})
-    }
-
-    if (type === 'alias') {
-      // @ts-ignore
-      event = new Alias(hydratedMessage, {})
-    }
-
-    if (type === 'screen') {
-      // @ts-ignore
-      event = new Screen(hydratedMessage, {})
-    }
-
-    await postToTrackingAPI(event, settings.writeKey)
     return ctx
   }
 
@@ -90,37 +53,15 @@ export function analyticsNode(settings: AnalyticsNodeSettings): Extension {
     type: settings.type,
     version: settings.version,
 
-    isLoaded: () => {
-      return true
-    },
+    load: (ctx) => Promise.resolve(ctx),
+    isLoaded: () => true,
 
-    track: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'track')
-    },
-
-    identify: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'identify')
-    },
-
-    page: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'page')
-    },
-
-    alias: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'alias')
-    },
-
-    group: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'group')
-    },
-
-    screen: async (ctx: Context): Promise<Context> => {
-      return fireEvent(ctx, 'screen')
-    },
-
-    load: async (ctx, _instance, _config) => {
-      return ctx
-    },
+    track: fireEvent,
+    identify: fireEvent,
+    page: fireEvent,
+    alias: fireEvent,
+    group: fireEvent,
+    screen: fireEvent,
   }
 
   return xt

@@ -527,10 +527,10 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@segment/facade@^3.3.1":
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.1.tgz#2e98e4c15424bdd0c5eca27de7dd1cf67ec8aae1"
-  integrity sha512-SbbhiKQRCB+Kt9kEfn6jqbmFwdcdSzKVEy3KCAMb8pXrtejpogneFeh19D7OgG6UW5IS7wA4t6J5CpgnlncmSA==
+"@segment/facade@^3.3.5":
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.5.tgz#0fac333bf8ae9c8ad4134d12c94dd8c9fb8f2de8"
+  integrity sha512-urQf2P6mbGgrp94E8ccz2Ak8Pk/Qo2sDV7nWhasSNj4oXqRlKuO4iC6swSXWxg1wuliJidS6uJyItG1Dkj7Tlw==
   dependencies:
     "@ndhoule/clone" "^1.0.0"
     "@segment/isodate-traverse" "^1.0.0"
@@ -538,7 +538,6 @@
     is-email "0.1.0"
     new-date "github://segmentio/new-date"
     obj-case "0.x"
-    type-component "0.0.1"
 
 "@segment/isodate-traverse@^1.0.0":
   version "1.1.0"
@@ -8686,11 +8685,6 @@ type-check@~0.3.2:
   integrity sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=
   dependencies:
     prelude-ls "~1.1.2"
-
-type-component@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/type-component/-/type-component-0.0.1.tgz#952a6c81c21efd24d13d811d0c8498cb860e1956"
-  integrity sha1-lSpsgcIe/STRPYEdDISYy4YOGVY=
 
 type-detect@4.0.8:
   version "4.0.8"

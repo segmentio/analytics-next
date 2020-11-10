@@ -1,8 +1,4 @@
-import { Alias } from '@segment/facade/dist/alias'
-import { Group } from '@segment/facade/dist/group'
-import { Identify } from '@segment/facade/dist/identify'
-import { Page } from '@segment/facade/dist/page'
-import { Track } from '@segment/facade/dist/track'
+import { Group, Identify, Track, Page, Alias } from '@segment/facade'
 import { Analytics } from '../../analytics'
 import { Emitter } from '../../core/emitter'
 
@@ -11,16 +7,16 @@ export interface LegacyIntegration extends Emitter {
   initialize: () => void
   loaded: () => boolean
 
-  track?: (event: typeof Track) => void | Promise<void>
-  identify?: (event: typeof Identify) => void | Promise<void>
-  page?: (event: typeof Page) => void | Promise<void>
-  alias?: (event: typeof Alias) => void | Promise<void>
-  group?: (event: typeof Group) => void | Promise<void>
+  track?: (event: Track) => void | Promise<void>
+  identify?: (event: Identify) => void | Promise<void>
+  page?: (event: Page) => void | Promise<void>
+  alias?: (event: Alias) => void | Promise<void>
+  group?: (event: Group) => void | Promise<void>
 
   // Segment.io specific
-  ontrack?: (event: typeof Track) => void | Promise<void>
-  onidentify?: (event: typeof Identify) => void | Promise<void>
-  onpage?: (event: typeof Page) => void | Promise<void>
-  onalias?: (event: typeof Alias) => void | Promise<void>
-  ongroup?: (event: typeof Group) => void | Promise<void>
+  ontrack?: (event: Track) => void | Promise<void>
+  onidentify?: (event: Identify) => void | Promise<void>
+  onpage?: (event: Page) => void | Promise<void>
+  onalias?: (event: Alias) => void | Promise<void>
+  ongroup?: (event: Group) => void | Promise<void>
 }

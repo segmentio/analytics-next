@@ -65,9 +65,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'track',
-          }),
+          type: 'track',
         }),
         'abc123'
       )
@@ -76,9 +74,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'identify',
-          }),
+          type: 'identify',
         }),
         'abc123'
       )
@@ -87,9 +83,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'page',
-          }),
+          type: 'page',
         }),
         'abc123'
       )
@@ -98,9 +92,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'group',
-          }),
+          type: 'group',
         }),
         'abc123'
       )
@@ -109,9 +101,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'alias',
-          }),
+          type: 'alias',
         }),
         'abc123'
       )
@@ -120,9 +110,7 @@ describe('Analytics Node', () => {
 
       expect(postToTrackingAPI).toHaveBeenCalledWith(
         expect.objectContaining({
-          obj: expect.objectContaining({
-            type: 'screen',
-          }),
+          type: 'screen',
         }),
         'abc123'
       )

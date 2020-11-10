@@ -1,8 +1,5 @@
 import { Integrations } from '@/core/events'
-import { Group } from '@segment/facade/dist/group'
-import { Identify } from '@segment/facade/dist/identify'
-import { Page } from '@segment/facade/dist/page'
-import { Track } from '@segment/facade/dist/track'
+import { Group, Identify, Track, Page, Alias } from '@segment/facade'
 import pWhilst from 'p-whilst'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
@@ -93,7 +90,6 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      // @ts-ignore
       const event = new Track(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       // Not sure why Segment.io use a different name than every other integration
@@ -114,7 +110,6 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      // @ts-ignore
       const event = new Identify(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onidentify) {
@@ -134,7 +129,6 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      // @ts-ignore
       const event = new Page(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onpage) {
@@ -154,7 +148,6 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      // @ts-ignore
       const event = new Alias(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onalias) {
@@ -174,7 +167,6 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      // @ts-ignore
       const event = new Group(applyEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.ongroup) {

@@ -1,10 +1,27 @@
-import { Facade } from '@segment/facade/dist/facade'
+import { Facade, Options } from '@segment/facade'
 import { Context } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import { Extension } from '../../core/extension'
 
+class Fac extends Facade<SegmentEvent> {
+  private _obj: SegmentEvent
+
+  constructor(obj: SegmentEvent, options?: Options) {
+    super(obj, options)
+    this._obj = obj
+  }
+
+  get obj(): SegmentEvent {
+    return this._obj
+  }
+
+  set obj(evt: SegmentEvent) {
+    this._obj = evt
+  }
+}
+
 export interface MiddlewareParams {
-  payload: Facade
+  payload: Fac
 
   integrations?: SegmentEvent['integrations']
   next: (payload: MiddlewareParams['payload']) => void
@@ -16,7 +33,7 @@ export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
   async function applyMiddleware(ctx: Context): Promise<Context> {
     return new Promise((resolve) => {
       fn({
-        payload: new Facade(ctx.event, {
+        payload: new Fac(ctx.event, {
           clone: true,
           traverse: false,
         }),
