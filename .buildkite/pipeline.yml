@@ -5,26 +5,12 @@ steps:
   - label: ':hammer: Build Libraries'
     agents:
       queue: v1
-    commands: |
-      echo '--- Install development dependencies'
-      npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      yarn install --frozen-lockfile
-      yarn add playwright
-
-      echo '--- Build server'
-      NODE_ENV=production yarn build-all
-
-      echo '--- Lint files'
-      yarn lint
-
-      echo '--- Run tests'
-      yarn test
-
-      echo '--- Check Size'
-      yarn size-limit
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - yarn ci
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1-cache-dev-{{ checksum 'yarn.lock' }}"
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['node_modules/']
           save: true
 

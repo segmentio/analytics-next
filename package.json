@@ -8,12 +8,12 @@
   "types": "dist/core/index.d.ts",
   "sideEffects": false,
   "scripts": {
-    "build-umd": "webpack",
-    "build-commonjs": "tsc",
-    "build-all": "yarn clean && yarn concurrently \"yarn build-commonjs\" \"yarn build-umd\"",
+    "umd": "webpack",
+    "cjs": "tsc",
+    "build": "yarn clean && yarn concurrently \"yarn umd\" \"yarn cjs\" ",
     "example": "yarn dev",
     "standalone-example": "concurrently \"webpack -w\" \"serve\"",
-    "dev": "yarn build-all && yarn concurrently \"yarn run-example\" \"yarn build-commonjs -w\" ",
+    "dev": "yarn build && yarn concurrently \"yarn run-example\" \"yarn cjs -w\" ",
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
@@ -23,7 +23,8 @@
     "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json",
     "size": "NODE_ENV=production yarn build-umd > /dev/null && size-limit",
     "release": "aws-okta exec plat-write -- ./scripts/release.ts",
-    "release-prod": "NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts"
+    "release-prod": "NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts",
+    "ci": "./scripts/ci.sh"
   },
   "engines": {
     "node": ">=12.16"
@@ -50,7 +51,7 @@
   },
   "dependencies": {
     "@lukeed/uuid": "^1.0.1",
-    "@segment/facade": "^3.3.5",
+    "@segment/facade": "^3.3.7",
     "component-url": "component/url",
     "dset": "^2.0.1",
     "js-cookie": "^2.2.1",
@@ -91,7 +92,7 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "node-fetch": "^2.6.1",
-    "playwright": "^1.5.1",
+    "playwright": "^1.5.2",
     "prettier": "^2.0.2",
     "serve": "^11.3.2",
     "size-limit": "^4.6.0",

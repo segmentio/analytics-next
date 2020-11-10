@@ -527,15 +527,14 @@
   dependencies:
     mkdirp "^1.0.4"
 
-"@segment/facade@^3.3.5":
-  version "3.3.5"
-  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.5.tgz#0fac333bf8ae9c8ad4134d12c94dd8c9fb8f2de8"
-  integrity sha512-urQf2P6mbGgrp94E8ccz2Ak8Pk/Qo2sDV7nWhasSNj4oXqRlKuO4iC6swSXWxg1wuliJidS6uJyItG1Dkj7Tlw==
+"@segment/facade@^3.3.7":
+  version "3.3.7"
+  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.7.tgz#44afb10a43713de1bca1f16d07b47a24947751e2"
+  integrity sha512-YN9nbnKPmwJuuERjiFmm8GJGg2xI+aLvIHTZ6lDI4x7YD+CwEjrr7Eg2GWroOgBG+mn29rTbTyIsXmcpDep6EQ==
   dependencies:
     "@ndhoule/clone" "^1.0.0"
     "@segment/isodate-traverse" "^1.0.0"
     inherits "^2.0.1"
-    is-email "0.1.0"
     new-date "github://segmentio/new-date"
     obj-case "0.x"
 
@@ -4572,11 +4571,6 @@ is-docker@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-docker/-/is-docker-2.1.1.tgz#4125a88e44e450d384e09047ede71adc2d144156"
   integrity sha512-ZOoqiXfEwtGknTiuDEy8pN2CfE3TxMHprvNer1mXiqwkOT77Rw3YVrUQ52EqAOU3QAWDQ+bQdx7HJzrv7LS2Hw==
 
-is-email@0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/is-email/-/is-email-0.1.0.tgz#e7eb1aefe8d4a3183980a7172b851272ebd04a95"
-  integrity sha1-5+sa7+jUoxg5gKcXK4UScuvQSpU=
-
 is-extendable@^0.1.0, is-extendable@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/is-extendable/-/is-extendable-0.1.1.tgz#62b110e289a471418e3ec36a617d472e301dfc89"
@@ -6638,10 +6632,10 @@ pkg-dir@^4.1.0, pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-playwright@^1.5.1:
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.5.1.tgz#f5333cbfefaf9cb7213b0c9ca8bc9f3f18efcf16"
-  integrity sha512-FYxrQ2TAmvp5ZnBnc6EJHc1Vt3DmXx8xVDq6rxVVG4YVoNKHYMarHI92zGyDlueN2kKCavrhk4Et9w6jJ5XWaA==
+playwright@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.5.2.tgz#e127142cba86c918fad9f68315db5e79524af64c"
+  integrity sha512-on7IEui47bDZta0txL86QKMDSgjbxERkLc5N0+lU2zajIfN/Ld6vMl+xiROEUPlT/QtqVekq9pTDGdcc0yScMQ==
   dependencies:
     debug "^4.1.1"
     extract-zip "^2.0.1"
