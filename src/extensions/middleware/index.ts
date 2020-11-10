@@ -27,7 +27,42 @@ export interface MiddlewareParams {
   next: (payload: MiddlewareParams['payload']) => void
 }
 
+export interface DestinationMiddlewareParams {
+  payload: Fac
+  integration: string
+  next: (payload: MiddlewareParams['payload']) => void
+}
+
 export type MiddlewareFunction = (middleware: MiddlewareParams) => void
+export type DestinationMiddlewareFunction = (middleware: DestinationMiddlewareParams) => void
+
+export async function applyDestinationMiddleware(
+  destination: string,
+  evt: SegmentEvent,
+  middleware: DestinationMiddlewareFunction[]
+): Promise<SegmentEvent> {
+  async function applyMiddleware(event: SegmentEvent, fn: DestinationMiddlewareFunction): Promise<SegmentEvent> {
+    return new Promise((resolve) => {
+      fn({
+        payload: new Fac(event, {
+          clone: true,
+          traverse: false,
+        }),
+        integration: destination,
+        next(evt) {
+          event = evt.obj
+          resolve(event)
+        },
+      })
+    })
+  }
+
+  for (const md of middleware) {
+    evt = await applyMiddleware(evt, md)
+  }
+
+  return evt
+}
 
 export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
   async function applyMiddleware(ctx: Context): Promise<Context> {

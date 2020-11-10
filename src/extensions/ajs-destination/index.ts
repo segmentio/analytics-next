@@ -1,6 +1,7 @@
-import { Integrations } from '@/core/events'
-import { Alias, Group, Identify, Page, Track } from '@segment/facade'
+import { Integrations, SegmentEvent } from '@/core/events'
+import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import pWhilst from 'p-whilst'
+import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
@@ -11,8 +12,13 @@ import { applyDestinationEdgeFns, DestinationEdgeFunction, EdgeFunction } from '
 import { asPromise } from '../../lib/as-promise'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
+import { applyDestinationMiddleware, DestinationMiddlewareFunction } from '../middleware'
 import { loadIntegration, resolveVersion } from './loader'
 import { LegacyIntegration } from './types'
+
+const klona = (evt: SegmentEvent): SegmentEvent => JSON.parse(JSON.stringify(evt))
+
+export type ClassType<T> = new (...args: unknown[]) => T
 
 async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
@@ -51,151 +57,120 @@ function embedMetrics(name: string, ctx: Context): Context {
   return ctx
 }
 
-export function ajsDestination(name: string, version: string, settings?: object, edgeFns: EdgeFunction[] = []): Extension {
-  let buffer: PriorityQueue<Context> = new PersistedPriorityQueue(4, `dest-${name}`)
-  let flushing = false
+export class LegacyDestination implements Extension {
+  name: string
+  version: string
+  settings: object
+  type: Extension['type'] = 'destination'
+  edgeFunctions: EdgeFunction[] = []
+  middleware: DestinationMiddlewareFunction[] = []
 
-  let integration: LegacyIntegration
-  let ready = false
-  let onReady = Promise.resolve()
+  private _ready = false
+  private onReady: Promise<unknown> = Promise.resolve()
+  integration: LegacyIntegration | undefined
 
-  const type = name === 'Segment.io' ? 'after' : 'destination'
+  buffer: PriorityQueue<Context>
+  flushing = false
 
-  const xt: Extension = {
-    name,
-    type,
-    version,
+  constructor(name: string, version: string, settings: object = {}) {
+    this.name = name
+    this.version = version
+    this.settings = settings
+    this.buffer = new PersistedPriorityQueue(4, `dest-${name}`)
 
-    isLoaded: () => ready,
-    ready: () => onReady,
-
-    load: async (ctx, analyticsInstance) => {
-      integration = await loadIntegration(ctx, analyticsInstance, name, version, settings)
-
-      onReady = new Promise((resolve) => {
-        integration.once('ready', () => {
-          ready = true
-          resolve()
-        })
-      })
-
-      integration.initialize()
-    },
-
-    async track(ctx) {
-      ctx = embedMetrics(name, ctx)
-
-      if (!ready || isOffline()) {
-        buffer.push(ctx)
-        return ctx
-      }
-
-      const event = new Track(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
-
-      // Not sure why Segment.io use a different name than every other integration
-      if (integration.ontrack) {
-        await asPromise(integration.ontrack(event))
-      } else if (integration.track) {
-        await asPromise(integration.track(event))
-      }
-
-      return ctx
-    },
-
-    async identify(ctx) {
-      ctx = embedMetrics(name, ctx)
-
-      if (!ready || isOffline()) {
-        buffer.push(ctx)
-        return ctx
-      }
-
-      const event = new Identify(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
-
-      if (integration.onidentify) {
-        await asPromise(integration.onidentify(event))
-      } else if (integration.identify) {
-        await asPromise(integration.identify(event))
-      }
-
-      return ctx
-    },
-
-    async page(ctx) {
-      ctx = embedMetrics(name, ctx)
-
-      if (!ready || isOffline()) {
-        buffer.push(ctx)
-        return ctx
-      }
-
-      const event = new Page(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
-
-      if (integration.onpage) {
-        await asPromise(integration.onpage(event))
-      } else if (integration.page) {
-        await asPromise(integration.page(event))
-      }
-
-      return ctx
-    },
-
-    async alias(ctx) {
-      ctx = embedMetrics(name, ctx)
-
-      if (!ready || isOffline()) {
-        buffer.push(ctx)
-        return ctx
-      }
-
-      const event = new Alias(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
-
-      if (integration.onalias) {
-        await asPromise(integration.onalias(event))
-      } else if (integration.alias) {
-        await asPromise(integration.alias(event))
-      }
-
-      return ctx
-    },
-
-    async group(ctx) {
-      ctx = embedMetrics(name, ctx)
-
-      if (!ready || isOffline()) {
-        buffer.push(ctx)
-        return ctx
-      }
-
-      const event = new Group(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
-
-      if (integration.ongroup) {
-        await asPromise(integration.ongroup(event))
-      } else if (integration.group) {
-        await asPromise(integration.group(event))
-      }
-
-      return ctx
-    },
+    this.scheduleFlush()
   }
 
-  const scheduleFlush = (): void => {
-    if (flushing) {
+  isLoaded(): boolean {
+    return this._ready
+  }
+
+  ready(): Promise<unknown> {
+    return this.onReady
+  }
+
+  async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
+    this.integration = await loadIntegration(ctx, analyticsInstance, this.name, this.version, this.settings)
+
+    this.onReady = new Promise((resolve) => {
+      this.integration!.once('ready', () => {
+        this._ready = true
+        resolve()
+      })
+    })
+
+    this.integration.initialize()
+  }
+
+  addEdgeFunctions(...edgeFunctions: EdgeFunction[]): void {
+    this.edgeFunctions = this.edgeFunctions.concat(...edgeFunctions)
+  }
+
+  addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
+    this.middleware = this.middleware.concat(...fn)
+  }
+
+  private async send<T extends Facade>(ctx: Context, clz: ClassType<T>): Promise<Context> {
+    ctx = embedMetrics(this.name, ctx)
+
+    if (!this._ready || isOffline()) {
+      this.buffer.push(ctx)
+      return ctx
+    }
+
+    const withEdgeFns = await applyDestinationEdgeFns(klona(ctx.event), this.edgeFunctions)
+    const afterMiddleware = await applyDestinationMiddleware(this.name, klona(withEdgeFns), this.middleware)
+
+    const event = new clz(afterMiddleware, {})
+
+    const eventType = clz.name.toLowerCase() as 'track' | 'identify' | 'page' | 'alias' | 'group'
+    const onEventType = `on${eventType}`
+
+    // @ts-expect-error
+    if (this.integration && this.integration[onEventType]) {
+      // @ts-expect-error
+      await asPromise(this.integration[onEventType])
+    } else if (this.integration && this.integration[eventType]) {
+      // @ts-expect-error
+      await asPromise(this.integration[eventType](event))
+    }
+
+    return ctx
+  }
+
+  async track(ctx: Context): Promise<Context> {
+    return this.send(ctx, Track as ClassType<Track>)
+  }
+
+  async page(ctx: Context): Promise<Context> {
+    return this.send(ctx, Page as ClassType<Page>)
+  }
+
+  async identify(ctx: Context): Promise<Context> {
+    return this.send(ctx, Identify as ClassType<Identify>)
+  }
+
+  async alias(ctx: Context): Promise<Context> {
+    return this.send(ctx, Alias as ClassType<Alias>)
+  }
+
+  async group(ctx: Context): Promise<Context> {
+    return this.send(ctx, Group as ClassType<Group>)
+  }
+
+  private scheduleFlush(): void {
+    if (this.flushing) {
       return
     }
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
-      flushing = true
-      buffer = await flushQueue(xt, buffer)
-      flushing = false
-      scheduleFlush()
+      this.flushing = true
+      this.buffer = await flushQueue(this, this.buffer)
+      this.flushing = false
+      this.scheduleFlush()
     }, Math.random() * 5000)
   }
-
-  scheduleFlush()
-
-  return xt
 }
 
 export async function ajsDestinations(
@@ -219,9 +194,13 @@ export async function ajsDestinations(
         return
       }
 
-      const edgeFns = destinationEdgeFns[name]
+      const edgeFns = destinationEdgeFns[name] ?? []
       const version = resolveVersion(settings)
-      return ajsDestination(name, version, settings as object, edgeFns)
+
+      const destination = new LegacyDestination(name, version, settings as object)
+      destination.addEdgeFunctions(...edgeFns)
+
+      return destination
     })
     .filter((xt) => xt !== undefined) as Extension[]
 }

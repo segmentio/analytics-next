@@ -32,7 +32,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "16 KB"
+      "limit": "16.5 KB"
     }
   ],
   "prettier": {
@@ -66,6 +66,7 @@
     "@types/jest": "^25.1.4",
     "@types/jest-dev-server": "^4.2.0",
     "@types/js-cookie": "^2.2.6",
+    "@types/jsdom": "^16.2.5",
     "@types/lodash": "^4.14.161",
     "@types/md5": "^2.2.0",
     "@types/mime": "^2.0.3",
@@ -86,6 +87,7 @@
     "husky": "^4.2.3",
     "jest": "^25.2.3",
     "jest-dev-server": "^4.4.0",
+    "jsdom": "^16.4.0",
     "lighthouse": "^6.4.1",
     "lint-staged": "^10.0.9",
     "log-update": "^4.0.0",

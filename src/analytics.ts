@@ -16,6 +16,7 @@ import { EventFactory, Integrations, SegmentEvent } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
+import { LegacyDestination } from './extensions/ajs-destination'
 import { MiddlewareFunction, sourceMiddlewareExtension } from './extensions/middleware'
 
 export interface AnalyticsSettings {
@@ -138,10 +139,13 @@ export class Analytics extends Emitter {
     return this.register(extension)
   }
 
-  // TODO: Just a stub, implement in the future
-  async addDestinationMiddleware(): Promise<Context> {
-    const ctx = Context.system()
-    return ctx
+  async addDestinationMiddleware(integrationName: string, ...middlewares: MiddlewareFunction[]): Promise<Context> {
+    const legacyDestinations = this.queue.extensions.filter(
+      (xt) => xt instanceof LegacyDestination && xt.name.toLowerCase() === integrationName.toLowerCase()
+    ) as LegacyDestination[]
+
+    legacyDestinations.forEach((destination) => destination.addMiddleware(...middlewares))
+    return Context.system()
   }
 
   setAnonymousId(id?: string): ID {

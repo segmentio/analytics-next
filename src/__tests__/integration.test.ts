@@ -1,7 +1,9 @@
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
+import { JSDOM } from 'jsdom'
 import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
+import { LegacyDestination } from '../extensions/ajs-destination'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -296,6 +298,63 @@ describe('addSourceMiddleware', () => {
     const ctx = await analytics.track('Hello!')
 
     expect(ctx.event.context).toEqual({
+      hello: 'from the other side',
+    })
+  })
+})
+
+describe('addDestinationMiddleware', () => {
+  beforeEach(async () => {
+    jest.restoreAllMocks()
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+  })
+
+  it('supports registering destination middlewares', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const amplitude = new LegacyDestination('amplitude', 'latest', {
+      apiKey: '***REMOVED***',
+    })
+
+    await analytics.register(amplitude)
+    await amplitude.ready()
+
+    await analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
+      payload.obj.properties!.hello = 'from the other side'
+      next(payload)
+    })
+
+    const integrationMock = jest.spyOn(amplitude.integration!, 'track')
+
+    const ctx = await analytics.track('Hello!')
+
+    // does not modify the event
+    expect(ctx.event.properties).not.toEqual({
+      hello: 'from the other side',
+    })
+
+    const calledWith = integrationMock.mock.calls[0][0].properties()
+
+    // only impacted this destination
+    expect(calledWith).toEqual({
+      ...ctx.event.properties,
       hello: 'from the other side',
     })
   })

@@ -6,7 +6,7 @@ import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
 
-export { ajsDestination } from './extensions/ajs-destination'
+export { LegacyDestination } from './extensions/ajs-destination'
 
 export interface LegacyIntegrationConfiguration {
   type?: string
