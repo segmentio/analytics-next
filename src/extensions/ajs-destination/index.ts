@@ -1,13 +1,13 @@
 import { Integrations } from '@/core/events'
-import { Group, Identify, Track, Page, Alias } from '@segment/facade'
+import { Alias, Group, Identify, Page, Track } from '@segment/facade'
 import pWhilst from 'p-whilst'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
-import { EdgeFunction, DestinationEdgeFunction, applyEdgeFns } from '../../extensions/edge-functions/index'
 import { attempt } from '../../core/queue/delivery'
+import { applyDestinationEdgeFns, DestinationEdgeFunction, EdgeFunction } from '../../extensions/edge-functions/index'
 import { asPromise } from '../../lib/as-promise'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
@@ -90,7 +90,7 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      const event = new Track(applyEdgeFns({ ...ctx.event }, edgeFns), {})
+      const event = new Track(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
 
       // Not sure why Segment.io use a different name than every other integration
       if (integration.ontrack) {
@@ -110,7 +110,7 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      const event = new Identify(applyEdgeFns({ ...ctx.event }, edgeFns), {})
+      const event = new Identify(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onidentify) {
         await asPromise(integration.onidentify(event))
@@ -129,7 +129,7 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      const event = new Page(applyEdgeFns({ ...ctx.event }, edgeFns), {})
+      const event = new Page(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onpage) {
         await asPromise(integration.onpage(event))
@@ -148,7 +148,7 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      const event = new Alias(applyEdgeFns({ ...ctx.event }, edgeFns), {})
+      const event = new Alias(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.onalias) {
         await asPromise(integration.onalias(event))
@@ -167,7 +167,7 @@ export function ajsDestination(name: string, version: string, settings?: object,
         return ctx
       }
 
-      const event = new Group(applyEdgeFns({ ...ctx.event }, edgeFns), {})
+      const event = new Group(await applyDestinationEdgeFns({ ...ctx.event }, edgeFns), {})
 
       if (integration.ongroup) {
         await asPromise(integration.ongroup(event))

@@ -10,7 +10,7 @@
   "scripts": {
     "build-umd": "webpack",
     "build-commonjs": "tsc",
-    "build-all": "yarn clean && yarn build-umd && yarn build-commonjs",
+    "build-all": "yarn clean && yarn concurrently \"yarn build-commonjs\" \"yarn build-umd\"",
     "example": "yarn dev",
     "standalone-example": "concurrently \"webpack -w\" \"serve\"",
     "dev": "yarn build-all && yarn concurrently \"yarn run-example\" \"yarn build-commonjs -w\" ",

@@ -2,9 +2,10 @@ import { Extension } from '../../core/extension'
 import { SegmentEvent } from '../../core/events'
 import { loadScript } from '../../lib/load-script'
 import { LegacySettings } from '../../browser'
+import { Context } from '../../core/context'
 
 export interface EdgeFunction {
-  (event: SegmentEvent): SegmentEvent | null
+  (event: SegmentEvent): SegmentEvent | Promise<SegmentEvent> | null
 }
 
 export interface DestinationEdgeFunction {
@@ -16,14 +17,25 @@ export interface EdgeFunctions {
   destinationEdgeFns: DestinationEdgeFunction
 }
 
-export function applyEdgeFns(event: SegmentEvent, edgeFns: EdgeFunction[]): SegmentEvent {
+export async function applyDestinationEdgeFns(event: SegmentEvent, edgeFns: EdgeFunction[]): Promise<SegmentEvent> {
   for (const edgeFn of edgeFns) {
-    event = edgeFn(event) ?? event
+    event = (await Promise.resolve(edgeFn(event))) ?? event
   }
+
   return event
 }
 
+export async function applyEdgeFns(ctx: Context, edgeFns: EdgeFunction[]): Promise<Context> {
+  for (const edgeFn of edgeFns) {
+    ctx.event = (await Promise.resolve(edgeFn(ctx.event))) ?? ctx.event
+  }
+
+  return ctx
+}
+
 function sourceEdgeFunction(edgeFunction: EdgeFunction): Extension {
+  const apply = (ctx: Context): Promise<Context> => applyEdgeFns(ctx, [edgeFunction])
+
   return {
     name: `Source Edge Function`,
     version: '0.1.0',
@@ -31,27 +43,19 @@ function sourceEdgeFunction(edgeFunction: EdgeFunction): Extension {
     isLoaded: () => true,
     load: () => Promise.resolve(),
 
-    async page(ctx) {
-      ctx.event = applyEdgeFns(ctx.event, [edgeFunction])
-      return ctx
-    },
-    async alias(ctx) {
-      ctx.event = applyEdgeFns(ctx.event, [edgeFunction])
-      return ctx
-    },
-    async track(ctx) {
-      ctx.event = applyEdgeFns(ctx.event, [edgeFunction])
-      return ctx
-    },
-    async identify(ctx) {
-      ctx.event = applyEdgeFns(ctx.event, [edgeFunction])
-      return ctx
-    },
-    async group(ctx) {
-      ctx.event = applyEdgeFns(ctx.event, [edgeFunction])
-      return ctx
-    },
+    page: apply,
+    alias: apply,
+    track: apply,
+    identify: apply,
+    group: apply,
   } as Extension
+}
+
+type RemoteMiddlewareResponse = {
+  edge_function?: {
+    sourceMiddleware: EdgeFunction[]
+    destinationMiddleware: DestinationEdgeFunction
+  }
 }
 
 export async function edgeFunctions(settings: LegacySettings): Promise<EdgeFunctions> {
@@ -61,7 +65,8 @@ export async function edgeFunctions(settings: LegacySettings): Promise<EdgeFunct
   if (settings.edgeFunction.downloadURL) {
     try {
       await loadScript(settings.edgeFunction.downloadURL)
-      const edgeFunction = (window as { [key: string]: any })['edge_function']
+      const edgeFunction = (window as RemoteMiddlewareResponse)['edge_function']
+
       if (edgeFunction) {
         sourceEdgeFns = edgeFunction.sourceMiddleware.map((middleware: EdgeFunction) => sourceEdgeFunction(middleware))
         destinationEdgeFns = edgeFunction.destinationMiddleware

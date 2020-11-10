@@ -38,12 +38,12 @@ describe('ajsDestination', () => {
     })
 
     await page.evaluate(`
-        const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
-          apiKey: "***REMOVED***"
-        })
-        window.analytics.register(amplitude)
-        window.amplitudeInstance = amplitude
-      `)
+      const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
+        apiKey: "***REMOVED***"
+      })
+      window.analytics.register(amplitude)
+      window.amplitudeInstance = amplitude
+    `)
 
     await page.waitForFunction('window.amplitudeInstance.isLoaded() === true')
 
@@ -90,12 +90,12 @@ describe('ajsDestination', () => {
     })
 
     await page.evaluate(`
-        const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
-          apiKey: "***REMOVED***"
-        })
-        window.analytics.register(amplitude)
-        window.amplitudeInstance = amplitude
-      `)
+      const amplitude = window.AnalyticsNext.ajsDestination("amplitude", "latest", {
+        apiKey: "***REMOVED***"
+      })
+      window.analytics.register(amplitude)
+      window.amplitudeInstance = amplitude
+    `)
     await page.waitForFunction('window.amplitudeInstance.isLoaded() === true')
     await ajs.track('Test Event', { banana: 'phone' })
 
