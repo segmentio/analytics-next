@@ -21,7 +21,7 @@
     "tdd": "jest --watch --notify",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "analyze": "webpack --profile --json > stats.json && webpack-bundle-analyzer --port 4200 stats.json",
-    "size": "NODE_ENV=production yarn build-umd > /dev/null && size-limit",
+    "size": "NODE_ENV=production yarn umd > /dev/null && size-limit",
     "release": "aws-okta exec plat-write -- ./scripts/release.ts",
     "release-prod": "NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts",
     "ci": "./scripts/ci.sh"
