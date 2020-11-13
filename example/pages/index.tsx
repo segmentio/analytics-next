@@ -254,7 +254,6 @@ export default function Home(): React.ReactElement {
               },
             ]}
             data={ctx?.stats.metrics ?? []}
-            rowKey="tags"
           />
         </div>
       </div>
