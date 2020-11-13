@@ -129,7 +129,7 @@ export class LegacyDestination implements Extension {
     // @ts-expect-error
     if (this.integration && this.integration[onEventType]) {
       // @ts-expect-error
-      await asPromise(this.integration[onEventType])
+      await asPromise(this.integration[onEventType](event))
     } else if (this.integration && this.integration[eventType]) {
       // @ts-expect-error
       await asPromise(this.integration[eventType](event))
