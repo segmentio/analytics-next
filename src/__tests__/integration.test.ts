@@ -4,6 +4,7 @@ import { JSDOM } from 'jsdom'
 import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
 import { LegacyDestination } from '../extensions/ajs-destination'
+import { Analytics } from '../analytics'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -59,6 +60,10 @@ const enrichBilling: Extension = {
 const writeKey = '***REMOVED***'
 
 describe('Initialization', () => {
+  beforeEach(async () => {
+    jest.resetAllMocks()
+  })
+
   it('loads extensions', async () => {
     await AnalyticsBrowser.load({
       writeKey,
@@ -142,6 +147,22 @@ describe('Initialization', () => {
 
     await sleep(200)
     expect(ready).toHaveBeenCalled()
+  })
+
+  it('should call page if initialpageview is set', async () => {
+    jest.mock('../analytics')
+    const mockPage = jest.fn()
+    Analytics.prototype.page = mockPage
+    await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
+    expect(mockPage).toHaveBeenCalled()
+  })
+
+  it('shouldnt call page if initialpageview is not set', async () => {
+    jest.mock('../analytics')
+    const mockPage = jest.fn()
+    Analytics.prototype.page = mockPage
+    await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
+    expect(mockPage).not.toHaveBeenCalled()
   })
 })
 

@@ -61,6 +61,7 @@ export class AnalyticsBrowser {
 
     analytics.emit('initialize', settings, options)
 
+    if (options.initialPageview) await analytics.page()
     return [analytics, ctx]
   }
 
