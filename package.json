@@ -17,6 +17,8 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "test": "jest --forceExit",
+    "test:coverage": "jest ----testPathIgnorePatterns=\"browser.test.ts\" --coverage --forceExit",
+    "test:browser": "jest \"browser.test.ts\" --forceExit",
     "coverage": "jest ----testPathIgnorePatterns=\"browser.test.ts\" --forceExit --collectCoverage && open coverage/lcov-report/index.html",
     "tdd": "jest --watch --notify",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",

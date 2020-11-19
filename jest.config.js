@@ -13,4 +13,12 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  coverageThreshold: {
+    global: {
+      branches: 80.91,
+      functions: 87.25,
+      lines: 91.03,
+      statements: 87.25,
+    },
+  },
 }

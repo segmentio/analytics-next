@@ -14,4 +14,7 @@ echo '--- Lint files'
 yarn lint
 
 echo '--- Run tests'
-yarn test
+yarn test:coverage
+
+echo '--- Run browser tests'
+yarn test:browser
