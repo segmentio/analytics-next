@@ -1,7 +1,7 @@
 import { Integrations, SegmentEvent } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import pWhilst from 'p-whilst'
-import { Analytics } from '../../analytics'
+import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context } from '../../core/context'
@@ -61,6 +61,7 @@ export class LegacyDestination implements Extension {
   name: string
   version: string
   settings: object
+  options: InitOptions
   type: Extension['type'] = 'destination'
   edgeFunctions: EdgeFunction[] = []
   middleware: DestinationMiddlewareFunction[] = []
@@ -72,10 +73,11 @@ export class LegacyDestination implements Extension {
   buffer: PriorityQueue<Context>
   flushing = false
 
-  constructor(name: string, version: string, settings: object = {}) {
+  constructor(name: string, version: string, settings: object = {}, options: InitOptions) {
     this.name = name
     this.version = version
     this.settings = settings
+    this.options = options
     this.buffer = new PersistedPriorityQueue(4, `dest-${name}`)
 
     this.scheduleFlush()
@@ -116,6 +118,18 @@ export class LegacyDestination implements Extension {
     if (!this._ready || isOffline()) {
       this.buffer.push(ctx)
       return ctx
+    }
+
+    const plan = this.options?.plan?.track
+    const ev = ctx.event.event
+
+    if (plan && ev) {
+      const planEvent = plan[ev]
+
+      if (planEvent?.enabled && planEvent.integrations[this.name] === false) {
+        ctx.log('debug', 'event dropped by plan', ctx.event)
+        return ctx
+      }
     }
 
     const withEdgeFns = await applyDestinationEdgeFns(klona(ctx.event), this.edgeFunctions)
@@ -176,7 +190,8 @@ export class LegacyDestination implements Extension {
 export async function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
-  destinationEdgeFns: DestinationEdgeFunction = {}
+  destinationEdgeFns: DestinationEdgeFunction = {},
+  options?: InitOptions
 ): Promise<Extension[]> {
   if (isServer()) {
     return []
@@ -197,7 +212,7 @@ export async function ajsDestinations(
       const edgeFns = destinationEdgeFns[name] ?? []
       const version = resolveVersion(settings)
 
-      const destination = new LegacyDestination(name, version, settings as object)
+      const destination = new LegacyDestination(name, version, settings, options as object)
       destination.addEdgeFunctions(...edgeFns)
 
       return destination

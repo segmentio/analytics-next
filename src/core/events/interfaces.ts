@@ -146,3 +146,25 @@ export interface SegmentEvent {
 
   timestamp?: Date | string
 }
+
+/**
+ * A Plan allows users to specify events and which destinations they would like them to be sent to
+ */
+export interface Plan {
+  track?: {
+    [key: string]: PlanEvent
+  }
+}
+
+export interface PlanEvent {
+  /**
+   * Whether or not this plan event is enabled
+   */
+  enabled: boolean
+  /**
+   * Which integrations the plan event applies to
+   */
+  integrations: {
+    [key: string]: boolean
+  }
+}

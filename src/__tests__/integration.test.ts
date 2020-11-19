@@ -350,9 +350,14 @@ describe('addDestinationMiddleware', () => {
       writeKey,
     })
 
-    const amplitude = new LegacyDestination('amplitude', 'latest', {
-      apiKey: '***REMOVED***',
-    })
+    const amplitude = new LegacyDestination(
+      'amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      {}
+    )
 
     await analytics.register(amplitude)
     await amplitude.ready()

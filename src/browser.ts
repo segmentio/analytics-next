@@ -53,8 +53,9 @@ export class AnalyticsBrowser {
     const legacySettings = await loadLegacySettings(settings.writeKey)
 
     const { sourceEdgeFns, destinationEdgeFns } = await edgeFunctions(legacySettings)
+
     const remoteExtensions =
-      process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, destinationEdgeFns) : []
+      process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, destinationEdgeFns, options) : []
 
     const toRegister = [validation, pageEnrichment, ...sourceEdgeFns, ...extensions, ...remoteExtensions]
     const ctx = await analytics.register(...toRegister)
@@ -62,6 +63,7 @@ export class AnalyticsBrowser {
     analytics.emit('initialize', settings, options)
 
     if (options.initialPageview) await analytics.page()
+    
     return [analytics, ctx]
   }
 

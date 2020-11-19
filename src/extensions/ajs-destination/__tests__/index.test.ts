@@ -5,7 +5,7 @@ import unfetch from 'unfetch'
 import jsdom from 'jsdom'
 import { Context } from '../../../core/context'
 import { Analytics } from '../../../analytics'
-import { SegmentEvent } from '../../../core/events'
+import { SegmentEvent, Plan } from '../../../core/events'
 
 const cdnResponse = {
   integrations: {
@@ -116,9 +116,14 @@ describe('remote loading', () => {
       writeKey: 'abc',
     })
 
-    const dest = new LegacyDestination('amplitude', 'latest', {
-      apiKey: '***REMOVED***',
-    })
+    const dest = new LegacyDestination(
+      'amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      {}
+    )
 
     await dest.load(Context.system(), ajs)
     await dest.ready()
@@ -204,5 +209,124 @@ describe('remote loading', () => {
         }),
       })
     )
+  })
+})
+
+describe('plan', () => {
+  beforeEach(async () => {
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new jsdom.JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+  })
+
+  const loadAmplitude = async (plan: Plan): Promise<LegacyDestination> => {
+    const ajs = new Analytics({
+      writeKey: 'abc',
+    })
+
+    const dest = new LegacyDestination(
+      'amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      { plan }
+    )
+
+    await dest.load(Context.system(), ajs)
+    await dest.ready()
+    return dest
+  }
+
+  it('does not drop events when no plan is defined', async () => {
+    const dest = await loadAmplitude({})
+
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('does not drop events when event is disabled', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: false,
+          integrations: { amplitude: false },
+        },
+      },
+    })
+
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('does not drop events with different names', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Fake Track Event': {
+          enabled: true,
+          integrations: { amplitude: false },
+        },
+      },
+    })
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('drops enabled event for matching destination', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: false },
+        },
+      },
+    })
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).not.toHaveBeenCalled()
+  })
+
+  it('does not drop enabled event for non-matching destination', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { 'not amplitude': false },
+        },
+      },
+    })
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('does not drop enabled event with enabled destination', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+    })
+    jest.spyOn(dest.integration!, 'track')
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
   })
 })

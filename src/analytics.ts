@@ -12,7 +12,7 @@ import {
 import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
 import { Emitter } from './core/emitter'
-import { EventFactory, Integrations, SegmentEvent } from './core/events'
+import { EventFactory, Integrations, SegmentEvent, Plan } from './core/events'
 import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
@@ -32,6 +32,7 @@ export interface InitOptions {
   user?: UserOptions
   group?: UserOptions
   integrations?: Integrations
+  plan?: Plan
 }
 
 export class Analytics extends Emitter {
