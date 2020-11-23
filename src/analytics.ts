@@ -135,18 +135,19 @@ export class Analytics extends Emitter {
     return invokeCallback(dispatched, callback, this.settings.timeout)
   }
 
-  async addSourceMiddleware(fn: MiddlewareFunction): Promise<Context> {
+  addSourceMiddleware(fn: MiddlewareFunction): Analytics {
     const extension = sourceMiddlewareExtension(fn)
-    return this.register(extension)
+    this.register(extension).catch(console.error)
+    return this
   }
 
-  async addDestinationMiddleware(integrationName: string, ...middlewares: MiddlewareFunction[]): Promise<Context> {
+  addDestinationMiddleware(integrationName: string, ...middlewares: MiddlewareFunction[]): Analytics {
     const legacyDestinations = this.queue.extensions.filter(
       (xt) => xt instanceof LegacyDestination && xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
 
     legacyDestinations.forEach((destination) => destination.addMiddleware(...middlewares))
-    return Context.system()
+    return this
   }
 
   setAnonymousId(id?: string): ID {
