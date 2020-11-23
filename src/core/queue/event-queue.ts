@@ -4,7 +4,7 @@ import { groupBy } from '../../lib/group-by'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { isOnline } from '../connection'
-import { Context } from '../context'
+import { Context, ContextCancelation } from '../context'
 import { Emitter } from '../emitter'
 import { Integrations } from '../events'
 import { Extension } from '../extension'
@@ -109,7 +109,10 @@ export class EventQueue extends Emitter {
         } catch (err) {
           ctx.log('error', 'Failed to deliver', err)
           ctx.stats.increment('delivery_failed')
-          failed.push(ctx)
+
+          const notRetriable = err instanceof ContextCancelation && err.retry === false
+          const retriable = !notRetriable
+          retriable && failed.push(ctx)
         }
       }
     )

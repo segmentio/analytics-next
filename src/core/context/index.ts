@@ -17,6 +17,20 @@ export interface SerializedContext {
   metrics: Metric[]
 }
 
+interface CancelationOptions {
+  retry?: boolean
+  reason?: string
+}
+
+export class ContextCancelation extends Error {
+  retry: boolean
+
+  constructor(options: CancelationOptions) {
+    super(options.reason)
+    this.retry = options.retry ?? true
+  }
+}
+
 export class Context implements AbstractContext {
   private _event: SegmentEvent
   public logger = new Logger()
@@ -36,12 +50,12 @@ export class Context implements AbstractContext {
     return other._id === this._id
   }
 
-  cancel = (error?: Error): never => {
+  cancel = (error?: Error | ContextCancelation): never => {
     if (error) {
       throw error
     }
 
-    throw new Error('Stap!')
+    throw new ContextCancelation({ reason: 'Context Cancel' })
   }
 
   log(level: LogLevel, message: string, extras?: object): void {

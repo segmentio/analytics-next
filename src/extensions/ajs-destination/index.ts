@@ -4,7 +4,7 @@ import pWhilst from 'p-whilst'
 import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
-import { Context } from '../../core/context'
+import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
@@ -128,6 +128,7 @@ export class LegacyDestination implements Extension {
 
       if (planEvent?.enabled && planEvent.integrations[this.name] === false) {
         ctx.log('debug', 'event dropped by plan', ctx.event)
+        ctx.cancel(new ContextCancelation({ retry: false, reason: 'event dropped by plan' }))
         return ctx
       }
     }

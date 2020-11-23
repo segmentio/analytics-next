@@ -255,6 +255,7 @@ describe('plan', () => {
     const dest = await loadAmplitude({})
 
     jest.spyOn(dest.integration!, 'track')
+
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })
@@ -270,6 +271,7 @@ describe('plan', () => {
     })
 
     jest.spyOn(dest.integration!, 'track')
+
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })
@@ -283,7 +285,9 @@ describe('plan', () => {
         },
       },
     })
+
     jest.spyOn(dest.integration!, 'track')
+
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })
@@ -297,8 +301,12 @@ describe('plan', () => {
         },
       },
     })
+
     jest.spyOn(dest.integration!, 'track')
-    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+
+    const unplannedCall = dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    await expect(unplannedCall).rejects.toThrowErrorMatchingInlineSnapshot(`"event dropped by plan"`)
+
     expect(dest.integration?.track).not.toHaveBeenCalled()
   })
 
@@ -311,7 +319,9 @@ describe('plan', () => {
         },
       },
     })
+
     jest.spyOn(dest.integration!, 'track')
+
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })
@@ -325,7 +335,9 @@ describe('plan', () => {
         },
       },
     })
+
     jest.spyOn(dest.integration!, 'track')
+
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })

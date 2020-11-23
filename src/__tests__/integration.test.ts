@@ -309,7 +309,7 @@ describe('addSourceMiddleware', () => {
       writeKey,
     })
 
-    await analytics.addSourceMiddleware(({ next, payload }) => {
+    analytics.addSourceMiddleware(({ next, payload }) => {
       payload.obj.context = {
         hello: 'from the other side',
       }
@@ -362,13 +362,12 @@ describe('addDestinationMiddleware', () => {
     await analytics.register(amplitude)
     await amplitude.ready()
 
-    await analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
+    analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
       payload.obj.properties!.hello = 'from the other side'
       next(payload)
     })
 
     const integrationMock = jest.spyOn(amplitude.integration!, 'track')
-
     const ctx = await analytics.track('Hello!')
 
     // does not modify the event

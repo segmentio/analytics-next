@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Analytics } from '../../../analytics'
-import { Context } from '../../context'
+import { Context, ContextCancelation } from '../../context'
 import { Extension } from '../../extension'
 import { EventQueue } from '../event-queue'
 
@@ -144,6 +144,75 @@ describe('Flushing', () => {
           // only fail first attempt
           if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
             throw new Error('aaay')
+          }
+
+          return Promise.resolve(ctx)
+        },
+      },
+      ajs
+    )
+
+    eq.dispatch(fruitBasket)
+    eq.dispatch(basketView)
+    eq.dispatch(shopper)
+
+    expect(eq.queue.length).toBe(3)
+
+    let flushed = await eq.flush()
+    // delivered both basket and shopper
+    expect(flushed).toEqual([basketView, shopper])
+
+    // advance the exponential backoff
+    jest.advanceTimersByTime(10000)
+
+    // second try
+    flushed = await eq.flush()
+    expect(eq.queue.length).toBe(0)
+
+    expect(flushed).toEqual([fruitBasket])
+    expect(flushed[0].event.context?.attempts).toEqual(2)
+  })
+
+  test('does not retry non retriable cancelations', async () => {
+    const eq = new EventQueue()
+
+    await eq.register(
+      Context.system(),
+      {
+        ...testExtension,
+        track: async (ctx) => {
+          ctx.cancel(new ContextCancelation({ retry: false }))
+          return ctx
+        },
+      },
+      ajs
+    )
+
+    eq.dispatch(fruitBasket)
+    eq.dispatch(basketView)
+    eq.dispatch(shopper)
+
+    expect(eq.queue.length).toBe(3)
+
+    const flushed = await eq.flush()
+    // delivered both basket and shopper
+    expect(flushed).toEqual([basketView, shopper])
+
+    // nothing to retry
+    expect(eq.queue.length).toBe(0)
+  })
+
+  test('retries retriable cancelations', async () => {
+    const eq = new EventQueue()
+
+    await eq.register(
+      Context.system(),
+      {
+        ...testExtension,
+        track: (ctx) => {
+          // only fail first attempt
+          if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
+            ctx.cancel(new ContextCancelation({ retry: true }))
           }
 
           return Promise.resolve(ctx)
