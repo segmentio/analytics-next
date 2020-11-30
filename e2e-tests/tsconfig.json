@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es2019",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "incremental": true,
+    "outDir": "dist/commonjs",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "lib": ["es2020", "DOM"],
+    "baseUrl": "./"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["data"]
+}

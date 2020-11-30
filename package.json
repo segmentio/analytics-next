@@ -26,7 +26,10 @@
     "size": "NODE_ENV=production yarn umd > /dev/null && size-limit",
     "release": "aws-okta exec plat-write -- ./scripts/release.ts",
     "release-prod": "NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts",
-    "ci": "./scripts/ci.sh"
+    "ci": "./scripts/ci.sh",
+    "record:clean": "rm -rf e2e-tests/data/requests/*",
+    "record:classic": "AJS_VERSION=classic ts-node e2e-tests/recorder.ts",
+    "record:next": "AJS_VERSION=next ts-node e2e-tests/recorder.ts"
   },
   "engines": {
     "node": ">=12.16"
@@ -96,7 +99,7 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "node-fetch": "^2.6.1",
-    "playwright": "^1.5.2",
+    "playwright": "^1.6.2",
     "prettier": "^2.0.2",
     "serve": "^11.3.2",
     "size-limit": "^4.6.0",

@@ -1,5 +1,5 @@
 {
-  "ignorePatterns": ["/node_modules/", "/dist/", "/example/"],
+  "ignorePatterns": ["/node_modules/", "/dist/", "/example/", "/e2e-tests/"],
   "parserOptions": {
     "ecmaVersion": 2019
   },

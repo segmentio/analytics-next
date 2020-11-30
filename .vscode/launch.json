@@ -1,6 +1,18 @@
 {
   "version": "0.2.0",
   "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug recorder",
+      "program": "${workspaceFolder}/node_modules/.bin/ts-node",
+      "args": ["${relativeFile}"],
+      "env": {
+        "HEADLESS": "false",
+        "AJS_VERSION": "next"
+      }
+    },
+
     // Launches Jest tests in debug mode
     // Simply drop a breakpoint and wait for the debugger to pick it up
     {
