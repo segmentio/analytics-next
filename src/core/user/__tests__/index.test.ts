@@ -58,6 +58,12 @@ describe('user', () => {
         clear()
       })
 
+      it('should not reset id with new user', () => {
+        store.set(cookieKey, 'id')
+        user = new User()
+        assert(user.id() === 'id')
+      })
+
       it('should get an id from the store', () => {
         store.set(cookieKey, 'id')
         assert(user.id() === 'id')
@@ -172,6 +178,12 @@ describe('user', () => {
         assert(jar.get(cookieKey) === 'id')
       })
 
+      it('should get an id when not persisting', function () {
+        user = new User({ persist: false })
+        user.id('id')
+        assert(user.id() === 'id')
+      })
+
       it('should be null by default', () => {
         assert(user.id() === null)
       })
@@ -203,6 +215,13 @@ describe('user', () => {
     })
 
     describe('when cookies are disabled', () => {
+      beforeEach(() => {
+        jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+
+        user = new User()
+        clear()
+      })
+
       it('should get an id from the store', () => {
         store.set('ajs_anonymous_id', 'anon-id')
         expect(user.anonymousId()).toEqual('anon-id')
@@ -211,6 +230,11 @@ describe('user', () => {
       it('should set an id to the store', () => {
         user.anonymousId('anon-id')
         assert(store.get('ajs_anonymous_id') === 'anon-id')
+      })
+
+      it('should return anonymousId using the store', () => {
+        user.anonymousId('anon-id')
+        assert(user.anonymousId() === 'anon-id')
       })
     })
 
@@ -354,6 +378,12 @@ describe('user', () => {
     it('should be an empty object by default', () => {
       expect(user.traits()).toEqual({})
     })
+
+    it('should not reset traits on new user', () => {
+      user.traits({ trait: true })
+      user = new User()
+      expect(user.traits()).toEqual({ trait: true })
+    })
   })
 
   describe('#options', () => {
@@ -389,6 +419,26 @@ describe('user', () => {
       user.id('id')
       user.save()
       expect(store.get(cookieKey)).toBeNull()
+    })
+
+    it('should not get id from localStorage when fallback is disabled and id() is called', () => {
+      user = new User({
+        localStorageFallbackDisabled: false,
+      })
+
+      user.id('id')
+      user.save()
+      jar.remove(cookieKey)
+
+      user = new User({
+        localStorageFallbackDisabled: true,
+      })
+
+      user.id('foo')
+      user.save()
+
+      expect(user.id()).toEqual('foo')
+      expect(store.get(cookieKey)).toEqual('id')
     })
 
     it('should save traits to local storage', () => {
