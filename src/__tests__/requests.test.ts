@@ -16,23 +16,39 @@ const cleanUp = (param: JSONRequests): object => {
       let postData = undefined
       if (r.postData) {
         postData = { ...r.postData }
+
+        // delete time/date fields
         delete postData.sentAt
         delete postData.timestamp
+
+        // replace randomly generated values
         postData.anonymousId = 'anon'
         postData.messageId = 'messageId'
+
+        if (postData.context.externalIds) {
+          postData.context.externalIds.forEach((externalId) => {
+            externalId.id = 'random'
+          })
+        }
 
         if (postData.traits) {
           postData.traits.crossDomainId = 'crossDomainId'
         }
 
-        if (postData.context) {
-          postData.context.metrics = []
-
-          if (postData.context.traits) {
-            postData.context.traits.crossDomainId = 'crossDomainId'
-          }
+        if (postData.context.traits) {
+          postData.context.traits.crossDomainId = 'crossDomainId'
         }
+
+        // delete AJSN-only fields
+        delete postData.context.metrics
+        delete postData.context.attempts
+
+        // library will obviously be different (ajs classic vs ajs next)
+        delete postData.context.library
       }
+
+      delete r.headers.accept
+      delete r.headers.origin
 
       return {
         ...r,
@@ -66,7 +82,10 @@ describe('Compare requests', () => {
     const nextScenario = nextScenarios.find((scenario) => scenario.fileName.includes(classicScenario.fileName.split('-')[1]))
 
     it(`compares classic and next recorded requests`, () => {
-      expect(cleanUp(classicScenario.content)).toEqual(cleanUp(nextScenario!.content))
+      const classic = cleanUp(classicScenario.content)
+      const next = cleanUp(nextScenario!.content)
+
+      expect(classic).toEqual(next)
     })
   })
 })
@@ -80,7 +99,13 @@ interface TrackingAPI {
   method: string
   url: string
   postData?: PostData
-  headers: object
+  headers: {
+    'content-type': string
+    'user-agent': string
+    referer: string
+    origin?: string
+    accept?: string
+  }
 }
 
 interface PostData {
@@ -99,11 +124,11 @@ interface PostData {
 }
 
 interface Context {
-  attempts: number
-  metrics: object[]
+  attempts?: number
+  metrics?: object[]
   userAgent: string
   locale: string
-  library: Library
+  library?: Library
   page?: Properties
   externalIds?: ExternalID[]
   traits?: Traits
@@ -118,6 +143,7 @@ interface ExternalID {
 
 interface Library {
   name: string
+  version?: string
 }
 
 interface Properties {

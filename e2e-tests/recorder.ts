@@ -1,15 +1,12 @@
 import { chromium, ChromiumBrowserContext } from 'playwright'
 import fs from 'fs'
 import path from 'path'
-import segment from './cases/segment'
-// import milanuncios from './cases/milanuncios'
+// import segment from './cases/segment'
+// import milanuncions from './cases/milanuncios'
 // import staples from './cases/staples'
+import local from './cases/local'
 
-const cases = [
-  segment,
-  // milanuncions,
-  // staples,
-]
+const cases = [local]
 
 const AJS_VERSION = process.env.AJS_VERSION || 'next'
 const HEADLESS = process.env.HEADLESS || 'true'
@@ -101,7 +98,7 @@ async function record() {
 
     await context.close()
     await browser.close()
-        
+
     // Save requests
     writeJSONFile(apiCalls)
   })

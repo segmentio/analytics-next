@@ -16,7 +16,7 @@
     "dev": "yarn build && yarn concurrently \"yarn run-example\" \"yarn cjs -w\" ",
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
-    "test": "jest --forceExit",
+    "test": "jest --testPathIgnorePatterns=\"requests.test.ts\" --forceExit",
     "test:coverage": "jest ----testPathIgnorePatterns=\"browser.test.ts\" --coverage --forceExit",
     "test:browser": "jest \"browser.test.ts\" --forceExit",
     "coverage": "jest ----testPathIgnorePatterns=\"browser.test.ts\" --forceExit --collectCoverage && open coverage/lcov-report/index.html",

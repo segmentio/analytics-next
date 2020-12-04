@@ -100,7 +100,7 @@ export const pageEnrichment: Extension = {
       ...pageDefaults(),
     }
 
-    return ctx
+    return enrichPageContext(ctx)
   },
 
   alias: async (ctx) => enrichPageContext(ctx),
