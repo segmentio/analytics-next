@@ -641,6 +641,40 @@ describe('group', () => {
   })
 })
 
+describe('store', function () {
+  const store = new LocalStorage()
+  beforeEach(function () {
+    clear()
+  })
+
+  describe('#get', function () {
+    it('should not not get an empty record', function () {
+      expect(store.get('abc') === undefined)
+    })
+
+    it('should get an existing record', function () {
+      store.set('x', { a: 'b' })
+      expect(store.get('x')).toStrictEqual({ a: 'b' })
+    })
+  })
+
+  describe('#set', function () {
+    it('should be able to set a record', function () {
+      store.set('x', { a: 'b' })
+      expect(store.get('x')).toStrictEqual({ a: 'b' })
+    })
+  })
+
+  describe('#remove', function () {
+    it('should be able to remove a record', function () {
+      store.set('x', { a: 'b' })
+      expect(store.get('x')).toStrictEqual({ a: 'b' })
+      store.remove('x')
+      expect(store.get('x') === undefined)
+    })
+  })
+})
+
 describe('Custom cookie params', () => {
   beforeEach(() => {
     clear()

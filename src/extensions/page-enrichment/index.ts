@@ -2,6 +2,14 @@ import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
 import url from 'component-url'
 
+interface PageDefault {
+  path: string
+  referrer: string
+  search: string
+  title: string
+  url: string
+}
+
 /**
  * Get the current page's canonical URL.
  *
@@ -9,14 +17,15 @@ import url from 'component-url'
  */
 function canonical(): string {
   const tags = document.getElementsByTagName('link')
+  let canon: string | null = ''
 
   Array.from(tags).forEach((tag) => {
     if (tag.getAttribute('rel') === 'canonical') {
-      return tag.getAttribute('href')
+      canon = tag.getAttribute('href')
     }
   })
 
-  return ''
+  return canon
 }
 
 /**
@@ -53,7 +62,7 @@ export function canonicalUrl(search = ''): string {
  * https://segment.com/docs/spec/page/#properties
  */
 
-function pageDefaults(): object {
+export function pageDefaults(): PageDefault {
   return {
     path: canonicalPath(),
     referrer: document.referrer,
