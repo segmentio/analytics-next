@@ -18,6 +18,7 @@ import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
 import { LegacyDestination } from './extensions/ajs-destination'
 import { MiddlewareFunction, sourceMiddlewareExtension } from './extensions/middleware'
+import * as autoTrack from './core/auto-track'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -114,6 +115,22 @@ export class Analytics extends Emitter {
     const segmentEvent = this.eventFactory.screen(category, page, properties, options, this.integrations)
     this.emit('screen', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
+  }
+
+  async trackClick(...args: Parameters<typeof autoTrack.link>): Promise<Analytics> {
+    return autoTrack.link.call(this, ...args)
+  }
+
+  async trackLink(...args: Parameters<typeof autoTrack.link>): Promise<Analytics> {
+    return autoTrack.link.call(this, ...args)
+  }
+
+  async trackSubmit(...args: Parameters<typeof autoTrack.form>): Promise<Analytics> {
+    return autoTrack.form.call(this, ...args)
+  }
+
+  async trackForm(...args: Parameters<typeof autoTrack.form>): Promise<Analytics> {
+    return autoTrack.form.call(this, ...args)
   }
 
   async register(...extensions: Extension[]): Promise<Context> {
