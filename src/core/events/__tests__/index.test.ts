@@ -1,5 +1,6 @@
 import { EventFactory } from '..'
 import { User } from '../../user'
+import { SegmentEvent, Options } from '../interfaces'
 
 describe('Event Factory', () => {
   let user: User
@@ -247,6 +248,29 @@ describe('Event Factory', () => {
         },
         foreignProp: '🇧🇷',
         innerProp: '👻',
+      })
+    })
+  })
+
+  describe('normalize', function () {
+    const msg: SegmentEvent = { type: 'track' }
+    const opts: Options = (msg.options = {})
+    
+    describe('message', function () {
+      it('should merge original with normalized', function () {
+        msg.userId = 'user-id'
+        opts.integrations = { Segment: true }
+        const normalized = factory['normalize'](msg)
+
+        expect(normalized.messageId).toHaveLength(45) // 'ajs-next-[UUID]'
+        delete normalized.messageId
+
+        expect(normalized).toStrictEqual({
+          integrations: { Segment: true },
+          type: 'track',
+          userId: 'user-id',
+          context: {},
+        })
       })
     })
   })

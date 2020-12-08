@@ -387,8 +387,21 @@ describe('user', () => {
   })
 
   describe('#options', () => {
-    it.todo('should get options')
-    it.todo('should set options with defaults')
+    it('should have default cookie options', () => {
+      const cookie = new Cookie()
+      expect(cookie['options'].domain).toBe(undefined)
+      expect(cookie['options'].maxage).toBe(365)
+      expect(cookie['options'].path).toBe('/')
+      expect(cookie['options'].sameSite).toBe('Lax')
+      expect(cookie['options'].secure).toBe(undefined)
+    })
+
+    it('should set options properly', () => {
+      const cookie = new Cookie({ domain: 'foo', secure: true, path: '/test' })
+      expect(cookie['options'].domain).toBe('foo')
+      expect(cookie['options'].secure).toBe(true)
+      expect(cookie['options'].path).toBe('/test')
+    })
   })
 
   describe('#save', () => {
@@ -605,6 +618,27 @@ describe('group', () => {
     clear()
   })
 
+  it('should net reset id and traits', () => {
+    let group = new Group()
+    group.id('gid')
+    group.traits({ trait: true })
+    group = new Group()
+    expect(group.id()).toBe('gid')
+    expect(group.traits()!.trait).toBe(true)
+  })
+
+  it('id() should fallback to localStorage', function () {
+    const group = new Group()
+
+    group.id('gid')
+
+    jar.remove('ajs_group_id')
+
+    assert.equal(jar.get('ajs_group_id'), null)
+    assert.equal(group.id(), 'gid')
+    assert.equal(store.get('ajs_group_id'), 'gid')
+  })
+
   it('behaves the same as user', () => {
     const user = new User()
     const group = new Group()
@@ -638,6 +672,21 @@ describe('group', () => {
 
     expect(store.get(group.options.localStorage?.key ?? '')).toEqual({ coolkids: true })
     expect(store.get(User.defaults.localStorage.key)).not.toEqual({ coolkids: true })
+  })
+
+  describe('#options', () => {
+    it('should set options with defaults', function () {
+      const group = new Group()
+      expect(group.options).toEqual({
+        persist: true,
+        cookie: {
+          key: 'ajs_group_id',
+        },
+        localStorage: {
+          key: 'ajs_group_properties',
+        },
+      })
+    })
   })
 })
 
