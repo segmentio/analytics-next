@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'ts-jest',
-  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/e2e-tests'],
   clearMocks: true,
   testEnvironmentOptions: {
     resources: 'usable',

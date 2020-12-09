@@ -1,4 +1,4 @@
-import uuid from '@lukeed/uuid'
+import { v4 as uuid } from '@lukeed/uuid'
 import dset from 'dset'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'

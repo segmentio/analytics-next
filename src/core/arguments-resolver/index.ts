@@ -102,4 +102,4 @@ export type EventParams = Parameters<typeof resolveArguments>
 export type PageParams = Parameters<typeof resolvePageArguments>
 export type AliasParams = Parameters<typeof resolveAliasArguments>
 
-export type DispatchedEvent = Promise<Context>
+export type DispatchedEvent = Context

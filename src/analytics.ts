@@ -42,6 +42,7 @@ export class Analytics extends Emitter {
   private _user: User
   private _group: Group
   private eventFactory: EventFactory
+  private _debug = false
   integrations: Integrations
 
   constructor(settings: AnalyticsSettings, options?: InitOptions, queue?: EventQueue, user?: User, group?: Group) {
@@ -59,7 +60,7 @@ export class Analytics extends Emitter {
     return this._user
   }
 
-  async track(...args: EventParams): DispatchedEvent {
+  async track(...args: EventParams): Promise<DispatchedEvent> {
     const [name, data, opts, cb] = resolveArguments(...args)
 
     const segmentEvent = this.eventFactory.track(name, data as SegmentEvent['properties'], opts, this.integrations)
@@ -67,7 +68,7 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, cb)
   }
 
-  async page(...args: PageParams): DispatchedEvent {
+  async page(...args: PageParams): Promise<DispatchedEvent> {
     const [category, page, properties, options, callback] = resolvePageArguments(...args)
 
     const segmentEvent = this.eventFactory.page(category, page, properties, options, this.integrations)
@@ -75,7 +76,7 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async identify(...args: UserParams): DispatchedEvent {
+  async identify(...args: UserParams): Promise<DispatchedEvent> {
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
 
     this._user.identify(id, _traits)
@@ -85,7 +86,7 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  group(...args: UserParams): DispatchedEvent | Group {
+  group(...args: UserParams): Promise<DispatchedEvent> | Group {
     if (args.length === 0) {
       return this._group
     }
@@ -102,14 +103,14 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async alias(...args: AliasParams): DispatchedEvent {
+  async alias(...args: AliasParams): Promise<DispatchedEvent> {
     const [to, from, options, callback] = resolveAliasArguments(...args)
     const segmentEvent = this.eventFactory.alias(to, from, options, this.integrations)
     this.emit('alias', to, from, options)
     return this.dispatch(segmentEvent, callback)
   }
 
-  async screen(...args: PageParams): DispatchedEvent {
+  async screen(...args: PageParams): Promise<DispatchedEvent> {
     const [category, page, properties, options, callback] = resolvePageArguments(...args)
 
     const segmentEvent = this.eventFactory.screen(category, page, properties, options, this.integrations)
@@ -142,14 +143,25 @@ export class Analytics extends Emitter {
     return ctx
   }
 
+  debug(toggle: boolean): Analytics {
+    this._debug = toggle
+    return this
+  }
+
   reset(): void {
     this._user.reset()
   }
 
-  private async dispatch(event: SegmentEvent, callback?: Callback): DispatchedEvent {
+  private async dispatch(event: SegmentEvent, callback?: Callback): Promise<DispatchedEvent> {
     const ctx = new Context(event)
     const dispatched = await this.queue.dispatch(ctx)
-    return invokeCallback(dispatched, callback, this.settings.timeout)
+    const result = await invokeCallback(dispatched, callback, this.settings.timeout)
+
+    if (this._debug) {
+      result.flush()
+    }
+
+    return result
   }
 
   addSourceMiddleware(fn: MiddlewareFunction): Analytics {

@@ -52,6 +52,7 @@ export async function install(): Promise<void> {
       window.analytics = analytics as StandaloneAnalytics
 
       for (const [operation, ...args] of buffered) {
+        // @ts-expect-error
         if (window.analytics[operation] && typeof window.analytics[operation] === 'function') {
           // @ts-expect-error
           window.analytics[operation].call(window.analytics, ...args)

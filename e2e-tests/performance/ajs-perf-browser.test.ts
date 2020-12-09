@@ -1,5 +1,5 @@
-import { tester, testerTeardown } from '../ajs-tester'
-import { gatherLighthouseMetrics, globalSetup, globalTeardown } from '../ajs-perf'
+import { tester, testerTeardown } from '../../src/tester/ajs-tester'
+import { gatherLighthouseMetrics, globalSetup, globalTeardown } from '../../src/tester/ajs-perf'
 
 describe('Performance', () => {
   beforeAll(async () => {
@@ -30,7 +30,7 @@ describe('Performance', () => {
     // main thread work less than 100ms
     expect(audits['mainthread-work-breakdown'].numericValue).toBeLessThan(200)
     // UMD bundle size less than ~34kb
-    expect(audits['total-byte-weight'].numericValue).toBeLessThanOrEqual(34000)
+    expect(audits['total-byte-weight'].numericValue).toBeLessThanOrEqual(40000)
 
     console.log('⚡️ AJS is blazing fast ⚡')
     console.table(

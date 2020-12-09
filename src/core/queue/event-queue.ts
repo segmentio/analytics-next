@@ -1,4 +1,4 @@
-import pWhile from 'p-whilst'
+import { pWhile } from '../../lib/p-while'
 import { Analytics } from '../../analytics'
 import { groupBy } from '../../lib/group-by'
 import { PriorityQueue } from '../../lib/priority-queue'

@@ -12,6 +12,8 @@
       }
     </style>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js"></script>
+
     <script>
       !(function () {
         var analytics = (window.analytics = window.analytics || [])
@@ -57,7 +59,7 @@
               var t = document.createElement('script')
               t.type = 'text/javascript'
               t.async = !0
-              t.src = 'http://localhost:5000/dist/umd/standalone.js'
+              t.src = '/dist/umd/standalone.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
               analytics._loadOptions = e
@@ -87,31 +89,40 @@
       </div>
     </form>
 
+    <pre id="ready-logs"></pre>
     <pre id="logs"></pre>
 
     <script type="text/javascript">
-      document.querySelector('#track').addEventListener('click', async (e) => {
-        e.preventDefault()
-        const contents = document.querySelector('#event').value
-        const evt = JSON.parse(contents)
-        const promise = window.analytics.track(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
-
-        promise?.then((ctx) => {
-          ctx.flush()
-          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
-        })
+      window.analytics.ready(function () {
+        document.querySelector('#ready-logs').textContent = 'ready!'
       })
 
-      document.querySelector('#identify').addEventListener('click', async (e) => {
+      document.querySelector('#track').addEventListener('click', function (e) {
         e.preventDefault()
-        const contents = document.querySelector('#event').value
-        const evt = JSON.parse(contents)
-        const promise = window.analytics.identify(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
+        var contents = document.querySelector('#event').value
+        var evt = JSON.parse(contents)
+        var promise = window.analytics.track(evt.name || '', evt.properties || {}, evt.options || {})
 
-        promise?.then((ctx) => {
-          ctx.flush()
-          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
-        })
+        promise &&
+          promise.then &&
+          promise.then(function (ctx) {
+            ctx.flush()
+            document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+          })
+      })
+
+      document.querySelector('#identify').addEventListener('click', function (e) {
+        e.preventDefault()
+        var contents = document.querySelector('#event').value
+        var evt = JSON.parse(contents)
+        var promise = window.analytics.identify(evt.name || '', evt.properties || {}, evt.options || {})
+
+        promise &&
+          promise.then &&
+          promise.then(function (ctx) {
+            ctx.flush()
+            document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+          })
       })
     </script>
   </body>

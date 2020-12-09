@@ -1,6 +1,6 @@
 import { Integrations, SegmentEvent } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
-import pWhilst from 'p-whilst'
+import { pWhile } from '../../lib/p-while'
 import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
@@ -23,7 +23,7 @@ export type ClassType<T> = new (...args: unknown[]) => T
 async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
 
-  await pWhilst(
+  await pWhile(
     () => queue.length > 0 && isOnline(),
     async () => {
       const ctx = queue.pop()

@@ -5,16 +5,14 @@ yarn install
 yarn add --dev playwright
 
 echo '--- Build bundles'
-NODE_ENV=production yarn build
+make build-prod
 
 echo '--- Check Size'
 yarn size-limit
 
 echo '--- Lint files'
-yarn lint
+make lint
 
 echo '--- Run tests'
-yarn test:coverage
-
-echo '--- Run browser tests'
-yarn test:browser
+make test-unit
+make test-integration

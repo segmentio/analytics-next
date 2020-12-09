@@ -1,4 +1,4 @@
-import uuid from '@lukeed/uuid'
+import { v4 as uuid } from '@lukeed/uuid'
 import jar from 'js-cookie'
 import { SegmentEvent } from '../events'
 import { tld } from './tld'

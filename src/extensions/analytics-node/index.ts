@@ -1,6 +1,6 @@
 import { Extension } from '../../core/extension'
 import { Context } from '../../core/context'
-import uuid from '@lukeed/uuid'
+import { v4 as uuid } from '@lukeed/uuid'
 import md5 from 'md5'
 import { SegmentEvent } from '../../core/events'
 import { postToTrackingAPI } from './api'

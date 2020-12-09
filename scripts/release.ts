@@ -91,7 +91,7 @@ async function upload(meta: Meta): Promise<void> {
 async function release(): Promise<void> {
   console.log('Compiling Bundles')
 
-  await ex('yarn', ['build'], {
+  await ex('make', ['build'], {
     env,
   })
 

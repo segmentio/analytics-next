@@ -1,7 +1,7 @@
-import fs from 'fs'
+import fs from 'fs-extra'
 import path from 'path'
 
-const PATH = 'e2e-tests/data/requests/'
+const PATH = path.join(process.cwd(), 'e2e-tests/data/requests/')
 
 const getFileContent = (file: string): JSONRequests => {
   const filePath = path.join(PATH, file)
@@ -14,6 +14,7 @@ const cleanUp = (param: JSONRequests): object => {
     ...param,
     trackingAPI: param.trackingAPI.map((r) => {
       let postData = undefined
+
       if (r.postData) {
         postData = { ...r.postData }
 
@@ -76,6 +77,10 @@ describe('Compare requests', () => {
       fileName,
       content: getFileContent(fileName),
     }))
+
+  test('setup', () => {
+    expect(files).not.toBeNull()
+  })
 
   classicScenarios.forEach((classicScenario) => {
     // considering all scenarios are named "AJS_VERSION-scenario_name". Eg "classic-staples"

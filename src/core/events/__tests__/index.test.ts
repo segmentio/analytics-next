@@ -255,7 +255,7 @@ describe('Event Factory', () => {
   describe('normalize', function () {
     const msg: SegmentEvent = { type: 'track' }
     const opts: Options = (msg.options = {})
-    
+
     describe('message', function () {
       it('should merge original with normalized', function () {
         msg.userId = 'user-id'

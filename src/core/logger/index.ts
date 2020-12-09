@@ -47,7 +47,12 @@ export default class Logger {
         }
       }, {} as Record<string, LogMessage>)
 
-      console.table(formatted)
+      // ie doesn't like console.table
+      if (console.table) {
+        console.table(formatted)
+      } else {
+        console.log(formatted)
+      }
     } else {
       this.logs.forEach((logEntry) => {
         const { level, message, extras } = logEntry

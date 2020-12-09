@@ -1,6 +1,18 @@
 import { Context } from '../context'
-import pTimeout from 'p-timeout'
 import { asPromise } from '../../lib/as-promise'
+
+async function pTimeout(cb: Promise<unknown>, timeout: number): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(Error('Promise timed out'))
+    }, timeout)
+
+    cb.then((val) => {
+      clearTimeout(timeoutId)
+      return resolve(val)
+    }).catch(reject)
+  })
+}
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 

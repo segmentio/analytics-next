@@ -1,10 +1,11 @@
 import { Page } from 'playwright'
+import { startLocalServer } from '../recorder'
 
 export default {
   name: 'local',
   scenario: async function (page: Page) {
-    // Go to http://localhost:5000/example/snippet_example/
-    await page.goto('http://localhost:5000/example/snippet_example/')
+    const url = await startLocalServer()
+    await page.goto(`${url}/example/snippet_example/index-local`)
 
     // Click text="Track"
     await page.click('text="Track"')

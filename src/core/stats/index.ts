@@ -50,7 +50,12 @@ export default class Stats {
 
   flush(): void {
     const formatted = this.metrics.map((m) => ({ ...m, tags: m.tags.join(',') }))
-    console.table(formatted)
+    // ie doesn't like console.table
+    if (console.table) {
+      console.table(formatted)
+    } else {
+      console.log(formatted)
+    }
     this.metrics = []
   }
 

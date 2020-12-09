@@ -1,6 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { AnalyticsBrowser } from '../browser'
-import { snippet } from './__fixtures__/segment-snippet'
+import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import { Analytics } from '../analytics'
 

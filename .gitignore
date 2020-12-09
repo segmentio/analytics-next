@@ -4,4 +4,4 @@
 *.log
 stats.json
 /coverage
-e2e-tests/data/requests/*
+e2e-tests/data/requests/*.json

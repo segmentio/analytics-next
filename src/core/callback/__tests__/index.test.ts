@@ -40,7 +40,7 @@ describe(invokeCallback, () => {
     const logs = returned.logs()
     expect(logs[0].extras).toMatchInlineSnapshot(`
       Object {
-        "error": [TimeoutError: Promise timed out after 50 milliseconds],
+        "error": [Error: Promise timed out],
       }
     `)
 
