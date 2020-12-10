@@ -1,4 +1,5 @@
 import fs from 'fs-extra'
+import { sortBy } from 'lodash'
 import path from 'path'
 
 const PATH = path.join(process.cwd(), 'e2e-tests/data/requests/')
@@ -9,7 +10,7 @@ const getFileContent = (file: string): JSONRequests => {
   return JSON.parse(jsonString)
 }
 
-const cleanUp = (param: JSONRequests): object => {
+const cleanUp = (param: JSONRequests): JSONRequests => {
   const reqs: JSONRequests = {
     ...param,
     trackingAPI: param.trackingAPI.map((r) => {
@@ -32,17 +33,20 @@ const cleanUp = (param: JSONRequests): object => {
           })
         }
 
-        if (postData.traits) {
+        if (postData.traits?.crossDomainId) {
           postData.traits.crossDomainId = 'crossDomainId'
         }
 
-        if (postData.context.traits) {
+        if (postData.context.traits?.crossDomainId) {
           postData.context.traits.crossDomainId = 'crossDomainId'
         }
 
         // delete AJSN-only fields
         delete postData.context.metrics
         delete postData.context.attempts
+
+        // category is covered by ASJNext, but omitted if its value is null
+        delete postData.cateogry
 
         // library will obviously be different (ajs classic vs ajs next)
         delete postData.context.library
@@ -87,8 +91,8 @@ describe('Compare requests', () => {
     const nextScenario = nextScenarios.find((scenario) => scenario.fileName.includes(classicScenario.fileName.split('-')[1]))
 
     it(`compares classic and next recorded requests`, () => {
-      const classic = cleanUp(classicScenario.content)
-      const next = cleanUp(nextScenario!.content)
+      const classic = sortBy(cleanUp(classicScenario.content).trackingAPI, 'url')
+      const next = sortBy(cleanUp(nextScenario!.content).trackingAPI, 'url')
 
       expect(classic).toEqual(next)
     })
@@ -126,6 +130,7 @@ interface PostData {
   userId?: string
   sentAt?: string
   traits?: Traits
+  cateogry?: string
 }
 
 interface Context {
