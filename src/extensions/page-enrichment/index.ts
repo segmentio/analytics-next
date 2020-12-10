@@ -100,6 +100,10 @@ export const pageEnrichment: Extension = {
       ...pageDefaults(),
     }
 
+    if (ctx.event.name) {
+      ctx.event.properties.name = ctx.event.name
+    }
+
     return enrichPageContext(ctx)
   },
 

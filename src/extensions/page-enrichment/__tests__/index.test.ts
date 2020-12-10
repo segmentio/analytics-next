@@ -17,6 +17,7 @@ describe('Page Enrichment', () => {
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
       Object {
+        "name": "Checkout",
         "path": "/",
         "referrer": "",
         "search": "",
