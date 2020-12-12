@@ -16,7 +16,7 @@ build: node_modules ## Builds typescript files and UMD library
 	yarn clean && yarn concurrently "yarn umd" "yarn cjs"
 .PHONY: build
 
-build-prod: node_modules ## Builds libraries in prod mode
+build-prod: ## Builds libraries in prod mode
 	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn cjs"
 .PHONY: build
 
@@ -47,7 +47,7 @@ ci:
 .PHONY: ci
 
 size: ## Verify the final size of Analytics-Next
-	NODE_ENV=production yarn umd > /dev/null && size-limit
+	NODE_ENV=production yarn umd > /dev/null && yarn size-limit
 .PHONY: size
 
 release: ## Releases Analytics Next to stage
