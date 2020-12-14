@@ -183,6 +183,19 @@ export class Analytics extends Emitter {
     return this._user.anonymousId(id)
   }
 
+  /**
+   * @deprecated This function does not register a destination extension.
+   *
+   * Instantiates a legacy Analytics.js destination.
+   *
+   * This function does not register the destination as an Analytics.JS extension,
+   * all the it does it to invoke the factory function back.
+   */
+  use(pluginFactory: (analytics: Analytics) => void): Analytics {
+    pluginFactory(this)
+    return this
+  }
+
   async ready(callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res): Promise<unknown> {
     return Promise.all(this.queue.extensions.map((i) => (i.ready ? i.ready() : Promise.resolve()))).then((res) => {
       callback(res)

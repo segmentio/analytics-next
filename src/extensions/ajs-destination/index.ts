@@ -97,7 +97,7 @@ export class LegacyDestination implements Extension {
     this.onReady = new Promise((resolve) => {
       this.integration!.once('ready', () => {
         this._ready = true
-        resolve()
+        resolve(true)
       })
     })
 

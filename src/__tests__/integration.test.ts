@@ -622,11 +622,15 @@ describe('track helpers', () => {
     it('should call submit after a timeout', async (done) => {
       const submitSpy = jest.spyOn(form, 'submit')
       const mockedTrack = jest.fn()
+
       // eslint-disable-next-line @typescript-eslint/unbound-method
       mockedTrack.mockImplementation(Analytics.prototype.track)
+
       analytics.track = mockedTrack
       await analytics.trackForm(form, 'foo')
+
       submit.click()
+
       setTimeout(function () {
         expect(submitSpy).toHaveBeenCalled()
         done()
@@ -637,33 +641,53 @@ describe('track helpers', () => {
       form.addEventListener('submit', () => {
         done()
       })
+
       await analytics.trackForm(form, 'foo')
       submit.click()
     })
 
     it('should trigger an existing jquery submit handler', async (done) => {
       const $form = jQuery(form)
+
       $form.submit(function () {
         done()
       })
+
       await analytics.trackForm(form, 'foo')
       submit.click()
     })
 
     it('should track on a form submitted via jquery', async () => {
       const $form = jQuery(form)
+
       await analytics.trackForm(form, 'foo')
       $form.submit()
+
       expect(mockTrack).toBeCalled()
     })
 
     it('should trigger an existing jquery submit handler on a form submitted via jquery', async (done) => {
       const $form = jQuery(form)
+
       $form.submit(function () {
         done()
       })
+
       await analytics.trackForm(form, 'foo')
       $form.submit()
     })
+  })
+})
+
+describe('use', () => {
+  it('registers a plugin', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const lePlugin = jest.fn()
+    analytics.use(lePlugin)
+
+    expect(lePlugin).toHaveBeenCalledWith(analytics)
   })
 })
