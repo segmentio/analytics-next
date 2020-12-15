@@ -9,7 +9,8 @@
       "args": ["${relativeFile}"],
       "env": {
         "HEADLESS": "false",
-        "AJS_VERSION": "next"
+        "AJS_VERSION": "next",
+        "CASES": "segment,local"
       }
     },
 

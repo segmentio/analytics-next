@@ -1,17 +1,18 @@
 import { chromium, ChromiumBrowserContext } from 'playwright'
 import fs from 'fs-extra'
 import path from 'path'
-// import segment from './cases/segment'
-// import milanuncions from './cases/milanuncios'
-// import staples from './cases/staples'
+import segment from './cases/segment'
+import milanuncios from './cases/milanuncios'
+import staples from './cases/staples'
 import local from './cases/local'
 import fetch from 'node-fetch'
 
 import http from 'http'
 import handler from 'serve-handler'
 
-const cases = [local]
+const cases = [segment, milanuncios, staples, local]
 
+const CASES = process.env.CASES
 const AJS_VERSION = process.env.AJS_VERSION || 'next'
 const HEADLESS = process.env.HEADLESS || 'true'
 const URL_KEYWORDS = ['https://api.segment.io', 'https://api.segment.com', 'https://api.cd.segment.com', 'https://api.cd.segment.io']
@@ -89,7 +90,9 @@ async function writeJSONFile(apiCalls: APICalls) {
 }
 
 async function record() {
-  const promises = cases.map(async (c) => {
+  const runFor = cases.filter((scenario) => CASES?.split(',').includes(scenario.name) ?? true)
+
+  const promises = runFor.map(async (c) => {
     const browser = await chromium.launch({
       headless: HEADLESS === 'true',
       // 2500 is the magic number that allows for navigation to wait for AJS

@@ -64,15 +64,17 @@ Import the new file created into [e2e-tests/recorder.ts](/e2e-tests/recorder.ts#
 To record requests made by AJS Classic, run
 
 ```sh
-yarn record:classic
+make record-classic
 ```
 
 To record requests made by AJS Next, run
 
 ```sh
-yarn standalone-example # to serve AJS Next locally
-yarn record:next
+make standalone-example # to serve AJS Next locally
+make record-next
 ```
+
+optional parameters like `HEADLESS=true|false` and `CASES=comma,separated,names` can also be passed in.
 
 # Comparing Requests
 
