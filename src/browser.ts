@@ -4,6 +4,7 @@ import { Context } from './core/context'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
+import { metadataEnrichment } from './extensions/metadata-enrichment'
 
 export { LegacyDestination } from './extensions/ajs-destination'
 
@@ -15,6 +16,7 @@ export interface LegacyIntegrationConfiguration {
     version?: string
     override?: string
   }
+  bundlingStatus?: string
 }
 
 export interface LegacySettings {
@@ -47,7 +49,10 @@ export class AnalyticsBrowser {
 
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, options) : []
 
-    const toRegister = [validation, pageEnrichment, ...extensions, ...remoteExtensions]
+    const metadata = metadataEnrichment(legacySettings, analytics.queue.failedInitializations)
+
+    const toRegister = [validation, pageEnrichment, metadata, ...extensions, ...remoteExtensions]
+
     const ctx = await analytics.register(...toRegister)
 
     analytics.emit('initialize', settings, options)

@@ -20,6 +20,7 @@ type ExtensionsByType = {
 export class EventQueue extends Emitter {
   queue: PriorityQueue<Context>
   extensions: Extension[] = []
+  failedInitializations: string[] = []
   private flushing = false
 
   constructor(priorityQueue?: PriorityQueue<Context>) {
@@ -36,6 +37,7 @@ export class EventQueue extends Emitter {
       })
       .catch((err) => {
         if (extension.type === 'destination') {
+          this.failedInitializations.push(extension.name)
           ctx.log('warn', 'Failed to load destination', { extension: extension.name, error: err })
           return
         }
