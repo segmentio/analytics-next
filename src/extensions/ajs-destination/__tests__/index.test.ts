@@ -5,7 +5,7 @@ import unfetch from 'unfetch'
 import jsdom from 'jsdom'
 import { Context } from '../../../core/context'
 import { Analytics } from '../../../analytics'
-import { SegmentEvent, Plan } from '../../../core/events'
+import { Plan } from '../../../core/events'
 
 const cdnResponse = {
   integrations: {
@@ -40,7 +40,6 @@ const cdnResponse = {
       type: 'browser',
     },
   },
-  edgeFunction: {},
 }
 
 const fetchSettings = Promise.resolve({
@@ -187,28 +186,6 @@ describe('remote loading', () => {
 
     await dest.page(new Context({ type: 'page' }))
     expect(dest.integration?.page).toHaveBeenCalled()
-  })
-
-  it('applies destination edge function to integration payload', async () => {
-    const changeProperties = (event: SegmentEvent): SegmentEvent => {
-      event.properties = { foo: 'bar' }
-      return event
-    }
-    const dest = await loadAmplitude()
-
-    dest.addEdgeFunctions(changeProperties)
-    jest.spyOn(dest.integration!, 'track')
-
-    await dest.track(new Context({ type: 'track', event: 'Button Clicked', properties: { count: 1 } }))
-    expect(dest.integration?.track).toHaveBeenCalledWith(
-      expect.objectContaining({
-        obj: expect.objectContaining({
-          properties: expect.objectContaining({
-            foo: 'bar',
-          }),
-        }),
-      })
-    )
   })
 })
 

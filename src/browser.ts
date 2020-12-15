@@ -2,7 +2,6 @@ import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { ajsDestinations } from './extensions/ajs-destination'
-import { edgeFunctions } from './extensions/edge-functions'
 import { pageEnrichment } from './extensions/page-enrichment'
 import { validation } from './extensions/validation'
 
@@ -22,17 +21,11 @@ export interface LegacySettings {
   integrations: {
     [name: string]: LegacyIntegrationConfiguration
   }
-  edgeFunction: {
-    downloadURL?: string
-  }
 }
 
 async function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
-    edgeFunction: {
-      downloadURL: undefined,
-    },
   }
 
   try {
@@ -52,12 +45,9 @@ export class AnalyticsBrowser {
     const extensions = settings.extensions ?? []
     const legacySettings = await loadLegacySettings(settings.writeKey)
 
-    const { sourceEdgeFns, destinationEdgeFns } = await edgeFunctions(legacySettings)
+    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, options) : []
 
-    const remoteExtensions =
-      process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, destinationEdgeFns, options) : []
-
-    const toRegister = [validation, pageEnrichment, ...sourceEdgeFns, ...extensions, ...remoteExtensions]
+    const toRegister = [validation, pageEnrichment, ...extensions, ...remoteExtensions]
     const ctx = await analytics.register(...toRegister)
 
     analytics.emit('initialize', settings, options)

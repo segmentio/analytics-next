@@ -8,7 +8,6 @@ import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
-import { applyDestinationEdgeFns, DestinationEdgeFunction, EdgeFunction } from '../../extensions/edge-functions/index'
 import { asPromise } from '../../lib/as-promise'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
@@ -63,7 +62,6 @@ export class LegacyDestination implements Extension {
   settings: object
   options: InitOptions
   type: Extension['type'] = 'destination'
-  edgeFunctions: EdgeFunction[] = []
   middleware: DestinationMiddlewareFunction[] = []
 
   private _ready = false
@@ -104,10 +102,6 @@ export class LegacyDestination implements Extension {
     this.integration.initialize()
   }
 
-  addEdgeFunctions(...edgeFunctions: EdgeFunction[]): void {
-    this.edgeFunctions = this.edgeFunctions.concat(...edgeFunctions)
-  }
-
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
     this.middleware = this.middleware.concat(...fn)
   }
@@ -133,8 +127,7 @@ export class LegacyDestination implements Extension {
       }
     }
 
-    const withEdgeFns = await applyDestinationEdgeFns(klona(ctx.event), this.edgeFunctions)
-    const afterMiddleware = await applyDestinationMiddleware(this.name, klona(withEdgeFns), this.middleware)
+    const afterMiddleware = await applyDestinationMiddleware(this.name, klona(ctx.event), this.middleware)
 
     const event = new clz(afterMiddleware, {})
 
@@ -191,7 +184,6 @@ export class LegacyDestination implements Extension {
 export async function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
-  destinationEdgeFns: DestinationEdgeFunction = {},
   options?: InitOptions
 ): Promise<Extension[]> {
   if (isServer()) {
@@ -210,13 +202,8 @@ export async function ajsDestinations(
         return
       }
 
-      const edgeFns = destinationEdgeFns[name] ?? []
       const version = resolveVersion(settings)
-
-      const destination = new LegacyDestination(name, version, settings, options as object)
-      destination.addEdgeFunctions(...edgeFns)
-
-      return destination
+      return new LegacyDestination(name, version, settings, options as object)
     })
     .filter((xt) => xt !== undefined) as Extension[]
 }
