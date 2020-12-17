@@ -5,17 +5,25 @@ import segment from './cases/segment'
 import milanuncios from './cases/milanuncios'
 import staples from './cases/staples'
 import local from './cases/local'
+import ritual from './cases/ritual'
 import fetch from 'node-fetch'
 
 import http from 'http'
 import handler from 'serve-handler'
 
-const cases = [segment, milanuncios, staples, local]
+const cases = [segment, milanuncios, staples, local, ritual]
 
 const CASES = process.env.CASES
+const DEVTOOLS = process.env.DEVTOOLS === 'true'
 const AJS_VERSION = process.env.AJS_VERSION || 'next'
 const HEADLESS = process.env.HEADLESS || 'true'
-const URL_KEYWORDS = ['https://api.segment.io', 'https://api.segment.com', 'https://api.cd.segment.com', 'https://api.cd.segment.io']
+const URL_KEYWORDS = [
+  'https://api.segment.io',
+  'https://api.segment.com',
+  'https://api.cd.segment.com',
+  'https://api.cd.segment.io',
+  'https://api.seg.ritual.com',
+]
 
 interface APICalls {
   name: string
@@ -98,10 +106,20 @@ async function record() {
       // 2500 is the magic number that allows for navigation to wait for AJS
       // calls to be actually fired
       slowMo: 2500,
-      // devtools: true,
+      devtools: DEVTOOLS,
     })
-    const context = await browser.newContext()
+
+    const context = await browser.newContext({
+      bypassCSP: true,
+      // the HAR files recorded below require a much bigger clean up process than the JSONs we're manually recording.
+      // We'll have to get back to this in the future and write a proper clean up script.
+      // recordHar: {
+      //   path: path.join(__dirname, 'data/requests/har', `${AJS_VERSION}-${c.name}`),
+      // },
+    })
+
     if (AJS_VERSION === 'next') {
+      // one thing worth investigating is if we can replace `loadAJSNext` with page.addInitScript(script)
       await loadAJSNext(context)
     }
 
@@ -109,6 +127,7 @@ async function record() {
 
     // Open new page
     const page = await context.newPage()
+
     await page.setViewportSize({ width: 1200, height: 800 })
 
     page.on('request', (request) => {

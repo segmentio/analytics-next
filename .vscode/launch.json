@@ -6,11 +6,12 @@
       "request": "launch",
       "name": "Debug recorder",
       "program": "${workspaceFolder}/node_modules/.bin/ts-node",
-      "args": ["${relativeFile}"],
+      "args": ["${workspaceFolder}/e2e-tests/recorder.ts"],
       "env": {
         "HEADLESS": "false",
-        "AJS_VERSION": "next",
-        "CASES": "segment,local"
+        "AJS_VERSION": "classic",
+        "CASES": "ritual",
+        "DEVTOOLS": "true"
       }
     },
 
