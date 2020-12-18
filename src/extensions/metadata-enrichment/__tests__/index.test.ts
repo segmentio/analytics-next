@@ -40,7 +40,7 @@ describe('Metadata Enrichment', () => {
         "failedInitializations": Array [
           "failed",
         ],
-        "unbundledIntegrations": Array [
+        "unbundled": Array [
           "bar",
         ],
       }

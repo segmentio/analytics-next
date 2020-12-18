@@ -140,7 +140,7 @@ export interface SegmentEvent {
   _metadata?: {
     failedInitializations?: unknown[]
     bundled?: string[]
-    unbundledIntegrations?: string[]
+    unbundled?: string[]
     nodeVersion?: string
   }
 

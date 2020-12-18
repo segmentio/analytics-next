@@ -240,6 +240,7 @@ describe('Dispatch', () => {
         "extension_time",
         "extension_time",
         "extension_time",
+        "extension_time",
         "message_delivered",
         "delivered",
       ]

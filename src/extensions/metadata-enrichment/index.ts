@@ -19,9 +19,9 @@ function enrich(ctx: Context, settings: LegacySettings, failed: string[]): Conte
   })
 
   ctx.event._metadata = {
-    bundled: bundled,
-    unbundledIntegrations: unbundled,
-    failedInitializations: failed,
+    bundled: bundled.sort(),
+    unbundled: unbundled.sort(),
+    failedInitializations: failed.sort(),
   }
   return ctx
 }
