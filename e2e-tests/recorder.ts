@@ -10,6 +10,7 @@ import fetch from 'node-fetch'
 
 import http from 'http'
 import handler from 'serve-handler'
+import { sortBy } from 'lodash'
 
 const cases = [segment, milanuncios, staples, local, ritual]
 
@@ -77,7 +78,13 @@ async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
 
 async function writeJSONFile(apiCalls: APICalls) {
   const filePath = path.join(__dirname, 'data/requests/', `${AJS_VERSION}-${apiCalls.name}.json`)
-  await fs.writeFile(filePath, JSON.stringify(apiCalls))
+
+  const sorted = {
+    ...apiCalls,
+    trackingAPI: sortBy(apiCalls.trackingAPI, ['url', 'context.url', 'context.page.path', 'context.page.url']),
+  }
+
+  await fs.writeFile(filePath, JSON.stringify(sorted))
 
   console.log(
     `\nDigest for ${apiCalls.name}:\n`,

@@ -208,7 +208,7 @@ export class User {
     this.mem.remove(key)
   }
 
-  id(id?: ID): ID {
+  id = (id?: ID): ID => {
     const prevId = this.chainGet(this.idKey)
 
     if (id !== undefined) {
@@ -232,7 +232,7 @@ export class User {
     return [anon, user]
   }
 
-  anonymousId(id?: ID): ID {
+  anonymousId = (id?: ID): ID => {
     if (id === undefined) {
       const val = this.chainGet<ID>(this.anonKey) ?? this.legacySIO()?.[0]
 
@@ -251,7 +251,7 @@ export class User {
   }
 
   // TODO: should traits be stored in cookies?
-  traits(traits?: object | null): SegmentEvent['traits'] {
+  traits = (traits?: object | null): SegmentEvent['traits'] => {
     if (traits === null) {
       traits = {}
     }
@@ -318,7 +318,7 @@ export class Group extends User {
     super(options, cookie)
   }
 
-  anonymousId(_id?: ID): ID {
+  anonymousId = (_id?: ID): ID => {
     return undefined
   }
 }

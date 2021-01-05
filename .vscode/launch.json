@@ -9,7 +9,7 @@
       "args": ["${workspaceFolder}/e2e-tests/recorder.ts"],
       "env": {
         "HEADLESS": "false",
-        "AJS_VERSION": "classic",
+        "AJS_VERSION": "next",
         "CASES": "ritual",
         "DEVTOOLS": "true"
       }

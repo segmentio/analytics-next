@@ -56,7 +56,7 @@ export class Analytics extends Emitter {
     this.integrations = options?.integrations ?? {}
   }
 
-  user(): User {
+  user = (): User => {
     return this._user
   }
 

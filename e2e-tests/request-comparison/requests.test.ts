@@ -1,5 +1,4 @@
 import fs from 'fs-extra'
-import { sortBy } from 'lodash'
 import path from 'path'
 
 const PATH = path.join(process.cwd(), 'e2e-tests/data/requests/')
@@ -27,6 +26,13 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
         postData.anonymousId = 'anon'
         postData.messageId = 'messageId'
 
+        if (postData.properties) {
+          // ritual.com related key
+          postData.properties.key = 'key'
+          postData.properties.cart_id = 'cart_id'
+          postData.properties.fbp = 'fbp'
+        }
+
         if (postData.context.externalIds) {
           postData.context.externalIds.forEach((externalId) => {
             externalId.id = 'random'
@@ -46,7 +52,7 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
         delete postData.context.attempts
 
         // category is covered by ASJNext, but omitted if its value is null
-        delete postData.cateogry
+        delete postData.category
 
         // library will obviously be different (ajs classic vs ajs next)
         delete postData.context.library
@@ -91,10 +97,10 @@ describe('Compare requests', () => {
     const nextScenario = nextScenarios.find((scenario) => scenario.fileName.includes(classicScenario.fileName.split('-')[1]))
 
     it(`compares classic and next recorded requests`, () => {
-      const classic = sortBy(cleanUp(classicScenario.content).trackingAPI, 'url')
-      const next = sortBy(cleanUp(nextScenario!.content).trackingAPI, 'url')
+      const cleanUpClassic = cleanUp(classicScenario.content).trackingAPI
+      const cleanUpNext = cleanUp(nextScenario!.content).trackingAPI
 
-      expect(classic).toEqual(next)
+      expect(cleanUpClassic).toEqual(cleanUpNext)
     })
   })
 })
@@ -130,7 +136,7 @@ interface PostData {
   userId?: string
   sentAt?: string
   traits?: Traits
-  cateogry?: string
+  category?: string
 }
 
 interface Context {
@@ -162,6 +168,11 @@ interface Properties {
   search: string
   title: string
   url: string
+
+  // ritual.com
+  key?: string
+  cart_id?: string
+  fbp?: string
 }
 
 interface Traits {
