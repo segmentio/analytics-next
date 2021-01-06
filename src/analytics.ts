@@ -1,3 +1,4 @@
+import autoBind from './lib/bind-all'
 import {
   AliasParams,
   DispatchedEvent,
@@ -54,6 +55,7 @@ export class Analytics extends Emitter {
     this._group = group ?? new Group(options?.group, cookieOptions).load()
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
+    autoBind(this)
   }
 
   user = (): User => {

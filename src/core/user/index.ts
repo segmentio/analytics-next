@@ -2,6 +2,7 @@ import { v4 as uuid } from '@lukeed/uuid'
 import jar from 'js-cookie'
 import { SegmentEvent } from '../events'
 import { tld } from './tld'
+import autoBind from '../../lib/bind-all'
 
 export type ID = string | null | undefined
 
@@ -188,6 +189,7 @@ export class User {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
     }
+    autoBind(this)
   }
 
   private chainGet<T>(key: string): T | null {
@@ -316,6 +318,7 @@ const groupDefaults: UserOptions = {
 export class Group extends User {
   constructor(options: UserOptions = groupDefaults, cookie?: CookieOptions) {
     super(options, cookie)
+    autoBind(this)
   }
 
   anonymousId = (_id?: ID): ID => {
