@@ -1,6 +1,5 @@
 import { Integrations, SegmentEvent } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
-import { pWhile } from '../../lib/p-while'
 import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
@@ -9,9 +8,11 @@ import { isServer } from '../../core/environment'
 import { Extension } from '../../core/extension'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
+import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { applyDestinationMiddleware, DestinationMiddlewareFunction } from '../middleware'
+import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion } from './loader'
 import { LegacyIntegration } from './types'
 
@@ -129,8 +130,11 @@ export class LegacyDestination implements Extension {
 
     const afterMiddleware = await applyDestinationMiddleware(this.name, klona(ctx.event), this.middleware)
 
-    const event = new clz(afterMiddleware, {})
+    if (afterMiddleware === null) {
+      return ctx
+    }
 
+    const event = new clz(afterMiddleware, {})
     const eventType = clz.name.toLowerCase() as 'track' | 'identify' | 'page' | 'alias' | 'group'
     const onEventType = `on${eventType}`
 
@@ -185,25 +189,35 @@ export async function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
   options?: InitOptions
-): Promise<Extension[]> {
+): Promise<LegacyDestination[]> {
   if (isServer()) {
     return []
   }
 
+  const routingRules = settings.routingRules?.rules ?? []
+  const routingMiddleware = tsubMiddleware(routingRules)
+
   return Object.entries(settings.integrations)
-    .map(([name, settings]) => {
+    .map(([name, integrationSettings]) => {
       const allDisableAndNotDefined = globalIntegrations.All === false && globalIntegrations[name] === undefined
 
       if (globalIntegrations[name] === false || allDisableAndNotDefined) {
         return
       }
 
-      if (settings.type !== 'browser' && name !== 'Segment.io') {
+      if (integrationSettings.type !== 'browser' && name !== 'Segment.io') {
         return
       }
 
-      const version = resolveVersion(settings)
-      return new LegacyDestination(name, version, settings, options as object)
+      const version = resolveVersion(integrationSettings)
+      const destination = new LegacyDestination(name, version, integrationSettings, options as object)
+
+      const routing = routingRules.filter((rule) => rule.destinationName === name)
+      if (routing.length > 0) {
+        destination.addMiddleware(routingMiddleware)
+      }
+
+      return destination
     })
-    .filter((xt) => xt !== undefined) as Extension[]
+    .filter((xt) => xt !== undefined) as LegacyDestination[]
 }

@@ -2,9 +2,10 @@ import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { ajsDestinations } from './extensions/ajs-destination'
-import { pageEnrichment } from './extensions/page-enrichment'
-import { validation } from './extensions/validation'
 import { metadataEnrichment } from './extensions/metadata-enrichment'
+import { pageEnrichment } from './extensions/page-enrichment'
+import { RoutingRule } from './extensions/routing-middleware'
+import { validation } from './extensions/validation'
 
 export { LegacyDestination } from './extensions/ajs-destination'
 
@@ -22,6 +23,10 @@ export interface LegacyIntegrationConfiguration {
 export interface LegacySettings {
   integrations: {
     [name: string]: LegacyIntegrationConfiguration
+  }
+
+  routingRules?: {
+    rules: RoutingRule[]
   }
 }
 

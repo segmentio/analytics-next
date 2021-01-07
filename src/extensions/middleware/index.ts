@@ -3,7 +3,7 @@ import { Context } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import { Extension } from '../../core/extension'
 
-class Fac extends Facade<SegmentEvent> {
+export class SegmentFacade extends Facade<SegmentEvent> {
   private _obj: SegmentEvent
 
   constructor(obj: SegmentEvent, options?: Options) {
@@ -21,16 +21,16 @@ class Fac extends Facade<SegmentEvent> {
 }
 
 export interface MiddlewareParams {
-  payload: Fac
+  payload: SegmentFacade
 
   integrations?: SegmentEvent['integrations']
-  next: (payload: MiddlewareParams['payload']) => void
+  next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
 export interface DestinationMiddlewareParams {
-  payload: Fac
+  payload: SegmentFacade
   integration: string
-  next: (payload: MiddlewareParams['payload']) => void
+  next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
 export type MiddlewareFunction = (middleware: MiddlewareParams) => void
@@ -40,17 +40,24 @@ export async function applyDestinationMiddleware(
   destination: string,
   evt: SegmentEvent,
   middleware: DestinationMiddlewareFunction[]
-): Promise<SegmentEvent> {
-  async function applyMiddleware(event: SegmentEvent, fn: DestinationMiddlewareFunction): Promise<SegmentEvent> {
+): Promise<SegmentEvent | null> {
+  async function applyMiddleware(event: SegmentEvent, fn: DestinationMiddlewareFunction): Promise<SegmentEvent | null> {
     return new Promise((resolve) => {
       fn({
-        payload: new Fac(event, {
+        payload: new SegmentFacade(event, {
           clone: true,
           traverse: false,
         }),
         integration: destination,
         next(evt) {
-          event = evt.obj
+          if (evt === null) {
+            return resolve(null)
+          }
+
+          if (evt) {
+            event = evt.obj
+          }
+
           resolve(event)
         },
       })
@@ -58,7 +65,11 @@ export async function applyDestinationMiddleware(
   }
 
   for (const md of middleware) {
-    evt = await applyMiddleware(evt, md)
+    const result = await applyMiddleware(evt, md)
+    if (result === null) {
+      return null
+    }
+    evt = result
   }
 
   return evt
@@ -68,13 +79,15 @@ export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
   async function applyMiddleware(ctx: Context): Promise<Context> {
     return new Promise((resolve) => {
       fn({
-        payload: new Fac(ctx.event, {
+        payload: new SegmentFacade(ctx.event, {
           clone: true,
           traverse: false,
         }),
         integrations: ctx.event.integrations ?? {},
         next(evt) {
-          ctx.event = evt.obj
+          if (evt) {
+            ctx.event = evt.obj
+          }
           resolve(ctx)
         },
       })

@@ -6,8 +6,10 @@ import jsdom from 'jsdom'
 import { Context } from '../../../core/context'
 import { Analytics } from '../../../analytics'
 import { Plan } from '../../../core/events'
+import { LegacySettings } from '../../../browser'
+import { tsubMiddleware } from '../../routing-middleware'
 
-const cdnResponse = {
+const cdnResponse: LegacySettings = {
   integrations: {
     Zapier: {
       type: 'server',
@@ -39,6 +41,23 @@ const cdnResponse = {
     Segmentio: {
       type: 'browser',
     },
+  },
+  routingRules: {
+    rules: [
+      {
+        matchers: [
+          {
+            ir: '["=","event",{"value":"Item Impression"}]',
+            type: 'fql',
+          },
+        ],
+        scope: 'destinations',
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        target_type: 'workspace::project::destination',
+        transformers: [[{ type: 'drop' }]],
+        destinationName: 'Amplitude',
+      },
+    ],
   },
 }
 
@@ -107,6 +126,12 @@ describe('ajsDestinations', () => {
     expect(destinations.length).toBe(1)
     expect(destinations[0].name).toEqual('Amplitude')
   })
+
+  it('adds a tsub middleware for matching rules', async () => {
+    const destinations = await ajsDestinations(cdnResponse)
+    const amplitude = destinations.find((d) => d.name === 'Amplitude')
+    expect(amplitude?.middleware.length).toBe(1)
+  })
 })
 
 describe('remote loading', () => {
@@ -116,7 +141,7 @@ describe('remote loading', () => {
     })
 
     const dest = new LegacyDestination(
-      'amplitude',
+      'Amplitude',
       'latest',
       {
         apiKey: '***REMOVED***',
@@ -186,6 +211,17 @@ describe('remote loading', () => {
 
     await dest.page(new Context({ type: 'page' }))
     expect(dest.integration?.page).toHaveBeenCalled()
+  })
+
+  it('applies remote routing rules', async () => {
+    const dest = await loadAmplitude()
+    jest.spyOn(dest.integration!, 'track')
+
+    dest.addMiddleware(tsubMiddleware(cdnResponse.routingRules?.rules ?? []))
+
+    // this routing rule should drop the event
+    await dest.track(new Context({ type: 'track', event: 'Item Impression' }))
+    expect(dest.integration?.track).not.toHaveBeenCalled()
   })
 })
 

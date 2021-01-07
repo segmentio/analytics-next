@@ -32,12 +32,14 @@ const jsontheme = {
   base0F: '#a3685a',
 }
 
-const settings: AnalyticsSettings = {
-  // segment.com
-  writeKey: '***REMOVED***',
+const writeKeys = {
+  segment_com: '***REMOVED***',
+  segment_app: '***REMOVED***',
+  classpass: '***REMOVED***',
+}
 
-  // segment app
-  // writeKey: '***REMOVED***',
+const settings: AnalyticsSettings = {
+  writeKey: writeKeys.segment_com,
 }
 
 export default function Home(): React.ReactElement {
@@ -91,7 +93,8 @@ export default function Home(): React.ReactElement {
       console.log('not ready yet')
     }
 
-    const ctx = await analytics.track('Track Event', JSON.parse(event))
+    const evt = JSON.parse(event)
+    const ctx = await analytics.track(evt?.event ?? 'Track Event', evt)
     setCtx(ctx)
 
     ctx.flush()
