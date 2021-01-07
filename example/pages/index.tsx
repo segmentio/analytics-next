@@ -45,6 +45,7 @@ const settings: AnalyticsSettings = {
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
+  const [writeKey, setWriteKey] = useState<string>(settings.writeKey)
 
   const newEvent = () => {
     const fakerFns = [
@@ -69,22 +70,25 @@ export default function Home(): React.ReactElement {
   const [event, setEvent] = React.useState('')
   const [ctx, setCtx] = React.useState<Context>()
 
+  async function fetchAnalytics() {
+    const [response, ctx] = await AnalyticsBrowser.load({
+      ...settings,
+      writeKey,
+    })
+
+    if (response) {
+      setCtx(ctx)
+      setAnalytics(response)
+      setAnalyticsReady(true)
+      setEvent(newEvent())
+      // @ts-ignore
+      window.analytics = response
+    }
+  }
+
   useEffect(() => {
-    async function fetchAnalytics() {
-      const [response, ctx] = await AnalyticsBrowser.load(settings)
-      if (response) {
-        setCtx(ctx)
-        setAnalytics(response)
-        setAnalyticsReady(true)
-        setEvent(newEvent())
-        // @ts-ignore
-        window.analytics = response
-      }
-    }
-    if (!analyticsReady && !analytics) {
-      fetchAnalytics()
-    }
-  }, [analytics, analyticsReady])
+    fetchAnalytics()
+  }, [writeKey, analyticsReady])
 
   const track = async (e) => {
     e.preventDefault()
@@ -125,6 +129,14 @@ export default function Home(): React.ReactElement {
       <h1 className="drac-text">
         <span className="drac-text-purple-cyan">Analytics Next</span> Tester
       </h1>
+
+      <select onChange={(e) => setWriteKey(e.target.value)}>
+        {Object.entries(writeKeys).map(([key, value]) => (
+          <option value={value} key={key}>
+            {key} - {value}
+          </option>
+        ))}
+      </select>
 
       <main className="drac-box" style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', alignItems: 'flex-start' }}>
         <div style={{ flex: 1 }}>

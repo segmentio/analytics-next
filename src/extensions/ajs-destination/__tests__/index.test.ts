@@ -42,8 +42,8 @@ const cdnResponse: LegacySettings = {
       type: 'browser',
     },
   },
-  routingRules: {
-    rules: [
+  middlewareSettings: {
+    routingRules: [
       {
         matchers: [
           {
@@ -217,7 +217,7 @@ describe('remote loading', () => {
     const dest = await loadAmplitude()
     jest.spyOn(dest.integration!, 'track')
 
-    dest.addMiddleware(tsubMiddleware(cdnResponse.routingRules?.rules ?? []))
+    dest.addMiddleware(tsubMiddleware(cdnResponse.middlewareSettings?.routingRules ?? []))
 
     // this routing rule should drop the event
     await dest.track(new Context({ type: 'track', event: 'Item Impression' }))

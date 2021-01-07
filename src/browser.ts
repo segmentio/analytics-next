@@ -25,8 +25,8 @@ export interface LegacySettings {
     [name: string]: LegacyIntegrationConfiguration
   }
 
-  routingRules?: {
-    rules: RoutingRule[]
+  middlewareSettings?: {
+    routingRules: RoutingRule[]
   }
 }
 

@@ -194,7 +194,7 @@ export async function ajsDestinations(
     return []
   }
 
-  const routingRules = settings.routingRules?.rules ?? []
+  const routingRules = settings.middlewareSettings?.routingRules ?? []
   const routingMiddleware = tsubMiddleware(routingRules)
 
   return Object.entries(settings.integrations)
