@@ -75,11 +75,17 @@ export function pageDefaults(): PageDefault {
 function enrichPageContext(ctx: Context): Context {
   const event = ctx.event
   event.context = event.context ?? {}
-  const pageContext = event.context.page ?? pageDefaults()
+  let pageContext = pageDefaults()
+  if (event.context.page) {
+    pageContext = {
+      ...pageContext,
+      ...event.context.page,
+    }
+  }
 
   event.context = {
-    page: pageContext,
     ...event.context,
+    page: pageContext,
   }
 
   ctx.event = event
