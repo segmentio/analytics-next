@@ -29,7 +29,7 @@ export async function loadIntegration(
   settings?: object
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
