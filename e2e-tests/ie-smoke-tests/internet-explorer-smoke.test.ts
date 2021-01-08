@@ -1,8 +1,8 @@
 import { remote } from 'webdriverio'
 import ngrok from 'ngrok'
 import URL from 'url'
-import { startLocalServer } from '../recorder'
 import execa from 'execa'
+import { startLocalServer } from '../recorder/localServer'
 
 const sauceKey = (): string => {
   return process.env.SAUCELABS_KEY ?? execa.commandSync('aws-okta exec dev-write -- chamber read -q analytics-next saucelabs-key').stdout

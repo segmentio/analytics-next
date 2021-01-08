@@ -78,11 +78,11 @@ record-clean:
 .PHONY: record-clean
 
 record-classic:
-	AJS_VERSION=classic $(BIN)/ts-node e2e-tests/recorder.ts
+	AJS_VERSION=classic $(BIN)/ts-node e2e-tests/recorder/index.ts
 .PHONY: record-classic
 
 record-next:
-	AJS_VERSION=next $(BIN)/ts-node e2e-tests/recorder.ts
+	AJS_VERSION=next $(BIN)/ts-node e2e-tests/recorder/index.ts
 .PHONY: record-next
 
 record: build-prod record-clean

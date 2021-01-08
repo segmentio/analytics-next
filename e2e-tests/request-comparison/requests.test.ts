@@ -29,8 +29,12 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
         if (postData.properties) {
           // ritual.com related key
           postData.properties.key = 'key'
+
           postData.properties.cart_id = 'cart_id'
           postData.properties.fbp = 'fbp'
+
+          // classpass.com related key
+          postData.properties.search_id = 'classpass'
         }
 
         if (postData.context.externalIds) {
@@ -50,6 +54,9 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
         // delete AJSN-only fields
         delete postData.context.metrics
         delete postData.context.attempts
+        if (postData._metadata?.failedInitializations && postData._metadata.failedInitializations.length === 0) {
+          delete postData._metadata.failedInitializations
+        }
 
         // category is covered by ASJNext, but omitted if its value is null
         delete postData.category
@@ -137,6 +144,13 @@ interface PostData {
   sentAt?: string
   traits?: Traits
   category?: string
+  _metadata?: Metadata
+}
+
+interface Metadata {
+  bundled: string[]
+  unbundled: string[]
+  failedInitializations?: string[]
 }
 
 interface Context {
@@ -173,6 +187,9 @@ interface Properties {
   key?: string
   cart_id?: string
   fbp?: string
+
+  // classpass.com
+  search_id?: string
 }
 
 interface Traits {

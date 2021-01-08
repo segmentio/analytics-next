@@ -1,5 +1,5 @@
 import { Page } from 'playwright'
-import { startLocalServer } from '../recorder'
+import { startLocalServer } from '../recorder/localServer'
 
 export default {
   name: 'local',

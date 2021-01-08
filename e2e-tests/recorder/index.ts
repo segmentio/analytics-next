@@ -1,30 +1,10 @@
 import { chromium, ChromiumBrowserContext } from 'playwright'
 import fs from 'fs-extra'
 import path from 'path'
-import segment from './cases/segment'
-import milanuncios from './cases/milanuncios'
-import staples from './cases/staples'
-import local from './cases/local'
-import ritual from './cases/ritual'
-import fetch from 'node-fetch'
-
-import http from 'http'
-import handler from 'serve-handler'
-import { sortBy } from 'lodash'
-
-const cases = [segment, milanuncios, staples, local, ritual]
-
-const CASES = process.env.CASES
-const DEVTOOLS = process.env.DEVTOOLS === 'true'
-const AJS_VERSION = process.env.AJS_VERSION || 'next'
-const HEADLESS = process.env.HEADLESS || 'true'
-const URL_KEYWORDS = [
-  'https://api.segment.io',
-  'https://api.segment.com',
-  'https://api.cd.segment.com',
-  'https://api.cd.segment.io',
-  'https://api.seg.ritual.com',
-]
+// import { sortBy } from 'lodash'
+import { AJS_VERSION, HEADLESS, DEVTOOLS, TRACKING_API_URLS, cases, ENDPOINTS } from './config'
+import { startLocalServer } from './localServer'
+import { Request } from 'playwright'
 
 interface APICalls {
   name: string
@@ -32,35 +12,9 @@ interface APICalls {
 }
 
 interface Call {
-  method: string
   url: string
   headers: Object
   postData: Object | null
-}
-
-export async function startLocalServer(): Promise<string> {
-  const srv = http.createServer((request, response) => {
-    return handler(request, response)
-  })
-
-  return new Promise(async (resolve, reject) => {
-    const desiredPort = process.env.PORT ?? 5000
-    const desiredPath = `http://localhost:${desiredPort}`
-
-    try {
-      const ping = await fetch(desiredPath)
-      if (ping.ok) {
-        return resolve(desiredPath)
-      }
-    } catch (err) {
-      srv.on('error', reject)
-      srv.listen(desiredPort, () => {
-        // @ts-expect-error
-        const { port } = srv.address()
-        resolve(`http://localhost:${port ?? desiredPort}`)
-      })
-    }
-  })
 }
 
 async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
@@ -77,14 +31,9 @@ async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
 }
 
 async function writeJSONFile(apiCalls: APICalls) {
-  const filePath = path.join(__dirname, 'data/requests/', `${AJS_VERSION}-${apiCalls.name}.json`)
+  const filePath = path.join(__dirname, '../data/requests/', `${AJS_VERSION}-${apiCalls.name}.json`)
 
-  const sorted = {
-    ...apiCalls,
-    trackingAPI: sortBy(apiCalls.trackingAPI, ['url', 'context.url', 'context.page.path', 'context.page.url']),
-  }
-
-  await fs.writeFile(filePath, JSON.stringify(sorted))
+  await fs.writeFile(filePath, JSON.stringify(apiCalls))
 
   console.log(
     `\nDigest for ${apiCalls.name}:\n`,
@@ -105,9 +54,7 @@ async function writeJSONFile(apiCalls: APICalls) {
 }
 
 async function record() {
-  const runFor = cases.filter((scenario) => CASES?.split(',').includes(scenario.name) ?? true)
-
-  const promises = runFor.map(async (c) => {
+  const promises = cases.map(async (c) => {
     const browser = await chromium.launch({
       headless: HEADLESS === 'true',
       // 2500 is the magic number that allows for navigation to wait for AJS
@@ -137,15 +84,27 @@ async function record() {
 
     await page.setViewportSize({ width: 1200, height: 800 })
 
-    page.on('request', (request) => {
-      if (URL_KEYWORDS.some((k) => request.url().includes(k))) {
-        console.log(request.url())
-        apiCalls.trackingAPI.push({
-          method: request.method(),
-          url: request.url(),
-          postData: request.postDataJSON(),
-          headers: request.headers(),
-        })
+    page.on('request', (request: Request) => {
+      if (TRACKING_API_URLS.some((k) => request.url().includes(k))) {
+        if (ENDPOINTS.some((e) => request.url().includes(e))) {
+          console.log(request.url())
+
+          const postData: any = request.postDataJSON()
+
+          const call = {
+            url: request.url(),
+            postData: {
+              type: postData!.type,
+              context: postData!.context,
+              properties: postData!.properties,
+              integrations: postData!.integrations,
+              _metadata: postData!._metadata,
+            },
+            headers: request.headers(),
+          }
+
+          apiCalls.trackingAPI.push(call)
+        }
       }
     })
 

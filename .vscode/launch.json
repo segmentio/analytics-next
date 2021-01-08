@@ -10,7 +10,7 @@
       "env": {
         "HEADLESS": "false",
         "AJS_VERSION": "next",
-        "CASES": "ritual",
+        "CASES": "classpass",
         "DEVTOOLS": "true"
       }
     },

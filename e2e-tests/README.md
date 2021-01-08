@@ -59,7 +59,7 @@ Paste the navigation code into a new typescript file and save it under [e2e-test
 
 # Recording requests
 
-Import the new file created into [e2e-tests/recorder.ts](/e2e-tests/recorder.ts#L4-L16) and add it to the scenarios list.
+Import the new file created into [e2e-tests/recorder/config.ts](/e2e-tests/recorder/config.ts#L20) and add it to the scenarios list.
 
 To record requests made by AJS Classic, run
 
@@ -74,7 +74,13 @@ make standalone-example # to serve AJS Next locally
 make record-next
 ```
 
-optional parameters like `HEADLESS=true|false` and `CASES=comma,separated,names` can also be passed in.
+optional parameters:
+
+- `HEADLESS=true|false` : whether or not to show chorme
+- `CASES=comma,separated,names` : comma separated list of cases to run
+- `ENDPOINTS=p,t,i,g,a` : comma separated list of tracking API endpoints to record
+- `DEVTOOLS=true|false` : whether or not to open chrome devtools when running on `HEADLESS=false` mode
+- `AJS_VERSION=classic|next` : what version of AJS to use (can also be controlled by using `make record-classic` or `make record-next`)
 
 # Comparing Requests
 
