@@ -1,24 +1,7 @@
-import { Facade, Options } from '@segment/facade'
 import { Context } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import { Extension } from '../../core/extension'
-
-export class SegmentFacade extends Facade<SegmentEvent> {
-  private _obj: SegmentEvent
-
-  constructor(obj: SegmentEvent, options?: Options) {
-    super(obj, options)
-    this._obj = obj
-  }
-
-  get obj(): SegmentEvent {
-    return this._obj
-  }
-
-  set obj(evt: SegmentEvent) {
-    this._obj = evt
-  }
-}
+import { SegmentFacade, toFacade } from '../../lib/to-facade'
 
 export interface MiddlewareParams {
   payload: SegmentFacade
@@ -44,7 +27,7 @@ export async function applyDestinationMiddleware(
   async function applyMiddleware(event: SegmentEvent, fn: DestinationMiddlewareFunction): Promise<SegmentEvent | null> {
     return new Promise((resolve) => {
       fn({
-        payload: new SegmentFacade(event, {
+        payload: toFacade(event, {
           clone: true,
           traverse: false,
         }),
@@ -76,10 +59,10 @@ export async function applyDestinationMiddleware(
 }
 
 export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
-  async function applyMiddleware(ctx: Context): Promise<Context> {
+  async function apply(ctx: Context): Promise<Context> {
     return new Promise((resolve) => {
       fn({
-        payload: new SegmentFacade(ctx.event, {
+        payload: toFacade(ctx.event, {
           clone: true,
           traverse: false,
         }),
@@ -102,10 +85,10 @@ export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
     isLoaded: (): boolean => true,
     load: (ctx): Promise<Context> => Promise.resolve(ctx),
 
-    track: applyMiddleware,
-    page: applyMiddleware,
-    identify: applyMiddleware,
-    alias: applyMiddleware,
-    group: applyMiddleware,
+    track: apply,
+    page: apply,
+    identify: apply,
+    alias: apply,
+    group: apply,
   }
 }

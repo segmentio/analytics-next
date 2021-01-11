@@ -1,10 +1,10 @@
 import { Context } from '@/core/context'
 import { Extension } from '@/core/extension'
 import { JSDOM } from 'jsdom'
+import { Analytics } from '../analytics'
 import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
 import { LegacyDestination } from '../extensions/ajs-destination'
-import { Analytics } from '../analytics'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -413,11 +413,11 @@ describe('track helpers', () => {
       jest.spyOn(console, 'error').mockImplementationOnce(() => {})
 
       document.querySelector('html')!.innerHTML = `
-            <html>
-              <body>
-                <a href='foo.com' id='foo'></a>
-              </body>
-            </html>`
+      <html>
+        <body>
+          <a href='foo.com' id='foo'></a>
+        </body>
+      </html>`
 
       link = document.getElementById('foo')
       wrap = document.createElementNS('http://www.w3.org/2000/svg', 'svg')

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { tsubMiddleware } from '..'
-import { SegmentFacade } from '../../middleware'
+import { toFacade } from '../../../lib/to-facade'
 
 describe('tsub middleware', () => {
   const rules = [
@@ -29,7 +29,7 @@ describe('tsub middleware', () => {
     middleware({
       integration: 'Google Tag Manager',
       next,
-      payload: new SegmentFacade({
+      payload: toFacade({
         type: 'track',
         event: 'Item Impression',
       }),
@@ -48,7 +48,7 @@ describe('tsub middleware', () => {
     middleware({
       integration: 'Google Analytics',
       next,
-      payload: new SegmentFacade({
+      payload: toFacade({
         type: 'track',
         event: 'Item Impression',
       }),

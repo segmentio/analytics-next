@@ -50,6 +50,24 @@ describe(sourceMiddlewareExtension, () => {
       })
     })
 
+    it('uses a segment facade object', async () => {
+      let type = ''
+      const facadeMiddleware: MiddlewareFunction = ({ payload, next }) => {
+        type = payload.type()
+        next(payload)
+      }
+
+      const xt = sourceMiddlewareExtension(facadeMiddleware)
+
+      await xt.track!(
+        new Context({
+          type: 'track',
+        })
+      )
+
+      expect(type).toEqual(type)
+    })
+
     it('does not continue unless `next` is called', async (done) => {
       const callback = jest.fn()
 

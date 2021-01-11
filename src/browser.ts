@@ -4,6 +4,7 @@ import { Context } from './core/context'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { metadataEnrichment } from './extensions/metadata-enrichment'
 import { pageEnrichment } from './extensions/page-enrichment'
+import { remoteMiddlewares } from './extensions/remote-middleware'
 import { RoutingRule } from './extensions/routing-middleware'
 import { validation } from './extensions/validation'
 
@@ -28,15 +29,19 @@ export interface LegacySettings {
   middlewareSettings?: {
     routingRules: RoutingRule[]
   }
+
+  enabledMiddleware?: Record<string, boolean>
 }
 
-async function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
+const CDN_PATH = 'https://cdn-settings.segment.com'
+
+export async function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
 
   try {
-    return await fetch(`https://cdn-settings.segment.com/v1/projects/${writeKey}/settings`).then((res) => res.json())
+    return await fetch(`${CDN_PATH}/v1/projects/${writeKey}/settings`).then((res) => res.json())
   } catch (err) {
     // proceed with default legacy settings
     console.warn('Failed to load legacy settings', err)
@@ -53,12 +58,13 @@ export class AnalyticsBrowser {
     const legacySettings = await loadLegacySettings(settings.writeKey)
 
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, options) : []
-
     const metadata = metadataEnrichment(legacySettings, analytics.queue.failedInitializations)
-
     const toRegister = [validation, pageEnrichment, metadata, ...extensions, ...remoteExtensions]
 
     const ctx = await analytics.register(...toRegister)
+
+    const middleware = await remoteMiddlewares(ctx, legacySettings)
+    middleware.forEach((mdw) => analytics.addSourceMiddleware(mdw))
 
     analytics.emit('initialize', settings, options)
 

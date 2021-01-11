@@ -36,6 +36,7 @@ const writeKeys = {
   segment_com: '***REMOVED***',
   segment_app: '***REMOVED***',
   classpass: '***REMOVED***',
+  stage: '***REMOVED***',
 }
 
 const settings: AnalyticsSettings = {
