@@ -66,7 +66,7 @@ export class LegacyDestination implements Extension {
   middleware: DestinationMiddlewareFunction[] = []
 
   private _ready = false
-  private onReady: Promise<unknown> = Promise.resolve()
+  private onReady: Promise<unknown> | undefined
   integration: LegacyIntegration | undefined
 
   buffer: PriorityQueue<Context>
@@ -87,12 +87,15 @@ export class LegacyDestination implements Extension {
   }
 
   ready(): Promise<unknown> {
-    return this.onReady
+    return this.onReady ?? Promise.resolve()
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
-    this.integration = await loadIntegration(ctx, analyticsInstance, this.name, this.version, this.settings)
+    if (this._ready || this.onReady !== undefined) {
+      return
+    }
 
+    this.integration = await loadIntegration(ctx, analyticsInstance, this.name, this.version, this.settings)
     this.onReady = new Promise((resolve) => {
       this.integration!.once('ready', () => {
         this._ready = true
@@ -100,7 +103,12 @@ export class LegacyDestination implements Extension {
       })
     })
 
-    this.integration.initialize()
+    try {
+      ctx.stats.increment('analytics_js.integration.invoke', 1, [`method:initialize`, `integration_name:${this.name}`])
+      this.integration.initialize()
+    } catch (error) {
+      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [`method:initialize`, `integration_name:${this.name}`])
+    }
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
@@ -138,13 +146,20 @@ export class LegacyDestination implements Extension {
     const eventType = clz.name.toLowerCase() as 'track' | 'identify' | 'page' | 'alias' | 'group'
     const onEventType = `on${eventType}`
 
-    // @ts-expect-error
-    if (this.integration && this.integration[onEventType]) {
+    ctx.stats.increment('analytics_js.integration.invoke', 1, [`method:${eventType}`, `integration_name:${this.name}`])
+
+    try {
       // @ts-expect-error
-      await asPromise(this.integration[onEventType](event))
-    } else if (this.integration && this.integration[eventType]) {
-      // @ts-expect-error
-      await asPromise(this.integration[eventType](event))
+      if (this.integration && this.integration[onEventType]) {
+        // @ts-expect-error
+        await asPromise(this.integration[onEventType](event))
+      } else if (this.integration && this.integration[eventType]) {
+        // @ts-expect-error
+        await asPromise(this.integration[eventType](event))
+      }
+    } catch (err) {
+      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [`method:${eventType}`, `integration_name:${this.name}`])
+      throw err
     }
 
     return ctx

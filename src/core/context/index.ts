@@ -3,6 +3,7 @@ import dset from 'dset'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'
 import Stats, { Metric } from '../stats'
+import { MetricsOptions, RemoteMetrics } from '../stats/remote-metrics'
 
 export interface AbstractContext {
   cancel: () => never
@@ -31,15 +32,22 @@ export class ContextCancelation extends Error {
   }
 }
 
+let remoteMetrics: RemoteMetrics | undefined
+
 export class Context implements AbstractContext {
   private _event: SegmentEvent
   public logger = new Logger()
-  public stats = new Stats()
+  public stats: Stats
   private _id: string
 
   constructor(event: SegmentEvent, id?: string) {
     this._event = event
     this._id = id ?? uuid()
+    this.stats = new Stats(remoteMetrics)
+  }
+
+  static initMetrics(options?: MetricsOptions): void {
+    remoteMetrics = new RemoteMetrics(options)
   }
 
   static system(): Context {

@@ -1,6 +1,7 @@
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
+import { MetricsOptions } from './core/stats/remote-metrics'
 import { ajsDestinations } from './extensions/ajs-destination'
 import { metadataEnrichment } from './extensions/metadata-enrichment'
 import { pageEnrichment } from './extensions/page-enrichment'
@@ -31,6 +32,7 @@ export interface LegacySettings {
   }
 
   enabledMiddleware?: Record<string, boolean>
+  metrics?: MetricsOptions
 }
 
 const CDN_PATH = 'https://cdn-settings.segment.com'
@@ -56,11 +58,11 @@ export class AnalyticsBrowser {
 
     const extensions = settings.extensions ?? []
     const legacySettings = await loadLegacySettings(settings.writeKey)
+    Context.initMetrics(legacySettings.metrics)
 
     const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, options) : []
     const metadata = metadataEnrichment(legacySettings, analytics.queue.failedInitializations)
     const toRegister = [validation, pageEnrichment, metadata, ...extensions, ...remoteExtensions]
-
     const ctx = await analytics.register(...toRegister)
 
     const middleware = await remoteMiddlewares(ctx, legacySettings)

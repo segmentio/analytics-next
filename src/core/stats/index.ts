@@ -1,3 +1,5 @@
+import { RemoteMetrics } from './remote-metrics'
+
 type MetricType = 'gauge' | 'counter'
 type CompactMetricType = 'g' | 'c'
 
@@ -28,6 +30,12 @@ const compactMetricType = (type: MetricType): CompactMetricType => {
 export default class Stats {
   metrics: Metric[] = []
 
+  private remoteMetrics?: RemoteMetrics
+
+  constructor(remoteMetrics?: RemoteMetrics) {
+    this.remoteMetrics = remoteMetrics
+  }
+
   increment(metric: string, by = 1, tags?: string[]): void {
     this.metrics.push({
       metric,
@@ -36,6 +44,8 @@ export default class Stats {
       type: 'counter',
       timestamp: Date.now(),
     })
+
+    this.remoteMetrics?.increment(metric, tags ?? [])
   }
 
   gauge(metric: string, value: number, tags?: string[]): void {
