@@ -1,6 +1,6 @@
 import { Context } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
-import { Extension } from '../../core/extension'
+import { Plugin } from '../../core/plugin'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
 
 export interface MiddlewareParams {
@@ -63,7 +63,7 @@ export async function applyDestinationMiddleware(
   return evt
 }
 
-export function sourceMiddlewareExtension(fn: MiddlewareFunction): Extension {
+export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     return new Promise((resolve) => {
       fn({

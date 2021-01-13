@@ -1,5 +1,5 @@
 import { Context } from '@/core/context'
-import { Extension } from '@/core/extension'
+import { Plugin } from '@/core/plugin'
 import url from 'component-url'
 
 interface PageDefault {
@@ -92,7 +92,7 @@ function enrichPageContext(ctx: Context): Context {
   return ctx
 }
 
-export const pageEnrichment: Extension = {
+export const pageEnrichment: Plugin = {
   name: 'Page Enrichment',
   version: '0.1.0',
   isLoaded: () => true,

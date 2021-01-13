@@ -2,7 +2,7 @@ import { shuffle } from 'lodash'
 import { Analytics } from '../../../analytics'
 import { PriorityQueue } from '../../../lib/priority-queue'
 import { Context } from '../../context'
-import { Extension } from '../../extension'
+import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
 
 const fruitBasket = new Context({
@@ -15,7 +15,7 @@ const fruitBasket = new Context({
   },
 })
 
-const testExtension: Extension = {
+const testPlugin: Plugin = {
   name: 'test',
   type: 'before',
   version: '0.1.0',
@@ -26,11 +26,11 @@ const testExtension: Extension = {
 const ajs = {} as Analytics
 
 describe('Registration', () => {
-  test('can register extensions', async () => {
+  test('can register plugins', async () => {
     const eq = new EventQueue()
     const load = jest.fn()
 
-    const extension: Extension = {
+    const plugin: Plugin = {
       name: 'test',
       type: 'before',
       version: '0.1.0',
@@ -39,15 +39,15 @@ describe('Registration', () => {
     }
 
     const ctx = Context.system()
-    await eq.register(ctx, extension, ajs)
+    await eq.register(ctx, plugin, ajs)
 
     expect(load).toHaveBeenCalledWith(ctx, ajs)
   })
 
-  test('fails if extension cant be loaded', async () => {
+  test('fails if plugin cant be loaded', async () => {
     const eq = new EventQueue()
 
-    const extension: Extension = {
+    const plugin: Plugin = {
       name: 'test',
       type: 'before',
       version: '0.1.0',
@@ -57,14 +57,14 @@ describe('Registration', () => {
 
     const ctx = Context.system()
     await expect(
-      eq.register(ctx, extension, ajs)
+      eq.register(ctx, plugin, ajs)
     ).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
   })
 
   test('allows for destinations to fail registration', async () => {
     const eq = new EventQueue()
 
-    const extension: Extension = {
+    const plugin: Plugin = {
       name: 'test',
       type: 'destination',
       version: '0.1.0',
@@ -73,15 +73,15 @@ describe('Registration', () => {
     }
 
     const ctx = Context.system()
-    await eq.register(ctx, extension, ajs)
+    await eq.register(ctx, plugin, ajs)
 
     expect(ctx.logs()[0].level).toEqual('warn')
     expect(ctx.logs()[0].message).toEqual('Failed to load destination')
   })
 })
 
-describe('Extension flushing', () => {
-  test('ensures `before` extensions are run', async () => {
+describe('Plugin flushing', () => {
+  test('ensures `before` plugins are run', async () => {
     const eq = new EventQueue()
     const queue = new PriorityQueue(1, [])
 
@@ -90,7 +90,7 @@ describe('Extension flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         type: 'before',
       },
       ajs
@@ -102,7 +102,7 @@ describe('Extension flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         name: 'Faulty before',
         type: 'before',
         track: () => {
@@ -124,13 +124,13 @@ describe('Extension flushing', () => {
     expect(messages).not.toContain('Delivered')
   })
 
-  test('atempts `enrichment` extensions', async () => {
+  test('atempts `enrichment` plugins', async () => {
     const eq = new EventQueue()
 
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         name: 'Faulty enrichment',
         type: 'enrichment',
         track: () => {
@@ -150,11 +150,11 @@ describe('Extension flushing', () => {
     expect(messages).toContain('Delivered')
   })
 
-  test('attempts `destination` extensions', async () => {
+  test('attempts `destination` plugins', async () => {
     const eq = new EventQueue()
 
-    const amplitude: Extension = {
-      ...testExtension,
+    const amplitude: Plugin = {
+      ...testPlugin,
       name: 'Amplitude',
       type: 'destination',
       track: async () => {
@@ -162,8 +162,8 @@ describe('Extension flushing', () => {
       },
     }
 
-    const fullstory: Extension = {
-      ...testExtension,
+    const fullstory: Plugin = {
+      ...testPlugin,
       name: 'FullStory',
       type: 'destination',
     }
@@ -188,22 +188,22 @@ describe('Extension flushing', () => {
         },
         Object {
           "extras": Object {
-            "extension": "Amplitude",
+            "plugin": "Amplitude",
           },
-          "message": "extension",
+          "message": "plugin",
         },
         Object {
           "extras": Object {
-            "extension": "FullStory",
+            "plugin": "FullStory",
           },
-          "message": "extension",
+          "message": "plugin",
         },
         Object {
           "extras": Object {
             "error": [Error: Boom!],
-            "extension": "Amplitude",
+            "plugin": "Amplitude",
           },
-          "message": "extension Error",
+          "message": "plugin Error",
         },
         Object {
           "extras": Object {
@@ -218,11 +218,11 @@ describe('Extension flushing', () => {
     `)
   })
 
-  test('attempts `after` extensions', async () => {
+  test('attempts `after` plugins', async () => {
     const eq = new EventQueue()
 
-    const afterFailed: Extension = {
-      ...testExtension,
+    const afterFailed: Plugin = {
+      ...testPlugin,
       name: 'after-failed',
       type: 'after',
       track: async () => {
@@ -230,8 +230,8 @@ describe('Extension flushing', () => {
       },
     }
 
-    const after: Extension = {
-      ...testExtension,
+    const after: Plugin = {
+      ...testPlugin,
       name: 'after',
       type: 'after',
     }
@@ -256,22 +256,22 @@ describe('Extension flushing', () => {
         },
         Object {
           "extras": Object {
-            "extension": "after-failed",
+            "plugin": "after-failed",
           },
-          "message": "extension",
+          "message": "plugin",
         },
         Object {
           "extras": Object {
-            "extension": "after",
+            "plugin": "after",
           },
-          "message": "extension",
+          "message": "plugin",
         },
         Object {
           "extras": Object {
             "error": [Error: Boom!],
-            "extension": "after-failed",
+            "plugin": "after-failed",
           },
-          "message": "extension Error",
+          "message": "plugin Error",
         },
         Object {
           "extras": Object {
@@ -292,7 +292,7 @@ describe('Extension flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         name: 'Kiwi',
         type: 'enrichment',
         track: async (ctx) => {
@@ -306,7 +306,7 @@ describe('Extension flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         name: 'Watermelon',
         type: 'enrichment',
         track: async (ctx) => {
@@ -320,7 +320,7 @@ describe('Extension flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         name: 'Before',
         type: 'before',
         track: async (ctx) => {
@@ -350,8 +350,8 @@ describe('Extension flushing', () => {
 
     let trace = 0
 
-    const before: Extension = {
-      ...testExtension,
+    const before: Plugin = {
+      ...testPlugin,
       name: 'Before',
       type: 'before',
       track: async (ctx) => {
@@ -361,8 +361,8 @@ describe('Extension flushing', () => {
       },
     }
 
-    const enrichment: Extension = {
-      ...testExtension,
+    const enrichment: Plugin = {
+      ...testPlugin,
       name: 'Enrichment',
       type: 'enrichment',
       track: async (ctx) => {
@@ -372,8 +372,8 @@ describe('Extension flushing', () => {
       },
     }
 
-    const enrichmentTwo: Extension = {
-      ...testExtension,
+    const enrichmentTwo: Plugin = {
+      ...testPlugin,
       name: 'Enrichment 2',
       type: 'enrichment',
       track: async (ctx) => {
@@ -383,8 +383,8 @@ describe('Extension flushing', () => {
       },
     }
 
-    const destination: Extension = {
-      ...testExtension,
+    const destination: Plugin = {
+      ...testPlugin,
       name: 'Destination',
       type: 'destination',
       track: async (ctx) => {
@@ -394,9 +394,9 @@ describe('Extension flushing', () => {
       },
     }
 
-    // shuffle extensions so we can verify order
-    const extensions = shuffle([before, enrichment, enrichmentTwo, destination])
-    for (const xt of extensions) {
+    // shuffle plugins so we can verify order
+    const plugins = shuffle([before, enrichment, enrichmentTwo, destination])
+    for (const xt of plugins) {
       await eq.register(Context.system(), xt, ajs)
     }
 

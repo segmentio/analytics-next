@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { Analytics } from '../../../analytics'
 import { Context, ContextCancelation } from '../../context'
-import { Extension } from '../../extension'
+import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
 
 const fruitBasket = new Context({
@@ -25,7 +25,7 @@ const shopper = new Context({
   },
 })
 
-const testExtension: Extension = {
+const testPlugin: Plugin = {
   name: 'test',
   type: 'before',
   version: '0.1.0',
@@ -106,7 +106,7 @@ describe('Flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         track: (ctx) => {
           if (ctx === fruitBasket) {
             throw new Error('aaay')
@@ -139,7 +139,7 @@ describe('Flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
           if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
@@ -179,7 +179,7 @@ describe('Flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         track: async (ctx) => {
           ctx.cancel(new ContextCancelation({ retry: false }))
           return ctx
@@ -208,7 +208,7 @@ describe('Flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
           if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
@@ -249,7 +249,7 @@ describe('Flushing', () => {
     await eq.register(
       Context.system(),
       {
-        ...testExtension,
+        ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
           if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {

@@ -1,4 +1,4 @@
-import { Extension } from '../../core/extension'
+import { Plugin } from '../../core/plugin'
 import { Context } from '../../core/context'
 import { v4 as uuid } from '@lukeed/uuid'
 import md5 from 'md5'
@@ -35,11 +35,11 @@ export const hydrateMessage = (message: SegmentEvent): SegmentEvent => ({
 interface AnalyticsNodeSettings {
   writeKey: string
   name: string
-  type: Extension['type']
+  type: Plugin['type']
   version: string
 }
 
-export function analyticsNode(settings: AnalyticsNodeSettings): Extension {
+export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
   const fireEvent = async (ctx: Context): Promise<Context> => {
     ctx = embedMetrics(ctx)
 
@@ -49,7 +49,7 @@ export function analyticsNode(settings: AnalyticsNodeSettings): Extension {
     return ctx
   }
 
-  const xt: Extension = {
+  const xt: Plugin = {
     name: settings.name,
     type: settings.type,
     version: settings.version,

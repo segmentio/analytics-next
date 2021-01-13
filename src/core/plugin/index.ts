@@ -1,17 +1,17 @@
 import { Analytics } from '../../analytics'
 import { Context } from '../context'
 
-interface ExtensionConfig {
+interface PluginConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any
-  priority: 'critical' | 'non-critical' // whether AJS should expect this extension to be loaded before starting event delivery
+  priority: 'critical' | 'non-critical' // whether AJS should expect this plugin to be loaded before starting event delivery
 }
 
 // enrichment - modifies the event. Enrichment can happen in parallel, by reducing all changes in the final event. Failures in this stage could halt event delivery.
 // destination - runs in parallel at the end of the lifecycle. Cannot modify the event, can fail and not halt execution.
 // utility - do not affect lifecycle. Should be run and executed once. Their `track/identify` calls don't really do anything. example
 
-export interface Extension {
+export interface Plugin {
   name: string
   version: string
   type: 'before' | 'after' | 'destination' | 'enrichment' | 'utility'
@@ -20,7 +20,7 @@ export interface Extension {
   load: (
     ctx: Context,
     instance: Analytics,
-    config?: ExtensionConfig
+    config?: PluginConfig
   ) => Promise<unknown>
 
   ready?: () => Promise<unknown>

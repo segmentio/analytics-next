@@ -1,7 +1,7 @@
-import { MiddlewareFunction, sourceMiddlewareExtension } from '..'
+import { MiddlewareFunction, sourceMiddlewarePlugin } from '..'
 import { Context } from '../../../core/context'
 
-describe(sourceMiddlewareExtension, () => {
+describe(sourceMiddlewarePlugin, () => {
   const simpleMiddleware: MiddlewareFunction = ({ payload, next }) => {
     if (!payload.obj.context) {
       payload.obj.context = {}
@@ -12,7 +12,7 @@ describe(sourceMiddlewareExtension, () => {
     next(payload)
   }
 
-  const xt = sourceMiddlewareExtension(simpleMiddleware)
+  const xt = sourceMiddlewarePlugin(simpleMiddleware)
 
   it('creates a source middleware', () => {
     expect(xt.name).toEqual('Source Middleware simpleMiddleware')
@@ -35,7 +35,7 @@ describe(sourceMiddlewareExtension, () => {
         next(payload)
       }
 
-      const xt = sourceMiddlewareExtension(changeProperties)
+      const xt = sourceMiddlewarePlugin(changeProperties)
 
       expect(
         (
@@ -57,7 +57,7 @@ describe(sourceMiddlewareExtension, () => {
         next(payload)
       }
 
-      const xt = sourceMiddlewareExtension(facadeMiddleware)
+      const xt = sourceMiddlewarePlugin(facadeMiddleware)
 
       await xt.track!(
         new Context({
@@ -72,13 +72,13 @@ describe(sourceMiddlewareExtension, () => {
       const callback = jest.fn()
 
       const hangs: MiddlewareFunction = () => {}
-      const hangsXT = sourceMiddlewareExtension(hangs)
+      const hangsXT = sourceMiddlewarePlugin(hangs)
 
       const doesNotHang: MiddlewareFunction = ({ next, payload }) => {
         next(payload)
       }
 
-      const doesNotHangXT = sourceMiddlewareExtension(doesNotHang)
+      const doesNotHangXT = sourceMiddlewarePlugin(doesNotHang)
 
       hangsXT.track!(new Context({ type: 'track' }))
         .then(callback)

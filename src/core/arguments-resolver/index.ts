@@ -3,7 +3,7 @@ import {
   isPlainObject,
   isString,
   isNumber,
-} from '../../extensions/validation'
+} from '../../plugins/validation'
 import { Context } from '../context'
 import { Options, SegmentEvent } from '../events'
 import { ID, User } from '../user'

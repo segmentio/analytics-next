@@ -1,18 +1,18 @@
 import { Context } from '@/core/context'
-import { Extension } from '@/core/extension'
+import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../analytics'
 import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
-import { LegacyDestination } from '../extensions/ajs-destination'
+import { LegacyDestination } from '../plugins/ajs-destination'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, time)
   })
 
-const xt: Extension = {
-  name: 'Test Extension',
+const xt: Plugin = {
+  name: 'Test Plugin',
   type: 'utility',
   version: '1.0',
 
@@ -31,19 +31,19 @@ const xt: Extension = {
   alias: async (ctx) => ctx,
 }
 
-const amplitude: Extension = {
+const amplitude: Plugin = {
   ...xt,
   name: 'Amplitude',
   type: 'destination',
 }
 
-const googleAnalytics: Extension = {
+const googleAnalytics: Plugin = {
   ...xt,
   name: 'Google Analytics',
   type: 'destination',
 }
 
-const enrichBilling: Extension = {
+const enrichBilling: Plugin = {
   ...xt,
   name: 'Billing Enrichment',
   type: 'enrichment',
@@ -64,22 +64,22 @@ describe('Initialization', () => {
     jest.resetAllMocks()
   })
 
-  it('loads extensions', async () => {
+  it('loads plugins', async () => {
     await AnalyticsBrowser.load({
       writeKey,
-      extensions: [xt],
+      plugins: [xt],
     })
 
     expect(xt.isLoaded()).toBe(true)
   })
 
-  it('loads async extensions', async () => {
-    let extensionLoaded = false
+  it('loads async plugins', async () => {
+    let pluginLoaded = false
     const onLoad = jest.fn(() => {
-      extensionLoaded = true
+      pluginLoaded = true
     })
 
-    const lazyExtension: Extension = {
+    const lazyPlugin: Plugin = {
       name: 'Test 2',
       type: 'utility',
       version: '1.0',
@@ -88,27 +88,27 @@ describe('Initialization', () => {
         setTimeout(onLoad, 300)
       },
       isLoaded: () => {
-        return extensionLoaded
+        return pluginLoaded
       },
     }
 
-    jest.spyOn(lazyExtension, 'load')
-    await AnalyticsBrowser.load({ writeKey, extensions: [lazyExtension] })
+    jest.spyOn(lazyPlugin, 'load')
+    await AnalyticsBrowser.load({ writeKey, plugins: [lazyPlugin] })
 
-    expect(lazyExtension.load).toHaveBeenCalled()
+    expect(lazyPlugin.load).toHaveBeenCalled()
     expect(onLoad).not.toHaveBeenCalled()
-    expect(extensionLoaded).toBe(false)
+    expect(pluginLoaded).toBe(false)
 
     await sleep(300)
 
     expect(onLoad).toHaveBeenCalled()
-    expect(extensionLoaded).toBe(true)
+    expect(pluginLoaded).toBe(true)
   })
 
-  it('ready method is called only when all extensions with ready have declared themselves as ready', async () => {
+  it('ready method is called only when all plugins with ready have declared themselves as ready', async () => {
     const ready = jest.fn()
 
-    const lazyExtension1: Extension = {
+    const lazyPlugin1: Plugin = {
       name: 'Test 2',
       type: 'destination',
       version: '1.0',
@@ -120,7 +120,7 @@ describe('Initialization', () => {
       isLoaded: () => true,
     }
 
-    const lazyExtension2: Extension = {
+    const lazyPlugin2: Plugin = {
       name: 'Test 2',
       type: 'destination',
       version: '1.0',
@@ -132,17 +132,17 @@ describe('Initialization', () => {
       isLoaded: () => true,
     }
 
-    jest.spyOn(lazyExtension1, 'load')
-    jest.spyOn(lazyExtension2, 'load')
+    jest.spyOn(lazyPlugin1, 'load')
+    jest.spyOn(lazyPlugin2, 'load')
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [lazyExtension1, lazyExtension2, xt],
+      plugins: [lazyPlugin1, lazyPlugin2, xt],
     })
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     analytics.ready(ready)
-    expect(lazyExtension1.load).toHaveBeenCalled()
-    expect(lazyExtension2.load).toHaveBeenCalled()
+    expect(lazyPlugin1.load).toHaveBeenCalled()
+    expect(lazyPlugin2.load).toHaveBeenCalled()
     expect(ready).not.toHaveBeenCalled()
 
     await sleep(100)
@@ -191,7 +191,7 @@ describe('Dispatch', () => {
   it('dispatches events to destinations', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [amplitude, googleAnalytics],
+      plugins: [amplitude, googleAnalytics],
     })
 
     const ampSpy = jest.spyOn(amplitude, 'track')
@@ -209,7 +209,7 @@ describe('Dispatch', () => {
   it('enriches events before dispatching', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [enrichBilling, amplitude, googleAnalytics],
+      plugins: [enrichBilling, amplitude, googleAnalytics],
     })
 
     const boo = await ajs.track('Boo!', {
@@ -227,7 +227,7 @@ describe('Dispatch', () => {
   it('collects metrics for every event', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [amplitude],
+      plugins: [amplitude],
     })
 
     const delivered = await ajs.track('Fruit Basket', {
@@ -240,10 +240,10 @@ describe('Dispatch', () => {
     expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       Array [
         "message_dispatched",
-        "extension_time",
-        "extension_time",
-        "extension_time",
-        "extension_time",
+        "plugin_time",
+        "plugin_time",
+        "plugin_time",
+        "plugin_time",
         "message_delivered",
         "delivered",
       ]
@@ -275,7 +275,7 @@ describe('Alias', () => {
   it('generates alias events', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [amplitude],
+      plugins: [amplitude],
     })
 
     jest.spyOn(amplitude, 'alias')
@@ -293,7 +293,7 @@ describe('setAnonymousId', () => {
   it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
-      extensions: [amplitude],
+      plugins: [amplitude],
     })
 
     const currentAnonymousId = analytics.user().anonymousId()
@@ -693,14 +693,14 @@ describe('track helpers', () => {
 })
 
 describe('use', () => {
-  it('registers a plugin', async () => {
+  it('registers a legacyPlugin', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
 
-    const lePlugin = jest.fn()
-    analytics.use(lePlugin)
+    const legacyPlugin = jest.fn()
+    analytics.use(legacyPlugin)
 
-    expect(lePlugin).toHaveBeenCalledWith(analytics)
+    expect(legacyPlugin).toHaveBeenCalledWith(analytics)
   })
 })

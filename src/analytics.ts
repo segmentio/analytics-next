@@ -14,20 +14,20 @@ import { Callback, invokeCallback } from './core/callback'
 import { Context } from './core/context'
 import { Emitter } from './core/emitter'
 import { EventFactory, Integrations, SegmentEvent, Plan } from './core/events'
-import { Extension } from './core/extension'
+import { Plugin } from './core/plugin'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import { LegacyDestination } from './extensions/ajs-destination'
+import { LegacyDestination } from './plugins/ajs-destination'
 import {
   MiddlewareFunction,
-  sourceMiddlewareExtension,
-} from './extensions/middleware'
+  sourceMiddlewarePlugin,
+} from './plugins/middleware'
 import * as autoTrack from './core/auto-track'
 
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  extensions?: Extension[]
+  plugins?: Plugin[]
   [key: string]: unknown
 }
 
@@ -201,10 +201,10 @@ export class Analytics extends Emitter {
     return autoTrack.form.call(this, ...args)
   }
 
-  async register(...extensions: Extension[]): Promise<Context> {
+  async register(...plugins: Plugin[]): Promise<Context> {
     const ctx = Context.system()
 
-    const registrations = extensions.map((xt) =>
+    const registrations = plugins.map((xt) =>
       this.queue.register(ctx, xt, this)
     )
     await Promise.all(registrations)
@@ -241,8 +241,8 @@ export class Analytics extends Emitter {
   }
 
   addSourceMiddleware(fn: MiddlewareFunction): Analytics {
-    const extension = sourceMiddlewareExtension(fn)
-    this.register(extension).catch(console.error)
+    const plugin = sourceMiddlewarePlugin(fn)
+    this.register(plugin).catch(console.error)
     return this
   }
 
@@ -250,7 +250,7 @@ export class Analytics extends Emitter {
     integrationName: string,
     ...middlewares: MiddlewareFunction[]
   ): Analytics {
-    const legacyDestinations = this.queue.extensions.filter(
+    const legacyDestinations = this.queue.plugins.filter(
       (xt) =>
         xt instanceof LegacyDestination &&
         xt.name.toLowerCase() === integrationName.toLowerCase()
@@ -267,15 +267,15 @@ export class Analytics extends Emitter {
   }
 
   /**
-   * @deprecated This function does not register a destination extension.
+   * @deprecated This function does not register a destination plugin.
    *
    * Instantiates a legacy Analytics.js destination.
    *
-   * This function does not register the destination as an Analytics.JS extension,
+   * This function does not register the destination as an Analytics.JS plugin,
    * all the it does it to invoke the factory function back.
    */
-  use(pluginFactory: (analytics: Analytics) => void): Analytics {
-    pluginFactory(this)
+  use(legacyPluginFactory: (analytics: Analytics) => void): Analytics {
+    legacyPluginFactory(this)
     return this
   }
 
@@ -283,9 +283,7 @@ export class Analytics extends Emitter {
     callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res
   ): Promise<unknown> {
     return Promise.all(
-      this.queue.extensions.map((i) =>
-        i.ready ? i.ready() : Promise.resolve()
-      )
+      this.queue.plugins.map((i) => (i.ready ? i.ready() : Promise.resolve()))
     ).then((res) => {
       callback(res)
       return res

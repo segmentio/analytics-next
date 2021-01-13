@@ -7,19 +7,19 @@ import { isOnline } from '../connection'
 import { Context, ContextCancelation } from '../context'
 import { Emitter } from '../emitter'
 import { Integrations } from '../events'
-import { Extension } from '../extension'
+import { Plugin } from '../plugin'
 import { attempt, ensure } from './delivery'
 
-type ExtensionsByType = {
-  before: Extension[]
-  after: Extension[]
-  enrichment: Extension[]
-  destinations: Extension[]
+type PluginsByType = {
+  before: Plugin[]
+  after: Plugin[]
+  enrichment: Plugin[]
+  destinations: Plugin[]
 }
 
 export class EventQueue extends Emitter {
   queue: PriorityQueue<Context>
-  extensions: Extension[] = []
+  plugins: Plugin[] = []
   failedInitializations: string[] = []
   private flushing = false
 
@@ -32,18 +32,18 @@ export class EventQueue extends Emitter {
 
   async register(
     ctx: Context,
-    extension: Extension,
+    plugin: Plugin,
     instance: Analytics
   ): Promise<void> {
-    await Promise.resolve(extension.load(ctx, instance))
+    await Promise.resolve(plugin.load(ctx, instance))
       .then(() => {
-        this.extensions.push(extension)
+        this.plugins.push(plugin)
       })
       .catch((err) => {
-        if (extension.type === 'destination') {
-          this.failedInitializations.push(extension.name)
+        if (plugin.type === 'destination') {
+          this.failedInitializations.push(plugin.name)
           ctx.log('warn', 'Failed to load destination', {
-            extension: extension.name,
+            plugin: plugin.name,
             error: err,
           })
           return
@@ -139,13 +139,13 @@ export class EventQueue extends Emitter {
   }
 
   private isReady(): boolean {
-    // return this.extensions.every((p) => p.isLoaded())
-    // should we wait for every extension to load?
+    // return this.plugins.every((p) => p.isLoaded())
+    // should we wait for every plugin to load?
     return true
   }
 
-  private availableExtensios(denyList: Integrations): ExtensionsByType {
-    const available = this.extensions.filter((p) => denyList[p.name] !== false)
+  private availableExtensios(denyList: Integrations): PluginsByType {
+    const available = this.plugins.filter((p) => denyList[p.name] !== false)
     const {
       before = [],
       enrichment = [],

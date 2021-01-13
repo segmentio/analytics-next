@@ -2,14 +2,14 @@ import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { MetricsOptions } from './core/stats/remote-metrics'
-import { ajsDestinations } from './extensions/ajs-destination'
-import { metadataEnrichment } from './extensions/metadata-enrichment'
-import { pageEnrichment } from './extensions/page-enrichment'
-import { remoteMiddlewares } from './extensions/remote-middleware'
-import { RoutingRule } from './extensions/routing-middleware'
-import { validation } from './extensions/validation'
+import { ajsDestinations } from './plugins/ajs-destination'
+import { metadataEnrichment } from './plugins/metadata-enrichment'
+import { pageEnrichment } from './plugins/page-enrichment'
+import { remoteMiddlewares } from './plugins/remote-middleware'
+import { RoutingRule } from './plugins/routing-middleware'
+import { validation } from './plugins/validation'
 
-export { LegacyDestination } from './extensions/ajs-destination'
+export { LegacyDestination } from './plugins/ajs-destination'
 
 export interface LegacyIntegrationConfiguration {
   type?: string
@@ -63,11 +63,11 @@ export class AnalyticsBrowser {
   ): Promise<[Analytics, Context]> {
     const analytics = new Analytics(settings, options)
 
-    const extensions = settings.extensions ?? []
+    const plugins = settings.plugins ?? []
     const legacySettings = await loadLegacySettings(settings.writeKey)
     Context.initMetrics(legacySettings.metrics)
 
-    const remoteExtensions =
+    const remotePlugins =
       process.env.NODE_ENV !== 'test'
         ? await ajsDestinations(legacySettings, analytics.integrations, options)
         : []
@@ -80,8 +80,8 @@ export class AnalyticsBrowser {
       validation,
       pageEnrichment,
       metadata,
-      ...extensions,
-      ...remoteExtensions,
+      ...plugins,
+      ...remotePlugins,
     ]
     const ctx = await analytics.register(...toRegister)
 

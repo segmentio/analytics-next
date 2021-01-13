@@ -1,4 +1,4 @@
-import { Extension } from '../../core/extension'
+import { Plugin } from '../../core/plugin'
 import { SegmentEvent } from '../../core/events'
 
 export function isString(obj: unknown): obj is string {
@@ -55,7 +55,7 @@ function validate(eventType?: unknown, event?: SegmentEvent): void {
   }
 }
 
-export const validation: Extension = {
+export const validation: Plugin = {
   name: 'Event Validation',
   type: 'before',
   version: '1.0.0',

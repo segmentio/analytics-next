@@ -5,7 +5,7 @@ import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
-import { Extension } from '../../core/extension'
+import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
 import { pWhile } from '../../lib/p-while'
@@ -25,7 +25,7 @@ const klona = (evt: SegmentEvent): SegmentEvent =>
 export type ClassType<T> = new (...args: unknown[]) => T
 
 async function flushQueue(
-  xt: Extension,
+  xt: Plugin,
   queue: PriorityQueue<Context>
 ): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
@@ -64,12 +64,12 @@ function embedMetrics(name: string, ctx: Context): Context {
   return ctx
 }
 
-export class LegacyDestination implements Extension {
+export class LegacyDestination implements Plugin {
   name: string
   version: string
   settings: object
   options: InitOptions
-  type: Extension['type'] = 'destination'
+  type: Plugin['type'] = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
 
   private _ready = false

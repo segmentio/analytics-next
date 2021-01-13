@@ -1,8 +1,8 @@
 import { Analytics } from './analytics'
 import { Context } from './core/context'
-import { validation } from './extensions/validation'
-import { analyticsNode } from './extensions/analytics-node'
-import { Extension } from './core/extension'
+import { validation } from './plugins/validation'
+import { analyticsNode } from './plugins/analytics-node'
+import { Plugin } from './core/plugin'
 import { EventQueue } from './core/queue/event-queue'
 import { PriorityQueue } from './lib/priority-queue'
 
@@ -21,7 +21,7 @@ export class AnalyticsNode {
     const nodeSettings = {
       writeKey: settings.writeKey,
       name: 'analytics-node-next',
-      type: 'after' as Extension['type'],
+      type: 'after' as Plugin['type'],
       version: 'latest',
     }
 

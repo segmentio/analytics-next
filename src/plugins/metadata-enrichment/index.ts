@@ -1,4 +1,4 @@
-import { Extension } from '../../core/extension'
+import { Plugin } from '../../core/plugin'
 import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 
@@ -33,7 +33,7 @@ function enrich(
 export function metadataEnrichment(
   settings: LegacySettings,
   failedInitializations: string[]
-): Extension {
+): Plugin {
   return {
     name: 'Metadata Enrichment',
     version: '0.1.0',

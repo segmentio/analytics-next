@@ -36,16 +36,13 @@ export async function loadIntegration(
   settings?: object
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
     recordLoadMetrics(fullPath, ctx, name)
   } catch (err) {
-    ctx.stats.gauge('legacy_destination_time', -1, [
-      `extension:${name}`,
-      `failed`,
-    ])
+    ctx.stats.gauge('legacy_destination_time', -1, [`plugin:${name}`, `failed`])
     throw err
   }
 

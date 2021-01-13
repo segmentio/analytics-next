@@ -1,5 +1,5 @@
 import { Context } from '../context'
-import { Extension } from '../extension'
+import { Plugin } from '../plugin'
 
 async function tryOperation(
   op: () => Context | Promise<Context>
@@ -13,28 +13,28 @@ async function tryOperation(
 
 export async function attempt(
   ctx: Context,
-  extension: Extension
+  plugin: Plugin
 ): Promise<Context | Error> {
-  ctx.log('debug', 'extension', { extension: extension.name })
+  ctx.log('debug', 'plugin', { plugin: plugin.name })
   const start = new Date().getTime()
 
-  const hook = extension[ctx.event.type]
+  const hook = plugin[ctx.event.type]
   if (hook === undefined) {
     return ctx
   }
 
-  const newCtx = await tryOperation(() => hook.apply(extension, [ctx]))
+  const newCtx = await tryOperation(() => hook.apply(plugin, [ctx]))
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats.gauge('extension_time', done, [`extension:${extension.name}`])
+      ctx.stats.gauge('plugin_time', done, [`plugin:${plugin.name}`])
       return ctx
     })
     .catch((err) => {
-      ctx.log('error', 'extension Error', {
-        extension: extension.name,
+      ctx.log('error', 'plugin Error', {
+        plugin: plugin.name,
         error: err,
       })
-      ctx.stats.increment('extension_error', 1, [`extension:${extension.name}`])
+      ctx.stats.increment('plugin_error', 1, [`plugin:${plugin.name}`])
       return err as Error
     })
 
@@ -43,9 +43,9 @@ export async function attempt(
 
 export async function ensure(
   ctx: Context,
-  extension: Extension
+  plugin: Plugin
 ): Promise<Context | undefined> {
-  const newContext = await attempt(ctx, extension)
+  const newContext = await attempt(ctx, plugin)
 
   if (newContext === undefined || newContext instanceof Error) {
     ctx.log('debug', 'Context canceled')
