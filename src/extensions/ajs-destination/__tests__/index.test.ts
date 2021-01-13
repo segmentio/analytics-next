@@ -81,9 +81,15 @@ describe('ajsDestinations', () => {
   // to `it('loads version overrides')`
   it('considers both legacy and new version formats', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
-    const withLegacyVersion = destinations.find((d) => d.name === 'WithLegacyVersion')
-    const withVersionSettings = destinations.find((d) => d.name === 'WithVersionSettings')
-    const withVersionOverrides = destinations.find((d) => d.name === 'WithVersionOverrides')
+    const withLegacyVersion = destinations.find(
+      (d) => d.name === 'WithLegacyVersion'
+    )
+    const withVersionSettings = destinations.find(
+      (d) => d.name === 'WithVersionSettings'
+    )
+    const withVersionOverrides = destinations.find(
+      (d) => d.name === 'WithVersionOverrides'
+    )
     const withNoVersion = destinations.find((d) => d.name === 'WithNoVersion')
 
     expect(withLegacyVersion?.version).toBe('3.0.7')
@@ -168,10 +174,16 @@ describe('remote loading', () => {
     </html>
     `.trim()
 
-    const jsd = new jsdom.JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+    const jsd = new jsdom.JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
-    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
   })
 
   it('loads integrations from the Segment CDN', async () => {
@@ -184,7 +196,9 @@ describe('remote loading', () => {
     expect(sources).toMatchObject(
       expect.arrayContaining([
         'https://cdn.segment.build/next-integrations/integrations/amplitude/latest/amplitude.dynamic.js.gz',
-        expect.stringContaining('https://cdn.segment.build/next-integrations/integrations/vendor/commons'),
+        expect.stringContaining(
+          'https://cdn.segment.build/next-integrations/integrations/vendor/commons'
+        ),
         'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
       ])
     )
@@ -220,7 +234,9 @@ describe('remote loading', () => {
     const dest = await loadAmplitude()
     jest.spyOn(dest.integration!, 'track')
 
-    dest.addMiddleware(tsubMiddleware(cdnResponse.middlewareSettings?.routingRules ?? []))
+    dest.addMiddleware(
+      tsubMiddleware(cdnResponse.middlewareSettings?.routingRules ?? [])
+    )
 
     // this routing rule should drop the event
     await dest.track(new Context({ type: 'track', event: 'Item Impression' }))
@@ -242,10 +258,16 @@ describe('plan', () => {
     </html>
     `.trim()
 
-    const jsd = new jsdom.JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+    const jsd = new jsdom.JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
-    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
   })
 
   const loadAmplitude = async (plan: Plan): Promise<LegacyDestination> => {
@@ -320,8 +342,12 @@ describe('plan', () => {
 
     jest.spyOn(dest.integration!, 'track')
 
-    const unplannedCall = dest.track(new Context({ type: 'page', event: 'Track Event' }))
-    await expect(unplannedCall).rejects.toThrowErrorMatchingInlineSnapshot(`"event dropped by plan"`)
+    const unplannedCall = dest.track(
+      new Context({ type: 'page', event: 'Track Event' })
+    )
+    await expect(unplannedCall).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"event dropped by plan"`
+    )
 
     expect(dest.integration?.track).not.toHaveBeenCalled()
   })

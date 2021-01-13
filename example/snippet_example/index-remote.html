@@ -16,7 +16,10 @@
       !(function () {
         var analytics = (window.analytics = window.analytics || [])
         if (!analytics.initialize)
-          if (analytics.invoked) window.console && console.error && console.error('Segment snippet included twice.')
+          if (analytics.invoked)
+            window.console &&
+              console.error &&
+              console.error('Segment snippet included twice.')
           else {
             analytics.invoked = !0
             analytics.methods = [
@@ -57,7 +60,10 @@
               var t = document.createElement('script')
               t.type = 'text/javascript'
               t.async = !0
-              t.src = 'https://cdn.segment.com/analytics.js/v1/' + key + '/analytics.min.js'
+              t.src =
+                'https://cdn.segment.com/analytics.js/v1/' +
+                key +
+                '/analytics.min.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
               analytics._loadOptions = e
@@ -93,25 +99,43 @@
         e.preventDefault()
         const contents = document.querySelector('#event').value
         const evt = JSON.parse(contents)
-        const promise = window.analytics.track(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
+        const promise = window.analytics.track(
+          evt.name ?? '',
+          evt.properties ?? {},
+          evt.options ?? {}
+        )
 
         promise?.then((ctx) => {
           ctx.flush()
-          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+          document.querySelector('#logs').textContent = JSON.stringify(
+            ctx.event,
+            null,
+            '  '
+          )
         })
       })
 
-      document.querySelector('#identify').addEventListener('click', async (e) => {
-        e.preventDefault()
-        const contents = document.querySelector('#event').value
-        const evt = JSON.parse(contents)
-        const promise = window.analytics.identify(evt.name ?? '', evt.properties ?? {}, evt.options ?? {})
+      document
+        .querySelector('#identify')
+        .addEventListener('click', async (e) => {
+          e.preventDefault()
+          const contents = document.querySelector('#event').value
+          const evt = JSON.parse(contents)
+          const promise = window.analytics.identify(
+            evt.name ?? '',
+            evt.properties ?? {},
+            evt.options ?? {}
+          )
 
-        promise?.then((ctx) => {
-          ctx.flush()
-          document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+          promise?.then((ctx) => {
+            ctx.flush()
+            document.querySelector('#logs').textContent = JSON.stringify(
+              ctx.event,
+              null,
+              '  '
+            )
+          })
         })
-      })
     </script>
   </body>
 </html>

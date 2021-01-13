@@ -20,7 +20,9 @@ describe('validation', () => {
           new Context()
         )
 
-        await expect(val).rejects.toMatchInlineSnapshot(`[Error: Event is missing]`)
+        await expect(val).rejects.toMatchInlineSnapshot(
+          `[Error: Event is missing]`
+        )
       })
 
       it('validates that `event.event` exists', async () => {
@@ -33,7 +35,9 @@ describe('validation', () => {
         )
 
         if (method === 'track') {
-          await expect(val).rejects.toMatchInlineSnapshot(`[Error: Event is not a string]`)
+          await expect(val).rejects.toMatchInlineSnapshot(
+            `[Error: Event is not a string]`
+          )
         }
       })
 
@@ -50,7 +54,9 @@ describe('validation', () => {
           })
         )
 
-        await expect(val).rejects.toMatchInlineSnapshot(`[Error: properties is not an object]`)
+        await expect(val).rejects.toMatchInlineSnapshot(
+          `[Error: properties is not an object]`
+        )
       })
 
       it('validates that it contains an user', async () => {
@@ -63,7 +69,9 @@ describe('validation', () => {
           })
         )
 
-        await expect(val).rejects.toMatchInlineSnapshot(`[Error: Missing userId or anonymousId]`)
+        await expect(val).rejects.toMatchInlineSnapshot(
+          `[Error: Missing userId or anonymousId]`
+        )
       })
     })
   })

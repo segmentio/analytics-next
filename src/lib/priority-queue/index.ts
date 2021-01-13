@@ -29,7 +29,9 @@ export class PriorityQueue<T extends WithID> {
       return true
     })
 
-    this.queue = this.queue.sort((a, b) => this.getAttempts(a) - this.getAttempts(b))
+    this.queue = this.queue.sort(
+      (a, b) => this.getAttempts(a) - this.getAttempts(b)
+    )
     return accepted
   }
 

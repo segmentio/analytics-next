@@ -5,7 +5,9 @@ import { User } from '../../core/user'
 import { loadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
-const path = process.env.LEGACY_INTEGRATIONS_PATH ?? 'https://cdn.segment.build/next-integrations'
+const path =
+  process.env.LEGACY_INTEGRATIONS_PATH ??
+  'https://cdn.segment.build/next-integrations'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
@@ -13,9 +15,14 @@ function normalizeName(name: string): string {
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
   try {
-    const [metric] = global.window?.performance?.getEntriesByName(fullPath, 'resource') ?? []
+    const [metric] =
+      global.window?.performance?.getEntriesByName(fullPath, 'resource') ?? []
     // we assume everything that took under 100ms is cached
-    metric && ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [name, ...(metric.duration < 100 ? ['cached'] : [])])
+    metric &&
+      ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [
+        name,
+        ...(metric.duration < 100 ? ['cached'] : []),
+      ])
   } catch (_) {
     // not available
   }
@@ -35,7 +42,10 @@ export async function loadIntegration(
     await loadScript(fullPath)
     recordLoadMetrics(fullPath, ctx, name)
   } catch (err) {
-    ctx.stats.gauge('legacy_destination_time', -1, [`extension:${name}`, `failed`])
+    ctx.stats.gauge('legacy_destination_time', -1, [
+      `extension:${name}`,
+      `failed`,
+    ])
     throw err
   }
 
@@ -72,12 +82,17 @@ export async function loadIntegration(
  * guarantee which `version` field (`version` or `versionSettings`) will be
  * available.
  */
-export function resolveVersion(settings: LegacyIntegrationConfiguration): string {
+export function resolveVersion(
+  settings: LegacyIntegrationConfiguration
+): string {
   let version = 'latest'
   if (settings.version) version = settings.version
 
   if (settings.versionSettings) {
-    version = settings.versionSettings.override ?? settings.versionSettings.version ?? 'latest'
+    version =
+      settings.versionSettings.override ??
+      settings.versionSettings.version ??
+      'latest'
   }
 
   return version

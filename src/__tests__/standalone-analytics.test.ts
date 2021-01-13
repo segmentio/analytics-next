@@ -31,7 +31,12 @@ describe('standalone bundle', () => {
     `.trim()
 
     const virtualConsole = new jsdom.VirtualConsole()
-    const jsd = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://segment.com', virtualConsole })
+    const jsd = new JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://segment.com',
+      virtualConsole,
+    })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     const documentSpy = jest.spyOn(global, 'document', 'get')
@@ -42,12 +47,16 @@ describe('standalone bundle', () => {
       return (jsd.window as unknown) as Window & typeof globalThis
     })
 
-    documentSpy.mockImplementation(() => (jsd.window.document as unknown) as Document)
+    documentSpy.mockImplementation(
+      () => (jsd.window.document as unknown) as Document
+    )
   })
 
   it('derives the write key from scripts on the page', async () => {
     const fakeAjs = {}
-    const spy = jest.spyOn(AnalyticsBrowser, 'standalone').mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+    const spy = jest
+      .spyOn(AnalyticsBrowser, 'standalone')
+      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
 
     await install()
 
@@ -61,12 +70,18 @@ describe('standalone bundle', () => {
       page: jest.fn(),
     }
 
-    jest.spyOn(AnalyticsBrowser, 'standalone').mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+    jest
+      .spyOn(AnalyticsBrowser, 'standalone')
+      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
 
     await install()
 
-    expect(fakeAjs.track).toHaveBeenCalledWith('fruit basket', { fruits: ['🍌', '🍇'] })
-    expect(fakeAjs.identify).toHaveBeenCalledWith('netto', { employer: 'segment' })
+    expect(fakeAjs.track).toHaveBeenCalledWith('fruit basket', {
+      fruits: ['🍌', '🍇'],
+    })
+    expect(fakeAjs.identify).toHaveBeenCalledWith('netto', {
+      employer: 'segment',
+    })
 
     expect(fakeAjs.page).toHaveBeenCalled()
   })

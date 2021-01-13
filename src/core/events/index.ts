@@ -11,7 +11,12 @@ export class EventFactory {
     this.user = user
   }
 
-  track(event: string, properties?: SegmentEvent['properties'], options?: Options, integrations?: Integrations): SegmentEvent {
+  track(
+    event: string,
+    properties?: SegmentEvent['properties'],
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -22,7 +27,13 @@ export class EventFactory {
     })
   }
 
-  page(category: string | null, page: string | null, properties?: object, options?: Options, integrations?: Integrations): SegmentEvent {
+  page(
+    category: string | null,
+    page: string | null,
+    properties?: object,
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'page' as const,
       properties: { ...properties },
@@ -72,7 +83,12 @@ export class EventFactory {
     } as SegmentEvent)
   }
 
-  identify(userId: ID, traits?: SegmentEvent['traits'], options?: Options, integrations?: Integrations): SegmentEvent {
+  identify(
+    userId: ID,
+    traits?: SegmentEvent['traits'],
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify' as const,
@@ -83,7 +99,12 @@ export class EventFactory {
     })
   }
 
-  group(groupId: ID, traits?: SegmentEvent['traits'], options?: Options, integrations?: Integrations): SegmentEvent {
+  group(
+    groupId: ID,
+    traits?: SegmentEvent['traits'],
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,
@@ -94,7 +115,12 @@ export class EventFactory {
     })
   }
 
-  alias(to: string, from: string | null, options?: Options, integrations?: Integrations): SegmentEvent {
+  alias(
+    to: string,
+    from: string | null,
+    options?: Options,
+    integrations?: Integrations
+  ): SegmentEvent {
     const base: Partial<SegmentEvent> = {
       userId: to,
       type: 'alias' as const,

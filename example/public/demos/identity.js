@@ -13,7 +13,9 @@ const identityStiching = () => {
     isLoaded: () => user !== undefined,
 
     async identify(ctx) {
-      const req = await fetch(`https://jsonplaceholder.typicode.com/users/${ctx.event.userId}`)
+      const req = await fetch(
+        `https://jsonplaceholder.typicode.com/users/${ctx.event.userId}`
+      )
       const userReq = await req.json()
 
       ctx.updateEvent('traits.custom', userReq)

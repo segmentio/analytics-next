@@ -10,7 +10,9 @@ export default {
     await page.click("//button[normalize-space(.)='Aceptar y cerrar']")
 
     // Click //div[4]/div[1]/div[1]/div/div/div[normalize-space(.)='Marcas y modelos para todosPortátiles']
-    await page.click("//div[4]/div[1]/div[1]/div/div/div[normalize-space(.)='Marcas y modelos para todosPortátiles']")
+    await page.click(
+      "//div[4]/div[1]/div[1]/div/div/div[normalize-space(.)='Marcas y modelos para todosPortátiles']"
+    )
     // assert.equal(page.url(), 'https://www.milanuncios.com/portatiles-de-segunda-mano/');
 
     // Click img[alt="Milanuncios logo"]
@@ -18,7 +20,9 @@ export default {
     // assert.equal(page.url(), 'https://www.milanuncios.com/');
 
     // Click //div[2]/div/div/div[normalize-space(.)='Miles de usos para un mismo muebleEscritorios']
-    await page.click("//div[2]/div/div/div[normalize-space(.)='Miles de usos para un mismo muebleEscritorios']")
+    await page.click(
+      "//div[2]/div/div/div[normalize-space(.)='Miles de usos para un mismo muebleEscritorios']"
+    )
     // assert.equal(page.url(), 'https://www.milanuncios.com/mesas/escritorio.htm');
 
     // Click //a[normalize-space(@title)='segunda mano']/div

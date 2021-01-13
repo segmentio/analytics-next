@@ -17,7 +17,11 @@ export interface Extension {
   type: 'before' | 'after' | 'destination' | 'enrichment' | 'utility'
 
   isLoaded: () => boolean
-  load: (ctx: Context, instance: Analytics, config?: ExtensionConfig) => Promise<unknown>
+  load: (
+    ctx: Context,
+    instance: Analytics,
+    config?: ExtensionConfig
+  ) => Promise<unknown>
 
   ready?: () => Promise<unknown>
   track?: (ctx: Context) => Promise<Context>

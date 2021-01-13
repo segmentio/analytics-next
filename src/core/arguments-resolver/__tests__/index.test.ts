@@ -1,4 +1,10 @@
-import { resolveArguments, resolvePageArguments, resolveUserArguments, Callback, resolveAliasArguments } from '../'
+import {
+  resolveArguments,
+  resolvePageArguments,
+  resolveUserArguments,
+  Callback,
+  resolveAliasArguments,
+} from '../'
 import { User } from '../../user'
 
 const bananaPhone = {
@@ -38,7 +44,10 @@ describe(resolveArguments, () => {
 
   describe('event as string', () => {
     test('event, props', () => {
-      const [event, props, options, cb] = resolveArguments('Test Event', bananaPhone)
+      const [event, props, options, cb] = resolveArguments(
+        'Test Event',
+        bananaPhone
+      )
 
       expect(event).toEqual('Test Event')
       expect(props).toEqual(bananaPhone)
@@ -47,11 +56,15 @@ describe(resolveArguments, () => {
     })
 
     test('event, props, options', () => {
-      const [event, props, options, cb] = resolveArguments('Test Event', bananaPhone, {
-        integrations: {
-          intercom: false,
-        },
-      })
+      const [event, props, options, cb] = resolveArguments(
+        'Test Event',
+        bananaPhone,
+        {
+          integrations: {
+            intercom: false,
+          },
+        }
+      )
 
       expect(event).toEqual('Test Event')
       expect(props).toEqual(bananaPhone)
@@ -66,7 +79,11 @@ describe(resolveArguments, () => {
     test('event, props, callback', () => {
       const fn = jest.fn()
 
-      const [event, props, options, cb] = resolveArguments('Test Event', bananaPhone, fn)
+      const [event, props, options, cb] = resolveArguments(
+        'Test Event',
+        bananaPhone,
+        fn
+      )
 
       expect(event).toEqual('Test Event')
       expect(props).toEqual(bananaPhone)
@@ -168,7 +185,13 @@ describe(resolveArguments, () => {
 describe(resolvePageArguments, () => {
   test('should accept (category, name, properties, options, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('category', 'name', bananaPhone, baseOptions, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'category',
+      'name',
+      bananaPhone,
+      baseOptions,
+      fn
+    )
 
     expect(category).toEqual('category')
     expect(name).toEqual('name')
@@ -179,7 +202,12 @@ describe(resolvePageArguments, () => {
 
   test('should accept (category, name, properties, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('category', 'name', bananaPhone, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'category',
+      'name',
+      bananaPhone,
+      fn
+    )
 
     expect(category).toEqual('category')
     expect(name).toEqual('name')
@@ -191,7 +219,11 @@ describe(resolvePageArguments, () => {
 
   it('should accept (category, name, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('category', 'name', fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'category',
+      'name',
+      fn
+    )
 
     expect(category).toEqual('category')
     expect(name).toEqual('name')
@@ -203,7 +235,12 @@ describe(resolvePageArguments, () => {
 
   it('should accept (name, properties, options, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('name', bananaPhone, baseOptions, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'name',
+      bananaPhone,
+      baseOptions,
+      fn
+    )
 
     expect(category).toEqual(null)
     expect(name).toEqual('name')
@@ -214,7 +251,11 @@ describe(resolvePageArguments, () => {
 
   it('should accept (name, properties, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('name', bananaPhone, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'name',
+      bananaPhone,
+      fn
+    )
 
     expect(category).toEqual(null)
     expect(name).toEqual('name')
@@ -225,7 +266,10 @@ describe(resolvePageArguments, () => {
 
   it('should accept (name, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments('name', fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'name',
+      fn
+    )
 
     expect(name).toEqual('name')
     expect(cb).toEqual(fn)
@@ -237,7 +281,11 @@ describe(resolvePageArguments, () => {
 
   it('should accept (properties, options, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments(bananaPhone, baseOptions, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      bananaPhone,
+      baseOptions,
+      fn
+    )
 
     expect(cb).toEqual(fn)
     expect(properties).toEqual(bananaPhone)
@@ -249,7 +297,10 @@ describe(resolvePageArguments, () => {
 
   it('should accept (properties, callback)', () => {
     const fn = jest.fn()
-    const [category, name, properties, options, cb] = resolvePageArguments(bananaPhone, fn)
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      bananaPhone,
+      fn
+    )
 
     expect(properties).toEqual(bananaPhone)
     expect(cb).toEqual(fn)

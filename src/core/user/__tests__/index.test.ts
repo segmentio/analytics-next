@@ -4,7 +4,9 @@ import assert from 'assert'
 
 function clear(): void {
   document.cookie.split(';').forEach(function (c) {
-    document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/')
+    document.cookie = c
+      .replace(/^ +/, '')
+      .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/')
   })
   localStorage.clear()
 }
@@ -670,8 +672,12 @@ describe('group', () => {
     const group = new Group()
     group.identify('gid', { coolkids: true })
 
-    expect(store.get(group.options.localStorage?.key ?? '')).toEqual({ coolkids: true })
-    expect(store.get(User.defaults.localStorage.key)).not.toEqual({ coolkids: true })
+    expect(store.get(group.options.localStorage?.key ?? '')).toEqual({
+      coolkids: true,
+    })
+    expect(store.get(User.defaults.localStorage.key)).not.toEqual({
+      coolkids: true,
+    })
   })
 
   describe('#options', () => {
@@ -740,7 +746,9 @@ describe('Custom cookie params', () => {
     )
     customUser.identify('some_id', { trait: true })
 
-    expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id; ajs_user_traits={%22trait%22:true}"`)
+    expect(document.cookie).toMatchInlineSnapshot(
+      `"; ajs_user_id=some_id; ajs_user_traits={%22trait%22:true}"`
+    )
     expect(customUser.id()).toBe('some_id')
     expect(customUser.traits()).toEqual({ trait: true })
   })

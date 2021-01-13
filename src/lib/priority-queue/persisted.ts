@@ -12,7 +12,9 @@ const loc = isBrowser()
 
 function persisted(key: string): Context[] {
   const items = loc.getItem(key)
-  return (items ? JSON.parse(items) : []).map((p: SerializedContext) => new Context(p.event, p.id))
+  return (items ? JSON.parse(items) : []).map(
+    (p: SerializedContext) => new Context(p.event, p.id)
+  )
 }
 
 function persistItems(key: string, items: Context[]): void {

@@ -19,8 +19,14 @@ describe('Persisted Priority Queue', () => {
       'abc'
     )
 
-    window.localStorage.setItem(`persisted-queue:v1:${key}:items`, JSON.stringify([ctx]))
-    window.localStorage.setItem(`persisted-queue:v1:${key}:seen`, JSON.stringify({ abc: 2 }))
+    window.localStorage.setItem(
+      `persisted-queue:v1:${key}:items`,
+      JSON.stringify([ctx])
+    )
+    window.localStorage.setItem(
+      `persisted-queue:v1:${key}:seen`,
+      JSON.stringify({ abc: 2 })
+    )
 
     const queue = new PersistedPriorityQueue(3, key)
     const included = queue.includes(ctx)
@@ -33,11 +39,13 @@ describe('Persisted Priority Queue', () => {
   it('a queue always pays their debts', () => {
     let onUnload: any = jest.fn()
 
-    jest.spyOn(window, 'addEventListener').mockImplementation((evt, handler) => {
-      if (evt === 'beforeunload') {
-        onUnload = handler
-      }
-    })
+    jest
+      .spyOn(window, 'addEventListener')
+      .mockImplementation((evt, handler) => {
+        if (evt === 'beforeunload') {
+          onUnload = handler
+        }
+      })
 
     const ctx = new Context(
       {
@@ -54,8 +62,12 @@ describe('Persisted Priority Queue', () => {
 
     onUnload()
 
-    const items = JSON.parse(localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? '')
-    const seen = JSON.parse(localStorage.getItem(`persisted-queue:v1:${key}:seen`) ?? '')
+    const items = JSON.parse(
+      localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+    )
+    const seen = JSON.parse(
+      localStorage.getItem(`persisted-queue:v1:${key}:seen`) ?? ''
+    )
 
     expect(items[0]).toEqual(ctx.toJSON())
     expect(seen).toEqual({ abc: 1 })
@@ -71,7 +83,10 @@ describe('Persisted Priority Queue', () => {
       },
       'abc'
     )
-    window.localStorage.setItem(`persisted-queue:v1:different-key:items`, JSON.stringify([ctx]))
+    window.localStorage.setItem(
+      `persisted-queue:v1:different-key:items`,
+      JSON.stringify([ctx])
+    )
 
     const queue = new PersistedPriorityQueue(3, key)
     expect(queue.todo).toBe(0)
@@ -84,11 +99,13 @@ describe('Persisted Priority Queue', () => {
     it('merges queue items with existing data', () => {
       let onUnload: any = jest.fn()
 
-      jest.spyOn(window, 'addEventListener').mockImplementation((evt, handler) => {
-        if (evt === 'beforeunload') {
-          onUnload = handler
-        }
-      })
+      jest
+        .spyOn(window, 'addEventListener')
+        .mockImplementation((evt, handler) => {
+          if (evt === 'beforeunload') {
+            onUnload = handler
+          }
+        })
 
       const ctx = new Context(
         {
@@ -100,7 +117,10 @@ describe('Persisted Priority Queue', () => {
         'abc'
       )
 
-      window.localStorage.setItem(`persisted-queue:v1:${key}:items`, JSON.stringify([ctx]))
+      window.localStorage.setItem(
+        `persisted-queue:v1:${key}:items`,
+        JSON.stringify([ctx])
+      )
 
       const ctxFromDifferentTab = new Context(
         {
@@ -118,7 +138,10 @@ describe('Persisted Priority Queue', () => {
       expect(queue.includes(ctxFromDifferentTab)).not.toBe(true)
 
       // another tab sets these two events again
-      window.localStorage.setItem(`persisted-queue:v1:${key}:items`, JSON.stringify([ctx, ctxFromDifferentTab]))
+      window.localStorage.setItem(
+        `persisted-queue:v1:${key}:items`,
+        JSON.stringify([ctx, ctxFromDifferentTab])
+      )
 
       const newCtx = new Context(
         {
@@ -132,7 +155,9 @@ describe('Persisted Priority Queue', () => {
       // page is unloaded
       onUnload()
 
-      const persisted = JSON.parse(window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? '') as unknown[]
+      const persisted = JSON.parse(
+        window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+      ) as unknown[]
 
       expect(persisted.length).toBe(3)
       expect(persisted).toContainEqual(ctx.toJSON())
@@ -153,7 +178,10 @@ describe('Persisted Priority Queue', () => {
         'abc'
       )
 
-      window.localStorage.setItem(`persisted-queue:v1:${key}:items`, JSON.stringify([ctx]))
+      window.localStorage.setItem(
+        `persisted-queue:v1:${key}:items`,
+        JSON.stringify([ctx])
+      )
 
       const firstTabQueue = new PersistedPriorityQueue(3, key)
       const secondTabQueue = new PersistedPriorityQueue(3, key)
@@ -168,11 +196,13 @@ describe('Persisted Priority Queue', () => {
     it('does not allow multiple tabs to override each other when closed', () => {
       const onUnloadFunctions: any[] = []
 
-      jest.spyOn(window, 'addEventListener').mockImplementation((evt, handler) => {
-        if (evt === 'beforeunload') {
-          onUnloadFunctions.push(handler)
-        }
-      })
+      jest
+        .spyOn(window, 'addEventListener')
+        .mockImplementation((evt, handler) => {
+          if (evt === 'beforeunload') {
+            onUnloadFunctions.push(handler)
+          }
+        })
 
       const firstTabQueue = new PersistedPriorityQueue(3, key)
       const secondTabQueue = new PersistedPriorityQueue(3, key)
@@ -186,7 +216,9 @@ describe('Persisted Priority Queue', () => {
       onUnloadFunctions[1]()
       onUnloadFunctions[0]()
 
-      const stored = JSON.parse(window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? '')
+      const stored = JSON.parse(
+        window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+      )
       expect(stored.length).toBe(2)
     })
   })

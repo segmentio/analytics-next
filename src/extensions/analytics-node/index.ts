@@ -23,7 +23,8 @@ export const hydrateMessage = (message: SegmentEvent): SegmentEvent => ({
     },
   },
   timestamp: message.timestamp || new Date(),
-  messageId: message.messageId || `node-${md5(JSON.stringify(message))}-${uuid()}`,
+  messageId:
+    message.messageId || `node-${md5(JSON.stringify(message))}-${uuid()}`,
   anonymousId: message.anonymousId,
   userId: message.userId,
   _metadata: {

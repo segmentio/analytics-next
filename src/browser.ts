@@ -37,13 +37,17 @@ export interface LegacySettings {
 
 const CDN_PATH = 'https://cdn-settings.segment.com'
 
-export async function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
+export async function loadLegacySettings(
+  writeKey: string
+): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
 
   try {
-    return await fetch(`${CDN_PATH}/v1/projects/${writeKey}/settings`).then((res) => res.json())
+    return await fetch(
+      `${CDN_PATH}/v1/projects/${writeKey}/settings`
+    ).then((res) => res.json())
   } catch (err) {
     // proceed with default legacy settings
     console.warn('Failed to load legacy settings', err)
@@ -53,16 +57,32 @@ export async function loadLegacySettings(writeKey: string): Promise<LegacySettin
 }
 
 export class AnalyticsBrowser {
-  static async load(settings: AnalyticsSettings, options: InitOptions = {}): Promise<[Analytics, Context]> {
+  static async load(
+    settings: AnalyticsSettings,
+    options: InitOptions = {}
+  ): Promise<[Analytics, Context]> {
     const analytics = new Analytics(settings, options)
 
     const extensions = settings.extensions ?? []
     const legacySettings = await loadLegacySettings(settings.writeKey)
     Context.initMetrics(legacySettings.metrics)
 
-    const remoteExtensions = process.env.NODE_ENV !== 'test' ? await ajsDestinations(legacySettings, analytics.integrations, options) : []
-    const metadata = metadataEnrichment(legacySettings, analytics.queue.failedInitializations)
-    const toRegister = [validation, pageEnrichment, metadata, ...extensions, ...remoteExtensions]
+    const remoteExtensions =
+      process.env.NODE_ENV !== 'test'
+        ? await ajsDestinations(legacySettings, analytics.integrations, options)
+        : []
+
+    const metadata = metadataEnrichment(
+      legacySettings,
+      analytics.queue.failedInitializations
+    )
+    const toRegister = [
+      validation,
+      pageEnrichment,
+      metadata,
+      ...extensions,
+      ...remoteExtensions,
+    ]
     const ctx = await analytics.register(...toRegister)
 
     const middleware = await remoteMiddlewares(ctx, legacySettings)
@@ -77,7 +97,10 @@ export class AnalyticsBrowser {
     return [analytics, ctx]
   }
 
-  static async standalone(writeKey: string, options?: InitOptions): Promise<Analytics> {
+  static async standalone(
+    writeKey: string,
+    options?: InitOptions
+  ): Promise<Analytics> {
     const [analytics] = await AnalyticsBrowser.load({ writeKey }, options)
     return analytics
   }

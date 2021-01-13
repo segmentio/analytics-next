@@ -18,7 +18,8 @@ export function isPlainObject(obj: unknown): obj is object {
 }
 
 function hasUser(event: SegmentEvent): boolean {
-  const id = event.userId ?? event.anonymousId ?? event.groupId ?? event.previousId
+  const id =
+    event.userId ?? event.anonymousId ?? event.groupId ?? event.previousId
   return isString(id)
 }
 

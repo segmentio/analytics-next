@@ -2,7 +2,14 @@ import { chromium, ChromiumBrowserContext } from 'playwright'
 import fs from 'fs-extra'
 import path from 'path'
 // import { sortBy } from 'lodash'
-import { AJS_VERSION, HEADLESS, DEVTOOLS, TRACKING_API_URLS, cases, ENDPOINTS } from './config'
+import {
+  AJS_VERSION,
+  HEADLESS,
+  DEVTOOLS,
+  TRACKING_API_URLS,
+  cases,
+  ENDPOINTS,
+} from './config'
 import { startLocalServer } from './localServer'
 import { Request } from 'playwright'
 
@@ -31,21 +38,30 @@ async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
 }
 
 async function writeJSONFile(apiCalls: APICalls) {
-  const filePath = path.join(__dirname, '../data/requests/', `${AJS_VERSION}-${apiCalls.name}.json`)
+  const filePath = path.join(
+    __dirname,
+    '../data/requests/',
+    `${AJS_VERSION}-${apiCalls.name}.json`
+  )
 
   await fs.writeFile(filePath, JSON.stringify(apiCalls))
 
   console.log(
     `\nDigest for ${apiCalls.name}:\n`,
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/p')).length,
+    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/p'))
+      .length,
     'Page calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/t')).length,
+    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/t'))
+      .length,
     'Track calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/i')).length,
+    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/i'))
+      .length,
     'Identify calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/a')).length,
+    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/a'))
+      .length,
     'Alias calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/g')).length,
+    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/g'))
+      .length,
     'Group calls \n',
     apiCalls.trackingAPI.length,
     'saved into',

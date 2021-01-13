@@ -8,7 +8,11 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import { AnalyticsSettings, AnalyticsBrowser, Analytics } from '../../dist/commonjs/src'
+import {
+  AnalyticsSettings,
+  AnalyticsBrowser,
+  Analytics,
+} from '../../dist/commonjs/src'
 import { Context } from '../../dist/commonjs/src/core/context'
 
 const jsontheme = {
@@ -56,7 +60,10 @@ export default function Home(): React.ReactElement {
       ...Object.entries(faker.company),
     ]
 
-    const randomStuff = shuffle(fakerFns).slice(0, Math.round(Math.random() * 10) + 3)
+    const randomStuff = shuffle(fakerFns).slice(
+      0,
+      Math.round(Math.random() * 10) + 3
+    )
 
     const event = randomStuff.reduce((ev, [name, fn]) => {
       return {
@@ -139,7 +146,15 @@ export default function Home(): React.ReactElement {
         ))}
       </select>
 
-      <main className="drac-box" style={{ display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <main
+        className="drac-box"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-around',
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+        }}
+      >
         <div style={{ flex: 1 }}>
           <h2 className="drac-text">Event</h2>
           <form>
@@ -199,7 +214,14 @@ export default function Home(): React.ReactElement {
 
         <div className="drac-box drac-spacing-lg-x" style={{ flex: 1 }}>
           <h2 className="drac-text">Result</h2>
-          {ctx && <JSONTree theme={jsontheme} sortObjectKeys data={ctx.event} invertTheme={false} />}
+          {ctx && (
+            <JSONTree
+              theme={jsontheme}
+              sortObjectKeys
+              data={ctx.event}
+              invertTheme={false}
+            />
+          )}
         </div>
       </main>
 
@@ -231,7 +253,12 @@ export default function Home(): React.ReactElement {
                 render(_val, logMessage) {
                   const json = logMessage.extras ?? {}
                   return (
-                    <JSONTree shouldExpandNode={(_keyName, _data, level) => level > 0} theme={jsontheme} data={json} invertTheme={false} />
+                    <JSONTree
+                      shouldExpandNode={(_keyName, _data, level) => level > 0}
+                      theme={jsontheme}
+                      data={json}
+                      invertTheme={false}
+                    />
                   )
                 },
               },

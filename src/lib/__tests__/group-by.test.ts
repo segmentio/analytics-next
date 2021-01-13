@@ -67,7 +67,9 @@ describe('groupBy', () => {
       },
     ]
 
-    const oddEven = groupBy(collection, (c) => (c.id % 2 === 0 ? 'even' : 'odd'))
+    const oddEven = groupBy(collection, (c) =>
+      c.id % 2 === 0 ? 'even' : 'odd'
+    )
     expect(oddEven).toEqual({
       even: [
         {

@@ -10,8 +10,18 @@ declare global {
 
 // Check if a user is opening the link in a new tab
 function userNewTab(event: Event): boolean {
-  // @ts-ignore -- typescript doesn't recognize that elements/events can have these properties
-  if (event.ctrlKey || event.shiftKey || event.metaKey || (event.button && event.button == 1)) {
+  const typedEvent = event as Event & {
+    ctrlKey: boolean
+    shiftKey: boolean
+    metaKey: boolean
+    button: number
+  }
+  if (
+    typedEvent.ctrlKey ||
+    typedEvent.shiftKey ||
+    typedEvent.metaKey ||
+    (typedEvent.button && typedEvent.button == 1)
+  ) {
     return true
   }
   return false
@@ -49,11 +59,20 @@ export async function link(
       'click',
       (elementEvent: Event) => {
         const ev = event instanceof Function ? event(el) : event
-        const props = properties instanceof Function ? properties(el) : properties
-        const href = el.getAttribute('href') || el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || el.getAttribute('xlink:href')
+        const props =
+          properties instanceof Function ? properties(el) : properties
+        const href =
+          el.getAttribute('href') ||
+          el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') ||
+          el.getAttribute('xlink:href')
 
-        if (!linkNewTab(el as HTMLAnchorElement, href) && !userNewTab(elementEvent)) {
-          elementEvent.preventDefault ? elementEvent.preventDefault() : (elementEvent.returnValue = false)
+        if (
+          !linkNewTab(el as HTMLAnchorElement, href) &&
+          !userNewTab(elementEvent)
+        ) {
+          elementEvent.preventDefault
+            ? elementEvent.preventDefault()
+            : (elementEvent.returnValue = false)
           // if a link is opening in the same tab, wait 300ms to give the track call time to complete
           setTimeout(() => {
             window.location.href = href!
@@ -81,9 +100,12 @@ export async function form(
   const elements = forms
 
   elements.forEach((el) => {
-    if (!(el instanceof Element)) throw new TypeError('Must pass HTMLElement to trackForm/trackSubmit.')
+    if (!(el instanceof Element))
+      throw new TypeError('Must pass HTMLElement to trackForm/trackSubmit.')
     const handler = async (elementEvent: Event): Promise<void> => {
-      elementEvent.preventDefault ? elementEvent.preventDefault() : (elementEvent.returnValue = false)
+      elementEvent.preventDefault
+        ? elementEvent.preventDefault()
+        : (elementEvent.returnValue = false)
 
       const ev = event instanceof Function ? event(el) : event
       const props = properties instanceof Function ? properties(el) : properties

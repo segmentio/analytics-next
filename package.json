@@ -29,7 +29,7 @@
   "prettier": {
     "semi": false,
     "singleQuote": true,
-    "printWidth": 140
+    "printWidth": 80
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

@@ -180,11 +180,20 @@ export class User {
     const shouldPersist = options.persist !== false
 
     this.localStorage =
-      options.localStorageFallbackDisabled || !shouldPersist || !LocalStorage.available() ? new NullStorage() : new LocalStorage()
+      options.localStorageFallbackDisabled ||
+      !shouldPersist ||
+      !LocalStorage.available()
+        ? new NullStorage()
+        : new LocalStorage()
 
-    this.cookies = shouldPersist && Cookie.available() ? new Cookie(cookieOptions) : new NullStorage()
+    this.cookies =
+      shouldPersist && Cookie.available()
+        ? new Cookie(cookieOptions)
+        : new NullStorage()
 
-    const legacyUser = this.cookies.get<{ id?: string; traits?: object }>(defaults.cookie.oldKey)
+    const legacyUser = this.cookies.get<{ id?: string; traits?: object }>(
+      defaults.cookie.oldKey
+    )
     if (legacyUser) {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
@@ -193,7 +202,11 @@ export class User {
   }
 
   private chainGet<T>(key: string): T | null {
-    const val = this.localStorage.get(key) ?? this.cookies.get(key) ?? this.mem.get(key) ?? null
+    const val =
+      this.localStorage.get(key) ??
+      this.cookies.get(key) ??
+      this.mem.get(key) ??
+      null
     return this.trySet(key, val) as T | null
   }
 
@@ -222,7 +235,11 @@ export class User {
       }
     }
 
-    return this.chainGet(this.idKey) ?? this.cookies.get(defaults.cookie.oldKey) ?? null
+    return (
+      this.chainGet(this.idKey) ??
+      this.cookies.get(defaults.cookie.oldKey) ??
+      null
+    )
   }
 
   private legacySIO(): [string, string] | null {

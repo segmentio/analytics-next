@@ -14,7 +14,10 @@ interface Meta {
   version: string
 }
 
-const bucket = process.env.NODE_ENV == 'production' ? 'segment-ajs-renderer-compiled-production' : 'segment-ajs-renderer-compiled-qa'
+const bucket =
+  process.env.NODE_ENV == 'production'
+    ? 'segment-ajs-renderer-compiled-production'
+    : 'segment-ajs-renderer-compiled-qa'
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
@@ -23,8 +26,10 @@ const env = {
   NODE_ENV: 'production',
 }
 
-const getBranch = async (): Promise<string> => (await ex('git', ['branch', '--show-current'])).stdout
-const getSha = async (): Promise<string> => (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
+const getBranch = async (): Promise<string> =>
+  (await ex('git', ['branch', '--show-current'])).stdout
+const getSha = async (): Promise<string> =>
+  (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 
 async function getFiles(dir: string): Promise<string[]> {
   const subdirs = await fs.readdir(dir)
@@ -57,7 +62,8 @@ async function upload(meta: Meta): Promise<void> {
       Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
       Body: await fs.readFile(filePath),
       ACL: 'public-read',
-      ContentType: mime.getType(filePath.replace('.gz', '')) ?? 'application/javascript',
+      ContentType:
+        mime.getType(filePath.replace('.gz', '')) ?? 'application/javascript',
     }
 
     if (meta.branch !== 'master') {

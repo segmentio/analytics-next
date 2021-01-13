@@ -14,6 +14,11 @@ type BackoffParams = {
 
 export function backoff(params: BackoffParams): number {
   const random = Math.random() + 1
-  const { minTimeout = 500, factor = 2, attempt, maxTimeout = Infinity } = params
+  const {
+    minTimeout = 500,
+    factor = 2,
+    attempt,
+    maxTimeout = Infinity,
+  } = params
   return Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout)
 }

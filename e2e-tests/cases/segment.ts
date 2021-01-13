@@ -39,7 +39,9 @@ export default {
     await page.click('text="Measure & improve KPIs"')
 
     // Click //div[2]/div[1]/div[1]/a/*[local-name()="svg" and normalize-space(.)='Segment logo']
-    await page.click('//div[2]/div[1]/div[1]/a/*[local-name()="svg" and normalize-space(.)=\'Segment logo\']')
+    await page.click(
+      '//div[2]/div[1]/div[1]/a/*[local-name()="svg" and normalize-space(.)=\'Segment logo\']'
+    )
     // assert.equal(page.url(), 'https://segment.com/');
   },
 }

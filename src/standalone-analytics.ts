@@ -44,16 +44,24 @@ export async function install(): Promise<void> {
     return
   }
 
-  return AnalyticsBrowser.standalone(writeKey, window.analytics?._loadOptions ?? {})
+  return AnalyticsBrowser.standalone(
+    writeKey,
+    window.analytics?._loadOptions ?? {}
+  )
     .then((analytics) => {
-      // @ts-expect-error
-      const buffered = window.analytics && window.analytics[0] ? [...window.analytics] : []
+      const buffered =
+        // @ts-expect-error
+        window.analytics && window.analytics[0] ? [...window.analytics] : []
 
       window.analytics = analytics as StandaloneAnalytics
 
       for (const [operation, ...args] of buffered) {
-        // @ts-expect-error
-        if (window.analytics[operation] && typeof window.analytics[operation] === 'function') {
+        if (
+          // @ts-expect-error
+          window.analytics[operation] &&
+          // @ts-expect-error
+          typeof window.analytics[operation] === 'function'
+        ) {
           // @ts-expect-error
           window.analytics[operation].call(window.analytics, ...args)
         }

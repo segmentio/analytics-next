@@ -14,7 +14,10 @@ try {
 
   // load polyfills in order to get AJS to work with IE11
   const script = document.createElement('script')
-  script.setAttribute('src', 'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js')
+  script.setAttribute(
+    'src',
+    'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js'
+  )
   document.body.appendChild(script)
 
   script.onload = function (): void {

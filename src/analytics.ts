@@ -18,7 +18,10 @@ import { Extension } from './core/extension'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
 import { LegacyDestination } from './extensions/ajs-destination'
-import { MiddlewareFunction, sourceMiddlewareExtension } from './extensions/middleware'
+import {
+  MiddlewareFunction,
+  sourceMiddlewareExtension,
+} from './extensions/middleware'
 import * as autoTrack from './core/auto-track'
 
 export interface AnalyticsSettings {
@@ -46,7 +49,13 @@ export class Analytics extends Emitter {
   private _debug = false
   integrations: Integrations
 
-  constructor(settings: AnalyticsSettings, options?: InitOptions, queue?: EventQueue, user?: User, group?: Group) {
+  constructor(
+    settings: AnalyticsSettings,
+    options?: InitOptions,
+    queue?: EventQueue,
+    user?: User,
+    group?: Group
+  ) {
     super()
     const cookieOptions = options?.cookie
     this.settings = settings
@@ -65,24 +74,48 @@ export class Analytics extends Emitter {
   async track(...args: EventParams): Promise<DispatchedEvent> {
     const [name, data, opts, cb] = resolveArguments(...args)
 
-    const segmentEvent = this.eventFactory.track(name, data as SegmentEvent['properties'], opts, this.integrations)
+    const segmentEvent = this.eventFactory.track(
+      name,
+      data as SegmentEvent['properties'],
+      opts,
+      this.integrations
+    )
     this.emit('track', name, data, opts)
     return this.dispatch(segmentEvent, cb)
   }
 
   async page(...args: PageParams): Promise<DispatchedEvent> {
-    const [category, page, properties, options, callback] = resolvePageArguments(...args)
+    const [
+      category,
+      page,
+      properties,
+      options,
+      callback,
+    ] = resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.page(category, page, properties, options, this.integrations)
+    const segmentEvent = this.eventFactory.page(
+      category,
+      page,
+      properties,
+      options,
+      this.integrations
+    )
     this.emit('page', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
   }
 
   async identify(...args: UserParams): Promise<DispatchedEvent> {
-    const [id, _traits, options, callback] = resolveUserArguments(this._user)(...args)
+    const [id, _traits, options, callback] = resolveUserArguments(this._user)(
+      ...args
+    )
 
     this._user.identify(id, _traits)
-    const segmentEvent = this.eventFactory.identify(this._user.id(), this._user.traits(), options, this.integrations)
+    const segmentEvent = this.eventFactory.identify(
+      this._user.id(),
+      this._user.traits(),
+      options,
+      this.integrations
+    )
 
     this.emit('identify', this._user.id(), this._user.traits(), options)
     return this.dispatch(segmentEvent, callback)
@@ -93,13 +126,20 @@ export class Analytics extends Emitter {
       return this._group
     }
 
-    const [id, _traits, options, callback] = resolveUserArguments(this._group)(...args)
+    const [id, _traits, options, callback] = resolveUserArguments(this._group)(
+      ...args
+    )
 
     this._group.identify(id, _traits)
     const groupId = this._group.id()
     const groupdTraits = this._group.traits()
 
-    const segmentEvent = this.eventFactory.group(groupId, groupdTraits, options, this.integrations)
+    const segmentEvent = this.eventFactory.group(
+      groupId,
+      groupdTraits,
+      options,
+      this.integrations
+    )
 
     this.emit('group', groupId, groupdTraits, options)
     return this.dispatch(segmentEvent, callback)
@@ -107,39 +147,66 @@ export class Analytics extends Emitter {
 
   async alias(...args: AliasParams): Promise<DispatchedEvent> {
     const [to, from, options, callback] = resolveAliasArguments(...args)
-    const segmentEvent = this.eventFactory.alias(to, from, options, this.integrations)
+    const segmentEvent = this.eventFactory.alias(
+      to,
+      from,
+      options,
+      this.integrations
+    )
     this.emit('alias', to, from, options)
     return this.dispatch(segmentEvent, callback)
   }
 
   async screen(...args: PageParams): Promise<DispatchedEvent> {
-    const [category, page, properties, options, callback] = resolvePageArguments(...args)
+    const [
+      category,
+      page,
+      properties,
+      options,
+      callback,
+    ] = resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.screen(category, page, properties, options, this.integrations)
+    const segmentEvent = this.eventFactory.screen(
+      category,
+      page,
+      properties,
+      options,
+      this.integrations
+    )
     this.emit('screen', category, name, properties, options)
     return this.dispatch(segmentEvent, callback)
   }
 
-  async trackClick(...args: Parameters<typeof autoTrack.link>): Promise<Analytics> {
+  async trackClick(
+    ...args: Parameters<typeof autoTrack.link>
+  ): Promise<Analytics> {
     return autoTrack.link.call(this, ...args)
   }
 
-  async trackLink(...args: Parameters<typeof autoTrack.link>): Promise<Analytics> {
+  async trackLink(
+    ...args: Parameters<typeof autoTrack.link>
+  ): Promise<Analytics> {
     return autoTrack.link.call(this, ...args)
   }
 
-  async trackSubmit(...args: Parameters<typeof autoTrack.form>): Promise<Analytics> {
+  async trackSubmit(
+    ...args: Parameters<typeof autoTrack.form>
+  ): Promise<Analytics> {
     return autoTrack.form.call(this, ...args)
   }
 
-  async trackForm(...args: Parameters<typeof autoTrack.form>): Promise<Analytics> {
+  async trackForm(
+    ...args: Parameters<typeof autoTrack.form>
+  ): Promise<Analytics> {
     return autoTrack.form.call(this, ...args)
   }
 
   async register(...extensions: Extension[]): Promise<Context> {
     const ctx = Context.system()
 
-    const registrations = extensions.map((xt) => this.queue.register(ctx, xt, this))
+    const registrations = extensions.map((xt) =>
+      this.queue.register(ctx, xt, this)
+    )
     await Promise.all(registrations)
 
     return ctx
@@ -154,10 +221,17 @@ export class Analytics extends Emitter {
     this._user.reset()
   }
 
-  private async dispatch(event: SegmentEvent, callback?: Callback): Promise<DispatchedEvent> {
+  private async dispatch(
+    event: SegmentEvent,
+    callback?: Callback
+  ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
     const dispatched = await this.queue.dispatch(ctx)
-    const result = await invokeCallback(dispatched, callback, this.settings.timeout)
+    const result = await invokeCallback(
+      dispatched,
+      callback,
+      this.settings.timeout
+    )
 
     if (this._debug) {
       result.flush()
@@ -172,12 +246,19 @@ export class Analytics extends Emitter {
     return this
   }
 
-  addDestinationMiddleware(integrationName: string, ...middlewares: MiddlewareFunction[]): Analytics {
+  addDestinationMiddleware(
+    integrationName: string,
+    ...middlewares: MiddlewareFunction[]
+  ): Analytics {
     const legacyDestinations = this.queue.extensions.filter(
-      (xt) => xt instanceof LegacyDestination && xt.name.toLowerCase() === integrationName.toLowerCase()
+      (xt) =>
+        xt instanceof LegacyDestination &&
+        xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
 
-    legacyDestinations.forEach((destination) => destination.addMiddleware(...middlewares))
+    legacyDestinations.forEach((destination) =>
+      destination.addMiddleware(...middlewares)
+    )
     return this
   }
 
@@ -198,8 +279,14 @@ export class Analytics extends Emitter {
     return this
   }
 
-  async ready(callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res): Promise<unknown> {
-    return Promise.all(this.queue.extensions.map((i) => (i.ready ? i.ready() : Promise.resolve()))).then((res) => {
+  async ready(
+    callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res
+  ): Promise<unknown> {
+    return Promise.all(
+      this.queue.extensions.map((i) =>
+        i.ready ? i.ready() : Promise.resolve()
+      )
+    ).then((res) => {
       callback(res)
       return res
     })

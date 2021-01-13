@@ -1,4 +1,13 @@
-import { Alias, Facade, Group, Identify, Options, Page, Screen, Track } from '@segment/facade'
+import {
+  Alias,
+  Facade,
+  Group,
+  Identify,
+  Options,
+  Page,
+  Screen,
+  Track,
+} from '@segment/facade'
 import { SegmentEvent } from '../core/events'
 
 export type SegmentFacade = Facade<SegmentEvent> & {

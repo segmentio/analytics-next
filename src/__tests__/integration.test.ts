@@ -134,7 +134,10 @@ describe('Initialization', () => {
 
     jest.spyOn(lazyExtension1, 'load')
     jest.spyOn(lazyExtension2, 'load')
-    const [analytics] = await AnalyticsBrowser.load({ writeKey, extensions: [lazyExtension1, lazyExtension2, xt] })
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      extensions: [lazyExtension1, lazyExtension2, xt],
+    })
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     analytics.ready(ready)
@@ -340,10 +343,16 @@ describe('addDestinationMiddleware', () => {
     </html>
     `.trim()
 
-    const jsd = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+    const jsd = new JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
-    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
   })
 
   it('supports registering destination middlewares', async () => {
@@ -407,7 +416,10 @@ describe('track helpers', () => {
       // @ts-ignore
       global.jQuery = require('jquery')
 
-      const jsd = new JSDOM('', { runScripts: 'dangerously', resources: 'usable' })
+      const jsd = new JSDOM('', {
+        runScripts: 'dangerously',
+        resources: 'usable',
+      })
       document = jsd.window.document
 
       jest.spyOn(console, 'error').mockImplementationOnce(() => {})

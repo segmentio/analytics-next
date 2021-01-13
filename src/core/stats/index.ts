@@ -59,7 +59,10 @@ export default class Stats {
   }
 
   flush(): void {
-    const formatted = this.metrics.map((m) => ({ ...m, tags: m.tags.join(',') }))
+    const formatted = this.metrics.map((m) => ({
+      ...m,
+      tags: m.tags.join(','),
+    }))
     // ie doesn't like console.table
     if (console.table) {
       console.table(formatted)

@@ -16,7 +16,10 @@
       !(function () {
         var analytics = (window.analytics = window.analytics || [])
         if (!analytics.initialize)
-          if (analytics.invoked) window.console && console.error && console.error('Segment snippet included twice.')
+          if (analytics.invoked)
+            window.console &&
+              console.error &&
+              console.error('Segment snippet included twice.')
           else {
             analytics.invoked = !0
             analytics.methods = [
@@ -99,29 +102,47 @@
         e.preventDefault()
         var contents = document.querySelector('#event').value
         var evt = JSON.parse(contents)
-        var promise = window.analytics.track(evt.name || '', evt.properties || {}, evt.options || {})
+        var promise = window.analytics.track(
+          evt.name || '',
+          evt.properties || {},
+          evt.options || {}
+        )
 
         promise &&
           promise.then &&
           promise.then(function (ctx) {
             ctx.flush()
-            document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
+            document.querySelector('#logs').textContent = JSON.stringify(
+              ctx.event,
+              null,
+              '  '
+            )
           })
       })
 
-      document.querySelector('#identify').addEventListener('click', function (e) {
-        e.preventDefault()
-        var contents = document.querySelector('#event').value
-        var evt = JSON.parse(contents)
-        var promise = window.analytics.identify(evt.name || '', evt.properties || {}, evt.options || {})
+      document
+        .querySelector('#identify')
+        .addEventListener('click', function (e) {
+          e.preventDefault()
+          var contents = document.querySelector('#event').value
+          var evt = JSON.parse(contents)
+          var promise = window.analytics.identify(
+            evt.name || '',
+            evt.properties || {},
+            evt.options || {}
+          )
 
-        promise &&
-          promise.then &&
-          promise.then(function (ctx) {
-            ctx.flush()
-            document.querySelector('#logs').textContent = JSON.stringify(ctx.event, null, '  ')
-          })
-      })
+          promise &&
+            promise.then &&
+            promise.then(function (ctx) {
+              ctx.flush()
+              document.querySelector('#logs').textContent = JSON.stringify(
+                ctx.event,
+                null,
+                '  '
+              )
+            })
+        })
     </script>
   </body>
 </html>

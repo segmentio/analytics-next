@@ -11,11 +11,14 @@ function tp(id, token) {
     },
 
     async load() {
-      const req = await fetch(`https://api.segmentapis.com/tracking-plans/${id}/rules\?pagination.count\=100`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const req = await fetch(
+        `https://api.segmentapis.com/tracking-plans/${id}/rules\?pagination.count\=100`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
 
       const result = await req.json()
       plan = result?.data?.rules ?? []
@@ -23,7 +26,9 @@ function tp(id, token) {
 
     async track(ctx) {
       const evt = ctx.event.event
-      const rule = plan.find((rule) => rule.type === 'TRACK' && rule.key === evt)
+      const rule = plan.find(
+        (rule) => rule.type === 'TRACK' && rule.key === evt
+      )
 
       if (rule) {
         const validation = await fetch('https://assertible.com/json', {

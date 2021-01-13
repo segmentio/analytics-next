@@ -1,5 +1,9 @@
 import { tester, testerTeardown } from '../../src/tester/ajs-tester'
-import { gatherLighthouseMetrics, globalSetup, globalTeardown } from '../../src/tester/ajs-perf'
+import {
+  gatherLighthouseMetrics,
+  globalSetup,
+  globalTeardown,
+} from '../../src/tester/ajs-perf'
 
 describe('Performance', () => {
   beforeAll(async () => {
@@ -14,7 +18,12 @@ describe('Performance', () => {
   it('gather lighthouse', async () => {
     jest.setTimeout(50000)
 
-    const analyticsStub = await tester('***REMOVED***', 'http://localhost:3001', 'chromium', true)
+    const analyticsStub = await tester(
+      '***REMOVED***',
+      'http://localhost:3001',
+      'chromium',
+      true
+    )
 
     const results = await gatherLighthouseMetrics(analyticsStub.browserPage)
     const audits = results.audits // Lighthouse audits
@@ -36,7 +45,10 @@ describe('Performance', () => {
     console.table(
       Object.keys(audits)
         .filter((i) => audits[i].displayValue)
-        .map((i) => ({ metric: audits[i].title, value: audits[i].displayValue }))
+        .map((i) => ({
+          metric: audits[i].title,
+          value: audits[i].displayValue,
+        }))
     )
 
     await analyticsStub.browserPage.close()
@@ -44,7 +56,12 @@ describe('Performance', () => {
 
   it('loads ajs in a browser', async () => {
     jest.setTimeout(10000)
-    const analyticsStub = await tester('***REMOVED***', 'http://localhost:3001', 'chromium', true)
+    const analyticsStub = await tester(
+      '***REMOVED***',
+      'http://localhost:3001',
+      'chromium',
+      true
+    )
 
     const ctx = await analyticsStub.track('hi', {
       test: 'prop',

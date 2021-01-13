@@ -1,4 +1,7 @@
-export async function loadScript(src: string, attributes?: Record<string, string>): Promise<HTMLScriptElement> {
+export async function loadScript(
+  src: string,
+  attributes?: Record<string, string>
+): Promise<HTMLScriptElement> {
   const scripts = Array.from(window.document.querySelectorAll('script'))
   const found = scripts.find((s) => s.src === src)
 

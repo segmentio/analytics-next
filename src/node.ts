@@ -7,7 +7,9 @@ import { EventQueue } from './core/queue/event-queue'
 import { PriorityQueue } from './lib/priority-queue'
 
 export class AnalyticsNode {
-  static async load(settings: { writeKey: string }): Promise<[Analytics, Context]> {
+  static async load(settings: {
+    writeKey: string
+  }): Promise<[Analytics, Context]> {
     const cookieOptions = {
       persist: false,
     }
@@ -23,7 +25,9 @@ export class AnalyticsNode {
       version: 'latest',
     }
 
-    const ctx = await analytics.register(...[validation, analyticsNode(nodeSettings)])
+    const ctx = await analytics.register(
+      ...[validation, analyticsNode(nodeSettings)]
+    )
     analytics.emit('initialize', settings, cookieOptions ?? {})
 
     return [analytics, ctx]

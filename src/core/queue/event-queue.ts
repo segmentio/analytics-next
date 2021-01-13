@@ -30,7 +30,11 @@ export class EventQueue extends Emitter {
     this.scheduleFlush()
   }
 
-  async register(ctx: Context, extension: Extension, instance: Analytics): Promise<void> {
+  async register(
+    ctx: Context,
+    extension: Extension,
+    instance: Analytics
+  ): Promise<void> {
     await Promise.resolve(extension.load(ctx, instance))
       .then(() => {
         this.extensions.push(extension)
@@ -38,7 +42,10 @@ export class EventQueue extends Emitter {
       .catch((err) => {
         if (extension.type === 'destination') {
           this.failedInitializations.push(extension.name)
-          ctx.log('warn', 'Failed to load destination', { extension: extension.name, error: err })
+          ctx.log('warn', 'Failed to load destination', {
+            extension: extension.name,
+            error: err,
+          })
           return
         }
 
@@ -112,7 +119,8 @@ export class EventQueue extends Emitter {
           ctx.log('error', 'Failed to deliver', err)
           ctx.stats.increment('delivery_failed')
 
-          const notRetriable = err instanceof ContextCancelation && err.retry === false
+          const notRetriable =
+            err instanceof ContextCancelation && err.retry === false
           const retriable = !notRetriable
           retriable && failed.push(ctx)
         }
@@ -138,7 +146,12 @@ export class EventQueue extends Emitter {
 
   private availableExtensios(denyList: Integrations): ExtensionsByType {
     const available = this.extensions.filter((p) => denyList[p.name] !== false)
-    const { before = [], enrichment = [], destination = [], after = [] } = groupBy(available, 'type')
+    const {
+      before = [],
+      enrichment = [],
+      destination = [],
+      after = [],
+    } = groupBy(available, 'type')
 
     return {
       before,
@@ -154,7 +167,9 @@ export class EventQueue extends Emitter {
     }
 
     const denyList = ctx.event.options?.integrations ?? {}
-    const { before, enrichment, destinations, after } = this.availableExtensios(denyList)
+    const { before, enrichment, destinations, after } = this.availableExtensios(
+      denyList
+    )
 
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)
@@ -174,7 +189,9 @@ export class EventQueue extends Emitter {
 
     // TODO: concurrency control
     // TODO: timeouts
-    const deliveryAttempts = destinations.map((destination) => attempt(ctx, destination))
+    const deliveryAttempts = destinations.map((destination) =>
+      attempt(ctx, destination)
+    )
     await Promise.all(deliveryAttempts)
 
     ctx.stats.increment('message_delivered')

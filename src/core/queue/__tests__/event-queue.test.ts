@@ -268,7 +268,11 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    const [fruitBasketCtx, basketViewCtx, shopperCtx] = await Promise.all([fruitBasketDelivery, basketViewDelivery, shopperDelivery])
+    const [fruitBasketCtx, basketViewCtx, shopperCtx] = await Promise.all([
+      fruitBasketDelivery,
+      basketViewDelivery,
+      shopperDelivery,
+    ])
 
     expect(eq.queue.length).toBe(0)
 

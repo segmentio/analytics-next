@@ -11,16 +11,23 @@ import { asPromise } from '../../lib/as-promise'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-import { applyDestinationMiddleware, DestinationMiddlewareFunction } from '../middleware'
+import {
+  applyDestinationMiddleware,
+  DestinationMiddlewareFunction,
+} from '../middleware'
 import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion } from './loader'
 import { LegacyIntegration } from './types'
 
-const klona = (evt: SegmentEvent): SegmentEvent => JSON.parse(JSON.stringify(evt))
+const klona = (evt: SegmentEvent): SegmentEvent =>
+  JSON.parse(JSON.stringify(evt))
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
-async function flushQueue(xt: Extension, queue: PriorityQueue<Context>): Promise<PriorityQueue<Context>> {
+async function flushQueue(
+  xt: Extension,
+  queue: PriorityQueue<Context>
+): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
 
   await pWhile(
@@ -72,7 +79,12 @@ export class LegacyDestination implements Extension {
   buffer: PriorityQueue<Context>
   flushing = false
 
-  constructor(name: string, version: string, settings: object = {}, options: InitOptions) {
+  constructor(
+    name: string,
+    version: string,
+    settings: object = {},
+    options: InitOptions
+  ) {
     this.name = name
     this.version = version
     this.settings = settings
@@ -95,7 +107,13 @@ export class LegacyDestination implements Extension {
       return
     }
 
-    this.integration = await loadIntegration(ctx, analyticsInstance, this.name, this.version, this.settings)
+    this.integration = await loadIntegration(
+      ctx,
+      analyticsInstance,
+      this.name,
+      this.version,
+      this.settings
+    )
     this.onReady = new Promise((resolve) => {
       this.integration!.once('ready', () => {
         this._ready = true
@@ -104,10 +122,16 @@ export class LegacyDestination implements Extension {
     })
 
     try {
-      ctx.stats.increment('analytics_js.integration.invoke', 1, [`method:initialize`, `integration_name:${this.name}`])
+      ctx.stats.increment('analytics_js.integration.invoke', 1, [
+        `method:initialize`,
+        `integration_name:${this.name}`,
+      ])
       this.integration.initialize()
     } catch (error) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [`method:initialize`, `integration_name:${this.name}`])
+      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
+        `method:initialize`,
+        `integration_name:${this.name}`,
+      ])
     }
   }
 
@@ -115,7 +139,10 @@ export class LegacyDestination implements Extension {
     this.middleware = this.middleware.concat(...fn)
   }
 
-  private async send<T extends Facade>(ctx: Context, clz: ClassType<T>): Promise<Context> {
+  private async send<T extends Facade>(
+    ctx: Context,
+    clz: ClassType<T>
+  ): Promise<Context> {
     ctx = embedMetrics(this.name, ctx)
 
     if (!this._ready || isOffline()) {
@@ -131,22 +158,39 @@ export class LegacyDestination implements Extension {
 
       if (planEvent?.enabled && planEvent.integrations[this.name] === false) {
         ctx.log('debug', 'event dropped by plan', ctx.event)
-        ctx.cancel(new ContextCancelation({ retry: false, reason: 'event dropped by plan' }))
+        ctx.cancel(
+          new ContextCancelation({
+            retry: false,
+            reason: 'event dropped by plan',
+          })
+        )
         return ctx
       }
     }
 
-    const afterMiddleware = await applyDestinationMiddleware(this.name, klona(ctx.event), this.middleware)
+    const afterMiddleware = await applyDestinationMiddleware(
+      this.name,
+      klona(ctx.event),
+      this.middleware
+    )
 
     if (afterMiddleware === null) {
       return ctx
     }
 
     const event = new clz(afterMiddleware, {})
-    const eventType = clz.name.toLowerCase() as 'track' | 'identify' | 'page' | 'alias' | 'group'
+    const eventType = clz.name.toLowerCase() as
+      | 'track'
+      | 'identify'
+      | 'page'
+      | 'alias'
+      | 'group'
     const onEventType = `on${eventType}`
 
-    ctx.stats.increment('analytics_js.integration.invoke', 1, [`method:${eventType}`, `integration_name:${this.name}`])
+    ctx.stats.increment('analytics_js.integration.invoke', 1, [
+      `method:${eventType}`,
+      `integration_name:${this.name}`,
+    ])
 
     try {
       // @ts-expect-error
@@ -158,7 +202,10 @@ export class LegacyDestination implements Extension {
         await asPromise(this.integration[eventType](event))
       }
     } catch (err) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [`method:${eventType}`, `integration_name:${this.name}`])
+      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
+        `method:${eventType}`,
+        `integration_name:${this.name}`,
+      ])
       throw err
     }
 
@@ -214,7 +261,9 @@ export async function ajsDestinations(
 
   return Object.entries(settings.integrations)
     .map(([name, integrationSettings]) => {
-      const allDisableAndNotDefined = globalIntegrations.All === false && globalIntegrations[name] === undefined
+      const allDisableAndNotDefined =
+        globalIntegrations.All === false &&
+        globalIntegrations[name] === undefined
 
       if (globalIntegrations[name] === false || allDisableAndNotDefined) {
         return
@@ -225,9 +274,16 @@ export async function ajsDestinations(
       }
 
       const version = resolveVersion(integrationSettings)
-      const destination = new LegacyDestination(name, version, integrationSettings, options as object)
+      const destination = new LegacyDestination(
+        name,
+        version,
+        integrationSettings,
+        options as object
+      )
 
-      const routing = routingRules.filter((rule) => rule.destinationName === name)
+      const routing = routingRules.filter(
+        (rule) => rule.destinationName === name
+      )
       if (routing.length > 0) {
         destination.addMiddleware(routingMiddleware)
       }

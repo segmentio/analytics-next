@@ -56,7 +56,9 @@ describe('Registration', () => {
     }
 
     const ctx = Context.system()
-    await expect(eq.register(ctx, extension, ajs)).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
+    await expect(
+      eq.register(ctx, extension, ajs)
+    ).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
   })
 
   test('allows for destinations to fail registration', async () => {
@@ -175,7 +177,9 @@ describe('Extension flushing', () => {
       })
     )
 
-    const messages = flushed.logs().map((l) => ({ message: l.message, extras: l.extras }))
+    const messages = flushed
+      .logs()
+      .map((l) => ({ message: l.message, extras: l.extras }))
     expect(messages).toMatchInlineSnapshot(`
       Array [
         Object {
@@ -241,7 +245,9 @@ describe('Extension flushing', () => {
       })
     )
 
-    const messages = flushed.logs().map((l) => ({ message: l.message, extras: l.extras }))
+    const messages = flushed
+      .logs()
+      .map((l) => ({ message: l.message, extras: l.extras }))
     expect(messages).toMatchInlineSnapshot(`
       Array [
         Object {

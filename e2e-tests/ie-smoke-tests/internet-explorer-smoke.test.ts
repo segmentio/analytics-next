@@ -5,7 +5,12 @@ import execa from 'execa'
 import { startLocalServer } from '../recorder/localServer'
 
 const sauceKey = (): string => {
-  return process.env.SAUCELABS_KEY ?? execa.commandSync('aws-okta exec dev-write -- chamber read -q analytics-next saucelabs-key').stdout
+  return (
+    process.env.SAUCELABS_KEY ??
+    execa.commandSync(
+      'aws-okta exec dev-write -- chamber read -q analytics-next saucelabs-key'
+    ).stdout
+  )
 }
 
 const config: WebdriverIO.RemoteOptions = {

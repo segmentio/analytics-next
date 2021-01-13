@@ -5,11 +5,13 @@ import lighthouse from 'lighthouse/lighthouse-core'
 // @ts-ignore
 import reportGenerator from 'lighthouse/lighthouse-core/report/report-generator'
 
-export async function gatherLighthouseMetrics(page: playwright.Page): Promise<any> {
+export async function gatherLighthouseMetrics(
+  page: playwright.Page
+): Promise<unknown> {
   return lighthouse(page.url(), {
     port: 9222,
     logLevel: 'error',
-  }).then(({ lhr }: { lhr: any }) => {
+  }).then(({ lhr }: { lhr: unknown }) => {
     return JSON.parse(reportGenerator.generateReport(lhr, 'json') as string)
   })
 }

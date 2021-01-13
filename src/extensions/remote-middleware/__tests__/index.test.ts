@@ -16,10 +16,16 @@ describe('Remote Middleware', () => {
     </html>
     `.trim()
 
-    const jsd = new jsdom.JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'https://localhost' })
+    const jsd = new jsdom.JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
-    windowSpy.mockImplementation(() => (jsd.window as unknown) as Window & typeof globalThis)
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
   })
 
   it('ignores empty dictionaries', async () => {

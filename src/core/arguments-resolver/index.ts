@@ -1,4 +1,9 @@
-import { isFunction, isPlainObject, isString, isNumber } from '../../extensions/validation'
+import {
+  isFunction,
+  isPlainObject,
+  isString,
+  isNumber,
+} from '../../extensions/validation'
 import { Context } from '../context'
 import { Options, SegmentEvent } from '../events'
 import { ID, User } from '../user'
@@ -18,7 +23,11 @@ export function resolveArguments(
     throw new Error('Event missing')
   }
 
-  const data = isPlainObject(eventName) ? eventName.properties ?? {} : isPlainObject(properties) ? properties : {}
+  const data = isPlainObject(eventName)
+    ? eventName.properties ?? {}
+    : isPlainObject(properties)
+    ? properties
+    : {}
 
   let opts = {}
   if (isPlainObject(properties) && !isFunction(options)) {
@@ -62,12 +71,19 @@ export function resolvePageArguments(
   const resolvedProperties = objects[0] ?? {}
   const resolvedOptions = objects[1] ?? {}
 
-  return [resolvedCategory, resolvedName, resolvedProperties, resolvedOptions, resolvedCallback]
+  return [
+    resolvedCategory,
+    resolvedName,
+    resolvedProperties,
+    resolvedOptions,
+    resolvedCallback,
+  ]
 }
 
 export const resolveUserArguments = (user: User): ResolveUser => {
   return (...args): ReturnType<ResolveUser> => {
-    const id = args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
+    const id =
+      args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
     const [data = {}, opts = {}] = args.filter(isPlainObject)
     const resolvedCallback = args.find(isFunction) as Callback | undefined
 

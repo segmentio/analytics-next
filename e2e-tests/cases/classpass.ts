@@ -38,7 +38,9 @@ export default {
     await page.fill('input[aria-label="City name"]', 'Vancouver')
 
     // Click //li[normalize-space(.)='Vancouver, BC, Canada' and normalize-space(@role)='option']
-    await page.click("//li[normalize-space(.)='Vancouver, BC, Canada' and normalize-space(@role)='option']")
+    await page.click(
+      "//li[normalize-space(.)='Vancouver, BC, Canada' and normalize-space(@role)='option']"
+    )
 
     // Go to https://classpass.com/pricing/vancouver
     await page.goto('https://classpass.com/pricing/vancouver')

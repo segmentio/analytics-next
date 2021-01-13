@@ -17,14 +17,19 @@ export interface DestinationMiddlewareParams {
 }
 
 export type MiddlewareFunction = (middleware: MiddlewareParams) => void
-export type DestinationMiddlewareFunction = (middleware: DestinationMiddlewareParams) => void
+export type DestinationMiddlewareFunction = (
+  middleware: DestinationMiddlewareParams
+) => void
 
 export async function applyDestinationMiddleware(
   destination: string,
   evt: SegmentEvent,
   middleware: DestinationMiddlewareFunction[]
 ): Promise<SegmentEvent | null> {
-  async function applyMiddleware(event: SegmentEvent, fn: DestinationMiddlewareFunction): Promise<SegmentEvent | null> {
+  async function applyMiddleware(
+    event: SegmentEvent,
+    fn: DestinationMiddlewareFunction
+  ): Promise<SegmentEvent | null> {
     return new Promise((resolve) => {
       fn({
         payload: toFacade(event, {

@@ -8,14 +8,20 @@ type BrowserType = 'chromium' | 'firefox' | 'webkit'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function makeStub(page: playwright.Page) {
   const stub = {
-    async register(...args: Parameters<Analytics['register']>): Promise<SerializedContext> {
+    async register(
+      ...args: Parameters<Analytics['register']>
+    ): Promise<SerializedContext> {
       return await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return window.analytics.register(...innerArgs).then((ctx) => ctx.toJSON())
+        return window.analytics
+          .register(...innerArgs)
+          .then((ctx) => ctx.toJSON())
         // @ts-ignore
       }, args)
     },
-    async track(...args: Parameters<Analytics['track']>): Promise<SerializedContext> {
+    async track(
+      ...args: Parameters<Analytics['track']>
+    ): Promise<SerializedContext> {
       // @ts-expect-error
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
@@ -27,7 +33,9 @@ function makeStub(page: playwright.Page) {
 
       return ctx
     },
-    async page(...args: Parameters<Analytics['page']>): Promise<SerializedContext> {
+    async page(
+      ...args: Parameters<Analytics['page']>
+    ): Promise<SerializedContext> {
       const ctx = await page.evaluate(async (innerArgs) => {
         // @ts-ignore
         return window.analytics.page(...innerArgs).then((ctx) => {
@@ -39,7 +47,9 @@ function makeStub(page: playwright.Page) {
       return ctx
     },
 
-    async identify(...args: Parameters<Analytics['identify']>): Promise<SerializedContext> {
+    async identify(
+      ...args: Parameters<Analytics['identify']>
+    ): Promise<SerializedContext> {
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
         return window.analytics.identify(...innerArgs).then((ctx) => {
@@ -57,19 +67,25 @@ function makeStub(page: playwright.Page) {
   return stub
 }
 
-export const getBrowser = mem(async (browserType?: BrowserType, remoteDebug?: boolean) => {
-  const browser = await playwright[browserType ?? 'chromium'].launch({
-    headless: true,
-    devtools: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox', remoteDebug ? '--remote-debugging-port=9222' : ''],
-  })
+export const getBrowser = mem(
+  async (browserType?: BrowserType, remoteDebug?: boolean) => {
+    const browser = await playwright[browserType ?? 'chromium'].launch({
+      headless: true,
+      devtools: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        remoteDebug ? '--remote-debugging-port=9222' : '',
+      ],
+    })
 
-  process.on('unhandledRejection', () => {
-    browser && browser.close()
-  })
+    process.on('unhandledRejection', () => {
+      browser && browser.close()
+    })
 
-  return browser
-})
+    return browser
+  }
+)
 
 export async function testerTeardown(): Promise<void> {
   const browser = await getBrowser()
@@ -85,7 +101,9 @@ export async function tester(
   const browser = await getBrowser(browserType, remoteDebug)
   const page = await browser.newPage()
 
-  await page.goto(url || `file://${process.cwd()}/src/tester/__fixtures__/index.html`)
+  await page.goto(
+    url || `file://${process.cwd()}/src/tester/__fixtures__/index.html`
+  )
   await page.evaluate(`
     window.AnalyticsNext.AnalyticsBrowser.load({
       writeKey: '${_writeKey}',

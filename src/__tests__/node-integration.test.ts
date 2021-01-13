@@ -10,7 +10,9 @@ describe('Initialization', () => {
 
     expect(analytics.queue.extensions.length).toBe(2)
 
-    const ajsNodeXt = analytics.queue.extensions.find((xt) => xt.name === 'analytics-node-next')
+    const ajsNodeXt = analytics.queue.extensions.find(
+      (xt) => xt.name === 'analytics-node-next'
+    )
     expect(ajsNodeXt).toBeDefined()
     expect(ajsNodeXt?.isLoaded()).toBeTruthy()
   })

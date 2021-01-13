@@ -1,7 +1,10 @@
 import { Context } from '../context'
 import { asPromise } from '../../lib/as-promise'
 
-async function pTimeout(cb: Promise<unknown>, timeout: number): Promise<unknown> {
+async function pTimeout(
+  cb: Promise<unknown>,
+  timeout: number
+): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(Error('Promise timed out'))
@@ -16,7 +19,11 @@ async function pTimeout(cb: Promise<unknown>, timeout: number): Promise<unknown>
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
-export function invokeCallback(ctx: Context, callback?: Callback, timeout?: number): Promise<Context> {
+export function invokeCallback(
+  ctx: Context,
+  callback?: Callback,
+  timeout?: number
+): Promise<Context> {
   if (!callback) {
     return Promise.resolve(ctx)
   }

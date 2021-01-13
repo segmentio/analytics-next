@@ -54,7 +54,10 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
         // delete AJSN-only fields
         delete postData.context.metrics
         delete postData.context.attempts
-        if (postData._metadata?.failedInitializations && postData._metadata.failedInitializations.length === 0) {
+        if (
+          postData._metadata?.failedInitializations &&
+          postData._metadata.failedInitializations.length === 0
+        ) {
           delete postData._metadata.failedInitializations
         }
 
@@ -101,7 +104,9 @@ describe('Compare requests', () => {
 
   classicScenarios.forEach((classicScenario) => {
     // considering all scenarios are named "AJS_VERSION-scenario_name". Eg "classic-staples"
-    const nextScenario = nextScenarios.find((scenario) => scenario.fileName.includes(classicScenario.fileName.split('-')[1]))
+    const nextScenario = nextScenarios.find((scenario) =>
+      scenario.fileName.includes(classicScenario.fileName.split('-')[1])
+    )
 
     it(`compares classic and next recorded requests`, () => {
       const cleanUpClassic = cleanUp(classicScenario.content).trackingAPI
