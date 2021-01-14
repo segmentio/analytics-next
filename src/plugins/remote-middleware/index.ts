@@ -6,7 +6,7 @@ import { MiddlewareFunction } from '../middleware'
 
 const path =
   process.env.LEGACY_INTEGRATIONS_PATH ??
-  'https://cdn.segment.build/next-integrations'
+  'https://cdn.segment.com/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,

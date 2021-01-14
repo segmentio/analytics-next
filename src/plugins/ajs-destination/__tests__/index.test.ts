@@ -195,9 +195,9 @@ describe('remote loading', () => {
 
     expect(sources).toMatchObject(
       expect.arrayContaining([
-        'https://cdn.segment.build/next-integrations/amplitude/latest/amplitude.dynamic.js.gz',
+        'https://cdn.segment.com/next-integrations/integrations/amplitude/latest/amplitude.dynamic.js.gz',
         expect.stringContaining(
-          'https://cdn.segment.build/next-integrations/vendor/commons'
+          'https://cdn.segment.com/next-integrations/integrations/vendor/commons'
         ),
         'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
       ])

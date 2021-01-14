@@ -1,6 +1,7 @@
 import { Plugin } from '../../core/plugin'
 import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
+import pkg from '../../../package.json'
 
 function enrich(
   ctx: Context,
@@ -21,6 +22,9 @@ function enrich(
       unbundled.push(key)
     }
   })
+
+  ctx.updateEvent('context.library.name', 'analytics-next')
+  ctx.updateEvent('context.library.version', pkg.version)
 
   ctx.event._metadata = {
     bundled: bundled.sort(),

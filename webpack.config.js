@@ -10,7 +10,7 @@ const plugins = [
     cache: true,
   }),
   new webpack.EnvironmentPlugin({
-    LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.build/next-integrations',
+    LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.com/next-integrations',
     DEBUG: false,
   }),
 ]

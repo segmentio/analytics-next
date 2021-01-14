@@ -7,7 +7,7 @@ import { LegacyIntegration } from './types'
 
 const path =
   process.env.LEGACY_INTEGRATIONS_PATH ??
-  'https://cdn.segment.build/next-integrations'
+  'https://cdn.segment.com/next-integrations'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
@@ -36,7 +36,7 @@ export async function loadIntegration(
   settings?: object
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const fullPath = `${path}/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
