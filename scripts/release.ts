@@ -28,6 +28,7 @@ const env = {
 
 const getBranch = async (): Promise<string> =>
   (await ex('git', ['branch', '--show-current'])).stdout
+
 const getSha = async (): Promise<string> =>
   (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 

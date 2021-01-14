@@ -55,6 +55,7 @@ release: ## Releases Analytics Next to stage
 .PHONY: release
 
 release-prod: ## Releases Analytics Next to production
+	yarn np --yolo --no-publish --no-release-draft
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release-prod
 
