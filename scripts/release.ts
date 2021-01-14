@@ -22,10 +22,6 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
 
-const env = {
-  NODE_ENV: 'production',
-}
-
 const getBranch = async (): Promise<string> =>
   (await ex('git', ['branch', '--show-current'])).stdout
 

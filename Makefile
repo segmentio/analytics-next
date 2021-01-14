@@ -12,7 +12,7 @@ node_modules: package.json yarn.lock
 	yarn install
 	@touch $@
 
-build: node_modules ## Builds typescript files and UMD library
+build: ## Builds typescript files and UMD library
 	yarn clean && yarn concurrently "yarn umd" "yarn cjs"
 .PHONY: build
 
@@ -51,7 +51,7 @@ size: ## Verify the final size of Analytics-Next
 .PHONY: size
 
 version:
-	yarn np --yolo --no-publish --no-release-draft --no-cleanup
+	yarn bump
 .PHONY: version
 
 release: version ## Releases Analytics Next to stage
