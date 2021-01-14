@@ -50,12 +50,15 @@ size: ## Verify the final size of Analytics-Next
 	NODE_ENV=production yarn umd > /dev/null && yarn size-limit
 .PHONY: size
 
-release: ## Releases Analytics Next to stage
+version:
+	yarn np --yolo --no-publish --no-release-draft --no-cleanup
+.PHONY: version
+
+release: version ## Releases Analytics Next to stage
 	aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release
 
-release-prod: ## Releases Analytics Next to production
-	yarn np --yolo --no-publish --no-release-draft
+release-prod: version ## Releases Analytics Next to production
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release-prod
 
