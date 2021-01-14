@@ -98,10 +98,6 @@ async function upload(meta: Meta): Promise<void> {
 async function release(): Promise<void> {
   console.log('Compiling Bundles')
 
-  await ex('make', ['build'], {
-    env,
-  })
-
   const sha = await getSha()
   const branch = await getBranch()
   const version = pkg.version

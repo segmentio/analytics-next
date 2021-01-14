@@ -55,10 +55,12 @@ version:
 .PHONY: version
 
 release: version ## Releases Analytics Next to stage
+	make build
 	aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release
 
 release-prod: version ## Releases Analytics Next to production
+	NODE_ENV=production make build
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release-prod
 
