@@ -70,6 +70,7 @@ const cleanUp = (param: JSONRequests): JSONRequests => {
 
       delete r.headers.accept
       delete r.headers.origin
+      delete r.headers['user-agent']
 
       return {
         ...r,
@@ -127,9 +128,9 @@ interface TrackingAPI {
   url: string
   postData?: PostData
   headers: {
-    'content-type': string
-    'user-agent': string
     referer: string
+    'content-type': string
+    'user-agent'?: string
     origin?: string
     accept?: string
   }

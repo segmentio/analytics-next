@@ -80,7 +80,6 @@ async function record() {
     })
 
     const context = await browser.newContext({
-      bypassCSP: true,
       // the HAR files recorded below require a much bigger clean up process than the JSONs we're manually recording.
       // We'll have to get back to this in the future and write a proper clean up script.
       // recordHar: {

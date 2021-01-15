@@ -5,6 +5,7 @@ import local from '../cases/local'
 import ritual from '../cases/ritual'
 import classpass from '../cases/classpass'
 import bonobos from '../cases/bonobos'
+import ifit from '../cases/ifit'
 
 export const DEVTOOLS = process.env.DEVTOOLS === 'true'
 export const AJS_VERSION = process.env.AJS_VERSION || 'next'
@@ -18,7 +19,16 @@ export const TRACKING_API_URLS = [
 ]
 
 const CASES = process.env.CASES
-const allScenarios = [segment, milanuncios, staples, local, ritual, classpass, bonobos]
+const allScenarios = [
+  segment,
+  milanuncios,
+  staples,
+  local,
+  ritual,
+  classpass,
+  bonobos,
+  ifit,
+]
 
 export const cases = allScenarios.filter(
   (scenario) => CASES?.split(',').includes(scenario.name) ?? true
