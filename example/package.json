@@ -10,7 +10,7 @@
   "dependencies": {
     "faker": "^5.1.0",
     "lodash": "^4.17.20",
-    "next": "9.5.4",
+    "next": "^10.0.5",
     "prismjs": "^1.21.0",
     "rc-table": "^7.10.0",
     "react": "16.13.1",
