@@ -1,4 +1,5 @@
 import fetch from 'unfetch'
+import pkg from '../../../package.json'
 
 export interface MetricsOptions {
   host?: string
@@ -18,7 +19,7 @@ export class RemoteMetrics {
 
   constructor(options?: MetricsOptions) {
     this.host = options?.host ?? 'api.segment.io/v1'
-    this.sampleRate = options?.sampleRate ?? 0
+    this.sampleRate = options?.sampleRate ?? 100
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20
 
@@ -64,6 +65,9 @@ export class RemoteMetrics {
       acc[k] = v
       return acc
     }, {} as Record<string, string>)
+
+    formatted['library'] = 'analytics-next'
+    formatted['library_version'] = pkg.version
 
     this.queue.push({
       type: 'Counter',

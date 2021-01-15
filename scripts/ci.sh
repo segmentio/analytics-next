@@ -2,7 +2,6 @@
 
 echo '--- Install development dependencies'
 yarn install
-yarn add --dev playwright
 
 echo '--- Build bundles'
 make build-prod
@@ -14,5 +13,6 @@ echo '--- Lint files'
 make lint
 
 echo '--- Run tests'
+yarn add --dev playwright
 make test-unit
 make test-integration
