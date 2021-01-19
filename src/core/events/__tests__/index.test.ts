@@ -6,7 +6,7 @@ describe('Event Factory', () => {
   let user: User
   let factory: EventFactory
 
-  const shoes = { product: 'shoes', total: '$35' }
+  const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
 
   beforeEach(() => {

@@ -43,6 +43,8 @@ export class EventFactory {
 
     if (category !== null) {
       event.category = category
+      event.properties = event.properties ?? {}
+      event.properties.category = category
     }
 
     if (page !== null) {
