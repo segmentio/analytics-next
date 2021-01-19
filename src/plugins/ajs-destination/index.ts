@@ -141,7 +141,8 @@ export class LegacyDestination implements Plugin {
 
   private async send<T extends Facade>(
     ctx: Context,
-    clz: ClassType<T>
+    clz: ClassType<T>,
+    eventType: 'track' | 'identify' | 'page' | 'alias' | 'group'
   ): Promise<Context> {
     ctx = embedMetrics(this.name, ctx)
 
@@ -179,12 +180,6 @@ export class LegacyDestination implements Plugin {
     }
 
     const event = new clz(afterMiddleware, {})
-    const eventType = clz.name.toLowerCase() as
-      | 'track'
-      | 'identify'
-      | 'page'
-      | 'alias'
-      | 'group'
     const onEventType = `on${eventType}`
 
     ctx.stats.increment('analytics_js.integration.invoke', 1, [
@@ -213,23 +208,23 @@ export class LegacyDestination implements Plugin {
   }
 
   async track(ctx: Context): Promise<Context> {
-    return this.send(ctx, Track as ClassType<Track>)
+    return this.send(ctx, Track as ClassType<Track>, 'track')
   }
 
   async page(ctx: Context): Promise<Context> {
-    return this.send(ctx, Page as ClassType<Page>)
+    return this.send(ctx, Page as ClassType<Page>, 'page')
   }
 
   async identify(ctx: Context): Promise<Context> {
-    return this.send(ctx, Identify as ClassType<Identify>)
+    return this.send(ctx, Identify as ClassType<Identify>, 'identify')
   }
 
   async alias(ctx: Context): Promise<Context> {
-    return this.send(ctx, Alias as ClassType<Alias>)
+    return this.send(ctx, Alias as ClassType<Alias>, 'alias')
   }
 
   async group(ctx: Context): Promise<Context> {
-    return this.send(ctx, Group as ClassType<Group>)
+    return this.send(ctx, Group as ClassType<Group>, 'group')
   }
 
   private scheduleFlush(): void {
