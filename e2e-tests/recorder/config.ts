@@ -6,6 +6,8 @@ import ritual from '../cases/ritual'
 import classpass from '../cases/classpass'
 import bonobos from '../cases/bonobos'
 import ifit from '../cases/ifit'
+import hoteltonight from '../cases/hoteltonight'
+import doordash from '../cases/doordash'
 
 export const DEVTOOLS = process.env.DEVTOOLS === 'true'
 export const AJS_VERSION = process.env.AJS_VERSION || 'next'
@@ -28,6 +30,8 @@ const allScenarios = [
   classpass,
   bonobos,
   ifit,
+  hoteltonight,
+  doordash,
 ]
 
 export const cases = allScenarios.filter(

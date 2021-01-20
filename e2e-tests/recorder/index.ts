@@ -1,7 +1,6 @@
 import { chromium, ChromiumBrowserContext } from 'playwright'
 import fs from 'fs-extra'
 import path from 'path'
-// import { sortBy } from 'lodash'
 import {
   AJS_VERSION,
   HEADLESS,
@@ -12,6 +11,7 @@ import {
 } from './config'
 import { startLocalServer } from './localServer'
 import { Request } from 'playwright'
+import fetch from 'node-fetch'
 
 interface APICalls {
   name: string
@@ -27,12 +27,13 @@ interface Call {
 async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
   const url = await startLocalServer()
 
+  const res = await fetch(`${url}/dist/umd/standalone.js`)
+  const body = await res.text()
+
   await context.route(`**/analytics.min.js`, (route) => {
     route.fulfill({
-      status: 301,
-      headers: {
-        Location: `${url}/dist/umd/standalone.js`,
-      },
+      status: 200,
+      body,
     })
   })
 }
@@ -80,6 +81,7 @@ async function record() {
     })
 
     const context = await browser.newContext({
+      bypassCSP: true,
       // the HAR files recorded below require a much bigger clean up process than the JSONs we're manually recording.
       // We'll have to get back to this in the future and write a proper clean up script.
       // recordHar: {
