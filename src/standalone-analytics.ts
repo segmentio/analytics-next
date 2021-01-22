@@ -49,6 +49,8 @@ export async function install(): Promise<void> {
     window.analytics?._loadOptions ?? {}
   )
     .then((analytics) => {
+      analytics.debug(true)
+
       const buffered =
         // @ts-expect-error
         window.analytics && window.analytics[0] ? [...window.analytics] : []
