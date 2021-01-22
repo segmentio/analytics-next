@@ -154,10 +154,11 @@ export class LegacyDestination implements Plugin {
     const plan = this.options?.plan?.track
     const ev = ctx.event.event
 
-    if (plan && ev) {
+    if (plan && ev && this.name !== 'Segment.io') {
+      // events are always sent to segment (legacy behavior)
       const planEvent = plan[ev]
 
-      if (planEvent?.enabled && planEvent.integrations[this.name] === false) {
+      if (planEvent?.enabled && planEvent?.integrations[this.name] === false) {
         ctx.log('debug', 'event dropped by plan', ctx.event)
         ctx.cancel(
           new ContextCancelation({
@@ -166,6 +167,11 @@ export class LegacyDestination implements Plugin {
           })
         )
         return ctx
+      } else {
+        ctx.updateEvent('integrations', {
+          ...ctx.event.integrations,
+          ...planEvent?.integrations,
+        })
       }
     }
 
@@ -249,6 +255,11 @@ export async function ajsDestinations(
 ): Promise<LegacyDestination[]> {
   if (isServer()) {
     return []
+  }
+
+  if (settings.plan) {
+    options = options ?? {}
+    options.plan = settings.plan
   }
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []

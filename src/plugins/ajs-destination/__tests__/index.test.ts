@@ -383,4 +383,36 @@ describe('plan', () => {
     await dest.track(new Context({ type: 'page', event: 'Track Event' }))
     expect(dest.integration?.track).toHaveBeenCalled()
   })
+
+  it('properly sets event integrations object with enabled plan', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+    })
+
+    const ctx = await dest.track(
+      new Context({ type: 'page', event: 'Track Event' })
+    )
+    expect(ctx.event.integrations).toEqual({ amplitude: true })
+  })
+
+  it('doesnt set event integrations object with different event', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+    })
+
+    const ctx = await dest.track(
+      new Context({ type: 'page', event: 'Not Track Event' })
+    )
+    expect(ctx.event.integrations).toEqual({})
+  })
 })

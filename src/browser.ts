@@ -1,6 +1,7 @@
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
+import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
 import { ajsDestinations } from './plugins/ajs-destination'
 import { metadataEnrichment } from './plugins/metadata-enrichment'
@@ -33,6 +34,8 @@ export interface LegacySettings {
 
   enabledMiddleware?: Record<string, boolean>
   metrics?: MetricsOptions
+
+  plan?: Plan
 }
 
 const CDN_PATH = 'https://cdn-settings.segment.com'
