@@ -64,6 +64,19 @@ release-prod: version ## Releases Analytics Next to production
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.ts
 .PHONY: release-prod
 
+handshake:
+	@echo "📡  Establishing Remote connection"
+	@robo --config ~/dev/src/github.com/segmentio/robofiles/development/robo.yml prod.ssh echo "✅ Connected"
+.PHONY: handshake
+
+rebuild-sources-prod: handshake ## Rebuilds all sources that are using ajs-next
+	@./scripts/ajs-sources.js
+.PHONY: rebuild-sources-prod
+
+rebuild-sources-stage: # Rebuilds all sources that are using ajs-next in stage
+	@robo --config ~/dev/src/github.com/segmentio/robofiles/development/robo.yml rebuild-all-stage
+.PHONY: rebuild-sources-stage
+
 analyze: 
 	NODE_ENV=production $(BIN)/webpack --profile --json > stats.json && $(BIN)/webpack-bundle-analyzer --port 4200 stats.json
 .PHONY: analyze
