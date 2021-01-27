@@ -41,6 +41,7 @@ const writeKeys = {
   segment_app: '***REMOVED***',
   classpass: '***REMOVED***',
   stage: '***REMOVED***',
+  gurdas_shop: '***REMOVED***',
 }
 
 const settings: AnalyticsSettings = {

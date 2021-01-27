@@ -103,6 +103,53 @@ describe('ajsDestinations', () => {
     expect(destinations.length).toBe(6)
   })
 
+  it('ignores type:browser when bundlingStatus is unbundled', async () => {
+    const destinations = await ajsDestinations(
+      {
+        integrations: {
+          'Some server destination': {
+            type: 'server',
+            bundlingStatus: 'bundled', // this combination will never happen
+          },
+          'Device Mode Customer.io': {
+            type: 'browser',
+            bundlingStatus: 'bundled',
+          },
+          'Cloud Mode Customer.io': {
+            type: 'browser',
+            bundlingStatus: 'unbundled',
+          },
+        },
+      },
+      {},
+      {}
+    )
+    expect(destinations.length).toBe(1)
+  })
+
+  it('loads type:browser when bundlingStatus is not defined', async () => {
+    const destinations = await ajsDestinations(
+      {
+        integrations: {
+          'Some server destination': {
+            type: 'server',
+            bundlingStatus: 'bundled', // this combination will never happen
+          },
+          'Device Mode Customer.io': {
+            type: 'browser',
+            bundlingStatus: 'bundled',
+          },
+          'Device Mode no bundling status Customer.io': {
+            type: 'browser',
+          },
+        },
+      },
+      {},
+      {}
+    )
+    expect(destinations.length).toBe(2)
+  })
+
   it('ignores destinations of type:server', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)

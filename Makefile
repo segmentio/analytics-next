@@ -26,6 +26,10 @@ clean: ## Clean the build directory
 
 ## Test Commands
 
+tdd: node_modules ## Runs unit tests in watch mode
+	$(BIN)/jest --watch
+.PHONY: tdd
+
 test-unit: node_modules ## Runs unit tests
 	$(BIN)/jest
 .PHONY: test-unit
