@@ -43,7 +43,7 @@ async function rebuild() {
       writeKeys: source.writeKeys.toString(),
     })
 
-    return ex.command(`robo rebuild-ajs-prod ${source.id}`, {
+    return ex.commandSync(`${robo} rebuild-ajs-prod ${source.id}`, {
       shell: true,
     })
   })
