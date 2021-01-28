@@ -76,7 +76,7 @@ export async function link(
           // if a link is opening in the same tab, wait 300ms to give the track call time to complete
           setTimeout(() => {
             window.location.href = href!
-          }, 300)
+          }, this.settings.timeout)
         }
 
         this.track(ev, props).catch(console.error)
@@ -113,7 +113,7 @@ export async function form(
 
       setTimeout(() => {
         el.submit()
-      }, 300)
+      }, this.settings.timeout)
     }
 
     // Support the events happening through jQuery or Zepto instead of through

@@ -43,7 +43,7 @@ export interface InitOptions {
 
 export class Analytics extends Emitter {
   queue: EventQueue
-  private settings: AnalyticsSettings
+  protected settings: AnalyticsSettings
   private _user: User
   private _group: Group
   private eventFactory: EventFactory
@@ -60,6 +60,7 @@ export class Analytics extends Emitter {
     super()
     const cookieOptions = options?.cookie
     this.settings = settings
+    this.settings.timeout = this.settings.timeout ?? 300
     this.queue = queue ?? new EventQueue()
     this._user = user ?? new User(options?.user, cookieOptions).load()
     this._group = group ?? new Group(options?.group, cookieOptions).load()
@@ -220,6 +221,10 @@ export class Analytics extends Emitter {
 
   reset(): void {
     this._user.reset()
+  }
+
+  timeout(timeout: number): void {
+    this.settings.timeout = timeout
   }
 
   private async dispatch(

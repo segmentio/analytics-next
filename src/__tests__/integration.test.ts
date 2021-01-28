@@ -704,3 +704,22 @@ describe('use', () => {
     expect(legacyPlugin).toHaveBeenCalledWith(analytics)
   })
 })
+
+describe('timeout', () => {
+  it('has a default timeout value', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+    //@ts-ignore
+    expect(analytics.settings.timeout).toEqual(300)
+  })
+
+  it('can set a timeout value', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+    analytics.timeout(50)
+    //@ts-ignore
+    expect(analytics.settings.timeout).toEqual(50)
+  })
+})
