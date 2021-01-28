@@ -97,6 +97,10 @@ export class AnalyticsBrowser {
       await analytics.page()
     }
 
+    if (window.location.search) {
+      await Promise.all(analytics.queryString(window.location.search))
+    }
+
     return [analytics, ctx]
   }
 

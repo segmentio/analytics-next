@@ -23,6 +23,7 @@ import {
   sourceMiddlewarePlugin,
 } from './plugins/middleware'
 import * as autoTrack from './core/auto-track'
+import queryString from './core/query-string'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -264,6 +265,10 @@ export class Analytics extends Emitter {
 
   setAnonymousId(id?: string): ID {
     return this._user.anonymousId(id)
+  }
+
+  queryString(query: string): Array<Promise<DispatchedEvent>> {
+    return queryString(this, query)
   }
 
   /**
