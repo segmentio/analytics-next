@@ -42,6 +42,7 @@ const writeKeys = {
   classpass: '***REMOVED***',
   stage: '***REMOVED***',
   gurdas_shop: '***REMOVED***',
+  netto_bt: '***REMOVED***',
 }
 
 const settings: AnalyticsSettings = {

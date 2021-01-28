@@ -4,7 +4,7 @@ import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
 import { MiddlewareFunction } from '../middleware'
 
-const path =
+export const path =
   process.env.LEGACY_INTEGRATIONS_PATH ??
   'https://cdn.segment.com/next-integrations'
 

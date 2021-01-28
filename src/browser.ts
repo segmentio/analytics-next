@@ -4,6 +4,7 @@ import { Context } from './core/context'
 import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
 import { ajsDestinations } from './plugins/ajs-destination'
+import { loadLegacyVideoPlugins } from './plugins/legacy-video-plugins'
 import { metadataEnrichment } from './plugins/metadata-enrichment'
 import { pageEnrichment } from './plugins/page-enrichment'
 import { remoteMiddlewares } from './plugins/remote-middleware'
@@ -36,6 +37,8 @@ export interface LegacySettings {
   metrics?: MetricsOptions
 
   plan?: Plan
+
+  legacyVideoPluginsEnabled?: boolean
 }
 
 const CDN_PATH = 'https://cdn-settings.segment.com'
@@ -79,6 +82,11 @@ export class AnalyticsBrowser {
       legacySettings,
       analytics.queue.failedInitializations
     )
+
+    if (legacySettings.legacyVideoPluginsEnabled) {
+      await loadLegacyVideoPlugins(analytics)
+    }
+
     const toRegister = [
       validation,
       pageEnrichment,
