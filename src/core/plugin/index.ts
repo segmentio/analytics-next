@@ -24,10 +24,10 @@ export interface Plugin {
   ) => Promise<unknown>
 
   ready?: () => Promise<unknown>
-  track?: (ctx: Context) => Promise<Context>
-  identify?: (ctx: Context) => Promise<Context>
-  page?: (ctx: Context) => Promise<Context>
-  group?: (ctx: Context) => Promise<Context>
-  alias?: (ctx: Context) => Promise<Context>
-  screen?: (ctx: Context) => Promise<Context>
+  track?: (ctx: Context) => Promise<Context> | Context
+  identify?: (ctx: Context) => Promise<Context> | Context
+  page?: (ctx: Context) => Promise<Context> | Context
+  group?: (ctx: Context) => Promise<Context> | Context
+  alias?: (ctx: Context) => Promise<Context> | Context
+  screen?: (ctx: Context) => Promise<Context> | Context
 }

@@ -1,43 +1,42 @@
-import { Plugin } from '../../core/plugin'
-import { LegacySettings } from '../../browser'
-import { Context } from '../../core/context'
-import pkg from '../../../package.json'
+import type { Plugin } from '../../core/plugin'
+import type { LegacySettings } from '../../browser'
+import type { Context } from '../../core/context'
 
-function enrich(
-  ctx: Context,
-  settings: LegacySettings,
-  failed: string[]
-): Context {
-  const bundled: string[] = []
-  const unbundled: string[] = []
-
-  Object.entries(settings.integrations).forEach(([key, integration]) => {
-    if (key === 'Segment.io') {
-      bundled.push(key)
-    }
-    if (integration.bundlingStatus === 'bundled') {
-      bundled.push(key)
-    }
-    if (integration.bundlingStatus === 'unbundled') {
-      unbundled.push(key)
-    }
-  })
-
-  ctx.updateEvent('context.library.name', 'analytics-next')
-  ctx.updateEvent('context.library.version', pkg.version)
-
-  ctx.event._metadata = {
-    bundled: bundled.sort(),
-    unbundled: unbundled.sort(),
-    failedInitializations: failed.sort(),
-  }
-  return ctx
-}
+const version = process.env.VERSION ?? 'undefined'
 
 export function metadataEnrichment(
   settings: LegacySettings,
   failedInitializations: string[]
 ): Plugin {
+  function enrich(ctx: Context): Context {
+    const bundled: string[] = []
+    const unbundled: string[] = []
+
+    for (const key in settings.integrations) {
+      const integration = settings.integrations[key]
+      if (key === 'Segment.io') {
+        bundled.push(key)
+      }
+      if (integration.bundlingStatus === 'bundled') {
+        bundled.push(key)
+      }
+      if (integration.bundlingStatus === 'unbundled') {
+        unbundled.push(key)
+      }
+    }
+
+    ctx.updateEvent('context.library.name', 'analytics-next')
+    ctx.updateEvent('context.library.version', version)
+
+    ctx.event._metadata = {
+      bundled: bundled.sort(),
+      unbundled: unbundled.sort(),
+      failedInitializations: failedInitializations.sort(),
+    }
+
+    return ctx
+  }
+
   return {
     name: 'Metadata Enrichment',
     version: '0.1.0',
@@ -45,15 +44,10 @@ export function metadataEnrichment(
     load: (): Promise<void> => Promise.resolve(),
     type: 'enrichment',
 
-    page: async (ctx): Promise<Context> =>
-      enrich(ctx, settings, failedInitializations),
-    alias: async (ctx): Promise<Context> =>
-      enrich(ctx, settings, failedInitializations),
-    track: async (ctx): Promise<Context> =>
-      enrich(ctx, settings, failedInitializations),
-    identify: async (ctx): Promise<Context> =>
-      enrich(ctx, settings, failedInitializations),
-    group: async (ctx): Promise<Context> =>
-      enrich(ctx, settings, failedInitializations),
+    page: enrich,
+    alias: enrich,
+    track: enrich,
+    identify: enrich,
+    group: enrich,
   }
 }

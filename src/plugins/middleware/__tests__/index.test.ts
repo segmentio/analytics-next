@@ -80,7 +80,7 @@ describe(sourceMiddlewarePlugin, () => {
 
       const doesNotHangXT = sourceMiddlewarePlugin(doesNotHang)
 
-      hangsXT.track!(new Context({ type: 'track' }))
+      Promise.resolve(hangsXT.track!(new Context({ type: 'track' })))
         .then(callback)
         .catch(callback)
 

@@ -4,6 +4,12 @@ const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin
+const { version } = require('./package.json')
+
+const isProd = process.env.NODE_ENV === 'production'
+const ASSET_PATH = isProd
+  ? 'https://cdn.segment.com/analytics-next/bundles/'
+  : '/dist/umd/'
 
 const plugins = [
   new CompressionPlugin({
@@ -12,14 +18,14 @@ const plugins = [
   new webpack.EnvironmentPlugin({
     LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.com/next-integrations',
     DEBUG: false,
+    VERSION: version,
+    ASSET_PATH,
   }),
 ]
 
 if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())
 }
-
-const isProd = process.env.NODE_ENV === 'production'
 
 const config = {
   mode: process.env.NODE_ENV || 'development',
@@ -31,6 +37,7 @@ const config = {
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist/umd'),
+    chunkFilename: '[name].bundle.[contenthash].js',
     library: 'AnalyticsNext',
     libraryTarget: 'umd',
   },
@@ -38,7 +45,14 @@ const config = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true,
+            },
+          },
+        ],
       },
     ],
   },

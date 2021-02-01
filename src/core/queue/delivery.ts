@@ -11,7 +11,7 @@ async function tryOperation(
   }
 }
 
-export async function attempt(
+export function attempt(
   ctx: Context,
   plugin: Plugin
 ): Promise<Context | Error> {
@@ -20,10 +20,10 @@ export async function attempt(
 
   const hook = plugin[ctx.event.type]
   if (hook === undefined) {
-    return ctx
+    return Promise.resolve(ctx)
   }
 
-  const newCtx = await tryOperation(() => hook.apply(plugin, [ctx]))
+  const newCtx = tryOperation(() => hook.apply(plugin, [ctx]))
     .then((ctx) => {
       const done = new Date().getTime() - start
       ctx.stats.gauge('plugin_time', done, [`plugin:${plugin.name}`])
@@ -41,18 +41,18 @@ export async function attempt(
   return newCtx
 }
 
-export async function ensure(
+export function ensure(
   ctx: Context,
   plugin: Plugin
 ): Promise<Context | undefined> {
-  const newContext = await attempt(ctx, plugin)
+  return attempt(ctx, plugin).then((newContext) => {
+    if (newContext === undefined || newContext instanceof Error) {
+      ctx.log('debug', 'Context canceled')
+      ctx.stats.increment('context_canceled')
+      ctx.cancel(newContext)
+      return undefined
+    }
 
-  if (newContext === undefined || newContext instanceof Error) {
-    ctx.log('debug', 'Context canceled')
-    ctx.stats.increment('context_canceled')
-    ctx.cancel(newContext)
-    return undefined
-  }
-
-  return newContext
+    return newContext
+  })
 }

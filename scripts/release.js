@@ -1,18 +1,13 @@
 #!/usr/bin/env ./node_modules/.bin/ts-node --script-mode --transpile-only --files
+/* eslint-disable no-undef */
 
-import pkg from '../package.json'
-import ex from 'execa'
-import S3 from 'aws-sdk/clients/s3'
-import fs from 'fs-extra'
-import path from 'path'
-import mime from 'mime'
-import logUpdate from 'log-update'
-
-interface Meta {
-  branch: string
-  sha: string
-  version: string
-}
+const pkg = require('../package.json')
+const ex = require('execa')
+const S3 = require('aws-sdk/clients/s3')
+const fs = require('fs-extra')
+const path = require('path')
+const mime = require('mime')
+const logUpdate = require('log-update')
 
 const bucket =
   process.env.NODE_ENV == 'production'
@@ -22,13 +17,13 @@ const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
 
-const getBranch = async (): Promise<string> =>
+const getBranch = async () =>
   (await ex('git', ['branch', '--show-current'])).stdout
 
-const getSha = async (): Promise<string> =>
+const getSha = async () =>
   (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 
-async function getFiles(dir: string): Promise<string[]> {
+async function getFiles(dir) {
   const subdirs = await fs.readdir(dir)
   const files = await Promise.all(
     subdirs.map(async (subdir) => {
@@ -39,7 +34,7 @@ async function getFiles(dir: string): Promise<string[]> {
   return files.reduce((a, f) => a.concat(f, [])).map((f) => f.split(dir)[1])
 }
 
-async function upload(meta: Meta): Promise<void> {
+async function upload(meta) {
   const s3 = new S3({
     accessKeyId,
     secretAccessKey,
@@ -54,13 +49,13 @@ async function upload(meta: Meta): Promise<void> {
   const uploads = files.map(async (f) => {
     const filePath = path.join(process.cwd(), './dist/umd', f)
 
-    const options: S3.PutObjectRequest = {
+    const options = {
       Bucket: bucket,
       Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
       Body: await fs.readFile(filePath),
       ACL: 'public-read',
       ContentType:
-        mime.getType(filePath.replace('.gz', '')) ?? 'application/javascript',
+        mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
     }
 
     if (meta.branch !== 'master') {
@@ -82,6 +77,18 @@ async function upload(meta: Meta): Promise<void> {
       })
       .promise()
 
+    // put chunks in a separate path. Regardless of branch, version, etc.
+    // there are immutable scripts that will be loaded by webpack in runtime
+    if (filePath.includes('bundle')) {
+      await s3
+        .putObject({
+          ...options,
+          Key: path.join(`analytics-next`, 'bundles', f),
+          CacheControl: 'public,max-age=31536000,immutable',
+        })
+        .promise()
+    }
+
     progress++
     logUpdate(`Progress: ${progress}/${total}`)
 
@@ -91,7 +98,7 @@ async function upload(meta: Meta): Promise<void> {
   await Promise.all(uploads)
 }
 
-async function release(): Promise<void> {
+async function release() {
   console.log('Compiling Bundles')
 
   const sha = await getSha()

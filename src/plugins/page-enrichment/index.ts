@@ -1,5 +1,5 @@
-import { Context } from '@/core/context'
-import { Plugin } from '@/core/plugin'
+import type { Context } from '@/core/context'
+import type { Plugin } from '@/core/plugin'
 import url from 'component-url'
 
 interface PageDefault {
@@ -38,7 +38,7 @@ function canonicalPath(): string {
     return window.location.pathname
   }
   const parsed = url.parse(canon)
-  return parsed.pathname ?? ''
+  return parsed.pathname || ''
 }
 
 /**
@@ -74,21 +74,19 @@ export function pageDefaults(): PageDefault {
 
 function enrichPageContext(ctx: Context): Context {
   const event = ctx.event
-  event.context = event.context ?? {}
+  event.context = event.context || {}
   let pageContext = pageDefaults()
+
   if (event.context.page) {
-    pageContext = {
-      ...pageContext,
-      ...event.context.page,
-    }
+    pageContext = Object.assign({}, pageContext, event.context.page)
   }
 
-  event.context = {
-    ...event.context,
+  event.context = Object.assign({}, event.context, {
     page: pageContext,
-  }
+  })
 
   ctx.event = event
+
   return ctx
 }
 
@@ -99,12 +97,12 @@ export const pageEnrichment: Plugin = {
   load: () => Promise.resolve(),
   type: 'enrichment',
 
-  page: async (ctx) => {
-    // TODO: fix overrides
-    ctx.event.properties = {
-      ...ctx.event.properties,
-      ...pageDefaults(),
-    }
+  page: (ctx) => {
+    ctx.event.properties = Object.assign(
+      {},
+      ctx.event.properties,
+      pageDefaults()
+    )
 
     if (ctx.event.name) {
       ctx.event.properties.name = ctx.event.name
@@ -113,8 +111,8 @@ export const pageEnrichment: Plugin = {
     return enrichPageContext(ctx)
   },
 
-  alias: async (ctx) => enrichPageContext(ctx),
-  track: async (ctx) => enrichPageContext(ctx),
-  identify: async (ctx) => enrichPageContext(ctx),
-  group: async (ctx) => enrichPageContext(ctx),
+  alias: enrichPageContext,
+  track: enrichPageContext,
+  identify: enrichPageContext,
+  group: enrichPageContext,
 }

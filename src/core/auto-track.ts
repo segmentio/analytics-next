@@ -35,12 +35,12 @@ function linkNewTab(element: HTMLAnchorElement, href: string | null): boolean {
   return false
 }
 
-export async function link(
+export function link(
   this: Analytics,
   links: Element | Array<Element> | JQuery | null,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
-): Promise<Analytics> {
+): Analytics {
   let elements: Array<Element> = []
   // always arrays, handles jquery
   if (!links) {
@@ -88,12 +88,14 @@ export async function link(
   return this
 }
 
-export async function form(
+export type LinkArgs = Parameters<typeof link>
+
+export function form(
   this: Analytics,
   forms: HTMLFormElement | Array<HTMLFormElement>,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
-): Promise<Analytics> {
+): Analytics {
   // always arrays, handles jquery
   if (forms instanceof HTMLFormElement) forms = [forms]
 
@@ -102,7 +104,7 @@ export async function form(
   elements.forEach((el) => {
     if (!(el instanceof Element))
       throw new TypeError('Must pass HTMLElement to trackForm/trackSubmit.')
-    const handler = async (elementEvent: Event): Promise<void> => {
+    const handler = (elementEvent: Event): void => {
       elementEvent.preventDefault
         ? elementEvent.preventDefault()
         : (elementEvent.returnValue = false)
@@ -129,3 +131,5 @@ export async function form(
 
   return this
 }
+
+export type FormArgs = Parameters<typeof form>

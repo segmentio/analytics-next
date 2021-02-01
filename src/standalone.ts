@@ -1,3 +1,7 @@
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/camelcase
+__webpack_public_path__ = process.env.ASSET_PATH
+
 import { install } from './standalone-analytics'
 
 try {

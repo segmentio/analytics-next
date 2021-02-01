@@ -1,7 +1,6 @@
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { RemoteMetrics } from '../remote-metrics'
-import pkg from '@/../package.json'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -20,7 +19,7 @@ describe('remote metrics', () => {
           "metric": "banana",
           "tags": Object {
             "library": "analytics-next",
-            "library_version": "${pkg.version}",
+            "library_version": "${process.env.VERSION}",
             "phone": "1",
           },
           "type": "Counter",
@@ -82,7 +81,7 @@ describe('remote metrics', () => {
       Array [
         "https://api.segment.io/v1/m",
         Object {
-          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics-next\\",\\"library_version\\":\\"${pkg.version}\\"}}]}",
+          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics-next\\",\\"library_version\\":\\"${process.env.VERSION}\\"}}]}",
           "headers": Object {
             "Content-Type": "text/plain",
           },

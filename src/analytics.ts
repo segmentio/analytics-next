@@ -17,13 +17,10 @@ import { EventFactory, Integrations, SegmentEvent, Plan } from './core/events'
 import { Plugin } from './core/plugin'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import { LegacyDestination } from './plugins/ajs-destination'
-import {
-  MiddlewareFunction,
-  sourceMiddlewarePlugin,
-} from './plugins/middleware'
-import * as autoTrack from './core/auto-track'
 import queryString from './core/query-string'
+import type { MiddlewareFunction } from './plugins/middleware'
+import type { LegacyDestination } from './plugins/ajs-destination'
+import type { FormArgs, LinkArgs } from './core/auto-track'
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -179,28 +176,32 @@ export class Analytics extends Emitter {
     return this.dispatch(segmentEvent, callback)
   }
 
-  async trackClick(
-    ...args: Parameters<typeof autoTrack.link>
-  ): Promise<Analytics> {
-    return autoTrack.link.call(this, ...args)
+  async trackClick(...args: LinkArgs): Promise<Analytics> {
+    const autotrack = await import(
+      /* webpackChunkName: "auto-track" */ './core/auto-track'
+    )
+    return autotrack.link.call(this, ...args)
   }
 
-  async trackLink(
-    ...args: Parameters<typeof autoTrack.link>
-  ): Promise<Analytics> {
-    return autoTrack.link.call(this, ...args)
+  async trackLink(...args: LinkArgs): Promise<Analytics> {
+    const autotrack = await import(
+      /* webpackChunkName: "auto-track" */ './core/auto-track'
+    )
+    return autotrack.link.call(this, ...args)
   }
 
-  async trackSubmit(
-    ...args: Parameters<typeof autoTrack.form>
-  ): Promise<Analytics> {
-    return autoTrack.form.call(this, ...args)
+  async trackSubmit(...args: FormArgs): Promise<Analytics> {
+    const autotrack = await import(
+      /* webpackChunkName: "auto-track" */ './core/auto-track'
+    )
+    return autotrack.form.call(this, ...args)
   }
 
-  async trackForm(
-    ...args: Parameters<typeof autoTrack.form>
-  ): Promise<Analytics> {
-    return autoTrack.form.call(this, ...args)
+  async trackForm(...args: FormArgs): Promise<Analytics> {
+    const autotrack = await import(
+      /* webpackChunkName: "auto-track" */ './core/auto-track'
+    )
+    return autotrack.form.call(this, ...args)
   }
 
   async register(...plugins: Plugin[]): Promise<Context> {
@@ -246,19 +247,22 @@ export class Analytics extends Emitter {
     return result
   }
 
-  addSourceMiddleware(fn: MiddlewareFunction): Analytics {
+  async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {
+    const { sourceMiddlewarePlugin } = await import(
+      /* webpackChunkName: "middleware" */ './plugins/middleware'
+    )
     const plugin = sourceMiddlewarePlugin(fn)
-    this.register(plugin).catch(console.error)
+    await this.register(plugin)
     return this
   }
 
-  addDestinationMiddleware(
+  async addDestinationMiddleware(
     integrationName: string,
     ...middlewares: MiddlewareFunction[]
-  ): Analytics {
+  ): Promise<Analytics> {
     const legacyDestinations = this.queue.plugins.filter(
       (xt) =>
-        xt instanceof LegacyDestination &&
+        // xt instanceof LegacyDestination &&
         xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
 

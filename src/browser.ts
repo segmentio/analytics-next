@@ -1,17 +1,16 @@
+// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/camelcase
+__webpack_public_path__ = process.env.ASSET_PATH
+
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
-import { ajsDestinations } from './plugins/ajs-destination'
-import { loadLegacyVideoPlugins } from './plugins/legacy-video-plugins'
 import { metadataEnrichment } from './plugins/metadata-enrichment'
 import { pageEnrichment } from './plugins/page-enrichment'
-import { remoteMiddlewares } from './plugins/remote-middleware'
-import { RoutingRule } from './plugins/routing-middleware'
+import type { RoutingRule } from './plugins/routing-middleware'
 import { validation } from './plugins/validation'
-
-export { LegacyDestination } from './plugins/ajs-destination'
 
 export interface LegacyIntegrationConfiguration {
   type?: string
@@ -43,23 +42,17 @@ export interface LegacySettings {
 
 const CDN_PATH = 'https://cdn-settings.segment.com'
 
-export async function loadLegacySettings(
-  writeKey: string
-): Promise<LegacySettings> {
+export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
 
-  try {
-    return await fetch(
-      `${CDN_PATH}/v1/projects/${writeKey}/settings`
-    ).then((res) => res.json())
-  } catch (err) {
-    // proceed with default legacy settings
-    console.warn('Failed to load legacy settings', err)
-  }
-
-  return Promise.resolve(legacySettings)
+  return fetch(`${CDN_PATH}/v1/projects/${writeKey}/settings`)
+    .then((res) => res.json())
+    .catch((err) => {
+      console.warn('Failed to load legacy settings', err)
+      return legacySettings
+    })
 }
 
 export class AnalyticsBrowser {
@@ -75,7 +68,15 @@ export class AnalyticsBrowser {
 
     const remotePlugins =
       process.env.NODE_ENV !== 'test'
-        ? await ajsDestinations(legacySettings, analytics.integrations, options)
+        ? await import(
+            /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
+          ).then((mod) => {
+            return mod.ajsDestinations(
+              legacySettings,
+              analytics.integrations,
+              options
+            )
+          })
         : []
 
     const metadata = metadataEnrichment(
@@ -84,7 +85,11 @@ export class AnalyticsBrowser {
     )
 
     if (legacySettings.legacyVideoPluginsEnabled) {
-      await loadLegacyVideoPlugins(analytics)
+      await import(
+        /* webpackChunkName: "legacyVideos" */ './plugins/legacy-video-plugins'
+      ).then((mod) => {
+        return mod.loadLegacyVideoPlugins(analytics)
+      })
     }
 
     const toRegister = [
@@ -96,8 +101,17 @@ export class AnalyticsBrowser {
     ]
     const ctx = await analytics.register(...toRegister)
 
-    const middleware = await remoteMiddlewares(ctx, legacySettings)
-    middleware.forEach((mdw) => analytics.addSourceMiddleware(mdw))
+    if (Object.keys(legacySettings.enabledMiddleware ?? {}).length > 0) {
+      await import(
+        /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
+      ).then(async ({ remoteMiddlewares }) => {
+        const middleware = await remoteMiddlewares(ctx, legacySettings)
+        const promises = middleware.map((mdw) =>
+          analytics.addSourceMiddleware(mdw)
+        )
+        return Promise.all(promises)
+      })
+    }
 
     analytics.emit('initialize', settings, options)
 
@@ -112,11 +126,10 @@ export class AnalyticsBrowser {
     return [analytics, ctx]
   }
 
-  static async standalone(
+  static standalone(
     writeKey: string,
     options?: InitOptions
   ): Promise<Analytics> {
-    const [analytics] = await AnalyticsBrowser.load({ writeKey }, options)
-    return analytics
+    return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
   }
 }

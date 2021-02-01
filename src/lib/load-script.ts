@@ -1,4 +1,4 @@
-export async function loadScript(
+export function loadScript(
   src: string,
   attributes?: Record<string, string>
 ): Promise<HTMLScriptElement> {
@@ -9,7 +9,7 @@ export async function loadScript(
     const status = found?.getAttribute('status')
 
     if (status === 'loaded') {
-      return found
+      return Promise.resolve(found)
     }
 
     if (status === 'loading') {

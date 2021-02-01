@@ -1,5 +1,6 @@
-import { Plugin } from '../../core/plugin'
-import { SegmentEvent } from '../../core/events'
+import type { Plugin } from '../../core/plugin'
+import type { SegmentEvent } from '../../core/events'
+import type { Context } from '../../core/context'
 
 export function isString(obj: unknown): obj is string {
   return typeof obj === 'string'
@@ -32,7 +33,10 @@ class ValidationError extends Error {
   }
 }
 
-function validate(eventType?: unknown, event?: SegmentEvent): void {
+function validate(ctx: Context): Context {
+  const eventType: unknown = ctx && ctx.event && ctx.event.type
+  const event = ctx.event
+
   if (event === undefined) {
     throw new ValidationError('event', 'Event is missing')
   }
@@ -53,6 +57,8 @@ function validate(eventType?: unknown, event?: SegmentEvent): void {
   if (!hasUser(event)) {
     throw new ValidationError('userId', 'Missing userId or anonymousId')
   }
+
+  return ctx
 }
 
 export const validation: Plugin = {
@@ -63,28 +69,10 @@ export const validation: Plugin = {
   isLoaded: () => true,
   load: () => Promise.resolve(),
 
-  track: async (ctx) => {
-    validate('track', ctx.event)
-    return ctx
-  },
-
-  identify: async (ctx) => {
-    validate('identify', ctx.event)
-    return ctx
-  },
-
-  page: async (ctx) => {
-    validate('page', ctx.event)
-    return ctx
-  },
-
-  group: async (ctx) => {
-    validate('group', ctx.event)
-    return ctx
-  },
-
-  alias: async (ctx) => {
-    validate('alias', ctx.event)
-    return ctx
-  },
+  track: validate,
+  identify: validate,
+  page: validate,
+  alias: validate,
+  group: validate,
+  screen: validate,
 }

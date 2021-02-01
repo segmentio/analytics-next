@@ -37,33 +37,34 @@ function getWriteKey(): string | undefined {
   return writeKey ?? window.analytics._writeKey
 }
 
-export async function install(): Promise<void> {
+export function install(): Promise<void> {
   const writeKey = getWriteKey()
   if (!writeKey) {
     console.error('Failed to load Write Key')
-    return
+    return Promise.resolve()
   }
 
   return AnalyticsBrowser.standalone(
     writeKey,
     window.analytics?._loadOptions ?? {}
   )
-    .then((analytics) => {
+    .then((an) => {
+      const wa = window.analytics
       const buffered =
         // @ts-expect-error
-        window.analytics && window.analytics[0] ? [...window.analytics] : []
+        wa && wa[0] ? [...wa] : []
 
-      window.analytics = analytics as StandaloneAnalytics
+      window.analytics = an as StandaloneAnalytics
 
       for (const [operation, ...args] of buffered) {
         if (
           // @ts-expect-error
-          window.analytics[operation] &&
+          an[operation] &&
           // @ts-expect-error
-          typeof window.analytics[operation] === 'function'
+          typeof an[operation] === 'function'
         ) {
           // @ts-expect-error
-          window.analytics[operation].call(window.analytics, ...args)
+          an[operation].call(an, ...args)
         }
       }
     })
