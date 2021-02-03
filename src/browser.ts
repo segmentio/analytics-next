@@ -118,11 +118,13 @@ export class AnalyticsBrowser {
     analytics.emit('initialize', settings, options)
 
     if (options.initialPageview) {
-      await analytics.page()
+      analytics.page().catch(console.error)
     }
 
     if (window.location.search) {
-      await Promise.all(analytics.queryString(window.location.search))
+      Promise.all(analytics.queryString(window.location.search)).catch(
+        console.error
+      )
     }
 
     return [analytics, ctx]

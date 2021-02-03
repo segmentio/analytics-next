@@ -97,7 +97,7 @@
     "mime": "^2.4.6",
     "ngrok": "^3.3.0",
     "node-fetch": "^2.6.1",
-    "playwright": "^1.7.1",
+    "playwright": "^1.8.0",
     "prettier": "^2.0.2",
     "serve": "^11.3.2",
     "serve-handler": "^6.1.3",

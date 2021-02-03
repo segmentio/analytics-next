@@ -154,9 +154,11 @@ describe('Initialization', () => {
 
   it('should call page if initialpageview is set', async () => {
     jest.mock('../analytics')
-    const mockPage = jest.fn()
+    const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
     Analytics.prototype.page = mockPage
+
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
+
     expect(mockPage).toHaveBeenCalled()
   })
 
@@ -313,12 +315,16 @@ describe('addSourceMiddleware', () => {
       writeKey,
     })
 
-    analytics.addSourceMiddleware(({ next, payload }) => {
-      payload.obj.context = {
-        hello: 'from the other side',
-      }
-      next(payload)
-    })
+    analytics
+      .addSourceMiddleware(({ next, payload }) => {
+        payload.obj.context = {
+          hello: 'from the other side',
+        }
+        next(payload)
+      })
+      .catch((err) => {
+        throw err
+      })
 
     const ctx = await analytics.track('Hello!')
 
@@ -372,10 +378,14 @@ describe('addDestinationMiddleware', () => {
     await analytics.register(amplitude)
     await amplitude.ready()
 
-    analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
-      payload.obj.properties!.hello = 'from the other side'
-      next(payload)
-    })
+    analytics
+      .addDestinationMiddleware('amplitude', ({ next, payload }) => {
+        payload.obj.properties!.hello = 'from the other side'
+        next(payload)
+      })
+      .catch((err) => {
+        throw err
+      })
 
     const integrationMock = jest.spyOn(amplitude.integration!, 'track')
     const ctx = await analytics.track('Hello!')
