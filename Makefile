@@ -74,7 +74,7 @@ handshake:
 .PHONY: handshake
 
 rebuild-sources-prod: handshake ## Rebuilds all sources that are using ajs-next
-	@./scripts/ajs-sources.js
+	@aws-okta exec prod-privileged -- ./scripts/ajs-sources.js
 .PHONY: rebuild-sources-prod
 
 rebuild-sources-stage: # Rebuilds all sources that are using ajs-next in stage
