@@ -13,6 +13,8 @@
     </style>
 
     <script>
+      console.profile('snippet')
+      console.time('snippet')
       !(function () {
         var analytics = (window.analytics = window.analytics || [])
         if (!analytics.initialize)
@@ -94,7 +96,9 @@
     <pre id="logs"></pre>
 
     <script type="text/javascript">
-      window.analytics.ready(function () {
+      window.analytics.ready(function onReady() {
+        console.profileEnd('snippet')
+        console.timeEnd('snippet')
         document.querySelector('#ready-logs').textContent = 'ready!'
       })
 

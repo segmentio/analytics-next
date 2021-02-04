@@ -6,18 +6,9 @@ if (process.env.ASSET_PATH) {
 
 import { install } from './standalone-analytics'
 
-try {
-  install().catch(function (err) {
-    console.error(err)
-  })
-} catch (err) {
-  // @ts-expect-error
-  const isIE11 = !!window.MSInputMethodContext && !!document.documentMode
-
-  if (!isIE11) {
-    throw err
-  }
-
+// @ts-expect-error
+const isIE11 = !!window.MSInputMethodContext && !!document.documentMode
+if (isIE11) {
   // load polyfills in order to get AJS to work with IE11
   const script = document.createElement('script')
   script.setAttribute(
@@ -29,4 +20,6 @@ try {
   script.onload = function (): void {
     install().catch(console.error)
   }
+} else {
+  install().catch(console.error)
 }

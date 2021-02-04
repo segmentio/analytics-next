@@ -69,7 +69,8 @@ export class AnalyticsBrowser {
     Context.initMetrics(legacySettings.metrics)
 
     const remotePlugins =
-      process.env.NODE_ENV !== 'test'
+      process.env.NODE_ENV !== 'test' &&
+      Object.keys(legacySettings.integrations).length > 0
         ? await import(
             /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
           ).then((mod) => {
