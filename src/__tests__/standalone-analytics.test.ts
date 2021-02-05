@@ -1,8 +1,18 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { AnalyticsBrowser } from '../browser'
+import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import { Analytics } from '../analytics'
+import { mocked } from 'ts-jest/utils'
+import unfetch from 'unfetch'
+
+const fetchSettings = Promise.resolve({
+  json: () => Promise.resolve(),
+})
+
+jest.mock('unfetch', () => {
+  return jest.fn()
+})
 
 describe('standalone bundle', () => {
   const segmentDotCom = `***REMOVED***`
@@ -61,6 +71,15 @@ describe('standalone bundle', () => {
     await install()
 
     expect(spy).toHaveBeenCalledWith(segmentDotCom, {})
+  })
+
+  it('derives the CDN from scripts on the page', async () => {
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    await loadLegacySettings(segmentDotCom)
+    expect(unfetch).toHaveBeenCalledWith(
+      'https://cdn.foo.com/v1/projects/***REMOVED***/settings'
+    )
   })
 
   it('runs any buffered operations after load', async () => {

@@ -42,14 +42,29 @@ export interface LegacySettings {
   legacyVideoPluginsEnabled?: boolean
 }
 
-const CDN_PATH = 'https://cdn-settings.segment.com'
+function getCDN(): string | undefined {
+  const regex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/
+  const scripts = Array.from(document.querySelectorAll('script'))
+  let cdn: string | undefined = undefined
+
+  scripts.forEach((s) => {
+    const src = s.getAttribute('src') ?? ''
+    const result = regex.exec(src)
+
+    if (result && result[1]) {
+      cdn = result[1]
+    }
+  })
+
+  return cdn
+}
 
 export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
-
-  return fetch(`${CDN_PATH}/v1/projects/${writeKey}/settings`)
+  const cdn = getCDN() ?? 'https://cdn-settings.segment.com'
+  return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {
       console.warn('Failed to load legacy settings', err)

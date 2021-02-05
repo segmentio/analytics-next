@@ -45,7 +45,7 @@ export const snippet = (writeKey: string, load: boolean = true, extra = '') => `
         var t = document.createElement('script')
         t.type = 'text/javascript'
         t.async = !0
-        t.src = 'https://cdn.segment.com/analytics.js/v1/' + key + '/analytics.min.js'
+        t.src = 'https://cdn.foo.com/analytics.js/v1/' + key + '/analytics.min.js'
         var n = document.getElementsByTagName('script')[0]
         n.parentNode.insertBefore(t, n)
         analytics._loadOptions = e
