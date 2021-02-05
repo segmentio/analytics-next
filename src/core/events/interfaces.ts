@@ -56,7 +56,7 @@ interface AnalyticsContext {
    * {@link https://github.com/segmentio/analytics.js-integrations/blob/2d5c637c022d2661c23449aed237d0d546bf062d/integrations/segmentio/lib/index.js#L292-L301}
    */
   traits?: {
-    crossDomainId: string
+    crossDomainId?: string
   }
 
   /**
@@ -114,7 +114,7 @@ export interface SegmentEvent {
   }
 
   integrations?: Integrations
-  context?: AnalyticsContext
+  context?: AnalyticsContext | Options
   options?: Options
 
   userId?: ID
@@ -142,6 +142,8 @@ export interface SegmentEvent {
     bundled?: string[]
     unbundled?: string[]
     nodeVersion?: string
+    bundledConfigIds?: string[]
+    unbundledConfigIds?: string[]
   }
 
   timestamp?: Date | string

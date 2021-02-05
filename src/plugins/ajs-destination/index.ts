@@ -51,19 +51,6 @@ async function flushQueue(
   return queue
 }
 
-function embedMetrics(name: string, ctx: Context): Context {
-  if (name !== 'Segment.io') {
-    return ctx
-  }
-
-  // embed metrics into segment event context
-  // It could be an enrichment with a before/after flag, and the 'after' type would run here.
-  const metrics = ctx.stats.serialize()
-  ctx.updateEvent('context.metrics', metrics)
-
-  return ctx
-}
-
 export class LegacyDestination implements Plugin {
   name: string
   version: string
@@ -144,8 +131,6 @@ export class LegacyDestination implements Plugin {
     clz: ClassType<T>,
     eventType: 'track' | 'identify' | 'page' | 'alias' | 'group'
   ): Promise<Context> {
-    ctx = embedMetrics(this.name, ctx)
-
     if (!this._ready || isOffline()) {
       this.buffer.push(ctx)
       return ctx
@@ -267,6 +252,10 @@ export async function ajsDestinations(
 
   return Object.entries(settings.integrations)
     .map(([name, integrationSettings]) => {
+      if (name.startsWith('Segment')) {
+        return
+      }
+
       const allDisableAndNotDefined =
         globalIntegrations.All === false &&
         globalIntegrations[name] === undefined

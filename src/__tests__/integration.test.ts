@@ -245,8 +245,8 @@ describe('Dispatch', () => {
         "plugin_time",
         "plugin_time",
         "plugin_time",
-        "plugin_time",
         "message_delivered",
+        "plugin_time",
         "delivered",
       ]
     `)
@@ -328,7 +328,7 @@ describe('addSourceMiddleware', () => {
 
     const ctx = await analytics.track('Hello!')
 
-    expect(ctx.event.context).toEqual({
+    expect(ctx.event.context).toMatchObject({
       hello: 'from the other side',
     })
   })

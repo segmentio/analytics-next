@@ -9,9 +9,9 @@ import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
-import { metadataEnrichment } from './plugins/metadata-enrichment'
 import { pageEnrichment } from './plugins/page-enrichment'
 import type { RoutingRule } from './plugins/routing-middleware'
+import { segmentio, SegmentioSettings } from './plugins/segmentio'
 import { validation } from './plugins/validation'
 
 export interface LegacyIntegrationConfiguration {
@@ -57,6 +57,14 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
     })
 }
 
+function hasLegacyDestinations(settings: LegacySettings): boolean {
+  return (
+    process.env.NODE_ENV !== 'test' &&
+    // just one integration means segmentio
+    Object.keys(settings.integrations).length > 1
+  )
+}
+
 export class AnalyticsBrowser {
   static async load(
     settings: AnalyticsSettings,
@@ -68,24 +76,17 @@ export class AnalyticsBrowser {
     const legacySettings = await loadLegacySettings(settings.writeKey)
     Context.initMetrics(legacySettings.metrics)
 
-    const remotePlugins =
-      process.env.NODE_ENV !== 'test' &&
-      Object.keys(legacySettings.integrations).length > 0
-        ? await import(
-            /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
-          ).then((mod) => {
-            return mod.ajsDestinations(
-              legacySettings,
-              analytics.integrations,
-              options
-            )
-          })
-        : []
-
-    const metadata = metadataEnrichment(
-      legacySettings,
-      analytics.queue.failedInitializations
-    )
+    const remotePlugins = hasLegacyDestinations(legacySettings)
+      ? await import(
+          /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
+        ).then((mod) => {
+          return mod.ajsDestinations(
+            legacySettings,
+            analytics.integrations,
+            options
+          )
+        })
+      : []
 
     if (legacySettings.legacyVideoPluginsEnabled) {
       await import(
@@ -98,9 +99,12 @@ export class AnalyticsBrowser {
     const toRegister = [
       validation,
       pageEnrichment,
-      metadata,
       ...plugins,
       ...remotePlugins,
+      segmentio(
+        analytics,
+        legacySettings.integrations['Segment.io'] as SegmentioSettings
+      ),
     ]
     const ctx = await analytics.register(...toRegister)
 

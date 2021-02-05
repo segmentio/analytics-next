@@ -38,7 +38,7 @@ test-coverage: node_modules ## Runs unit tests with coverage
 	$(BIN)/jest --coverage --forceExit
 .PHONY: test-coverage
 
-test-integration: build-prod ## Runs all integration tests in a single command
+test-integration: build ## Runs all integration tests in a single command
 	$(BIN)/jest --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
@@ -101,13 +101,13 @@ record-clean:
 .PHONY: record-clean
 
 record-classic:
-	AJS_VERSION=classic $(BIN)/ts-node e2e-tests/recorder/index.ts
+	AJS_VERSION=classic $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/index.ts
 .PHONY: record-classic
 
 record-next:
-	AJS_VERSION=next $(BIN)/ts-node e2e-tests/recorder/index.ts
+	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/index.ts
 .PHONY: record-next
 
-record: build-prod record-clean
+record: build record-clean
 	yarn concurrently "make record-classic" "make record-next"
 .PHONY: record

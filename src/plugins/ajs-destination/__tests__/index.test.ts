@@ -100,7 +100,8 @@ describe('ajsDestinations', () => {
 
   it('loads type:browser legacy ajs destinations from cdn', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
-    expect(destinations.length).toBe(6)
+    // ignores segment.io
+    expect(destinations.length).toBe(5)
   })
 
   it('ignores type:browser when bundlingStatus is unbundled', async () => {
