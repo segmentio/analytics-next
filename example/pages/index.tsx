@@ -12,8 +12,8 @@ import {
   AnalyticsSettings,
   AnalyticsBrowser,
   Analytics,
-} from '../../dist/commonjs'
-import { Context } from '../../dist/commonjs/core/context'
+  Context,
+} from '../../dist/pkg'
 
 const jsontheme = {
   scheme: 'tomorrow',

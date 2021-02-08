@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "incremental": true,
-    "outDir": "dist/commonjs",
+    "outDir": "dist/pkg",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "lib": ["es2020", "DOM"],
