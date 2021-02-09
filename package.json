@@ -15,7 +15,8 @@
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "record:clean": "rm -rf e2e-tests/data/requests/*",
     "record:classic": "AJS_VERSION=classic ts-node e2e-tests/recorder.ts",
-    "record:next": "AJS_VERSION=next ts-node e2e-tests/recorder.ts"
+    "record:next": "AJS_VERSION=next ts-node e2e-tests/recorder.ts",
+    "prepare": "yarn run pkg"
   },
   "engines": {
     "node": ">=12.16"
