@@ -23,6 +23,8 @@ export interface Plugin {
     config?: PluginConfig
   ) => Promise<unknown>
 
+  unload?: (ctx: Context, instance: Analytics) => Promise<unknown> | unknown
+
   ready?: () => Promise<unknown>
   track?: (ctx: Context) => Promise<Context> | Context
   identify?: (ctx: Context) => Promise<Context> | Context

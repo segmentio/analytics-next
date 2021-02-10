@@ -53,6 +53,25 @@ export class EventQueue extends Emitter {
       })
   }
 
+  async deregister(
+    ctx: Context,
+    plugin: Plugin,
+    instance: Analytics
+  ): Promise<void> {
+    try {
+      if (plugin.unload) {
+        await Promise.resolve(plugin.unload(ctx, instance))
+      }
+
+      this.plugins = this.plugins.filter((p) => p.name !== plugin.name)
+    } catch (e) {
+      ctx.log('warn', 'Failed to unload destination', {
+        plugin: plugin.name,
+        error: e,
+      })
+    }
+  }
+
   async dispatch(ctx: Context): Promise<Context> {
     ctx.log('debug', 'Dispatching')
     ctx.stats.increment('message_dispatched')

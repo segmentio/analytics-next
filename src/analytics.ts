@@ -215,6 +215,23 @@ export class Analytics extends Emitter {
     return ctx
   }
 
+  async deregister(...plugins: string[]): Promise<Context> {
+    const ctx = Context.system()
+
+    const deregistrations = plugins.map(async (pl) => {
+      const plugin = this.queue.plugins.find((p) => p.name === pl)
+      if (plugin) {
+        return this.queue.deregister(ctx, plugin, this)
+      } else {
+        ctx.log('warn', `plugin ${pl} not found`)
+      }
+    })
+
+    await Promise.all(deregistrations)
+
+    return ctx
+  }
+
   debug(toggle: boolean): Analytics {
     this._debug = toggle
     return this

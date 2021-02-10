@@ -733,3 +733,23 @@ describe('timeout', () => {
     expect(analytics.settings.timeout).toEqual(50)
   })
 })
+
+describe('deregister', () => {
+  it('deregisters a plugin given its name', async () => {
+    const unload = jest.fn(
+      (): Promise<unknown> => {
+        return Promise.resolve()
+      }
+    )
+    xt.unload = unload
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [xt],
+    })
+
+    await analytics.deregister('Test Plugin')
+
+    expect(xt.unload).toHaveBeenCalled()
+  })
+})

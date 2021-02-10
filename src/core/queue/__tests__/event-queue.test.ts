@@ -281,3 +281,32 @@ describe('Flushing', () => {
     expect(shopperCtx.event.context?.attempts).toBe(1)
   })
 })
+
+describe('deregister', () => {
+  it('remove plugin from plugins list', async () => {
+    const eq = new EventQueue()
+    const toBeRemoved = { ...testPlugin, name: 'remove-me' }
+    const plugins = [testPlugin, toBeRemoved]
+
+    const promises = plugins.map((p) => eq.register(Context.system(), p, ajs))
+    await Promise.all(promises)
+
+    await eq.deregister(Context.system(), toBeRemoved, ajs)
+    expect(eq.plugins.length).toBe(1)
+    expect(eq.plugins[0]).toBe(testPlugin)
+  })
+
+  it('invokes plugin.unload', async () => {
+    const eq = new EventQueue()
+    const toBeRemoved = { ...testPlugin, name: 'remove-me', unload: jest.fn() }
+    const plugins = [testPlugin, toBeRemoved]
+
+    const promises = plugins.map((p) => eq.register(Context.system(), p, ajs))
+    await Promise.all(promises)
+
+    await eq.deregister(Context.system(), toBeRemoved, ajs)
+    expect(toBeRemoved.unload).toHaveBeenCalled()
+    expect(eq.plugins.length).toBe(1)
+    expect(eq.plugins[0]).toBe(testPlugin)
+  })
+})
