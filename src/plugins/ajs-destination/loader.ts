@@ -2,7 +2,7 @@ import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
-import { loadScript } from '../../lib/load-script'
+import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
 const path =
@@ -71,6 +71,16 @@ export async function loadIntegration(
   integration.analytics = analyticsInstance
 
   return integration
+}
+
+export async function unloadIntegration(
+  name: string,
+  version: string
+): Promise<void> {
+  const pathName = normalizeName(name)
+  return unloadScript(
+    `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  )
 }
 
 /**

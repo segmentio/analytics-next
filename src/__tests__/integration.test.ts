@@ -752,4 +752,26 @@ describe('deregister', () => {
 
     expect(xt.unload).toHaveBeenCalled()
   })
+
+  it('cleans up the DOM when deregistering a legacy integration', async () => {
+    const amplitude = new LegacyDestination(
+      'amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      {}
+    )
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude],
+    })
+
+    const scriptsLength = window.document.scripts.length
+
+    await analytics.deregister('amplitude')
+
+    expect(window.document.scripts.length).toBe(scriptsLength - 1)
+  })
 })

@@ -16,7 +16,7 @@ import {
   DestinationMiddlewareFunction,
 } from '../middleware'
 import { tsubMiddleware } from '../routing-middleware'
-import { loadIntegration, resolveVersion } from './loader'
+import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
 
 const klona = (evt: SegmentEvent): SegmentEvent =>
@@ -120,6 +120,10 @@ export class LegacyDestination implements Plugin {
         `integration_name:${this.name}`,
       ])
     }
+  }
+
+  unload(_ctx: Context, _analyticsInstance: Analytics): Promise<void> {
+    return unloadIntegration(this.name, this.version)
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {

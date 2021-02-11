@@ -1,9 +1,13 @@
+function findScript(src: string): HTMLScriptElement | undefined {
+  const scripts = Array.from(window.document.querySelectorAll('script'))
+  return scripts.find((s) => s.src === src)
+}
+
 export function loadScript(
   src: string,
   attributes?: Record<string, string>
 ): Promise<HTMLScriptElement> {
-  const scripts = Array.from(window.document.querySelectorAll('script'))
-  const found = scripts.find((s) => s.src === src)
+  const found = findScript(src)
 
   if (found !== undefined) {
     const status = found?.getAttribute('status')
@@ -47,4 +51,14 @@ export function loadScript(
     const tag = global.window.document.getElementsByTagName('script')[0]
     tag.parentElement?.insertBefore(script, tag)
   })
+}
+
+export function unloadScript(src: string): Promise<void> {
+  const found = findScript(src)
+
+  if (found !== undefined) {
+    found.remove()
+  }
+
+  return Promise.resolve()
 }
