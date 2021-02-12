@@ -45,6 +45,7 @@ export class Analytics extends Emitter {
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
+  initialized = false
   integrations: Integrations
 
   constructor(

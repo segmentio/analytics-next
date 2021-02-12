@@ -134,7 +134,7 @@ export class AnalyticsBrowser {
         return Promise.all(promises)
       })
     }
-
+    analytics.initialized = true
     analytics.emit('initialize', settings, options)
 
     if (options.initialPageview) {
