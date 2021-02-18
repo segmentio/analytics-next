@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "repository": "segmentio/analytics-next",
   "license": "UNLICENSED",
   "main": "dist/pkg/index.js",
