@@ -50,3 +50,5 @@ export const ENDPOINTS =
   process.env.ENDPOINTS?.split(',').map(
     (endpoint) => endpointMapping[endpoint]
   ) ?? Object.values(endpointMapping)
+
+export const WRITE_KEYS = ['***REMOVED***']

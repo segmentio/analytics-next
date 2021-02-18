@@ -1,30 +1,13 @@
-import { chromium, ChromiumBrowserContext } from 'playwright'
+import { chromium, ChromiumBrowserContext, Page } from 'playwright'
 import fs from 'fs-extra'
 import path from 'path'
-import {
-  AJS_VERSION,
-  HEADLESS,
-  DEVTOOLS,
-  TRACKING_API_URLS,
-  cases,
-  ENDPOINTS,
-} from './config'
+import { HEADLESS, DEVTOOLS } from './config'
 import { startLocalServer } from './localServer'
-import { Request } from 'playwright'
 import fetch from 'node-fetch'
 
-interface APICalls {
-  name: string
-  trackingAPI: Call[]
-}
-
-interface Call {
-  url: string
-  headers: Object
-  postData: Object | null
-}
-
-async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
+export async function loadAJSNext(
+  context: ChromiumBrowserContext
+): Promise<void> {
   const url = await startLocalServer()
 
   const res = await fetch(`${url}/dist/umd/standalone.js`)
@@ -38,110 +21,59 @@ async function loadAJSNext(context: ChromiumBrowserContext): Promise<void> {
   })
 }
 
-async function writeJSONFile(apiCalls: APICalls) {
-  const filePath = path.join(
-    __dirname,
-    '../data/requests/',
-    `${AJS_VERSION}-${apiCalls.name}.json`
-  )
+export async function writeJSONFile(apiCalls: any, name: string) {
+  const filePath = path.join(__dirname, '../data/requests/', `${name}.json`)
 
   await fs.writeFile(filePath, JSON.stringify(apiCalls))
-
-  console.log(
-    `\nDigest for ${apiCalls.name}:\n`,
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/p'))
-      .length,
-    'Page calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/t'))
-      .length,
-    'Track calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/i'))
-      .length,
-    'Identify calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/a'))
-      .length,
-    'Alias calls \n',
-    apiCalls.trackingAPI.filter((request) => request.url.includes('v1/g'))
-      .length,
-    'Group calls \n',
-    apiCalls.trackingAPI.length,
-    'saved into',
-    filePath
-  )
 }
 
-async function record() {
-  const promises = cases.map(async (c) => {
-    const browser = await chromium.launch({
-      headless: HEADLESS === 'true',
-      // 2500 is the magic number that allows for navigation to wait for AJS
-      // calls to be actually fired
-      slowMo: 2500,
-      devtools: DEVTOOLS,
-    })
-
-    const context = await browser.newContext({
-      bypassCSP: true,
-      // the HAR files recorded below require a much bigger clean up process than the JSONs we're manually recording.
-      // We'll have to get back to this in the future and write a proper clean up script.
-      // recordHar: {
-      //   path: path.join(__dirname, 'data/requests/har', `${AJS_VERSION}-${c.name}`),
-      // },
-    })
-
-    if (AJS_VERSION === 'next') {
-      // one thing worth investigating is if we can replace `loadAJSNext` with page.addInitScript(script)
-      await loadAJSNext(context)
-    }
-
-    const apiCalls: APICalls = { name: c.name, trackingAPI: [] }
-
-    // Open new page
-    const page = await context.newPage()
-
-    await page.setViewportSize({ width: 1200, height: 800 })
-
-    page.on('request', (request: Request) => {
-      if (TRACKING_API_URLS.some((k) => request.url().includes(k))) {
-        if (ENDPOINTS.some((e) => request.url().includes(e))) {
-          console.log(request.url())
-
-          const postData: any = request.postDataJSON()
-
-          const call = {
-            url: request.url(),
-            postData: {
-              type: postData!.type,
-              context: postData!.context,
-              properties: postData!.properties,
-              integrations: postData!.integrations,
-              _metadata: postData!._metadata,
-            },
-            headers: request.headers(),
-          }
-
-          apiCalls.trackingAPI.push(call)
-        }
-      }
-    })
-
-    await c.scenario(page)
-
-    // Close page
-    // ---------------------
-    await page.close()
-
-    await context.close()
-    await browser.close()
-
-    // Save requests
-    await writeJSONFile(apiCalls)
+export async function navigate(params: {
+  c: {
+    name: string
+    scenario: (
+      page: Page,
+      writeKey?: string,
+      ajsVersion?: string
+    ) => Promise<void>
+    getIntegrations?: any
+  }
+  recordCallsFunc: (page: Page, networkRequests: any[]) => void
+  version: string
+  writeKey?: string
+}): Promise<{ networkRequests: any[]; cookies: any[]; integrations: any[] }> {
+  const browser = await chromium.launch({
+    headless: HEADLESS === 'true',
+    slowMo: 2500,
+    devtools: DEVTOOLS,
   })
 
-  await Promise.all(promises)
-}
+  const context = await browser.newContext({ bypassCSP: true })
 
-record().catch((err) => {
-  console.error(err)
-  process.exit(1)
-})
+  if (params.version === 'next' && !params.writeKey) {
+    await loadAJSNext(context)
+  }
+
+  // Open new page
+  const page = await context.newPage()
+
+  await page.setViewportSize({ width: 1200, height: 800 })
+
+  const networkRequests: any[] = []
+  params.recordCallsFunc(page, networkRequests)
+
+  await params.c.scenario(page, params.writeKey, params.version)
+
+  const cookies = await context.cookies()
+  const integrations = params.c.getIntegrations
+    ? await params.c.getIntegrations(page, params.version)
+    : []
+
+  // Close page
+  // ---------------------
+  await page.close()
+
+  await context.close()
+  await browser.close()
+
+  return { networkRequests, cookies, integrations }
+}

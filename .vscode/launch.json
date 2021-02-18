@@ -6,13 +6,13 @@
       "request": "launch",
       "name": "Debug recorder",
       "program": "${workspaceFolder}/node_modules/.bin/ts-node",
-      "args": ["${workspaceFolder}/e2e-tests/recorder/index.ts"],
-      "env": {
-        "HEADLESS": "false",
-        "AJS_VERSION": "classic",
-        "CASES": "ifit",
-        "DEVTOOLS": "true"
-      }
+      "args": [
+        "--transpile-only",
+        "--project",
+        "tsconfig.scripts.json",
+        "${workspaceFolder}/e2e-tests/recorder/customRunner.ts"
+      ],
+      "env": {}
     },
 
     // Launches Jest tests in debug mode

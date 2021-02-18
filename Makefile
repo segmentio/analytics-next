@@ -101,13 +101,17 @@ record-clean:
 .PHONY: record-clean
 
 record-classic:
-	AJS_VERSION=classic $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/index.ts
+	AJS_VERSION=classic $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/runner.ts
 .PHONY: record-classic
 
 record-next:
-	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/index.ts
+	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/runner.ts
 .PHONY: record-next
 
 record: build record-clean
 	yarn concurrently "make record-classic" "make record-next"
 .PHONY: record
+
+record-custom: record-clean
+	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/customRunner.ts
+.PHONY: record-custom

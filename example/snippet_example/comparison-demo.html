@@ -1,0 +1,165 @@
+<html>
+  <head>
+    <title>AJS tester</title>
+  </head>
+  <body>
+    <form method="GET">
+      <input type="text" name="writeKey" placeholder="Write key" id="writeKey" />
+      <input type="checkbox" name="next" id="useNext"> Use AJSNext </input>
+      <button>Load</button>
+    </form>
+    <p id="status-msg"></p>
+
+    <button
+      id="track"
+      onclick="analytics.track('Product Viewed')"
+    >
+      Track: Product Viewed
+    </button>
+
+    <br />
+
+    <button id="page" onclick="analytics.page('Home')">Page: Home</button>
+    <br />
+    <button
+      id="id"
+      onclick="analytics.identify('spongebob', {'lastname':'squarepants'})"
+    >
+      Identify: spongebob
+    </button>
+
+    <button
+      id="group"
+      onclick="analytics.group(
+        'group name',
+        {
+          'address': {
+            'city': 'Vancouver',
+            'country': 'Canada',
+            'postalCode': 'V6b3E2',
+            'state': 'BC',
+            'street': '21 Jump St'
+          },
+          'avatar': 'does not exist',
+          'description': 'a fake group',
+          'email': 'email-me-not@domain.com',
+          'employees': 3,
+          'id': 1,
+          'industry': 'sw eng',
+          'name': 'libweb',
+          'phone': '555-pizza',
+          'website': 'www.google.com',
+          'plan': 'business'
+        },
+        {
+          'integrations': {
+            'All': true
+          }
+        }, function() { console.log('group callback triggered')})"
+    >
+      Group
+    </button>
+
+    <button
+      id="alias"
+      onclick="analytics.alias('userId', 'previous id', {
+        'integrations': { 'All': true }
+      }, function(){ console.log('alias callback triggered')})"
+    >
+      Alias
+    </button>
+
+    <button id="reset" onclick="analytics.reset()">Reset</button>
+    <br />
+
+    <script>
+      const { searchParams } = new URL(document.location)
+      const writeKey = searchParams.get('writeKey')
+      const next = searchParams.get('next')
+      const status = (s) => (document.querySelector('p').innerText = s)
+
+      document.querySelector('input').value = writeKey
+
+      if (writeKey) {
+        !(function () {
+          var analytics = (window.analytics = window.analytics || [])
+          if (!analytics.initialize)
+            if (analytics.invoked)
+              window.console &&
+                console.error &&
+                console.error('Segment snippet included twice.')
+            else {
+              analytics.invoked = !0
+              analytics.methods = [
+                'trackSubmit',
+                'trackClick',
+                'trackLink',
+                'trackForm',
+                'pageview',
+                'identify',
+                'reset',
+                'group',
+                'track',
+                'ready',
+                'alias',
+                'debug',
+                'page',
+                'once',
+                'off',
+                'on',
+              ]
+              analytics.factory = function (t) {
+                return function () {
+                  var e = Array.prototype.slice.call(arguments)
+                  e.unshift(t)
+                  analytics.push(e)
+                  return analytics
+                }
+              }
+              for (var t = 0; t < analytics.methods.length; t++) {
+                var e = analytics.methods[t]
+                analytics[e] = analytics.factory(e)
+              }
+              analytics.load = function (t, e) {
+                var n = document.createElement('script')
+                n.type = 'text/javascript'
+                n.async = !0
+
+                if (next === 'on') {
+                  n.src = '/dist/umd/standalone.js'
+                } else {
+                  n.src =
+                    'https://cdn.segment.com/analytics.js/v1/' +
+                    t +
+                    '/analytics.js'
+                }
+                var a = document.getElementsByTagName('script')[0]
+                a.parentNode.insertBefore(n, a)
+                analytics._loadOptions = e
+              }
+              analytics.SNIPPET_VERSION = '4.13.1'
+              analytics._writeKey = writeKey
+              analytics.load(writeKey)
+              analytics.page()
+            }
+        })()
+
+        status('loading ajs')
+
+        analytics.ready(() => {
+          analytics.reset()
+          return status(
+            `- ajs ${analytics.VERSION} loaded \n
+            - write key: ${
+              analytics._integrations['Segment.io'].options.apiKey
+            } \n
+            - integrations: ${Object.keys(analytics.Integrations)}
+            `
+          )
+        })
+      } else {
+        status('ajs not loaded, enter a write key')
+      }
+    </script>
+  </body>
+</html>
