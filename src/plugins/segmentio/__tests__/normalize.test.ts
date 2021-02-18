@@ -282,11 +282,25 @@ describe('before loading', () => {
     })
 
     describe('unbundling', () => {
-      it('should add a list of bundled integrations when `addBundledMetadata` is set', () => {
-        options.addBundledMetadata = true
-        analytics.integrations = {
-          'Segment.io': true,
-          other: true,
+      it('should add a list of bundled integrations', () => {
+        // @ts-ignore ignore missing fields for analytics.queue
+        analytics.queue = {
+          plugins: [
+            {
+              name: 'Segment.io',
+              version: '1',
+              type: 'destination',
+              isLoaded: (): boolean => true,
+              load: async (): Promise<void> => {},
+            },
+            {
+              name: 'other',
+              version: '1',
+              type: 'destination',
+              isLoaded: (): boolean => true,
+              load: async (): Promise<void> => {},
+            },
+          ],
         }
         normalize(analytics, object, options)
 
@@ -295,8 +309,7 @@ describe('before loading', () => {
         assert.deepEqual(object._metadata.bundled, ['Segment.io', 'other'])
       })
 
-      it('should add a list of unbundled integrations when `addBundledMetadata` and `unbundledIntegrations` are set', () => {
-        options.addBundledMetadata = true
+      it('should add a list of unbundled integrations when `unbundledIntegrations` is set', () => {
         options.unbundledIntegrations = ['other2']
 
         normalize(analytics, object, options)
@@ -304,13 +317,6 @@ describe('before loading', () => {
         assert(object)
         assert(object._metadata)
         assert.deepEqual(object._metadata.unbundled, ['other2'])
-      })
-
-      it('should not add _metadata when `addBundledMetadata` is unset', () => {
-        normalize(analytics, object, options)
-
-        assert(object)
-        assert(!object._metadata)
       })
     })
 

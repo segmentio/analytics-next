@@ -139,15 +139,16 @@ export function normalize(
     json._metadata = { failedInitializations: failed }
   }
 
-  if (settings.addBundledMetadata) {
-    const bundled = Object.keys(analytics.integrations)
-    json._metadata = {
-      ...json._metadata,
-      bundled,
-      unbundled: settings.unbundledIntegrations,
-      bundledConfigIds: settings.bundledConfigIds,
-      unbundledConfigIds: settings.unbundledConfigIds,
-    }
+  const bundled = analytics.queue.plugins
+    .filter((p) => p.type === 'destination')
+    .map((p) => p.name)
+
+  json._metadata = {
+    ...json._metadata,
+    bundled,
+    unbundled: settings.unbundledIntegrations ?? [],
+    bundledConfigIds: settings.bundledConfigIds ?? [],
+    unbundledConfigIds: settings.unbundledConfigIds ?? [],
   }
 
   const amp = ampId()
