@@ -64,7 +64,7 @@ export function segmentio(
   }
 
   return {
-    name: 'Segmentio',
+    name: 'Segment.io',
     type: 'after',
     version: '0.1.0',
     isLoaded: (): boolean => true,
