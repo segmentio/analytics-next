@@ -3,6 +3,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { HEADLESS, DEVTOOLS } from './config'
 import { startLocalServer } from './localServer'
+import { Cookie } from '../request-comparison/types'
 import fetch from 'node-fetch'
 
 export async function loadAJSNext(
@@ -40,7 +41,11 @@ export async function navigate(params: {
   recordCallsFunc: (page: Page, networkRequests: any[]) => void
   version: string
   writeKey?: string
-}): Promise<{ networkRequests: any[]; cookies: any[]; integrations: any[] }> {
+}): Promise<{
+  networkRequests: any[]
+  cookies: Cookie[]
+  integrations: string[]
+}> {
   const browser = await chromium.launch({
     headless: HEADLESS === 'true',
     slowMo: 2500,

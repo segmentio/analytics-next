@@ -1,10 +1,10 @@
 export interface JSONRequests {
-  name: string
-  trackingAPI: TrackingAPI[]
+  cookies: Cookie[]
+  integrations: string[]
+  networkRequests: NetworkRequest[]
 }
 
-export interface TrackingAPI {
-  method: string
+export interface NetworkRequest {
   url: string
   postData: PostData
   headers: {
@@ -14,6 +14,17 @@ export interface TrackingAPI {
     origin?: string
     accept?: string
   }
+}
+
+export interface Cookie {
+  sameSite: string
+  name: string
+  value: string
+  domain: string
+  path: string
+  expires: number
+  httpOnly: boolean
+  secure: boolean
 }
 
 interface PostData {
@@ -37,6 +48,7 @@ interface Metadata {
   bundled: string[]
   unbundled: string[]
   failedInitializations?: string[]
+  bundledConfigIds?: string[]
 }
 
 interface Context {

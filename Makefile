@@ -112,6 +112,6 @@ record: build record-clean
 	yarn concurrently "make record-classic" "make record-next"
 .PHONY: record
 
-record-custom: record-clean
+record-custom:
 	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/customRunner.ts
 .PHONY: record-custom

@@ -4,14 +4,16 @@ import ajsTester from '../cases/custom-site'
 import fs from 'fs-extra'
 import { WRITE_KEYS } from './config'
 import { navigate } from '.'
+import { sortBy } from 'lodash'
+import { JSONRequests, NetworkRequest } from '../request-comparison/types'
 
-async function writeJSONFile(content: any, name: string) {
+async function writeJSONFile(content: JSONRequests, name: string) {
   const filePath = path.join(__dirname, '../data/requests/', `${name}.json`)
 
   await fs.writeFile(filePath, JSON.stringify(content))
 }
 
-function recordCalls(page: Page, networkRequests: any[]) {
+function recordCalls(page: Page, networkRequests: NetworkRequest[]) {
   page.on('request', (request: Request) => {
     try {
       const postData: any = request.postDataJSON()
@@ -46,9 +48,20 @@ async function recordAJSTester(version: string) {
 
     await writeJSONFile(
       {
-        integrations,
-        cookies,
-        networkRequests: networkRequests.filter(Boolean),
+        integrations: integrations.sort(),
+        cookies: sortBy(cookies, 'name'),
+        networkRequests: sortBy(
+          networkRequests.filter(
+            (n) =>
+              Boolean(n) &&
+              typeof n !== 'string' &&
+              !n.url.includes('localhost') && // Next only: calls to localhost to fetch AJSN bundle
+              !n.url.includes('cdn-settings.segment.com') && // Next only: calls to fetch integrations settings
+              !n.url.includes('next-integrations') && // Next only: calls to fetch integrations bundles
+              !n.url.includes('cdn.segment.com/analytics.js/v1') // Classic only: calls to fetch AJS from cdn
+          ),
+          'url'
+        ),
       },
       `ajs-tester-${writeKey}-${version}`
     )

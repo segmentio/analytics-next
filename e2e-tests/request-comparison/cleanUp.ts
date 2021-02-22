@@ -3,7 +3,7 @@ import { JSONRequests } from './types'
 const cleanUp = (param: JSONRequests): JSONRequests => {
   const reqs: JSONRequests = {
     ...param,
-    trackingAPI: param.trackingAPI.map((r) => {
+    networkRequests: param.networkRequests.map((r) => {
       const postData = { ...r.postData }
 
       // delete time/date fields

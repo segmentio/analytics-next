@@ -1,6 +1,6 @@
-import { JSONRequests } from './types'
 import fs from 'fs-extra'
 import path from 'path'
+import { JSONRequests } from './types'
 
 const PATH = path.join(process.cwd(), 'e2e-tests/data/requests/')
 
