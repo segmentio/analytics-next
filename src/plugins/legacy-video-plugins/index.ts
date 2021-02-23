@@ -12,5 +12,5 @@ export async function loadLegacyVideoPlugins(
   // that is linked in the segment docs in order to be backwards compatible with ajs-classic
 
   // @ts-expect-error
-  analytics.plugins = window.analyticsVideoPlugins
+  analytics._plugins = window.analyticsVideoPlugins
 }

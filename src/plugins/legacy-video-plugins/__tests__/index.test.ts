@@ -31,13 +31,13 @@ beforeEach(async () => {
 
 describe(loadLegacyVideoPlugins.name, () => {
   it('attaches video plugins to ajs', async () => {
+    console.warn = () => {}
     const ajs = new Analytics({
       writeKey: 'w_123',
     })
 
     await loadLegacyVideoPlugins(ajs)
 
-    // @ts-expect-error
     expect(ajs.plugins).toMatchInlineSnapshot(`
       Object {
         "VimeoAnalytics": [Function],

@@ -185,7 +185,7 @@ export class EventFactory {
     return [context, overrides]
   }
 
-  private normalize(event: SegmentEvent): SegmentEvent {
+  public normalize(event: SegmentEvent): SegmentEvent {
     const allIntegrations = {
       // Base config integrations object
       ...event.integrations,

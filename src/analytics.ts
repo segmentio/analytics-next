@@ -21,6 +21,14 @@ import queryString from './core/query-string'
 import type { MiddlewareFunction } from './plugins/middleware'
 import type { LegacyDestination } from './plugins/ajs-destination'
 import type { FormArgs, LinkArgs } from './core/auto-track'
+import { AnalyticsBrowser } from './browser'
+
+const deprecationWarning =
+  'This is being deprecated and will be not be available in future releases of Analytics JS'
+
+// reference any pre-existing "analytics" object so a user can restore the reference
+const globalAny: any = global
+const _analytics = globalAny.analytics
 
 export interface AnalyticsSettings {
   writeKey: string
@@ -39,7 +47,6 @@ export interface InitOptions {
 }
 
 export class Analytics extends Emitter {
-  queue: EventQueue
   protected settings: AnalyticsSettings
   private _user: User
   private _group: Group
@@ -47,6 +54,8 @@ export class Analytics extends Emitter {
   private _debug = false
   initialized = false
   integrations: Integrations
+  options: InitOptions
+  queue: EventQueue
 
   constructor(
     settings: AnalyticsSettings,
@@ -64,6 +73,7 @@ export class Analytics extends Emitter {
     this._group = group ?? new Group(options?.group, cookieOptions).load()
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
+    this.options = options ?? {}
     autoBind(this)
   }
 
@@ -320,5 +330,144 @@ export class Analytics extends Emitter {
       callback(res)
       return res
     })
+  }
+
+  // analytics-classic api
+
+  noConflict(): Analytics {
+    console.warn(deprecationWarning)
+    window.analytics = _analytics ?? this
+    return this
+  }
+
+  normalize(msg: SegmentEvent): SegmentEvent {
+    console.warn(deprecationWarning)
+    return this.eventFactory.normalize(msg)
+  }
+
+  get failedInitializations(): string[] {
+    console.warn(deprecationWarning)
+    return this.queue.failedInitializations
+  }
+
+  get VERSION(): string {
+    console.warn(deprecationWarning)
+    return process.env.VERSION ?? ''
+  }
+
+  async initialize(
+    settings?: AnalyticsSettings,
+    options?: InitOptions
+  ): Promise<Analytics> {
+    console.warn(deprecationWarning)
+    if (settings) {
+      await AnalyticsBrowser.load(settings, options)
+    }
+    this.options = options || {}
+    return this
+  }
+
+  init = this.initialize.bind(this)
+
+  async pageview(url: string): Promise<Analytics> {
+    console.warn(deprecationWarning)
+    await this.page({ path: url })
+    return this
+  }
+
+  get plugins() {
+    console.warn(deprecationWarning)
+    // @ts-expect-error
+    return this._plugins ?? {}
+  }
+
+  get Integrations() {
+    console.warn(deprecationWarning)
+    const integrations = this.queue.plugins
+      .filter((plugin) => plugin.type === 'destination')
+      .reduce((acc, plugin) => {
+        const name = `${plugin.name
+          .toLowerCase()
+          .split(' ')
+          .join('-')}Integration`
+        // @ts-expect-error
+        const nested = window[name].Integration // hack - Google Analytics function resides in the "Integration" field
+        if (nested) {
+          // @ts-expect-error
+          acc[plugin.name] = nested
+          return acc
+        }
+        // @ts-expect-error
+        acc[plugin.name] = window[name]
+        return acc
+      }, {})
+
+    return integrations
+  }
+
+  // analytics-classic stubs
+
+  // essentially console.log in AJSC
+  log() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  // unreleased AJSC feature
+  addIntegrationMiddleware() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  listeners() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  addEventListener() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  removeAllListeners() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  removeListener() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  removeEventListener() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  hasListeners() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  // This function is only used to add GA and Appcue, but these are already being added to Integrations by AJSN
+  addIntegration() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  // The field this function uses is unused in AJSN
+  add() {
+    console.warn(deprecationWarning)
+    return
+  }
+
+  // snippet function
+  push(args: any[]) {
+    const an = this as any
+    const method = args.shift()
+    if (method) {
+      if (!an[method]) return
+    }
+    an[method].apply(this, args)
   }
 }

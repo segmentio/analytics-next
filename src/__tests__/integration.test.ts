@@ -291,6 +291,17 @@ describe('Alias', () => {
   })
 })
 
+describe('pageview', () => {
+  it('makes a page call with the given url', async () => {
+    console.warn = () => {}
+    const analytics = new Analytics({ writeKey: writeKey })
+    const mockPage = jest.spyOn(analytics, 'page')
+    await analytics.pageview('www.foo.com')
+
+    expect(mockPage).toHaveBeenCalledWith({ path: 'www.foo.com' })
+  })
+})
+
 describe('setAnonymousId', () => {
   it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
     const [analytics] = await AnalyticsBrowser.load({
