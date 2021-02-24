@@ -62,62 +62,62 @@ describe('before loading', () => {
 
     it('should add .anonymousId', () => {
       analytics.user().anonymousId('anon-id')
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.anonymousId === 'anon-id')
     })
 
     it('should add .sentAt', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.sentAt)
       // assert(type(object.sentAt) === 'date')
     })
 
     it('should add .userId', () => {
       analytics.user().id('user-id')
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.userId === 'user-id')
     })
 
     it('should not replace the .userId', () => {
       analytics.user().id('user-id')
       object.userId = 'existing-id'
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.userId === 'existing-id')
     })
 
     it('should always add .anonymousId even if .userId is given', () => {
       const object: SegmentEvent = { userId: 'baz', type: 'track' }
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.anonymousId?.length === 36)
     })
 
     it('should add .context', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.context)
     })
 
     it('should not rewrite context if provided', () => {
       const ctx = {}
       const obj = { ...object, context: ctx }
-      normalize(analytics, obj, options)
+      normalize(analytics, obj, options, {})
       expect(obj.context).toEqual(ctx)
     })
 
     it('should copy .options to .context', () => {
       const opts = {}
       const obj = { ...object, options: opts }
-      normalize(analytics, obj, options)
+      normalize(analytics, obj, options, {})
       assert(obj.context === opts)
       assert(obj.options == null)
     })
 
     it('should add .writeKey', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.writeKey === options.apiKey)
     })
 
     it('should add .library', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.context?.library)
       assert(object.context?.library.name === 'analytics-next')
       assert(object.context?.library.version === process.env.VERSION)
@@ -132,7 +132,7 @@ describe('before loading', () => {
       }
       const obj = { ...object, context: ctx }
 
-      normalize(analytics, obj, options)
+      normalize(analytics, obj, options, {})
 
       assert(obj.context?.library)
       assert(obj.context?.library.name === 'analytics-wordpress')
@@ -140,12 +140,12 @@ describe('before loading', () => {
     })
 
     it('should add .userAgent', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.context?.userAgent === navigator.userAgent)
     })
 
     it('should add .locale', () => {
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object.context?.locale === navigator.language)
     })
 
@@ -154,7 +154,7 @@ describe('before loading', () => {
         locale: 'foobar',
       }
       const obj = { ...object, context: ctx }
-      normalize(analytics, obj, options)
+      normalize(analytics, obj, options, {})
       assert(obj.context?.locale === 'foobar')
     })
 
@@ -164,7 +164,7 @@ describe('before loading', () => {
           'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
 
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -194,7 +194,7 @@ describe('before loading', () => {
           },
         },
       }
-      normalize(analytics, obj, options)
+      normalize(analytics, obj, options, {})
       assert(obj)
       assert(obj.context)
       assert(obj.context.campaign)
@@ -210,7 +210,7 @@ describe('before loading', () => {
         url: 'http://localhost?utm_source=source&urid=medium',
       })
 
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
@@ -225,7 +225,7 @@ describe('before loading', () => {
         url: 'http://localhost?utm_source=source',
       })
 
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -244,7 +244,7 @@ describe('before loading', () => {
         url: 'http://localhost',
       })
 
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
@@ -254,7 +254,7 @@ describe('before loading', () => {
 
     it('shouldnt add non amp ga cookie', () => {
       cookie.set('_ga', 'some-nonamp-id')
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(!object.context.amp)
@@ -262,7 +262,7 @@ describe('before loading', () => {
 
     it('should add .amp.id from store', () => {
       cookie.set('_ga', 'amp-foo')
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.amp)
@@ -271,7 +271,7 @@ describe('before loading', () => {
 
     it('should not add .amp if theres no _ga', () => {
       cookie.remove('_ga')
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(!object.context.amp)
@@ -283,26 +283,12 @@ describe('before loading', () => {
 
     describe('unbundling', () => {
       it('should add a list of bundled integrations', () => {
-        // @ts-ignore ignore missing fields for analytics.queue
-        analytics.queue = {
-          plugins: [
-            {
-              name: 'Segment.io',
-              version: '1',
-              type: 'destination',
-              isLoaded: (): boolean => true,
-              load: async (): Promise<void> => {},
-            },
-            {
-              name: 'other',
-              version: '1',
-              type: 'destination',
-              isLoaded: (): boolean => true,
-              load: async (): Promise<void> => {},
-            },
-          ],
-        }
-        normalize(analytics, object, options)
+        normalize(analytics, object, options, {
+          'Segment.io': {},
+          other: {
+            bundlingStatus: 'bundled',
+          },
+        })
 
         assert(object)
         assert(object._metadata)
@@ -311,8 +297,11 @@ describe('before loading', () => {
 
       it('should add a list of unbundled integrations when `unbundledIntegrations` is set', () => {
         options.unbundledIntegrations = ['other2']
-
-        normalize(analytics, object, options)
+        normalize(analytics, object, options, {
+          other2: {
+            bundlingStatus: 'unbundled',
+          },
+        })
 
         assert(object)
         assert(object._metadata)
@@ -321,10 +310,10 @@ describe('before loading', () => {
     })
 
     it('should pick up messageId from AJS', () => {
-      normalize(analytics, object, options) // ajs core generates the message ID here
+      normalize(analytics, object, options, {}) // ajs core generates the message ID here
       const messageId = object.messageId
 
-      normalize(analytics, object, options)
+      normalize(analytics, object, options, {})
       assert.equal(object.messageId, messageId)
     })
   })

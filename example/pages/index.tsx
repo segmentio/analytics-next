@@ -43,6 +43,7 @@ const writeKeys = {
   stage: '***REMOVED***',
   gurdas_shop: '***REMOVED***',
   netto_bt: '***REMOVED***',
+  netto_amplitude: '***REMOVED***',
 }
 
 const settings: AnalyticsSettings = {

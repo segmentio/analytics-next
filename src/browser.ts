@@ -118,7 +118,8 @@ export class AnalyticsBrowser {
       ...remotePlugins,
       segmentio(
         analytics,
-        legacySettings.integrations['Segment.io'] as SegmentioSettings
+        legacySettings.integrations['Segment.io'] as SegmentioSettings,
+        legacySettings.integrations
       ),
     ]
     const ctx = await analytics.register(...toRegister)

@@ -1,6 +1,7 @@
 import { Facade } from '@segment/facade'
 import fetch from 'unfetch'
 import { Analytics } from '../../analytics'
+import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { toFacade } from '../../lib/to-facade'
@@ -38,7 +39,8 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
 
 export function segmentio(
   analytics: Analytics,
-  settings: SegmentioSettings
+  settings: SegmentioSettings,
+  integrations: LegacySettings['integrations']
 ): Plugin {
   const remote = `https://${settings.apiHost ?? 'api.segment.io/v1'}`
 
@@ -59,7 +61,7 @@ export function segmentio(
     return fetch(`${remote}/${path}`, {
       headers: { 'Content-Type': 'text/plain' },
       method: 'post',
-      body: JSON.stringify(normalize(analytics, json, settings)),
+      body: JSON.stringify(normalize(analytics, json, settings, integrations)),
     }).then(() => ctx)
   }
 

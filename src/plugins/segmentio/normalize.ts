@@ -1,5 +1,6 @@
 import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
 import { Analytics } from '../../analytics'
+import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
@@ -100,7 +101,8 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
 export function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
-  settings: SegmentioSettings
+  settings: SegmentioSettings,
+  integrations: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
   const query = window.location.search
@@ -139,16 +141,30 @@ export function normalize(
     json._metadata = { failedInitializations: failed }
   }
 
-  const bundled = analytics.queue.plugins
-    .filter((p) => p.type === 'destination')
-    .map((p) => p.name)
+  const bundled: string[] = []
+  const unbundled: string[] = []
 
-  json._metadata = {
-    ...json._metadata,
-    bundled,
-    unbundled: settings.unbundledIntegrations ?? [],
-    bundledConfigIds: settings.bundledConfigIds ?? [],
-    unbundledConfigIds: settings.unbundledConfigIds ?? [],
+  for (const key in integrations) {
+    const integration = integrations[key]
+    if (key === 'Segment.io') {
+      bundled.push(key)
+    }
+    if (integration.bundlingStatus === 'bundled') {
+      bundled.push(key)
+    }
+    if (integration.bundlingStatus === 'unbundled') {
+      unbundled.push(key)
+    }
+  }
+
+  if (settings.addBundledMetadata !== false) {
+    json._metadata = {
+      ...json._metadata,
+      bundled: bundled.sort(),
+      unbundled: unbundled.sort(),
+      bundledConfigIds: settings.bundledConfigIds ?? [],
+      unbundledConfigIds: settings.unbundledConfigIds ?? [],
+    }
   }
 
   const amp = ampId()

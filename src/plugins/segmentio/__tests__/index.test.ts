@@ -23,7 +23,7 @@ describe('Segment.io', () => {
 
     options = { apiKey: 'oq0vdlg7yi' }
     analytics = new Analytics({ writeKey: options.apiKey })
-    segment = segmentio(analytics, options)
+    segment = segmentio(analytics, options, {})
 
     await analytics.register(segment, pageEnrichment)
 
