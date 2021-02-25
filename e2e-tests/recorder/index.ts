@@ -48,7 +48,7 @@ export async function navigate(params: {
 }> {
   const browser = await chromium.launch({
     headless: HEADLESS === 'true',
-    slowMo: 2500,
+    slowMo: 1500,
     devtools: DEVTOOLS,
   })
 

@@ -18,7 +18,7 @@ function recordCalls(page: Page, networkRequests: NetworkRequest[]) {
     try {
       const postData: any = request.postDataJSON()
 
-      const call = {
+      const call: NetworkRequest = {
         url: request.url(),
         postData: {
           type: postData?.type ?? '',
@@ -31,8 +31,8 @@ function recordCalls(page: Page, networkRequests: NetworkRequest[]) {
       }
 
       networkRequests.push(call)
-    } catch (_e) {
-      networkRequests.push(request.postData())
+    } catch (e) {
+      console.warn(`Couldn't parse request ${request.url()}`)
     }
   })
 }

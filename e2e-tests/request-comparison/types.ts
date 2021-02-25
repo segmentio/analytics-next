@@ -8,8 +8,8 @@ export interface NetworkRequest {
   url: string
   postData: PostData
   headers: {
-    referer: string
-    'content-type': string
+    referer?: string
+    'content-type'?: string
     'user-agent'?: string
     origin?: string
     accept?: string
@@ -29,14 +29,14 @@ export interface Cookie {
 
 interface PostData {
   integrations: object
-  anonymousId: string
+  anonymousId?: string
   type: string
   properties?: Properties
   name?: string
   context: Context
-  messageId: string
+  messageId?: string
   timestamp?: string
-  writeKey: string
+  writeKey?: string
   userId?: string
   sentAt?: string
   traits?: Traits
