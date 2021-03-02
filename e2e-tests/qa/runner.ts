@@ -38,7 +38,13 @@ export async function run(
         })
       }
 
-      const data = JSON.parse(request.postData() ?? '{}')
+      let data: JSONValue
+      try {
+        data = JSON.parse(request.postData() ?? '{}')
+      } catch (e) {
+        console.warn('Invalid JSON', e)
+        data = null
+      }
 
       const call = {
         url: request.url(),
@@ -60,7 +66,7 @@ export async function run(
     await page.evaluate('Date.prototype.getTime = () => 1614653469;')
 
     await page.waitForFunction(`window.analytics.initialized === true`)
-    await page.evaluate(execution)
+    const codeEvaluation = await page.evaluate(execution)
 
     const cookies = await context.cookies()
 
@@ -77,7 +83,7 @@ export async function run(
       runBeforeUnload: true,
     })
 
-    return { networkRequests, cookies, localStorage }
+    return { networkRequests, cookies, localStorage, codeEvaluation }
   }
 
   const browser = await playwright.chromium.launch({})
