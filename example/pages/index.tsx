@@ -42,6 +42,7 @@ const writeKeys = {
   classpass: '***REMOVED***',
   stage: '***REMOVED***',
   gurdas_shop: '***REMOVED***',
+  julios_test: '***REMOVED***',
   netto_bt: '***REMOVED***',
   netto_amplitude: '***REMOVED***',
 }

@@ -23,6 +23,9 @@ export interface LegacyIntegrationConfiguration {
     override?: string
   }
   bundlingStatus?: string
+
+  // Segment.io specific
+  retryQueue?: boolean
 }
 
 export interface LegacySettings {
@@ -85,10 +88,16 @@ export class AnalyticsBrowser {
     settings: AnalyticsSettings,
     options: InitOptions = {}
   ): Promise<[Analytics, Context]> {
-    const analytics = new Analytics(settings, options)
+    const legacySettings = await loadLegacySettings(settings.writeKey)
+
+    const retryQueue: boolean =
+      legacySettings.integrations['Segment.io']?.retryQueue ?? true
+
+    const opts: InitOptions = { retryQueue, ...options }
+
+    const analytics = new Analytics(settings, opts)
 
     const plugins = settings.plugins ?? []
-    const legacySettings = await loadLegacySettings(settings.writeKey)
     Context.initMetrics(legacySettings.metrics)
 
     const remotePlugins = hasLegacyDestinations(legacySettings)
@@ -98,7 +107,7 @@ export class AnalyticsBrowser {
           return mod.ajsDestinations(
             legacySettings,
             analytics.integrations,
-            options
+            opts
           )
         })
       : []

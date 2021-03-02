@@ -2,9 +2,11 @@ import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../analytics'
-import { AnalyticsBrowser } from '../browser'
 import { Group } from '../core/user'
 import { LegacyDestination } from '../plugins/ajs-destination'
+import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
+// @ts-ignore loadLegacySettings mocked dependency is accused as unused
+import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -293,7 +295,7 @@ describe('Alias', () => {
 
 describe('pageview', () => {
   it('makes a page call with the given url', async () => {
-    console.warn = () => {}
+    console.warn = (): void => {}
     const analytics = new Analytics({ writeKey: writeKey })
     const mockPage = jest.spyOn(analytics, 'page')
     await analytics.pageview('www.foo.com')
@@ -784,5 +786,62 @@ describe('deregister', () => {
     await analytics.deregister('amplitude')
 
     expect(window.document.scripts.length).toBe(scriptsLength - 1)
+  })
+})
+
+describe('retries', () => {
+  const testPlugin: Plugin = {
+    name: 'test',
+    type: 'before',
+    version: '0.1.0',
+    load: () => Promise.resolve(),
+    isLoaded: () => true,
+  }
+
+  const fruitBasketEvent = new Context({
+    type: 'track',
+    event: 'Fruit Basket',
+  })
+
+  beforeEach(async () => {
+    // @ts-ignore ignore reassining function
+    loadLegacySettings = jest.fn().mockReturnValue(
+      Promise.resolve({
+        integrations: { 'Segment.io': { retryQueue: false } },
+      })
+    )
+  })
+
+  it('does not retry errored events if retryQueue setting is set to false', async () => {
+    const [ajs] = await AnalyticsBrowser.load({ writeKey })
+
+    expect(ajs.queue.queue).toStrictEqual(
+      new PersistedPriorityQueue(1, 'event-queue')
+    )
+
+    await ajs.queue.register(
+      Context.system(),
+      {
+        ...testPlugin,
+        track: (_ctx) => {
+          throw new Error('aaay')
+        },
+      },
+      ajs
+    )
+
+    // Dispatching an event will push it into the priority queue.
+    await ajs.queue.dispatch(fruitBasketEvent).catch(() => {})
+
+    // we make sure the queue is flushed and there are no events queued up.
+    expect(ajs.queue.queue.length).toBe(0)
+    const flushed = await ajs.queue.flush()
+    expect(flushed).toStrictEqual([])
+
+    // as maxAttempts === 1, only one attempt was made.
+    // getAttempts(fruitBasketEvent) === 2 means the event's attemp was incremented,
+    // but the condition "(getAttempts(event) > maxAttempts) { return false }"
+    // aborted the retry
+    expect(ajs.queue.queue.getAttempts(fruitBasketEvent)).toEqual(2)
   })
 })

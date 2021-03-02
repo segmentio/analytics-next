@@ -69,7 +69,7 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
-describe('ajsDestinations', () => {
+describe('loading ajsDestinations', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
 

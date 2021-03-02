@@ -22,6 +22,7 @@ import type { MiddlewareFunction } from './plugins/middleware'
 import type { LegacyDestination } from './plugins/ajs-destination'
 import type { FormArgs, LinkArgs } from './core/auto-track'
 import { AnalyticsBrowser } from './browser'
+import { PersistedPriorityQueue } from './lib/priority-queue/persisted'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -44,6 +45,7 @@ export interface InitOptions {
   group?: UserOptions
   integrations?: Integrations
   plan?: Plan
+  retryQueue?: boolean
 }
 
 export class Analytics extends Emitter {
@@ -68,7 +70,11 @@ export class Analytics extends Emitter {
     const cookieOptions = options?.cookie
     this.settings = settings
     this.settings.timeout = this.settings.timeout ?? 300
-    this.queue = queue ?? new EventQueue()
+    this.queue =
+      queue ??
+      new EventQueue(
+        new PersistedPriorityQueue(options?.retryQueue ? 4 : 1, 'event-queue')
+      )
     this._user = user ?? new User(options?.user, cookieOptions).load()
     this._group = group ?? new Group(options?.group, cookieOptions).load()
     this.eventFactory = new EventFactory(this._user)
