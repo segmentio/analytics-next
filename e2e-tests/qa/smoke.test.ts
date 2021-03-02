@@ -101,11 +101,6 @@ describe('Smoke Tests', () => {
       const classic = classicReqs[index]
 
       expect(req.url).toEqual(classic.url)
-
-      // TODO: Add support in ajs-next
-      // @ts-ignore
-      delete classic.data._metadata.bundledIds
-
       expect(req.data).toContainSchema(classic.data)
 
       const nextSchema = objectSchema(req.data as object)

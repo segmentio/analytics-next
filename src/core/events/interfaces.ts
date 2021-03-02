@@ -144,6 +144,7 @@ export interface SegmentEvent {
     nodeVersion?: string
     bundledConfigIds?: string[]
     unbundledConfigIds?: string[]
+    bundledIds?: string[]
   }
 
   timestamp?: Date | string

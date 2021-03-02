@@ -157,6 +157,15 @@ export function normalize(
     }
   }
 
+  const configIds = settings.maybeBundledConfigIds ?? {}
+  const bundledConfigIds: string[] = []
+
+  bundled.sort().forEach((name) => {
+    ;(configIds[name] ?? []).forEach((id) => {
+      bundledConfigIds.push(id)
+    })
+  })
+
   if (settings.addBundledMetadata !== false) {
     json._metadata = {
       ...json._metadata,
@@ -164,6 +173,7 @@ export function normalize(
       unbundled: unbundled.sort(),
       bundledConfigIds: settings.bundledConfigIds ?? [],
       unbundledConfigIds: settings.unbundledConfigIds ?? [],
+      bundledIds: bundledConfigIds,
     }
   }
 

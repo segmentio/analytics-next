@@ -295,6 +295,29 @@ describe('before loading', () => {
         assert.deepEqual(object._metadata.bundled, ['Segment.io', 'other'])
       })
 
+      it('should add a list of bundled ids', () => {
+        normalize(
+          analytics,
+          object,
+          {
+            ...options,
+            maybeBundledConfigIds: {
+              other: ['o_123', 'o_456'],
+            },
+          },
+          {
+            'Segment.io': {},
+            other: {
+              bundlingStatus: 'bundled',
+            },
+          }
+        )
+
+        assert(object)
+        assert(object._metadata)
+        assert.deepEqual(object._metadata.bundledIds, ['o_123', 'o_456'])
+      })
+
       it('should add a list of unbundled integrations when `unbundledIntegrations` is set', () => {
         options.unbundledIntegrations = ['other2']
         normalize(analytics, object, options, {

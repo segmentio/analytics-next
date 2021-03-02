@@ -17,6 +17,7 @@ export interface SegmentioSettings {
   crossDomainIdServers?: string[]
   saveCrossDomainIdInLocalStorage?: boolean
   deleteCrossDomainId?: boolean
+  maybeBundledConfigIds?: Record<string, string[]>
 }
 
 function embedMetrics(ctx: Context): Context {
