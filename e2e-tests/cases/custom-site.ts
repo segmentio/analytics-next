@@ -1,8 +1,9 @@
 import { Page } from 'playwright'
+import { Analytics } from '../../src/analytics'
 
 declare global {
   interface Window {
-    analytics: any
+    analytics: Analytics
   }
 }
 
