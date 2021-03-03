@@ -42,7 +42,6 @@ export async function run(
       try {
         data = JSON.parse(request.postData() ?? '{}')
       } catch (e) {
-        console.warn('Invalid JSON', e)
         data = null
       }
 
@@ -66,10 +65,10 @@ export async function run(
     await page.evaluate('Date.prototype.getTime = () => 1614653469;')
 
     await page.waitForFunction(`window.analytics.initialized === true`)
+
     const codeEvaluation = await page.evaluate(execution)
 
     const cookies = await context.cookies()
-
     const localStorage: Record<string, string | null> = await page.evaluate(
       () => {
         return Object.keys(localStorage).reduce(function (obj, str) {
@@ -79,6 +78,7 @@ export async function run(
       }
     )
 
+    await page.waitForLoadState('networkidle')
     await page.close({
       runBeforeUnload: true,
     })

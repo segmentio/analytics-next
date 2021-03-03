@@ -748,6 +748,32 @@ describe('timeout', () => {
 })
 
 describe('deregister', () => {
+  beforeEach(async () => {
+    jest.restoreAllMocks()
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
+  })
+
   it('deregisters a plugin given its name', async () => {
     const unload = jest.fn(
       (): Promise<unknown> => {
@@ -762,7 +788,6 @@ describe('deregister', () => {
     })
 
     await analytics.deregister('Test Plugin')
-
     expect(xt.unload).toHaveBeenCalled()
   })
 
@@ -781,10 +806,12 @@ describe('deregister', () => {
       plugins: [amplitude],
     })
 
+    await analytics.ready()
+
     const scriptsLength = window.document.scripts.length
+    expect(scriptsLength).toBeGreaterThan(1)
 
     await analytics.deregister('amplitude')
-
     expect(window.document.scripts.length).toBe(scriptsLength - 1)
   })
 })

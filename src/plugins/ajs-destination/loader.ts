@@ -70,6 +70,10 @@ export async function loadIntegration(
   const integration = new integrationBuilder(settings)
   integration.analytics = analyticsInstance
 
+  if (integration.initialize) {
+    integration.initialize()
+  }
+
   return integration
 }
 
