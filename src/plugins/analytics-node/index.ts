@@ -5,13 +5,6 @@ import md5 from 'md5'
 import { SegmentEvent } from '../../core/events'
 import { postToTrackingAPI } from './api'
 
-const embedMetrics = (ctx: Context): Context => {
-  const metrics = ctx.stats.serialize()
-  ctx.updateEvent('context.metrics', metrics)
-
-  return ctx
-}
-
 // To keep parity with the current analytics-node library
 export const hydrateMessage = (message: SegmentEvent): SegmentEvent => ({
   properties: message.properties,
@@ -41,8 +34,6 @@ interface AnalyticsNodeSettings {
 
 export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
   const fireEvent = async (ctx: Context): Promise<Context> => {
-    ctx = embedMetrics(ctx)
-
     const hydratedMessage = hydrateMessage(ctx.event)
     await postToTrackingAPI(hydratedMessage, settings.writeKey)
 

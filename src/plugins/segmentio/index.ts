@@ -20,12 +20,6 @@ export interface SegmentioSettings {
   maybeBundledConfigIds?: Record<string, string[]>
 }
 
-function embedMetrics(ctx: Context): Context {
-  const metrics = ctx.stats.serialize()
-  ctx.updateEvent('context.metrics', metrics)
-  return ctx
-}
-
 type JSON = ReturnType<Facade['json']>
 
 function onAlias(analytics: Analytics, json: JSON): JSON {
@@ -46,8 +40,6 @@ export function segmentio(
   const remote = `https://${settings.apiHost ?? 'api.segment.io/v1'}`
 
   async function send(ctx: Context): Promise<Context> {
-    ctx = embedMetrics(ctx)
-
     const path = ctx.event.type.charAt(0)
     let json = toFacade(ctx.event).json()
 
