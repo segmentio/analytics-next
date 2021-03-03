@@ -2,10 +2,10 @@ import { Request, Page } from 'playwright'
 import path from 'path'
 import ajsTester from '../cases/custom-site'
 import fs from 'fs-extra'
-import { WRITE_KEYS } from './config'
+import { TRACKING_API_URLS, WRITE_KEYS } from './config'
 import { navigate } from '.'
 import { sortBy } from 'lodash'
-import { JSONRequests, NetworkRequest } from '../request-comparison/types'
+import { JSONRequests, NetworkRequest } from './types'
 
 async function writeJSONFile(content: JSONRequests, name: string) {
   const filePath = path.join(__dirname, '../data/requests/', `${name}.json`)
@@ -13,26 +13,27 @@ async function writeJSONFile(content: JSONRequests, name: string) {
   await fs.writeFile(filePath, JSON.stringify(content))
 }
 
-function recordCalls(page: Page, networkRequests: NetworkRequest[]) {
+export function recordCalls(page: Page, networkRequests: NetworkRequest[]) {
   page.on('request', (request: Request) => {
-    try {
-      const postData: any = request.postDataJSON()
+    if (TRACKING_API_URLS.some((k) => request.url().includes(k))) {
+      try {
+        const postData: any = request.postDataJSON()
 
-      const call: NetworkRequest = {
-        url: request.url(),
-        postData: {
-          type: postData?.type ?? '',
-          context: postData?.context ?? {},
-          properties: postData?.properties ?? {},
-          integrations: postData?.integrations ?? {},
-          _metadata: postData?._metadata ?? {},
-        },
-        headers: request.headers(),
+        const call: NetworkRequest = {
+          url: request.url(),
+          postData: {
+            type: postData?.type ?? '',
+            context: postData?.context ?? {},
+            properties: postData?.properties ?? {},
+            integrations: postData?.integrations ?? {},
+            _metadata: postData?._metadata ?? {},
+          },
+          headers: request.headers(),
+        }
+        networkRequests.push(call)
+      } catch (e) {
+        console.warn(`Couldn't parse request ${request.url()}`)
       }
-
-      networkRequests.push(call)
-    } catch (e) {
-      console.warn(`Couldn't parse request ${request.url()}`)
     }
   })
 }

@@ -3,7 +3,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { HEADLESS, DEVTOOLS } from './config'
 import { startLocalServer } from './localServer'
-import { Cookie } from '../request-comparison/types'
+import { Cookie } from './types'
 import fetch from 'node-fetch'
 
 export async function loadAJSNext(

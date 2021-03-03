@@ -21,6 +21,7 @@ export const TRACKING_API_URLS = [
 ]
 
 const CASES = process.env.CASES
+
 const allScenarios = [
   segment,
   milanuncios,
@@ -37,18 +38,5 @@ const allScenarios = [
 export const cases = allScenarios.filter(
   (scenario) => CASES?.split(',').includes(scenario.name) ?? true
 )
-
-const endpointMapping: { [endpoint: string]: string } = {
-  i: '/v1/i',
-  p: '/v1/p',
-  t: '/v1/t',
-  a: '/v1/a',
-  g: '/v1/g',
-}
-
-export const ENDPOINTS =
-  process.env.ENDPOINTS?.split(',').map(
-    (endpoint) => endpointMapping[endpoint]
-  ) ?? Object.values(endpointMapping)
 
 export const WRITE_KEYS = ['***REMOVED***']
