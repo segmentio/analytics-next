@@ -42,10 +42,13 @@ export class EventQueue extends Emitter {
       .catch((err) => {
         if (plugin.type === 'destination') {
           this.failedInitializations.push(plugin.name)
+          console.warn(plugin.name, err)
+
           ctx.log('warn', 'Failed to load destination', {
             plugin: plugin.name,
             error: err,
           })
+
           return
         }
 

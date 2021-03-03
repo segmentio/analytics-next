@@ -60,6 +60,7 @@ export class LegacyDestination implements Plugin {
   middleware: DestinationMiddlewareFunction[] = []
 
   private _ready = false
+  private _initialized = false
   private onReady: Promise<unknown> | undefined
   integration: LegacyIntegration | undefined
 
@@ -101,11 +102,16 @@ export class LegacyDestination implements Plugin {
       this.version,
       this.settings
     )
+
     this.onReady = new Promise((resolve) => {
       this.integration!.once('ready', () => {
         this._ready = true
         resolve(true)
       })
+    })
+
+    this.integration.once('initialize', () => {
+      this._initialized = true
     })
 
     try {
@@ -135,7 +141,7 @@ export class LegacyDestination implements Plugin {
     clz: ClassType<T>,
     eventType: 'track' | 'identify' | 'page' | 'alias' | 'group'
   ): Promise<Context> {
-    if (!this._ready || isOffline()) {
+    if (!this._initialized || isOffline()) {
       this.buffer.push(ctx)
       return ctx
     }

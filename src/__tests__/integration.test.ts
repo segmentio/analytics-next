@@ -874,7 +874,7 @@ describe('retries', () => {
     expect(ajs.queue.queue.getAttempts(fruitBasketEvent)).toEqual(2)
   })
 
-  it.only('does not queue up events when offline if retryQueue setting is set to false', async () => {
+  it('does not queue up events when offline if retryQueue setting is set to false', async () => {
     const [ajs] = await AnalyticsBrowser.load({ writeKey })
 
     await ajs.queue.register(

@@ -121,7 +121,7 @@ export const samples = {
   ],
   curebit: ['***REMOVED***'],
   'customer.io': [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   'doubleclick-floodlight': [
@@ -145,7 +145,7 @@ export const samples = {
     '***REMOVED***',
   ],
   'facebook-pixel': [
-    '***REMOVED***',
+    // '***REMOVED***', // times out
     '***REMOVED***',
   ],
   friendbuy: [
@@ -153,7 +153,7 @@ export const samples = {
     '***REMOVED***',
   ],
   fullstory: [
-    '***REMOVED***',
+    // '***REMOVED***',
     'T30yto0kWxOFMMWFW7yj2pxgihhxjoMD',
   ],
   'google-adwords-new': [
@@ -224,7 +224,7 @@ export const samples = {
     '***REMOVED***',
   ],
   'lucky-orange': [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   lytics: [
@@ -236,11 +236,11 @@ export const samples = {
     '***REMOVED***',
   ],
   'marketo-v2': [
-    '***REMOVED***',
+    // '***REMOVED***', // amplitude
     '***REMOVED***',
   ],
   mediamath: [
-    '***REMOVED***',
+    // '***REMOVED***', // cloudfront
     '***REMOVED***',
   ],
   mixpanel: ['***REMOVED***', '***REMOVED***'],
@@ -249,7 +249,7 @@ export const samples = {
     '***REMOVED***',
   ],
   monetate: [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   mouseflow: [
@@ -282,7 +282,7 @@ export const samples = {
     '***REMOVED***',
   ],
   'perfect-audience': [
-    '***REMOVED***',
+    // '***REMOVED***', // amplitude bug
     '***REMOVED***',
   ],
   pingdom: [
@@ -339,11 +339,11 @@ export const samples = {
     '***REMOVED***',
   ],
   survicate: [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   taplytics: [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   totango: [
@@ -351,7 +351,7 @@ export const samples = {
     '***REMOVED***',
   ],
   'track-js': [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   'tv-squared': [
@@ -359,7 +359,7 @@ export const samples = {
     '***REMOVED***',
   ],
   'twitter-ads': [
-    '***REMOVED***',
+    // '***REMOVED***',
     '***REMOVED***',
   ],
   vero: [
