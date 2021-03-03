@@ -7,6 +7,8 @@ import { LegacyDestination } from '../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
+// @ts-ignore isOffline mocked dependency is accused as unused
+import { isOffline } from '../core/connection'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -870,5 +872,27 @@ describe('retries', () => {
     // but the condition "(getAttempts(event) > maxAttempts) { return false }"
     // aborted the retry
     expect(ajs.queue.queue.getAttempts(fruitBasketEvent)).toEqual(2)
+  })
+
+  it.only('does not queue up events when offline if retryQueue setting is set to false', async () => {
+    const [ajs] = await AnalyticsBrowser.load({ writeKey })
+
+    await ajs.queue.register(
+      Context.system(),
+      {
+        ...testPlugin,
+        ready: () => Promise.resolve(true),
+        track: (ctx) => ctx,
+      },
+      ajs
+    )
+
+    // @ts-ignore ignore reassining function
+    isOffline = jest.fn().mockReturnValue(true)
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ajs.track('event')
+
+    expect(ajs.queue.queue.length).toBe(0)
   })
 })

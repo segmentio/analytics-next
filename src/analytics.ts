@@ -23,6 +23,7 @@ import type { LegacyDestination } from './plugins/ajs-destination'
 import type { FormArgs, LinkArgs } from './core/auto-track'
 import { AnalyticsBrowser } from './browser'
 import { PersistedPriorityQueue } from './lib/priority-queue/persisted'
+import { isOffline } from './core/connection'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -267,6 +268,11 @@ export class Analytics extends Emitter {
     callback?: Callback
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
+
+    if (isOffline() && !this.options.retryQueue) {
+      return ctx
+    }
+
     const dispatched = await this.queue.dispatch(ctx)
     const result = await invokeCallback(
       dispatched,
