@@ -1,23 +1,4 @@
 export const sources = [
-  // '***REMOVED***', // double fails
-  '***REMOVED***',
-  // '***REMOVED***', // double click
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  // '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  '***REMOVED***',
-  // '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',
@@ -34,365 +15,122 @@ export const sources = [
   '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',
-  // '***REMOVED***',
   '***REMOVED***',
-  // '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
+  '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',
 ]
 
 export const samples = {
   'adlearn-open-platform': ['***REMOVED***'],
-  'adobe-analytics': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  'adobe-analytics': ['***REMOVED***'],
   adroll: ['***REMOVED***'],
-  adwords: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  alexa: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  adwords: ['***REMOVED***'],
+  alexa: ['***REMOVED***'],
   amplitude: ['***REMOVED***'],
-  appboy: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  appcues: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  appnexus: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  aptrinsic: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  appboy: ['***REMOVED***'],
+  appcues: ['***REMOVED***'],
+  appnexus: ['***REMOVED***'],
+  aptrinsic: ['***REMOVED***'],
   auryc: ['***REMOVED***'],
-  'bing-ads': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  blueshift: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  bronto: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  'bing-ads': ['***REMOVED***'],
+  blueshift: ['***REMOVED***'],
+  bronto: ['***REMOVED***'],
   bugherd: ['***REMOVED***'],
-  bugsnag: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  chameleon: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  chartbeat: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  clevertap: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  clicky: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  comscore: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'crazy-egg': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  criteo: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  bugsnag: ['***REMOVED***'],
+  chameleon: ['***REMOVED***'],
+  chartbeat: ['***REMOVED***'],
+  clevertap: ['***REMOVED***'],
+  clicky: ['***REMOVED***'],
+  comscore: ['***REMOVED***'],
+  'crazy-egg': ['***REMOVED***'],
+  criteo: ['***REMOVED***'],
   curebit: ['***REMOVED***'],
-  'customer.io': [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'doubleclick-floodlight': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  drip: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  elevio: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  eloqua: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  errorception: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'facebook-pixel': [
-    // '***REMOVED***', // times out
-    '***REMOVED***',
-  ],
-  friendbuy: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  fullstory: [
-    // '***REMOVED***',
-    'T30yto0kWxOFMMWFW7yj2pxgihhxjoMD',
-  ],
-  'google-adwords-new': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'google-analytics': ['***REMOVED***', '***REMOVED***'],
-  'google-cloud-pubsub': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'google-tag-manager': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  gosquared: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  heap: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  'customer.io': ['***REMOVED***'],
+  'doubleclick-floodlight': ['***REMOVED***'],
+  drip: ['***REMOVED***'],
+  elevio: ['***REMOVED***'],
+  eloqua: ['***REMOVED***'],
+  errorception: ['***REMOVED***'],
+  'facebook-pixel': ['***REMOVED***'],
+  friendbuy: ['***REMOVED***'],
+  fullstory: ['***REMOVED***'],
+  'google-adwords-new': ['***REMOVED***'],
+  'google-analytics': ['***REMOVED***'],
+  'google-cloud-pubsub': ['***REMOVED***'],
+  'google-tag-manager': ['***REMOVED***'],
+  gosquared: ['***REMOVED***'],
+  heap: ['***REMOVED***'],
   'hello-bar': ['***REMOVED***'],
-  hindsight: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  hotjar: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  hubspot: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  hindsight: ['***REMOVED***'],
+  hotjar: ['***REMOVED***'],
+  hubspot: ['***REMOVED***'],
   improvely: ['***REMOVED***'],
-  inspectlet: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  intercom: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  iterable: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'keen-io': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  kissmetrics: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  klaviyo: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'linkedin-insight-tag': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  livechat: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'lucky-orange': [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  lytics: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  madkudu: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'marketo-v2': [
-    // '***REMOVED***', // amplitude
-    '***REMOVED***',
-  ],
-  mediamath: [
-    // '***REMOVED***', // cloudfront
-    '***REMOVED***',
-  ],
-  mixpanel: ['***REMOVED***', '***REMOVED***'],
-  moengage: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  monetate: [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  mouseflow: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  inspectlet: ['***REMOVED***'],
+  intercom: ['***REMOVED***'],
+  iterable: ['***REMOVED***'],
+  'keen-io': ['***REMOVED***'],
+  kissmetrics: ['***REMOVED***'],
+  klaviyo: ['***REMOVED***'],
+  'linkedin-insight-tag': ['***REMOVED***'],
+  livechat: ['***REMOVED***'],
+  'lucky-orange': ['***REMOVED***'],
+  lytics: ['***REMOVED***'],
+  madkudu: ['***REMOVED***'],
+  'marketo-v2': ['***REMOVED***'],
+  mediamath: ['***REMOVED***'],
+  mixpanel: ['***REMOVED***'],
+  moengage: ['***REMOVED***'],
+  monetate: ['***REMOVED***'],
+  mouseflow: ['***REMOVED***'],
   mousestats: ['***REMOVED***'],
-  olark: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  optimizely: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  outbound: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  pardot: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  parsely: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  pendo: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'perfect-audience': [
-    // '***REMOVED***', // amplitude bug
-    '***REMOVED***',
-  ],
-  pingdom: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'pinterest-tag': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  piwik: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  qualaroo: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  quantcast: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'quora-conversion-pixel': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  rollbar: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  saasquatch: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  satismeter: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  sentry: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  shareasale: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  olark: ['***REMOVED***'],
+  optimizely: ['***REMOVED***'],
+  outbound: ['***REMOVED***'],
+  pardot: ['***REMOVED***'],
+  parsely: ['***REMOVED***'],
+  pendo: ['***REMOVED***'],
+  'perfect-audience': ['***REMOVED***'],
+  pingdom: ['***REMOVED***'],
+  'pinterest-tag': ['***REMOVED***'],
+  piwik: ['***REMOVED***'],
+  qualaroo: ['***REMOVED***'],
+  quantcast: ['***REMOVED***'],
+  'quora-conversion-pixel': ['***REMOVED***'],
+  rollbar: ['***REMOVED***'],
+  saasquatch: ['***REMOVED***'],
+  satismeter: ['***REMOVED***'],
+  sentry: ['***REMOVED***'],
+  shareasale: ['***REMOVED***'],
   simplereach: ['***REMOVED***'],
-  snapengage: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  spinnakr: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  survicate: [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  taplytics: [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  totango: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'track-js': [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'tv-squared': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'twitter-ads': [
-    // '***REMOVED***',
-    '***REMOVED***',
-  ],
-  vero: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'visual-website-optimizer': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  webengage: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  wishpond: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  woopra: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  wootric: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
-  'yandex-metrica': [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  snapengage: ['***REMOVED***'],
+  spinnakr: ['***REMOVED***'],
+  taplytics: ['***REMOVED***'],
+  totango: ['***REMOVED***'],
+  'track-js': ['***REMOVED***'],
+  'tv-squared': ['***REMOVED***'],
+  'twitter-ads': ['***REMOVED***'],
+  vero: ['***REMOVED***'],
+  'visual-website-optimizer': ['***REMOVED***'],
+  webengage: ['***REMOVED***'],
+  wishpond: ['***REMOVED***'],
+  woopra: ['***REMOVED***'],
+  wootric: ['***REMOVED***'],
+  'yandex-metrica': ['***REMOVED***'],
   yellowhammer: ['***REMOVED***'],
-  zopim: [
-    '***REMOVED***',
-    '***REMOVED***',
-  ],
+  zopim: ['***REMOVED***'],
 }

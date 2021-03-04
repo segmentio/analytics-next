@@ -19,4 +19,6 @@ export interface LegacyIntegration extends Emitter {
   onpage?: (event: Page) => void | Promise<void>
   onalias?: (event: Alias) => void | Promise<void>
   ongroup?: (event: Group) => void | Promise<void>
+
+  _assumesPageview?: boolean
 }

@@ -3,9 +3,6 @@ import { run } from './runner'
 import { startLocalServer } from './server'
 import { samples } from './__fixtures__/sources'
 
-// tv-squared
-// _initialize chartbeat
-
 const destinations = Object.keys(samples)
 
 jest.setTimeout(100000)
@@ -23,19 +20,19 @@ const server = async () => {
 describe('Destination Tests', () => {
   // needs to be written as a string so it's not transpiled
   const code = `(async () => {
-    await window.analytics.identify('Test', {
+    await new Promise(res => window.analytics.page({}, res))
+
+    await new Promise(res => window.analytics.identify('Test', {
       email: 'test@mctesting.org',
-    })
+    }, res))
     
-    await window.analytics.track('Track!', {
+    await new Promise(res => window.analytics.track('Track!', {
       leProp: 'propé',
-    })
-    
-    await window.analytics.page()
+    }, res))
   })()`
 
   // This won't be run actively in CI until all destinations and test cases are 100% fixed
-  test.concurrent.skip.each(destinations)(`%p`, async (destination) => {
+  test.concurrent.each(destinations)(`%p`, async (destination) => {
     const key = destination as keyof typeof samples
     const writeKey = samples[key][0]
     const url = await server()

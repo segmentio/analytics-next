@@ -62,6 +62,8 @@ export class LegacyDestination implements Plugin {
   private _ready = false
   private _initialized = false
   private onReady: Promise<unknown> | undefined
+  private onInitialize: Promise<unknown> | undefined
+
   integration: LegacyIntegration | undefined
 
   buffer: PriorityQueue<Context>
@@ -110,8 +112,11 @@ export class LegacyDestination implements Plugin {
       })
     })
 
-    this.integration.once('initialize', () => {
-      this._initialized = true
+    this.onInitialize = new Promise((resolve) => {
+      this.integration!.on('initialize', () => {
+        this._initialized = true
+        resolve(true)
+      })
     })
 
     try {
@@ -119,6 +124,7 @@ export class LegacyDestination implements Plugin {
         `method:initialize`,
         `integration_name:${this.name}`,
       ])
+
       this.integration.initialize()
     } catch (error) {
       ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
@@ -141,7 +147,7 @@ export class LegacyDestination implements Plugin {
     clz: ClassType<T>,
     eventType: 'track' | 'identify' | 'page' | 'alias' | 'group'
   ): Promise<Context> {
-    if (!this._initialized || isOffline()) {
+    if (isOffline()) {
       this.buffer.push(ctx)
       return ctx
     }
@@ -213,7 +219,14 @@ export class LegacyDestination implements Plugin {
   }
 
   async page(ctx: Context): Promise<Context> {
-    return this.send(ctx, Page as ClassType<Page>, 'page')
+    // TODO (netto) - Add unit test explaining this
+    if (this.integration?._assumesPageview && !this._initialized) {
+      this.integration.initialize()
+    }
+
+    return this.onInitialize!.then(() => {
+      return this.send(ctx, Page as ClassType<Page>, 'page')
+    })
   }
 
   async identify(ctx: Context): Promise<Context> {

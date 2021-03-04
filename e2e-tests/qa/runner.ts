@@ -45,9 +45,16 @@ export async function run(
         data = null
       }
 
-      const call = {
-        url: request.url(),
-        data,
+      const call = { url: request.url(), data }
+
+      // skip GTM tags as they lead to unreliable JS
+      if (
+        call.url.includes('googletagmanager') ||
+        call.url.includes('bid.g.doubleclick.net') ||
+        call.url.includes('fonts.googleapis.com') ||
+        (request.method() === 'POST' && data === null)
+      ) {
+        return
       }
 
       networkRequests.push(call)
@@ -79,14 +86,15 @@ export async function run(
     )
 
     await page.waitForLoadState('networkidle')
-    await page.close({
-      runBeforeUnload: true,
-    })
+    await page.close({ runBeforeUnload: true })
 
     return { networkRequests, cookies, localStorage, codeEvaluation }
   }
 
-  const browser = await playwright.chromium.launch({})
+  const browser = await playwright.chromium.launch({
+    devtools: true,
+    headless: true,
+  })
 
   const [classic, next] = await Promise.all([
     load(browser, false, source, execution),
