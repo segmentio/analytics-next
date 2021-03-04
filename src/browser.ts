@@ -15,13 +15,18 @@ import { segmentio, SegmentioSettings } from './plugins/segmentio'
 import { validation } from './plugins/validation'
 
 export interface LegacyIntegrationConfiguration {
-  type?: string
-  // The version field is temporary as some sources were not rebuilt yet.
+  /* @deprecated - This does not indicate version types anymore */
   version?: string
+
+  /* @deprecated - This does not indicate browser types anymore */
+  type?: string
+
   versionSettings?: {
     version?: string
     override?: string
+    componentTypes?: Array<'browser' | 'android' | 'ios' | 'server'>
   }
+
   bundlingStatus?: string
 
   // Segment.io specific

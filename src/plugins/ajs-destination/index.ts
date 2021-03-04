@@ -287,10 +287,13 @@ export async function ajsDestinations(
         return
       }
 
-      const { type, bundlingStatus } = integrationSettings
+      const { type, bundlingStatus, versionSettings } = integrationSettings
       // We use `!== 'unbundled'` (versus `=== 'bundled'`) to be inclusive of
       // destinations without a defined value for `bundlingStatus`
-      const deviceMode = type === 'browser' && bundlingStatus !== 'unbundled'
+      const deviceMode =
+        bundlingStatus !== 'unbundled' &&
+        (type === 'browser' ||
+          versionSettings?.componentTypes?.includes('browser'))
 
       if (!deviceMode && name !== 'Segment.io') {
         return

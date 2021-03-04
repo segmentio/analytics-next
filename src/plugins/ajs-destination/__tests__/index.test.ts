@@ -17,6 +17,11 @@ const cdnResponse: LegacySettings = {
     WithNoVersion: {
       type: 'browser',
     },
+    WithProperTypeComponent: {
+      versionSettings: {
+        componentTypes: ['browser'],
+      },
+    },
     WithLegacyVersion: {
       version: '3.0.7',
       type: 'browser',
@@ -98,10 +103,77 @@ describe('loading ajsDestinations', () => {
     expect(withNoVersion?.version).toBe('latest')
   })
 
+  describe('versionSettings.components', () => {
+    it('loads legacy ajs destinations from cdn', async () => {
+      const destinations = await ajsDestinations(cdnResponse, {}, {})
+      // ignores segment.io
+      expect(destinations.length).toBe(6)
+    })
+
+    it('ignores [componentType:browser] when bundlingStatus is unbundled', async () => {
+      const destinations = await ajsDestinations(
+        {
+          integrations: {
+            'Some server destination': {
+              versionSettings: {
+                componentTypes: ['server'],
+              },
+              bundlingStatus: 'bundled', // this combination will never happen
+            },
+            'Device Mode Customer.io': {
+              versionSettings: {
+                componentTypes: ['browser'],
+              },
+              bundlingStatus: 'bundled',
+            },
+            'Cloud Mode Customer.io': {
+              versionSettings: {
+                componentTypes: ['browser'],
+              },
+              bundlingStatus: 'unbundled',
+            },
+          },
+        },
+        {},
+        {}
+      )
+      expect(destinations.length).toBe(1)
+    })
+
+    it('loads [componentType:browser] when bundlingStatus is not defined', async () => {
+      const destinations = await ajsDestinations(
+        {
+          integrations: {
+            'Some server destination': {
+              versionSettings: {
+                componentTypes: ['server'],
+              },
+              bundlingStatus: 'bundled', // this combination will never happen
+            },
+            'Device Mode Customer.io': {
+              versionSettings: {
+                componentTypes: ['browser'],
+              },
+              bundlingStatus: 'bundled',
+            },
+            'Device Mode no bundling status Customer.io': {
+              versionSettings: {
+                componentTypes: ['browser'],
+              },
+            },
+          },
+        },
+        {},
+        {}
+      )
+      expect(destinations.length).toBe(2)
+    })
+  })
+
   it('loads type:browser legacy ajs destinations from cdn', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
     // ignores segment.io
-    expect(destinations.length).toBe(5)
+    expect(destinations.length).toBe(6)
   })
 
   it('ignores type:browser when bundlingStatus is unbundled', async () => {
