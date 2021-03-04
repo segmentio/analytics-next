@@ -14,6 +14,20 @@ steps:
           paths: ['node_modules/']
           save: true
 
+  - label: ':hammer: QA'
+    soft_fail: true
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - yarn install
+      - yarn add --dev playwright
+      - make test-e2e
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['node_modules/']
+
   - label: ':lock: Snyk'
     agents:
       queue: v1

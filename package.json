@@ -104,6 +104,7 @@
     "mime": "^2.4.6",
     "ngrok": "^3.3.0",
     "node-fetch": "^2.6.1",
+    "p-retry": "^4.4.0",
     "playwright": "^1.9.0",
     "prettier": "^2.0.2",
     "serve": "^11.3.2",

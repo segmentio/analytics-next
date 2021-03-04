@@ -38,6 +38,10 @@ test-coverage: node_modules ## Runs unit tests with coverage
 	$(BIN)/jest --coverage --forceExit
 .PHONY: test-coverage
 
+test-e2e: build ## Runs all integration tests in a single command
+	$(BIN)/jest --runTestsByPath qa/*.test.ts ${args}
+.PHONY: test-coverage
+
 test-integration: build ## Runs all integration tests in a single command
 	$(BIN)/jest --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage

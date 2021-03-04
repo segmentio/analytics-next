@@ -1,15 +1,10 @@
 import { difference } from 'lodash'
+import { browser } from './browser'
 import { run } from './runner'
-import { startLocalServer } from './server'
-
-let url: string
-
-beforeAll(async () => {
-  url = await startLocalServer()
-})
+import { server } from './server'
 
 describe('Backwards compatibility', () => {
-  test('provides all same properties', async () => {
+  test.concurrent('provides all same properties', async () => {
     const code = `(() => {
       return [
         ...new Set([
@@ -19,7 +14,12 @@ describe('Backwards compatibility', () => {
       ].sort()
     })()`
 
-    const results = await run(url, '***REMOVED***', code)
+    const results = await run({
+      browser: await browser(),
+      script: code,
+      serverURL: await server(),
+      writeKey: '***REMOVED***',
+    })
 
     const next = results.next.codeEvaluation as string[]
     const classic = results.classic.codeEvaluation as string[]
@@ -33,13 +33,18 @@ describe('Backwards compatibility', () => {
     expect(missing).toEqual([])
   })
 
-  test('accesses user_id the same way', async () => {
+  test.concurrent('accesses user_id the same way', async () => {
     const code = `(async () => {
       await analytics.identify('Test User')
       return analytics.user().id()
     })()`
 
-    const results = await run(url, '***REMOVED***', code)
+    const results = await run({
+      browser: await browser(),
+      script: code,
+      serverURL: await server(),
+      writeKey: '***REMOVED***',
+    })
 
     const nextId = results.next.codeEvaluation
     const classicId = results.classic.codeEvaluation
@@ -48,13 +53,18 @@ describe('Backwards compatibility', () => {
     expect(nextId).not.toBeFalsy()
   })
 
-  test('accesses traits the same way', async () => {
+  test.concurrent('accesses traits the same way', async () => {
     const code = `(async () => {
       await analytics.identify('Test User', { email: 'test@example.org' })
       return analytics.user().traits()
     })()`
 
-    const results = await run(url, '***REMOVED***', code)
+    const results = await run({
+      browser: await browser(),
+      script: code,
+      serverURL: await server(),
+      writeKey: '***REMOVED***',
+    })
 
     const nextId = results.next.codeEvaluation as { email: string }
     const classicId = results.classic.codeEvaluation as { email: string }

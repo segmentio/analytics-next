@@ -40,3 +40,13 @@ export async function startLocalServer(): Promise<string> {
     }
   })
 }
+
+let url: string
+export const server = async () => {
+  if (url) {
+    return url
+  }
+
+  url = await startLocalServer().catch(() => url)
+  return url
+}

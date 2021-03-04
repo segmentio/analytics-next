@@ -1,11 +1,14 @@
-import playwright, { Browser } from 'playwright'
+import { Browser } from 'playwright'
 import { JSONValue } from '../../src/core/events'
 
-export async function run(
-  serverURL: string,
-  source: string,
-  execution: string
-) {
+type ComparisonParams = {
+  browser: Browser
+  serverURL: string
+  writeKey: string
+  script: string
+}
+
+export async function run(params: ComparisonParams) {
   async function load(
     browser: Browser,
     isNext: boolean,
@@ -33,9 +36,7 @@ export async function run(
         route.continue()
       } else {
         // do not actually send data
-        route.fulfill({
-          body: 'ok!',
-        })
+        route.fulfill({ body: 'ok!' })
       }
 
       let data: JSONValue
@@ -47,11 +48,9 @@ export async function run(
 
       const call = { url: request.url(), data }
 
-      // skip GTM tags as they lead to unreliable JS
+      // skip doubleclick as it leads to unreliable JS
       if (
-        call.url.includes('googletagmanager') ||
-        call.url.includes('bid.g.doubleclick.net') ||
-        call.url.includes('fonts.googleapis.com') ||
+        call.url.includes('doubleclick.net') ||
         (request.method() === 'POST' && data === null)
       ) {
         return
@@ -61,11 +60,12 @@ export async function run(
     })
 
     const url =
-      serverURL + (isNext ? '?type=next' : '?type=classic') + '&wk=' + source
+      params.serverURL +
+      (isNext ? '?type=next' : '?type=classic') +
+      '&wk=' +
+      source
 
-    await page.goto(url, {
-      waitUntil: 'networkidle',
-    })
+    await page.goto(url)
 
     // This forces every timestamp to look exactly the same
     await page.evaluate('Date.prototype.toJSON = () => "<date>";')
@@ -91,17 +91,10 @@ export async function run(
     return { networkRequests, cookies, localStorage, codeEvaluation }
   }
 
-  const browser = await playwright.chromium.launch({
-    devtools: true,
-    headless: true,
-  })
-
   const [classic, next] = await Promise.all([
-    load(browser, false, source, execution),
-    load(browser, true, source, execution),
+    load(params.browser, false, params.writeKey, params.script),
+    load(params.browser, true, params.writeKey, params.script),
   ])
-
-  await browser.close()
 
   return {
     next,
