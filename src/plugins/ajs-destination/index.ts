@@ -194,7 +194,6 @@ export class LegacyDestination implements Plugin {
     }
 
     const event = new clz(afterMiddleware, {})
-    const onEventType = `on${eventType}`
 
     ctx.stats.increment('analytics_js.integration.invoke', 1, [
       `method:${eventType}`,
@@ -202,13 +201,10 @@ export class LegacyDestination implements Plugin {
     ])
 
     try {
-      // @ts-expect-error
-      if (this.integration && this.integration[onEventType]) {
-        // @ts-expect-error
-        await asPromise(this.integration[onEventType](event))
-      } else if (this.integration && this.integration[eventType]) {
-        // @ts-expect-error
-        await asPromise(this.integration[eventType](event))
+      if (this.integration) {
+        await asPromise(
+          this.integration.invoke.call(this.integration, eventType, event)
+        )
       }
     } catch (err) {
       ctx.stats.increment('analytics_js.integration.invoke.error', 1, [

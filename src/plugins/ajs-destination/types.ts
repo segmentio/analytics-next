@@ -7,6 +7,8 @@ export interface LegacyIntegration extends Emitter {
   initialize: () => void
   loaded: () => boolean
 
+  invoke: (method: string, ...args: any[]) => unknown
+
   track?: (event: Track) => void | Promise<void>
   identify?: (event: Identify) => void | Promise<void>
   page?: (event: Page) => void | Promise<void>

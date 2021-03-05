@@ -48,14 +48,14 @@ export async function run(params: ComparisonParams) {
 
       const call = { url: request.url(), data }
 
-      // skip doubleclick as it leads to unreliable JS
+      // do not Record GA calls because it thinks ajs-next is a bot and doesn't naturally trigger requests
+      // we know GA works :)
       if (
         call.url.includes('doubleclick.net') ||
         (request.method() === 'POST' && data === null)
       ) {
         return
       }
-
       networkRequests.push(call)
     })
 

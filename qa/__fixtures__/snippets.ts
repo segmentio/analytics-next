@@ -123,7 +123,7 @@ export function classic(writekey: string) {
           t.src =
             'https://cdn.segment.com/analytics.js/v1/' +
             key +
-            '/analytics.min.js'
+            '/analytics.js'
           var n = document.getElementsByTagName('script')[0]
           n.parentNode.insertBefore(t, n)
           analytics._loadOptions = e

@@ -97,7 +97,9 @@ export class Analytics extends Emitter {
       opts,
       this.integrations
     )
+
     this.emit('track', name, data, opts)
+
     return this.dispatch(segmentEvent, cb)
   }
 
