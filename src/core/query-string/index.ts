@@ -1,16 +1,16 @@
 import { pickPrefix } from './pickPrefix'
-import { DispatchedEvent } from '../arguments-resolver'
 import { Analytics } from '../../analytics'
 import url from 'component-url'
+import { Context } from '../context'
 
 export interface QueryStringParams {
   [key: string]: string | null
 }
 
-export default function queryString(
+export function queryString(
   analytics: Analytics,
   query: string
-): Array<Promise<DispatchedEvent>> {
+): Promise<Context[]> {
   const parsed = url.parse(query)
 
   const params = parsed.query
@@ -51,5 +51,5 @@ export default function queryString(
   }
   /* eslint-enable @typescript-eslint/camelcase */
 
-  return calls
+  return Promise.all(calls)
 }

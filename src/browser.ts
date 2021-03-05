@@ -160,9 +160,7 @@ export class AnalyticsBrowser {
     }
 
     if (window.location.search) {
-      Promise.all(analytics.queryString(window.location.search)).catch(
-        console.error
-      )
+      analytics.queryString(window.location.search).catch(console.error)
     }
 
     return [analytics, ctx]

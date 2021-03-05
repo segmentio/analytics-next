@@ -17,7 +17,6 @@ import { EventFactory, Integrations, SegmentEvent, Plan } from './core/events'
 import { Plugin } from './core/plugin'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import queryString from './core/query-string'
 import type { MiddlewareFunction } from './plugins/middleware'
 import type { LegacyDestination } from './plugins/ajs-destination'
 import type { FormArgs, LinkArgs } from './core/auto-track'
@@ -318,7 +317,10 @@ export class Analytics extends Emitter {
     return this._user.anonymousId(id)
   }
 
-  queryString(query: string): Array<Promise<DispatchedEvent>> {
+  async queryString(query: string): Promise<Context[]> {
+    const { queryString } = await import(
+      /* webpackChunkName: "queryString" */ './core/query-string'
+    )
     return queryString(this, query)
   }
 
