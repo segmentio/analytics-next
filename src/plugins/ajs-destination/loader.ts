@@ -83,24 +83,12 @@ export async function unloadIntegration(
   )
 }
 
-/**
- * resolveVersion should be a temporary function. As not all sources have been
- * rebuilt and we're constantly changing the CDN settings file, we cannot
- * guarantee which `version` field (`version` or `versionSettings`) will be
- * available.
- */
 export function resolveVersion(
   settings: LegacyIntegrationConfiguration
 ): string {
-  let version = 'latest'
-  if (settings.version) version = settings.version
-
-  if (settings.versionSettings) {
-    version =
-      settings.versionSettings.override ??
-      settings.versionSettings.version ??
-      'latest'
-  }
-
-  return version
+  return (
+    settings.versionSettings?.override ??
+    settings.versionSettings?.version ??
+    'latest'
+  )
 }

@@ -22,10 +22,6 @@ const cdnResponse: LegacySettings = {
         componentTypes: ['browser'],
       },
     },
-    WithLegacyVersion: {
-      version: '3.0.7',
-      type: 'browser',
-    },
     WithVersionSettings: {
       versionSettings: {
         version: '1.2.3',
@@ -84,32 +80,25 @@ describe('loading ajsDestinations', () => {
 
   // This test should temporary. Once we deprecate `version`, we can change it
   // to `it('loads version overrides')`
-  it('considers both legacy and new version formats', async () => {
+  it('loads version overrides', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
-    const withLegacyVersion = destinations.find(
-      (d) => d.name === 'WithLegacyVersion'
-    )
+
     const withVersionSettings = destinations.find(
       (d) => d.name === 'WithVersionSettings'
     )
+
     const withVersionOverrides = destinations.find(
       (d) => d.name === 'WithVersionOverrides'
     )
+
     const withNoVersion = destinations.find((d) => d.name === 'WithNoVersion')
 
-    expect(withLegacyVersion?.version).toBe('3.0.7')
     expect(withVersionSettings?.version).toBe('1.2.3')
     expect(withVersionOverrides?.version).toBe('9.9.9')
     expect(withNoVersion?.version).toBe('latest')
   })
 
   describe('versionSettings.components', () => {
-    it('loads legacy ajs destinations from cdn', async () => {
-      const destinations = await ajsDestinations(cdnResponse, {}, {})
-      // ignores segment.io
-      expect(destinations.length).toBe(6)
-    })
-
     it('ignores [componentType:browser] when bundlingStatus is unbundled', async () => {
       const destinations = await ajsDestinations(
         {
@@ -173,7 +162,7 @@ describe('loading ajsDestinations', () => {
   it('loads type:browser legacy ajs destinations from cdn', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
     // ignores segment.io
-    expect(destinations.length).toBe(6)
+    expect(destinations.length).toBe(5)
   })
 
   it('ignores type:browser when bundlingStatus is unbundled', async () => {

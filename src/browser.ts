@@ -15,9 +15,6 @@ import { segmentio, SegmentioSettings } from './plugins/segmentio'
 import { validation } from './plugins/validation'
 
 export interface LegacyIntegrationConfiguration {
-  /* @deprecated - This does not indicate version types anymore */
-  version?: string
-
   /* @deprecated - This does not indicate browser types anymore */
   type?: string
 
