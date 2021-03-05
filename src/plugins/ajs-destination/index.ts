@@ -1,4 +1,4 @@
-import { Integrations, SegmentEvent } from '@/core/events'
+import { Integrations, JSONValue, SegmentEvent } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
@@ -54,8 +54,8 @@ async function flushQueue(
 export class LegacyDestination implements Plugin {
   name: string
   version: string
-  settings: object
-  options: InitOptions
+  settings: Record<string, JSONValue>
+  options: InitOptions = {}
   type: Plugin['type'] = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
 
@@ -72,12 +72,19 @@ export class LegacyDestination implements Plugin {
   constructor(
     name: string,
     version: string,
-    settings: object = {},
+    settings: Record<string, JSONValue> = {},
     options: InitOptions
   ) {
     this.name = name
     this.version = version
-    this.settings = settings
+    this.settings = { ...settings }
+
+    // AJS-Renderer sets an extraneous `type` setting that clobbers
+    // existing type defaults. We need to remove it if it's present
+    if (this.settings['type'] && this.settings['type'] === 'browser') {
+      delete this.settings['type']
+    }
+
     this.options = options
     this.buffer = new PersistedPriorityQueue(4, `dest-${name}`)
 

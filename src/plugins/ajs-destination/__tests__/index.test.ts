@@ -260,6 +260,33 @@ describe('loading ajsDestinations', () => {
   })
 })
 
+describe('settings', () => {
+  it('does not delete type=any', () => {
+    const dest = new LegacyDestination(
+      'Yandex',
+      'latest',
+      {
+        type: 'custom',
+      },
+      {}
+    )
+    expect(dest.settings['type']).toEqual('custom')
+  })
+
+  it('deletes type=browser', () => {
+    const dest = new LegacyDestination(
+      'Amplitude',
+      'latest',
+      {
+        type: 'browser',
+      },
+      {}
+    )
+
+    expect(dest.settings['type']).toBeUndefined()
+  })
+})
+
 describe('remote loading', () => {
   const loadAmplitude = async (): Promise<LegacyDestination> => {
     const ajs = new Analytics({

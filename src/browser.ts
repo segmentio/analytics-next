@@ -31,6 +31,9 @@ export interface LegacyIntegrationConfiguration {
 
   // Segment.io specific
   retryQueue?: boolean
+
+  // any extra unknown settings
+  [key: string]: any
 }
 
 export interface LegacySettings {
