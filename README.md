@@ -7,9 +7,9 @@ Client Side Instrumentation Platform.
 ### Development
 
 ```sh
-git clone git@github.com:segmentio/analytics-next.git
-cd analytics-next
-make dev
+$ git clone git@github.com:segmentio/analytics-next.git
+$ cd analytics-next
+$ make dev
 ```
 
 ### Enabling AJSN
@@ -17,7 +17,7 @@ make dev
 To enable analytics-next for a source you must first add your workspace to flagon. To do this, run the following command in slack
 
 ```sh
-/flagon-{stage/prod} -f app-ui-analytics-js -n analytics-next {workspaceID}
+$ /flagon-{stage/prod} -f app-ui-analytics-js -n analytics-next {workspaceID}
 ```
 
 or manually add your workspace ID to the overrides list in the flagon UI (ie. https://flagon.segment.com/families/app-ui-analytics-js/flags/analytics-next).
@@ -28,7 +28,51 @@ Once this is done you can navigate to the Settings > Analytics.js tab of your ja
 The tests are written in [Jest](https://jestjs.io) and can be run be using `make test-unit`
 Linting is done using [ESLint](https://github.com/typescript-eslint/typescript-eslint/) and can be run using `make lint`.
 
-To compare payloads of analytics-next and analytics-classic to check parity, see https://github.com/segmentio/analytics-next/blob/master/e2e-tests/README.md
+### Unit Testing
+
+Please write small, and concise unit tests for every feature you work on.
+
+```sh
+$ make test-unit # runs all tests
+$ yarn jest src/<path> # runs a specific test or tests in a folder
+```
+
+### Advanced QA
+
+Analytics-Next contains a compreehensive QA test suite that verifies that E2E functionality is compatible with analytics.js classic.
+
+1. Compile Analytics-Next
+
+```sh
+$ make build # any time you make changes to Analytics-Next
+## or
+$ yarn umd --watch ## (in a separate tab) if you'd like
+```
+
+2. Run QA tests:
+
+```sh
+$ make test-qa ## if you'd like to run all tests in one go (generally slower)
+```
+
+or run individual tests (much faster)
+
+```sh
+$ yarn jest --runTestsByPath qa/__tests__/<test_path>
+```
+
+2.1. QAing Analytics-Next against all destinations
+
+```sh
+make test-qa-destinations
+```
+
+2.1.1 Debugging one specific destination
+
+```sh
+# Will open one Chrome instance for AJS Classic and one for AJS Next
+$ make test-qa-destinations DESTINATION=amplitude DEBUG=true
+```
 
 ## Releasing
 

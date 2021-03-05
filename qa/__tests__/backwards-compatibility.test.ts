@@ -1,7 +1,7 @@
 import { difference } from 'lodash'
-import { browser } from './browser'
-import { run } from './runner'
-import { server } from './server'
+import { browser } from '../lib/browser'
+import { run } from '../lib/runner'
+import { server } from '../lib/server'
 
 describe('Backwards compatibility', () => {
   test.concurrent('provides all same properties', async () => {

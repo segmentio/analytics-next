@@ -1,10 +1,13 @@
 import { difference } from 'lodash'
-import { browser } from './browser'
-import { run } from './runner'
-import { server } from './server'
-import { samples } from './__fixtures__/sources'
+import { browser } from '../lib/browser'
+import { run } from '../lib/runner'
+import { server } from '../lib/server'
+import { samples } from '../__fixtures__/sources'
 
-const destinations = Object.keys(samples)
+let destinations = Object.keys(samples)
+if (process.env.DESTINATION) {
+  destinations = [process.env.DESTINATION]
+}
 
 jest.setTimeout(100000)
 

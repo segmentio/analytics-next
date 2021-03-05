@@ -22,7 +22,7 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - yarn install
       - yarn add --dev playwright
-      - make test-e2e
+      - make test-qa
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

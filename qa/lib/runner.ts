@@ -1,6 +1,8 @@
 import { Browser } from 'playwright'
 import { JSONValue } from '../../src/core/events'
 
+const DEBUG = process.env.DEBUG ?? false
+
 type ComparisonParams = {
   browser: Browser
   serverURL: string
@@ -56,6 +58,7 @@ export async function run(params: ComparisonParams) {
       ) {
         return
       }
+
       networkRequests.push(call)
     })
 
@@ -86,7 +89,7 @@ export async function run(params: ComparisonParams) {
     )
 
     await page.waitForLoadState('networkidle')
-    await page.close({ runBeforeUnload: true })
+    !DEBUG && (await page.close({ runBeforeUnload: true }))
 
     return { networkRequests, cookies, localStorage, codeEvaluation }
   }

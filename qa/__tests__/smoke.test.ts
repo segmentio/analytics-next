@@ -1,21 +1,15 @@
 import flat from 'flat'
 import { difference, intersection, without } from 'lodash'
 import { JSONValue } from '../../src/core/events'
-import { browser } from './browser'
-import { run } from './runner'
-import { objectSchema } from './schema'
-import { server, startLocalServer } from './server'
-import { sources } from './__fixtures__/sources'
+import { browser } from '../lib/browser'
+import { run } from '../lib/runner'
+import { objectSchema } from '../lib/schema'
+import { server, startLocalServer } from '../lib/server'
+import { sources } from '../__fixtures__/sources'
 
 type RemovePromise<T> = T extends Promise<infer U> ? U : T
 
-let url: string
-
 jest.setTimeout(100000)
-
-beforeAll(async () => {
-  url = await startLocalServer()
-})
 
 describe('Smoke Tests', () => {
   const allResults: Record<string, RemovePromise<ReturnType<typeof run>>> = {}

@@ -16,6 +16,11 @@ build: ## Builds typescript files and UMD library
 	yarn clean && yarn concurrently "yarn umd" "yarn pkg"
 .PHONY: build
 
+build-browser:
+	@rm -rf dist/umd
+	@yarn umd --display=none
+.PHONY: build-browser
+
 build-prod: ## Builds libraries in prod mode
 	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn pkg"
 .PHONY: build
@@ -38,11 +43,15 @@ test-coverage: node_modules ## Runs unit tests with coverage
 	$(BIN)/jest --coverage --forceExit
 .PHONY: test-coverage
 
-test-e2e: build ## Runs all integration tests in a single command
-	$(BIN)/jest --runTestsByPath qa/*.test.ts ${args}
+test-qa: build-browser ## Runs all QA tests in a single command
+	$(BIN)/jest --runTestsByPath qa/__tests__/*.test.ts ${args}
 .PHONY: test-coverage
 
-test-integration: build ## Runs all integration tests in a single command
+test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTINATION=amplitude DEBUG=true
+	$(BIN)/jest --runTestsByPath qa/__tests__/destinations.test.ts ${args} ${DESTINATION} ${DEBUG}
+.PHONY: test-coverage
+
+test-integration: build-browser ## Runs all integration tests in a single command
 	$(BIN)/jest --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
