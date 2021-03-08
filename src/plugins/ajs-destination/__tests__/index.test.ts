@@ -42,6 +42,10 @@ const cdnResponse: LegacySettings = {
     Segmentio: {
       type: 'browser',
     },
+    Iterable: {
+      type: 'browser',
+      name: 'Iterable',
+    },
   },
   middlewareSettings: {
     routingRules: [
@@ -78,8 +82,6 @@ describe('loading ajsDestinations', () => {
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
   })
 
-  // This test should temporary. Once we deprecate `version`, we can change it
-  // to `it('loads version overrides')`
   it('loads version overrides', async () => {
     const destinations = await ajsDestinations(cdnResponse, {}, {})
 
@@ -96,6 +98,13 @@ describe('loading ajsDestinations', () => {
     expect(withVersionSettings?.version).toBe('1.2.3')
     expect(withVersionOverrides?.version).toBe('9.9.9')
     expect(withNoVersion?.version).toBe('latest')
+  })
+
+  // This test should temporary. It must be deleted once we fix the Iterable metadata
+  it('ignores Iterable', async () => {
+    const destinations = await ajsDestinations(cdnResponse, {}, {})
+    const iterable = destinations.find((d) => d.name === 'Iterable')
+    expect(iterable).toBeUndefined()
   })
 
   describe('versionSettings.components', () => {

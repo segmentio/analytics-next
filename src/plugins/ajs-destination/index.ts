@@ -298,7 +298,10 @@ export async function ajsDestinations(
         (type === 'browser' ||
           versionSettings?.componentTypes?.includes('browser'))
 
-      if (!deviceMode && name !== 'Segment.io') {
+      // checking for iterable is a quick fix we need in place to prevent
+      // errors showing Iterable as a failed destiantion. Ideally, we should
+      // fix the Iterable metadata instead, but that's a longer process.
+      if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
         return
       }
 
