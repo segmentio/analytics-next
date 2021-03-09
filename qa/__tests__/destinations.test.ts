@@ -4,12 +4,12 @@ import { run } from '../lib/runner'
 import { server } from '../lib/server'
 import { samples } from '../__fixtures__/sources'
 
+jest.setTimeout(100000)
+
 let destinations = Object.keys(samples)
 if (process.env.DESTINATION) {
   destinations = [process.env.DESTINATION]
 }
-
-jest.setTimeout(100000)
 
 describe('Destination Tests', () => {
   // needs to be written as a string so it's not transpiled
@@ -25,7 +25,6 @@ describe('Destination Tests', () => {
     }, res))
   })()`
 
-  // This won't be run actively in CI until all destinations and test cases are 100% fixed
   test.concurrent.each(destinations)(`%p`, async (destination) => {
     const key = destination as keyof typeof samples
     const writeKey = samples[key][0]
