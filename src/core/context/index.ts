@@ -36,11 +36,13 @@ let remoteMetrics: RemoteMetrics | undefined
 
 export class Context implements AbstractContext {
   private _event: SegmentEvent
+  private _attempts: number
   public logger = new Logger()
   public stats: Stats
   private _id: string
 
   constructor(event: SegmentEvent, id?: string) {
+    this._attempts = 0
     this._event = event
     this._id = id ?? uuid()
     this.stats = new Stats(remoteMetrics)
@@ -80,6 +82,14 @@ export class Context implements AbstractContext {
 
   public set event(evt: SegmentEvent) {
     this._event = evt
+  }
+
+  public get attempts(): number {
+    return this._attempts
+  }
+
+  public set attempts(attempts: number) {
+    this._attempts = attempts
   }
 
   public updateEvent(path: string, val: unknown): SegmentEvent {

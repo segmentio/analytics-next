@@ -123,11 +123,12 @@ export class EventQueue extends Emitter {
       async () => {
         const start = new Date().getTime()
         const ctx = this.queue.pop()
-        ctx?.updateEvent('context.attempts', this.queue.getAttempts(ctx))
 
         if (!ctx) {
           return
         }
+
+        ctx.attempts = this.queue.getAttempts(ctx)
 
         try {
           await this.flushOne(ctx)

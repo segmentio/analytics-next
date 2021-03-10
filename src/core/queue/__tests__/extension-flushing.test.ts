@@ -207,9 +207,6 @@ describe('Plugin flushing', () => {
         },
         Object {
           "extras": Object {
-            "context": Object {
-              "attempts": 1,
-            },
             "type": "track",
           },
           "message": "Delivered",
@@ -275,9 +272,6 @@ describe('Plugin flushing', () => {
         },
         Object {
           "extras": Object {
-            "context": Object {
-              "attempts": 1,
-            },
             "type": "track",
           },
           "message": "Delivered",

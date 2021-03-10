@@ -142,7 +142,7 @@ describe('Flushing', () => {
         ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
-          if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
+          if (ctx === fruitBasket && ctx.attempts === 1) {
             throw new Error('aaay')
           }
 
@@ -170,7 +170,7 @@ describe('Flushing', () => {
     expect(eq.queue.length).toBe(0)
 
     expect(flushed).toEqual([fruitBasket])
-    expect(flushed[0].event.context?.attempts).toEqual(2)
+    expect(flushed[0].attempts).toEqual(2)
   })
 
   test('does not retry non retriable cancelations', async () => {
@@ -211,7 +211,7 @@ describe('Flushing', () => {
         ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
-          if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
+          if (ctx === fruitBasket && ctx.attempts === 1) {
             ctx.cancel(new ContextCancelation({ retry: true }))
           }
 
@@ -239,7 +239,7 @@ describe('Flushing', () => {
     expect(eq.queue.length).toBe(0)
 
     expect(flushed).toEqual([fruitBasket])
-    expect(flushed[0].event.context?.attempts).toEqual(2)
+    expect(flushed[0].attempts).toEqual(2)
   })
 
   test('client: can block on delivery', async () => {
@@ -252,7 +252,7 @@ describe('Flushing', () => {
         ...testPlugin,
         track: (ctx) => {
           // only fail first attempt
-          if (ctx === fruitBasket && ctx.event.context?.attempts === 1) {
+          if (ctx === fruitBasket && ctx.attempts === 1) {
             throw new Error('aaay')
           }
 
@@ -276,9 +276,9 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(0)
 
-    expect(fruitBasketCtx.event.context?.attempts).toBe(2)
-    expect(basketViewCtx.event.context?.attempts).toBe(1)
-    expect(shopperCtx.event.context?.attempts).toBe(1)
+    expect(fruitBasketCtx.attempts).toBe(2)
+    expect(basketViewCtx.attempts).toBe(1)
+    expect(shopperCtx.attempts).toBe(1)
   })
 })
 
