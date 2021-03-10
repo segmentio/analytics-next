@@ -15,7 +15,7 @@ export class EventFactory {
     event: string,
     properties?: SegmentEvent['properties'],
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
@@ -23,7 +23,7 @@ export class EventFactory {
       type: 'track' as const,
       properties,
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
     })
   }
 
@@ -32,13 +32,13 @@ export class EventFactory {
     page: string | null,
     properties?: object,
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'page' as const,
       properties: { ...properties },
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
     }
 
     if (category !== null) {
@@ -62,13 +62,13 @@ export class EventFactory {
     screen: string | null,
     properties?: object,
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'screen' as const,
       properties: { ...properties },
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
     }
 
     if (category !== null) {
@@ -89,7 +89,7 @@ export class EventFactory {
     userId: ID,
     traits?: SegmentEvent['traits'],
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
@@ -97,7 +97,7 @@ export class EventFactory {
       userId,
       traits,
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
     })
   }
 
@@ -105,14 +105,14 @@ export class EventFactory {
     groupId: ID,
     traits?: SegmentEvent['traits'],
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,
       traits,
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
       groupId,
     })
   }
@@ -121,13 +121,13 @@ export class EventFactory {
     to: string,
     from: string | null,
     options?: Options,
-    integrations?: Integrations
+    globalIntegrations?: Integrations
   ): SegmentEvent {
     const base: Partial<SegmentEvent> = {
       userId: to,
       type: 'alias' as const,
       options: { ...options },
-      integrations: { ...integrations },
+      integrations: { ...globalIntegrations },
     }
 
     if (from !== null) {
@@ -186,10 +186,25 @@ export class EventFactory {
   }
 
   public normalize(event: SegmentEvent): SegmentEvent {
+    const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
+      (integrationNames, name) => {
+        return {
+          ...integrationNames,
+          [name]: Boolean(event.integrations?.[name]),
+        }
+      },
+      {} as Record<string, boolean>
+    )
+
+    // This is pretty trippy, but here's what's going on:
+    // - a) We don't pass initial integration options as part of the event, only if they're true or false
+    // - b) We do accept per integration overrides (like integrations.Amplitude.sessionId) at the event level
+    // Hence the need to convert base integration options to booleans, but maintain per event integration overrides
     const allIntegrations = {
-      // Base config integrations object
-      ...event.integrations,
-      // Per event overrides
+      // Base config integrations object as booleans
+      ...integrationBooleans,
+
+      // Per event overrides, for things like amplitude sessionId, for example
       ...event.options?.integrations,
     }
 

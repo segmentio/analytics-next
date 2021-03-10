@@ -154,6 +154,41 @@ describe('Event Factory', () => {
       })
     })
 
+    test('do not send integration settings overrides from initialization', () => {
+      const track = factory.track(
+        'Order Completed',
+        shoes,
+        {
+          integrations: {
+            Amplitude: {
+              sessionId: 'session_123',
+            },
+          },
+        },
+        {
+          'Segment.io': {
+            apiHost: 'custom',
+          },
+          GoogleAnalytics: false,
+
+          'Customer.io': {},
+        }
+      )
+
+      expect(track.integrations).toEqual({
+        // do not pass Segment.io global settings
+        'Segment.io': true,
+        // accept amplitude event level settings
+        Amplitude: {
+          sessionId: 'session_123',
+        },
+        // pass along google analytics setting
+        GoogleAnalytics: false,
+        // empty objects are still valid
+        'Customer.io': true,
+      })
+    })
+
     test('should move foreign options into `context`', () => {
       const track = factory.track('Order Completed', shoes, {
         opt1: true,
