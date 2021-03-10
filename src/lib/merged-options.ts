@@ -24,6 +24,7 @@ export function mergedOptions(
       }
 
       return {
+        ...overrides,
         [integration]: {},
       }
     },

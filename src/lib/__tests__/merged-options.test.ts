@@ -91,4 +91,33 @@ describe(mergedOptions, () => {
       }
     `)
   })
+
+  it('works with boolean overrides', () => {
+    const cdn = {
+      integrations: {
+        'Segment.io': { apiHost: 'api.segment.io' },
+        'Google Tag Manager': {
+          ghost: '👻',
+        },
+      },
+    }
+    const overrides = {
+      integrations: {
+        All: false,
+        'Segment.io': { apiHost: 'mgs.instacart.com/v2' },
+        'Google Tag Manager': true,
+      },
+    }
+
+    expect(mergedOptions(cdn, overrides)).toMatchInlineSnapshot(`
+      Object {
+        "Google Tag Manager": Object {
+          "ghost": "👻",
+        },
+        "Segment.io": Object {
+          "apiHost": "mgs.instacart.com/v2",
+        },
+      }
+    `)
+  })
 })
