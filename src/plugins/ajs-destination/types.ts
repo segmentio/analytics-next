@@ -23,4 +23,5 @@ export interface LegacyIntegration extends Emitter {
   ongroup?: (event: Group) => void | Promise<void>
 
   _assumesPageview?: boolean
+  options?: object
 }

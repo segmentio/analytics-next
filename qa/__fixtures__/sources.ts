@@ -1,5 +1,5 @@
 export const sources = [
-  '***REMOVED***',
+  '***REMOVED***', // instacart. overrides the segmentio host.
   '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',

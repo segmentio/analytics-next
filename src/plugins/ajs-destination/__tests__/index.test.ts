@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { ajsDestinations, LegacyDestination } from '..'
+import jsdom from 'jsdom'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import jsdom from 'jsdom'
-import { Context } from '../../../core/context'
+import { ajsDestinations, LegacyDestination } from '..'
 import { Analytics } from '../../../analytics'
-import { Plan } from '../../../core/events'
 import { LegacySettings } from '../../../browser'
+import { Context } from '../../../core/context'
+import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
 
 const cdnResponse: LegacySettings = {
@@ -559,5 +559,73 @@ describe('plan', () => {
       new Context({ type: 'page', event: 'Not Track Event' })
     )
     expect(ctx.event.integrations).toEqual({})
+  })
+})
+
+describe('option overrides', () => {
+  beforeEach(async () => {
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new jsdom.JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
+  })
+
+  it('accepts settings overrides from options', async () => {
+    const cdnSettings = {
+      integrations: {
+        Amplitude: {
+          type: 'browser',
+          apiKey: '123',
+          secondOption: '👻',
+        },
+      },
+    }
+
+    const initOptions = {
+      integrations: {
+        Amplitude: {
+          apiKey: 'abc',
+          thirdOption: '🤠',
+        },
+      },
+    }
+
+    const destinations = await ajsDestinations(cdnSettings, {}, initOptions)
+    const amplitude = destinations[0]
+
+    await amplitude.load(Context.system(), {} as Analytics)
+    await amplitude.ready()
+
+    expect(amplitude.settings).toMatchObject({
+      apiKey: 'abc', // overriden
+      secondOption: '👻', // merged from cdn settings
+      thirdOption: '🤠', // merged from init options
+    })
+
+    expect(amplitude.integration?.options).toEqual(
+      expect.objectContaining({
+        apiKey: 'abc', // overriden
+        secondOption: '👻', // merged from cdn settings
+        thirdOption: '🤠', // merged from init options
+      })
+    )
   })
 })

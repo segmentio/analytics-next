@@ -9,6 +9,7 @@ import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../core/connection'
+import * as SegmentPlugin from '../plugins/segmentio'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -894,5 +895,32 @@ describe('retries', () => {
     ajs.track('event')
 
     expect(ajs.queue.queue.length).toBe(0)
+  })
+})
+
+describe('Segment.io overrides', () => {
+  it('allows for overriding Segment.io settings', async () => {
+    jest.spyOn(SegmentPlugin, 'segmentio')
+
+    await AnalyticsBrowser.load(
+      { writeKey },
+      {
+        integrations: {
+          'Segment.io': {
+            apiHost: 'https://my.endpoint.com',
+            anotherSettings: '👻',
+          },
+        },
+      }
+    )
+
+    expect(SegmentPlugin.segmentio).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        apiHost: 'https://my.endpoint.com',
+        anotherSettings: '👻',
+      }),
+      expect.anything()
+    )
   })
 })

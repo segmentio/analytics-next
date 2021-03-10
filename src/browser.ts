@@ -9,6 +9,7 @@ import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
+import { mergedOptions } from './lib/merged-options'
 import { pageEnrichment } from './plugins/page-enrichment'
 import type { RoutingRule } from './plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from './plugins/segmentio'
@@ -75,7 +76,7 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {
-      console.warn('Failed to load legacy settings', err)
+      console.warn('Failed to load settings', err)
       return legacySettings
     })
 }
@@ -99,7 +100,6 @@ export class AnalyticsBrowser {
       legacySettings.integrations['Segment.io']?.retryQueue ?? true
 
     const opts: InitOptions = { retryQueue, ...options }
-
     const analytics = new Analytics(settings, opts)
 
     const plugins = settings.plugins ?? []
@@ -125,6 +125,8 @@ export class AnalyticsBrowser {
       })
     }
 
+    const mergedSettings = mergedOptions(legacySettings, options)
+
     const toRegister = [
       validation,
       pageEnrichment,
@@ -132,7 +134,7 @@ export class AnalyticsBrowser {
       ...remotePlugins,
       segmentio(
         analytics,
-        legacySettings.integrations['Segment.io'] as SegmentioSettings,
+        mergedSettings['Segment.io'] as SegmentioSettings,
         legacySettings.integrations
       ),
     ]

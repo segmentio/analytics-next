@@ -8,7 +8,7 @@ export type JSONArray = Array<JSONValue>
 
 export type Integrations = {
   All?: boolean
-  [integration: string]: boolean | undefined
+  [integration: string]: boolean | JSONObject | undefined
 }
 
 export type Options = {

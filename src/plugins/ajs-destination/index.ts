@@ -1,4 +1,9 @@
-import { Integrations, JSONValue, SegmentEvent } from '@/core/events'
+import {
+  Integrations,
+  JSONObject,
+  JSONValue,
+  SegmentEvent,
+} from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../analytics'
 import { LegacySettings } from '../../browser'
@@ -8,6 +13,7 @@ import { isServer } from '../../core/environment'
 import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
+import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
@@ -276,6 +282,12 @@ export async function ajsDestinations(
   const routingRules = settings.middlewareSettings?.routingRules ?? []
   const routingMiddleware = tsubMiddleware(routingRules)
 
+  // merged remote CDN settings with user provided options
+  const integrationOptions = mergedOptions(settings, options ?? {}) as Record<
+    string,
+    JSONObject
+  >
+
   return Object.entries(settings.integrations)
     .map(([name, integrationSettings]) => {
       if (name.startsWith('Segment')) {
@@ -309,7 +321,7 @@ export async function ajsDestinations(
       const destination = new LegacyDestination(
         name,
         version,
-        integrationSettings,
+        integrationOptions[name],
         options as object
       )
 
