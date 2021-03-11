@@ -20,9 +20,6 @@
   "publishConfig": {
     "access": "restricted"
   },
-  "engines": {
-    "node": ">=12.16"
-  },
   "size-limit": [
     {
       "path": "dist/umd/index.js",
