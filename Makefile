@@ -79,6 +79,7 @@ release: version ## Releases Analytics Next to stage
 release-prod: version ## Releases Analytics Next to production
 	make build-prod
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.js
+	npm publish
 .PHONY: release-prod
 
 handshake:
