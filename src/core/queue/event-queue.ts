@@ -117,38 +117,43 @@ export class EventQueue extends Emitter {
   async flush(): Promise<Context[]> {
     const flushed: Context[] = []
     const failed: Context[] = []
+    const toFlush: Context[] = []
 
     await pWhile(
       () => this.queue.length > 0 && isOnline(),
       async () => {
-        const start = new Date().getTime()
         const ctx = this.queue.pop()
-
         if (!ctx) {
           return
         }
 
         ctx.attempts = this.queue.getAttempts(ctx)
-
-        try {
-          await this.flushOne(ctx)
-          const done = new Date().getTime() - start
-          ctx.stats.gauge('delivered', done)
-          ctx.log('debug', 'Delivered', ctx.event)
-
-          flushed.push(ctx)
-          this.emit('flush', ctx, true)
-        } catch (err) {
-          ctx.log('error', 'Failed to deliver', err)
-          ctx.stats.increment('delivery_failed')
-
-          const notRetriable =
-            err instanceof ContextCancelation && err.retry === false
-          const retriable = !notRetriable
-          retriable && failed.push(ctx)
-        }
+        toFlush.push(ctx)
       }
     )
+
+    const flushes = toFlush.map(async (ctx) => {
+      const start = new Date().getTime()
+      try {
+        await this.flushOne(ctx)
+        const done = new Date().getTime() - start
+        ctx.stats.gauge('delivered', done)
+        ctx.log('debug', 'Delivered', ctx.event)
+
+        flushed.push(ctx)
+        this.emit('flush', ctx, true)
+      } catch (err) {
+        ctx.log('error', 'Failed to deliver', err)
+        ctx.stats.increment('delivery_failed')
+
+        const notRetriable =
+          err instanceof ContextCancelation && err.retry === false
+        const retriable = !notRetriable
+        retriable && failed.push(ctx)
+      }
+    })
+
+    await Promise.all(flushes)
 
     // re-queue all failed
     failed.forEach((ctx) => {
