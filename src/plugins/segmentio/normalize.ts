@@ -101,8 +101,8 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
 export function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
-  settings: SegmentioSettings,
-  integrations: LegacySettings['integrations']
+  settings?: SegmentioSettings,
+  integrations?: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
   const query = window.location.search
@@ -111,7 +111,7 @@ export function normalize(
   const ctx = json.context
 
   delete json.options
-  json.writeKey = settings.apiKey
+  json.writeKey = settings?.apiKey
   ctx.userAgent = window.navigator.userAgent
 
   // @ts-ignore
@@ -157,7 +157,7 @@ export function normalize(
     }
   }
 
-  const configIds = settings.maybeBundledConfigIds ?? {}
+  const configIds = settings?.maybeBundledConfigIds ?? {}
   const bundledConfigIds: string[] = []
 
   bundled.sort().forEach((name) => {
@@ -166,13 +166,13 @@ export function normalize(
     })
   })
 
-  if (settings.addBundledMetadata !== false) {
+  if (settings?.addBundledMetadata !== false) {
     json._metadata = {
       ...json._metadata,
       bundled: bundled.sort(),
       unbundled: unbundled.sort(),
-      bundledConfigIds: settings.bundledConfigIds ?? [],
-      unbundledConfigIds: settings.unbundledConfigIds ?? [],
+      bundledConfigIds: settings?.bundledConfigIds ?? [],
+      unbundledConfigIds: settings?.unbundledConfigIds ?? [],
       bundledIds: bundledConfigIds,
     }
   }

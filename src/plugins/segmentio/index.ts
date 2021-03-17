@@ -34,10 +34,10 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
 
 export function segmentio(
   analytics: Analytics,
-  settings: SegmentioSettings,
-  integrations: LegacySettings['integrations']
+  settings?: SegmentioSettings,
+  integrations?: LegacySettings['integrations']
 ): Plugin {
-  const remote = `https://${settings.apiHost ?? 'api.segment.io/v1'}`
+  const remote = `https://${settings?.apiHost ?? 'api.segment.io/v1'}`
 
   async function send(ctx: Context): Promise<Context> {
     const path = ctx.event.type.charAt(0)

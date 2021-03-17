@@ -11,6 +11,7 @@ import { Plan } from './core/events'
 import { MetricsOptions } from './core/stats/remote-metrics'
 import { mergedOptions } from './lib/merged-options'
 import { pageEnrichment } from './plugins/page-enrichment'
+import { remoteLoader, RemotePlugin } from './plugins/remote-loader'
 import type { RoutingRule } from './plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from './plugins/segmentio'
 import { validation } from './plugins/validation'
@@ -49,6 +50,8 @@ export interface LegacySettings {
   plan?: Plan
 
   legacyVideoPluginsEnabled?: boolean
+
+  remotePlugins?: RemotePlugin[]
 }
 
 function getCDN(): string | undefined {
@@ -105,7 +108,7 @@ export class AnalyticsBrowser {
     const plugins = settings.plugins ?? []
     Context.initMetrics(legacySettings.metrics)
 
-    const remotePlugins = hasLegacyDestinations(legacySettings)
+    const legacyDestinations = hasLegacyDestinations(legacySettings)
       ? await import(
           /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
         ).then((mod) => {
@@ -126,11 +129,13 @@ export class AnalyticsBrowser {
     }
 
     const mergedSettings = mergedOptions(legacySettings, options)
+    const remotePlugins = await remoteLoader(legacySettings)
 
     const toRegister = [
       validation,
       pageEnrichment,
       ...plugins,
+      ...legacyDestinations,
       ...remotePlugins,
       segmentio(
         analytics,

@@ -54,7 +54,8 @@ export async function loadIntegration(
   window[`${pathName}Loader`]()
 
   // @ts-ignore
-  let integrationBuilder = window[`${pathName}Integration`]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let integrationBuilder = window[`${pathName}Integration`] as any
 
   // GA and Appcues use a different interface to instantiating integrations
   if (integrationBuilder.Integration) {
@@ -67,7 +68,7 @@ export async function loadIntegration(
     integrationBuilder = integrationBuilder.Integration
   }
 
-  const integration = new integrationBuilder(settings)
+  const integration = new integrationBuilder(settings) as LegacyIntegration
   integration.analytics = analyticsInstance
 
   return integration
