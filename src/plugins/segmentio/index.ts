@@ -1,23 +1,31 @@
 import { Facade } from '@segment/facade'
-import fetch from 'unfetch'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { toFacade } from '../../lib/to-facade'
+import standard from './fetch-dispatcher'
+import batch from './batched-dispatcher'
 import { normalize } from './normalize'
 
 export interface SegmentioSettings {
   apiKey: string
   apiHost?: string
+
   addBundledMetadata?: boolean
   unbundledIntegrations?: string[]
   bundledConfigIds?: string[]
   unbundledConfigIds?: string[]
-  crossDomainIdServers?: string[]
-  saveCrossDomainIdInLocalStorage?: boolean
-  deleteCrossDomainId?: boolean
+
   maybeBundledConfigIds?: Record<string, string[]>
+
+  deliveryStrategy?: {
+    strategy?: 'standard' | 'batching'
+    config?: {
+      size?: number
+      timeout?: number
+    }
+  }
 }
 
 type JSON = ReturnType<Facade['json']>
@@ -37,7 +45,13 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  const remote = `https://${settings?.apiHost ?? 'api.segment.io/v1'}`
+  const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
+  const remote = `https://${apiHost}`
+
+  const client =
+    settings?.deliveryStrategy?.strategy === 'batching'
+      ? batch(apiHost, settings?.deliveryStrategy?.config)
+      : standard()
 
   async function send(ctx: Context): Promise<Context> {
     const path = ctx.event.type.charAt(0)
@@ -51,11 +65,12 @@ export function segmentio(
       json = onAlias(analytics, json)
     }
 
-    return fetch(`${remote}/${path}`, {
-      headers: { 'Content-Type': 'text/plain' },
-      method: 'post',
-      body: JSON.stringify(normalize(analytics, json, settings, integrations)),
-    }).then(() => ctx)
+    return client
+      .dispatch(
+        `${remote}/${path}`,
+        normalize(analytics, json, settings, integrations)
+      )
+      .then(() => ctx)
   }
 
   return {
