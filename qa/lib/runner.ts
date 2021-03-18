@@ -21,7 +21,7 @@ export async function run(params: ComparisonParams) {
     const context = await browser.newContext()
     const page = await context.newPage()
 
-    page.route('**', (route) => {
+    page.route('**', async (route) => {
       const request = route.request()
 
       if (
@@ -35,10 +35,15 @@ export async function run(params: ComparisonParams) {
       }
 
       if (request.resourceType() === 'script') {
-        route.continue()
+        await route.continue()
       } else {
-        // do not actually send data
-        route.fulfill({ body: 'ok!' })
+        try {
+          // do not actually send data
+          await route.fulfill({ body: 'ok!' })
+        } catch (_err) {
+          // there are cases where the runner finishes so fast that requests
+          // are still in flight when the browser is closing
+        }
       }
 
       let data: JSONValue
