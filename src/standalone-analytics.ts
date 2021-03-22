@@ -17,7 +17,6 @@ type StandaloneAnalytics = Analytics & {
 declare global {
   interface Window {
     analytics: StandaloneAnalytics
-    // [libraryName: string]: unknown
   }
 }
 
