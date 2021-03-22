@@ -171,8 +171,6 @@ export function normalize(
       ...json._metadata,
       bundled: bundled.sort(),
       unbundled: unbundled.sort(),
-      bundledConfigIds: settings?.bundledConfigIds ?? [],
-      unbundledConfigIds: settings?.unbundledConfigIds ?? [],
       bundledIds: bundledConfigIds,
     }
   }
