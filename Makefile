@@ -72,7 +72,7 @@ version:
 .PHONY: version
 
 release: version ## Releases Analytics Next to stage
-	make build
+	make build-prod
 	aws-okta exec plat-write -- ./scripts/release.js
 .PHONY: release
 
