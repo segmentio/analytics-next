@@ -22,21 +22,22 @@ declare global {
 
 function getWriteKey(): string | undefined {
   if (window.analytics._writeKey) {
-      return window.analytics._writeKey
+    return window.analytics._writeKey
   }
 
-  const regex = /.*\/analytics\.js\/v1\/([^/]*)(\/platform)?\/analytics.*/
+  const regex = /http.*\/analytics\.js\/v1\/([^/]*)(\/platform)?\/analytics.*/
   const scripts = Array.from(document.querySelectorAll('script'))
   let writeKey: string | undefined = undefined
 
-  scripts.forEach((s) => {
+  for (const s of scripts) {
     const src = s.getAttribute('src') ?? ''
     const result = regex.exec(src)
 
     if (result && result[1]) {
       writeKey = result[1]
+      break
     }
-  })
+  }
 
   return writeKey
 }
