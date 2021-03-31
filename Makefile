@@ -55,6 +55,10 @@ test-integration: build-browser ## Runs all integration tests in a single comman
 	$(BIN)/jest --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
+test-perf: build-browser ## Runs all integration tests in a single command
+	$(BIN)/jest --runTestsByPath e2e-tests/performance/*.test.ts ${args}
+.PHONY: test-coverage
+
 lint: node_modules ## Lints the source code
 	$(BIN)/eslint '**/*.{js,jsx,ts,tsx}'
 .PHONY: lint
