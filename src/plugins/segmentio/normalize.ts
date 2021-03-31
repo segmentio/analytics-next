@@ -157,6 +157,15 @@ export function normalize(
     }
   }
 
+  // TODO: context 3-sev-substantial-owl-2021-03-30
+  // This will make sure that the disabled cloud mode destinations will be
+  // included in the unbundled list. Not sure if that's important tho.
+  for (const settingsUnbundled of settings?.unbundledIntegrations || []) {
+    if (!unbundled.includes(settingsUnbundled)) {
+      unbundled.push(settingsUnbundled)
+    }
+  }
+
   const configIds = settings?.maybeBundledConfigIds ?? {}
   const bundledConfigIds: string[] = []
 
