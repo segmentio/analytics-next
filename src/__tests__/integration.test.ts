@@ -213,6 +213,32 @@ describe('Dispatch', () => {
     expect(gaSpy).toHaveBeenCalledWith(boo)
   })
 
+  it('does not dispatch events to destinations on deny list', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude, googleAnalytics],
+    })
+
+    const ampSpy = jest.spyOn(amplitude, 'track')
+    const gaSpy = jest.spyOn(googleAnalytics, 'track')
+
+    const boo = await ajs.track(
+      'Boo!',
+      {
+        total: 25,
+        userId: '👻',
+      },
+      {
+        integrations: {
+          Amplitude: false,
+        },
+      }
+    )
+
+    expect(gaSpy).toHaveBeenCalledWith(boo)
+    expect(ampSpy).not.toHaveBeenCalled()
+  })
+
   it('enriches events before dispatching', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,

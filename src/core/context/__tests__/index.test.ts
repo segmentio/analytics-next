@@ -119,6 +119,9 @@ describe(Context, () => {
       properties: {
         serializable: true,
       },
+      integrations: {
+        Mixpanel: false,
+      },
     }
 
     const ctx = new Context(evt)
@@ -129,6 +132,9 @@ describe(Context, () => {
 
     expect(JSON.parse(str)).toEqual({
       event: {
+        integrations: {
+          Mixpanel: false,
+        },
         properties: {
           serializable: true,
         },

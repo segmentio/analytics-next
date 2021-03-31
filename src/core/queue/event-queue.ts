@@ -194,7 +194,7 @@ export class EventQueue extends Emitter {
       throw new Error('Not ready')
     }
 
-    const denyList = ctx.event.options?.integrations ?? {}
+    const denyList = ctx.event.integrations ?? {}
     const { before, enrichment, destinations, after } = this.availableExtensios(
       denyList
     )

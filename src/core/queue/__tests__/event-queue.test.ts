@@ -280,6 +280,58 @@ describe('Flushing', () => {
     expect(basketViewCtx.attempts).toBe(1)
     expect(shopperCtx.attempts).toBe(1)
   })
+
+  test('does not delivery to destinations on denyList', async () => {
+    const eq = new EventQueue()
+
+    const amplitude = {
+      ...testPlugin,
+      name: 'Amplitude',
+      track: (ctx: Context): Promise<Context> | Context => {
+        return Promise.resolve(ctx)
+      },
+    }
+
+    const mixPanel = {
+      ...testPlugin,
+      name: 'Mixpanel',
+      track: (ctx: Context): Promise<Context> | Context => {
+        return Promise.resolve(ctx)
+      },
+    }
+
+    jest.spyOn(amplitude, 'track')
+    jest.spyOn(mixPanel, 'track')
+
+    const evt = {
+      type: 'track' as
+        | 'track'
+        | 'page'
+        | 'identify'
+        | 'group'
+        | 'alias'
+        | 'screen',
+      integrations: {
+        Mixpanel: false,
+      },
+    }
+
+    const ctx = new Context(evt)
+
+    await eq.register(Context.system(), amplitude, ajs)
+    await eq.register(Context.system(), mixPanel, ajs)
+
+    eq.dispatch(ctx)
+
+    expect(eq.queue.length).toBe(1)
+
+    const flushed = await eq.flush()
+
+    expect(flushed).toEqual([ctx])
+
+    expect(mixPanel.track).not.toHaveBeenCalled()
+    expect(amplitude.track).toHaveBeenCalled()
+  })
 })
 
 describe('deregister', () => {
