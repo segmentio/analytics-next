@@ -31,7 +31,6 @@ export const sources = [
   '***REMOVED***',
   '***REMOVED***',
   '***REMOVED***',
-  '***REMOVED***',
 ]
 
 export const samples = {

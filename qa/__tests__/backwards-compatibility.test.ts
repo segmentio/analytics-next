@@ -4,7 +4,7 @@ import { run } from '../lib/runner'
 import { server } from '../lib/server'
 
 describe('Backwards compatibility', () => {
-  test.concurrent('provides all same properties', async () => {
+  test('provides all same properties', async () => {
     const code = `(() => {
       return [
         ...new Set([
@@ -33,7 +33,7 @@ describe('Backwards compatibility', () => {
     expect(missing).toEqual([])
   })
 
-  test.concurrent('accesses user_id the same way', async () => {
+  test('accesses user_id the same way', async () => {
     const code = `(async () => {
       await analytics.identify('Test User')
       return analytics.user().id()
@@ -53,7 +53,7 @@ describe('Backwards compatibility', () => {
     expect(nextId).not.toBeFalsy()
   })
 
-  test.concurrent('accesses traits the same way', async () => {
+  test('accesses traits the same way', async () => {
     const code = `(async () => {
       await analytics.identify('Test User', { email: 'test@example.org' })
       return analytics.user().traits()

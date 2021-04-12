@@ -15,7 +15,6 @@ steps:
           save: true
 
   - label: ':hammer: QA'
-    soft_fail: true
     agents:
       queue: v1
     commands:

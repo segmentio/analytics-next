@@ -129,7 +129,7 @@ export class AnalyticsBrowser {
     }
 
     const mergedSettings = mergedOptions(legacySettings, options)
-    const remotePlugins = await remoteLoader(legacySettings)
+    const remotePlugins = await remoteLoader(legacySettings).catch(() => [])
 
     const toRegister = [
       validation,
@@ -156,6 +156,7 @@ export class AnalyticsBrowser {
         return Promise.all(promises)
       })
     }
+
     analytics.initialized = true
     analytics.emit('initialize', settings, options)
 

@@ -68,5 +68,5 @@ export async function remoteLoader(
   )
 
   await Promise.all(pluginPromises)
-  return allPlugins
+  return allPlugins.filter(Boolean)
 }

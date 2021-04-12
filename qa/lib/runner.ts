@@ -30,16 +30,16 @@ export async function run(params: ComparisonParams) {
         request.url().includes('localhost') ||
         request.url().includes('unpkg')
       ) {
-        route.continue()
+        route.continue().catch(console.error)
         return
       }
 
       if (request.resourceType() === 'script') {
-        await route.continue()
+        await route.continue().catch(console.error)
       } else {
         try {
           // do not actually send data
-          await route.fulfill({ body: 'ok!' })
+          await route.fulfill({ body: 'ok!' }).catch(console.error)
         } catch (_err) {
           // there are cases where the runner finishes so fast that requests
           // are still in flight when the browser is closing
@@ -59,6 +59,7 @@ export async function run(params: ComparisonParams) {
       // we know GA works :)
       if (
         call.url.includes('doubleclick.net') ||
+        call.url.includes('api-iam.intercom.io') ||
         (request.method() === 'POST' && data === null)
       ) {
         return
