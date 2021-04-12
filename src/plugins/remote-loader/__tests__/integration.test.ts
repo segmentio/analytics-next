@@ -8,7 +8,7 @@ jest.mock('unfetch', () => {
 
 import unfetch from 'unfetch'
 
-describe('Remote Plugin Integration', () => {
+describe.skip('Remote Plugin Integration', () => {
   const window = global.window as any
 
   beforeEach(async () => {
