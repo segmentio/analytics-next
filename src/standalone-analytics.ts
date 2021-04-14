@@ -45,7 +45,9 @@ function getWriteKey(): string | undefined {
 export function install(): Promise<void> {
   const writeKey = getWriteKey()
   if (!writeKey) {
-    console.error('Failed to load Write Key')
+    console.error(
+      'Failed to load Write Key. Make sure to use the latest version of the Segment snippet, which can be found in your source settings.'
+    )
     return Promise.resolve()
   }
 
