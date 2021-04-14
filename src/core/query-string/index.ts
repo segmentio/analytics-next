@@ -1,6 +1,5 @@
 import { pickPrefix } from './pickPrefix'
 import { Analytics } from '../../analytics'
-import url from 'component-url'
 import { Context } from '../context'
 
 export interface QueryStringParams {
@@ -11,15 +10,15 @@ export function queryString(
   analytics: Analytics,
   query: string
 ): Promise<Context[]> {
-  const parsed = url.parse(query)
+  const a = document.createElement('a')
+  a.href = query
+  const parsed = a.search.slice(1)
 
-  const params = parsed.query
-    .split('&')
-    .reduce((acc: QueryStringParams, str) => {
-      const [k, v] = str.split('=')
-      acc[k] = decodeURI(v).replace('+', ' ')
-      return acc
-    }, {})
+  const params = parsed.split('&').reduce((acc: QueryStringParams, str) => {
+    const [k, v] = str.split('=')
+    acc[k] = decodeURI(v).replace('+', ' ')
+    return acc
+  }, {})
 
   const calls = []
 

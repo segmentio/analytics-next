@@ -1,6 +1,5 @@
 import type { Context } from '@/core/context'
 import type { Plugin } from '@/core/plugin'
-import url from 'component-url'
 
 interface PageDefault {
   path: string
@@ -37,8 +36,12 @@ function canonicalPath(): string {
   if (!canon) {
     return window.location.pathname
   }
-  const parsed = url.parse(canon)
-  return parsed.pathname || ''
+
+  const a = document.createElement('a')
+  a.href = canon
+  const pathname = !a.pathname.startsWith('/') ? '/' + a.pathname : a.pathname
+
+  return pathname
 }
 
 /**

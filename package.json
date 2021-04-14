@@ -44,7 +44,6 @@
     "@lukeed/uuid": "^2.0.0",
     "@segment/facade": "^3.3.7",
     "@segment/tsub": "^0.1.4",
-    "component-url": "component/url",
     "dset": "^2.0.1",
     "js-cookie": "^2.2.1",
     "md5": "^2.3.0",
