@@ -171,9 +171,12 @@ export class LegacyDestination implements Plugin {
     if (plan && ev && this.name !== 'Segment.io') {
       // events are always sent to segment (legacy behavior)
       const planEvent = plan[ev]
-
-      if (planEvent?.enabled && planEvent?.integrations[this.name] === false) {
-        ctx.log('debug', 'event dropped by plan', ctx.event)
+      if (planEvent?.enabled === false) {
+        ctx.updateEvent('integrations', {
+          ...ctx.event.integrations,
+          All: false,
+          'Segment.io': true,
+        })
         ctx.cancel(
           new ContextCancelation({
             retry: false,
@@ -186,6 +189,16 @@ export class LegacyDestination implements Plugin {
           ...ctx.event.integrations,
           ...planEvent?.integrations,
         })
+      }
+
+      if (planEvent?.enabled && planEvent?.integrations[this.name] === false) {
+        ctx.cancel(
+          new ContextCancelation({
+            retry: false,
+            reason: 'event dropped by plan',
+          })
+        )
+        return ctx
       }
     }
 

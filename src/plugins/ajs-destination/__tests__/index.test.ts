@@ -443,7 +443,7 @@ describe('plan', () => {
     expect(dest.integration?.track).toHaveBeenCalled()
   })
 
-  it('does not drop events when event is disabled', async () => {
+  it('drops event when event is disabled', async () => {
     const dest = await loadAmplitude({
       track: {
         'Track Event': {
@@ -455,8 +455,19 @@ describe('plan', () => {
 
     jest.spyOn(dest.integration!, 'track')
 
-    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
-    expect(dest.integration?.track).toHaveBeenCalled()
+    const ctx = new Context({ type: 'page', event: 'Track Event' })
+    const call = dest.track(ctx)
+
+    await expect(call).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"event dropped by plan"`
+    )
+    expect(dest.integration?.track).not.toHaveBeenCalled()
+    expect(ctx.event.integrations).toMatchInlineSnapshot(`
+      Object {
+        "All": false,
+        "Segment.io": true,
+      }
+    `)
   })
 
   it('does not drop events with different names', async () => {
@@ -543,6 +554,26 @@ describe('plan', () => {
       new Context({ type: 'page', event: 'Track Event' })
     )
     expect(ctx.event.integrations).toEqual({ amplitude: true })
+  })
+
+  it('sets event integrations object when integration is disabled', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: false },
+        },
+      },
+    })
+
+    const ctx = new Context({ type: 'page', event: 'Track Event' })
+
+    const call = dest.track(ctx)
+
+    await expect(call).rejects.toThrowErrorMatchingInlineSnapshot(
+      `"event dropped by plan"`
+    )
+    expect(ctx.event.integrations).toEqual({ amplitude: false })
   })
 
   it('doesnt set event integrations object with different event', async () => {
