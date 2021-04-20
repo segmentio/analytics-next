@@ -63,7 +63,11 @@ describe('standalone bundle', () => {
   })
 
   it('derives the write key from scripts on the page', async () => {
-    const fakeAjs = {}
+    const fakeAjs = {
+      ready: async (cb: Function): Promise<void> => {
+        cb()
+      },
+    }
     const spy = jest
       .spyOn(AnalyticsBrowser, 'standalone')
       .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
@@ -76,17 +80,22 @@ describe('standalone bundle', () => {
   it('derives the CDN from scripts on the page', async () => {
     // @ts-ignore ignore Response required fields
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+
     await loadLegacySettings(segmentDotCom)
+
     expect(unfetch).toHaveBeenCalledWith(
       'https://cdn.foo.com/v1/projects/***REMOVED***/settings'
     )
   })
 
-  it('runs any buffered operations after load', async () => {
+  it('runs any buffered operations after load', async (done) => {
     const fakeAjs = {
       track: jest.fn(),
       identify: jest.fn(),
       page: jest.fn(),
+      ready: async (cb: Function): Promise<void> => {
+        cb()
+      },
     }
 
     jest
@@ -95,13 +104,17 @@ describe('standalone bundle', () => {
 
     await install()
 
-    expect(fakeAjs.track).toHaveBeenCalledWith('fruit basket', {
-      fruits: ['🍌', '🍇'],
-    })
-    expect(fakeAjs.identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
+    setTimeout(() => {
+      expect(fakeAjs.track).toHaveBeenCalledWith('fruit basket', {
+        fruits: ['🍌', '🍇'],
+      })
+      expect(fakeAjs.identify).toHaveBeenCalledWith('netto', {
+        employer: 'segment',
+      })
 
-    expect(fakeAjs.page).toHaveBeenCalled()
+      expect(fakeAjs.page).toHaveBeenCalled()
+
+      done()
+    }, 0)
   })
 })
