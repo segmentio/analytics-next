@@ -122,7 +122,7 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    ctx.library = { name: 'analytics-next', version }
+    ctx.library = { name: 'analytics.js', version: `next-${version}` }
   }
 
   if (query && !ctx.campaign) {

@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 echo '--- Install development dependencies'
 yarn install
