@@ -80,6 +80,7 @@ export async function run(params: ComparisonParams) {
     await page.evaluate('Date.prototype.toJSON = () => "<date>";')
     await page.evaluate('Date.prototype.getTime = () => 1614653469;')
 
+    await page.waitForLoadState('networkidle')
     await page.waitForFunction(`window.analytics.initialized === true`)
 
     const codeEvaluation = await page.evaluate(execution)

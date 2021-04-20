@@ -20,7 +20,7 @@ describe('Destination Tests', () => {
     await new Promise(res => window.analytics.identify('Test', {
       email: 'test@mctesting.org',
     }, res))
-    
+
     await new Promise(res => window.analytics.track('Track!', {
       leProp: 'propé',
     }, res))

@@ -36,6 +36,10 @@ async function flushQueue(
 ): Promise<PriorityQueue<Context>> {
   const failedQueue: Context[] = []
 
+  if (isOffline()) {
+    return queue
+  }
+
   await pWhile(
     () => queue.length > 0 && isOnline(),
     async () => {
@@ -119,17 +123,21 @@ export class LegacyDestination implements Plugin {
     )
 
     this.onReady = new Promise((resolve) => {
-      this.integration!.once('ready', () => {
+      const onReadyFn = (): void => {
         this._ready = true
         resolve(true)
-      })
+      }
+
+      this.integration!.once('ready', onReadyFn)
     })
 
     this.onInitialize = new Promise((resolve) => {
-      this.integration!.on('initialize', () => {
+      const onInit = (): void => {
         this._initialized = true
         resolve(true)
-      })
+      }
+
+      this.integration!.on('initialize', onInit)
     })
 
     try {
@@ -144,6 +152,8 @@ export class LegacyDestination implements Plugin {
         `method:initialize`,
         `integration_name:${this.name}`,
       ])
+
+      throw error
     }
   }
 
@@ -155,13 +165,22 @@ export class LegacyDestination implements Plugin {
     this.middleware = this.middleware.concat(...fn)
   }
 
+  shouldBuffer(ctx: Context): boolean {
+    return (
+      // page events can't be buffered because of destinations that automatically add page views
+      ctx.event.type !== 'page' &&
+      (isOffline() || this._ready === false || this._initialized === false)
+    )
+  }
+
   private async send<T extends Facade>(
     ctx: Context,
     clz: ClassType<T>,
     eventType: 'track' | 'identify' | 'page' | 'alias' | 'group'
   ): Promise<Context> {
-    if (isOffline()) {
+    if (this.shouldBuffer(ctx)) {
       this.buffer.push(ctx)
+      this.scheduleFlush()
       return ctx
     }
 
@@ -273,7 +292,10 @@ export class LegacyDestination implements Plugin {
       this.flushing = true
       this.buffer = await flushQueue(this, this.buffer)
       this.flushing = false
-      this.scheduleFlush()
+
+      if (this.buffer.todo > 0) {
+        this.scheduleFlush()
+      }
     }, Math.random() * 5000)
   }
 }

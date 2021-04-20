@@ -180,6 +180,7 @@ describe('Plugin flushing', () => {
     const messages = flushed
       .logs()
       .map((l) => ({ message: l.message, extras: l.extras }))
+
     expect(messages).toMatchInlineSnapshot(`
       Array [
         Object {

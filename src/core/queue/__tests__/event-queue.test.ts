@@ -1,8 +1,23 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
+import * as timer from '../../../lib/priority-queue/backoff'
 import { Analytics } from '../../../analytics'
+import { pWhile } from '../../../lib/p-while'
 import { Context, ContextCancelation } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
+
+async function flushAll(eq: EventQueue): Promise<Context[]> {
+  let flushed: Context[] = []
+
+  await pWhile(
+    () => eq.queue.length > 0,
+    async () => {
+      const res = await eq.flush()
+      flushed = flushed.concat(res)
+    }
+  )
+  return flushed
+}
 
 const fruitBasket = new Context({
   type: 'track',
@@ -74,15 +89,15 @@ test('does not enqueue multiple flushes at once', async () => {
   expect(setTimeout).toHaveBeenCalledTimes(1)
   expect(eq.queue.length).toBe(2)
 
-  jest.runAllTimers()
-  await eq.flush()
+  jest.useRealTimers()
+  await flushAll(eq)
 
   expect(eq.queue.length).toBe(0)
 })
 
 describe('Flushing', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    jest.useRealTimers()
   })
 
   test('works until the queue is empty', async () => {
@@ -94,7 +109,7 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    const flushed = await eq.flush()
+    const flushed = await flushAll(eq)
 
     expect(eq.queue.length).toBe(0)
     expect(flushed).toEqual([fruitBasket, basketView, shopper])
@@ -124,7 +139,7 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    const flushed = await eq.flush()
+    const flushed = await flushAll(eq)
 
     // flushed good events
     expect(flushed).toEqual([basketView, shopper])
@@ -134,6 +149,11 @@ describe('Flushing', () => {
   })
 
   test('delivers events on retry', async () => {
+    jest.useRealTimers()
+
+    // make sure all backoffs return immediatelly
+    jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
+
     const eq = new EventQueue()
 
     await eq.register(
@@ -158,15 +178,15 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    let flushed = await eq.flush()
+    let flushed = await flushAll(eq)
     // delivered both basket and shopper
     expect(flushed).toEqual([basketView, shopper])
 
-    // advance the exponential backoff
-    jest.advanceTimersByTime(10000)
+    // wait for the exponential backoff
+    await new Promise((res) => setTimeout(res, 100))
 
     // second try
-    flushed = await eq.flush()
+    flushed = await flushAll(eq)
     expect(eq.queue.length).toBe(0)
 
     expect(flushed).toEqual([fruitBasket])
@@ -194,7 +214,7 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    const flushed = await eq.flush()
+    const flushed = await flushAll(eq)
     // delivered both basket and shopper
     expect(flushed).toEqual([basketView, shopper])
 
@@ -203,6 +223,9 @@ describe('Flushing', () => {
   })
 
   test('retries retriable cancelations', async () => {
+    // make sure all backoffs return immediatelly
+    jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
+
     const eq = new EventQueue()
 
     await eq.register(
@@ -227,15 +250,15 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(3)
 
-    let flushed = await eq.flush()
+    let flushed = await flushAll(eq)
     // delivered both basket and shopper
     expect(flushed).toEqual([basketView, shopper])
 
-    // advance the exponential backoff
-    jest.advanceTimersByTime(10000)
+    // wait for the exponential backoff
+    await new Promise((res) => setTimeout(res, 100))
 
     // second try
-    flushed = await eq.flush()
+    flushed = await flushAll(eq)
     expect(eq.queue.length).toBe(0)
 
     expect(flushed).toEqual([fruitBasket])
@@ -325,7 +348,7 @@ describe('Flushing', () => {
 
     expect(eq.queue.length).toBe(1)
 
-    const flushed = await eq.flush()
+    const flushed = await flushAll(eq)
 
     expect(flushed).toEqual([ctx])
 
