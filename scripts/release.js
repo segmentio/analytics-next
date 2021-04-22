@@ -68,11 +68,11 @@ async function upload(meta) {
 
     const output = await s3.putObject(options).promise()
 
-    // put latest version without caching
+    // put latest version with only 5 minutes caching
     await s3
       .putObject({
         ...options,
-        CacheControl: undefined,
+        CacheControl: 'public,max-age=300,immutable',
         Key: path.join(`analytics-next`, meta.branch, 'latest', f),
       })
       .promise()
