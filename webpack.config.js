@@ -67,6 +67,7 @@ const config = {
     minimize: isProd,
     minimizer: [
       new TerserPlugin({
+        extractComments: false,
         terserOptions: {
           ecma: '2015',
           mangle: true,
