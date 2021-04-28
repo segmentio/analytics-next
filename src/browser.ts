@@ -164,7 +164,7 @@ export class AnalyticsBrowser {
       analytics.page().catch(console.error)
     }
 
-    if (window.location.search) {
+    if (window.location.search.includes('ajs_')) {
       analytics.queryString(window.location.search).catch(console.error)
     }
 
