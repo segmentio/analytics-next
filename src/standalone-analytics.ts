@@ -63,25 +63,20 @@ export function install(): Promise<void> {
 
       window.analytics = an as StandaloneAnalytics
 
-      // flush buffered events after all plugins are done loading
-      window.analytics
-        .ready(() => {
-          for (const [operation, ...args] of buffered) {
-            if (
-              // @ts-expect-error
-              an[operation] &&
-              // @ts-expect-error
-              typeof an[operation] === 'function'
-            ) {
-              // flush each individual event as its own task, so not to block initial page loads
-              setTimeout(() => {
-                // @ts-expect-error
-                an[operation].call(an, ...args)
-              }, 0)
-            }
-          }
-        })
-        .catch(console.error)
+      for (const [operation, ...args] of buffered) {
+        if (
+          // @ts-expect-error
+          an[operation] &&
+          // @ts-expect-error
+          typeof an[operation] === 'function'
+        ) {
+          // flush each individual event as its own task, so not to block initial page loads
+          setTimeout(() => {
+            // @ts-expect-error
+            an[operation].call(an, ...args)
+          }, 0)
+        }
+      }
     })
     .catch((err) => {
       console.error(err)
