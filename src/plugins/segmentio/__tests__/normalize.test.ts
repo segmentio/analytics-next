@@ -176,6 +176,19 @@ describe('before loading', () => {
       assert(object.context.campaign.name === 'name')
     })
 
+    it('should decode query params', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=%5BFoo%5D',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign)
+      assert(object.context.campaign.source === '[Foo]')
+    })
+
     it('should allow override of .campaign', () => {
       jsdom.reconfigure({
         url:

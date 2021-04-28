@@ -51,7 +51,7 @@ export function utm(query: string): Record<string, string> {
       if (utmParam === 'campaign') {
         utmParam = 'name'
       }
-      acc[utmParam] = v
+      acc[utmParam] = decodeURIComponent(v.replace(/\+/g, ' '))
     }
     return acc
   }, {} as Record<string, string>)
