@@ -190,6 +190,14 @@ describe('user', () => {
         assert(user.id() === null)
       })
 
+      it('should parse integer values', () => {
+        // @ts-expect-error the library only accepts strings or objects,
+        // but AJS Classic allows setting numbers on cookie values, so we have
+        // to parse them back to string.
+        jar.set(cookieKey, 1234)
+        assert(user.id() === '1234')
+      })
+
       it('should not reset anonymousId if the user didnt have previous id', () => {
         const prev = user.anonymousId()
         user.id('foo')

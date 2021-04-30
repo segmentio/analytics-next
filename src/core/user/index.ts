@@ -207,7 +207,11 @@ export class User {
       this.cookies.get(key) ??
       this.mem.get(key) ??
       null
-    return this.trySet(key, val) as T | null
+
+    return this.trySet(
+      key,
+      typeof val === 'number' ? val.toString() : val
+    ) as T | null
   }
 
   private trySet<T>(key: string, value: T): T | null {
