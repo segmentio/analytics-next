@@ -18,7 +18,7 @@ build: ## Builds typescript files and UMD library
 
 build-browser:
 	@rm -rf dist/umd
-	@yarn umd --display=none
+	@yarn umd --no-stats
 .PHONY: build-browser
 
 build-prod: ## Builds libraries in prod mode

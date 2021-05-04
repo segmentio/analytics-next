@@ -35,12 +35,14 @@ const config = {
     standalone: path.resolve(__dirname, 'src/standalone.ts'),
   },
   output: {
+    publicPath: ASSET_PATH,
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist/umd'),
     chunkFilename: '[name].bundle.[contenthash].js',
     library: 'AnalyticsNext',
     libraryTarget: 'umd',
   },
+  target: ['web', 'es5'],
   module: {
     rules: [
       {
@@ -63,7 +65,7 @@ const config = {
     contentBase: path.resolve(__dirname, 'dist/umd'),
   },
   optimization: {
-    moduleIds: 'hashed',
+    moduleIds: 'deterministic',
     minimize: isProd,
     minimizer: [
       new TerserPlugin({
