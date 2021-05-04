@@ -13,6 +13,10 @@ const bucket =
   process.env.NODE_ENV == 'production'
     ? 'segment-ajs-renderer-compiled-production'
     : 'segment-ajs-renderer-compiled-qa'
+const cloudfrontCanonicalUserId =
+  process.env.NODE_ENV == 'production'
+    ? 'id=***REMOVED***' // cdn.segment.com OAI
+    : 'id=***REMOVED***' // cdn.segment.build OAI
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
@@ -53,7 +57,7 @@ async function upload(meta) {
       Bucket: bucket,
       Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
       Body: await fs.readFile(filePath),
-      ACL: 'public-read',
+      GrantRead: cloudfrontCanonicalUserId,
       ContentType:
         mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
     }
