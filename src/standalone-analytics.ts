@@ -56,27 +56,7 @@ export function install(): Promise<void> {
     window.analytics?._loadOptions ?? {}
   )
     .then((an) => {
-      const wa = window.analytics
-      const buffered =
-        // @ts-expect-error
-        wa && wa[0] ? [...wa] : []
-
       window.analytics = an as StandaloneAnalytics
-
-      for (const [operation, ...args] of buffered) {
-        if (
-          // @ts-expect-error
-          an[operation] &&
-          // @ts-expect-error
-          typeof an[operation] === 'function'
-        ) {
-          // flush each individual event as its own task, so not to block initial page loads
-          setTimeout(() => {
-            // @ts-expect-error
-            an[operation].call(an, ...args)
-          }, 0)
-        }
-      }
     })
     .catch((err) => {
       console.error(err)

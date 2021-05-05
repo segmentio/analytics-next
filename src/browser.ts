@@ -8,6 +8,7 @@ import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
 import { Context } from './core/context'
 import { Plan } from './core/events'
+import { Plugin } from './core/plugin'
 import { MetricsOptions } from './core/stats/remote-metrics'
 import { mergedOptions } from './lib/merged-options'
 import { pageEnrichment } from './plugins/page-enrichment'
@@ -92,6 +93,101 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
+function flushBuffered(analytics: Analytics): void {
+  const wa = window.analytics
+  const buffered =
+    // @ts-expect-error
+    wa && wa[0] ? [...wa] : []
+
+  for (const [operation, ...args] of buffered) {
+    if (
+      // @ts-expect-error
+      analytics[operation] &&
+      // @ts-expect-error
+      typeof analytics[operation] === 'function'
+    ) {
+      // flush each individual event as its own task, so not to block initial page loads
+      setTimeout(() => {
+        // @ts-expect-error
+        analytics[operation].call(analytics, ...args)
+      }, 0)
+    }
+  }
+}
+
+/**
+ * With AJS classic, we allow users to call setAnonymousId before the library initialization.
+ * This is important because some of the destinations will use the anonymousId during the initialization,
+ * and if we set anonId afterwards, that wouldn’t impact the destination.
+ */
+function flushAnonymousUser(analytics: Analytics): void {
+  const wa = window.analytics
+  const buffered =
+    // @ts-expect-error
+    wa && wa[0] ? [...wa] : []
+
+  const anon = buffered.find(([op]) => op === 'setAnonymousId')
+  if (anon) {
+    const [, id] = anon
+    analytics.setAnonymousId(id)
+  }
+}
+
+async function registerPlugins(
+  legacySettings: LegacySettings,
+  analytics: Analytics,
+  opts: InitOptions,
+  options: InitOptions,
+  plugins: Plugin[]
+): Promise<Context> {
+  const legacyDestinations = hasLegacyDestinations(legacySettings)
+    ? await import(
+        /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
+      ).then((mod) => {
+        return mod.ajsDestinations(legacySettings, analytics.integrations, opts)
+      })
+    : []
+
+  if (legacySettings.legacyVideoPluginsEnabled) {
+    await import(
+      /* webpackChunkName: "legacyVideos" */ './plugins/legacy-video-plugins'
+    ).then((mod) => {
+      return mod.loadLegacyVideoPlugins(analytics)
+    })
+  }
+
+  const mergedSettings = mergedOptions(legacySettings, options)
+  const remotePlugins = await remoteLoader(legacySettings).catch(() => [])
+
+  const toRegister = [
+    validation,
+    pageEnrichment,
+    ...plugins,
+    ...legacyDestinations,
+    ...remotePlugins,
+    segmentio(
+      analytics,
+      mergedSettings['Segment.io'] as SegmentioSettings,
+      legacySettings.integrations
+    ),
+  ]
+  const ctx = await analytics.register(...toRegister)
+
+  if (Object.keys(legacySettings.enabledMiddleware ?? {}).length > 0) {
+    await import(
+      /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
+    ).then(async ({ remoteMiddlewares }) => {
+      const middleware = await remoteMiddlewares(ctx, legacySettings)
+      const promises = middleware.map((mdw) =>
+        analytics.addSourceMiddleware(mdw)
+      )
+      return Promise.all(promises)
+    })
+  }
+
+  return ctx
+}
+
 export class AnalyticsBrowser {
   static async load(
     settings: AnalyticsSettings,
@@ -108,54 +204,16 @@ export class AnalyticsBrowser {
     const plugins = settings.plugins ?? []
     Context.initMetrics(legacySettings.metrics)
 
-    const legacyDestinations = hasLegacyDestinations(legacySettings)
-      ? await import(
-          /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
-        ).then((mod) => {
-          return mod.ajsDestinations(
-            legacySettings,
-            analytics.integrations,
-            opts
-          )
-        })
-      : []
+    // needs to be flushed before plugins are registered
+    flushAnonymousUser(analytics)
 
-    if (legacySettings.legacyVideoPluginsEnabled) {
-      await import(
-        /* webpackChunkName: "legacyVideos" */ './plugins/legacy-video-plugins'
-      ).then((mod) => {
-        return mod.loadLegacyVideoPlugins(analytics)
-      })
-    }
-
-    const mergedSettings = mergedOptions(legacySettings, options)
-    const remotePlugins = await remoteLoader(legacySettings).catch(() => [])
-
-    const toRegister = [
-      validation,
-      pageEnrichment,
-      ...plugins,
-      ...legacyDestinations,
-      ...remotePlugins,
-      segmentio(
-        analytics,
-        mergedSettings['Segment.io'] as SegmentioSettings,
-        legacySettings.integrations
-      ),
-    ]
-    const ctx = await analytics.register(...toRegister)
-
-    if (Object.keys(legacySettings.enabledMiddleware ?? {}).length > 0) {
-      await import(
-        /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
-      ).then(async ({ remoteMiddlewares }) => {
-        const middleware = await remoteMiddlewares(ctx, legacySettings)
-        const promises = middleware.map((mdw) =>
-          analytics.addSourceMiddleware(mdw)
-        )
-        return Promise.all(promises)
-      })
-    }
+    const ctx = await registerPlugins(
+      legacySettings,
+      analytics,
+      opts,
+      options,
+      plugins
+    )
 
     analytics.initialized = true
     analytics.emit('initialize', settings, options)
@@ -167,6 +225,8 @@ export class AnalyticsBrowser {
     if (window.location.search.includes('ajs_')) {
       analytics.queryString(window.location.search).catch(console.error)
     }
+
+    flushBuffered(analytics)
 
     return [analytics, ctx]
   }

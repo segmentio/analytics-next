@@ -1,5 +1,5 @@
 import flat from 'flat'
-import { difference, intersection, without } from 'lodash'
+import { difference, intersection, uniq, without } from 'lodash'
 import { JSONValue } from '../../src/core/events'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
@@ -33,6 +33,13 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
     if (classic.data?._metadata) {
       // @ts-ignore need all sources to be rebuilt first
       delete classic.data._metadata.bundledIds
+
+      // TODO: Remove this once Gabe fixes this bug
+      // @ts-ignore sort unbundled metadata because of a breaking change in the SegmentIO destination
+      classic.data._metadata.unbundled = uniq(
+        // @ts-ignore
+        classic.data._metadata.unbundled.sort()
+      )
     }
 
     expect(req.data).toContainSchema(classic.data)

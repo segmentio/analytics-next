@@ -2,12 +2,33 @@ import jsdom, { JSDOM } from 'jsdom'
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
-import { Analytics } from '../analytics'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 
+const track = jest.fn()
+const identify = jest.fn()
+const page = jest.fn()
+const setAnonymousId = jest.fn()
+const register = jest.fn()
+
+jest.mock('../analytics', () => ({
+  Analytics: (): unknown => ({
+    track,
+    identify,
+    page,
+    setAnonymousId,
+    register,
+    emit: jest.fn(),
+  }),
+}))
+
+import { Analytics } from '../analytics'
+
 const fetchSettings = Promise.resolve({
-  json: () => Promise.resolve(),
+  json: () =>
+    Promise.resolve({
+      integrations: {},
+    }),
 })
 
 jest.mock('unfetch', () => {
@@ -31,6 +52,7 @@ describe('standalone bundle', () => {
             `
             window.analytics.track('fruit basket', { fruits: ['🍌', '🍇'] })
             window.analytics.identify('netto', { employer: 'segment' })
+            window.analytics.setAnonymousId('anonNetto')
           `
           )}
         </script>
@@ -89,31 +111,50 @@ describe('standalone bundle', () => {
   })
 
   it('runs any buffered operations after load', async (done) => {
-    const fakeAjs = {
-      track: jest.fn(),
-      identify: jest.fn(),
-      page: jest.fn(),
-      ready: async (cb: Function): Promise<void> => {
-        cb()
-      },
-    }
-
-    jest
-      .spyOn(AnalyticsBrowser, 'standalone')
-      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
 
     await install()
 
     setTimeout(() => {
-      expect(fakeAjs.track).toHaveBeenCalledWith('fruit basket', {
+      expect(track).toHaveBeenCalledWith('fruit basket', {
         fruits: ['🍌', '🍇'],
       })
-      expect(fakeAjs.identify).toHaveBeenCalledWith('netto', {
+      expect(identify).toHaveBeenCalledWith('netto', {
         employer: 'segment',
       })
 
-      expect(fakeAjs.page).toHaveBeenCalled()
+      expect(page).toHaveBeenCalled()
 
+      done()
+    }, 0)
+  })
+
+  it('sets buffered anonymousId before loading destinations', async (done) => {
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+
+    const operations: string[] = []
+
+    track.mockImplementationOnce(() => operations.push('track'))
+    setAnonymousId.mockImplementationOnce(() =>
+      operations.push('setAnonymousId')
+    )
+    register.mockImplementationOnce(() => operations.push('register'))
+
+    await install()
+
+    setTimeout(() => {
+      expect(setAnonymousId).toHaveBeenCalledWith('anonNetto')
+
+      expect(operations).toEqual([
+        // should run before any plugin is registered
+        'setAnonymousId',
+        // should run before any events are sent downstream
+        'register',
+        // should run after all plugins have been registered
+        'track',
+      ])
       done()
     }, 0)
   })

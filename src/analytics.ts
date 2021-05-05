@@ -54,6 +54,7 @@ export class Analytics extends Emitter {
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
+
   initialized = false
   integrations: Integrations
   options: InitOptions
@@ -80,6 +81,7 @@ export class Analytics extends Emitter {
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
+
     autoBind(this)
   }
 
