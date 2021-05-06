@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
+    "@segment/analytics.js-video-plugins": "github://segmentio/analytics.js-video-plugins",
     "@segment/facade": "^3.3.7",
     "@segment/tsub": "^0.1.4",
     "dset": "^2.0.1",

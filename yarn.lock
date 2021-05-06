@@ -604,6 +604,12 @@
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.11.tgz#aeb16f50649a91af79dbe36574b66d0f9e4d9f71"
   integrity sha512-3NsZsJIA/22P3QUyrEDNA2D133H4j224twJrdipXN38dpnIOzAbUDtOwkcJ5pXmn75w7LSQDjA4tO9dm1XlqlA==
 
+"@segment/analytics.js-video-plugins@github://segmentio/analytics.js-video-plugins":
+  version "0.2.1"
+  resolved "git+ssh://git@github.com/segmentio/analytics.js-video-plugins.git#b9b52877c5a91091efb1a1a4e78f7b587e773e69"
+  dependencies:
+    unfetch "^3.1.1"
+
 "@segment/facade@^3.3.7":
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.7.tgz#44afb10a43713de1bca1f16d07b47a24947751e2"
@@ -11752,6 +11758,11 @@ underscore@^1.9.1:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.11.0.tgz#dd7c23a195db34267186044649870ff1bab5929e"
   integrity sha512-xY96SsN3NA461qIRKZ/+qox37YXPtSBswMGfiNptr+wrt6ds4HaMw23TP612fEyGekRE6LNRiLYr/aqbHXNedw==
+
+unfetch@^3.1.1:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/unfetch/-/unfetch-3.1.2.tgz#dc271ef77a2800768f7b459673c5604b5101ef77"
+  integrity sha512-L0qrK7ZeAudGiKYw6nzFjnJ2D5WHblUBwmHIqtPS6oKUd+Hcpk7/hKsSmcHsTlpd1TbTNsiRBUKRq3bHLNIqIw==
 
 unfetch@^4.1.0:
   version "4.1.0"
