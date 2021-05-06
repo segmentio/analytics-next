@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "faker": "^5.1.0",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "next": "^10.0.5",
     "prismjs": "^1.23.0",
     "rc-table": "^7.10.0",
