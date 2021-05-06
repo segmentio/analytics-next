@@ -121,6 +121,24 @@ describe('remote metrics', () => {
     expect(errorSpy).toHaveBeenCalledWith(error)
   })
 
+  test('disables metrics reporting in case of errors', async () => {
+    jest.spyOn(console, 'error').mockImplementation()
+
+    const error = new Error('aaay')
+    mocked(unfetch).mockImplementation(() => {
+      throw error
+    })
+
+    const remote = new RemoteMetrics({
+      sampleRate: 100,
+    })
+
+    remote.increment('banana', ['phone:1'])
+    await remote.flush()
+
+    expect(remote.sampleRate).toBe(0)
+  })
+
   test('flushs on a schedule', () => {
     jest.useFakeTimers()
 

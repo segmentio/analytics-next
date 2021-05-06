@@ -11,14 +11,15 @@ type Metric = { type: 'Counter'; metric: string; value: number; tags: object }
 
 export class RemoteMetrics {
   private host: string
-  private sampleRate: number
   private flushTimer: number
   private maxQueueSize: number
+
+  sampleRate: number
   queue: Metric[]
 
   constructor(options?: MetricsOptions) {
     this.host = options?.host ?? 'api.segment.io/v1'
-    this.sampleRate = options?.sampleRate ?? 100
+    this.sampleRate = options?.sampleRate ?? 50
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20
 
@@ -88,6 +89,7 @@ export class RemoteMetrics {
 
     await this.send().catch((error) => {
       console.error(error)
+      this.sampleRate = 0
     })
   }
 
