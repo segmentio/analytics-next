@@ -1,5 +1,6 @@
 import playwright from 'playwright'
 import { setup, teardown } from 'jest-dev-server'
+
 // @ts-ignore
 import lighthouse from 'lighthouse/lighthouse-core'
 // @ts-ignore

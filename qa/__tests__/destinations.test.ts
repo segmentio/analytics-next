@@ -1,5 +1,5 @@
-import { difference, sampleSize } from 'lodash'
-import { cpus } from 'os'
+import { difference } from 'lodash'
+import { reportMetrics } from '../lib/benchmark'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
@@ -15,6 +15,9 @@ if (process.env.DESTINATION) {
 describe('Destination Tests', () => {
   // needs to be written as a string so it's not transpiled
   const code = `(async () => {
+    await new Promise(res => window.analytics.page({}, res))
+
+    // second page so that assumePageView destinations stop complaining
     await new Promise(res => window.analytics.page({}, res))
 
     await new Promise(res => window.analytics.identify('Test', {
@@ -45,6 +48,10 @@ describe('Destination Tests', () => {
     const nextReqs = results.next.networkRequests
       .map((n) => new URL(n.url).host)
       .sort()
+
+    const nextMetrics = results.next.metrics
+    const classicMetrics = results.classic.metrics
+    reportMetrics(nextMetrics, classicMetrics)
 
     expect(nextReqs).not.toEqual([])
     expect(classicReqs).not.toEqual([])

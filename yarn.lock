@@ -1049,6 +1049,13 @@
     "@types/node" "*"
     form-data "^3.0.0"
 
+"@types/node-statsd@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@types/node-statsd/-/node-statsd-0.1.2.tgz#75aa05c65a22e06cc7d90747c8d6e7226aa8e563"
+  integrity sha512-xNR5ds3AwS+nd/RrC8ikcZsuPz7z6tpS75hYAWb7Bn3DjCrUZrx58BKw5Uub/h98NBCnA2TBq6Av/GAuZO7w7g==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*":
   version "14.6.3"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.3.tgz#cc4f979548ca4d8e7b90bc0180052ab99ee64224"
@@ -8448,6 +8455,11 @@ node-releases@^1.1.71:
   version "1.1.71"
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-1.1.71.tgz#cb1334b179896b1c89ecfdd4b725fb7bbdfc7dbb"
   integrity sha512-zR6HoT6LrLCRBwukmrVbHv0EpEQjksO6GmFcZQQuCAy139BEsoVKPYnf3jongYW83fAa1torLGYwxxky/p28sg==
+
+node-statsd@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/node-statsd/-/node-statsd-0.1.1.tgz#27a59348763d0af7a037ac2a031fef3f051013d3"
+  integrity sha1-J6WTSHY9CvegN6wqAx/vPwUQE9M=
 
 node-status-codes@^1.0.0:
   version "1.0.0"

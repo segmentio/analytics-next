@@ -2,7 +2,6 @@ export function next(writekey: string) {
   return `
     <html>
     <head></head>
-    <body>
     <script>
       !(function () {
         var analytics = (window.analytics = window.analytics || [])
@@ -62,6 +61,9 @@ export function next(writekey: string) {
           }
       })()
     </script>
+    <body>
+    next
+    <img id="taylor" src="https://i.insider.com/57d1eef909d29325008b6cfa?width=1100&format=jpeg&auto=webp" />
     </body>
     </html>
   `
@@ -72,7 +74,6 @@ export function classic(writekey: string) {
   <html>
   <head>
   </head>
-  <body>
     <script>!(function () {
     var analytics = (window.analytics = window.analytics || [])
     if (!analytics.initialize)
@@ -132,6 +133,9 @@ export function classic(writekey: string) {
         analytics.load('${writekey}')
       }
   })()</script>
+  <body>
+  classic
+  <img id="taylor" src="https://i.insider.com/57d1eef909d29325008b6cfa?width=1100&format=jpeg&auto=webp" />
   </body>
   </html>
 `

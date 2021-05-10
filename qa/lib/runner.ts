@@ -1,5 +1,6 @@
 import { Browser } from 'playwright'
 import { JSONValue } from '../../src/core/events'
+import { getMetrics } from './benchmark'
 
 const DEBUG = process.env.DEBUG ?? false
 
@@ -96,9 +97,11 @@ export async function run(params: ComparisonParams) {
     )
 
     await page.waitForLoadState('networkidle')
+    const metrics = await getMetrics(page)
+
     !DEBUG && (await page.close({ runBeforeUnload: true }))
 
-    return { networkRequests, cookies, localStorage, codeEvaluation }
+    return { networkRequests, cookies, localStorage, codeEvaluation, metrics }
   }
 
   const [classic, next] = await Promise.all([
