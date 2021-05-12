@@ -34,10 +34,10 @@ steps:
       queue: v1
     command: 'bk-snyk'
 
-  - wait: ~
+  # - wait: ~
 
   - label: ':rocket: Release!'
-    depends_on: 'qa'
+    # depends_on: 'qa'
     branches: 'v*'
     agents:
       queue: v1

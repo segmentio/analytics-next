@@ -1,4 +1,4 @@
-#!/usr/bin/env ./node_modules/.bin/ts-node --script-mode --transpile-only --files
+#!/usr/bin/env node
 /* eslint-disable no-undef */
 
 const pkg = require('../package.json')
