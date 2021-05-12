@@ -45,8 +45,8 @@ export function utm(query: string): Record<string, string> {
   query = query.replace(/\?/g, '&')
 
   return query.split('&').reduce((acc, str) => {
-    const [k, v] = str.split('=')
-    if (k.includes('utm_')) {
+    const [k, v = ''] = str.split('=')
+    if (k.includes('utm_') && k.length > 4) {
       let utmParam = k.substr(4)
       if (utmParam === 'campaign') {
         utmParam = 'name'

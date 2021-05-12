@@ -189,6 +189,56 @@ describe('before loading', () => {
       assert(object.context.campaign.source === '[Foo]')
     })
 
+    it('should guard against undefined utm params', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign)
+      assert(object.context.campaign.source === '')
+    })
+
+    it('should guard against empty utm params', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign)
+      assert(object.context.campaign.source === '')
+    })
+
+    it('only parses utm params suffixed with _', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert.deepStrictEqual(object.context.campaign, {})
+    })
+
+    it('should guard against short utm params', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert.deepStrictEqual(object.context.campaign, {})
+    })
+
     it('should allow override of .campaign', () => {
       jsdom.reconfigure({
         url:
