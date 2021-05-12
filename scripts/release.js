@@ -22,11 +22,11 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
 
 const getBranch = async () =>
-  (await ex('git', ['rev-parse', '--abbrev-ref', 'HEAD'])).stdout
-
-const getSha = async () =>
   process.env.BUILDKITE_BRANCH ||
   process.env.BUILDKITE_TAG ||
+  (await ex('git', ['branch', '--show-current'])).stdout
+
+const getSha = async () =>
   (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 
 async function getFiles(dir) {
