@@ -1,12 +1,15 @@
  # bail on fail
 set -e
 
-version=$(cat package.json \
+packageVersion=$(cat package.json \
   | grep version \
   | head -1 \
   | awk -F: '{ print $2 }' \
   | sed 's/[",]//g' \
   | tr -d '[[:space:]]')
+
+branch=$(git branch --show-current)
+version="${packageVersion}-${branch}"
 
 # fetch latest tags from upstream
 git fetch --tags
