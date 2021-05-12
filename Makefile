@@ -86,6 +86,16 @@ release-prod: version ## Releases Analytics Next to production
 	npm publish
 .PHONY: release-prod
 
+release-branch: version
+	./scripts/git-release.sh
+.PHONY: release-branch
+
+release-ci: ## Releases Analytics Next to production in CI
+	make build-prod
+	NODE_ENV=production ./scripts/release.js
+	npm publish
+.PHONY: release-ci
+
 handshake:
 	@echo "📡  Establishing Remote connection"
 	@robo --config ~/dev/src/github.com/segmentio/robofiles/development/robo.yml prod.ssh echo "✅ Connected"

@@ -1,6 +1,7 @@
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
+
 steps:
   - label: ':hammer: Build Libraries'
     agents:
@@ -15,6 +16,7 @@ steps:
           save: true
 
   - label: ':hammer: QA'
+    key: 'qa'
     agents:
       queue: v1
     commands:
@@ -31,3 +33,19 @@ steps:
     agents:
       queue: v1
     command: 'bk-snyk'
+
+  - wait: ~
+
+  - block: ':rocket: Release!'
+    depends_on: 'qa'
+    branches: 'v*'
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - yarn install
+      - make release-ci
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['node_modules/']
