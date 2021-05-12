@@ -25,6 +25,7 @@ const getBranch = async () =>
   (await ex('git', ['rev-parse', '--abbrev-ref', 'HEAD'])).stdout
 
 const getSha = async () =>
+  process.env.BUILDKITE_BRANCH ||
   (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 
 async function getFiles(dir) {
