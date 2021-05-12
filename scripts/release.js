@@ -109,7 +109,7 @@ async function release() {
 
   const sha = await getSha()
   const branch = await getBranch()
-  const version = pkg.version
+  const version = process.env.BUILDKITE_TAG || pkg.version
 
   const meta = {
     sha,
