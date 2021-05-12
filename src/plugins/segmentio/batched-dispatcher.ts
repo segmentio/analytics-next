@@ -5,6 +5,22 @@ type BatchingConfig = {
   timeout?: number
 }
 
+const MAX_PAYLOAD_SIZE = 500
+
+function kilobytes(buffer: unknown): number {
+  const size = encodeURI(JSON.stringify(buffer)).split(/%..|./).length - 1
+  return size / 1024
+}
+
+/**
+ * Checks if the payload is over or close to
+ * the maximum payload size allowed by tracking
+ * API.
+ */
+function approachingTrackingAPILimit(buffer: unknown): boolean {
+  return kilobytes(buffer) >= MAX_PAYLOAD_SIZE - 50
+}
+
 export default function batch(apiHost: string, config?: BatchingConfig) {
   const { dispatch: fetch } = standard()
 
@@ -50,7 +66,9 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
   async function dispatch(url: string, body: object): Promise<unknown> {
     buffer.push([url, body])
 
-    if (buffer.length >= limit && !flushing) {
+    const bufferOverflow =
+      buffer.length >= limit || approachingTrackingAPILimit(buffer)
+    if (bufferOverflow && !flushing) {
       flush()
     }
 
