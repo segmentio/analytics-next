@@ -36,7 +36,7 @@ steps:
 
   - wait: ~
 
-  - block: ':rocket: Release!'
+  - label: ':rocket: Release!'
     depends_on: 'qa'
     branches: 'v*'
     agents:
