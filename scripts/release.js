@@ -22,7 +22,8 @@ const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
 
 const getBranch = async () =>
-  (await ex('git', ['rev-parse', '--abbrev-ref', 'HEAD'])).stdout
+  (await ex('git', ['branch', '--show-current'])).stdout
+
 const getSha = async () =>
   (await ex('git', ['rev-parse', '--short', 'HEAD'])).stdout
 
@@ -105,7 +106,7 @@ async function release() {
   console.log('Compiling Bundles')
 
   const sha = await getSha()
-  const branch = await getBranch()
+  const branch = process.env.BUILDKITE_BRANCH || (await getBranch())
   const version = pkg.version
 
   const meta = {
