@@ -1,5 +1,9 @@
 # v1.19.6-remote-release / 2021-05-12
 
+- Use node shebang
+
+# v1.19.6-remote-release / 2021-05-12
+
 - Include branch version
 - Rename step
 - Add git-release script
