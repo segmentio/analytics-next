@@ -3,6 +3,7 @@ env:
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
   - label: ':hammer: Build Libraries'
+    key: build
     agents:
       queue: v1
     commands:
@@ -15,6 +16,7 @@ steps:
           save: true
 
   - label: ':hammer: QA'
+    key: qa
     agents:
       queue: v1
     commands:
@@ -31,3 +33,15 @@ steps:
     agents:
       queue: v1
     command: 'bk-snyk'
+
+  - label: 'Upload'
+    agents:
+      queue: v1
+    depends_on: build,qa
+    commands:
+      - make build-prod
+      - bash ./scripts/release.sh
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['node_modules/']
