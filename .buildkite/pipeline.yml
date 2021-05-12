@@ -37,7 +37,7 @@ steps:
   - label: 'Upload'
     agents:
       queue: v1
-    depends_on: build,qa
+    depends_on: [build, qa]
     commands:
       - make build-prod
       - bash ./scripts/release.sh
