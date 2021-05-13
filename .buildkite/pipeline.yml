@@ -34,13 +34,28 @@ steps:
       queue: v1
     command: 'bk-snyk'
 
-  - label: 'Upload assets'
-    branches: !master
+  # Auto deploys branches
+  - label: ':rocket: Release Branch'
+    branches: '!master !v*'
     agents:
       queue: v1
     commands:
       - make build-prod
       - bash ./scripts/release.sh
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['node_modules/']
+
+  # Deploy and NPM publish releases
+  - label: ':rocket: Release'
+    branches: 'v*'
+    agents:
+      queue: v1
+    commands:
+      - make build-prod
+      - bash ./scripts/release.sh
+      - npm publish
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
