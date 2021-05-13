@@ -1,7 +1,6 @@
 #!/usr/bin/env ./node_modules/.bin/ts-node --script-mode --transpile-only --files
 /* eslint-disable no-undef */
 
-const pkg = require('../package.json')
 const ex = require('execa')
 const S3 = require('aws-sdk/clients/s3')
 const fs = require('fs-extra')
@@ -107,12 +106,10 @@ async function release() {
 
   const sha = await getSha()
   const branch = process.env.BUILDKITE_BRANCH || (await getBranch())
-  const version = pkg.version
 
   const meta = {
     sha,
     branch: `br/${branch}`,
-    version,
   }
 
   console.table(meta)
