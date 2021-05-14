@@ -1,7 +1,6 @@
 #!/usr/bin/env ./node_modules/.bin/ts-node --script-mode --transpile-only --files
 /* eslint-disable no-undef */
 
-const pkg = require('../package.json')
 const ex = require('execa')
 const S3 = require('aws-sdk/clients/s3')
 const fs = require('fs-extra')
@@ -13,6 +12,7 @@ const bucket =
   process.env.NODE_ENV == 'production'
     ? 'segment-ajs-renderer-compiled-production'
     : 'segment-ajs-renderer-compiled-qa'
+
 const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? 'id=***REMOVED***' // cdn.segment.com OAI
@@ -106,13 +106,17 @@ async function release() {
   console.log('Compiling Bundles')
 
   const sha = await getSha()
-  const branch = await getBranch()
-  const version = pkg.version
+  let branch = process.env.BUILDKITE_BRANCH || (await getBranch())
+
+  // this means we're deploying production
+  // from a release branch
+  if (process.env.RELEASE) {
+    branch = 'master'
+  }
 
   const meta = {
     sha,
     branch: `br/${branch}`,
-    version,
   }
 
   console.table(meta)

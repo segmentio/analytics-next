@@ -76,7 +76,15 @@ $ make test-qa-destinations DESTINATION=amplitude DEBUG=true
 
 ## Releasing
 
+### Feature branches
+
+Feature branches are automatically released under:
+
+- `http://cdn.segment.com/analytics-next/br/<branch>/<latest|sha>/standalone.js.gz`
+
+### Production
+
 Once you have tested your changes and they have been approved for a new release, merge your pull request and follow the steps:
 
-- `make release-prod` - this will compile the code, create a new version and publish the changes to s3
-- `make rebuild-sources-prod` - rebuild all sources that use AJS Next
+- `make release`
+  > creates a release tag that is then compiled and published in CI

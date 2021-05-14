@@ -71,20 +71,15 @@ size: ## Verify the final size of Analytics-Next
 	NODE_ENV=production yarn umd > /dev/null && yarn size-limit
 .PHONY: size
 
-version:
-	yarn bump
-.PHONY: version
-
-release: version ## Releases Analytics Next to stage
-	make build-prod
-	aws-okta exec plat-write -- ./scripts/release.js
+release: ## Releases Analytics Next to stage
+	yarn np --yolo --no-publish --no-release-draft
 .PHONY: release
 
-release-prod: version ## Releases Analytics Next to production
+release-manual: ## Releases Analytics Next to production
 	make build-prod
 	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.js
 	npm publish
-.PHONY: release-prod
+.PHONY: release-prod-manual
 
 handshake:
 	@echo "📡  Establishing Remote connection"

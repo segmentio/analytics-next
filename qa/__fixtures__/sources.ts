@@ -109,8 +109,11 @@ export const samples = {
   qualaroo: ['***REMOVED***'],
   quantcast: ['***REMOVED***'],
   'quora-conversion-pixel': ['***REMOVED***'],
-  rollbar: ['***REMOVED***'],
+
+  // TODO: re-enable this once rollbar is fully deployed to AJS 1.0
+  // rollbar: ['***REMOVED***'],
   saasquatch: ['***REMOVED***'],
+
   satismeter: ['***REMOVED***'],
   sentry: ['***REMOVED***'],
   shareasale: ['***REMOVED***'],
