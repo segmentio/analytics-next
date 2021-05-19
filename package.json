@@ -47,7 +47,6 @@
     "@segment/tsub": "^0.1.4",
     "dset": "^2.0.1",
     "js-cookie": "^2.2.1",
-    "md5": "^2.3.0",
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
@@ -102,7 +101,6 @@
     "mime": "^2.4.6",
     "ngrok": "^3.3.0",
     "node-fetch": "^2.6.1",
-    "node-statsd": "^0.1.1",
     "np": "^7.5.0",
     "p-map": "^4.0.0",
     "playwright": "^1.10.0",

@@ -1,5 +1,6 @@
 import { Page } from 'playwright'
-import { statsd } from './stats'
+import { Context } from '../../src/core/context'
+import { gauge } from './stats'
 
 const loadTime = (timing: PerformanceTiming) =>
   timing.loadEventEnd - timing.loadEventStart
@@ -13,18 +14,15 @@ const startToInteractive = (timing: PerformanceTiming) =>
 export function reportMetrics(
   next: PerformanceTiming,
   classic: PerformanceTiming
-): void {
-  statsd.gauge('load_time', loadTime(next), ['flavor:next'])
-  statsd.gauge('start_to_interactive', startToInteractive(next), [
-    'flavor:next',
+): Promise<Context[]> {
+  return Promise.all([
+    gauge('load_time', loadTime(next), ['flavor:next']),
+    gauge('start_to_interactive', startToInteractive(next), ['flavor:next']),
+    gauge('dom_content_loaded', DOMContentLoaded(next), ['flavor:next']),
+    gauge('load_time', loadTime(classic), ['flavor:next']),
+    gauge('start_to_interactive', startToInteractive(classic), ['flavor:next']),
+    gauge('dom_content_loaded', DOMContentLoaded(classic), ['flavor:next']),
   ])
-  statsd.gauge('dom_content_loaded', DOMContentLoaded(next), ['flavor:next'])
-
-  statsd.gauge('load_time', loadTime(classic), ['flavor:next'])
-  statsd.gauge('start_to_interactive', startToInteractive(classic), [
-    'flavor:next',
-  ])
-  statsd.gauge('dom_content_loaded', DOMContentLoaded(classic), ['flavor:next'])
 }
 
 export async function getMetrics(page: Page): Promise<PerformanceTiming> {

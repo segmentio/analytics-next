@@ -51,7 +51,8 @@ describe('Destination Tests', () => {
 
     const nextMetrics = results.next.metrics
     const classicMetrics = results.classic.metrics
-    reportMetrics(nextMetrics, classicMetrics)
+
+    await reportMetrics(nextMetrics, classicMetrics)
 
     expect(nextReqs).not.toEqual([])
     expect(classicReqs).not.toEqual([])

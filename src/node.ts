@@ -26,7 +26,8 @@ export class AnalyticsNode {
     }
 
     const ctx = await analytics.register(
-      ...[validation, analyticsNode(nodeSettings)]
+      validation,
+      analyticsNode(nodeSettings)
     )
     analytics.emit('initialize', settings, cookieOptions ?? {})
 

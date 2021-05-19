@@ -45,6 +45,7 @@ const writeKeys = {
   julios_test: '***REMOVED***',
   netto_bt: '***REMOVED***',
   netto_amplitude: '***REMOVED***',
+  mme_stats: '***REMOVED***',
 }
 
 const settings: AnalyticsSettings = {

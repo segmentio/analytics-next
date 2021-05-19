@@ -1,29 +1,7 @@
 import { Plugin } from '../../core/plugin'
 import { Context } from '../../core/context'
-import { v4 as uuid } from '@lukeed/uuid'
-import md5 from 'md5'
 import { SegmentEvent } from '../../core/events'
-import { postToTrackingAPI } from './api'
-
-// To keep parity with the current analytics-node library
-export const hydrateMessage = (message: SegmentEvent): SegmentEvent => ({
-  properties: message.properties,
-  type: message.type,
-  context: {
-    library: {
-      name: 'analytics-node-next',
-      version: 'latest',
-    },
-  },
-  timestamp: message.timestamp || new Date(),
-  messageId:
-    message.messageId || `node-${md5(JSON.stringify(message))}-${uuid()}`,
-  anonymousId: message.anonymousId,
-  userId: message.userId,
-  _metadata: {
-    nodeVersion: process.versions.node,
-  },
-})
+import fetch from 'node-fetch'
 
 interface AnalyticsNodeSettings {
   writeKey: string
@@ -32,15 +10,40 @@ interface AnalyticsNodeSettings {
   version: string
 }
 
-export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
-  const fireEvent = async (ctx: Context): Promise<Context> => {
-    const hydratedMessage = hydrateMessage(ctx.event)
-    await postToTrackingAPI(hydratedMessage, settings.writeKey)
+const btoa = (val: string): string => Buffer.from(val).toString('base64')
 
+export async function post(
+  event: SegmentEvent,
+  writeKey: string
+): Promise<SegmentEvent> {
+  const res = await fetch(`https://api.segment.io/v1/${event.type}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'analytics-node-next/latest',
+      Authorization: `Basic ${btoa(writeKey)}`,
+    },
+    body: JSON.stringify(event),
+  })
+
+  if (!res.ok) {
+    throw new Error('Message Rejected')
+  }
+
+  return event
+}
+
+export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
+  const send = async (ctx: Context): Promise<Context> => {
+    ctx.updateEvent('context.library.name', 'analytics-node-next')
+    ctx.updateEvent('context.library.version', process.env.VERSION)
+    ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
+
+    await post(ctx.event, settings.writeKey)
     return ctx
   }
 
-  const xt: Plugin = {
+  const plugin: Plugin = {
     name: settings.name,
     type: settings.type,
     version: settings.version,
@@ -48,13 +51,13 @@ export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
     load: (ctx) => Promise.resolve(ctx),
     isLoaded: () => true,
 
-    track: fireEvent,
-    identify: fireEvent,
-    page: fireEvent,
-    alias: fireEvent,
-    group: fireEvent,
-    screen: fireEvent,
+    track: send,
+    identify: send,
+    page: send,
+    alias: send,
+    group: send,
+    screen: send,
   }
 
-  return xt
+  return plugin
 }

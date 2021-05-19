@@ -1,9 +1,8 @@
-import { hydrateMessage } from '..'
+const fetcher = jest.fn()
+jest.mock('node-fetch', () => fetcher)
+
 import { Analytics } from '../../../analytics'
 import { AnalyticsNode } from '../../../node'
-import { postToTrackingAPI } from '../api'
-
-jest.mock('../api')
 
 const myDate = new Date('2016')
 const _Date = Date
@@ -28,91 +27,42 @@ describe('Analytics Node', () => {
     global.Date.now = _Date.now
   })
 
-  describe('hydrateMessage', () => {
-    test('merges message with default values', () => {
-      const hydrated = hydrateMessage({
-        type: 'track',
-        anonymousId: 'anon',
-        properties: {
-          dogs: 'da bomb',
-        },
-      })
-
-      expect(hydrated).toEqual({
-        _metadata: {
-          nodeVersion: process.versions.node,
-        },
-        context: {
-          library: {
-            name: 'analytics-node-next',
-            version: 'latest',
-          },
-        },
-        properties: {
-          dogs: 'da bomb',
-        },
-        timestamp: new Date(),
-        anonymousId: 'anon',
-        messageId: expect.any(String),
-        type: 'track',
-      })
-    })
-  })
-
   describe('AJS', () => {
     test('fireEvent instantiates the right event types', async () => {
       await ajs.track('track')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'track',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/track',
+        expect.anything()
       )
 
       await ajs.identify('identify')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'identify',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/identify',
+        expect.anything()
       )
 
       await ajs.page('page')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'page',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/page',
+        expect.anything()
       )
 
       await ajs.group('group')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'group',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/group',
+        expect.anything()
       )
 
       await ajs.alias('alias')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'alias',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/alias',
+        expect.anything()
       )
 
       await ajs.screen('screen')
-
-      expect(postToTrackingAPI).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'screen',
-        }),
-        'abc123'
+      expect(fetcher).toHaveBeenCalledWith(
+        'https://api.segment.io/v1/screen',
+        expect.anything()
       )
     })
   })
