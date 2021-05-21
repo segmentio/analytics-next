@@ -103,8 +103,8 @@ export const pageEnrichment: Plugin = {
   page: (ctx) => {
     ctx.event.properties = Object.assign(
       {},
-      ctx.event.properties,
-      pageDefaults()
+      pageDefaults(),
+      ctx.event.properties
     )
 
     if (ctx.event.name) {

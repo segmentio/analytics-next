@@ -44,9 +44,11 @@ describe('Page Enrichment', () => {
   })
 
   test('enriches page events with the page context', async () => {
-    const ctx = await ajs.page('My event', {
-      banana: 'phone',
-    })
+    const ctx = await ajs.page(
+      'My event',
+      { banana: 'phone' },
+      { page: { url: 'not-localhost' } }
+    )
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
     Object {
@@ -54,7 +56,7 @@ describe('Page Enrichment', () => {
       "referrer": "",
       "search": "",
       "title": "",
-      "url": "http://localhost/",
+      "url": "not-localhost",
     }
   `)
   })
