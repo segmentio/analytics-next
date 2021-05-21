@@ -60,6 +60,7 @@ export async function run(params: ComparisonParams) {
       // we know GA works :)
       if (
         call.url.includes('doubleclick.net') ||
+        call.url.includes('googletagmanager') ||
         call.url.includes('api-iam.intercom.io') ||
         (request.method() === 'POST' && data === null)
       ) {

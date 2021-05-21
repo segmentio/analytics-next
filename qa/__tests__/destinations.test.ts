@@ -42,11 +42,34 @@ describe('Destination Tests', () => {
     })
 
     const classicReqs = results.classic.networkRequests
-      .map((n) => new URL(n.url).host)
+      .map((n) => {
+        const url = new URL(n.url)
+
+        return JSON.stringify({
+          host: url.host + url.pathname,
+          queryParams: Array.from(url.searchParams.entries())
+            .map((entry) => entry[0])
+            .filter((p) => !p.match(/^\d+$/))
+            .sort(),
+          // TODO: add bug once `category` is present in page calls
+          // bodyParams: Object.keys(n.data).sort(),
+        })
+      })
       .sort()
 
     const nextReqs = results.next.networkRequests
-      .map((n) => new URL(n.url).host)
+      .map((n) => {
+        const url = new URL(n.url)
+        return JSON.stringify({
+          host: url.host + url.pathname,
+          queryParams: Array.from(url.searchParams.entries())
+            .map((entry) => entry[0])
+            .filter((p) => !p.match(/^\d+$/))
+            .sort(),
+          // TODO: add bug once `category` is present in page calls
+          // bodyParams: Object.keys(n.data).sort(),
+        })
+      })
       .sort()
 
     const nextMetrics = results.next.metrics
