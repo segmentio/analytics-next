@@ -32,6 +32,7 @@ export async function gauge(
     {
       value,
       tags,
+      type: 'gauge',
     },
     {
       userId: 'system',
