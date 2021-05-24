@@ -17,6 +17,7 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  reporters: ['default'],
   coverageThreshold: {
     global: {
       branches: 80.91,
