@@ -16,12 +16,15 @@ export function reportMetrics(
   classic: PerformanceTiming
 ): Promise<Context[]> {
   return Promise.all([
-    gauge('load_time', loadTime(next), ['flavor:next']),
-    gauge('start_to_interactive', startToInteractive(next), ['flavor:next']),
-    gauge('dom_content_loaded', DOMContentLoaded(next), ['flavor:next']),
-    gauge('load_time', loadTime(classic), ['flavor:next']),
-    gauge('start_to_interactive', startToInteractive(classic), ['flavor:next']),
-    gauge('dom_content_loaded', DOMContentLoaded(classic), ['flavor:next']),
+    gauge('load_time', loadTime(next), ['release:next']),
+    gauge('start_to_interactive', startToInteractive(next), ['release:next']),
+    gauge('dom_content_loaded', DOMContentLoaded(next), ['release:next']),
+
+    gauge('load_time', loadTime(classic), ['release:classic']),
+    gauge('start_to_interactive', startToInteractive(classic), [
+      'release:classic',
+    ]),
+    gauge('dom_content_loaded', DOMContentLoaded(classic), ['release:classic']),
   ])
 }
 
