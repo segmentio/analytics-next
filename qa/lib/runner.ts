@@ -62,6 +62,7 @@ export async function run(params: ComparisonParams) {
         call.url.includes('doubleclick.net') ||
         call.url.includes('googletagmanager') ||
         call.url.includes('api-iam.intercom.io') ||
+        call.url.includes('api.segment.io/v1/m') ||
         (request.method() === 'POST' && data === null)
       ) {
         return
