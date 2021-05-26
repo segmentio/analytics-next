@@ -19,7 +19,7 @@ export class RemoteMetrics {
 
   constructor(options?: MetricsOptions) {
     this.host = options?.host ?? 'api.segment.io/v1'
-    this.sampleRate = options?.sampleRate ?? 50
+    this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20
 
