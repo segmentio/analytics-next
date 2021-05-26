@@ -45,7 +45,7 @@ export function resolveArguments(
 export function resolvePageArguments(
   category?: string | object,
   name?: string | object | Callback,
-  properties?: object | Options | Callback,
+  properties?: object | Options | Callback | null,
   options?: Options | Callback,
   callback?: Callback
 ): [string | null, string | null, object, Options, Callback | undefined] {
@@ -66,7 +66,10 @@ export function resolvePageArguments(
   }
 
   const resolvedCallback = args.find(isFunction) as Callback | undefined
-  const objects = args.filter(isPlainObject)
+
+  const objects = args.filter(
+    (obj) => isPlainObject(obj) || obj === null
+  ) as Array<object | null>
 
   const resolvedProperties = objects[0] ?? {}
   const resolvedOptions = objects[1] ?? {}

@@ -200,6 +200,32 @@ describe(resolvePageArguments, () => {
     expect(cb).toEqual(fn)
   })
 
+  test('empty strings ("", "", "", { integrations })', () => {
+    const [category, name, properties, options] = resolvePageArguments(
+      '',
+      '',
+      null,
+      {
+        integrations: {
+          Amplitude: {
+            sessionId: '123',
+          },
+        },
+      }
+    )
+
+    expect(category).toBeNull()
+    expect(name).toBeNull()
+    expect(properties).toEqual({})
+    expect(options).toEqual({
+      integrations: {
+        Amplitude: {
+          sessionId: '123',
+        },
+      },
+    })
+  })
+
   test('should accept (category, name, properties, callback)', () => {
     const fn = jest.fn()
     const [category, name, properties, options, cb] = resolvePageArguments(
