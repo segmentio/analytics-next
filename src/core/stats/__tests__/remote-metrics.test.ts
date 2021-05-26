@@ -11,15 +11,15 @@ describe('remote metrics', () => {
     const remote = new RemoteMetrics({
       sampleRate: 100,
     })
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
 
     expect(remote.queue).toMatchInlineSnapshot(`
       Array [
         Object {
-          "metric": "banana",
+          "metric": "analytics_js.banana",
           "tags": Object {
             "library": "analytics.js",
-            "library_version": "next-${process.env.VERSION}",
+            "library_version": "next-undefined",
             "phone": "1",
           },
           "type": "Counter",
@@ -33,7 +33,7 @@ describe('remote metrics', () => {
     const remote = new RemoteMetrics({
       sampleRate: 0,
     })
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
 
     expect(remote.queue).toMatchInlineSnapshot(`Array []`)
   })
@@ -44,10 +44,10 @@ describe('remote metrics', () => {
       maxQueueSize: 3,
     })
 
-    remote.increment('banana', ['phone:1'])
-    remote.increment('banana', ['phone:1'])
-    remote.increment('banana', ['phone:1'])
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
 
     expect(remote.queue.length).toBe(3)
   })
@@ -59,10 +59,10 @@ describe('remote metrics', () => {
 
     const spy = jest.spyOn(remote, 'flush')
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     expect(spy).not.toHaveBeenCalled()
 
-    remote.increment('banana.error', ['phone:1'])
+    remote.increment('analytics_js.banana.error', ['phone:1'])
     expect(spy).toHaveBeenCalled()
   })
 
@@ -73,7 +73,7 @@ describe('remote metrics', () => {
       sampleRate: 100,
     })
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     await remote.flush()
 
     expect(spy).toHaveBeenCalled()
@@ -81,7 +81,7 @@ describe('remote metrics', () => {
       Array [
         "https://api.segment.io/v1/m",
         Object {
-          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"next-${process.env.VERSION}\\"}}]}",
+          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"next-undefined\\"}}]}",
           "headers": Object {
             "Content-Type": "text/plain",
           },
@@ -96,7 +96,7 @@ describe('remote metrics', () => {
       sampleRate: 100,
     })
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     expect(remote.queue.length).toBe(1)
 
     await remote.flush()
@@ -115,7 +115,7 @@ describe('remote metrics', () => {
       sampleRate: 100,
     })
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     await remote.flush()
 
     expect(errorSpy).toHaveBeenCalledWith(error)
@@ -133,7 +133,7 @@ describe('remote metrics', () => {
       sampleRate: 100,
     })
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     await remote.flush()
 
     expect(remote.sampleRate).toBe(0)
@@ -149,7 +149,7 @@ describe('remote metrics', () => {
 
     const flushSpy = jest.spyOn(remote, 'flush')
 
-    remote.increment('banana', ['phone:1'])
+    remote.increment('analytics_js.banana', ['phone:1'])
     jest.advanceTimersByTime(500)
 
     expect(flushSpy).toHaveBeenCalledTimes(5)

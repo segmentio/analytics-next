@@ -47,6 +47,11 @@ export class RemoteMetrics {
   }
 
   increment(metric: string, tags: string[]): void {
+    // All metrics are part of an allow list in Tracking API
+    if (!metric.includes('analytics_js.')) {
+      return
+    }
+
     // /m doesn't like empty tags
     if (tags.length === 0) {
       return
