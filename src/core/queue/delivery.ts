@@ -1,4 +1,4 @@
-import { Context } from '../context'
+import { Context, ContextCancelation } from '../context'
 import { Plugin } from '../plugin'
 
 async function tryOperation(
@@ -14,7 +14,7 @@ async function tryOperation(
 export function attempt(
   ctx: Context,
   plugin: Plugin
-): Promise<Context | Error> {
+): Promise<Context | Error | undefined> {
   ctx.log('debug', 'plugin', { plugin: plugin.name })
   const start = new Date().getTime()
 
@@ -30,6 +30,13 @@ export function attempt(
       return ctx
     })
     .catch((err) => {
+      if (err instanceof ContextCancelation) {
+        ctx.log('warn', err.type, {
+          plugin: plugin.name,
+          error: err,
+        })
+        return
+      }
       ctx.log('error', 'plugin Error', {
         plugin: plugin.name,
         error: err,

@@ -199,7 +199,8 @@ export class LegacyDestination implements Plugin {
         ctx.cancel(
           new ContextCancelation({
             retry: false,
-            reason: 'event dropped by plan',
+            reason: `Event ${ev} disabled for integration ${this.name} in tracking plan`,
+            type: 'Dropped by plan',
           })
         )
         return ctx
@@ -214,7 +215,8 @@ export class LegacyDestination implements Plugin {
         ctx.cancel(
           new ContextCancelation({
             retry: false,
-            reason: 'event dropped by plan',
+            reason: `Event ${ev} disabled for integration ${this.name} in tracking plan`,
+            type: 'Dropped by plan',
           })
         )
         return ctx

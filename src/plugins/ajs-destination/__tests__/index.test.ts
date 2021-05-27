@@ -456,11 +456,14 @@ describe('plan', () => {
     jest.spyOn(dest.integration!, 'track')
 
     const ctx = new Context({ type: 'page', event: 'Track Event' })
-    const call = dest.track(ctx)
+    await expect(() => dest.track(ctx)).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "Event Track Event disabled for integration amplitude in tracking plan",
+        "retry": false,
+        "type": "Dropped by plan",
+      }
+    `)
 
-    await expect(call).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"event dropped by plan"`
-    )
     expect(dest.integration?.track).not.toHaveBeenCalled()
     expect(ctx.event.integrations).toMatchInlineSnapshot(`
       Object {
@@ -497,13 +500,14 @@ describe('plan', () => {
     })
 
     jest.spyOn(dest.integration!, 'track')
-
-    const unplannedCall = dest.track(
-      new Context({ type: 'page', event: 'Track Event' })
-    )
-    await expect(unplannedCall).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"event dropped by plan"`
-    )
+    const ctx = new Context({ type: 'page', event: 'Track Event' })
+    await expect(() => dest.track(ctx)).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "Event Track Event disabled for integration amplitude in tracking plan",
+        "retry": false,
+        "type": "Dropped by plan",
+      }
+    `)
 
     expect(dest.integration?.track).not.toHaveBeenCalled()
   })
@@ -565,14 +569,18 @@ describe('plan', () => {
         },
       },
     })
-
+    jest.spyOn(dest.integration!, 'track')
     const ctx = new Context({ type: 'page', event: 'Track Event' })
 
-    const call = dest.track(ctx)
+    await expect(() => dest.track(ctx)).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "Event Track Event disabled for integration amplitude in tracking plan",
+        "retry": false,
+        "type": "Dropped by plan",
+      }
+    `)
 
-    await expect(call).rejects.toThrowErrorMatchingInlineSnapshot(
-      `"event dropped by plan"`
-    )
+    expect(dest.integration?.track).not.toHaveBeenCalled()
     expect(ctx.event.integrations).toEqual({ amplitude: false })
   })
 

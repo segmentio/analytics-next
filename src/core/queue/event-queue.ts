@@ -207,7 +207,10 @@ export class EventQueue extends Emitter {
     // TODO: should enrichment halt the pipeline?
     // TODO: should enrichment be run in parallel?
     for (const enrichmentWare of enrichment) {
-      const temp: Context | Error = await attempt(ctx, enrichmentWare)
+      const temp: Context | Error | undefined = await attempt(
+        ctx,
+        enrichmentWare
+      )
       if (temp instanceof Context) {
         ctx = temp
       }

@@ -21,14 +21,18 @@ export interface SerializedContext {
 interface CancelationOptions {
   retry?: boolean
   reason?: string
+  type?: string
 }
 
-export class ContextCancelation extends Error {
+export class ContextCancelation {
   retry: boolean
+  type: string
+  reason?: string
 
   constructor(options: CancelationOptions) {
-    super(options.reason)
     this.retry = options.retry ?? true
+    this.type = options.type ?? 'plugin Error'
+    this.reason = options.reason ?? ''
   }
 }
 
