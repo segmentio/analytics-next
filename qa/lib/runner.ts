@@ -60,8 +60,13 @@ export async function run(params: ComparisonParams) {
       // we know GA works :)
       if (
         call.url.includes('doubleclick.net') ||
+        // bot
         call.url.includes('googletagmanager') ||
+        // bot
         call.url.includes('api-iam.intercom.io') ||
+        // bot
+        call.url.includes('bat.bing') ||
+        // there's no need to assert on metrics, especially as they're sampled
         call.url.includes('api.segment.io/v1/m') ||
         (request.method() === 'POST' && data === null)
       ) {
