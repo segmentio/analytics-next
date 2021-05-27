@@ -754,9 +754,7 @@ describe('Custom cookie params', () => {
     )
     customUser.identify('some_id', { trait: true })
 
-    expect(document.cookie).toMatchInlineSnapshot(
-      `"; ajs_user_id=some_id; ajs_user_traits={%22trait%22:true}"`
-    )
+    expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id"`)
     expect(customUser.id()).toBe('some_id')
     expect(customUser.traits()).toEqual({ trait: true })
   })

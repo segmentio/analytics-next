@@ -273,17 +273,21 @@ export class User {
     return this.chainGet(this.anonKey)
   }
 
-  // TODO: should traits be stored in cookies?
   traits = (traits?: object | null): SegmentEvent['traits'] => {
     if (traits === null) {
       traits = {}
     }
 
     if (traits) {
-      this.trySet(this.traitsKey, traits ?? {})
+      this.mem.set(this.traitsKey, traits ?? {})
+      this.localStorage.set(this.traitsKey, traits ?? {})
     }
 
-    return this.chainGet(this.traitsKey) ?? {}
+    return (
+      this.localStorage.get(this.traitsKey) ??
+      this.mem.get(this.traitsKey) ??
+      {}
+    )
   }
 
   identify(id?: ID, traits?: object): void {
