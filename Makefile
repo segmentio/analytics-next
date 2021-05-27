@@ -48,7 +48,7 @@ test-qa: build-browser ## Runs all QA tests in a single command
 .PHONY: test-coverage
 
 test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTINATION=amplitude DEBUG=true
-	$(BIN)/jest --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args} ${DESTINATION} ${DEBUG}
+	$(BIN)/jest --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-integration: build-browser ## Runs all integration tests in a single command

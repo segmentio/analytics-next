@@ -71,7 +71,7 @@ make test-qa-destinations
 
 ```sh
 # Will open one Chrome instance for AJS Classic and one for AJS Next
-$ make test-qa-destinations DESTINATION=amplitude DEBUG=true
+$ DESTINATION=amplitude DEBUG=true make test-qa-destinations
 ```
 
 ## Releasing
