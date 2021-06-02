@@ -1,4 +1,5 @@
-import standard from './fetch-dispatcher'
+import fetch from 'unfetch'
+import { SegmentEvent } from '../../core/events'
 
 type BatchingConfig = {
   size?: number
@@ -22,8 +23,6 @@ function approachingTrackingAPILimit(buffer: unknown): boolean {
 }
 
 export default function batch(apiHost: string, config?: BatchingConfig) {
-  const { dispatch: fetch } = standard()
-
   let buffer: Array<[string, object]> = []
   let flushing = false
 
@@ -37,7 +36,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
 
     flushing = true
 
-    const remote = `https://${apiHost}/b`
+    const remote = `https://${apiHost}/batch`
     const batch = buffer.map(([_url, blob]) => {
       return blob
     })
@@ -45,7 +44,18 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     buffer = []
     flushing = false
 
-    return fetch(remote, batch)
+    const writeKey = (batch[0] as SegmentEvent)?.writeKey
+    const authtoken = btoa(writeKey + ':')
+
+    return fetch(remote, {
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Basic ${authtoken}`,
+      },
+      method: 'post',
+      body: JSON.stringify({ batch }),
+    })
   }
 
   function scheduleFlush(): void {

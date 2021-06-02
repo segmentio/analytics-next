@@ -1,7 +1,7 @@
 const fetch = jest.fn()
 
-jest.mock('../fetch-dispatcher', () => {
-  return () => ({ dispatch: fetch })
+jest.mock('unfetch', () => {
+  return fetch
 })
 
 import batch from '../batched-dispatcher'
@@ -44,18 +44,16 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
-        Array [
-          Object {
-            "event": "first",
+        "https://https://api.segment.io/batch",
+        Object {
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}]}",
+          "headers": Object {
+            "Authorization": "Basic dW5kZWZpbmVkOg==",
+            "Content-Type": "application/json",
           },
-          Object {
-            "event": "second",
-          },
-          Object {
-            "event": "third",
-          },
-        ],
+          "keepalive": true,
+          "method": "post",
+        },
       ]
     `)
   })
@@ -154,15 +152,16 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
-        Array [
-          Object {
-            "event": "first",
+        "https://https://api.segment.io/batch",
+        Object {
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}]}",
+          "headers": Object {
+            "Authorization": "Basic dW5kZWZpbmVkOg==",
+            "Content-Type": "application/json",
           },
-          Object {
-            "event": "second",
-          },
-        ],
+          "keepalive": true,
+          "method": "post",
+        },
       ]
     `)
   })
@@ -191,23 +190,31 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
-        Array [
-          Object {
-            "event": "first",
+        "https://https://api.segment.io/batch",
+        Object {
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}]}",
+          "headers": Object {
+            "Authorization": "Basic dW5kZWZpbmVkOg==",
+            "Content-Type": "application/json",
           },
-        ],
+          "keepalive": true,
+          "method": "post",
+        },
       ]
     `)
 
     expect(fetch.mock.calls[1]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
-        Array [
-          Object {
-            "event": "second",
+        "https://https://api.segment.io/batch",
+        Object {
+          "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}]}",
+          "headers": Object {
+            "Authorization": "Basic dW5kZWZpbmVkOg==",
+            "Content-Type": "application/json",
           },
-        ],
+          "keepalive": true,
+          "method": "post",
+        },
       ]
     `)
   })
