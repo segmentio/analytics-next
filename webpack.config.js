@@ -31,16 +31,26 @@ const config = {
   mode: process.env.NODE_ENV || 'development',
   devtool: 'source-map',
   entry: {
-    index: path.resolve(__dirname, 'src/browser.ts'),
-    standalone: path.resolve(__dirname, 'src/standalone.ts'),
+    index: {
+      import: path.resolve(__dirname, 'src/browser.ts'),
+      library: {
+        name: 'AnalyticsNext',
+        type: 'umd',
+      },
+    },
+    standalone: {
+      import: path.resolve(__dirname, 'src/standalone.ts'),
+      library: {
+        name: 'AnalyticsNext',
+        type: 'window',
+      },
+    },
   },
   output: {
     publicPath: ASSET_PATH,
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist/umd'),
     chunkFilename: '[name].bundle.[contenthash].js',
-    library: 'AnalyticsNext',
-    libraryTarget: 'umd',
   },
   target: ['web', 'es5'],
   module: {
