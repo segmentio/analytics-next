@@ -17,6 +17,12 @@ const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? 'id=***REMOVED***' // cdn.segment.com OAI
     : 'id=***REMOVED***' // cdn.segment.build OAI
+
+const customDomainCanonicalUserId =
+  process.env.NODE_ENV == 'production'
+    ? 'id=***REMOVED***' // custom domain prod
+    : 'id=***REMOVED***' // custom domain stage
+
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 const sessionToken = process.env.AWS_SESSION_TOKEN
@@ -84,6 +90,7 @@ async function upload(meta) {
     // put chunks in a separate path. Regardless of branch, version, etc.
     // there are immutable scripts that will be loaded by webpack in runtime
     if (filePath.includes('bundle')) {
+      options.GrantRead = `${cloudfrontCanonicalUserId},${customDomainCanonicalUserId}`
       await s3
         .putObject({
           ...options,
