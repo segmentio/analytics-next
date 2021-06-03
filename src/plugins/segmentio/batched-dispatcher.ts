@@ -58,28 +58,31 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     })
   }
 
-  function scheduleFlush(): void {
-    setTimeout(() => {
+  function scheduleFlush(): NodeJS.Timeout {
+    return setTimeout(() => {
       if (buffer.length && !flushing) {
         flush()
       }
-      scheduleFlush()
     }, timeout)
   }
 
-  scheduleFlush()
+  let schedule = scheduleFlush()
 
   window.addEventListener('unload', () => {
     flush()
   })
 
   async function dispatch(url: string, body: object): Promise<unknown> {
+    clearTimeout(schedule)
     buffer.push([url, body])
 
     const bufferOverflow =
       buffer.length >= limit || approachingTrackingAPILimit(buffer)
+
     if (bufferOverflow && !flushing) {
       flush()
+    } else {
+      schedule = scheduleFlush()
     }
 
     return true
