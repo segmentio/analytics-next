@@ -70,7 +70,6 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     const authtoken = btoa(writeKey + ':')
 
     return fetch(remote, {
-      keepalive: true,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Basic ${authtoken}`,
