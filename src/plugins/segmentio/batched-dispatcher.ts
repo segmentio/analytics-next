@@ -1,5 +1,7 @@
-import fetch from 'unfetch'
+import unfetch from 'unfetch'
 import { SegmentEvent } from '../../core/events'
+
+const fetch = window.fetch || unfetch
 
 type BatchingConfig = {
   size?: number
@@ -20,6 +22,26 @@ function kilobytes(buffer: unknown): number {
  */
 function approachingTrackingAPILimit(buffer: unknown): boolean {
   return kilobytes(buffer) >= MAX_PAYLOAD_SIZE - 50
+}
+
+function chunks(batch: object[]): Array<object[]> {
+  const result: object[][] = []
+  let index = 0
+
+  batch.forEach((item) => {
+    const size = kilobytes(result[index])
+    if (size >= 64) {
+      index++
+    }
+
+    if (result[index]) {
+      result[index].push(item)
+    } else {
+      result[index] = [item]
+    }
+  })
+
+  return result
 }
 
 export default function batch(apiHost: string, config?: BatchingConfig) {
@@ -70,8 +92,38 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     }, timeout)
   }
 
-  window.addEventListener('unload', () => {
-    flush()
+  window.addEventListener('beforeunload', () => {
+    if (buffer.length === 0) {
+      return
+    }
+
+    const batch = buffer.map(([_url, blob]) => {
+      return blob
+    })
+
+    const chunked = chunks(batch)
+
+    const reqs = chunked.map(async (chunk) => {
+      if (chunk.length === 0) {
+        return
+      }
+
+      const remote = `https://${apiHost}/batch`
+      const writeKey = (chunk[0] as SegmentEvent)?.writeKey
+      const authtoken = btoa(writeKey + ':')
+
+      return fetch(remote, {
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${authtoken}`,
+        },
+        method: 'post',
+        body: JSON.stringify({ batch: chunk }),
+      })
+    })
+
+    Promise.all(reqs).catch(console.error)
   })
 
   async function dispatch(url: string, body: object): Promise<unknown> {
