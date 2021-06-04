@@ -94,7 +94,6 @@ describe('Batching', () => {
             "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "application/json",
           },
-          "keepalive": true,
           "method": "post",
         },
       ]
@@ -155,7 +154,6 @@ describe('Batching', () => {
             "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "application/json",
           },
-          "keepalive": true,
           "method": "post",
         },
       ]
@@ -193,7 +191,6 @@ describe('Batching', () => {
             "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "application/json",
           },
-          "keepalive": true,
           "method": "post",
         },
       ]
@@ -208,7 +205,6 @@ describe('Batching', () => {
             "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "application/json",
           },
-          "keepalive": true,
           "method": "post",
         },
       ]
