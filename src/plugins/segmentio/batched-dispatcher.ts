@@ -58,22 +58,23 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  let schedule: NodeJS.Timeout | undefined = scheduleFlush()
+
   function scheduleFlush(): NodeJS.Timeout {
     return setTimeout(() => {
+      schedule = undefined
       if (buffer.length && !flushing) {
         flush()
       }
     }, timeout)
   }
 
-  let schedule = scheduleFlush()
-
   window.addEventListener('unload', () => {
     flush()
   })
 
   async function dispatch(url: string, body: object): Promise<unknown> {
-    clearTimeout(schedule)
     buffer.push([url, body])
 
     const bufferOverflow =
@@ -82,7 +83,9 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     if (bufferOverflow && !flushing) {
       flush()
     } else {
-      schedule = scheduleFlush()
+      if (!schedule) {
+        schedule = scheduleFlush()
+      }
     }
 
     return true
