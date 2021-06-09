@@ -1,7 +1,10 @@
 import unfetch from 'unfetch'
 import { SegmentEvent } from '../../core/events'
 
-const fetch = window.fetch || unfetch
+let fetch = unfetch
+if (typeof window !== 'undefined') {
+  fetch = window.fetch || unfetch
+}
 
 type BatchingConfig = {
   size?: number

@@ -92,11 +92,12 @@ export type LinkArgs = Parameters<typeof link>
 
 export function form(
   this: Analytics,
-  forms: HTMLFormElement | Array<HTMLFormElement>,
+  forms: HTMLFormElement | Array<HTMLFormElement> | null,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
 ): Analytics {
   // always arrays, handles jquery
+  if (!forms) return this
   if (forms instanceof HTMLFormElement) forms = [forms]
 
   const elements = forms

@@ -637,6 +637,17 @@ describe('track helpers', () => {
       document.body.removeChild(form)
     })
 
+    it('should not error or send track event on null form', async () => {
+      const form = document.getElementById('fake-form') as HTMLFormElement
+
+      await analytics.trackForm(form, 'Signed Up', {
+        plan: 'Premium',
+        revenue: 99.0,
+      })
+      submit.click()
+      expect(mockTrack).not.toBeCalled()
+    })
+
     it('should trigger a track on a form submit', async () => {
       await analytics.trackForm(form, 'foo')
       submit.click()
