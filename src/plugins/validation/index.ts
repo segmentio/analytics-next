@@ -15,7 +15,9 @@ export function isFunction(obj: unknown): obj is Function {
 }
 
 export function isPlainObject(obj: unknown): obj is object {
-  return typeof obj == 'object' && obj !== null && obj.constructor == Object
+  return (
+    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
+  )
 }
 
 function hasUser(event: SegmentEvent): boolean {

@@ -610,10 +610,10 @@
   dependencies:
     unfetch "^3.1.1"
 
-"@segment/facade@3.3.9":
-  version "3.3.9"
-  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.9.tgz#3417f07e3c68d965738a73b209017147137773b1"
-  integrity sha512-KubHTlqL+Jvy878yTjBuUiDNs1G4ziw3QvjChfjinAMPnXBpcjl4JTvZPTexQC/8kixSYgDHmWQxsF6eK+npqg==
+"@segment/facade@3.3.10":
+  version "3.3.10"
+  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.10.tgz#94381079d326f8d4b2d11e0b2b1a85ca7aac28c4"
+  integrity sha512-Ed6hRwpNqwjsj3s5fXFqzoWwyB/foVGM+uT3Kl94Yd5BlZtYvmHxtX5gGsAPD49eazIPxLqJDZSHz/2tnokRTQ==
   dependencies:
     "@segment/isodate-traverse" "^1.1.1"
     inherits "^2.0.4"
