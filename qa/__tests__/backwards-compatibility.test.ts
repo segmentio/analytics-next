@@ -72,4 +72,33 @@ describe('Backwards compatibility', () => {
     expect(nextId).toEqual(classicId)
     expect(nextId.email).toEqual('test@example.org')
   })
+
+  test('loads bundles from custom domain CDN', async () => {
+    const code = `(async () => {})()`
+
+    const result = await run({
+      browser: await browser(),
+      script: code,
+      serverURL: await server(),
+      writeKey: '***REMOVED***',
+    })
+
+    const resultString = result.next.bundleRequests.join()
+
+    expect(resultString).toContain(
+      'http://localhost:4000/dist/umd/standalone.js'
+    )
+    expect(resultString).toContain(
+      'http://localhost:4000/dist/umd/vendors-node_modules_segment_tsub_dist_index_js.bundle'
+    )
+    expect(resultString).toContain(
+      'http://localhost:4000/dist/umd/ajs-destination.bundle'
+    )
+    expect(resultString).toContain(
+      'http://localhost:4000/dist/umd/legacyVideos.bundle'
+    )
+    expect(resultString).toContain(
+      'http://localhost:4000/dist/umd/vendors-node_modules_segment_analytics_js-video-plugins_dist_index_umd_js.bundle'
+    )
+  })
 })

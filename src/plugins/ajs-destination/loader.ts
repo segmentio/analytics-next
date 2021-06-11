@@ -1,13 +1,17 @@
 import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
+import { getCDN } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
-const path =
-  process.env.LEGACY_INTEGRATIONS_PATH ??
-  'https://cdn.segment.com/next-integrations'
+const cdn = getCDN()
+
+const path = cdn
+  ? cdn + '/next-integrations'
+  : process.env.LEGACY_INTEGRATIONS_PATH ??
+    'https://cdn.segment.com/next-integrations'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')

@@ -50,7 +50,7 @@ export function next(writekey: string) {
               var t = document.createElement('script')
               t.type = 'text/javascript'
               t.async = !0
-              t.src = '/dist/umd/standalone.js'
+              t.src = 'http://localhost:4000/dist/umd/standalone.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
               analytics._loadOptions = e

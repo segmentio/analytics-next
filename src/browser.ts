@@ -1,7 +1,18 @@
+import { getCDN } from './lib/parse-cdn'
+
 if (process.env.ASSET_PATH) {
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/camelcase
-  __webpack_public_path__ = process.env.ASSET_PATH
+  if (process.env.ASSET_PATH === '/dist/umd/') {
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    __webpack_public_path__ = '/dist/umd/'
+  } else {
+    const cdn = getCDN()
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    __webpack_public_path__ = cdn
+      ? cdn + '/analytics-next/bundles/'
+      : 'https://cdn.segment.com/analytics-next/bundles/'
+  }
 }
 
 import fetch from 'unfetch'
@@ -53,23 +64,6 @@ export interface LegacySettings {
   legacyVideoPluginsEnabled?: boolean
 
   remotePlugins?: RemotePlugin[]
-}
-
-function getCDN(): string | undefined {
-  const regex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/
-  const scripts = Array.from(document.querySelectorAll('script'))
-  let cdn: string | undefined = undefined
-
-  scripts.forEach((s) => {
-    const src = s.getAttribute('src') ?? ''
-    const result = regex.exec(src)
-
-    if (result && result[1]) {
-      cdn = result[1]
-    }
-  })
-
-  return cdn
 }
 
 export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {

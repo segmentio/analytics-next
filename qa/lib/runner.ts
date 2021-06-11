@@ -19,18 +19,19 @@ export async function run(params: ComparisonParams) {
     execution: string
   ) {
     const networkRequests: Array<{ url: string; data: JSONValue }> = []
+    const bundleRequests: Array<string> = []
     const context = await browser.newContext()
     const page = await context.newPage()
 
     page.route('**', async (route) => {
       const request = route.request()
-
       if (
         request.url().includes('cdn.segment') ||
         request.url().includes('cdn-settings') ||
         request.url().includes('localhost') ||
         request.url().includes('unpkg')
       ) {
+        bundleRequests.push(request.url())
         route.continue().catch(console.error)
         return
       }
@@ -108,7 +109,14 @@ export async function run(params: ComparisonParams) {
 
     !DEBUG && (await page.close({ runBeforeUnload: true }))
 
-    return { networkRequests, cookies, localStorage, codeEvaluation, metrics }
+    return {
+      networkRequests,
+      cookies,
+      localStorage,
+      codeEvaluation,
+      metrics,
+      bundleRequests,
+    }
   }
 
   const [classic, next] = await Promise.all([
