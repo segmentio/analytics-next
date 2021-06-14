@@ -1,3 +1,5 @@
+import uuid from '@lukeed/uuid'
+import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
 import { User } from '../../user'
 import { SegmentEvent, Options } from '../interfaces'
@@ -97,6 +99,36 @@ describe('Event Factory', () => {
     test('adds a message id', () => {
       const track = factory.track('Order Completed', shoes)
       expect(track.messageId).toContain('ajs-next')
+    })
+
+    test('adds a random message id even when random is mocked', () => {
+      jest.useFakeTimers()
+      jest.spyOn(uuid, 'v4').mockImplementation(() => 'abc-123')
+      // fake timer and fake uuid => equal
+      expect(factory.track('Order Completed', shoes).messageId).toEqual(
+        factory.track('Order Completed', shoes).messageId
+      )
+
+      // restore uuid function => not equal
+      jest.restoreAllMocks()
+      expect(factory.track('Order Completed', shoes).messageId).not.toEqual(
+        factory.track('Order Completed', shoes).messageId
+      )
+
+      // restore timers function => not equal
+      jest.useRealTimers()
+
+      expect(factory.track('Order Completed', shoes).messageId).not.toEqual(
+        factory.track('Order Completed', shoes).messageId
+      )
+    })
+
+    test('message ids are random', () => {
+      const ids = range(0, 200).map(
+        () => factory.track('Order Completed', shoes).messageId
+      )
+
+      expect(uniq(ids)).toHaveLength(200)
     })
 
     test('sets an user id', () => {
@@ -297,7 +329,7 @@ describe('Event Factory', () => {
         opts.integrations = { Segment: true }
         const normalized = factory['normalize'](msg)
 
-        expect(normalized.messageId).toHaveLength(45) // 'ajs-next-[UUID]'
+        expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
         delete normalized.messageId
 
         expect(normalized).toStrictEqual({

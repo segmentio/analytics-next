@@ -23,7 +23,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "21.00 KB"
+      "limit": "22.8 KB"
     }
   ],
   "prettier": {
@@ -47,6 +47,7 @@
     "@segment/tsub": "^0.1.4",
     "dset": "^2.1.0",
     "js-cookie": "^2.2.1",
+    "spark-md5": "^3.0.1",
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
@@ -67,6 +68,7 @@
     "@types/node-statsd": "^0.1.2",
     "@types/serve-handler": "^6.1.0",
     "@types/sinon": "^9.0.10",
+    "@types/spark-md5": "^3.0.2",
     "@types/test-listen": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",

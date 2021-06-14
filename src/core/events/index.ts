@@ -2,6 +2,8 @@ import { v4 as uuid } from '@lukeed/uuid'
 import dset from 'dset'
 import { ID, User } from '../user'
 import { Options, Integrations, SegmentEvent } from './interfaces'
+import md5 from 'spark-md5'
+
 export * from './interfaces'
 
 export class EventFactory {
@@ -211,12 +213,20 @@ export class EventFactory {
     const [context, overrides] = this.context(event)
     const { options, ...rest } = event
 
-    return {
+    const body = {
       ...rest,
       context,
       integrations: allIntegrations,
-      messageId: 'ajs-next-' + uuid(),
       ...overrides,
     }
+
+    const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
+
+    const evt: SegmentEvent = {
+      ...body,
+      messageId,
+    }
+
+    return evt
   }
 }
