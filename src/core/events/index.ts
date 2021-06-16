@@ -136,6 +136,13 @@ export class EventFactory {
       base.previousId = from
     }
 
+    if (to === undefined) {
+      return this.normalize({
+        ...base,
+        ...this.baseEvent(),
+      } as SegmentEvent)
+    }
+
     return this.normalize({
       ...this.baseEvent(),
       ...base,

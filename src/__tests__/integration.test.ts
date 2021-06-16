@@ -10,6 +10,7 @@ import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
+import jar from 'js-cookie'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -318,6 +319,22 @@ describe('Alias', () => {
     expect(ctx.event.userId).toEqual('netto farah')
     expect(ctx.event.previousId).toEqual('netto')
 
+    expect(amplitude.alias).toHaveBeenCalled()
+  })
+
+  it('falls back to userID in cookies if no id passed', async () => {
+    jar.set('ajs_user_id', 'dan')
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude],
+    })
+
+    jest.spyOn(amplitude, 'alias')
+
+    // @ts-ignore ajs 1.0 parity - allows empty alias calls
+    const ctx = await analytics.alias()
+
+    expect(ctx.event.userId).toEqual('dan')
     expect(amplitude.alias).toHaveBeenCalled()
   })
 })
