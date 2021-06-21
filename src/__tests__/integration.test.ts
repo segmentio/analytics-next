@@ -158,7 +158,7 @@ describe('Initialization', () => {
     expect(ready).toHaveBeenCalled()
   })
 
-  it('should call page if initialpageview is set', async () => {
+  it('calls page if initialpageview is set', async () => {
     jest.mock('../analytics')
     const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
     Analytics.prototype.page = mockPage
@@ -168,12 +168,130 @@ describe('Initialization', () => {
     expect(mockPage).toHaveBeenCalled()
   })
 
-  it('shouldnt call page if initialpageview is not set', async () => {
+  it('does not call page if initialpageview is not set', async () => {
     jest.mock('../analytics')
     const mockPage = jest.fn()
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
+  })
+
+  describe('options.integrations permutations', () => {
+    const settings = { writeKey }
+
+    it('does not load Segment.io if integrations.All is false and Segment.io is not listed', async () => {
+      const options: { integrations: { [key: string]: boolean } } = {
+        integrations: { All: false },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(segmentio).toBeUndefined()
+    })
+
+    it('does not load Segment.io if its set to false', async () => {
+      const options: { integrations?: { [key: string]: boolean } } = {
+        integrations: { 'Segment.io': false },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(segmentio).toBeUndefined()
+    })
+
+    it('loads Segment.io if integrations.All is false and Segment.io is listed', async () => {
+      const options: { integrations: { [key: string]: boolean } } = {
+        integrations: { All: false, 'Segment.io': true },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(segmentio).toBeDefined()
+    })
+
+    it('loads Segment.io if integrations.All is undefined', async () => {
+      const options: { integrations: { [key: string]: boolean } } = {
+        integrations: { 'Segment.io': true },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(segmentio).toBeDefined()
+    })
+
+    it('loads Segment.io if integrations is undefined', async () => {
+      const options: { integrations?: { [key: string]: boolean } } = {
+        integrations: undefined,
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(segmentio).toBeDefined()
+    })
+
+    it('loads selected plugins when Segment.io is false', async () => {
+      const options: { integrations?: { [key: string]: boolean } } = {
+        integrations: {
+          'Test Plugin': true,
+          'Segment.io': false,
+        },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(
+        { ...settings, plugins: [xt] },
+        options
+      )
+
+      const plugin = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Test Plugin'
+      )
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(plugin).toBeDefined()
+      expect(segmentio).toBeUndefined()
+    })
+
+    it('loads selected plugins when Segment.io and All are false', async () => {
+      const options: { integrations?: { [key: string]: boolean } } = {
+        integrations: {
+          All: false,
+          'Test Plugin': true,
+          'Segment.io': false,
+        },
+      }
+      const analyticsResponse = await AnalyticsBrowser.load(
+        { ...settings, plugins: [xt] },
+        options
+      )
+
+      const plugin = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Test Plugin'
+      )
+
+      const segmentio = analyticsResponse[0].queue.plugins.find(
+        (p) => p.name === 'Segment.io'
+      )
+
+      expect(plugin).toBeDefined()
+      expect(segmentio).toBeUndefined()
+    })
   })
 })
 

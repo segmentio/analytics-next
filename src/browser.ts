@@ -159,12 +159,22 @@ async function registerPlugins(
     ...plugins,
     ...legacyDestinations,
     ...remotePlugins,
-    segmentio(
-      analytics,
-      mergedSettings['Segment.io'] as SegmentioSettings,
-      legacySettings.integrations
-    ),
   ]
+
+  const shouldIgnoreSegmentio =
+    (opts.integrations?.All === false && !opts.integrations['Segment.io']) ||
+    (opts.integrations && opts.integrations['Segment.io'] === false)
+
+  if (!shouldIgnoreSegmentio) {
+    toRegister.push(
+      segmentio(
+        analytics,
+        mergedSettings['Segment.io'] as SegmentioSettings,
+        legacySettings.integrations
+      )
+    )
+  }
+
   const ctx = await analytics.register(...toRegister)
 
   if (Object.keys(legacySettings.enabledMiddleware ?? {}).length > 0) {
