@@ -425,13 +425,11 @@ export class Analytics extends Emitter {
 
   // analytics-classic stubs
 
-  // essentially console.log in AJSC
   log() {
     console.warn(deprecationWarning)
     return
   }
 
-  // unreleased AJSC feature
   addIntegrationMiddleware() {
     console.warn(deprecationWarning)
     return
@@ -473,7 +471,6 @@ export class Analytics extends Emitter {
     return
   }
 
-  // The field this function uses is unused in AJSN
   add() {
     console.warn(deprecationWarning)
     return

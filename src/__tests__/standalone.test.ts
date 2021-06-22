@@ -92,7 +92,6 @@ describe('standalone bundle', () => {
     expect(window.analytics.initialized).toBe(true)
   })
 
-  // TODO: figure out how to trigger CSP events with JSDom
   it.skip('reverts to ajs classic in case of CSP errors', async () => {
     await import('../standalone')
 

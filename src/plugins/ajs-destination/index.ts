@@ -262,7 +262,6 @@ export class LegacyDestination implements Plugin {
   }
 
   async page(ctx: Context): Promise<Context> {
-    // TODO (netto) - Add unit test explaining this
     if (this.integration?._assumesPageview && !this._initialized) {
       this.integration.initialize()
     }

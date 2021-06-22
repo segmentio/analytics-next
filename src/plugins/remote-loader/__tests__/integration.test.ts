@@ -70,13 +70,5 @@ describe.skip('Remote Plugin Integration', () => {
 
     // loaded remote plugin
     expect(window['amplitude-pluginsDestination']).not.toBeUndefined()
-
-    // TODO re-enable after fixing the plugin
-    // registered the plugin correctly
-    // expect(
-    //   ajs.queue.plugins.find(
-    //     (p) => p.type === 'enrichment' && p.name.includes('amplitude')
-    //   )
-    // ).not.toBeFalsy()
   })
 })

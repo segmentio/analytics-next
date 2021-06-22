@@ -110,8 +110,7 @@ export const samples = {
   quantcast: ['***REMOVED***'],
   'quora-conversion-pixel': ['***REMOVED***'],
 
-  // TODO: re-enable this once rollbar is fully deployed to AJS 1.0
-  // rollbar: ['***REMOVED***'],
+  rollbar: ['***REMOVED***'],
   saasquatch: ['***REMOVED***'],
 
   satismeter: ['***REMOVED***'],

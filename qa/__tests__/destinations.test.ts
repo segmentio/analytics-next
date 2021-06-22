@@ -51,8 +51,6 @@ describe('Destination Tests', () => {
             .map((entry) => entry[0])
             .filter((p) => !p.match(/^\d+$/))
             .sort(),
-          // TODO: add bug once `category` is present in page calls
-          // bodyParams: Object.keys(n.data).sort(),
         })
       })
       .sort()
@@ -66,8 +64,6 @@ describe('Destination Tests', () => {
             .map((entry) => entry[0])
             .filter((p) => !p.match(/^\d+$/))
             .sort(),
-          // TODO: add bug once `category` is present in page calls
-          // bodyParams: Object.keys(n.data).sort(),
         })
       })
       .sort()

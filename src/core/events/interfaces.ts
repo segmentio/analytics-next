@@ -108,7 +108,6 @@ export interface SegmentEvent {
     [k: string]: JSONValue
   }
 
-  // TODO: Narrow types (i.e. only show traits for `track` and `group`)
   traits?: object & {
     [k: string]: JSONValue
   }

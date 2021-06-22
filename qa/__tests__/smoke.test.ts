@@ -34,7 +34,6 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
       // @ts-ignore need all sources to be rebuilt first
       delete classic.data._metadata.bundledIds
 
-      // TODO: Remove this once Gabe fixes this bug
       // @ts-ignore sort unbundled metadata because of a breaking change in the SegmentIO destination
       classic.data._metadata.unbundled = uniq(
         // @ts-ignore

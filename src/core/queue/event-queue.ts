@@ -24,7 +24,6 @@ export class EventQueue extends Emitter {
 
   constructor(priorityQueue?: PriorityQueue<Context>) {
     super()
-    // todo: should the persisted queue be namespaced with the write key?
     this.queue = priorityQueue ?? new PersistedPriorityQueue(4, 'event-queue')
     this.scheduleFlush()
   }
@@ -204,8 +203,6 @@ export class EventQueue extends Emitter {
       }
     }
 
-    // TODO: should enrichment halt the pipeline?
-    // TODO: should enrichment be run in parallel?
     for (const enrichmentWare of enrichment) {
       const temp: Context | Error | undefined = await attempt(
         ctx,
@@ -215,9 +212,6 @@ export class EventQueue extends Emitter {
         ctx = temp
       }
     }
-
-    // TODO: concurrency control
-    // TODO: timeouts
 
     await new Promise((resolve, reject) => {
       setTimeout(() => {
