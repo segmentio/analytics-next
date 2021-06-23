@@ -604,9 +604,10 @@
   dependencies:
     any-observable "^0.3.0"
 
-"@segment/analytics.js-video-plugins@github://segmentio/analytics.js-video-plugins":
+"@segment/analytics.js-video-plugins@^0.2.1":
   version "0.2.1"
-  resolved "git+ssh://git@github.com/segmentio/analytics.js-video-plugins.git#b9b52877c5a91091efb1a1a4e78f7b587e773e69"
+  resolved "https://registry.yarnpkg.com/@segment/analytics.js-video-plugins/-/analytics.js-video-plugins-0.2.1.tgz#3596fa3887dcd9df5978dc566edf4a0aea2a9b1e"
+  integrity sha512-lZwCyEXT4aaHBLNK433okEKdxGAuyrVmop4BpQqQSJuRz0DglPZgd9B/XjiiWs1UyOankg2aNYMN3VcS8t4eSQ==
   dependencies:
     unfetch "^3.1.1"
 
