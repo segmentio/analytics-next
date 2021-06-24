@@ -36,26 +36,13 @@ const jsontheme = {
   base0F: '#a3685a',
 }
 
-const writeKeys = {
-  segment_com: '***REMOVED***',
-  segment_app: '***REMOVED***',
-  classpass: '***REMOVED***',
-  stage: '***REMOVED***',
-  gurdas_shop: '***REMOVED***',
-  julios_test: '***REMOVED***',
-  netto_bt: '***REMOVED***',
-  netto_amplitude: '***REMOVED***',
-  mme_stats: '***REMOVED***',
-}
-
-const settings: AnalyticsSettings = {
-  writeKey: writeKeys.segment_com,
-}
-
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
+  const [settings, setSettings] = useState<AnalyticsSettings | undefined>(
+    undefined
+  )
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useState<string>(settings.writeKey)
+  const [writeKey, setWriteKey] = useState<string>('')
 
   const newEvent = () => {
     const fakerFns = [
@@ -99,10 +86,6 @@ export default function Home(): React.ReactElement {
     }
   }
 
-  useEffect(() => {
-    fetchAnalytics()
-  }, [writeKey, analyticsReady])
-
   const track = async (e) => {
     e.preventDefault()
 
@@ -143,13 +126,23 @@ export default function Home(): React.ReactElement {
         <span className="drac-text-purple-cyan">Analytics Next</span> Tester
       </h1>
 
-      <select onChange={(e) => setWriteKey(e.target.value)}>
-        {Object.entries(writeKeys).map(([key, value]) => (
-          <option value={value} key={key}>
-            {key} - {value}
-          </option>
-        ))}
-      </select>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          setSettings({ writeKey: writeKey })
+          fetchAnalytics()
+        }}
+      >
+        <label>
+          Writekey:
+          <input
+            type="text"
+            value={writeKey}
+            onChange={(e) => setWriteKey(e.target.value)}
+          />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
 
       <main
         className="drac-box"

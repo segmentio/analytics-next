@@ -3,9 +3,10 @@ import { reportMetrics } from '../lib/benchmark'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
-import { samples } from '../__fixtures__/sources'
 
 jest.setTimeout(100000)
+
+const samples = JSON.parse(process.env.QA_SAMPLES)
 
 let destinations = Object.keys(samples)
 if (process.env.DESTINATION) {

@@ -5,12 +5,11 @@ import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { objectSchema } from '../lib/schema'
 import { server } from '../lib/server'
-import { sources } from '../__fixtures__/sources'
 
 jest.setTimeout(100000)
 type RemovePromise<T> = T extends Promise<infer U> ? U : T
 
-const samples = process.env.SOURCES?.split(',') ?? sources
+const samples = process.env.QA_SOURCES.split(',')
 
 function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
   const classicReqs = results.classic.networkRequests
