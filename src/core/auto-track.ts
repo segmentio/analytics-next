@@ -3,7 +3,9 @@ import { SegmentEvent } from '../core/events'
 
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jQuery: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Zepto: any
   }
 }

@@ -12,9 +12,7 @@ const ASSET_PATH = isProd
   : '/dist/umd/'
 
 const plugins = [
-  new CompressionPlugin({
-    cache: true,
-  }),
+  new CompressionPlugin({}),
   new webpack.EnvironmentPlugin({
     LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.com/next-integrations',
     DEBUG: false,

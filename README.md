@@ -37,9 +37,9 @@ $ make test-unit # runs all tests
 $ yarn jest src/<path> # runs a specific test or tests in a folder
 ```
 
-### Advanced QA
+### Advanced QA (internal use only)
 
-Analytics-Next contains a compreehensive QA test suite that verifies that E2E functionality is compatible with analytics.js classic.
+Analytics-Next contains a comprehensive QA test suite that verifies that E2E functionality is compatible with analytics.js classic.
 
 1. Compile Analytics-Next
 
@@ -49,7 +49,14 @@ $ make build # any time you make changes to Analytics-Next
 $ yarn umd --watch ## (in a separate tab) if you'd like
 ```
 
-2. Run QA tests:
+2. Grab list of test sources
+
+```sh
+export QA_SAMPLES=$(aws-okta exec dev-write -- chamber read analytics-next QA_SAMPLES -q)
+export QA_SOURCES=$(aws-okta exec dev-write -- chamber read analytics-next QA_SOURCES -q)
+```
+
+3. Run QA tests:
 
 ```sh
 $ make test-qa ## if you'd like to run all tests in one go (generally slower)

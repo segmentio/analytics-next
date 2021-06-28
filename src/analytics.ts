@@ -28,6 +28,7 @@ const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
 
 // reference any pre-existing "analytics" object so a user can restore the reference
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalAny: any = global
 const _analytics = globalAny.analytics
 
@@ -477,7 +478,9 @@ export class Analytics extends Emitter {
   }
 
   // snippet function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   push(args: any[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const an = this as any
     const method = args.shift()
     if (method) {

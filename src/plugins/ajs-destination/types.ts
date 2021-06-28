@@ -7,6 +7,7 @@ export interface LegacyIntegration extends Emitter {
   initialize: () => void
   loaded: () => boolean
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   invoke: (method: string, ...args: any[]) => unknown
 
   track?: (event: Track) => void | Promise<void>

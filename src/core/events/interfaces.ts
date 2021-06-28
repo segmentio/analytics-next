@@ -18,6 +18,7 @@ export type Options = {
   context?: AnalyticsContext
   traits?: object
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 
@@ -92,6 +93,7 @@ interface AnalyticsContext {
     id: string
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
 

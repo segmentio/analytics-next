@@ -4,8 +4,8 @@
 
 analytics-next is comprised of two different codebases:
 
-- [analytics-next](github.com/segmentio/analytics-next): All core functionality of AJSN
-- [integrations](github.com/segmentio/analytics.js-integrations): All existing legacy client side destinations
+- [analytics-next](https://github.com/segmentio/analytics-next): All core functionality of AJSN
+- [integrations](https://github.com/segmentio/analytics.js-integrations): All existing legacy client side destinations
 
 This diagram outlines the relationship between these two codebases (cloudfront being where the integrations are hosted):
 ![Architecture](.github/architecture.png?raw=true)
