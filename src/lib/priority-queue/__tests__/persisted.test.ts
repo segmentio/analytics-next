@@ -37,6 +37,7 @@ describe('Persisted Priority Queue', () => {
   })
 
   it('a queue always pays their debts', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let onUnload: any = jest.fn()
 
     jest
@@ -97,6 +98,7 @@ describe('Persisted Priority Queue', () => {
 
   describe('merging', () => {
     it('merges queue items with existing data', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let onUnload: any = jest.fn()
 
       jest
@@ -194,6 +196,7 @@ describe('Persisted Priority Queue', () => {
     })
 
     it('does not allow multiple tabs to override each other when closed', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const onUnloadFunctions: any[] = []
 
       jest

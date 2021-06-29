@@ -4,6 +4,7 @@ import assert from 'assert'
 
 describe('topDomain', function () {
   beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cookies: Record<string, any> = {}
 
     // @ts-ignore

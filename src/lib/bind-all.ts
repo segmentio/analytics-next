@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default function bindAll<
   ObjType extends { [key: string]: any },
   KeyType extends keyof ObjType
@@ -18,3 +18,4 @@ export default function bindAll<
 
   return obj
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
