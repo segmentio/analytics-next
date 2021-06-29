@@ -2,7 +2,7 @@
   "name": "@segment/analytics-next",
   "version": "1.24.6",
   "repository": "segmentio/analytics-next",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "main": "dist/pkg/index.js",
   "types": "dist/pkg/index.d.ts",
   "sideEffects": false,
