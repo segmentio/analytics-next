@@ -10,18 +10,18 @@ const logUpdate = require('log-update')
 
 const bucket =
   process.env.NODE_ENV == 'production'
-    ? 'segment-ajs-renderer-compiled-production'
-    : 'segment-ajs-renderer-compiled-qa'
+    ? process.env.PROD_BUCKET
+    : process.env.STAGE_BUCKET
 
 const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
-    ? 'id=***REMOVED***' // cdn.segment.com OAI
-    : 'id=***REMOVED***' // cdn.segment.build OAI
+    ? process.env.PROD_CDN_OAI
+    : process.env.STAGE_CDN_OAI
 
 const customDomainCanonicalUserId =
   process.env.NODE_ENV == 'production'
-    ? 'id=***REMOVED***' // custom domain prod
-    : 'id=***REMOVED***' // custom domain stage
+    ? process.env.PROD_CUSTOM_DOMAIN_OAI
+    : process.env.STAGE_CUSTOM_DOMAIN_OAI
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY

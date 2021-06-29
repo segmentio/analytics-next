@@ -6,4 +6,4 @@ function main() {
     node scripts/release.js
 }
 
-run-with-role "arn:aws:iam::812113486725:role/ajs-private-assets-upload" main
+run-with-role ${AJS_PRIVATE_ASSETS_UPLOAD} main
