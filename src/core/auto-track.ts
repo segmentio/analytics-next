@@ -66,22 +66,24 @@ export function link(
         const href =
           el.getAttribute('href') ||
           el.getAttributeNS('http://www.w3.org/1999/xlink', 'href') ||
-          el.getAttribute('xlink:href')
+          el.getAttribute('xlink:href') ||
+          el.getElementsByTagName('a')[0]?.getAttribute('href')
 
+        this.track(ev, props).catch(console.error)
         if (
           !linkNewTab(el as HTMLAnchorElement, href) &&
           !userNewTab(elementEvent)
         ) {
-          elementEvent.preventDefault
-            ? elementEvent.preventDefault()
-            : (elementEvent.returnValue = false)
-          // if a link is opening in the same tab, wait 300ms to give the track call time to complete
-          setTimeout(() => {
-            window.location.href = href!
-          }, this.settings.timeout)
+          if (href) {
+            elementEvent.preventDefault
+              ? elementEvent.preventDefault()
+              : (elementEvent.returnValue = false)
+            // if a link is opening in the same tab, wait 300ms to give the track call time to complete
+            setTimeout(() => {
+              window.location.href = href
+            }, this.settings.timeout)
+          }
         }
-
-        this.track(ev, props).catch(console.error)
       },
       false
     )

@@ -615,6 +615,11 @@ describe('track helpers', () => {
       <html>
         <body>
           <a href='foo.com' id='foo'></a>
+          <div id='bar'>
+            <div>
+              <a href='bar.com'></a>
+            </div>
+          </div>
         </body>
       </html>`
 
@@ -623,10 +628,34 @@ describe('track helpers', () => {
       svg = document.createElementNS('http://www.w3.org/2000/svg', 'a')
       wrap.appendChild(svg)
       document.body.appendChild(wrap)
+
+      jest.spyOn(window, 'location', 'get').mockReturnValue({
+        ...window.location,
+      })
     })
 
-    afterEach(() => {
-      global.window.location.hash = ''
+    it('should stay on same page with blank href', async (done) => {
+      link.href = ''
+      await analytics.trackLink(link!, 'foo')
+      link.click()
+
+      expect(mockTrack).toHaveBeenCalled()
+      setTimeout(() => {
+        expect(window.location.href).toBe('https://localhost/')
+        done()
+      }, 300)
+    })
+
+    it('should work with nested link', async (done) => {
+      const nested = document.getElementById('bar')
+      await analytics.trackLink(nested, 'foo')
+      nested!.click()
+
+      expect(mockTrack).toHaveBeenCalled()
+      setTimeout(() => {
+        expect(window.location.href).toBe('bar.com')
+        done()
+      }, 300)
     })
 
     it('should make a track call', async () => {
@@ -684,7 +713,7 @@ describe('track helpers', () => {
       link.click()
 
       setTimeout(() => {
-        expect(global.window.location.hash).toBe('#test')
+        expect(global.window.location.href).toBe('#test')
         done()
       }, 300)
     })
@@ -696,7 +725,7 @@ describe('track helpers', () => {
       svg.dispatchEvent(clickEvent)
 
       setTimeout(() => {
-        expect(global.window.location.hash).toBe('#svg')
+        expect(global.window.location.href).toBe('#svg')
         done()
       }, 300)
     })
@@ -708,7 +737,7 @@ describe('track helpers', () => {
       svg.dispatchEvent(clickEvent)
 
       setTimeout(() => {
-        expect(global.window.location.hash).toBe('#svg')
+        expect(global.window.location.href).toBe('#svg')
         done()
       }, 300)
     })
@@ -720,7 +749,7 @@ describe('track helpers', () => {
       svg.dispatchEvent(clickEvent)
 
       setTimeout(() => {
-        expect(global.window.location.hash).toBe('#svg')
+        expect(global.window.location.href).toBe('#svg')
         done()
       }, 300)
     })
@@ -732,7 +761,7 @@ describe('track helpers', () => {
       link.click()
 
       setTimeout(() => {
-        expect(global.window.location.hash).not.toBe('#test')
+        expect(global.window.location.href).not.toBe('#test')
         done()
       }, 300)
     })
