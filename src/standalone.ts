@@ -60,7 +60,7 @@ function shouldPolyfill(): boolean {
   return (
     isIE11 ||
     (browserVersionCompatList[browser] !== undefined &&
-      browserVersionCompatList[browser] <= parseInt(version))
+      browserVersionCompatList[browser] >= parseInt(version))
   )
 }
 
