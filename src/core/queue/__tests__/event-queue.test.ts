@@ -304,12 +304,16 @@ describe('Flushing', () => {
     expect(shopperCtx.attempts).toBe(1)
   })
 
-  test('does not delivery to destinations on denyList', async () => {
-    const eq = new EventQueue()
-
+  describe('denyList permutations', () => {
     const amplitude = {
       ...testPlugin,
       name: 'Amplitude',
+      type: 'destination' as
+        | 'before'
+        | 'after'
+        | 'destination'
+        | 'enrichment'
+        | 'utility',
       track: (ctx: Context): Promise<Context> | Context => {
         return Promise.resolve(ctx)
       },
@@ -318,42 +322,123 @@ describe('Flushing', () => {
     const mixPanel = {
       ...testPlugin,
       name: 'Mixpanel',
+      type: 'destination' as
+        | 'before'
+        | 'after'
+        | 'destination'
+        | 'enrichment'
+        | 'utility',
       track: (ctx: Context): Promise<Context> | Context => {
         return Promise.resolve(ctx)
       },
     }
 
-    jest.spyOn(amplitude, 'track')
-    jest.spyOn(mixPanel, 'track')
+    test('does not delivery to destinations on denyList', async () => {
+      const eq = new EventQueue()
 
-    const evt = {
-      type: 'track' as
-        | 'track'
-        | 'page'
-        | 'identify'
-        | 'group'
-        | 'alias'
-        | 'screen',
-      integrations: {
-        Mixpanel: false,
-      },
-    }
+      jest.spyOn(amplitude, 'track')
+      jest.spyOn(mixPanel, 'track')
 
-    const ctx = new Context(evt)
+      const evt = {
+        type: 'track' as
+          | 'track'
+          | 'page'
+          | 'identify'
+          | 'group'
+          | 'alias'
+          | 'screen',
+        integrations: {
+          Mixpanel: false,
+        },
+      }
 
-    await eq.register(Context.system(), amplitude, ajs)
-    await eq.register(Context.system(), mixPanel, ajs)
+      const ctx = new Context(evt)
 
-    eq.dispatch(ctx)
+      await eq.register(Context.system(), amplitude, ajs)
+      await eq.register(Context.system(), mixPanel, ajs)
 
-    expect(eq.queue.length).toBe(1)
+      eq.dispatch(ctx)
 
-    const flushed = await flushAll(eq)
+      expect(eq.queue.length).toBe(1)
 
-    expect(flushed).toEqual([ctx])
+      const flushed = await flushAll(eq)
 
-    expect(mixPanel.track).not.toHaveBeenCalled()
-    expect(amplitude.track).toHaveBeenCalled()
+      expect(flushed).toEqual([ctx])
+
+      expect(mixPanel.track).not.toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+    })
+
+    test('does not deliver to any destination if All: false ', async () => {
+      const eq = new EventQueue()
+
+      jest.spyOn(amplitude, 'track')
+      jest.spyOn(mixPanel, 'track')
+
+      const evt = {
+        type: 'track' as
+          | 'track'
+          | 'page'
+          | 'identify'
+          | 'group'
+          | 'alias'
+          | 'screen',
+        integrations: {
+          All: false,
+        },
+      }
+
+      const ctx = new Context(evt)
+
+      await eq.register(Context.system(), amplitude, ajs)
+      await eq.register(Context.system(), mixPanel, ajs)
+
+      eq.dispatch(ctx)
+
+      expect(eq.queue.length).toBe(1)
+      const flushed = await flushAll(eq)
+
+      expect(flushed).toEqual([ctx])
+
+      expect(mixPanel.track).not.toHaveBeenCalled()
+      expect(amplitude.track).not.toHaveBeenCalled()
+    })
+
+    test('delivers to destinations if All: false but the destination is allowed', async () => {
+      const eq = new EventQueue()
+
+      jest.spyOn(amplitude, 'track')
+      jest.spyOn(mixPanel, 'track')
+
+      const evt = {
+        type: 'track' as
+          | 'track'
+          | 'page'
+          | 'identify'
+          | 'group'
+          | 'alias'
+          | 'screen',
+        integrations: {
+          All: false,
+          Amplitude: true,
+        },
+      }
+
+      const ctx = new Context(evt)
+
+      await eq.register(Context.system(), amplitude, ajs)
+      await eq.register(Context.system(), mixPanel, ajs)
+
+      eq.dispatch(ctx)
+
+      expect(eq.queue.length).toBe(1)
+      const flushed = await flushAll(eq)
+
+      expect(flushed).toEqual([ctx])
+
+      expect(mixPanel.track).not.toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+    })
   })
 })
 
