@@ -6,7 +6,9 @@ if (process.env.ASSET_PATH) {
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
   } else {
-    const cdn = getCDN()
+    const cdn = window.analytics?._cdn ?? getCDN()
+    if (window.analytics) window.analytics._cdn = cdn
+
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = cdn

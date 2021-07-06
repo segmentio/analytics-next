@@ -6,7 +6,9 @@ if (process.env.ASSET_PATH) {
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
   } else {
-    const cdn = getCDN()
+    const cdn = window.analytics?._cdn ?? getCDN()
+    if (window.analytics) window.analytics._cdn = cdn
+
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = cdn
@@ -71,7 +73,7 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
-  const cdn = getCDN() ?? 'https://cdn-settings.segment.com'
+  const cdn = window.analytics?._cdn ?? getCDN() ?? 'https://cdn.segment.com'
   return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {

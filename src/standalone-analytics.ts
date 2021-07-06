@@ -10,6 +10,7 @@ type AnalyticsMethods = Pick<Analytics, keyof FunctionsOf<Analytics>>
 type StandaloneAnalytics = Analytics & {
   _loadOptions?: InitOptions
   _writeKey?: string
+  _cdn?: string
 
   [Symbol.iterator](): Iterator<[keyof AnalyticsMethods, ...unknown[]]>
 }

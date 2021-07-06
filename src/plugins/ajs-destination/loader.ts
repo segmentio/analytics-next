@@ -6,7 +6,7 @@ import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
-const cdn = getCDN()
+const cdn = window.analytics?._cdn ?? getCDN()
 
 const path = cdn
   ? cdn + '/next-integrations'
