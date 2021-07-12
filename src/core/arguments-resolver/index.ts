@@ -86,7 +86,14 @@ export const resolveUserArguments = (user: User): ResolveUser => {
   return (...args): ReturnType<ResolveUser> => {
     const id =
       args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
-    const [data = {}, opts = {}] = args.filter(isPlainObject)
+
+    const objects = args.filter(
+      (obj) => isPlainObject(obj) || obj === null
+    ) as Array<object | null>
+
+    const data = objects[0] ?? {}
+    const opts = objects[1] ?? {}
+
     const resolvedCallback = args.find(isFunction) as Callback | undefined
 
     return [id, data, opts, resolvedCallback]
@@ -110,7 +117,7 @@ export function resolveAliasArguments(
 
 type ResolveUser = (
   id?: ID | object,
-  traits?: object | Callback,
+  traits?: object | Callback | null,
   options?: Options | Callback,
   callback?: Callback
 ) => [ID, object, Options, Callback | undefined]

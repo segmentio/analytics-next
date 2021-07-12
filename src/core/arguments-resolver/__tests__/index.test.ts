@@ -403,6 +403,20 @@ describe(resolveUserArguments, () => {
 
     expect(options).toEqual({})
   })
+
+  it('should accept (id, null, options)', () => {
+    const [id, traits, options] = resolver(uid, null, baseOptions)
+    expect(id).toEqual(uid)
+    expect(traits).toEqual({})
+    expect(options).toEqual(baseOptions)
+  })
+
+  it('should accept (id, traits)', () => {
+    const [id, traits, options] = resolver(uid, userTraits)
+    expect(id).toEqual(uid)
+    expect(traits).toEqual(userTraits)
+    expect(options).toEqual({})
+  })
 })
 
 describe(resolveAliasArguments, () => {
