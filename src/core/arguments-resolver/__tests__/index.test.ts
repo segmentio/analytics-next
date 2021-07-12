@@ -214,8 +214,8 @@ describe(resolvePageArguments, () => {
       }
     )
 
-    expect(category).toBeNull()
-    expect(name).toBeNull()
+    expect(category).toEqual('')
+    expect(name).toEqual('')
     expect(properties).toEqual({})
     expect(options).toEqual({
       integrations: {

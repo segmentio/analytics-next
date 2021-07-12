@@ -51,11 +51,10 @@ export function resolvePageArguments(
 ): [string | null, string | null, object, Options, Callback | undefined] {
   let resolvedCategory: string | undefined | null = null
   let resolvedName: string | undefined | null = null
-
   const args = [category, name, properties, options, callback]
 
   const strings = args.filter(isString)
-  if (strings[0] && strings[1]) {
+  if (strings[0] !== undefined && strings[1] !== undefined) {
     resolvedCategory = strings[0]
     resolvedName = strings[1]
   }
