@@ -40,6 +40,17 @@ function getWriteKey(): string | undefined {
     }
   }
 
+  if (!writeKey && document.currentScript) {
+    const script = document.currentScript as HTMLScriptElement
+    const src = script.src
+
+    const result = regex.exec(src)
+
+    if (result && result[1]) {
+      writeKey = result[1]
+    }
+  }
+
   return writeKey
 }
 
