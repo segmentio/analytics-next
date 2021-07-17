@@ -56,7 +56,7 @@ steps:
 
   # Deploy and NPM publish releases
   - label: ':rocket: Release Production'
-    depends_on: [build, qa]
+    depends_on: [build]
     branches: 'v*'
     agents:
       queue: v1
