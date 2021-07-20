@@ -11,9 +11,7 @@ if (process.env.ASSET_PATH) {
 
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
-    __webpack_public_path__ = cdn
-      ? cdn + '/analytics-next/bundles/'
-      : 'https://cdn.segment.com/analytics-next/bundles/'
+    __webpack_public_path__ = cdn + '/analytics-next/bundles/'
   }
 }
 
@@ -73,7 +71,8 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const legacySettings: LegacySettings = {
     integrations: {},
   }
-  const cdn = window.analytics?._cdn ?? getCDN() ?? 'https://cdn.segment.com'
+
+  const cdn = window.analytics?._cdn ?? getCDN()
   return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {

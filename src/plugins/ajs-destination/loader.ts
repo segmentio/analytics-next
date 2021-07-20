@@ -7,11 +7,7 @@ import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
 const cdn = window.analytics?._cdn ?? getCDN()
-
-const path = cdn
-  ? cdn + '/next-integrations'
-  : process.env.LEGACY_INTEGRATIONS_PATH ??
-    'https://cdn.segment.com/next-integrations'
+const path = cdn + '/next-integrations'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
