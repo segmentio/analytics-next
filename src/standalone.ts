@@ -19,10 +19,13 @@ if (process.env.ASSET_PATH) {
 
 import { loadScript } from './lib/load-script'
 import { install } from './standalone-analytics'
+import { embeddedWriteKey } from './lib/embedded-write-key'
 
 const regex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/
 
 function getScriptPath(): string {
+  const writeKey = embeddedWriteKey() ?? window.analytics._writeKey
+
   const scripts = Array.from(document.querySelectorAll('script'))
   let path: string | undefined = undefined
 
@@ -40,7 +43,7 @@ function getScriptPath(): string {
     return path.replace('analytics.min.js', 'analytics.classic.js')
   }
 
-  return `https://cdn.segment.com/analytics.js/v1/${window.analytics._writeKey}/analytics.classic.js`
+  return `https://cdn.segment.com/analytics.js/v1/${writeKey}/analytics.classic.js`
 }
 
 let identifiedCSP = false

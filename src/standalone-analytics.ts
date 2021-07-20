@@ -1,5 +1,6 @@
 import { Analytics, InitOptions } from './analytics'
 import { AnalyticsBrowser } from './browser'
+import { embeddedWriteKey } from './lib/embedded-write-key'
 
 type FunctionsOf<T> = {
   [k in keyof T]: T[k] extends Function ? T[k] : never
@@ -22,6 +23,10 @@ declare global {
 }
 
 function getWriteKey(): string | undefined {
+  if (embeddedWriteKey()) {
+    return embeddedWriteKey()
+  }
+
   if (window.analytics._writeKey) {
     return window.analytics._writeKey
   }

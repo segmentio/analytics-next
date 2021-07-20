@@ -84,6 +84,24 @@ describe('standalone bundle', () => {
     )
   })
 
+  it('detects embedded write keys', async () => {
+    window.analyticsWriteKey = 'write_key_abc_123'
+
+    const fakeAjs = {
+      ready: async (cb: Function): Promise<void> => {
+        cb()
+      },
+    }
+
+    const spy = jest
+      .spyOn(AnalyticsBrowser, 'standalone')
+      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+
+    await install()
+
+    expect(spy).toHaveBeenCalledWith('write_key_abc_123', {})
+  })
+
   it('derives the write key from scripts on the page', async () => {
     const fakeAjs = {
       ready: async (cb: Function): Promise<void> => {
