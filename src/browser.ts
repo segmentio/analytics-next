@@ -68,16 +68,12 @@ export interface LegacySettings {
 }
 
 export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
-  const legacySettings: LegacySettings = {
-    integrations: {},
-  }
-
   const cdn = window.analytics?._cdn ?? getCDN()
   return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {
       console.warn('Failed to load settings', err)
-      return legacySettings
+      throw err
     })
 }
 

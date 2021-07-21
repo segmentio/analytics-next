@@ -1,9 +1,10 @@
 import jsdom, { JSDOM } from 'jsdom'
+import { AnalyticsBrowser, LegacySettings } from '../browser'
+import { snippet } from '../tester/__fixtures__/segment-snippet'
+import { pWhile } from '../lib/p-while'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { LegacySettings } from '../browser'
-import { pWhile } from '../lib/p-while'
-import { snippet } from '../tester/__fixtures__/segment-snippet'
+import { RemoteMetrics } from '../core/stats/remote-metrics'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -80,38 +81,53 @@ describe('standalone bundle', () => {
     )
   })
 
-  it('loads AJS on execution', async () => {
-    await import('../standalone')
+  it('catches initialization errors and reports them', async () => {
+    window.analyticsWriteKey = 'write_key_abc_123'
+    const errorMessages: string[] = []
+    const metrics: { metric: string; tags: string[] }[] = []
 
-    await pWhile(
-      () => window.analytics?.initialized !== true,
-      () => {}
-    )
+    jest.spyOn(console, 'error').mockImplementationOnce((...args) => {
+      errorMessages.push(args.join(','))
+    })
 
-    expect(window.analytics).not.toBeUndefined()
-    expect(window.analytics.initialized).toBe(true)
-  })
-
-  it.skip('reverts to ajs classic in case of CSP errors', async () => {
-    await import('../standalone')
-
-    jsd.window.document.dispatchEvent(
-      new jsd.window.Event('securitypolicyviolation', {
-        // @ts-ignore jsdom doesn't implement the specific event we need :'(
-        blockedURI: 'cdn.segment.com',
+    jest
+      .spyOn(RemoteMetrics.prototype, 'increment')
+      .mockImplementationOnce((metric, tags) => {
+        metrics.push({
+          metric,
+          tags,
+        })
       })
-    )
 
-    const getClassic = (): HTMLScriptElement | undefined =>
-      Array.from(document.scripts).find((s) =>
-        s.getAttribute('src')?.includes('classic')
-      )
+    jest
+      .spyOn(AnalyticsBrowser, 'standalone')
+      .mockRejectedValueOnce(new Error('Ohhh nooo'))
+
+    await import('../standalone')
 
     await pWhile(
-      () => getClassic() === undefined,
+      () => errorMessages.length === 0,
       () => {}
     )
 
-    expect(getClassic()).toMatchInlineSnapshot()
+    expect(metrics).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "metric": "analytics_js.invoke.error",
+          "tags": Array [
+            "type:initialization",
+            "message:Ohhh nooo",
+            "name:Error",
+            "host:segment.com",
+            "wk:write_key_abc_123",
+          ],
+        },
+      ]
+    `)
+    expect(errorMessages).toMatchInlineSnapshot(`
+      Array [
+        "[analytics.js],Failed to load Analytics.js,Error: Ohhh nooo",
+      ]
+    `)
   })
 })

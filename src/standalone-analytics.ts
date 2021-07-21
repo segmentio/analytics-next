@@ -71,11 +71,7 @@ export function install(): Promise<void> {
   return AnalyticsBrowser.standalone(
     writeKey,
     window.analytics?._loadOptions ?? {}
-  )
-    .then((an) => {
-      window.analytics = an as StandaloneAnalytics
-    })
-    .catch((err) => {
-      console.error(err)
-    })
+  ).then((an) => {
+    window.analytics = an as StandaloneAnalytics
+  })
 }
