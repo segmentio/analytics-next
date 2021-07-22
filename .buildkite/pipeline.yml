@@ -28,7 +28,7 @@ steps:
     retry:
       automatic:
         - exit_status: '*'
-          limit: 4
+          limit: 2
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
