@@ -40,7 +40,7 @@ async function startServer(): Promise<URL.UrlWithStringQuery> {
 }
 
 describe('💩 Internet Explorer', () => {
-  it('can load analytics-next and send a track call', async () => {
+  it.skip('can load analytics-next and send a track call', async () => {
     const { port } = await startServer()
     const url = await ngrok.connect(parseInt(port ?? '5000', 10))
 

@@ -1,5 +1,7 @@
 import { MiddlewareFunction, sourceMiddlewarePlugin } from '..'
+import { Analytics } from '../../../analytics'
 import { Context } from '../../../core/context'
+import { Plugin } from '../../../core/plugin'
 
 describe(sourceMiddlewarePlugin, () => {
   const simpleMiddleware: MiddlewareFunction = ({ payload, next }) => {
@@ -90,6 +92,48 @@ describe(sourceMiddlewarePlugin, () => {
         expect(callback).not.toHaveBeenCalled()
         done()
       }, 500)
+    })
+  })
+
+  describe('Common use cases', () => {
+    it('can be used to re-route/cancel destinations', async () => {
+      let middlewareInvoked = false
+      const pageMock = jest.fn()
+
+      const skipGA: MiddlewareFunction = ({ payload, next }) => {
+        if (!payload.obj.integrations) {
+          payload.obj.integrations = {}
+        }
+
+        payload.obj.integrations['Google Analytics'] = false
+        middlewareInvoked = true
+        next(payload)
+      }
+
+      const gaDestination: Plugin = {
+        name: 'Google Analytics',
+        isLoaded: () => true,
+        load: async () => {},
+        type: 'destination',
+        version: '1.0',
+        page: async (ctx) => {
+          pageMock()
+          return ctx
+        },
+      }
+
+      const ajs = new Analytics({
+        writeKey: 'abc',
+      })
+      await ajs.register(gaDestination)
+
+      await ajs.page('hello')
+      expect(pageMock).toHaveBeenCalled()
+
+      await ajs.addSourceMiddleware(skipGA)
+      await ajs.page('hello')
+      expect(middlewareInvoked).toBe(true)
+      expect(pageMock).toHaveBeenCalledTimes(1)
     })
   })
 

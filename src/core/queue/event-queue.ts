@@ -198,9 +198,8 @@ export class EventQueue extends Emitter {
       throw new Error('Not ready')
     }
 
-    const denyList = ctx.event.integrations ?? {}
-    const { before, enrichment, destinations, after } = this.availableExtensios(
-      denyList
+    const { before, enrichment } = this.availableExtensios(
+      ctx.event.integrations ?? {}
     )
 
     for (const beforeWare of before) {
@@ -219,6 +218,12 @@ export class EventQueue extends Emitter {
         ctx = temp
       }
     }
+
+    // Enrichment and before plugins can re-arrange the deny list dynamically
+    // so we need to pluck them at the end
+    const { destinations, after } = this.availableExtensios(
+      ctx.event.integrations ?? {}
+    )
 
     await new Promise((resolve, reject) => {
       setTimeout(() => {
