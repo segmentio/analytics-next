@@ -2,7 +2,9 @@ import { loadScript } from './load-script'
 import { getLegacyAJSPath } from './parse-cdn'
 
 let identifiedCSP = false
-async function onCSPError(e: SecurityPolicyViolationEvent): Promise<void> {
+export async function onCSPError(
+  e: SecurityPolicyViolationEvent
+): Promise<void> {
   if (!e.blockedURI.includes('cdn.segment') || identifiedCSP) {
     return
   }
@@ -17,7 +19,3 @@ async function onCSPError(e: SecurityPolicyViolationEvent): Promise<void> {
   const classicPath = getLegacyAJSPath()
   await loadScript(classicPath)
 }
-
-document.addEventListener('securitypolicyviolation', (e) => {
-  onCSPError(e).catch(console.error)
-})

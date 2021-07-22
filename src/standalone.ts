@@ -23,6 +23,7 @@ import './lib/csp-detection'
 import { shouldPolyfill } from './lib/browser-polyfill'
 import { RemoteMetrics } from './core/stats/remote-metrics'
 import { embeddedWriteKey } from './lib/embedded-write-key'
+import { onCSPError } from './lib/csp-detection'
 
 function onError(err?: Error) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
@@ -35,6 +36,10 @@ function onError(err?: Error) {
     `wk:${embeddedWriteKey()}`,
   ])
 }
+
+document.addEventListener('securitypolicyviolation', (e) => {
+  onCSPError(e).catch(console.error)
+})
 
 /**
  * Attempts to run a promise and catch both sync and async errors.
