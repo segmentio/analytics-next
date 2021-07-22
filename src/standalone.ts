@@ -21,7 +21,6 @@ if (process.env.ASSET_PATH) {
 import { install } from './standalone-analytics'
 import './lib/csp-detection'
 import { shouldPolyfill } from './lib/browser-polyfill'
-import { loadScript } from './lib/load-script'
 import { RemoteMetrics } from './core/stats/remote-metrics'
 import { embeddedWriteKey } from './lib/embedded-write-key'
 
@@ -51,9 +50,16 @@ async function attempt<T>(promise: () => Promise<T>) {
 
 if (shouldPolyfill()) {
   // load polyfills in order to get AJS to work with old browsers
-  loadScript(
+  const script = document.createElement('script')
+  script.setAttribute(
+    'src',
     'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js'
-  ).then(() => attempt(install))
+  )
+  document.body.appendChild(script)
+
+  script.onload = function (): void {
+    attempt(install)
+  }
 } else {
   attempt(install)
 }
