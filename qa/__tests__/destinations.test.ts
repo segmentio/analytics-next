@@ -13,7 +13,7 @@ if (process.env.DESTINATION) {
   destinations = [process.env.DESTINATION]
 }
 
-jest.retryTimes(5)
+jest.retryTimes(10)
 describe('Destination Tests', () => {
   // needs to be written as a string so it's not transpiled
 
@@ -25,15 +25,15 @@ describe('Destination Tests', () => {
     await new Promise(res => window.analytics.page({}, res))
 
     // second page so that assumePageView destinations stop complaining
-    await new Promise(res => setTimeout(res, 150))
+    await new Promise(res => setTimeout(res, Math.random() * 150 + 100))
     await new Promise(res => window.analytics.page({}, res))
 
-    await new Promise(res => setTimeout(res, 150))
+    await new Promise(res => setTimeout(res, Math.random() * 150 + 100))
     await new Promise(res => window.analytics.identify('Test', {
       email: 'test@mctesting.org',
     }, res))
 
-    await new Promise(res => setTimeout(res, 150))
+    await new Promise(res => setTimeout(res, Math.random() * 150 + 100))
     await new Promise(res => window.analytics.track('Track!', {
       leProp: 'propé',
     }, res))
