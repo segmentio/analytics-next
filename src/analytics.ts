@@ -277,18 +277,25 @@ export class Analytics extends Emitter {
       return ctx
     }
 
-    const dispatched = await this.queue.dispatch(ctx)
-    const result = await invokeCallback(
-      dispatched,
-      callback,
-      this.settings.timeout
-    )
-
-    if (this._debug) {
-      result.flush()
+    let dispatched: Context
+    if (this.queue.isEmpty()) {
+      dispatched = await this.queue.dispatchSingle(ctx)
+    } else {
+      dispatched = await this.queue.dispatch(ctx)
     }
 
-    return result
+    if (callback) {
+      dispatched = await invokeCallback(
+        dispatched,
+        callback,
+        this.settings.timeout
+      )
+    }
+    if (this._debug) {
+      dispatched.flush()
+    }
+
+    return dispatched
   }
 
   async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {

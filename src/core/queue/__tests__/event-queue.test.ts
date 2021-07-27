@@ -23,27 +23,6 @@ async function flushAll(eq: EventQueue): Promise<Context[]> {
   return flushed
 }
 
-const fruitBasket = new Context({
-  type: 'track',
-  event: 'Fruit Basket',
-  properties: {
-    banana: '🍌',
-    apple: '🍎',
-    grape: '🍇',
-  },
-})
-
-const basketView = new Context({
-  type: 'page',
-})
-
-const shopper = new Context({
-  type: 'identify',
-  traits: {
-    name: 'Netto Farah',
-  },
-})
-
 const testPlugin: Plugin = {
   name: 'test',
   type: 'before',
@@ -53,6 +32,31 @@ const testPlugin: Plugin = {
 }
 
 const ajs = {} as Analytics
+
+let fruitBasket: Context, basketView: Context, shopper: Context
+
+beforeEach(() => {
+  fruitBasket = new Context({
+    type: 'track',
+    event: 'Fruit Basket',
+    properties: {
+      banana: '🍌',
+      apple: '🍎',
+      grape: '🍇',
+    },
+  })
+
+  basketView = new Context({
+    type: 'page',
+  })
+
+  shopper = new Context({
+    type: 'identify',
+    traits: {
+      name: 'Netto Farah',
+    },
+  })
+})
 
 test('can send events', async () => {
   const eq = new EventQueue()
@@ -484,5 +488,68 @@ describe('deregister', () => {
     expect(toBeRemoved.unload).toHaveBeenCalled()
     expect(eq.plugins.length).toBe(1)
     expect(eq.plugins[0]).toBe(testPlugin)
+  })
+})
+
+describe('dispatchSingle', () => {
+  it('dispatches events without placing them on the queue', async () => {
+    const eq = new EventQueue()
+    const promise = eq.dispatchSingle(fruitBasket)
+
+    expect(eq.queue.length).toBe(0)
+    await promise
+    expect(eq.queue.length).toBe(0)
+  })
+
+  it('records delivery metrics', async () => {
+    const eq = new EventQueue()
+    const ctx = await eq.dispatchSingle(
+      new Context({
+        type: 'track',
+      })
+    )
+
+    expect(ctx.logs().map((l) => l.message)).toMatchInlineSnapshot(`
+      Array [
+        "Dispatching",
+        "Delivered",
+      ]
+    `)
+
+    expect(ctx.stats.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
+      Array [
+        "message_dispatched",
+        "message_delivered",
+        "delivered",
+      ]
+    `)
+  })
+
+  test('retries retriable cancelations', async () => {
+    // make sure all backoffs return immediatelly
+    jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
+
+    const eq = new EventQueue()
+
+    await eq.register(
+      Context.system(),
+      {
+        ...testPlugin,
+        track: (ctx) => {
+          // only fail first attempt
+          if (ctx === fruitBasket && ctx.attempts === 1) {
+            ctx.cancel(new ContextCancelation({ retry: true }))
+          }
+
+          return Promise.resolve(ctx)
+        },
+      },
+      ajs
+    )
+
+    expect(eq.queue.length).toBe(0)
+
+    const attempted = await eq.dispatchSingle(fruitBasket)
+    expect(attempted.attempts).toEqual(2)
   })
 })

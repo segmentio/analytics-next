@@ -62,7 +62,7 @@ export class PriorityQueue<T extends WithID> {
     return this.seen[operation.id] ?? 0
   }
 
-  private updateAttempts(operation: T): number {
+  public updateAttempts(operation: T): number {
     this.seen[operation.id] = this.getAttempts(operation) + 1
     return this.getAttempts(operation)
   }

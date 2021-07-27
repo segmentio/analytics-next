@@ -25,10 +25,6 @@ steps:
       - yarn add --dev playwright
       - echo "+++ Running QA Tests :pray:"
       - make test-qa
-    retry:
-      automatic:
-        - exit_status: '*'
-          limit: 2
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

@@ -78,8 +78,12 @@ export class EventQueue extends Emitter {
     ctx.stats.increment('message_dispatched')
 
     this.queue.push(ctx)
+    const willDeliver = this.subscribeToDelivery(ctx)
     this.scheduleFlush(0)
+    return willDeliver
+  }
 
+  private async subscribeToDelivery(ctx: Context): Promise<Context> {
     return new Promise((resolve, reject) => {
       const onDeliver = (flushed: Context, delivered: boolean): void => {
         if (flushed.isSame(ctx)) {
@@ -96,6 +100,27 @@ export class EventQueue extends Emitter {
     })
   }
 
+  async dispatchSingle(ctx: Context): Promise<Context> {
+    ctx.log('debug', 'Dispatching')
+    ctx.stats.increment('message_dispatched')
+
+    this.queue.updateAttempts(ctx)
+    ctx.attempts = 1
+
+    return this.deliver(ctx).catch((err) => {
+      const accepted = this.enqueuRetry(err, ctx)
+      if (!accepted) {
+        throw err
+      }
+
+      return this.subscribeToDelivery(ctx)
+    })
+  }
+
+  isEmpty(): boolean {
+    return this.queue.length === 0
+  }
+
   private scheduleFlush(timeout = 500): void {
     if (this.flushing) {
       return
@@ -103,59 +128,71 @@ export class EventQueue extends Emitter {
 
     this.flushing = true
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    setTimeout(async () => {
-      await this.flush()
-      this.flushing = false
+    setTimeout(() => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.flush().then(() => {
+        setTimeout(() => {
+          this.flushing = false
 
-      if (this.queue.length) {
-        this.scheduleFlush(0)
-      } else {
-        this.scheduleFlush(500)
-      }
+          if (this.queue.length) {
+            this.scheduleFlush(0)
+          } else {
+            this.scheduleFlush(500)
+          }
+        }, 0)
+      })
     }, timeout)
   }
 
-  async flush(): Promise<Context[]> {
-    const failed: Context[] = []
-    const toFlush: Context[] = []
+  private async deliver(ctx: Context): Promise<Context> {
+    const start = Date.now()
+    try {
+      ctx = await this.flushOne(ctx)
+      const done = Date.now() - start
+      ctx.stats.gauge('delivered', done)
+      ctx.log('debug', 'Delivered', ctx.event)
+      return ctx
+    } catch (err) {
+      ctx.log('error', 'Failed to deliver', err)
+      ctx.stats.increment('delivery_failed')
+      throw err
+    }
+  }
 
+  private enqueuRetry(err: Error, ctx: Context): boolean {
+    const notRetriable =
+      err instanceof ContextCancelation && err.retry === false
+    const retriable = !notRetriable
+
+    if (retriable) {
+      const accepted = this.queue.pushWithBackoff(ctx)
+      return accepted
+    }
+
+    return false
+  }
+
+  async flush(): Promise<Context[]> {
     if (this.queue.length === 0 || !isOnline()) {
       return []
     }
 
-    const ctx = this.queue.pop()
+    let ctx = this.queue.pop()
     if (!ctx) {
       return []
     }
 
     ctx.attempts = this.queue.getAttempts(ctx)
-    toFlush.push(ctx)
-    const start = Date.now()
 
     try {
-      await this.flushOne(ctx)
-      const done = Date.now() - start
-      ctx.stats.gauge('delivered', done)
-      ctx.log('debug', 'Delivered', ctx.event)
-
+      ctx = await this.deliver(ctx)
       this.emit('flush', ctx, true)
     } catch (err) {
-      ctx.log('error', 'Failed to deliver', err)
-      ctx.stats.increment('delivery_failed')
+      const accepted = this.enqueuRetry(err, ctx)
 
-      const notRetriable =
-        err instanceof ContextCancelation && err.retry === false
-      const retriable = !notRetriable
-      retriable && failed.push(ctx)
-
-      // re-queue all failed
-      failed.forEach((ctx) => {
-        const accepted = this.queue.pushWithBackoff(ctx)
-        if (!accepted) {
-          this.emit('flush', ctx, false)
-        }
-      })
+      if (!accepted) {
+        this.emit('flush', ctx, false)
+      }
 
       return []
     }
@@ -169,7 +206,7 @@ export class EventQueue extends Emitter {
     return true
   }
 
-  private availableExtensios(denyList: Integrations): PluginsByType {
+  private availableExtensions(denyList: Integrations): PluginsByType {
     const available =
       denyList.All === false
         ? this.plugins.filter(
@@ -193,12 +230,12 @@ export class EventQueue extends Emitter {
     }
   }
 
-  private async flushOne(ctx: Context): Promise<Context | undefined> {
+  private async flushOne(ctx: Context): Promise<Context> {
     if (!this.isReady()) {
       throw new Error('Not ready')
     }
 
-    const { before, enrichment } = this.availableExtensios(
+    const { before, enrichment } = this.availableExtensions(
       ctx.event.integrations ?? {}
     )
 
@@ -221,7 +258,7 @@ export class EventQueue extends Emitter {
 
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end
-    const { destinations, after } = this.availableExtensios(
+    const { destinations, after } = this.availableExtensions(
       ctx.event.integrations ?? {}
     )
 

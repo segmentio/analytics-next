@@ -106,6 +106,8 @@
         e.preventDefault()
         var contents = document.querySelector('#event').value
         var evt = JSON.parse(contents)
+        console.profile('track')
+        console.time('track')
         var promise = window.analytics.track(
           evt.name || '',
           evt.properties || {},
@@ -115,6 +117,8 @@
         promise &&
           promise.then &&
           promise.then(function (ctx) {
+            console.timeEnd('track')
+            console.profileEnd('track')
             ctx.flush()
             document.querySelector('#logs').textContent = JSON.stringify(
               ctx.event,
@@ -130,6 +134,7 @@
           e.preventDefault()
           var contents = document.querySelector('#event').value
           var evt = JSON.parse(contents)
+          console.time('identify')
           var promise = window.analytics.identify(
             evt.name || '',
             evt.properties || {},
@@ -139,6 +144,7 @@
           promise &&
             promise.then &&
             promise.then(function (ctx) {
+              console.timeEnd('identify')
               ctx.flush()
               document.querySelector('#logs').textContent = JSON.stringify(
                 ctx.event,
