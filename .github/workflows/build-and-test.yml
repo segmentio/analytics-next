@@ -2,6 +2,7 @@ name: build-and-test
 on: [push]
 jobs:
   build:
+    if: github.repository_owner != 'segmentio'
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
