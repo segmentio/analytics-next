@@ -1107,3 +1107,87 @@ describe('Segment.io overrides', () => {
     )
   })
 })
+
+describe('.Integrations', () => {
+  beforeEach(async () => {
+    jest.restoreAllMocks()
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(
+      () => (jsd.window as unknown) as Window & typeof globalThis
+    )
+  })
+
+  it('lists all legacy destinations', async () => {
+    const amplitude = new LegacyDestination(
+      'Amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      {}
+    )
+
+    const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude, ga],
+    })
+
+    await analytics.ready()
+
+    expect(analytics.Integrations).toMatchInlineSnapshot(`
+      Object {
+        "Amplitude": [Function],
+        "Google-Analytics": [Function],
+      }
+    `)
+  })
+
+  it('catches destinations with dots in their names', async () => {
+    const amplitude = new LegacyDestination(
+      'Amplitude',
+      'latest',
+      {
+        apiKey: '***REMOVED***',
+      },
+      {}
+    )
+
+    const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
+    const customerIO = new LegacyDestination('Customer.io', 'latest', {}, {})
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude, ga, customerIO],
+    })
+
+    await analytics.ready()
+
+    expect(analytics.Integrations).toMatchInlineSnapshot(`
+      Object {
+        "Amplitude": [Function],
+        "Customer.io": [Function],
+        "Google-Analytics": [Function],
+      }
+    `)
+  })
+})

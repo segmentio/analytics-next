@@ -22,6 +22,7 @@ import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
 import autoBind from './lib/bind-all'
 import { PersistedPriorityQueue } from './lib/priority-queue/persisted'
 import type { LegacyDestination } from './plugins/ajs-destination'
+import type { LegacyIntegration } from './plugins/ajs-destination/types'
 import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
@@ -417,19 +418,28 @@ export class Analytics extends Emitter {
       .reduce((acc, plugin) => {
         const name = `${plugin.name
           .toLowerCase()
+          .replace('.', '')
           .split(' ')
           .join('-')}Integration`
+
         // @ts-expect-error
-        const nested = window[name].Integration // hack - Google Analytics function resides in the "Integration" field
+        const integration = window[name] as
+          | (LegacyIntegration & { Integration?: LegacyIntegration })
+          | undefined
+
+        if (!integration) {
+          return acc
+        }
+
+        const nested = integration.Integration // hack - Google Analytics function resides in the "Integration" field
         if (nested) {
-          // @ts-expect-error
           acc[plugin.name] = nested
           return acc
         }
-        // @ts-expect-error
-        acc[plugin.name] = window[name]
+
+        acc[plugin.name] = integration as LegacyIntegration
         return acc
-      }, {})
+      }, {} as Record<string, LegacyIntegration>)
 
     return integrations
   }
