@@ -2,6 +2,7 @@ import { MiddlewareFunction, sourceMiddlewarePlugin } from '..'
 import { Analytics } from '../../../analytics'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
+import { asPromise } from '../../../lib/as-promise'
 
 describe(sourceMiddlewarePlugin, () => {
   const simpleMiddleware: MiddlewareFunction = ({ payload, next }) => {
@@ -70,9 +71,7 @@ describe(sourceMiddlewarePlugin, () => {
       expect(type).toEqual(type)
     })
 
-    it('does not continue unless `next` is called', async (done) => {
-      const callback = jest.fn()
-
+    it('cancels the event if `next` is not called', async (done) => {
       const hangs: MiddlewareFunction = () => {}
       const hangsXT = sourceMiddlewarePlugin(hangs)
 
@@ -81,21 +80,46 @@ describe(sourceMiddlewarePlugin, () => {
       }
 
       const doesNotHangXT = sourceMiddlewarePlugin(doesNotHang)
+      const toReturn = new Context({ type: 'track' })
+      const returnedCtx = await doesNotHangXT.track!(toReturn)
 
-      Promise.resolve(hangsXT.track!(new Context({ type: 'track' })))
-        .then(callback)
-        .catch(callback)
+      expect(returnedCtx).toBe(toReturn)
 
-      await doesNotHangXT.track!(new Context({ type: 'track' }))
-
-      setTimeout(() => {
-        expect(callback).not.toHaveBeenCalled()
+      const toCancel = new Context({ type: 'track' })
+      await asPromise(hangsXT.track!(toCancel)).catch((err) => {
+        expect(err).toMatchInlineSnapshot(`
+          ContextCancelation {
+            "reason": "Middleware \`next\` function skipped",
+            "retry": false,
+            "type": "middleware_cancellation",
+          }
+        `)
         done()
-      }, 500)
+      })
     })
   })
 
   describe('Common use cases', () => {
+    it('can be used to cancel an event altogether', async () => {
+      const blowUp: MiddlewareFunction = () => {
+        // do nothing
+        // do not invoke next
+      }
+
+      const ajs = new Analytics({
+        writeKey: 'abc',
+      })
+
+      const ctx = await ajs.page('hello')
+      expect(ctx.logs().map((l) => l.message)).toContain('Delivered')
+
+      await ajs.addSourceMiddleware(blowUp)
+      const notDelivered = await ajs.page('hello')
+      expect(notDelivered.logs().map((l) => l.message)).not.toContain(
+        'Delivered'
+      )
+    })
+
     it('can be used to re-route/cancel destinations', async () => {
       let middlewareInvoked = false
       const pageMock = jest.fn()

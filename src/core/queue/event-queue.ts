@@ -108,6 +108,10 @@ export class EventQueue extends Emitter {
     ctx.attempts = 1
 
     return this.deliver(ctx).catch((err) => {
+      if (err instanceof ContextCancelation && err.retry === false) {
+        return ctx
+      }
+
       const accepted = this.enqueuRetry(err, ctx)
       if (!accepted) {
         throw err

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import * as timer from '../../../lib/priority-queue/backoff'
 import { Analytics } from '../../../analytics'
 import { pWhile } from '../../../lib/p-while'
-import { Context, ContextCancelation } from '../../context'
-import { Plugin } from '../../plugin'
-import { EventQueue } from '../event-queue'
+import * as timer from '../../../lib/priority-queue/backoff'
 import {
   MiddlewareFunction,
   sourceMiddlewarePlugin,
 } from '../../../plugins/middleware'
+import { Context, ContextCancelation } from '../../context'
+import { Plugin } from '../../plugin'
+import { EventQueue } from '../event-queue'
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
   let flushed: Context[] = []
@@ -16,7 +16,7 @@ async function flushAll(eq: EventQueue): Promise<Context[]> {
   await pWhile(
     () => eq.queue.length > 0,
     async () => {
-      const res = await eq.flush()
+      const res = await eq.flush().catch(() => [])
       flushed = flushed.concat(res)
     }
   )
@@ -209,7 +209,9 @@ describe('Flushing', () => {
       {
         ...testPlugin,
         track: async (ctx) => {
-          ctx.cancel(new ContextCancelation({ retry: false }))
+          if (ctx === fruitBasket) {
+            throw new ContextCancelation({ retry: false, reason: 'Test!' })
+          }
           return ctx
         },
       },

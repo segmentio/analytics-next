@@ -1,6 +1,7 @@
-import { Context } from '../../core/context'
+import { Context, ContextCancelation } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
+import { asPromise } from '../../lib/as-promise'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
 
 export interface MiddlewareParams {
@@ -30,7 +31,10 @@ export async function applyDestinationMiddleware(
     event: SegmentEvent,
     fn: DestinationMiddlewareFunction
   ): Promise<SegmentEvent | null> {
-    return new Promise((resolve) => {
+    let nextCalled = false
+    let returnedEvent: SegmentEvent | null = null
+
+    await asPromise(
       fn({
         payload: toFacade(event, {
           clone: true,
@@ -38,18 +42,28 @@ export async function applyDestinationMiddleware(
         }),
         integration: destination,
         next(evt) {
+          nextCalled = true
+
           if (evt === null) {
-            return resolve(null)
+            returnedEvent = null
           }
 
           if (evt) {
-            event = evt.obj
+            returnedEvent = evt.obj
           }
-
-          resolve(event)
         },
       })
-    })
+    )
+
+    if (!nextCalled && returnedEvent !== null) {
+      returnedEvent = returnedEvent as SegmentEvent
+      returnedEvent.integrations = {
+        ...event.integrations,
+        [destination]: false,
+      }
+    }
+
+    return returnedEvent
   }
 
   for (const md of middleware) {
@@ -65,7 +79,9 @@ export async function applyDestinationMiddleware(
 
 export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
   async function apply(ctx: Context): Promise<Context> {
-    return new Promise((resolve) => {
+    let nextCalled = false
+
+    await asPromise(
       fn({
         payload: toFacade(ctx.event, {
           clone: true,
@@ -73,18 +89,28 @@ export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
         }),
         integrations: ctx.event.integrations ?? {},
         next(evt) {
+          nextCalled = true
           if (evt) {
             ctx.event = evt.obj
           }
-          resolve(ctx)
         },
       })
-    })
+    )
+
+    if (!nextCalled) {
+      throw new ContextCancelation({
+        retry: false,
+        type: 'middleware_cancellation',
+        reason: 'Middleware `next` function skipped',
+      })
+    }
+
+    return ctx
   }
 
   return {
     name: `Source Middleware ${fn.name}`,
-    type: 'enrichment',
+    type: 'before',
     version: '0.1.0',
 
     isLoaded: (): boolean => true,

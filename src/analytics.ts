@@ -1,4 +1,4 @@
-import autoBind from './lib/bind-all'
+import { AnalyticsBrowser } from './browser'
 import {
   AliasParams,
   DispatchedEvent,
@@ -10,19 +10,22 @@ import {
   resolveUserArguments,
   UserParams,
 } from './core/arguments-resolver'
+import type { FormArgs, LinkArgs } from './core/auto-track'
 import { Callback, invokeCallback } from './core/callback'
+import { isOffline } from './core/connection'
 import { Context } from './core/context'
 import { Emitter } from './core/emitter'
-import { EventFactory, Integrations, SegmentEvent, Plan } from './core/events'
+import { EventFactory, Integrations, Plan, SegmentEvent } from './core/events'
 import { Plugin } from './core/plugin'
 import { EventQueue } from './core/queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import type { MiddlewareFunction } from './plugins/middleware'
-import type { LegacyDestination } from './plugins/ajs-destination'
-import type { FormArgs, LinkArgs } from './core/auto-track'
-import { AnalyticsBrowser } from './browser'
+import autoBind from './lib/bind-all'
 import { PersistedPriorityQueue } from './lib/priority-queue/persisted'
-import { isOffline } from './core/connection'
+import type { LegacyDestination } from './plugins/ajs-destination'
+import type {
+  DestinationMiddlewareFunction,
+  MiddlewareFunction,
+} from './plugins/middleware'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -309,7 +312,7 @@ export class Analytics extends Emitter {
 
   async addDestinationMiddleware(
     integrationName: string,
-    ...middlewares: MiddlewareFunction[]
+    ...middlewares: DestinationMiddlewareFunction[]
   ): Promise<Analytics> {
     const legacyDestinations = this.queue.plugins.filter(
       (xt) =>
@@ -317,9 +320,9 @@ export class Analytics extends Emitter {
         xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
 
-    legacyDestinations.forEach((destination) =>
+    legacyDestinations.forEach((destination) => {
       destination.addMiddleware(...middlewares)
-    )
+    })
     return this
   }
 
