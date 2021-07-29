@@ -1,5 +1,6 @@
 import { Analytics } from '../analytics'
 import { SegmentEvent } from '../core/events'
+import { pTimeout } from './callback'
 
 declare global {
   interface Window {
@@ -69,7 +70,11 @@ export function link(
           el.getAttribute('xlink:href') ||
           el.getElementsByTagName('a')[0]?.getAttribute('href')
 
-        this.track(ev, props).catch(console.error)
+        const trackEvent = pTimeout(
+          this.track(ev, props),
+          this.settings.timeout ?? 500
+        )
+
         if (
           !linkNewTab(el as HTMLAnchorElement, href) &&
           !userNewTab(elementEvent)
@@ -78,10 +83,12 @@ export function link(
             elementEvent.preventDefault
               ? elementEvent.preventDefault()
               : (elementEvent.returnValue = false)
-            // if a link is opening in the same tab, wait 300ms to give the track call time to complete
-            setTimeout(() => {
-              window.location.href = href
-            }, this.settings.timeout)
+            trackEvent
+              .catch(console.error)
+              .then(() => {
+                window.location.href = href
+              })
+              .catch(console.error)
           }
         }
       },
@@ -116,11 +123,18 @@ export function form(
 
       const ev = event instanceof Function ? event(el) : event
       const props = properties instanceof Function ? properties(el) : properties
-      this.track(ev, props).catch(console.error)
 
-      setTimeout(() => {
-        el.submit()
-      }, this.settings.timeout)
+      const trackEvent = pTimeout(
+        this.track(ev, props),
+        this.settings.timeout ?? 500
+      )
+
+      trackEvent
+        .catch(console.error)
+        .then(() => {
+          el.submit()
+        })
+        .catch(console.error)
     }
 
     // Support the events happening through jQuery or Zepto instead of through
