@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start"
   },
+  "resolutions": {
+    "glob-parent": "^5.1.2"
+  },
   "dependencies": {
     "faker": "^5.1.0",
     "lodash": "^4.17.21",
