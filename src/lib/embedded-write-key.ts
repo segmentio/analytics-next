@@ -6,7 +6,12 @@ declare global {
 
 // This variable is used as an optional fallback for when customers
 // host or proxy their own analytics.js.
-window.analyticsWriteKey = '__WRITE_KEY__'
+try {
+  window.analyticsWriteKey = '__WRITE_KEY__'
+} catch (_) {
+  // @ eslint-disable-next-line
+}
+
 export function embeddedWriteKey(): string | undefined {
   if (window.analyticsWriteKey === undefined) {
     return undefined
