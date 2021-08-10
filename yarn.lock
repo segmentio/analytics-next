@@ -641,13 +641,13 @@
   resolved "https://registry.yarnpkg.com/@segment/isodate/-/isodate-1.0.3.tgz#f44e8202d5edd277ce822785239474b2c9411d4a"
   integrity sha512-BtanDuvJqnACFkeeYje7pWULVv8RgZaqKHWwGFnL/g/TH/CcZjkIVTfGDp/MAxmilYHUkrX70SqwnYSTNEaN7A==
 
-"@segment/tsub@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@segment/tsub/-/tsub-0.1.4.tgz#20b76729ab9d217cc60b3ab50059b123916370c8"
-  integrity sha512-DxiC/0+3ZzGD+8uKO6TqouO2Lyf5BvsX9iNfPe6+VYn7REOAu0zttTanx7uhU2G/iwFDRPsQSe1JAPxNW25UtA==
+"@segment/tsub@^0.1.7":
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@segment/tsub/-/tsub-0.1.7.tgz#9858e02d34c8f5150174c198452fc3fda2d6ced6"
+  integrity sha512-4814SQnmQIXtoveNm/PG18RspuZQnWedpfOEjPblr4oA3EZ09QZMFGK0ROC4Tkg47raX1cub6yRIBCafM3uXuA==
   dependencies:
     dlv "^1.1.3"
-    dset "^2.0.1"
+    dset "2.1.0"
     math-float64-ldexp "^1.0.1"
     tiny-hashes "^1.0.1"
 
@@ -4337,12 +4337,7 @@ download@^7.1.0:
     p-event "^2.1.0"
     pify "^3.0.0"
 
-dset@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/dset/-/dset-2.0.1.tgz#a15fff3d1e4d60ac0c95634625cbd5441a76deb1"
-  integrity sha512-nI29OZMRYq36hOcifB6HTjajNAAiBKSXsyWZrq+VniusseuP2OpNlTiYgsaNRSGvpyq5Wjbc2gQLyBdTyWqhnQ==
-
-dset@^2.1.0:
+dset@2.1.0, dset@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/dset/-/dset-2.1.0.tgz#cd1e99e55cf32366d8f144f906c42f7fb3bf431e"
   integrity sha512-hlQYwNEdW7Qf8zxysy+yN1E8C/SxRst3Z9n+IvXOR35D9bPVwNHhnL8ZBeoZjvinuGrlvGg6pAMDwhmjqFDgjA==
