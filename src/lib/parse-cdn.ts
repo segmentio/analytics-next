@@ -4,7 +4,9 @@ const regex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics
 export function getCDN(): string {
   let cdn: string | undefined = undefined
 
-  const scripts = Array.from(document.querySelectorAll('script'))
+  const scripts = Array.prototype.slice.call(
+    document.querySelectorAll('script')
+  )
 
   scripts.forEach((s) => {
     const src = s.getAttribute('src') ?? ''
@@ -34,7 +36,9 @@ export function getCDN(): string {
 export function getLegacyAJSPath(): string {
   const writeKey = embeddedWriteKey() ?? window.analytics._writeKey
 
-  const scripts = Array.from(document.querySelectorAll('script'))
+  const scripts = Array.prototype.slice.call(
+    document.querySelectorAll('script')
+  )
   let path: string | undefined = undefined
 
   for (const s of scripts) {

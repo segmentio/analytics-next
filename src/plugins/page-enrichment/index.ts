@@ -18,7 +18,7 @@ function canonical(): string {
   const tags = document.getElementsByTagName('link')
   let canon: string | null = ''
 
-  Array.from(tags).forEach((tag) => {
+  Array.prototype.slice.call(tags).forEach((tag) => {
     if (tag.getAttribute('rel') === 'canonical') {
       canon = tag.getAttribute('href')
     }

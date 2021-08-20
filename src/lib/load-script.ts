@@ -1,5 +1,7 @@
 function findScript(src: string): HTMLScriptElement | undefined {
-  const scripts = Array.from(window.document.querySelectorAll('script'))
+  const scripts = Array.prototype.slice.call(
+    window.document.querySelectorAll('script')
+  )
   return scripts.find((s) => s.src === src)
 }
 

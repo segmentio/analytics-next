@@ -32,7 +32,9 @@ function getWriteKey(): string | undefined {
   }
 
   const regex = /http.*\/analytics\.js\/v1\/([^/]*)(\/platform)?\/analytics.*/
-  const scripts = Array.from(document.querySelectorAll('script'))
+  const scripts = Array.prototype.slice.call(
+    document.querySelectorAll('script')
+  )
   let writeKey: string | undefined = undefined
 
   for (const s of scripts) {
