@@ -11,6 +11,7 @@ import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
+import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -63,7 +64,7 @@ const enrichBilling: Plugin = {
   },
 }
 
-const writeKey = '***REMOVED***'
+const writeKey = TEST_WRITEKEY
 
 describe('Initialization', () => {
   beforeEach(async () => {
@@ -529,7 +530,7 @@ describe('addDestinationMiddleware', () => {
       'amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       {}
     )
@@ -645,7 +646,7 @@ describe('deregister', () => {
       'amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       {}
     )
@@ -689,7 +690,10 @@ describe('retries', () => {
   })
 
   it('does not retry errored events if retryQueue setting is set to false', async () => {
-    const [ajs] = await AnalyticsBrowser.load({ writeKey })
+    const [ajs] = await AnalyticsBrowser.load(
+      { writeKey: TEST_WRITEKEY },
+      { retryQueue: false }
+    )
 
     expect(ajs.queue.queue).toStrictEqual(
       new PersistedPriorityQueue(1, 'event-queue')
@@ -803,7 +807,7 @@ describe('.Integrations', () => {
       'Amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       {}
     )
@@ -830,7 +834,7 @@ describe('.Integrations', () => {
       'Amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       {}
     )
