@@ -12,8 +12,18 @@
       }
     </style>
 
+    <form method="get">
+      <input type="text" name="writeKey" placeholder="Writekey" />
+      <button>Load</button>
+    </form>
+
     <script>
-      !(function () {
+      const { searchParams } = new URL(document.location);
+      const writeKey = searchParams.get("writeKey");
+      document.querySelector("input").value = writeKey;
+
+      if (writeKey) {
+        !(function () {
         var analytics = (window.analytics = window.analytics || [])
         if (!analytics.initialize)
           if (analytics.invoked)
@@ -62,17 +72,19 @@
               t.async = !0
               t.src =
                 'https://cdn.segment.com/analytics.js/v1/' +
-                key +
+                writeKey +
                 '/analytics.min.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
               analytics._loadOptions = e
             }
             analytics.SNIPPET_VERSION = '4.13.1'
-            analytics.load('***REMOVED***')
+            analytics._writeKey = writeKey
+            analytics.load()
             analytics.page()
           }
       })()
+      }
     </script>
   </head>
   <body>

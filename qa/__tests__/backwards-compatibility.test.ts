@@ -2,6 +2,7 @@ import { difference } from 'lodash'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
+import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
 
 describe('Backwards compatibility', () => {
   test('provides all same properties', async () => {
@@ -18,7 +19,7 @@ describe('Backwards compatibility', () => {
       browser: await browser(),
       script: code,
       serverURL: await server(),
-      writeKey: '***REMOVED***',
+      writeKey: TEST_WRITEKEY,
     })
 
     const next = results.next.codeEvaluation as string[]
@@ -43,7 +44,7 @@ describe('Backwards compatibility', () => {
       browser: await browser(),
       script: code,
       serverURL: await server(),
-      writeKey: '***REMOVED***',
+      writeKey: TEST_WRITEKEY,
     })
 
     const nextId = results.next.codeEvaluation
@@ -63,7 +64,7 @@ describe('Backwards compatibility', () => {
       browser: await browser(),
       script: code,
       serverURL: await server(),
-      writeKey: '***REMOVED***',
+      writeKey: TEST_WRITEKEY,
     })
 
     const nextId = results.next.codeEvaluation as { email: string }
@@ -80,7 +81,7 @@ describe('Backwards compatibility', () => {
       browser: await browser(),
       script: code,
       serverURL: await server(),
-      writeKey: '***REMOVED***',
+      writeKey: TEST_WRITEKEY,
     })
 
     const resultString = result.next.bundleRequests.join()

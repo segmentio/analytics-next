@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { TEST_WRITEKEY } from '../../../src/__tests__/test-writekeys'
 
 import {
   AnalyticsSettings,
@@ -7,7 +8,7 @@ import {
 } from '../../../dist/pkg'
 
 const settings: AnalyticsSettings = {
-  writeKey: '***REMOVED***', // segment.com
+  writeKey: TEST_WRITEKEY,
 }
 
 export default function Iframe(): React.ReactElement {

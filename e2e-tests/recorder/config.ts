@@ -8,6 +8,7 @@ import bonobos from '../cases/bonobos'
 import ifit from '../cases/ifit'
 import hoteltonight from '../cases/hoteltonight'
 import doordash from '../cases/doordash'
+import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
 
 export const DEVTOOLS = process.env.DEVTOOLS === 'true'
 export const AJS_VERSION = process.env.AJS_VERSION || 'next'
@@ -39,4 +40,4 @@ export const cases = allScenarios.filter(
   (scenario) => CASES?.split(',').includes(scenario.name) ?? true
 )
 
-export const WRITE_KEYS = ['***REMOVED***']
+export const WRITE_KEYS = [TEST_WRITEKEY]

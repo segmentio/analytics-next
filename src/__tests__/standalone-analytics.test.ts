@@ -36,7 +36,7 @@ jest.mock('unfetch', () => {
 })
 
 describe('standalone bundle', () => {
-  const segmentDotCom = `***REMOVED***`
+  const segmentDotCom = `foo`
 
   beforeEach(async () => {
     jest.restoreAllMocks()
@@ -124,7 +124,7 @@ describe('standalone bundle', () => {
     await loadLegacySettings(segmentDotCom)
 
     expect(unfetch).toHaveBeenCalledWith(
-      'https://cdn.foo.com/v1/projects/***REMOVED***/settings'
+      'https://cdn.foo.com/v1/projects/foo/settings'
     )
   })
 

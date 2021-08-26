@@ -1,7 +1,6 @@
 const fetch = require('node-fetch')
 const ex = require('execa')
 
-const writeKey = '***REMOVED***'
 const btoa = (val) => Buffer.from(val).toString('base64')
 
 const getBranch = async () =>
@@ -23,7 +22,7 @@ async function increment(metric, value = 0, tags = []) {
     headers: {
       'Content-Type': 'application/json',
       'User-Agent': 'analytics-node-next/latest',
-      Authorization: `Basic ${btoa(writeKey)}`,
+      Authorization: `Basic ${btoa(process.env.STATS_WRITEKEY)}`,
     },
     body: JSON.stringify(event),
   })

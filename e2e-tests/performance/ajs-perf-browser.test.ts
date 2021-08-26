@@ -4,6 +4,7 @@ import {
   globalSetup,
   globalTeardown,
 } from '../../src/tester/ajs-perf'
+import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
 
 describe('Performance', () => {
   beforeAll(async () => {
@@ -20,7 +21,7 @@ describe('Performance', () => {
     jest.setTimeout(50000)
 
     const analyticsStub = await tester(
-      '***REMOVED***',
+      TEST_WRITEKEY,
       'http://localhost:3001',
       'chromium',
       true
@@ -57,7 +58,7 @@ describe('Performance', () => {
   it('loads ajs in a browser', async () => {
     jest.setTimeout(10000)
     const analyticsStub = await tester(
-      '***REMOVED***',
+      TEST_WRITEKEY,
       'http://localhost:3001',
       'chromium',
       true

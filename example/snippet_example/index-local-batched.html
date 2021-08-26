@@ -12,79 +12,90 @@
       }
     </style>
 
+    <form method="get">
+      <input type="text" name="writeKey" placeholder="Writekey" />
+      <button>Load</button>
+    </form>
+
     <script>
-      console.profile('snippet')
-      console.time('snippet')
-      !(function () {
-        var analytics = (window.analytics = window.analytics || [])
-        if (!analytics.initialize)
-          if (analytics.invoked)
-            window.console &&
-              console.error &&
-              console.error('Segment snippet included twice.')
-          else {
-            analytics.invoked = !0
-            analytics.methods = [
-              'trackSubmit',
-              'trackClick',
-              'trackLink',
-              'trackForm',
-              'pageview',
-              'identify',
-              'reset',
-              'group',
-              'track',
-              'ready',
-              'alias',
-              'debug',
-              'page',
-              'once',
-              'off',
-              'on',
-              'addSourceMiddleware',
-              'addIntegrationMiddleware',
-              'setAnonymousId',
-              'addDestinationMiddleware',
-            ]
-            analytics.factory = function (e) {
-              return function () {
-                var t = Array.prototype.slice.call(arguments)
-                t.unshift(e)
-                analytics.push(t)
-                return analytics
+      const { searchParams } = new URL(document.location);
+      const writeKey = searchParams.get("writeKey");
+      document.querySelector("input").value = writeKey;
+
+      if (writeKey) {
+        console.profile('snippet')
+        console.time('snippet')
+        !(function () {
+          var analytics = (window.analytics = window.analytics || [])
+          if (!analytics.initialize)
+            if (analytics.invoked)
+              window.console &&
+                console.error &&
+                console.error('Segment snippet included twice.')
+            else {
+              analytics.invoked = !0
+              analytics.methods = [
+                'trackSubmit',
+                'trackClick',
+                'trackLink',
+                'trackForm',
+                'pageview',
+                'identify',
+                'reset',
+                'group',
+                'track',
+                'ready',
+                'alias',
+                'debug',
+                'page',
+                'once',
+                'off',
+                'on',
+                'addSourceMiddleware',
+                'addIntegrationMiddleware',
+                'setAnonymousId',
+                'addDestinationMiddleware',
+              ]
+              analytics.factory = function (e) {
+                return function () {
+                  var t = Array.prototype.slice.call(arguments)
+                  t.unshift(e)
+                  analytics.push(t)
+                  return analytics
+                }
               }
-            }
-            for (var e = 0; e < analytics.methods.length; e++) {
-              var key = analytics.methods[e]
-              analytics[key] = analytics.factory(key)
-            }
-            analytics.load = function (key, e) {
-              var t = document.createElement('script')
-              t.type = 'text/javascript'
-              t.async = !0
-              t.src = '/dist/umd/standalone.js'
-              var n = document.getElementsByTagName('script')[0]
-              n.parentNode.insertBefore(t, n)
-              analytics._loadOptions = e
-            }
-            analytics.SNIPPET_VERSION = '4.13.1'
-            analytics._writeKey = 'DeIEFkOsBwyADYc9sI4EISuhLLFRRnZo'
-            analytics.load('DeIEFkOsBwyADYc9sI4EISuhLLFRRnZo', {
-              integrations: {
-                'Segment.io': {
-                  deliveryStrategy: {
-                    strategy: 'batching',
-                    config: {
-                      size: 10,
-                      timeout: 5000,
+              for (var e = 0; e < analytics.methods.length; e++) {
+                var key = analytics.methods[e]
+                analytics[key] = analytics.factory(key)
+              }
+              analytics.load = function (key, e) {
+                var t = document.createElement('script')
+                t.type = 'text/javascript'
+                t.async = !0
+                t.src = '/dist/umd/standalone.js'
+                var n = document.getElementsByTagName('script')[0]
+                n.parentNode.insertBefore(t, n)
+                analytics._loadOptions = e
+              }
+              analytics.SNIPPET_VERSION = '4.13.1'
+              analytics._writeKey = writeKey
+              analytics.load('', {
+                integrations: {
+                  'Segment.io': {
+                    deliveryStrategy: {
+                      strategy: 'batching',
+                      config: {
+                        size: 10,
+                        timeout: 5000,
+                      },
                     },
                   },
                 },
-              },
-            })
-            analytics.page()
-          }
-      })()
+              })
+              analytics.page()
+            }
+        })()
+      }
     </script>
   </head>
   <body>
@@ -108,7 +119,8 @@
     <pre id="logs"></pre>
 
     <script type="text/javascript">
-      window.analytics.ready(function onReady() {
+      if (window.analytics) {
+        window.analytics.ready(function onReady() {
         console.profileEnd('snippet')
         console.timeEnd('snippet')
         document.querySelector('#ready-logs').textContent = 'ready!'
@@ -159,6 +171,7 @@
               )
             })
         })
+      }
     </script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 import { AnalyticsNode } from '../node'
 
-const writeKey = '***REMOVED***'
+const writeKey = 'foo'
 
 describe('Initialization', () => {
   it('loads analytics-node-next plugin', async () => {

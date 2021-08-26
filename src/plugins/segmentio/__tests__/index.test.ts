@@ -21,7 +21,7 @@ describe('Segment.io', () => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
-    options = { apiKey: 'oq0vdlg7yi' }
+    options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
     segment = segmentio(analytics, options, {})
 

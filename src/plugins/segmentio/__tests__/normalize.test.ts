@@ -36,7 +36,7 @@ describe('before loading', () => {
   let analytics: Analytics
 
   beforeEach(() => {
-    options = { apiKey: 'oq0vdlg7yi' }
+    options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
 
     window.localStorage.clear()

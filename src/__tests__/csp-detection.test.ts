@@ -34,7 +34,7 @@ jest.mock('unfetch', () => {
 })
 
 describe('CSP Detection', () => {
-  const segmentDotCom = `***REMOVED***`
+  const writeKey = `foo`
 
   let jsd: JSDOM
   let windowSpy: jest.SpyInstance
@@ -58,7 +58,7 @@ describe('CSP Detection', () => {
     <!DOCTYPE html>
       <head>
         <script>
-          ${snippet(segmentDotCom, true)}
+          ${snippet(writeKey, true)}
         </script>
       </head>
       <body>
@@ -114,7 +114,7 @@ describe('CSP Detection', () => {
 
     expect(getClassic()).toMatchInlineSnapshot(`
       <script
-        src="https://cdn.foo.com/analytics.js/v1/***REMOVED***/analytics.classic.js"
+        src="https://cdn.foo.com/analytics.js/v1/foo/analytics.classic.js"
         status="loading"
         type="text/javascript"
       />

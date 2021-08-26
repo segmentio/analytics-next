@@ -34,7 +34,7 @@ jest.mock('unfetch', () => {
 })
 
 describe('standalone bundle', () => {
-  const segmentDotCom = `***REMOVED***`
+  const segmentDotCom = `foo`
 
   let jsd: JSDOM
 

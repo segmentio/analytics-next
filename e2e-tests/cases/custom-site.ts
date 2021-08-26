@@ -32,7 +32,6 @@ export default {
 
     // Click text="Load"
     await page.click('text="Load"')
-    // assert.equal(page.url(), 'http://localhost:5000/example/snippet_example/comparison-demo?writeKey=***REMOVED***');
 
     // Click text=/.*Track: Product Viewed.*/
     await page.click('text=/.*Track: Product Viewed.*/')

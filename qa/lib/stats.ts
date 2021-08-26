@@ -3,9 +3,6 @@ import { Context } from '../../src/core/context'
 import { AnalyticsNode } from '../../src/node'
 import ex from 'execa'
 
-// https://app.segment.com/mme-e2e/sources/ajs_2_0_qa/overview
-const writeKey = '***REMOVED***'
-
 let analytics: Analytics = undefined
 
 const getBranch = async () =>
@@ -17,7 +14,7 @@ async function client(): Promise<Analytics> {
   }
 
   const [nodeAnalytics] = await AnalyticsNode.load({
-    writeKey,
+    writeKey: process.env.STATS_WRITEKEY,
   })
 
   analytics = nodeAnalytics

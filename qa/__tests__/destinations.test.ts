@@ -81,7 +81,9 @@ describe('Destination Tests', () => {
     const nextMetrics = results.next.metrics
     const classicMetrics = results.classic.metrics
 
-    await reportMetrics(nextMetrics, classicMetrics)
+    if (process.env.STATS_WRITEKEY) {
+      await reportMetrics(nextMetrics, classicMetrics)
+    }
 
     expect(nextReqs).not.toEqual([])
     expect(classicReqs).not.toEqual([])

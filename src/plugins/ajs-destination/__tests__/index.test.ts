@@ -8,6 +8,7 @@ import { LegacySettings } from '../../../browser'
 import { Context } from '../../../core/context'
 import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
+import { AMPLITUDE_WRITEKEY } from '../../../__tests__/test-writekeys'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -295,7 +296,7 @@ describe('remote loading', () => {
       'Amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       {}
     )
@@ -424,7 +425,7 @@ describe('plan', () => {
       'amplitude',
       'latest',
       {
-        apiKey: '***REMOVED***',
+        apiKey: AMPLITUDE_WRITEKEY,
       },
       { plan }
     )
