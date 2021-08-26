@@ -87,12 +87,11 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/batch",
+        "https://https://api.segment.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}]}",
           "headers": Object {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
           "method": "post",
         },
@@ -147,12 +146,11 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/batch",
+        "https://https://api.segment.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}]}",
           "headers": Object {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
           "method": "post",
         },
@@ -184,12 +182,11 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/batch",
+        "https://https://api.segment.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}]}",
           "headers": Object {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
           "method": "post",
         },
@@ -198,12 +195,11 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[1]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/batch",
+        "https://https://api.segment.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}]}",
           "headers": Object {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
           "method": "post",
         },

@@ -61,7 +61,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
 
     flushing = true
 
-    const remote = `https://${apiHost}/batch`
+    const remote = `https://${apiHost}/b`
     const batch = buffer.map(([_url, blob]) => {
       return blob
     })
@@ -70,15 +70,13 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     flushing = false
 
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
-    const authtoken = btoa(writeKey + ':')
 
     return fetch(remote, {
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Basic ${authtoken}`,
+        'Content-Type': 'text/plain',
       },
       method: 'post',
-      body: JSON.stringify({ batch }),
+      body: JSON.stringify({ batch, writeKey }),
     })
   }
 
@@ -110,18 +108,16 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
         return
       }
 
-      const remote = `https://${apiHost}/batch`
+      const remote = `https://${apiHost}/b`
       const writeKey = (chunk[0] as SegmentEvent)?.writeKey
-      const authtoken = btoa(writeKey + ':')
 
       return fetch(remote, {
         keepalive: true,
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Basic ${authtoken}`,
+          'Content-Type': 'text/plain',
         },
         method: 'post',
-        body: JSON.stringify({ batch: chunk }),
+        body: JSON.stringify({ batch: chunk, writeKey }),
       })
     })
 
