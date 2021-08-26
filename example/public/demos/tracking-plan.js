@@ -52,8 +52,8 @@ function tp(id, token) {
   return trackingPlan
 }
 
-const token = '***REMOVED***'
-const id = '***REMOVED***'
+const token = ''
+const id = ''
 
 const xt = tp(id, token)
 
