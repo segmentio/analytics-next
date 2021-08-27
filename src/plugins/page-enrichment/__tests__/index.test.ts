@@ -76,6 +76,22 @@ describe('Page Enrichment', () => {
       }
     `)
   })
+
+  test('runs before any other plugin', async () => {
+    let called = false
+
+    await ajs.addSourceMiddleware(({ payload, next }) => {
+      called = true
+      expect(payload.obj?.context?.page).not.toBeFalsy()
+      next(payload)
+    })
+
+    await ajs.track('My event', {
+      banana: 'phone',
+    })
+
+    expect(called).toBe(true)
+  })
 })
 
 describe('pageDefaults', () => {

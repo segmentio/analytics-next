@@ -98,7 +98,7 @@ export const pageEnrichment: Plugin = {
   version: '0.1.0',
   isLoaded: () => true,
   load: () => Promise.resolve(),
-  type: 'enrichment',
+  type: 'before',
 
   page: (ctx) => {
     ctx.event.properties = Object.assign(
