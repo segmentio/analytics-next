@@ -95,7 +95,7 @@ describe('Smoke Tests', () => {
     await window.analytics.page()
   })()`
 
-  test.concurrent.each(samples)(`%p`, async (writekey) => {
+  test.concurrent.each(samples)(`smoke test`, async (writekey) => {
     const [url, chrome] = await Promise.all([server(), browser()])
 
     const results = await run({

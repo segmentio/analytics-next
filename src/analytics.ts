@@ -104,9 +104,10 @@ export class Analytics extends Emitter {
       this.integrations
     )
 
-    this.emit('track', name, data, opts)
-
-    return this.dispatch(segmentEvent, cb)
+    return this.dispatch(segmentEvent, cb).then((ctx) => {
+      this.emit('track', name, ctx.event.properties, ctx.event.options)
+      return ctx
+    })
   }
 
   async page(...args: PageParams): Promise<DispatchedEvent> {
@@ -125,8 +126,11 @@ export class Analytics extends Emitter {
       options,
       this.integrations
     )
-    this.emit('page', category, name, properties, options)
-    return this.dispatch(segmentEvent, callback)
+
+    return this.dispatch(segmentEvent, callback).then((ctx) => {
+      this.emit('page', category, page, ctx.event.properties, ctx.event.options)
+      return ctx
+    })
   }
 
   async identify(...args: UserParams): Promise<DispatchedEvent> {
@@ -142,8 +146,15 @@ export class Analytics extends Emitter {
       this.integrations
     )
 
-    this.emit('identify', this._user.id(), this._user.traits(), options)
-    return this.dispatch(segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback).then((ctx) => {
+      this.emit(
+        'identify',
+        ctx.event.userId,
+        ctx.event.traits,
+        ctx.event.options
+      )
+      return ctx
+    })
   }
 
   group(...args: UserParams): Promise<DispatchedEvent> | Group {
@@ -157,17 +168,19 @@ export class Analytics extends Emitter {
 
     this._group.identify(id, _traits)
     const groupId = this._group.id()
-    const groupdTraits = this._group.traits()
+    const groupTraits = this._group.traits()
 
     const segmentEvent = this.eventFactory.group(
       groupId,
-      groupdTraits,
+      groupTraits,
       options,
       this.integrations
     )
 
-    this.emit('group', groupId, groupdTraits, options)
-    return this.dispatch(segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback).then((ctx) => {
+      this.emit('group', ctx.event.groupId, ctx.event.traits, ctx.event.options)
+      return ctx
+    })
   }
 
   async alias(...args: AliasParams): Promise<DispatchedEvent> {
@@ -178,8 +191,10 @@ export class Analytics extends Emitter {
       options,
       this.integrations
     )
-    this.emit('alias', to, from, options)
-    return this.dispatch(segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback).then((ctx) => {
+      this.emit('alias', to, from, ctx.event.options)
+      return ctx
+    })
   }
 
   async screen(...args: PageParams): Promise<DispatchedEvent> {
@@ -198,8 +213,16 @@ export class Analytics extends Emitter {
       options,
       this.integrations
     )
-    this.emit('screen', category, name, properties, options)
-    return this.dispatch(segmentEvent, callback)
+    return this.dispatch(segmentEvent, callback).then((ctx) => {
+      this.emit(
+        'screen',
+        category,
+        page,
+        ctx.event.properties,
+        ctx.event.options
+      )
+      return ctx
+    })
   }
 
   async trackClick(...args: LinkArgs): Promise<Analytics> {
