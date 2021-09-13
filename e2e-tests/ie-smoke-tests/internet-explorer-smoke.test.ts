@@ -2,7 +2,7 @@ import { remote } from 'webdriverio'
 import ngrok from 'ngrok'
 import URL from 'url'
 import execa from 'execa'
-import { startLocalServer } from '../recorder/localServer'
+import { startLocalServer } from '../local-server'
 
 const sauceKey = (): string => {
   return (

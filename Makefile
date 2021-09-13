@@ -109,26 +109,3 @@ dev: build ## Starts a dev server that is ready for development
 standalone-example: ## Runs a server with standalone ajs examples
 	yarn concurrently "yarn webpack -w" "yarn serve"
 .PHONY: standalone-example
-
-
-## Recorders
-
-record-clean:
-	rm -rf e2e-tests/data/requests/*
-.PHONY: record-clean
-
-record-classic:
-	AJS_VERSION=classic $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/runner.ts
-.PHONY: record-classic
-
-record-next:
-	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/runner.ts
-.PHONY: record-next
-
-record: build record-clean
-	yarn concurrently "make record-classic" "make record-next"
-.PHONY: record
-
-record-custom:
-	AJS_VERSION=next $(BIN)/ts-node --transpile-only --project tsconfig.scripts.json e2e-tests/recorder/customRunner.ts
-.PHONY: record-custom
