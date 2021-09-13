@@ -102,4 +102,76 @@ describe('Backwards compatibility', () => {
       'http://localhost:4000/dist/umd/vendors-node_modules_segment_analytics_js-video-plugins_dist_index_umd_js.bundle'
     )
   })
+
+  test('event emitters emit the same properties', async () => {
+    const code = `(async () => {
+      let allEvents = {}
+      const analytics = window.analytics
+
+      analytics.on('page', (...args) => {
+        allEvents['page'] = [...args].filter(a => a !== undefined && Object.keys(a ?? {}).length > 0)
+      })
+
+      analytics.on('track', (...args) => {
+        allEvents['track'] = [...args].filter(a => a !== undefined && Object.keys(a ?? {}).length > 0)
+      })
+
+      analytics.on('identify', (...args) => {
+        allEvents['identify'] = [...args].filter(a => a !== undefined && Object.keys(a ?? {}).length > 0)
+      })
+
+      await analytics.page()
+      await analytics.identify('Hasbulla', { goat: true })
+      await analytics.track('hello world')
+
+      return allEvents
+    })()`
+
+    const result = await run({
+      browser: await browser(),
+      script: code,
+      serverURL: await server(),
+      writeKey: TEST_WRITEKEY,
+    })
+
+    const classic = result.classic.codeEvaluation
+    const next = result.next.codeEvaluation
+
+    expect(next['track']).toEqual(classic['track'])
+    expect(next['identify']).toEqual(classic['identify'])
+
+    expect(classic['page']).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "path": "/",
+          "referrer": "",
+          "search": "?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
+          "title": "",
+          "url": "http://localhost:4000/?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
+        },
+        Object {
+          "context": Object {
+            "page": Object {
+              "path": "/",
+              "referrer": "",
+              "search": "?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
+              "title": "",
+              "url": "http://localhost:4000/?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
+            },
+          },
+        },
+      ]
+    `)
+
+    const pagecallback = next['page']
+
+    expect(pagecallback[0]).toEqual(
+      expect.objectContaining({
+        ...classic['page'][0],
+        search: '?type=next&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6',
+        url:
+          'http://localhost:4000/?type=next&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6',
+      })
+    )
+  })
 })
