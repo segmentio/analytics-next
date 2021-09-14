@@ -19,9 +19,10 @@ describe('Remote Loader', () => {
 
   it('should attempt to load a script from the url of each remotePlugin', async () => {
     await remoteLoader({
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         {
+          name: 'foo',
           url: 'cdn/path/to/file.js',
           libraryName: 'testPlugin',
           settings: {},
@@ -34,9 +35,10 @@ describe('Remote Loader', () => {
 
   it('should attempt calling the library', async () => {
     await remoteLoader({
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         {
+          name: 'foo',
           url: 'cdn/path/to/file.js',
           libraryName: 'testPlugin',
           settings: {
@@ -56,11 +58,29 @@ describe('Remote Loader', () => {
 
   it('should skip remote plugins that arent callable functions', async () => {
     const plugins = await remoteLoader({
+      integrations: { foo: {} },
+      remotePlugins: [
+        {
+          name: 'foo',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'this wont resolve',
+          settings: {},
+        },
+      ],
+    })
+
+    expect(pluginFactory).not.toHaveBeenCalled()
+    expect(plugins).toHaveLength(0)
+  })
+
+  it('should skip remote plugins when the destination is disabled', async () => {
+    const plugins = await remoteLoader({
       integrations: {},
       remotePlugins: [
         {
+          name: 'disabledDestination',
           url: 'cdn/path/to/file.js',
-          libraryName: 'this wont resolve',
+          libraryName: 'destination disabled',
           settings: {},
         },
       ],
@@ -107,14 +127,16 @@ describe('Remote Loader', () => {
     })
 
     const plugins = await remoteLoader({
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         {
+          name: 'foo',
           url: 'multiple-plugins.js',
           libraryName: 'multiple-plugins',
           settings: { foo: true },
         },
         {
+          name: 'foo',
           url: 'single-plugin.js',
           libraryName: 'single-plugin',
           settings: { bar: false },
@@ -143,14 +165,16 @@ describe('Remote Loader', () => {
     })
 
     const plugins = await remoteLoader({
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         {
+          name: 'foo',
           url: 'cdn/path/to/flaky.js',
           libraryName: 'flaky',
           settings: {},
         },
         {
+          name: 'foo',
           url: 'cdn/path/to/asyncFlaky.js',
           libraryName: 'asyncFlaky',
           settings: {},
@@ -189,14 +213,16 @@ describe('Remote Loader', () => {
     })
 
     const plugins = await remoteLoader({
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         {
+          name: 'foo',
           url: 'valid',
           libraryName: 'valid',
           settings: { foo: true },
         },
         {
+          name: 'foo',
           url: 'invalid',
           libraryName: 'invalid',
           settings: { bar: false },

@@ -5,6 +5,8 @@ import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
 
 export interface RemotePlugin {
+  /** The name of the action destination. */
+  name: string
   /** The url of the javascript file to load */
   url: string
   /** The UMD/global name the plugin uses. Plugins are expected to exist here with the `PluginFactory` method signature */
@@ -42,27 +44,28 @@ export async function remoteLoader(
   settings: LegacySettings
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
-
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
-      try {
-        await loadScript(remotePlugin.url)
+      if (settings.integrations[remotePlugin.name]) {
+        try {
+          await loadScript(remotePlugin.url)
 
-        const libraryName = remotePlugin.libraryName
+          const libraryName = remotePlugin.libraryName
 
-        // @ts-expect-error
-        if (typeof window[libraryName] === 'function') {
           // @ts-expect-error
-          const pluginFactory = window[libraryName] as PluginFactory
-          const plugin = await asPromise(pluginFactory(remotePlugin.settings))
-          const plugins = Array.isArray(plugin) ? plugin : [plugin]
+          if (typeof window[libraryName] === 'function') {
+            // @ts-expect-error
+            const pluginFactory = window[libraryName] as PluginFactory
+            const plugin = await asPromise(pluginFactory(remotePlugin.settings))
+            const plugins = Array.isArray(plugin) ? plugin : [plugin]
 
-          validate(plugins)
+            validate(plugins)
 
-          allPlugins.push(...plugins)
+            allPlugins.push(...plugins)
+          }
+        } catch (error) {
+          console.warn('Failed to load Remote Plugin', error)
         }
-      } catch (error) {
-        console.warn('Failed to load Remote Plugin', error)
       }
     }
   )

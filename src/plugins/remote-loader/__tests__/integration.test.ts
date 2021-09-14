@@ -37,12 +37,13 @@ describe.skip('Remote Plugin Integration', () => {
     )
 
     const cdnResponse: LegacySettings = {
-      integrations: {},
+      integrations: { foo: {} },
       remotePlugins: [
         // This may be a bit flaky
         // we should mock this file in case it becomes a problem
         // but I'd like to have a full integration test if possible
         {
+          name: 'foo',
           url:
             'https://ajs-next-integrations.s3-us-west-2.amazonaws.com/fab-5/amplitude-plugins.js',
           libraryName: 'amplitude-pluginsDestination',
