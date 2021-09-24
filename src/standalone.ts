@@ -60,7 +60,14 @@ if (shouldPolyfill()) {
     'src',
     'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js'
   )
-  document.body.appendChild(script)
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () =>
+      document.body.appendChild(script)
+    )
+  } else {
+    document.body.appendChild(script)
+  }
 
   script.onload = function (): void {
     attempt(install)
