@@ -214,7 +214,7 @@ export class EventQueue extends Emitter {
     const available =
       denyList.All === false
         ? this.plugins.filter(
-            (p) => denyList[p.name] === true || p.type !== 'destination'
+            (p) => denyList[p.name] || p.type !== 'destination'
           )
         : // !== false includes plugins not present on the denyList
           this.plugins.filter((p) => denyList[p.name] !== false)
