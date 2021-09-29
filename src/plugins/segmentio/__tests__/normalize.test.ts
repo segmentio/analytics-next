@@ -91,6 +91,16 @@ describe('before loading', () => {
       assert(object.anonymousId?.length === 36)
     })
 
+    it('should accept anonymousId being set in an event', async () => {
+      const object: SegmentEvent = {
+        userId: 'baz',
+        type: 'track',
+        anonymousId: '👻',
+      }
+      normalize(analytics, object, options, {})
+      expect(object.anonymousId).toEqual('👻')
+    })
+
     it('should add .context', () => {
       normalize(analytics, object, options, {})
       assert(object.context)
