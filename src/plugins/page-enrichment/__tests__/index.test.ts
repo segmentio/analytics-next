@@ -61,6 +61,20 @@ describe('Page Enrichment', () => {
   `)
   })
 
+  test('enriches page events using properties', async () => {
+    const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
+
+    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
+    Object {
+      "path": "/",
+      "referrer": "foo",
+      "search": "",
+      "title": "",
+      "url": "http://localhost/",
+    }
+  `)
+  })
+
   test('enriches identify events with the page context', async () => {
     const ctx = await ajs.identify('Netto', {
       banana: 'phone',
