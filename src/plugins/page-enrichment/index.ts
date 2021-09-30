@@ -2,6 +2,7 @@ import type { Context } from '@/core/context'
 import type { Plugin } from '@/core/plugin'
 
 interface PageDefault {
+  [key: string]: unknown
   path: string
   referrer: string
   search: string
@@ -79,6 +80,13 @@ function enrichPageContext(ctx: Context): Context {
   const event = ctx.event
   event.context = event.context || {}
   let pageContext = pageDefaults()
+  const pageProps = event.properties ?? {}
+
+  Object.keys(pageContext).forEach((key) => {
+    if (pageProps[key]) {
+      pageContext[key] = pageProps[key]
+    }
+  })
 
   if (event.context.page) {
     pageContext = Object.assign({}, pageContext, event.context.page)
