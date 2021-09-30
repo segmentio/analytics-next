@@ -8,7 +8,6 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
   - [💡 Using with Segment](#-using-with-segment)
   - [💻 Using as an NPM package](#-using-as-an-npm-package)
 - [🔌 Plugins](#-plugins)
-  - [Example]
 - [🐒 Development](#-development)
 - [🧪 Testing](#-testing)
   - [✅ Unit Testing](#-unit-testing)
@@ -17,7 +16,7 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 
 # 🏎️ Quickstart
 
-The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
+The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you can [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
 
 ## 💡 Using with Segment
 
@@ -107,8 +106,6 @@ After: Plugins that need to run after all other plugins have run. An example of 
 Destination: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
 Enrichment: Modifies an event, failure here could halt the event pipeline.
 Utility: Plugins that change Analytics Next functionality and don't fall into the other categories.
-
-## Example
 
 Here is an example of a simple plugin that would convert all track events event names to lowercase before the event gets sent through the rest of the pipeline:
 
