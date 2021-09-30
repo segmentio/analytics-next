@@ -3,6 +3,7 @@ import { JSONValue } from '../../core/events'
 import { Plugin } from '../../core/plugin'
 import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
+import { getCDN } from '../../lib/parse-cdn'
 
 export interface RemotePlugin {
   /** The url of the javascript file to load */
@@ -42,11 +43,14 @@ export async function remoteLoader(
   settings: LegacySettings
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
+  const cdn = window.analytics?._cdn ?? getCDN()
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
       try {
-        await loadScript(remotePlugin.url)
+        await loadScript(
+          remotePlugin.url.replace('https://cdn.segment.com', cdn)
+        )
 
         const libraryName = remotePlugin.libraryName
 

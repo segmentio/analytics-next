@@ -32,6 +32,23 @@ describe('Remote Loader', () => {
     expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js')
   })
 
+  it('should attempt to load a script from a custom CDN', async () => {
+    window.analytics = {}
+    window.analytics._cdn = 'foo.com'
+    await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          url: 'https://cdn.segment.com/actions/file.js',
+          libraryName: 'testPlugin',
+          settings: {},
+        },
+      ],
+    })
+
+    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
+  })
+
   it('should attempt calling the library', async () => {
     await remoteLoader({
       integrations: {},
