@@ -73,6 +73,8 @@ export function segmentio(
     setTimeout(async () => {
       flushing = true
       buffer = await flushQueue(
+        // How can I get the segment.io plugin into this function without having
+        // to repeat this code?
         {
           name: 'Segment.io',
           type: 'after',
