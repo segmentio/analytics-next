@@ -30,7 +30,7 @@ const klona = (evt: SegmentEvent): SegmentEvent =>
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
-async function flushQueue(
+export async function flushQueue(
   xt: Plugin,
   queue: PriorityQueue<Context>
 ): Promise<PriorityQueue<Context>> {
