@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Facade } from '@segment/facade'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
@@ -73,20 +72,10 @@ export function segmentio(
     setTimeout(async () => {
       flushing = true
       buffer = await flushQueue(
-        // How can I get the segment.io plugin into this function without having
-        // to repeat this code?
-        {
-          name: 'Segment.io',
-          type: 'after',
-          version: '0.1.0',
-          isLoaded: (): boolean => true,
-          load: (): Promise<void> => Promise.resolve(),
-          track: send,
-          identify: send,
-          page: send,
-          alias: send,
-          group: send,
-        },
+        // How else can I get the segment.io plugin into this function without
+        // accessing a variable that wasn't defined yet?
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        segmentio,
         buffer
       )
       flushing = false
@@ -123,7 +112,7 @@ export function segmentio(
       .then(() => ctx)
   }
 
-  return {
+  const segmentio: Plugin = {
     name: 'Segment.io',
     type: 'after',
     version: '0.1.0',
@@ -135,4 +124,6 @@ export function segmentio(
     alias: send,
     group: send,
   }
+
+  return segmentio
 }
