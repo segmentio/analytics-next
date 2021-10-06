@@ -4,9 +4,11 @@ import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { attempt } from '../../core/queue/delivery'
+import { pWhile } from '../../lib/p-while'
+import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
-import { flushQueue } from '../ajs-destination'
 import batch from './batched-dispatcher'
 import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
@@ -62,6 +64,32 @@ export function segmentio(
     settings?.deliveryStrategy?.strategy === 'batching'
       ? batch(apiHost, settings?.deliveryStrategy?.config)
       : standard()
+
+  async function flushQueue(xt: Plugin, queue: PriorityQueue<Context>) {
+    const failedQueue: Context[] = []
+    if (isOffline()) {
+      return queue
+    }
+
+    await pWhile(
+      () => queue.length > 0 && !isOffline(),
+      async () => {
+        const ctx = queue.pop()
+        if (!ctx) {
+          return
+        }
+
+        const result = await attempt(ctx, xt)
+        const success = result instanceof Context
+        if (!success) {
+          failedQueue.push(ctx)
+        }
+      }
+    )
+    // re-add failed tasks
+    failedQueue.map((failed) => queue.pushWithBackoff(failed))
+    return queue
+  }
 
   function scheduleFlush(): void {
     if (flushing) {
