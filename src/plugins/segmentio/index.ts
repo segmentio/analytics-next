@@ -45,12 +45,40 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
   return json
 }
 
+async function flushQueue(
+  xt: Plugin,
+  queue: PriorityQueue<Context>
+): Promise<PriorityQueue<Context>> {
+  const failedQueue: Context[] = []
+  if (isOffline()) {
+    return queue
+  }
+
+  await pWhile(
+    () => queue.length > 0 && !isOffline(),
+    async () => {
+      const ctx = queue.pop()
+      if (!ctx) {
+        return
+      }
+
+      const result = await attempt(ctx, xt)
+      const success = result instanceof Context
+      if (!success) {
+        failedQueue.push(ctx)
+      }
+    }
+  )
+  // re-add failed tasks
+  failedQueue.map((failed) => queue.pushWithBackoff(failed))
+  return queue
+}
+
 export function segmentio(
   analytics: Analytics,
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  // delete during code review: should this be `Segment.io` or `dest-Segment.io` ?
   let buffer = new PersistedPriorityQueue(
     analytics.queue.queue.maxAttempts,
     `dest-Segment.io`
@@ -64,32 +92,6 @@ export function segmentio(
     settings?.deliveryStrategy?.strategy === 'batching'
       ? batch(apiHost, settings?.deliveryStrategy?.config)
       : standard()
-
-  async function flushQueue(xt: Plugin, queue: PriorityQueue<Context>) {
-    const failedQueue: Context[] = []
-    if (isOffline()) {
-      return queue
-    }
-
-    await pWhile(
-      () => queue.length > 0 && !isOffline(),
-      async () => {
-        const ctx = queue.pop()
-        if (!ctx) {
-          return
-        }
-
-        const result = await attempt(ctx, xt)
-        const success = result instanceof Context
-        if (!success) {
-          failedQueue.push(ctx)
-        }
-      }
-    )
-    // re-add failed tasks
-    failedQueue.map((failed) => queue.pushWithBackoff(failed))
-    return queue
-  }
 
   function scheduleFlush(): void {
     if (flushing) {
