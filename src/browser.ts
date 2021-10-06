@@ -224,8 +224,13 @@ export class AnalyticsBrowser {
       analytics.page().catch(console.error)
     }
 
-    if (window.location.search.includes('ajs_')) {
-      analytics.queryString(window.location.search).catch(console.error)
+    const search = window.location.search ?? ''
+    const hash = window.location.hash ?? ''
+
+    const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+
+    if (term.includes('ajs_')) {
+      analytics.queryString(term).catch(console.error)
     }
 
     flushBuffered(analytics)
