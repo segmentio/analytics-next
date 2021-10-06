@@ -916,5 +916,27 @@ describe('queryString', () => {
 
     await AnalyticsBrowser.load({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
+
+    jsd.reconfigure({
+      url: 'https://localhost/#about?ajs_id=123',
+    })
+
+    await AnalyticsBrowser.load({ writeKey })
+    expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
+  })
+
+  it('applies query string logic if window.location.hash is present in different formats', async () => {
+    jest.mock('../analytics')
+    const mockQueryString = jest
+      .fn()
+      .mockImplementation(() => Promise.resolve())
+    Analytics.prototype.queryString = mockQueryString
+
+    jsd.reconfigure({
+      url: 'https://localhost/#about?ajs_id=123',
+    })
+
+    await AnalyticsBrowser.load({ writeKey })
+    expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
   })
 })
