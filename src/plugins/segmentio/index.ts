@@ -71,8 +71,6 @@ export function segmentio(
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
       flushing = true
-      // How else can I get the segment.io plugin into this function without
-      // accessing a variable that wasn't defined yet?
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       buffer = await flushQueue(segmentio, buffer)
       flushing = false
