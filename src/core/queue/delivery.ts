@@ -37,6 +37,18 @@ export function attempt(
         throw err
       }
 
+      if (
+        err instanceof ContextCancelation &&
+        err.type === 'no_internet_connection'
+      ) {
+        ctx.log('warn', err.type, {
+          plugin: plugin.name,
+          error: err,
+        })
+
+        throw err
+      }
+
       if (err instanceof ContextCancelation) {
         ctx.log('warn', err.type, {
           plugin: plugin.name,
