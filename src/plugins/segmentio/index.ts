@@ -1,7 +1,7 @@
 import { Facade } from '@segment/facade'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
-import { Context } from '../../core/context'
+import { Context, ContextCancelation } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { toFacade } from '../../lib/to-facade'
 import standard from './fetch-dispatcher'
@@ -71,6 +71,21 @@ export function segmentio(
         normalize(analytics, json, settings, integrations)
       )
       .then(() => ctx)
+      .catch((e) => {
+        if (e.message === 'Failed to fetch' || e.type === 'error') {
+          ctx.cancel(
+            new ContextCancelation({
+              retry: true,
+              reason: `Event ${
+                ctx.event.name ?? ''
+              } failed. No internet connection.`,
+              type: 'no_internet_connection',
+            })
+          )
+        }
+
+        return ctx
+      })
   }
 
   return {
