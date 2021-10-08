@@ -322,10 +322,6 @@ export class Analytics extends Emitter {
       dispatched.flush()
     }
 
-    if (isOffline() && dispatched.logs().some((l) => l.level === 'error')) {
-      this.queue.queue.pushWithBackoff(ctx)
-    }
-
     return dispatched
   }
 
