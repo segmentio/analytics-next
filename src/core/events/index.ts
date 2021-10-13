@@ -157,9 +157,9 @@ export class EventFactory {
 
     if (this.user.id()) {
       base.userId = this.user.id()
-    } else {
-      base.anonymousId = this.user.anonymousId()
     }
+
+    base.anonymousId = this.user.anonymousId()
 
     return base
   }

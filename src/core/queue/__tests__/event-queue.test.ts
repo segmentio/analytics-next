@@ -481,7 +481,7 @@ describe('Flushing', () => {
 
       await eq.register(
         Context.system(),
-        sourceMiddlewarePlugin(skipAmplitude),
+        sourceMiddlewarePlugin(skipAmplitude, {}),
         ajs
       )
 

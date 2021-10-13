@@ -329,7 +329,15 @@ export class Analytics extends Emitter {
     const { sourceMiddlewarePlugin } = await import(
       /* webpackChunkName: "middleware" */ './plugins/middleware'
     )
-    const plugin = sourceMiddlewarePlugin(fn)
+
+    const integrations: Record<string, boolean> = {}
+    this.queue.plugins.forEach((plugin) => {
+      if (plugin.type === 'destination') {
+        return (integrations[plugin.name] = true)
+      }
+    })
+
+    const plugin = sourceMiddlewarePlugin(fn, integrations)
     await this.register(plugin)
     return this
   }

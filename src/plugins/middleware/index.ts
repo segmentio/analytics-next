@@ -77,7 +77,10 @@ export async function applyDestinationMiddleware(
   return evt
 }
 
-export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
+export function sourceMiddlewarePlugin(
+  fn: MiddlewareFunction,
+  integrations: SegmentEvent['integrations']
+): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false
 
@@ -87,7 +90,7 @@ export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
           clone: true,
           traverse: false,
         }),
-        integrations: ctx.event.integrations ?? {},
+        integrations: integrations ?? {},
         next(evt) {
           nextCalled = true
           if (evt) {

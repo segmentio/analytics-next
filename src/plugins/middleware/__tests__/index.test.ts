@@ -15,7 +15,7 @@ describe(sourceMiddlewarePlugin, () => {
     next(payload)
   }
 
-  const xt = sourceMiddlewarePlugin(simpleMiddleware)
+  const xt = sourceMiddlewarePlugin(simpleMiddleware, {})
 
   it('creates a source middleware', () => {
     expect(xt.name).toEqual('Source Middleware simpleMiddleware')
@@ -38,7 +38,7 @@ describe(sourceMiddlewarePlugin, () => {
         next(payload)
       }
 
-      const xt = sourceMiddlewarePlugin(changeProperties)
+      const xt = sourceMiddlewarePlugin(changeProperties, {})
 
       expect(
         (
@@ -60,7 +60,7 @@ describe(sourceMiddlewarePlugin, () => {
         next(payload)
       }
 
-      const xt = sourceMiddlewarePlugin(facadeMiddleware)
+      const xt = sourceMiddlewarePlugin(facadeMiddleware, {})
 
       await xt.track!(
         new Context({
@@ -73,13 +73,13 @@ describe(sourceMiddlewarePlugin, () => {
 
     it('cancels the event if `next` is not called', async (done) => {
       const hangs: MiddlewareFunction = () => {}
-      const hangsXT = sourceMiddlewarePlugin(hangs)
+      const hangsXT = sourceMiddlewarePlugin(hangs, {})
 
       const doesNotHang: MiddlewareFunction = ({ next, payload }) => {
         next(payload)
       }
 
-      const doesNotHangXT = sourceMiddlewarePlugin(doesNotHang)
+      const doesNotHangXT = sourceMiddlewarePlugin(doesNotHang, {})
       const toReturn = new Context({ type: 'track' })
       const returnedCtx = await doesNotHangXT.track!(toReturn)
 
