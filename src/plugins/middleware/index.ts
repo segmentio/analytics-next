@@ -3,11 +3,12 @@ import { SegmentEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
 import { asPromise } from '../../lib/as-promise'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
+import { LegacyIntegration } from '../ajs-destination/types'
 
 export interface MiddlewareParams {
   payload: SegmentFacade
 
-  integrations?: SegmentEvent['integrations']
+  integrations?: Record<string, LegacyIntegration>
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
@@ -77,7 +78,10 @@ export async function applyDestinationMiddleware(
   return evt
 }
 
-export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
+export function sourceMiddlewarePlugin(
+  fn: MiddlewareFunction,
+  integrations: Record<string, LegacyIntegration>
+): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false
 
@@ -87,7 +91,7 @@ export function sourceMiddlewarePlugin(fn: MiddlewareFunction): Plugin {
           clone: true,
           traverse: false,
         }),
-        integrations: ctx.event.integrations ?? {},
+        integrations: integrations ?? {},
         next(evt) {
           nextCalled = true
           if (evt) {
