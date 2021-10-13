@@ -8,7 +8,7 @@ import { LegacyIntegration } from '../ajs-destination/types'
 export interface MiddlewareParams {
   payload: SegmentFacade
 
-  integrations?: Record<string, LegacyIntegration>
+  integrations?: Record<string, boolean>
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
@@ -80,7 +80,7 @@ export async function applyDestinationMiddleware(
 
 export function sourceMiddlewarePlugin(
   fn: MiddlewareFunction,
-  integrations: Record<string, LegacyIntegration>
+  integrations: Record<string, boolean>
 ): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false

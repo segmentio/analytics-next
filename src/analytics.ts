@@ -329,33 +329,13 @@ export class Analytics extends Emitter {
     const { sourceMiddlewarePlugin } = await import(
       /* webpackChunkName: "middleware" */ './plugins/middleware'
     )
-    const integrations = this.queue.plugins
-      .filter((plugin) => plugin.type === 'destination')
-      .reduce((acc, plugin) => {
-        const name = `${plugin.name
-          .toLowerCase()
-          .replace('.', '')
-          .split(' ')
-          .join('-')}Integration`
 
-        // @ts-expect-error
-        const integration = window[name] as
-          | (LegacyIntegration & { Integration?: LegacyIntegration })
-          | undefined
-
-        if (!integration) {
-          return acc
-        }
-
-        const nested = integration.Integration // hack - Google Analytics function resides in the "Integration" field
-        if (nested) {
-          acc[plugin.name] = nested
-          return acc
-        }
-
-        acc[plugin.name] = integration as LegacyIntegration
-        return acc
-      }, {} as Record<string, LegacyIntegration>)
+    const integrations: Record<string, boolean> = {}
+    this.queue.plugins.forEach((plugin) => {
+      if (plugin.type === 'destination') {
+        return (integrations[plugin.name] = true)
+      }
+    })
 
     const plugin = sourceMiddlewarePlugin(fn, integrations)
     await this.register(plugin)
