@@ -7,7 +7,7 @@ import { SegmentFacade, toFacade } from '../../lib/to-facade'
 export interface MiddlewareParams {
   payload: SegmentFacade
 
-  integrations?: Record<string, boolean>
+  integrations?: SegmentEvent['integrations']
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
@@ -79,7 +79,7 @@ export async function applyDestinationMiddleware(
 
 export function sourceMiddlewarePlugin(
   fn: MiddlewareFunction,
-  integrations: Record<string, boolean>
+  integrations: SegmentEvent['integrations']
 ): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false
