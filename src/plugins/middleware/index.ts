@@ -3,7 +3,6 @@ import { SegmentEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
 import { asPromise } from '../../lib/as-promise'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
-import { LegacyIntegration } from '../ajs-destination/types'
 
 export interface MiddlewareParams {
   payload: SegmentFacade
