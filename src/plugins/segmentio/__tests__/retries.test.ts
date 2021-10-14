@@ -37,16 +37,12 @@ describe('Segment.io retries', () => {
     await analytics.register(segment, pageEnrichment)
   })
 
-  test('buffers offline events', async () => {
-    await analytics.track('event')
-    expect(scheduleFlush).toHaveBeenCalled()
-  })
-
   test('add events to the queue', async () => {
     jest.spyOn(queue, 'push')
 
     const ctx = await analytics.track('event')
 
+    expect(scheduleFlush).toHaveBeenCalled()
     /* eslint-disable  @typescript-eslint/unbound-method */
     expect(queue.push).toHaveBeenCalled()
     expect(queue.length).toBe(1)
