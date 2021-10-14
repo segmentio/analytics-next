@@ -136,7 +136,14 @@ export class LocalStorage extends Store {
 
   get<T>(key: string): T | null {
     const val = localStorage.getItem(key)
-    return val ? JSON.parse(val) : null
+    if (val) {
+      try {
+        return JSON.parse(val)
+      } catch (e) {
+        return JSON.parse(JSON.stringify(val))
+      }
+    }
+    return null
   }
 
   set<T>(key: string, value: T): T | null {
