@@ -9,7 +9,7 @@ export class PriorityQueue<T extends WithID> {
   protected queue: T[]
   protected seen: Record<string, number>
 
-  private maxAttempts: number
+  public maxAttempts: number
 
   constructor(maxAttempts: number, queue: T[], seen?: Record<string, number>) {
     this.maxAttempts = maxAttempts

@@ -4,6 +4,7 @@ import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
+import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -19,6 +20,9 @@ jest.mock('../analytics', () => ({
     setAnonymousId,
     register,
     emit: jest.fn(),
+    queue: {
+      queue: new PersistedPriorityQueue(1, 'event-queue'),
+    },
   }),
 }))
 

@@ -1,12 +1,15 @@
 import { Facade } from '@segment/facade'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
+import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
-import standard from './fetch-dispatcher'
 import batch from './batched-dispatcher'
+import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
+import { scheduleFlush } from './schedule-flush'
 
 export interface SegmentioSettings {
   apiKey: string
@@ -45,6 +48,12 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
+  const buffer = new PersistedPriorityQueue(
+    analytics.queue.queue.maxAttempts,
+    `dest-Segment.io`
+  )
+  const flushing = false
+
   const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
   const remote = `https://${apiHost}`
 
@@ -54,6 +63,13 @@ export function segmentio(
       : standard()
 
   async function send(ctx: Context): Promise<Context> {
+    if (isOffline()) {
+      buffer.push(ctx)
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
+      return ctx
+    }
+
     const path = ctx.event.type.charAt(0)
     let json = toFacade(ctx.event).json()
 
@@ -71,9 +87,17 @@ export function segmentio(
         normalize(analytics, json, settings, integrations)
       )
       .then(() => ctx)
+      .catch((err) => {
+        if (err.type === 'error' || err.message === 'Failed to fetch') {
+          buffer.push(ctx)
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
+        }
+        return ctx
+      })
   }
 
-  return {
+  const segmentio: Plugin = {
     name: 'Segment.io',
     type: 'after',
     version: '0.1.0',
@@ -85,4 +109,6 @@ export function segmentio(
     alias: send,
     group: send,
   }
+
+  return segmentio
 }
