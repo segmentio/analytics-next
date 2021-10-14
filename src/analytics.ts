@@ -282,6 +282,10 @@ export class Analytics extends Emitter {
   }
 
   debug(toggle: boolean): Analytics {
+    // Make sure legacy ajs debug gets turned off if it was enabled before upgrading.
+    if (toggle === false && localStorage.getItem('debug')) {
+      localStorage.removeItem('debug')
+    }
     this._debug = toggle
     return this
   }
