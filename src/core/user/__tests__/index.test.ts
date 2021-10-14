@@ -246,6 +246,11 @@ describe('user', () => {
         user.anonymousId('anon-id')
         assert(user.anonymousId() === 'anon-id')
       })
+
+      it('should get an id without quotes from the store', () => {
+        window.localStorage.setItem('ajs_anonymous_id', 'abc-def')
+        assert(user.anonymousId() === 'abc-def')
+      })
     })
 
     describe('when cookies and localStorage are disabled', () => {
