@@ -97,6 +97,17 @@ export class Context implements AbstractContext {
   }
 
   public updateEvent(path: string, val: unknown): SegmentEvent {
+    // Allow integrations that are set to true to be overridden with integration settings.
+    // For example, allow {..., integrations: {Amplitude: true}} to be overwritten with
+    // {..., integrations: {Amplitude: {sessionId: 'foo'}}}.
+    if (path.split('.')[0] === 'integrations') {
+      const integrationName = path.split('.')[1]
+
+      if (this._event.integrations?.[integrationName] === true) {
+        delete this._event.integrations?.[integrationName]
+      }
+    }
+
     dset(this._event, path, val)
     return this._event
   }
