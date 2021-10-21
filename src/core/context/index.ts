@@ -1,5 +1,5 @@
 import { v4 as uuid } from '@lukeed/uuid'
-import dset from 'dset'
+import { dset } from 'dset'
 import { SegmentEvent } from '../events'
 import Logger, { LogLevel, LogMessage } from '../logger'
 import Stats, { Metric } from '../stats'
@@ -97,14 +97,12 @@ export class Context implements AbstractContext {
   }
 
   public updateEvent(path: string, val: unknown): SegmentEvent {
-    // Allow integrations that are set to true to be overridden with integration settings.
-    // For example, allow {..., integrations: {Amplitude: true}} to be overwritten with
-    // {..., integrations: {Amplitude: {sessionId: 'foo'}}}.
+    // Don't allow integrations that are set to false to be overwritten with integration settings.
     if (path.split('.')[0] === 'integrations') {
       const integrationName = path.split('.')[1]
 
-      if (this._event.integrations?.[integrationName] === true) {
-        delete this._event.integrations?.[integrationName]
+      if (this._event.integrations?.[integrationName] === false) {
+        return this._event
       }
     }
 
