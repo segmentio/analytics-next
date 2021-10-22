@@ -111,6 +111,41 @@ describe(Context, () => {
         lastName: 'Farah',
       })
     })
+
+    it('allows updating integrations set to true', () => {
+      const trueEvt: SegmentEvent = {
+        type: 'identify',
+        integrations: {
+          Amplitude: true,
+        },
+      }
+
+      const falseEvt: SegmentEvent = {
+        type: 'identify',
+        integrations: {
+          Amplitude: false,
+        },
+      }
+
+      const trueCtx = new Context(trueEvt)
+      trueCtx.updateEvent('integrations.Amplitude.sessionId', 'foo')
+      expect(trueCtx.event.integrations).toEqual({
+        Amplitude: {
+          sessionId: 'foo',
+        },
+      })
+
+      trueCtx.updateEvent('traits.address', {
+        street: '301 Brazos St',
+        state: 'TX',
+      })
+
+      const falseCtx = new Context(falseEvt)
+      falseCtx.updateEvent('integrations.Amplitude.sessionId', 'foo')
+      expect(falseCtx.event.integrations).toEqual({
+        Amplitude: false,
+      })
+    })
   })
 
   it('serializes a context to JSON', () => {

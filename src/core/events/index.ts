@@ -1,5 +1,5 @@
 import { v4 as uuid } from '@lukeed/uuid'
-import dset from 'dset'
+import { dset } from 'dset'
 import { ID, User } from '../user'
 import { Options, Integrations, SegmentEvent } from './interfaces'
 import md5 from 'spark-md5'
