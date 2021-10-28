@@ -66,9 +66,12 @@ export function resolvePageArguments(
 
   const resolvedCallback = args.find(isFunction) as Callback | undefined
 
-  const objects = args.filter(
-    (obj) => isPlainObject(obj) || obj === null
-  ) as Array<object | null>
+  const objects = args.filter((obj) => {
+    if (resolvedName === null) {
+      return isPlainObject(obj)
+    }
+    return isPlainObject(obj) || obj === null
+  }) as Array<object | null>
 
   const resolvedProperties = objects[0] ?? {}
   const resolvedOptions = objects[1] ?? {}
