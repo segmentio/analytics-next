@@ -60,6 +60,18 @@ describe('Segment.io', () => {
       assert(body.context.opt === true)
       assert(body.timestamp)
     })
+
+    it('sets properties when name and category are null', async () => {
+      // @ts-ignore test a valid ajsc page call
+      await analytics.page(null, { foo: 'bar' })
+
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/p"`)
+
+      const body = JSON.parse(params.body)
+
+      assert(body.properties.foo === 'bar')
+    })
   })
 
   describe('#identify', () => {
