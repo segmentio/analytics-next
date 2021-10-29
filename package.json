@@ -3,12 +3,18 @@
   "version": "1.30.0",
   "repository": "segmentio/analytics-next",
   "license": "MIT",
-  "main": "dist/pkg/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/pkg/index.js",
   "types": "dist/pkg/index.d.ts",
+  "files": [
+    "dist/",
+    "src/"
+  ],
   "sideEffects": false,
   "scripts": {
     "umd": "webpack",
     "pkg": "tsc",
+    "cjs": "tsc -p tsconfig.cjs.json",
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",

@@ -22,7 +22,7 @@ build-browser:
 .PHONY: build-browser
 
 build-prod: ## Builds libraries in prod mode
-	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn pkg"
+	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn pkg" "NODE_ENV=production yarn cjs"
 .PHONY: build
 
 clean: ## Clean the build directory
