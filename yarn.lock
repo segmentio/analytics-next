@@ -611,14 +611,14 @@
   dependencies:
     unfetch "^3.1.1"
 
-"@segment/facade@3.3.10":
-  version "3.3.10"
-  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.3.10.tgz#94381079d326f8d4b2d11e0b2b1a85ca7aac28c4"
-  integrity sha512-Ed6hRwpNqwjsj3s5fXFqzoWwyB/foVGM+uT3Kl94Yd5BlZtYvmHxtX5gGsAPD49eazIPxLqJDZSHz/2tnokRTQ==
+"@segment/facade@3.4.7":
+  version "3.4.7"
+  resolved "https://registry.yarnpkg.com/@segment/facade/-/facade-3.4.7.tgz#27e469189d45d5a2806d16571722e6b00d81429a"
+  integrity sha512-Tj4aJsdmR9cl7xm7BT0NF9kYOnbIJ/3DdC1yOiLnjQRbHcnOq7WWkMDug/JCSEPF2loxGhG/oTeZybR3hpG3MA==
   dependencies:
     "@segment/isodate-traverse" "^1.1.1"
     inherits "^2.0.4"
-    klona "^2.0.4"
+    klona "^2.0.5"
     new-date "^1.0.3"
     obj-case "0.2.1"
 
@@ -7483,10 +7483,10 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-klona@^2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.4.tgz#7bb1e3affb0cb8624547ef7e8f6708ea2e39dfc0"
-  integrity sha512-ZRbnvdg/NxqzC7L9Uyqzf4psi1OM4Cuc+sJAkQPjO6XkQIJTNbfK2Rsmbw8fx1p2mkZdp2FZYo2+LwXYY/uwIA==
+klona@^2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/klona/-/klona-2.0.5.tgz#d166574d90076395d9963aa7a928fabb8d76afbc"
+  integrity sha512-pJiBpiXMbt7dkzXe8Ghj/u4FfXOOa98fPW+bihOJ4SjnoijweJrNThJfd3ifXpXhREjpoF2mZVH1GfS9LV3kHQ==
 
 last-call-webpack-plugin@^3.0.0:
   version "3.0.0"
