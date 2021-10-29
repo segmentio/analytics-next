@@ -87,6 +87,20 @@ describe('Segment.io', () => {
       assert(body.context.opt === true)
       assert(body.timestamp)
     })
+
+    it('should set traits with null id', async () => {
+      await analytics.identify(null, { trait: true }, { opt: true })
+
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/i"`)
+
+      const body = JSON.parse(params.body)
+      assert(body.userId === null)
+      assert(body.traits.trait === true)
+      assert(!body.context.trait)
+      assert(body.context.opt === true)
+      assert(body.timestamp)
+    })
   })
 
   describe('#track', () => {
@@ -117,6 +131,21 @@ describe('Segment.io', () => {
       assert(body.groupId === 'id')
       assert(body.context.opt === true)
       assert(body.traits.trait === true)
+      assert(body.timestamp)
+    })
+
+    it('should set traits with null id', async () => {
+      await analytics.group(null, { trait: true }, { opt: true })
+
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/g"`)
+
+      const body = JSON.parse(params.body)
+
+      assert(body.groupId === null)
+      assert(body.context.opt === true)
+      assert(body.traits.trait === true)
+      assert(!body.context.trait)
       assert(body.timestamp)
     })
   })

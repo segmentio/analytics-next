@@ -87,12 +87,15 @@ export function resolvePageArguments(
 
 export const resolveUserArguments = (user: User): ResolveUser => {
   return (...args): ReturnType<ResolveUser> => {
-    const id =
-      args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
+    let id: string | ID | null = null
+    id = args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
 
-    const objects = args.filter(
-      (obj) => isPlainObject(obj) || obj === null
-    ) as Array<object | null>
+    const objects = args.filter((obj) => {
+      if (id === null) {
+        return isPlainObject(obj)
+      }
+      return isPlainObject(obj) || obj === null
+    }) as Array<object | null>
 
     const data = objects[0] ?? {}
     const opts = objects[1] ?? {}
