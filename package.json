@@ -20,9 +20,6 @@
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
     "prepare": "yarn pkg"
   },
-  "publishConfig": {
-    "access": "restricted"
-  },
   "size-limit": [
     {
       "path": "dist/umd/index.js",
