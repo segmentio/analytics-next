@@ -50,6 +50,8 @@ export const snippet = (writeKey: string, load: boolean = true, extra = '') => `
         n.parentNode.insertBefore(t, n)
         analytics._loadOptions = e
       }
+      var smw1 = function ({}) {}
+      analytics.addSourceMiddleware(smw1);
       analytics.SNIPPET_VERSION = '4.13.1'
       ${load && `analytics.load('${writeKey}')`}
       analytics.page()

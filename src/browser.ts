@@ -85,7 +85,7 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
-function flushBuffered(analytics: Analytics): void {
+async function flushBuffered(analytics: Analytics): Promise<void> {
   const wa = window.analytics
   const buffered =
     // @ts-expect-error
@@ -98,11 +98,16 @@ function flushBuffered(analytics: Analytics): void {
       // @ts-expect-error
       typeof analytics[operation] === 'function'
     ) {
-      // flush each individual event as its own task, so not to block initial page loads
-      setTimeout(() => {
+      if (operation === 'addSourceMiddleware') {
         // @ts-expect-error
-        analytics[operation].call(analytics, ...args)
-      }, 0)
+        await analytics[operation].call(analytics, ...args)
+      } else {
+        // flush each individual event as its own task, so not to block initial page loads
+        setTimeout(() => {
+          // @ts-expect-error
+          analytics[operation].call(analytics, ...args)
+        }, 0)
+      }
     }
   }
 }
@@ -233,7 +238,7 @@ export class AnalyticsBrowser {
       analytics.queryString(term).catch(console.error)
     }
 
-    flushBuffered(analytics)
+    await flushBuffered(analytics)
 
     return [analytics, ctx]
   }
