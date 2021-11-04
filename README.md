@@ -103,7 +103,7 @@ Non-critical: Analytics Next can start event delivery before this plugin has fin
 
 and can be of five different types:
 
-Before: Pleguns that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
+Before: Plugins that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
 After: Plugins that need to run after all other plugins have run. An example of this is the segment.io integration, which will wait for destinations to succeed or fail so that it can send its observability metrics.
 Destination: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
 Enrichment: Modifies an event, failure here could halt the event pipeline.
