@@ -11,6 +11,7 @@ const identify = jest.fn()
 const page = jest.fn()
 const setAnonymousId = jest.fn()
 const register = jest.fn()
+const addSourceMiddleware = jest.fn()
 
 jest.mock('../analytics', () => ({
   Analytics: (): unknown => ({
@@ -18,6 +19,7 @@ jest.mock('../analytics', () => ({
     identify,
     page,
     setAnonymousId,
+    addSourceMiddleware,
     register,
     emit: jest.fn(),
     queue: {
@@ -148,6 +150,31 @@ describe('standalone bundle', () => {
 
       expect(page).toHaveBeenCalled()
 
+      done()
+    }, 0)
+  })
+
+  it('adds buffered source middleware before other buffered operations', async (done) => {
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+
+    const operations: string[] = []
+
+    addSourceMiddleware.mockImplementationOnce(() =>
+      operations.push('addSourceMiddleware')
+    )
+    page.mockImplementationOnce(() => operations.push('page'))
+
+    await install()
+
+    setTimeout(() => {
+      expect(addSourceMiddleware).toHaveBeenCalled()
+
+      expect(operations).toEqual([
+        // should run before page call in the snippet
+        'addSourceMiddleware',
+        'page',
+      ])
       done()
     }, 0)
   })
