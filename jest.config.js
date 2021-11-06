@@ -7,6 +7,7 @@ module.exports = {
     '<rootDir>/src/__tests__/test-writekeys',
     '<rootDir>/src/__tests__/stats-writekey',
   ],
+  watchPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
   clearMocks: true,
   testEnvironmentOptions: {
     resources: 'usable',
