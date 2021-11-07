@@ -53,6 +53,9 @@
     "spark-md5": "^3.0.1",
     "unfetch": "^4.1.0"
   },
+  "peerDependencies": {
+    "tslib": "^2.3.1"
+  },
   "devDependencies": {
     "@jsdevtools/version-bump-prompt": "^6.1.0",
     "@rollup/plugin-replace": "^3.0.0",
