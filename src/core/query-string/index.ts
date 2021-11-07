@@ -22,7 +22,7 @@ export function queryString(
 
   const calls = []
 
-  /* eslint-disable @typescript-eslint/camelcase */
+  /* eslint-disable @typescript-eslint/naming-convention */
   const { ajs_uid, ajs_event, ajs_aid } = params
 
   if (ajs_uid) {
@@ -48,7 +48,7 @@ export function queryString(
       : params.ajs_aid
     analytics.setAnonymousId(anonId)
   }
-  /* eslint-enable @typescript-eslint/camelcase */
+  /* eslint-enable @typescript-eslint/naming-convention */
 
   return Promise.all(calls)
 }

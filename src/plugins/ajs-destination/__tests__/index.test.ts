@@ -58,7 +58,7 @@ const cdnResponse: LegacySettings = {
           },
         ],
         scope: 'destinations',
-        // eslint-disable-next-line @typescript-eslint/camelcase
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         target_type: 'workspace::project::destination',
         transformers: [[{ type: 'drop' }]],
         destinationName: 'Amplitude',

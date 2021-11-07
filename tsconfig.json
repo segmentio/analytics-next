@@ -17,7 +17,9 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    // TODO: revisit for better type safety
+    "useUnknownInCatchVariables": false
   },
   "exclude": ["node_modules", "dist"],
   "include": ["src"]
