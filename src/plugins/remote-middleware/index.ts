@@ -4,9 +4,9 @@ import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
 import { MiddlewareFunction } from '../middleware'
 
-export const path =
-  process.env.LEGACY_INTEGRATIONS_PATH ??
-  'https://cdn.segment.com/next-integrations'
+export const path = process.env.LEGACY_INTEGRATIONS_PATH
+  ? process.env.LEGACY_INTEGRATIONS_PATH
+  : 'https://cdn.segment.com/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,

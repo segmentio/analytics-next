@@ -12,8 +12,8 @@ node_modules: package.json yarn.lock
 	yarn install
 	@touch $@
 
-build: ## Builds typescript files and UMD library
-	yarn clean && yarn concurrently "yarn umd" "yarn pkg"
+build: ## Builds esm and cjs files
+	yarn clean && yarn bundle
 .PHONY: build
 
 build-browser:
@@ -22,7 +22,7 @@ build-browser:
 .PHONY: build-browser
 
 build-prod: ## Builds libraries in prod mode
-	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn pkg" "NODE_ENV=production yarn cjs"
+	NODE_ENV=production yarn clean && yarn concurrently "NODE_ENV=production yarn umd" "NODE_ENV=production yarn bundle"
 .PHONY: build
 
 clean: ## Clean the build directory
@@ -103,7 +103,7 @@ analyze:
 .PHONY: analyze
 
 dev: build ## Starts a dev server that is ready for development
-	yarn concurrently "yarn run-example" "yarn pkg -w"
+	yarn concurrently "yarn run-example" "yarn bundle --watch"
 .PHONY: build
 
 standalone-example: ## Runs a server with standalone ajs examples

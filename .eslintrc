@@ -1,5 +1,12 @@
 {
-  "ignorePatterns": ["/node_modules/", "/dist/", "/example/", "/e2e-tests/", "/qa/"],
+  "ignorePatterns": [
+    "/.rollup.cache/",
+    "/node_modules/",
+    "/dist/",
+    "/example/",
+    "/e2e-tests/",
+    "/qa/"
+  ],
   "parserOptions": {
     "ecmaVersion": 2019
   },

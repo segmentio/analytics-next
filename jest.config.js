@@ -1,13 +1,18 @@
 module.exports = {
   preset: 'ts-jest',
   modulePathIgnorePatterns: [
+    '<rootDir>/.rollup.cache/',
     '<rootDir>/dist/',
     '<rootDir>/e2e-tests',
     '<rootDir>/qa',
     '<rootDir>/src/__tests__/test-writekeys',
     '<rootDir>/src/__tests__/stats-writekey',
   ],
-  watchPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
+  watchPathIgnorePatterns: [
+    '<rootDir>/.rollup.cache/',
+    '<rootDir>/dist/',
+    '<rootDir>/node_modules/',
+  ],
   clearMocks: true,
   testEnvironmentOptions: {
     resources: 'usable',
