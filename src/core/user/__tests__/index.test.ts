@@ -623,6 +623,14 @@ describe('user', () => {
       expect(user.id()).toEqual('old')
       expect(user.traits()).toEqual({ trait: true })
     })
+
+    it('load should preserve the original User cookie options', () => {
+      user = new User(undefined, {
+        domain: 'foo',
+      }).load()
+      // @ts-ignore - we are testing the private properties here
+      expect(user.cookies['options'].domain).toEqual('foo')
+    })
   })
 })
 
