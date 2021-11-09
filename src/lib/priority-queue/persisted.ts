@@ -2,13 +2,19 @@ import { PriorityQueue } from '.'
 import { Context, SerializedContext } from '../../core/context'
 import { isBrowser } from '../../core/environment'
 
-const loc = isBrowser()
-  ? window.localStorage
-  : {
-      getItem() {},
-      setItem() {},
-      removeItem() {},
-    }
+let loc:
+  | Storage
+  | { getItem: () => void; setItem: () => void; removeItem: () => void } = {
+  getItem() {},
+  setItem() {},
+  removeItem() {},
+}
+
+try {
+  loc = isBrowser() ? window.localStorage : loc
+} catch (err) {
+  console.warn('Unable to access localStorage', err)
+}
 
 function persisted(key: string): Context[] {
   const items = loc.getItem(key)
