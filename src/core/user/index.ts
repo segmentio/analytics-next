@@ -174,11 +174,13 @@ export class User {
   private idKey: string
   private traitsKey: string
   private anonKey: string
+  private cookieOptions?: CookieOptions
 
   options: UserOptions = {}
 
   constructor(options: UserOptions = defaults, cookieOptions?: CookieOptions) {
     this.options = options
+    this.cookieOptions = cookieOptions
 
     this.idKey = options.cookie?.key ?? defaults.cookie.key
     this.traitsKey = options.localStorage?.key ?? defaults.localStorage.key
@@ -329,7 +331,7 @@ export class User {
   }
 
   load(): User {
-    return new User(this.options)
+    return new User(this.options, this.cookieOptions)
   }
 
   save(): boolean {
