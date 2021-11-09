@@ -28,8 +28,15 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 
 1. Install the package
 
-```
+```sh
+# npm 
+npm install @segment/analytics-next
+
+# yarn
 yarn add @segment/analytics-next
+
+#pnpm
+pnpm add @segment/analytics-next
 ```
 
 2. Import the package into your project and you're good to go (with working types)! Example react app:
