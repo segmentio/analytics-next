@@ -2,6 +2,7 @@ import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { PlanEvent } from '../../core/events/interfaces'
 import { Plugin } from '../../core/plugin'
+import { RemotePlugin } from '../remote-loader'
 
 function disabledActionDestinations(
   plan: PlanEvent,
@@ -11,16 +12,25 @@ function disabledActionDestinations(
     return {}
   }
 
-  const plugins = settings.remotePlugins ?? []
-
   const disabledIntegrations = Object.keys(plan.integrations).filter(
     (i) => plan.integrations[i] === false
   )
 
-  return plugins.reduce((acc, p) => {
+  // This accounts for cases like Fullstory, where the settings.integrations
+  // contains a "Fullstory" object but settings.remotePlugins contains "Fullstory (Actions)"
+  const disabledRemotePlugins: string[] = []
+  ;(settings.remotePlugins ?? []).forEach((p: RemotePlugin) => {
+    disabledIntegrations.forEach((int) => {
+      if (p.name.includes(int) || int.includes(p.name)) {
+        disabledRemotePlugins.push(p.name)
+      }
+    })
+  })
+
+  return (settings.remotePlugins ?? []).reduce((acc, p) => {
     // @ts-expect-error element implicitly has an 'any' type because p.settings is a JSONValue
     if (p.settings['subscriptions']) {
-      if (disabledIntegrations.includes(p.name)) {
+      if (disabledRemotePlugins.includes(p.name)) {
         // @ts-expect-error element implicitly has an 'any' type because p.settings is a JSONValue
         p.settings['subscriptions'].forEach(
           // @ts-expect-error parameter 'sub' implicitly has an 'any' type

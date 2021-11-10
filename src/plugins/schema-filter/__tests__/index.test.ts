@@ -8,6 +8,8 @@ import { segmentio, SegmentioSettings } from '../../segmentio'
 const settings: LegacySettings = {
   integrations: {
     'Braze Web Mode (Actions)': {},
+    // note that Fullstory's name here doesn't contain 'Actions'
+    Fullstory: {},
     'Segment.io': {},
   },
   remotePlugins: [
@@ -26,6 +28,23 @@ const settings: LegacySettings = {
           },
           {
             partnerAction: 'trackPurchase',
+          },
+        ],
+      },
+    },
+    {
+      // note that Fullstory name contains 'Actions'
+      name: 'Fullstory (Actions)',
+      libraryName: 'fullstoryDestination',
+      url:
+        'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
+      settings: {
+        subscriptions: [
+          {
+            partnerAction: 'trackEvent',
+          },
+          {
+            partnerAction: 'identifyUser',
           },
         ],
       },
@@ -68,6 +87,11 @@ const amplitude: Plugin = {
   name: 'amplitude',
 }
 
+const fullstory: Plugin = {
+  ...trackEvent,
+  name: 'Fullstory (Actions) trackEvent',
+}
+
 describe('schema filter', () => {
   let options: SegmentioSettings
   let filterXt: Plugin
@@ -88,6 +112,7 @@ describe('schema filter', () => {
     jest.spyOn(trackPurchase, 'track')
     jest.spyOn(updateUserProfile, 'track')
     jest.spyOn(amplitude, 'track')
+    jest.spyOn(fullstory, 'track')
   })
 
   describe('plugins and destinations', () => {
@@ -340,29 +365,28 @@ describe('schema filter', () => {
   })
 
   describe('action destinations', () => {
-    const plan = {
-      track: {
-        'Track Event': {
-          enabled: true,
-          integrations: {
-            'Braze Web Mode (Actions)': false,
-          },
-        },
-        __default: {
-          enabled: true,
-          integrations: {},
-        },
-        hi: {
-          enabled: true,
-          integrations: {
-            'Braze Web Mode (Actions)': false,
-          },
-        },
-      },
-    }
-
     it('disables action destinations', async () => {
-      const filterXt = schemaFilter(plan.track, settings)
+      const filterXt = schemaFilter(
+        {
+          'Track Event': {
+            enabled: true,
+            integrations: {
+              'Braze Web Mode (Actions)': false,
+            },
+          },
+          __default: {
+            enabled: true,
+            integrations: {},
+          },
+          hi: {
+            enabled: true,
+            integrations: {
+              'Braze Web Mode (Actions)': false,
+            },
+          },
+        },
+        settings
+      )
 
       await ajs.register(
         segment,
@@ -390,6 +414,51 @@ describe('schema filter', () => {
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
+    })
+
+    it('covers different names between remote plugins and integrations', async () => {
+      const filterXt = schemaFilter(
+        {
+          hi: {
+            enabled: true,
+            integrations: {
+              // note that Fullstory's name here does not contain 'Actions'
+              Fullstory: false,
+            },
+          },
+        },
+        settings
+      )
+
+      await ajs.register(
+        segment,
+        trackEvent,
+        trackPurchase,
+        updateUserProfile,
+        amplitude,
+        fullstory,
+        filterXt
+      )
+
+      await ajs.track('hi')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+      expect(trackEvent.track).toHaveBeenCalled()
+      expect(trackPurchase.track).toHaveBeenCalled()
+      expect(updateUserProfile.track).toHaveBeenCalled()
+
+      expect(fullstory.track).not.toHaveBeenCalled()
+
+      await ajs.track('a non blocked event')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+
+      expect(trackEvent.track).toHaveBeenCalled()
+      expect(trackPurchase.track).toHaveBeenCalled()
+      expect(updateUserProfile.track).toHaveBeenCalled()
+      expect(fullstory.track).toHaveBeenCalled()
     })
   })
 })
