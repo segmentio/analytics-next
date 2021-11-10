@@ -85,6 +85,73 @@ function App() {
 export default App
 ```
 
+### using `Vite` with `Vue 3`
+
+1. add to `vite.config.ts` 
+
+```ts
+  define: {
+    global: {},
+  },
+```
+
+2. create composable file `segment.ts` with factory ref analytics:
+
+```ts
+import { ref, reactive } from 'vue'
+import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
+
+const analytics = ref<Analytics>()
+
+export const useSegment = () => {
+  if (!analytics.value) {
+    AnalyticsBrowser.load({
+      writeKey: '<YOUR_WRITE_KEY>',
+    })
+      .then(([response]) => {
+        analytics.value = response
+      })
+      .catch((e) => {
+        console.log('error loading segment')
+      })
+  }
+
+  return reactive({
+    analytics,
+  })
+}
+
+```
+
+3. in component 
+
+```vue
+<template>
+  <button @click="track()">Track</button>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import { useSegment } from './services/segment'
+
+export default defineComponent({
+  setup() {
+    const { analytics } = useSegment()
+    
+    function track() { 
+      analytics?.track('Hello world')
+    }
+    
+    return {
+      track
+    }
+  }
+})
+</script>
+
+```
+
+
 # 🐒 Development
 
 First, clone the repo and then startup our local dev environment:
