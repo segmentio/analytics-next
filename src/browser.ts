@@ -153,6 +153,14 @@ async function registerPlugins(
     })
   }
 
+  const schemaFilter = opts.plan?.track
+    ? await import(
+        /* webpackChunkName: "schemaFilter" */ './plugins/schema-filter'
+      ).then((mod) => {
+        return mod.schemaFilter(opts.plan?.track, legacySettings)
+      })
+    : undefined
+
   const mergedSettings = mergedOptions(legacySettings, options)
   const remotePlugins = await remoteLoader(legacySettings).catch(() => [])
 
@@ -163,6 +171,10 @@ async function registerPlugins(
     ...legacyDestinations,
     ...remotePlugins,
   ]
+
+  if (schemaFilter) {
+    toRegister.push(schemaFilter)
+  }
 
   const shouldIgnoreSegmentio =
     (opts.integrations?.All === false && !opts.integrations['Segment.io']) ||
