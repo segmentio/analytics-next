@@ -85,13 +85,13 @@ function App() {
 export default App
 ```
 
-### using with `Vite` with `Vue 3`
+### using `Vite` with `Vue 3`
 
 1. add to `vite.config.ts` 
 
 ```ts
   define: {
-    global: JSON.stringify({}),
+    global: {},
   },
 ```
 
