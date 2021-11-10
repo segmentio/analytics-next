@@ -95,10 +95,32 @@ export default App
   },
 ```
 
-2. create composable file `segment.ts` 
+2. create composable file `segment.ts` with factory ref analytics:
 
 ```ts
-  // 
+import { ref, reactive } from 'vue'
+import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
+
+const analytics = ref<Analytics>()
+
+export const useSegment = () => {
+  if (!analytics.value) {
+    AnalyticsBrowser.load({
+      writeKey: '<YOUR_WRITE_KEY>',
+    })
+      .then(([response]) => {
+        analytics.value = response
+      })
+      .catch((e) => {
+        console.log('error loading segment')
+      })
+  }
+
+  return reactive({
+    analytics,
+  })
+}
+
 ```
 
 3. in component 
