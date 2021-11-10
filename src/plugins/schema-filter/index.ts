@@ -1,5 +1,5 @@
 import { LegacySettings } from '../../browser'
-import { Context, ContextCancelation } from '../../core/context'
+import { Context } from '../../core/context'
 import { PlanEvent } from '../../core/events/interfaces'
 import { Plugin } from '../../core/plugin'
 
@@ -7,6 +7,10 @@ function disabledActionDestinations(
   plan: PlanEvent,
   settings: LegacySettings
 ): { [destination: string]: string[] } {
+  if (!plan || !Object.keys(plan)) {
+    return {}
+  }
+
   const plugins = settings.remotePlugins ?? []
 
   const disabledIntegrations = Object.keys(plan.integrations).filter(
@@ -49,9 +53,9 @@ export function schemaFilter(
         const disabledActions = disabledActionDestinations(planEvent, settings)
 
         ctx.updateEvent('integrations', {
+          ...disabledActions,
           ...ctx.event.integrations,
           ...planEvent?.integrations,
-          ...disabledActions,
           'Segment.io': true,
         })
       }
