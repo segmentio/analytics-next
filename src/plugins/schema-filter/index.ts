@@ -56,7 +56,6 @@ export function schemaFilter(
           ...disabledActions,
           ...ctx.event.integrations,
           ...planEvent?.integrations,
-          'Segment.io': true,
         })
       }
     }

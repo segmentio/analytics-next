@@ -2,44 +2,10 @@ import { Plugin } from '../../../core/plugin'
 import { Analytics } from '../../../analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
-import { AnalyticsBrowser, LegacySettings } from '../../../browser'
-import { TEST_WRITEKEY } from '../../../__tests__/test-writekeys'
+import { LegacySettings } from '../../../browser'
 import { segmentio, SegmentioSettings } from '../../segmentio'
 
-const writeKey = TEST_WRITEKEY
-
 // TODO what happens if we only have defaults?
-const plan = {
-  track: {
-    'Track Event': {
-      enabled: true,
-      integrations: {
-        'Braze Web Mode (Actions)': false,
-      },
-    },
-    __default: {
-      enabled: true,
-      integrations: {},
-    },
-    hi: {
-      enabled: true,
-      integrations: {
-        'Braze Web Mode (Actions)': false,
-      },
-    },
-  },
-  identify: {
-    __default: {
-      enabled: true,
-    },
-  },
-  group: {
-    __default: {
-      enabled: true,
-    },
-  },
-}
-
 const settings: LegacySettings = {
   integrations: {
     'Braze Web Mode (Actions)': {},
@@ -98,48 +64,277 @@ const updateUserProfile: Plugin = {
   name: 'Braze Web Mode (Actions) updateUserProfile',
 }
 
+const amplitude: Plugin = {
+  ...trackEvent,
+  name: 'amplitude',
+}
+
 describe('schema filter', () => {
   let options: SegmentioSettings
   let filterXt: Plugin
   let segment: Plugin
-  let analytics: Analytics
+  let ajs: Analytics
 
   beforeEach(async () => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
     options = { apiKey: 'foo' }
-    analytics = new Analytics({ writeKey: options.apiKey })
-    segment = segmentio(analytics, options, {})
-    filterXt = schemaFilter(plan.track, settings)
-  })
+    ajs = new Analytics({ writeKey: options.apiKey })
+    segment = segmentio(ajs, options, {})
+    filterXt = schemaFilter({}, settings)
 
-  it('loads plugin', async () => {
-    await analytics.register(filterXt)
-    expect(filterXt.isLoaded()).toBe(true)
-  })
-
-  it('does not drop events when no plan is defined', async () => {
     jest.spyOn(segment, 'track')
     jest.spyOn(trackEvent, 'track')
     jest.spyOn(trackPurchase, 'track')
     jest.spyOn(updateUserProfile, 'track')
-    // jest.spyOn(segment, 'track')
+    jest.spyOn(amplitude, 'track')
+  })
 
-    await analytics.register(
+  it('loads plugin', async () => {
+    await ajs.register(filterXt)
+    expect(filterXt.isLoaded()).toBe(true)
+  })
+
+  it('does not drop events when no plan is defined', async () => {
+    await ajs.register(
       segment,
       trackEvent,
       trackPurchase,
-      updateUserProfile
+      updateUserProfile,
+      schemaFilter({}, settings)
     )
 
-    await analytics.register(schemaFilter({}, settings))
-
-    const ev = await analytics.track('A Track Event')
+    await ajs.track('A Track Event')
 
     expect(segment.track).toHaveBeenCalled()
-    expect(trackEvent.track).toHaveBeenCalledWith(ev)
+    expect(trackEvent.track).toHaveBeenCalled()
     expect(trackPurchase.track).toHaveBeenCalled()
     expect(updateUserProfile.track).toHaveBeenCalled()
+  })
+
+  it('drops an event when the event is disabled', async () => {
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      schemaFilter(
+        {
+          hi: {
+            enabled: true,
+            integrations: {
+              'Braze Web Mode (Actions)': false,
+            },
+          },
+        },
+        settings
+      )
+    )
+
+    await ajs.track('hi')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(amplitude.track).toHaveBeenCalled()
+
+    expect(trackEvent.track).not.toHaveBeenCalled()
+    expect(trackPurchase.track).not.toHaveBeenCalled()
+    expect(updateUserProfile.track).not.toHaveBeenCalled()
+  })
+
+  it('does not drop events with different names', async () => {
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      schemaFilter(
+        {
+          'Fake Track Event': {
+            enabled: true,
+            integrations: { amplitude: false },
+          },
+        },
+        settings
+      )
+    )
+
+    await ajs.track('Track Event')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(amplitude.track).toHaveBeenCalled()
+    expect(trackEvent.track).toHaveBeenCalled()
+    expect(trackPurchase.track).toHaveBeenCalled()
+    expect(updateUserProfile.track).toHaveBeenCalled()
+  })
+
+  it('drops enabled event for matching destination', async () => {
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      schemaFilter(
+        {
+          'Track Event': {
+            enabled: true,
+            integrations: { amplitude: false },
+          },
+        },
+        settings
+      )
+    )
+
+    await ajs.track('Track Event')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(trackEvent.track).toHaveBeenCalled()
+    expect(trackPurchase.track).toHaveBeenCalled()
+    expect(updateUserProfile.track).toHaveBeenCalled()
+
+    expect(amplitude.track).not.toHaveBeenCalled()
+  })
+
+  it('does not drop event for non-matching destination', async () => {
+    const filterXt = schemaFilter(
+      {
+        'Track Event': {
+          enabled: true,
+          integrations: { 'not amplitude': false },
+        },
+      },
+      settings
+    )
+
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      filterXt
+    )
+
+    await ajs.track('Track Event')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(trackEvent.track).toHaveBeenCalled()
+    expect(trackPurchase.track).toHaveBeenCalled()
+    expect(updateUserProfile.track).toHaveBeenCalled()
+    expect(amplitude.track).toHaveBeenCalled()
+  })
+
+  it('does not drop enabled event with enabled destination', async () => {
+    const filterXt = schemaFilter(
+      {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+      settings
+    )
+
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      filterXt
+    )
+
+    await ajs.track('Track Event')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(trackEvent.track).toHaveBeenCalled()
+    expect(trackPurchase.track).toHaveBeenCalled()
+    expect(updateUserProfile.track).toHaveBeenCalled()
+    expect(amplitude.track).toHaveBeenCalled()
+  })
+
+  it('properly sets event integrations object with enabled plan', async () => {
+    const filterXt = schemaFilter(
+      {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+      settings
+    )
+
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      filterXt
+    )
+
+    const ctx = await ajs.track('Track Event')
+
+    expect(ctx.event.integrations).toEqual({ amplitude: true })
+    expect(segment.track).toHaveBeenCalled()
+  })
+
+  it('sets event integrations object when integration is disabled', async () => {
+    const filterXt = schemaFilter(
+      {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: false },
+        },
+      },
+      settings
+    )
+
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      filterXt
+    )
+
+    const ctx = await ajs.track('Track Event')
+
+    expect(segment.track).toHaveBeenCalled()
+    expect(trackEvent.track).toHaveBeenCalled()
+    expect(trackPurchase.track).toHaveBeenCalled()
+    expect(updateUserProfile.track).toHaveBeenCalled()
+
+    expect(amplitude.track).not.toHaveBeenCalled()
+    expect(ctx.event.integrations).toEqual({ amplitude: false })
+  })
+
+  it('doesnt set event integrations object with different event', async () => {
+    const filterXt = schemaFilter(
+      {
+        'Track Event': {
+          enabled: true,
+          integrations: { amplitude: true },
+        },
+      },
+      settings
+    )
+
+    await ajs.register(
+      segment,
+      trackEvent,
+      trackPurchase,
+      updateUserProfile,
+      amplitude,
+      filterXt
+    )
+
+    const ctx = await ajs.track('Not Track Event')
+
+    expect(ctx.event.integrations).toEqual({})
   })
 })
