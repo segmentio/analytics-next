@@ -60,6 +60,8 @@ export async function run(params: ComparisonParams) {
       // do not Record GA calls because it thinks ajs-next is a bot and doesn't naturally trigger requests
       // we know GA works :)
       if (
+        // clarity.ms uses multiple subdomains
+        call.url.includes('clarity.ms') ||
         call.url.includes('doubleclick.net') ||
         // bot
         call.url.includes('googletagmanager') ||
