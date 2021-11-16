@@ -63,9 +63,9 @@ export function schemaFilter(
         const disabledActions = disabledActionDestinations(planEvent, settings)
 
         ctx.updateEvent('integrations', {
-          ...disabledActions,
           ...ctx.event.integrations,
           ...planEvent?.integrations,
+          ...disabledActions,
         })
       }
     }
