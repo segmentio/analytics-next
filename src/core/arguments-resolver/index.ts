@@ -107,11 +107,13 @@ export const resolveUserArguments = (user: User): ResolveUser => {
 }
 
 export function resolveAliasArguments(
-  to: string,
-  from?: string | Options,
+  to: string | number,
+  from?: string | number | Options,
   options?: Options | Callback,
   callback?: Callback
 ): [string, string | null, Options, Callback | undefined] {
+  if (isNumber(to)) to = to.toString() // Legacy behaviour - allow integers for alias calls
+  if (isNumber(from)) from = from.toString()
   const args = [to, from, options, callback]
 
   const [aliasTo = to, aliasFrom = null] = args.filter(isString)
