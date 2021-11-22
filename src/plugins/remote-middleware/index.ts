@@ -2,11 +2,11 @@ import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
+import { getCDN } from '../../lib/parse-cdn'
 import { MiddlewareFunction } from '../middleware'
 
-export const path =
-  process.env.LEGACY_INTEGRATIONS_PATH ??
-  'https://cdn.segment.com/next-integrations'
+const cdn = window.analytics?._cdn ?? getCDN()
+const path = cdn + '/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,
