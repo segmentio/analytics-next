@@ -22,6 +22,7 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'remote plugin',
           url: 'cdn/path/to/file.js',
           libraryName: 'testPlugin',
           settings: {},
@@ -39,6 +40,7 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'remote plugin',
           url: 'https://cdn.segment.com/actions/file.js',
           libraryName: 'testPlugin',
           settings: {},
@@ -54,6 +56,7 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'remote plugin',
           url: 'cdn/path/to/file.js',
           libraryName: 'testPlugin',
           settings: {
@@ -76,6 +79,7 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'remote plugin',
           url: 'cdn/path/to/file.js',
           libraryName: 'this wont resolve',
           settings: {},
@@ -127,11 +131,13 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'multiple plugins',
           url: 'multiple-plugins.js',
           libraryName: 'multiple-plugins',
           settings: { foo: true },
         },
         {
+          name: 'single plugin',
           url: 'single-plugin.js',
           libraryName: 'single-plugin',
           settings: { bar: false },
@@ -163,11 +169,13 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'flaky plugin',
           url: 'cdn/path/to/flaky.js',
           libraryName: 'flaky',
           settings: {},
         },
         {
+          name: 'async flaky plugin',
           url: 'cdn/path/to/asyncFlaky.js',
           libraryName: 'asyncFlaky',
           settings: {},
@@ -209,11 +217,13 @@ describe('Remote Loader', () => {
       integrations: {},
       remotePlugins: [
         {
+          name: 'valid plugin',
           url: 'valid',
           libraryName: 'valid',
           settings: { foo: true },
         },
         {
+          name: 'invalid plugin',
           url: 'invalid',
           libraryName: 'invalid',
           settings: { bar: false },

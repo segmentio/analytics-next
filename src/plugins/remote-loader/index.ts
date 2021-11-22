@@ -6,6 +6,8 @@ import { loadScript } from '../../lib/load-script'
 import { getCDN } from '../../lib/parse-cdn'
 
 export interface RemotePlugin {
+  /** The name of the remote plugin */
+  name: string
   /** The url of the javascript file to load */
   url: string
   /** The UMD/global name the plugin uses. Plugins are expected to exist here with the `PluginFactory` method signature */

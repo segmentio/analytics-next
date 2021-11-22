@@ -43,6 +43,7 @@ describe.skip('Remote Plugin Integration', () => {
         // we should mock this file in case it becomes a problem
         // but I'd like to have a full integration test if possible
         {
+          name: 'amplitude',
           url:
             'https://ajs-next-integrations.s3-us-west-2.amazonaws.com/fab-5/amplitude-plugins.js',
           libraryName: 'amplitude-pluginsDestination',
