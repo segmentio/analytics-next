@@ -4,7 +4,6 @@ const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
   .BundleAnalyzerPlugin
-const { version } = require('./package.json')
 
 const isProd = process.env.NODE_ENV === 'production'
 const ASSET_PATH = isProd
@@ -14,9 +13,6 @@ const ASSET_PATH = isProd
 const plugins = [
   new CompressionPlugin({}),
   new webpack.EnvironmentPlugin({
-    LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.com/next-integrations',
-    DEBUG: false,
-    VERSION: version,
     ASSET_PATH,
   }),
 ]

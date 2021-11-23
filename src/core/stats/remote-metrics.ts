@@ -1,4 +1,5 @@
 import fetch from 'unfetch'
+import { version } from '../../../build/build'
 
 export interface MetricsOptions {
   host?: string
@@ -72,8 +73,7 @@ export class RemoteMetrics {
     }, {} as Record<string, string>)
 
     formatted['library'] = 'analytics.js'
-    formatted['library_version'] =
-      `next-${process.env.VERSION}` ?? 'next-undefined'
+    formatted['library_version'] = `next-${version}` ?? 'next-undefined'
 
     this.queue.push({
       type: 'Counter',

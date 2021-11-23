@@ -5,6 +5,7 @@ import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
+import { version } from '../../../build/build'
 
 let domain: string | undefined = undefined
 try {
@@ -28,8 +29,6 @@ export function sCookie(key: string, value: string): string | undefined {
 }
 
 type Ad = { id: string; type: string }
-
-const version = process.env.VERSION
 
 export function ampId(): string | undefined {
   const ampId = getCookie('_ga')

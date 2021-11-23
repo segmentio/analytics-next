@@ -27,6 +27,7 @@ import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
 } from './plugins/middleware'
+import { version } from '../build/build'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -415,9 +416,9 @@ export class Analytics extends Emitter {
     return this.queue.failedInitializations
   }
 
-  get VERSION(): string {
+  get VERSION(): string | undefined {
     console.warn(deprecationWarning)
-    return process.env.VERSION ?? ''
+    return version
   }
 
   async initialize(
