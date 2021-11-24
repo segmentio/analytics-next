@@ -131,7 +131,7 @@ describe('before loading', () => {
       normalize(analytics, object, options, {})
       assert(object.context?.library)
       assert(object.context?.library.name === 'analytics.js')
-      assert(object.context?.library.version === `web:next-${version}`)
+      assert(object.context?.library.version === `npm:next-${version}`)
     })
 
     it('should allow override of .library', () => {

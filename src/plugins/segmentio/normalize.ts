@@ -122,7 +122,7 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    if (typeof process !== undefined) {
+    if (typeof process.env.VERSION !== 'undefined') {
       ctx.library = {
         name: 'analytics.js',
         version: `web:next-${version}` ?? 'web:next-undefined',

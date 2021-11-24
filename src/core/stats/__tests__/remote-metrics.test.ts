@@ -20,7 +20,7 @@ describe('remote metrics', () => {
           "metric": "analytics_js.banana",
           "tags": Object {
             "library": "analytics.js",
-            "library_version": "web:next-${version}",
+            "library_version": "npm:next-${version}",
             "phone": "1",
           },
           "type": "Counter",
@@ -82,7 +82,7 @@ describe('remote metrics', () => {
       Array [
         "https://api.segment.io/v1/m",
         Object {
-          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"web:next-${version}\\"}}]}",
+          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"npm:next-${version}\\"}}]}",
           "headers": Object {
             "Content-Type": "text/plain",
           },

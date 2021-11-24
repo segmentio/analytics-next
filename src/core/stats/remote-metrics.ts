@@ -74,7 +74,7 @@ export class RemoteMetrics {
 
     formatted['library'] = 'analytics.js'
 
-    if (typeof process !== undefined) {
+    if (typeof process.env.VERSION !== 'undefined') {
       formatted['library_version'] =
         `web:next-${version}` ?? 'web:next-undefined'
     } else {
