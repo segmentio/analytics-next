@@ -5,6 +5,7 @@ import { normalize } from '../normalize'
 import { Analytics } from '../../../analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
+import { version } from '../../../../build/build'
 
 describe('before loading', () => {
   let jsdom: JSDOM
@@ -130,9 +131,7 @@ describe('before loading', () => {
       normalize(analytics, object, options, {})
       assert(object.context?.library)
       assert(object.context?.library.name === 'analytics.js')
-      assert(
-        object.context?.library.version === `web:next-${process.env.VERSION}`
-      )
+      assert(object.context?.library.version === `web:next-${version}`)
     })
 
     it('should allow override of .library', () => {
