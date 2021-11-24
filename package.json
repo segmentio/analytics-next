@@ -12,7 +12,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build-prep": "sed -i '' \"s/export const version: .*$/export const version: string | undefined = '$npm_package_version'/\" build/build.ts",
+    "build-prep": "sed -i '' \"s/export const version: .*$/export const version = '$npm_package_version'/\" build/build.ts",
     "umd": "webpack",
     "pkg": "tsc",
     "cjs": "tsc -p tsconfig.cjs.json",

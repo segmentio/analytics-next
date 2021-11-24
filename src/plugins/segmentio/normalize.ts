@@ -122,7 +122,17 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    ctx.library = { name: 'analytics.js', version: `next-${version}` }
+    if (typeof process !== undefined) {
+      ctx.library = {
+        name: 'analytics.js',
+        version: `web:next-${version}` ?? 'web:next-undefined',
+      }
+    } else {
+      ctx.library = {
+        name: 'analytics.js',
+        version: `npm:next-${version}` ?? 'npm:next-undefined',
+      }
+    }
   }
 
   if (query && !ctx.campaign) {

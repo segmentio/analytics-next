@@ -73,7 +73,14 @@ export class RemoteMetrics {
     }, {} as Record<string, string>)
 
     formatted['library'] = 'analytics.js'
-    formatted['library_version'] = `next-${version}` ?? 'next-undefined'
+
+    if (typeof process !== undefined) {
+      formatted['library_version'] =
+        `web:next-${version}` ?? 'web:next-undefined'
+    } else {
+      formatted['library_version'] =
+        `npm:next-${version}` ?? 'npm:next-undefined'
+    }
 
     this.queue.push({
       type: 'Counter',
