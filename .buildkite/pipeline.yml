@@ -15,7 +15,7 @@ steps:
           paths: ['node_modules/']
           save: true
 
-  - label: ':hammer: QA'
+  - label: ':perfection: QA'
     key: qa
     agents:
       queue: v1
@@ -35,7 +35,7 @@ steps:
       queue: v1
     command: 'bk-snyk'
 
-  - label: ':hammer: Destinations QA'
+  - label: ':thisisfine: Destinations QA'
     key: destinations
     agents:
       queue: v1
