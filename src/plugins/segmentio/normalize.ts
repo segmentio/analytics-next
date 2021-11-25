@@ -5,7 +5,7 @@ import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
-import { version } from '../../../build/build'
+import { version } from '../../../package.json'
 
 let domain: string | undefined = undefined
 try {
@@ -22,6 +22,18 @@ const cookieOptions: CookieAttributes = {
 
 if (domain) {
   cookieOptions.domain = domain
+}
+
+export function getVersion(): string {
+  // process.env.VERSION will only exist in webpack build.
+  try {
+    if (process.env.VERSION) {
+      return 'web'
+    }
+    return 'npm'
+  } catch {
+    return 'npm'
+  }
 }
 
 export function sCookie(key: string, value: string): string | undefined {
@@ -122,10 +134,11 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    if (typeof process.env.VERSION !== 'undefined') {
+    const type = getVersion()
+    if (type === 'web') {
       ctx.library = {
         name: 'analytics.js',
-        version: `web:next-${version}` ?? 'web:next-undefined',
+        version: `next-${version}` ?? 'next-undefined',
       }
     } else {
       ctx.library = {

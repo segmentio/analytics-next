@@ -1,5 +1,6 @@
 import fetch from 'unfetch'
-import { version } from '../../../build/build'
+import { version } from '../../../package.json'
+import { getVersion } from '../../plugins/segmentio/normalize'
 
 export interface MetricsOptions {
   host?: string
@@ -74,9 +75,9 @@ export class RemoteMetrics {
 
     formatted['library'] = 'analytics.js'
 
-    if (typeof process.env.VERSION !== 'undefined') {
-      formatted['library_version'] =
-        `web:next-${version}` ?? 'web:next-undefined'
+    const type = getVersion()
+    if (type === 'web') {
+      formatted['library_version'] = `next-${version}` ?? 'next-undefined'
     } else {
       formatted['library_version'] =
         `npm:next-${version}` ?? 'npm:next-undefined'
