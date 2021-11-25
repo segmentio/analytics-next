@@ -147,7 +147,12 @@ export class LocalStorage extends Store {
   }
 
   set<T>(key: string, value: T): T | null {
-    localStorage.setItem(key, JSON.stringify(value))
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+      console.warn(`Unable to set ${key} in localStorage, storage may be full.`)
+    }
+
     return value
   }
 
