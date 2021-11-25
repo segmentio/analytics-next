@@ -417,7 +417,6 @@ export class Analytics extends Emitter {
   }
 
   get VERSION(): string {
-    console.warn(deprecationWarning)
     return version
   }
 
