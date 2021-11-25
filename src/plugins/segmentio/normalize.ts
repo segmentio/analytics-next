@@ -138,12 +138,12 @@ export function normalize(
     if (type === 'web') {
       ctx.library = {
         name: 'analytics.js',
-        version: `next-${version}` ?? 'next-undefined',
+        version: `next-${version}`,
       }
     } else {
       ctx.library = {
         name: 'analytics.js',
-        version: `npm:next-${version}` ?? 'npm:next-undefined',
+        version: `npm:next-${version}`,
       }
     }
   }

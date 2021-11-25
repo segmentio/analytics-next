@@ -77,10 +77,9 @@ export class RemoteMetrics {
 
     const type = getVersion()
     if (type === 'web') {
-      formatted['library_version'] = `next-${version}` ?? 'next-undefined'
+      formatted['library_version'] = `next-${version}`
     } else {
-      formatted['library_version'] =
-        `npm:next-${version}` ?? 'npm:next-undefined'
+      formatted['library_version'] = `npm:next-${version}`
     }
 
     this.queue.push({
