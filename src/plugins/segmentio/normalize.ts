@@ -5,6 +5,7 @@ import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
+import { version } from '../../../package.json'
 
 let domain: string | undefined = undefined
 try {
@@ -23,13 +24,23 @@ if (domain) {
   cookieOptions.domain = domain
 }
 
+export function getVersion(): string {
+  // process.env.VERSION will only exist in webpack build.
+  try {
+    if (process.env.VERSION) {
+      return 'web'
+    }
+    return 'npm'
+  } catch {
+    return 'npm'
+  }
+}
+
 export function sCookie(key: string, value: string): string | undefined {
   return setCookie(key, value, cookieOptions)
 }
 
 type Ad = { id: string; type: string }
-
-const version = process.env.VERSION
 
 export function ampId(): string | undefined {
   const ampId = getCookie('_ga')
@@ -123,7 +134,18 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    ctx.library = { name: 'analytics.js', version: `next-${version}` }
+    const type = getVersion()
+    if (type === 'web') {
+      ctx.library = {
+        name: 'analytics.js',
+        version: `next-${version}`,
+      }
+    } else {
+      ctx.library = {
+        name: 'analytics.js',
+        version: `npm:next-${version}`,
+      }
+    }
   }
 
   if (query && !ctx.campaign) {

@@ -1,4 +1,6 @@
 import fetch from 'unfetch'
+import { version } from '../../../package.json'
+import { getVersion } from '../../plugins/segmentio/normalize'
 
 export interface MetricsOptions {
   host?: string
@@ -72,8 +74,13 @@ export class RemoteMetrics {
     }, {} as Record<string, string>)
 
     formatted['library'] = 'analytics.js'
-    formatted['library_version'] =
-      `next-${process.env.VERSION}` ?? 'next-undefined'
+
+    const type = getVersion()
+    if (type === 'web') {
+      formatted['library_version'] = `next-${version}`
+    } else {
+      formatted['library_version'] = `npm:next-${version}`
+    }
 
     this.queue.push({
       type: 'Counter',

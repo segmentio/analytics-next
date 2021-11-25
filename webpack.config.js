@@ -14,8 +14,6 @@ const ASSET_PATH = isProd
 const plugins = [
   new CompressionPlugin({}),
   new webpack.EnvironmentPlugin({
-    LEGACY_INTEGRATIONS_PATH: 'https://cdn.segment.com/next-integrations',
-    DEBUG: false,
     VERSION: version,
     ASSET_PATH,
   }),
