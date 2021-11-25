@@ -87,12 +87,13 @@ export default App
 
 ### using `Vite` with `Vue 3`
 
-1. add to `vite.config.ts` 
+1. add to your `index.html` 
 
-```ts
-  define: {
-    global: {},
-  },
+```html
+<script>
+  window.global = window
+  var exports = {}
+</script>
 ```
 
 2. create composable file `segment.ts` with factory ref analytics:
