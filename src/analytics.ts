@@ -416,7 +416,7 @@ export class Analytics extends Emitter {
     return this.queue.failedInitializations
   }
 
-  get VERSION(): string | undefined {
+  get VERSION(): string {
     console.warn(deprecationWarning)
     return version
   }
