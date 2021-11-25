@@ -739,6 +739,13 @@ describe('store', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
     })
+
+    it('should catch localStorage quota exceeded errors', () => {
+      const val = 'x'.repeat(10 * 1024 * 1024)
+      store.set('foo', val)
+
+      expect(store.get('foo')).toBe(null)
+    })
   })
 
   describe('#remove', function () {
