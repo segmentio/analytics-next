@@ -15,7 +15,7 @@ steps:
           paths: ['node_modules/']
           save: true
 
-  - label: ':hammer: QA'
+  - label: ':perfection: QA'
     key: qa
     agents:
       queue: v1
@@ -34,6 +34,23 @@ steps:
     agents:
       queue: v1
     command: 'bk-snyk'
+
+  - label: ':thisisfine: Destinations QA'
+    key: destinations
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - yarn install
+      - yarn add --dev playwright
+      - echo "+++ Running Destinations QA Tests :pray:"
+      - make test-qa-destinations
+    soft_fail:
+      - exit_status: '*'
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['node_modules/']
 
   # Auto deploys branches
   - label: ':rocket: Release Branch'

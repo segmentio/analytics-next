@@ -44,11 +44,11 @@ test-coverage: node_modules ## Runs unit tests with coverage
 .PHONY: test-coverage
 
 test-qa: build-browser ## Runs all QA tests in a single command
-	$(BIN)/jest --runTestsByPath qa/__tests__/*.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	$(BIN)/jest --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTINATION=amplitude DEBUG=true
-	$(BIN)/jest --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	$(BIN)/jest --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-integration: build-browser ## Runs all integration tests in a single command
