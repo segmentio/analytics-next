@@ -1,5 +1,5 @@
 import fetch from 'unfetch'
-import { version } from '../../../package.json'
+import packageMetadata from '../../../package.json'
 import { getVersion } from '../../plugins/segmentio/normalize'
 
 export interface MetricsOptions {
@@ -77,9 +77,9 @@ export class RemoteMetrics {
 
     const type = getVersion()
     if (type === 'web') {
-      formatted['library_version'] = `next-${version}`
+      formatted['library_version'] = `next-${packageMetadata.version}`
     } else {
-      formatted['library_version'] = `npm:next-${version}`
+      formatted['library_version'] = `npm:next-${packageMetadata.version}`
     }
 
     this.queue.push({

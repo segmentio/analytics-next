@@ -5,7 +5,7 @@ import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
-import { version } from '../../../package.json'
+import packageMetadata from '../../../package.json'
 
 let domain: string | undefined = undefined
 try {
@@ -138,12 +138,12 @@ export function normalize(
     if (type === 'web') {
       ctx.library = {
         name: 'analytics.js',
-        version: `next-${version}`,
+        version: `next-${packageMetadata.version}`,
       }
     } else {
       ctx.library = {
         name: 'analytics.js',
-        version: `npm:next-${version}`,
+        version: `npm:next-${packageMetadata.version}`,
       }
     }
   }
