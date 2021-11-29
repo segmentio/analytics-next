@@ -2,7 +2,7 @@ import { Plugin } from '../../core/plugin'
 import { Context } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import fetch from 'node-fetch'
-import { version } from '../../../package.json'
+import { version } from '../../generated/version'
 
 interface AnalyticsNodeSettings {
   writeKey: string

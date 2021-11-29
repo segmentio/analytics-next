@@ -5,7 +5,7 @@ import { normalize } from '../normalize'
 import { Analytics } from '../../../analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
-import { version } from '../../../../package.json'
+import { version } from '../../../generated/version'
 
 describe('before loading', () => {
   let jsdom: JSDOM

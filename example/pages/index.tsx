@@ -8,12 +8,7 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import {
-  AnalyticsSettings,
-  AnalyticsBrowser,
-  Analytics,
-  Context,
-} from '../../dist/pkg'
+import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
 
 const jsontheme = {
   scheme: 'tomorrow',
