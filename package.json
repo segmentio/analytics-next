@@ -4,8 +4,8 @@
   "repository": "segmentio/analytics-next",
   "license": "MIT",
   "main": "dist/cjs/index.js",
-  "module": "dist/pkg/index.js",
-  "types": "dist/pkg/index.d.ts",
+  "module": "dist/pkg/src/index.js",
+  "types": "dist/pkg/src/index.d.ts",
   "files": [
     "dist/",
     "src/"
