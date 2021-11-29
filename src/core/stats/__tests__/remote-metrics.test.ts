@@ -1,7 +1,7 @@
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { RemoteMetrics } from '../remote-metrics'
-import { version } from '../../../../package.json'
+import { version } from '../../../generated/version'
 
 jest.mock('unfetch', () => {
   return jest.fn()

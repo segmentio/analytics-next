@@ -13,7 +13,7 @@ node_modules: package.json yarn.lock
 	@touch $@
 
 build: ## Builds typescript files and UMD library
-	yarn clean && yarn concurrently "yarn umd" "yarn pkg"
+	yarn clean && yarn build-prep && yarn concurrently "yarn umd" "yarn pkg"
 .PHONY: build
 
 build-browser:

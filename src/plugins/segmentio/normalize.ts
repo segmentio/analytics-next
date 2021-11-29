@@ -5,7 +5,7 @@ import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
-import { version } from '../../../package.json'
+import { version } from '../../generated/version'
 
 let domain: string | undefined = undefined
 try {

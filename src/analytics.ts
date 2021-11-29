@@ -27,7 +27,7 @@ import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
 } from './plugins/middleware'
-import { version } from '../package.json'
+import { version } from './generated/version'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'

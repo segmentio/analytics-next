@@ -1,5 +1,5 @@
 import fetch from 'unfetch'
-import { version } from '../../../package.json'
+import { version } from '../../generated/version'
 import { getVersion } from '../../plugins/segmentio/normalize'
 
 export interface MetricsOptions {
