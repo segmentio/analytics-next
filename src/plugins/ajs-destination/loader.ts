@@ -5,6 +5,7 @@ import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
+import getGlobal from 'globalthis'
 
 const cdn = window.analytics?._cdn ?? getCDN()
 const path = cdn + '/next-integrations'
@@ -14,9 +15,11 @@ function normalizeName(name: string): string {
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
+  const globalThis = getGlobal()
   try {
     const [metric] =
-      global.window?.performance?.getEntriesByName(fullPath, 'resource') ?? []
+      globalThis.window?.performance?.getEntriesByName(fullPath, 'resource') ??
+      []
     // we assume everything that took under 100ms is cached
     metric &&
       ctx.stats.gauge('legacy_destination_time', Math.round(metric.duration), [
