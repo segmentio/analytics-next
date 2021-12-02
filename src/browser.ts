@@ -1,7 +1,9 @@
+import { getProcessEnv } from './lib/get-process-env'
 import { getCDN } from './lib/parse-cdn'
 
-if (process.env.ASSET_PATH) {
-  if (process.env.ASSET_PATH === '/dist/umd/') {
+const processEnv = getProcessEnv()
+if (processEnv.ASSET_PATH) {
+  if (processEnv.ASSET_PATH === '/dist/umd/') {
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
@@ -79,7 +81,7 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
 
 function hasLegacyDestinations(settings: LegacySettings): boolean {
   return (
-    process.env.NODE_ENV !== 'test' &&
+    processEnv.NODE_ENV !== 'test' &&
     // just one integration means segmentio
     Object.keys(settings.integrations).length > 1
   )
