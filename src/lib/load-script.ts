@@ -1,4 +1,4 @@
-import getGlobal from 'globalthis'
+import { getGlobal } from './global-shim'
 
 function findScript(src: string): HTMLScriptElement | undefined {
   const scripts = Array.prototype.slice.call(
@@ -29,7 +29,7 @@ export function loadScript(
   }
 
   return new Promise((resolve, reject) => {
-    const globalThis = getGlobal()
+    getGlobal()
     const script = globalThis.window.document.createElement('script')
 
     script.type = 'text/javascript'

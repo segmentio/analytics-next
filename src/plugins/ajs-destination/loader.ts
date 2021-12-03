@@ -5,7 +5,7 @@ import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
-import getGlobal from 'globalthis'
+import { getGlobal } from '../../lib/global-shim'
 
 const cdn = window.analytics?._cdn ?? getCDN()
 const path = cdn + '/next-integrations'
@@ -15,7 +15,7 @@ function normalizeName(name: string): string {
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
-  const globalThis = getGlobal()
+  getGlobal()
   try {
     const [metric] =
       globalThis.window?.performance?.getEntriesByName(fullPath, 'resource') ??
