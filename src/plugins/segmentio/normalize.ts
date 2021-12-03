@@ -7,7 +7,6 @@ import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
 import { getProcessEnv } from '../../lib/get-process-env'
-// import { getProcessEnv } from '../../lib/get-process-env'
 
 let domain: string | undefined = undefined
 try {
