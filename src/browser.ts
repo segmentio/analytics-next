@@ -1,19 +1,5 @@
+import { getProcessEnv } from './lib/get-process-env'
 import { getCDN } from './lib/parse-cdn'
-
-if (process.env.ASSET_PATH) {
-  if (process.env.ASSET_PATH === '/dist/umd/') {
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    __webpack_public_path__ = '/dist/umd/'
-  } else {
-    const cdn = window.analytics?._cdn ?? getCDN()
-    if (window.analytics) window.analytics._cdn = cdn
-
-    // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    __webpack_public_path__ = cdn + '/analytics-next/bundles/'
-  }
-}
 
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
@@ -79,7 +65,7 @@ export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
 
 function hasLegacyDestinations(settings: LegacySettings): boolean {
   return (
-    process.env.NODE_ENV !== 'test' &&
+    getProcessEnv().NODE_ENV !== 'test' &&
     // just one integration means segmentio
     Object.keys(settings.integrations).length > 1
   )

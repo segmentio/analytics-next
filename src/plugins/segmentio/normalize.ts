@@ -6,6 +6,7 @@ import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
+import { getProcessEnv } from '../../lib/get-process-env'
 
 let domain: string | undefined = undefined
 try {
@@ -26,14 +27,7 @@ if (domain) {
 
 export function getVersion(): string {
   // process.env.VERSION will only exist in webpack build.
-  try {
-    if (process.env.VERSION) {
-      return 'web'
-    }
-    return 'npm'
-  } catch {
-    return 'npm'
-  }
+  return getProcessEnv().VERSION ? 'web' : 'npm'
 }
 
 export function sCookie(key: string, value: string): string | undefined {
