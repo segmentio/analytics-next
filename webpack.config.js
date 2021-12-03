@@ -28,7 +28,7 @@ const config = {
   devtool: 'source-map',
   entry: {
     index: {
-      import: path.resolve(__dirname, 'src/browser.ts'),
+      import: path.resolve(__dirname, 'src/browser-umd.ts'),
       library: {
         name: 'AnalyticsNext',
         type: 'umd',

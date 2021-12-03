@@ -3,11 +3,9 @@
  * Always returns an object make it similarly easy to use as `process.env`.
  */
 export function getProcessEnv(): { [key: string]: string | undefined } {
-  if (typeof process === 'undefined' || process === null) {
+  if (typeof process === 'undefined' || !process.env) {
     return {}
   }
-  if (!process.env) {
-    return {}
-  }
+
   return process.env
 }

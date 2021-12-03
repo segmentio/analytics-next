@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { getCDN } from './lib/parse-cdn'
-import { getProcessEnv } from './lib/get-process-env'
 
-const processEnv = getProcessEnv()
-if (processEnv.ASSET_PATH) {
-  if (processEnv.ASSET_PATH === '/dist/umd/') {
+if (process.env.ASSET_PATH) {
+  if (process.env.ASSET_PATH === '/dist/umd/') {
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
