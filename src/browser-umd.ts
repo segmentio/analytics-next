@@ -1,4 +1,5 @@
 import { getCDN } from './lib/parse-cdn'
+import { setVersionType } from './plugins/segmentio/normalize'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
@@ -14,5 +15,7 @@ if (process.env.ASSET_PATH) {
     __webpack_public_path__ = cdn + '/analytics-next/bundles/'
   }
 }
+
+setVersionType('web')
 
 export * from './browser'

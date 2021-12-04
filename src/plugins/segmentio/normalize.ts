@@ -6,7 +6,6 @@ import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
-import { getProcessEnv } from '../../lib/get-process-env'
 
 let domain: string | undefined = undefined
 try {
@@ -25,9 +24,15 @@ if (domain) {
   cookieOptions.domain = domain
 }
 
-export function getVersion(): string {
-  // process.env.VERSION will only exist in webpack build.
-  return getProcessEnv().VERSION ? 'web' : 'npm'
+// Default value will be updated to 'web' in `bundle-umd.ts` for web build.
+let _version: 'web' | 'npm' = 'npm'
+
+export function setVersionType(version: typeof _version) {
+  _version = version
+}
+
+export function getVersionType(): typeof _version {
+  return _version
 }
 
 export function sCookie(key: string, value: string): string | undefined {
@@ -128,7 +133,7 @@ export function normalize(
   }
 
   if (!ctx.library) {
-    const type = getVersion()
+    const type = getVersionType()
     if (type === 'web') {
       ctx.library = {
         name: 'analytics.js',
