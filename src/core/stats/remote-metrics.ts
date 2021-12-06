@@ -1,6 +1,6 @@
 import fetch from 'unfetch'
 import { version } from '../../generated/version'
-import { getVersion } from '../../plugins/segmentio/normalize'
+import { getVersionType } from '../../plugins/segmentio/normalize'
 
 export interface MetricsOptions {
   host?: string
@@ -75,7 +75,7 @@ export class RemoteMetrics {
 
     formatted['library'] = 'analytics.js'
 
-    const type = getVersion()
+    const type = getVersionType()
     if (type === 'web') {
       formatted['library_version'] = `next-${version}`
     } else {

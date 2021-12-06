@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { getCDN } from './lib/parse-cdn'
+import { setVersionType } from './plugins/segmentio/normalize'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
@@ -17,6 +18,8 @@ if (process.env.ASSET_PATH) {
       : 'https://cdn.segment.com/analytics-next/bundles/'
   }
 }
+
+setVersionType('web')
 
 import { install } from './standalone-analytics'
 import './lib/csp-detection'
