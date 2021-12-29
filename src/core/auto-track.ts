@@ -38,9 +38,13 @@ function linkNewTab(element: HTMLAnchorElement, href: string | null): boolean {
   return false
 }
 
+export interface JQueryShim<TElement = HTMLElement> {
+  toArray(): TElement[]
+}
+
 export function link(
   this: Analytics,
-  links: Element | Array<Element> | JQuery | null,
+  links: Element | Array<Element> | JQueryShim | null,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
 ): Analytics {
