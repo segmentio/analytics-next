@@ -13,6 +13,7 @@
   "sideEffects": false,
   "scripts": {
     "build-prep": "echo \"// This file is generated.\\nexport const version = '$npm_package_version'\" > src/generated/version.ts",
+    "version": "npm run build-prep",
     "umd": "webpack",
     "pkg": "tsc",
     "cjs": "tsc -p tsconfig.cjs.json",
@@ -52,6 +53,7 @@
     "@segment/tsub": "^0.1.9",
     "dset": "^3.0.0",
     "js-cookie": "^2.2.1",
+    "node-fetch": "^2.6.1",
     "spark-md5": "^3.0.1",
     "tslib": "^2.1.0",
     "unfetch": "^4.1.0"
@@ -107,7 +109,6 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "ngrok": "^3.3.0",
-    "node-fetch": "^2.6.1",
     "np": "^7.5.0",
     "p-map": "^4.0.0",
     "playwright": "^1.10.0",
