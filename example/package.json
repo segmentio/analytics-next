@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/faker": "^5.1.2",
-    "@types/react": "^17.0.37"
+    "@types/react": "^17.0.37",
+    "source-map-loader": "^3.0.1"
   }
 }
