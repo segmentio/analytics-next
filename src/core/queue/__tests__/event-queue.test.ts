@@ -392,6 +392,36 @@ describe('Flushing', () => {
       expect(amplitude.track).not.toHaveBeenCalled()
     })
 
+    test('does not deliver when All: false and destination is also explicitly false', async () => {
+      const eq = new EventQueue()
+
+      jest.spyOn(amplitude, 'track')
+      jest.spyOn(mixPanel, 'track')
+
+      const evt = {
+        type: 'track' as const,
+        integrations: {
+          All: false,
+          Amplitude: false,
+        },
+      }
+
+      const ctx = new Context(evt)
+
+      await eq.register(Context.system(), amplitude, ajs)
+      await eq.register(Context.system(), mixPanel, ajs)
+
+      eq.dispatch(ctx)
+
+      expect(eq.queue.length).toBe(1)
+      const flushed = await flushAll(eq)
+
+      expect(flushed).toEqual([ctx])
+
+      expect(mixPanel.track).not.toHaveBeenCalled()
+      expect(amplitude.track).not.toHaveBeenCalled()
+    })
+
     test('delivers to destinations if All: false but the destination is allowed', async () => {
       const eq = new EventQueue()
 
