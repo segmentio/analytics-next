@@ -211,13 +211,10 @@ export class EventQueue extends Emitter {
   }
 
   private availableExtensions(denyList: Integrations): PluginsByType {
-    const available =
-      denyList.All === false
-        ? this.plugins.filter(
-            (p) => denyList[p.name] !== undefined || p.type !== 'destination'
-          )
-        : // !== false includes plugins not present on the denyList
-          this.plugins.filter((p) => denyList[p.name] !== false)
+    const available = this.plugins.filter(
+      (p) =>
+        p.type !== 'destination' || (denyList[p.name] ?? denyList.All) !== false
+    )
 
     const {
       before = [],
