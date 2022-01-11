@@ -84,7 +84,7 @@ async function flushBuffered(analytics: Analytics): Promise<void> {
       // @ts-expect-error
       typeof analytics[operation] === 'function'
     ) {
-      if (operation === 'addSourceMiddleware') {
+      if (operation === 'addSourceMiddleware' || operation === 'on') {
         // @ts-expect-error
         await analytics[operation].call(analytics, ...args)
       } else {
@@ -220,9 +220,6 @@ export class AnalyticsBrowser {
       plugins
     )
 
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
-
     if (options.initialPageview) {
       analytics.page().catch(console.error)
     }
@@ -237,6 +234,8 @@ export class AnalyticsBrowser {
     }
 
     await flushBuffered(analytics)
+    analytics.initialized = true
+    analytics.emit('initialize', settings, options)
 
     return [analytics, ctx]
   }
