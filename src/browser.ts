@@ -84,7 +84,7 @@ async function flushBuffered(analytics: Analytics): Promise<void> {
       // @ts-expect-error
       typeof analytics[operation] === 'function'
     ) {
-      if (operation === 'addSourceMiddleware' || operation === 'on') {
+      if (operation === 'addSourceMiddleware') {
         // @ts-expect-error
         await analytics[operation].call(analytics, ...args)
       } else {
@@ -113,6 +113,27 @@ function flushAnonymousUser(analytics: Analytics): void {
   if (anon) {
     const [, id] = anon
     analytics.setAnonymousId(id)
+  }
+}
+
+/**
+ * Ensures events can be registered before library initialization.
+ * This is important so users can register to 'initialize' and any events that may fire early during setup.
+ */
+
+function flushEventEmitters(analytics: Analytics): void {
+  const wa = window.analytics
+  const buffered =
+    //@ts-expect-error
+    wa && wa[0] ? [...wa] : []
+  const onHandlers = buffered.filter(
+    ([operation]: [string]) => operation === 'on'
+  )
+  if (onHandlers.length) {
+    onHandlers.forEach(([operation, ...args]) => {
+      // @ts-expect-error
+      analytics[operation].call(analytics, ...args)
+    })
   }
 }
 
@@ -211,6 +232,7 @@ export class AnalyticsBrowser {
 
     // needs to be flushed before plugins are registered
     flushAnonymousUser(analytics)
+    flushEventEmitters(analytics)
 
     const ctx = await registerPlugins(
       legacySettings,
@@ -219,6 +241,9 @@ export class AnalyticsBrowser {
       options,
       plugins
     )
+
+    analytics.initialized = true
+    analytics.emit('initialize', settings, options)
 
     if (options.initialPageview) {
       analytics.page().catch(console.error)
@@ -234,8 +259,6 @@ export class AnalyticsBrowser {
     }
 
     await flushBuffered(analytics)
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
 
     return [analytics, ctx]
   }
