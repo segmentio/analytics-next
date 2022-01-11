@@ -173,16 +173,16 @@ When developing against Analytics Next you will likely be writing plugins, which
 
 Plugins can be of two different priorities:
 
-Critical: Analytics Next should expect this plugin to be loaded before starting event delivery
-Non-critical: Analytics Next can start event delivery before this plugin has finished loading
+1. **Critical**: Analytics Next should expect this plugin to be loaded before starting event delivery
+2. **Non-critical**: Analytics Next can start event delivery before this plugin has finished loading
 
 and can be of five different types:
 
-Before: Plugins that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
-After: Plugins that need to run after all other plugins have run. An example of this is the segment.io integration, which will wait for destinations to succeed or fail so that it can send its observability metrics.
-Destination: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
-Enrichment: Modifies an event, failure here could halt the event pipeline.
-Utility: Plugins that change Analytics Next functionality and don't fall into the other categories.
+1. **Before**: Plugins that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
+2. **After**: Plugins that need to run after all other plugins have run. An example of this is the segment.io integration, which will wait for destinations to succeed or fail so that it can send its observability metrics.
+3. **Destination**: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
+4. **Enrichment**: Modifies an event, failure here could halt the event pipeline.
+5. **Utility**: Plugins that change Analytics Next functionality and don't fall into the other categories.
 
 Here is an example of a simple plugin that would convert all track events event names to lowercase before the event gets sent through the rest of the pipeline:
 
