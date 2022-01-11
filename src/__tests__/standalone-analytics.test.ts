@@ -12,6 +12,7 @@ const page = jest.fn()
 const setAnonymousId = jest.fn()
 const register = jest.fn()
 const addSourceMiddleware = jest.fn()
+const on = jest.fn()
 
 jest.mock('../analytics', () => ({
   Analytics: (): unknown => ({
@@ -22,6 +23,7 @@ jest.mock('../analytics', () => ({
     addSourceMiddleware,
     register,
     emit: jest.fn(),
+    on,
     queue: {
       queue: new PersistedPriorityQueue(1, 'event-queue'),
     },
@@ -47,7 +49,6 @@ describe('standalone bundle', () => {
   beforeEach(async () => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
-
     const html = `
     <!DOCTYPE html>
       <head>
@@ -59,6 +60,7 @@ describe('standalone bundle', () => {
             window.analytics.track('fruit basket', { fruits: ['🍌', '🍇'] })
             window.analytics.identify('netto', { employer: 'segment' })
             window.analytics.setAnonymousId('anonNetto')
+            window.analytics.on('initialize', () => ({ user: 'ariel' }))
           `
           )}
         </script>
@@ -149,7 +151,6 @@ describe('standalone bundle', () => {
       })
 
       expect(page).toHaveBeenCalled()
-
       done()
     }, 0)
   })
@@ -199,6 +200,35 @@ describe('standalone bundle', () => {
       expect(operations).toEqual([
         // should run before any plugin is registered
         'setAnonymousId',
+        // should run before any events are sent downstream
+        'register',
+        // should run after all plugins have been registered
+        'track',
+      ])
+      done()
+    }, 0)
+  })
+  it('sets buffered event emitters before loading destinations', async (done) => {
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+
+    const operations: string[] = []
+
+    track.mockImplementationOnce(() => operations.push('track'))
+    on.mockImplementationOnce(() => operations.push('on', 'on'))
+    register.mockImplementationOnce(() => operations.push('register'))
+
+    await install()
+
+    setTimeout(() => {
+      expect(on).toHaveBeenCalledTimes(2)
+      expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+      expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+
+      expect(operations).toEqual([
+        // should run before any plugin is registered
+        'on',
+        'on',
         // should run before any events are sent downstream
         'register',
         // should run after all plugins have been registered

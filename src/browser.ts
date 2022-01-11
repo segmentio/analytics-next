@@ -102,8 +102,11 @@ async function flushBuffered(analytics: Analytics): Promise<void> {
  * With AJS classic, we allow users to call setAnonymousId before the library initialization.
  * This is important because some of the destinations will use the anonymousId during the initialization,
  * and if we set anonId afterwards, that wouldn’t impact the destination.
+ *
+ * Also Ensures events can be registered before library initialization.
+ * This is important so users can register to 'initialize' and any events that may fire early during setup.
  */
-function flushAnonymousUser(analytics: Analytics): void {
+function flushPreBuffer(analytics: Analytics): void {
   const wa = window.analytics
   const buffered =
     // @ts-expect-error
@@ -113,6 +116,16 @@ function flushAnonymousUser(analytics: Analytics): void {
   if (anon) {
     const [, id] = anon
     analytics.setAnonymousId(id)
+  }
+
+  const onHandlers = buffered.filter(
+    ([operation]: [string]) => operation === 'on'
+  )
+  if (onHandlers.length) {
+    onHandlers.forEach(([operation, ...args]) => {
+      // @ts-expect-error
+      analytics[operation].call(analytics, ...args)
+    })
   }
 }
 
@@ -210,7 +223,7 @@ export class AnalyticsBrowser {
     Context.initMetrics(legacySettings.metrics)
 
     // needs to be flushed before plugins are registered
-    flushAnonymousUser(analytics)
+    flushPreBuffer(analytics)
 
     const ctx = await registerPlugins(
       legacySettings,
