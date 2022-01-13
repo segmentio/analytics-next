@@ -1,4 +1,5 @@
 import { pickPrefix } from './pickPrefix'
+import { gracefulDecodeURIComponent } from './gracefulDecodeURIComponent'
 import { Analytics } from '../../analytics'
 import { Context } from '../context'
 
@@ -16,7 +17,7 @@ export function queryString(
 
   const params = parsed.split('&').reduce((acc: QueryStringParams, str) => {
     const [k, v] = str.split('=')
-    acc[k] = decodeURI(v).replace('+', ' ')
+    acc[k] = gracefulDecodeURIComponent(v)
     return acc
   }, {})
 

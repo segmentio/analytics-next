@@ -19,6 +19,13 @@ describe('queryString', () => {
         spy.mockRestore()
       })
 
+      it('accepts encoded emails as `ajs_uid` params', async () => {
+        const spy = jest.spyOn(analytics, 'identify')
+        await queryString(analytics, '?ajs_uid=user%40example.org')
+        expect(spy).toHaveBeenCalledWith('user@example.org', {})
+        spy.mockRestore()
+      })
+
       it('applies traits if `ajs_trait_` is present', async () => {
         const spy = jest.spyOn(analytics, 'identify')
         await queryString(analytics, '?ajs_uid=1234&ajs_trait_address=123 St')
