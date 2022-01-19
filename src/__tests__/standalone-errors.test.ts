@@ -118,7 +118,6 @@ describe('standalone bundle', () => {
             "type:initialization",
             "message:Ohhh nooo",
             "name:Error",
-            "host:segment.com",
             "wk:write_key_abc_123",
           ],
         },
