@@ -35,7 +35,6 @@ function onError(err?: Error) {
     'type:initialization',
     `message:${err?.message}`,
     `name:${err?.name}`,
-    `location:${window.location.hostname}`,
     `wk:${embeddedWriteKey()}`,
   ])
 }
