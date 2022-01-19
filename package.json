@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.33.3",
+  "version": "1.33.2",
   "repository": "segmentio/analytics-next",
   "license": "MIT",
   "main": "dist/cjs/index.js",
