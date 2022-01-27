@@ -17,7 +17,9 @@ export async function remoteMiddlewares(
   }
 
   const remoteMiddleware = settings.enabledMiddleware ?? {}
-  const names = Object.keys(remoteMiddleware)
+  const names = Object.entries(remoteMiddleware)
+    .filter(([_, enabled]) => enabled)
+    .map(([name]) => name)
 
   const scripts = names.map(async (name) => {
     const nonNamespaced = name.replace('@segment/', '')
