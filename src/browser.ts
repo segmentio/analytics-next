@@ -191,7 +191,11 @@ async function registerPlugins(
 
   const ctx = await analytics.register(...toRegister)
 
-  if (Object.keys(legacySettings.enabledMiddleware ?? {}).length > 0) {
+  if (
+    Object.entries(legacySettings.enabledMiddleware ?? {}).some(
+      ([, enabled]) => enabled
+    )
+  ) {
     await import(
       /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
     ).then(async ({ remoteMiddlewares }) => {

@@ -36,6 +36,17 @@ describe('Remote Middleware', () => {
     expect(md).toEqual([])
   })
 
+  it('doesnt load entries if their value is false', async () => {
+    const md = await remoteMiddlewares(Context.system(), {
+      integrations: {},
+      enabledMiddleware: {
+        '@segment/analytics.js-middleware-braze-deduplicate': false,
+      },
+    })
+
+    expect(md).toEqual([])
+  })
+
   it('loads middleware that exist', async () => {
     const md = await remoteMiddlewares(Context.system(), {
       integrations: {},
