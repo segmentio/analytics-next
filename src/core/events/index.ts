@@ -169,7 +169,7 @@ export class EventFactory {
    * are provided in the `Options` parameter for an Event
    */
   private context(event: SegmentEvent): [object, object] {
-    const optionsKeys = ['integrations', 'anonymousId', 'timestamp', 'userId']
+    const optionsKeys = ['integrations', 'anonymousId', 'timestamp', 'userId', 'messageId']
 
     const options = event.options ?? {}
     delete options['integrations']
@@ -232,6 +232,7 @@ export class EventFactory {
     const evt: SegmentEvent = {
       ...body,
       messageId,
+      ...overrides.messageId,
     }
 
     return evt
