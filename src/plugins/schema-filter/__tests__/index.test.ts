@@ -195,6 +195,62 @@ describe('schema filter', () => {
       expect(updateUserProfile.track).toHaveBeenCalled()
     })
 
+    it('does not drop events with same name when unplanned events are disallowed', async () => {
+      await ajs.register(
+        segment,
+        trackEvent,
+        trackPurchase,
+        updateUserProfile,
+        amplitude,
+        schemaFilter(
+          {
+            __default: { enabled: false, integrations: {} },
+            'Track Event': {
+              enabled: true,
+              integrations: {},
+            },
+          },
+          settings
+        )
+      )
+
+      await ajs.track('Track Event')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+      expect(trackEvent.track).toHaveBeenCalled()
+      expect(trackPurchase.track).toHaveBeenCalled()
+      expect(updateUserProfile.track).toHaveBeenCalled()
+    })
+
+    it('drop events with different names when unplanned events are disallowed', async () => {
+      await ajs.register(
+        segment,
+        trackEvent,
+        trackPurchase,
+        updateUserProfile,
+        amplitude,
+        schemaFilter(
+          {
+            __default: { enabled: false, integrations: {} },
+            'Fake Track Event': {
+              enabled: true,
+              integrations: {},
+            },
+          },
+          settings
+        )
+      )
+
+      await ajs.track('Track Event')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).not.toHaveBeenCalled()
+      expect(trackEvent.track).not.toHaveBeenCalled()
+      expect(trackPurchase.track).not.toHaveBeenCalled()
+      expect(updateUserProfile.track).not.toHaveBeenCalled()
+    })
+
     it('drops enabled event for matching destination', async () => {
       await ajs.register(
         segment,

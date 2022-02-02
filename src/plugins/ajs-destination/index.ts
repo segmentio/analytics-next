@@ -13,6 +13,7 @@ import { isServer } from '../../core/environment'
 import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
+import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
@@ -190,7 +191,7 @@ export class LegacyDestination implements Plugin {
     if (plan && ev && this.name !== 'Segment.io') {
       // events are always sent to segment (legacy behavior)
       const planEvent = plan[ev]
-      if (planEvent?.enabled === false) {
+      if (!isPlanEventEnabled(plan, planEvent)) {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,
