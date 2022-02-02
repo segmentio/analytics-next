@@ -474,12 +474,59 @@ describe('plan', () => {
     `)
   })
 
+  it('drops event when unplanned event is disabled', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        __default: {
+          enabled: false,
+          integrations: {},
+        },
+      },
+    })
+
+    jest.spyOn(dest.integration!, 'track')
+
+    const ctx = new Context({ type: 'page', event: 'Track Event' })
+    await expect(() => dest.track(ctx)).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "Event Track Event disabled for integration amplitude in tracking plan",
+        "retry": false,
+        "type": "Dropped by plan",
+      }
+    `)
+
+    expect(dest.integration?.track).not.toHaveBeenCalled()
+    expect(ctx.event.integrations).toMatchInlineSnapshot(`
+      Object {
+        "All": false,
+        "Segment.io": true,
+      }
+    `)
+  })
+
   it('does not drop events with different names', async () => {
     const dest = await loadAmplitude({
       track: {
         'Fake Track Event': {
           enabled: true,
           integrations: { amplitude: false },
+        },
+      },
+    })
+
+    jest.spyOn(dest.integration!, 'track')
+
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('does not drop events with same name when unplanned events are disallowed', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        __default: { enabled: false, integrations: {} },
+        'Track Event': {
+          enabled: true,
+          integrations: {},
         },
       },
     })

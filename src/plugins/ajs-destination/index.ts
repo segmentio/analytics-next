@@ -24,6 +24,8 @@ import {
 import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
+import { Plan, PlanEvent } from '../../core/events/interfaces'
+import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 
 const klona = (evt: SegmentEvent): SegmentEvent =>
   JSON.parse(JSON.stringify(evt))
@@ -190,7 +192,7 @@ export class LegacyDestination implements Plugin {
     if (plan && ev && this.name !== 'Segment.io') {
       // events are always sent to segment (legacy behavior)
       const planEvent = plan[ev]
-      if (planEvent?.enabled === false) {
+      if (!isPlanEventEnabled(plan, planEvent)) {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,
