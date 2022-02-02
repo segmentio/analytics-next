@@ -13,6 +13,7 @@ import { isServer } from '../../core/environment'
 import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
+import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
@@ -24,8 +25,6 @@ import {
 import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
-import { Plan, PlanEvent } from '../../core/events/interfaces'
-import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 
 const klona = (evt: SegmentEvent): SegmentEvent =>
   JSON.parse(JSON.stringify(evt))
