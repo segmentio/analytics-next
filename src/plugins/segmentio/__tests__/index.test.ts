@@ -11,6 +11,13 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
+class StubbedClass {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
+}
+
 describe('Segment.io', () => {
   let options: SegmentioSettings
   let analytics: Analytics
@@ -105,17 +112,22 @@ describe('Segment.io', () => {
 
   describe('#track', () => {
     it('should enqueue an event and properties', async () => {
-      await analytics.track('event', { prop: true }, { opt: true })
+      const stubbedClass = new StubbedClass('stub')
+      await analytics.track(
+        'event',
+        { prop: true, prop2: stubbedClass },
+        { opt: true }
+      )
       const [url, params] = spyMock.mock.calls[0]
       expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/t"`)
 
       const body = JSON.parse(params.body)
-
       assert(body.event === 'event')
       assert(body.context.opt === true)
       assert(body.properties.prop === true)
       assert(body.traits == null)
       assert(body.timestamp)
+      expect(body.properties.prop2).toEqual({ name: 'stub' })
     })
   })
 
