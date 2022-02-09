@@ -13,7 +13,10 @@ jest.mock('unfetch', () => {
 
 class StubbedClass {
   name: string
-  constructor(name: string) {
+  constructor(name?: string) {
+    if (!name) {
+      throw new TypeError('Missing argument: name')
+    }
     this.name = name
   }
 }
@@ -112,10 +115,9 @@ describe('Segment.io', () => {
 
   describe('#track', () => {
     it('should enqueue an event and properties', async () => {
-      const stubbedClass = new StubbedClass('stub')
       await analytics.track(
         'event',
-        { prop: true, prop2: stubbedClass },
+        { prop: true, prop2: { key: 'value' } },
         { opt: true }
       )
       const [url, params] = spyMock.mock.calls[0]
@@ -127,7 +129,22 @@ describe('Segment.io', () => {
       assert(body.properties.prop === true)
       assert(body.traits == null)
       assert(body.timestamp)
-      expect(body.properties.prop2).toEqual({ name: 'stub' })
+      expect(body.properties.prop2).toEqual({ key: 'value' })
+    })
+
+    it('should convert any class instance in the event properties to a plain object', async () => {
+      const stubbedClass = new StubbedClass('name')
+      await analytics.track(
+        'event',
+        { prop: true, prop2: stubbedClass },
+        { opt: true }
+      )
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/t"`)
+
+      const body = JSON.parse(params.body)
+      assert(!(body.properties.prop2 instanceof StubbedClass))
+      expect(body.properties.prop2).toEqual({ name: 'name' })
     })
   })
 
