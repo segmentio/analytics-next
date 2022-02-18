@@ -16,6 +16,10 @@ build: ## Builds typescript files and UMD library
 	yarn clean && yarn build-prep && yarn concurrently "yarn umd" "yarn pkg"
 .PHONY: build
 
+build-api: build ## Updates the api/analytics-next.api.md API review
+	yarn generate-api
+.PHONY: build-api
+
 build-browser:
 	@rm -rf dist/umd
 	@yarn umd --no-stats

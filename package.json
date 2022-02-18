@@ -18,6 +18,7 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "generate-api": "api-extractor run --local",
     "build-prep": "echo \"// This file is generated.\\nexport const version = '$npm_package_version'\" > src/generated/version.ts",
     "version": "npm run build-prep && git add src/generated/version.ts",
     "umd": "webpack",
@@ -54,6 +55,7 @@
   },
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
+    "@microsoft/api-extractor": "^7.19.4",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "3.4.8",
     "@segment/tsub": "^0.1.10",
