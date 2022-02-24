@@ -1,5 +1,5 @@
 import { User, LocalStorage, Cookie, Group } from '..'
-import jar from 'js-cookie'
+import cookies from 'js-cookie'
 import assert from 'assert'
 
 function clear(): void {
@@ -22,14 +22,14 @@ describe('user', () => {
     })
 
     it('should pick the old "_sio" anonymousId', () => {
-      jar.set('_sio', 'anonymous-id----user-id')
+      cookies.set('_sio', 'anonymous-id----user-id')
       const user = new User()
       expect(user.anonymousId()).toEqual('anonymous-id')
     })
 
     it('should not pick the old "_sio" if anonymous id is present', () => {
-      jar.set('_sio', 'old-anonymous-id----user-id')
-      jar.set('ajs_anonymous_id', 'new-anonymous-id')
+      cookies.set('_sio', 'old-anonymous-id----user-id')
+      cookies.set('ajs_anonymous_id', 'new-anonymous-id')
       assert(new User().anonymousId() === 'new-anonymous-id')
     })
 
@@ -39,7 +39,7 @@ describe('user', () => {
     })
 
     it('should not overwrite anonymous id', () => {
-      jar.set('ajs_anonymous_id', 'anonymous')
+      cookies.set('ajs_anonymous_id', 'anonymous')
       expect(new User().anonymousId()).toEqual('anonymous')
     })
   })
@@ -129,7 +129,7 @@ describe('user', () => {
         user.id('id')
         assert(user.id() === 'id')
 
-        expect(jar.get(cookieKey)).toBeFalsy()
+        expect(cookies.get(cookieKey)).toBeFalsy()
         expect(store.get(cookieKey)).toBeFalsy()
       })
 
@@ -171,13 +171,13 @@ describe('user', () => {
 
     describe('when cookies are enabled', () => {
       it('should get an id from the cookie', () => {
-        jar.set(cookieKey, 'id')
+        cookies.set(cookieKey, 'id')
         assert(user.id() === 'id')
       })
 
       it('should set an id to the cookie', () => {
         user.id('id')
-        assert(jar.get(cookieKey) === 'id')
+        assert(cookies.get(cookieKey) === 'id')
       })
 
       it('should get an id when not persisting', function () {
@@ -194,7 +194,7 @@ describe('user', () => {
         // @ts-expect-error the library only accepts strings or objects,
         // but AJS Classic allows setting numbers on cookie values, so we have
         // to parse them back to string.
-        jar.set(cookieKey, 1234)
+        cookies.set(cookieKey, 1234)
         assert(user.id() === '1234')
       })
 
@@ -265,24 +265,24 @@ describe('user', () => {
       it('should get an id from memory', () => {
         user.anonymousId('anon-id')
         assert(user.anonymousId() === 'anon-id')
-        expect(jar.get('ajs_anonymous_id')).toBeFalsy()
+        expect(cookies.get('ajs_anonymous_id')).toBeFalsy()
       })
     })
 
     describe('when cookies are enabled', () => {
       it('should get an id from the cookie', () => {
-        jar.set('ajs_anonymous_id', 'anon-id')
+        cookies.set('ajs_anonymous_id', 'anon-id')
         assert(user.anonymousId() === 'anon-id')
       })
 
       it('should set an id to the cookie', () => {
         user.anonymousId('anon-id')
-        assert(jar.get('ajs_anonymous_id') === 'anon-id')
+        assert(cookies.get('ajs_anonymous_id') === 'anon-id')
       })
 
       it('should set anonymousId in both cookie and localStorage', () => {
         user.anonymousId('anon0')
-        assert.equal(jar.get('ajs_anonymous_id'), 'anon0')
+        assert.equal(cookies.get('ajs_anonymous_id'), 'anon0')
         assert.equal(store.get('ajs_anonymous_id'), 'anon0')
       })
 
@@ -292,13 +292,13 @@ describe('user', () => {
         })
 
         user.anonymousId('anon0')
-        assert.equal(jar.get('ajs_anonymous_id'), 'anon0')
+        assert.equal(cookies.get('ajs_anonymous_id'), 'anon0')
         assert.equal(store.get('ajs_anonymous_id'), null)
       })
 
       it('should copy value from cookie to localStorage', () => {
         user = new User()
-        jar.set('ajs_anonymous_id', 'anon1')
+        cookies.set('ajs_anonymous_id', 'anon1')
 
         assert.equal(user.anonymousId(), 'anon1')
         assert.equal(store.get('ajs_anonymous_id'), 'anon1')
@@ -308,7 +308,7 @@ describe('user', () => {
         user = new User({
           localStorageFallbackDisabled: true,
         })
-        jar.set('ajs_anonymous_id', 'anon1')
+        cookies.set('ajs_anonymous_id', 'anon1')
         assert.equal(user.anonymousId(), 'anon1')
         assert.equal(store.get('ajs_anonymous_id'), null)
       })
@@ -316,17 +316,17 @@ describe('user', () => {
       it('should fall back to localStorage when cookie is not set', () => {
         user = new User()
         user.anonymousId('anon12')
-        assert.equal(jar.get('ajs_anonymous_id'), 'anon12')
+        assert.equal(cookies.get('ajs_anonymous_id'), 'anon12')
 
         // delete the cookie
-        jar.remove('ajs_anonymous_id')
-        assert.equal(jar.get('ajs_anonymous_id'), null)
+        cookies.remove('ajs_anonymous_id')
+        assert.equal(cookies.get('ajs_anonymous_id'), null)
 
         // verify anonymousId() returns the correct id even when there's no cookie
         assert.equal(user.anonymousId(), 'anon12')
 
         // verify cookie value is restored from localStorage
-        assert.equal(jar.get('ajs_anonymous_id'), 'anon12')
+        assert.equal(cookies.get('ajs_anonymous_id'), 'anon12')
       })
 
       it('should write to both cookie and localStorage when generating a new anonymousId', () => {
@@ -335,7 +335,7 @@ describe('user', () => {
         const anonId = user.anonymousId()
 
         assert.notEqual(anonId, null)
-        assert.equal(jar.get('ajs_anonymous_id'), anonId)
+        assert.equal(cookies.get('ajs_anonymous_id'), anonId)
         assert.equal(store.get('ajs_anonymous_id'), anonId)
       })
 
@@ -348,7 +348,7 @@ describe('user', () => {
         const anonId = user.anonymousId()
 
         assert.notEqual(anonId, null)
-        assert.equal(jar.get('ajs_anonymous_id'), anonId)
+        assert.equal(cookies.get('ajs_anonymous_id'), anonId)
         assert.equal(store.get('ajs_anonymous_id'), null)
       })
     })
@@ -430,7 +430,7 @@ describe('user', () => {
     it('should save an id to a cookie', () => {
       user.id('id')
       user.save()
-      expect(jar.get(cookieKey)).toEqual('id')
+      expect(cookies.get(cookieKey)).toEqual('id')
     })
 
     it('should save an id to localStorage', () => {
@@ -456,7 +456,7 @@ describe('user', () => {
 
       user.id('id')
       user.save()
-      jar.remove(cookieKey)
+      cookies.remove(cookieKey)
 
       user = new User({
         localStorageFallbackDisabled: true,
@@ -482,7 +482,7 @@ describe('user', () => {
 
       user.id('id')
       user.save()
-      expect(jar.get(cookieKey)).toBeUndefined()
+      expect(cookies.get(cookieKey)).toBeUndefined()
     })
   })
 
@@ -500,7 +500,7 @@ describe('user', () => {
       user.traits({ trait: true })
       user.logout()
 
-      expect(jar.get('ajs_anonymous_id')).toBeUndefined()
+      expect(cookies.get('ajs_anonymous_id')).toBeUndefined()
       expect(user.id()).toBeNull()
       expect(user.traits()).toEqual({})
     })
@@ -510,7 +510,7 @@ describe('user', () => {
       user.save()
       user.logout()
 
-      expect(jar.getJSON(cookieKey)).toBeFalsy()
+      expect(cookies.get(cookieKey)).toBeFalsy()
     })
 
     it('should clear id in local storage', () => {
@@ -555,7 +555,7 @@ describe('user', () => {
       expect(user.id()).toEqual('id')
       expect(user.traits()).toEqual({ trait: true })
 
-      expect(jar.getJSON(cookieKey)).toEqual('id')
+      expect(cookies.get(cookieKey)).toEqual('id')
       expect(store.get(localStorageKey)).toEqual({ trait: true })
     })
 
@@ -602,7 +602,7 @@ describe('user', () => {
     })
 
     it('should load an id from a cookie', () => {
-      jar.set(cookieKey, 'le id')
+      cookies.set(cookieKey, 'le id')
       user.load()
       expect(user.id()).toEqual('le id')
     })
@@ -614,10 +614,13 @@ describe('user', () => {
     })
 
     it('should load from an old cookie', () => {
-      jar.set(User.defaults.cookie.oldKey, {
-        id: 'old',
-        traits: { trait: true },
-      })
+      cookies.set(
+        User.defaults.cookie.oldKey,
+        JSON.stringify({
+          id: 'old',
+          traits: { trait: true },
+        })
+      )
 
       user.load()
       expect(user.id()).toEqual('old')
@@ -655,9 +658,9 @@ describe('group', () => {
 
     group.id('gid')
 
-    jar.remove('ajs_group_id')
+    cookies.remove('ajs_group_id')
 
-    assert.equal(jar.get('ajs_group_id'), null)
+    assert.equal(cookies.get('ajs_group_id'), null)
     assert.equal(group.id(), 'gid')
     assert.equal(store.get('ajs_group_id'), 'gid')
   })
@@ -685,8 +688,8 @@ describe('group', () => {
     const group = new Group()
     group.id('gid')
 
-    expect(jar.get(group.options.cookie?.key ?? '')).toEqual('gid')
-    expect(jar.get(User.defaults.cookie.key)).not.toEqual('gid')
+    expect(cookies.get(group.options.cookie?.key ?? '')).toEqual('gid')
+    expect(cookies.get(User.defaults.cookie.key)).not.toEqual('gid')
   })
 
   it('uses a different local storage key', () => {

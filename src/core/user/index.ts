@@ -1,5 +1,5 @@
 import { v4 as uuid } from '@lukeed/uuid'
-import jar from 'js-cookie'
+import cookies from 'js-cookie'
 import { SegmentEvent } from '../events'
 import { tld } from './tld'
 import autoBind from '../../lib/bind-all'
@@ -62,9 +62,9 @@ export class Cookie extends Store {
     let cookieEnabled = window.navigator.cookieEnabled
 
     if (!cookieEnabled) {
-      jar.set('ajs:cookies', 'test')
+      cookies.set('ajs:cookies', 'test')
       cookieEnabled = document.cookie.includes('ajs:cookies')
-      jar.remove('ajs:cookies')
+      cookies.remove('ajs:cookies')
     }
 
     return cookieEnabled
@@ -87,9 +87,9 @@ export class Cookie extends Store {
     } as Required<CookieOptions>
   }
 
-  private opts(): jar.CookieAttributes {
+  private opts(): cookies.CookieAttributes {
     return {
-      sameSite: this.options.sameSite as jar.CookieAttributes['sameSite'],
+      sameSite: this.options.sameSite as cookies.CookieAttributes['sameSite'],
       expires: this.options.maxage,
       domain: this.options.domain,
       path: this.options.path,
@@ -97,22 +97,36 @@ export class Cookie extends Store {
   }
 
   get<T>(key: string): T | null {
-    return jar.getJSON(key)
+    try {
+      const value = cookies.get(key)
+
+      if (!value) {
+        return null
+      }
+
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return (value as unknown) as T
+      }
+    } catch (e) {
+      return null
+    }
   }
 
   set<T>(key: string, value: T): T | null {
     if (typeof value === 'string') {
-      jar.set(key, value, this.opts())
+      cookies.set(key, value, this.opts())
     } else if (value === null) {
-      jar.remove(key, this.opts())
+      cookies.remove(key, this.opts())
     } else {
-      jar.set(key, JSON.stringify(value), this.opts())
+      cookies.set(key, JSON.stringify(value), this.opts())
     }
     return value
   }
 
   remove(key: string): void {
-    return jar.remove(key, this.opts())
+    return cookies.remove(key, this.opts())
   }
 }
 
