@@ -115,6 +115,8 @@ export class LegacyDestination implements Plugin {
       return
     }
 
+    // Figure out how to consume options.obfuscate or settings.obfuscate here
+
     this.integration = await loadIntegration(
       ctx,
       analyticsInstance,
@@ -353,7 +355,6 @@ export async function ajsDestinations(
       if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
         return
       }
-
       const version = resolveVersion(integrationSettings)
       const destination = new LegacyDestination(
         name,

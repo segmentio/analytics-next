@@ -33,10 +33,14 @@ export async function loadIntegration(
   analyticsInstance: Analytics,
   name: string,
   version: string,
-  settings?: object
+  settings?: { [key: string]: any }
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  let obfuscatedPathName = ''
+  if (settings?.obfuscate) {
+    obfuscatedPathName = btoa(pathName).replace(/=/g, '')
+  }
+  const fullPath = `https://cdn.segment.build/next-integrations/integrations-2.0/integrations/b3B0aW1pemVseQ/${version}/b3B0aW1pemVseQ.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
