@@ -10,7 +10,7 @@ import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
-import jar from 'js-cookie'
+import cookies from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 
 const sleep = (time: number): Promise<void> =>
@@ -424,7 +424,7 @@ describe('Alias', () => {
   })
 
   it('falls back to userID in cookies if no id passed', async () => {
-    jar.set('ajs_user_id', 'dan')
+    cookies.set('ajs_user_id', 'dan')
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
       plugins: [amplitude],
