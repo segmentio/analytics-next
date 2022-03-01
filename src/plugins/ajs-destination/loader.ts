@@ -33,14 +33,17 @@ export async function loadIntegration(
   analyticsInstance: Analytics,
   name: string,
   version: string,
-  settings?: { [key: string]: any }
+  settings?: { [key: string]: any },
+  obfuscate?: boolean
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
   let obfuscatedPathName = ''
-  if (settings?.obfuscate) {
+  if (obfuscate) {
     obfuscatedPathName = btoa(pathName).replace(/=/g, '')
   }
-  const fullPath = `https://cdn.segment.build/next-integrations/integrations-2.0/integrations/b3B0aW1pemVseQ/${version}/b3B0aW1pemVseQ.dynamic.js.gz`
+  const fullPath = `${path}/integrations/${
+    obfuscate ? obfuscatedPathName : pathName
+  }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
@@ -80,12 +83,19 @@ export async function loadIntegration(
 
 export async function unloadIntegration(
   name: string,
-  version: string
+  version: string,
+  obfuscate?: boolean
 ): Promise<void> {
   const pathName = normalizeName(name)
-  return unloadScript(
-    `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
-  )
+  let obfuscatedPathName = ''
+  if (obfuscate) {
+    obfuscatedPathName = btoa(pathName).replace(/=/g, '')
+  }
+  const fullPath = `${path}/integrations/${
+    obfuscate ? obfuscatedPathName : pathName
+  }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`
+
+  return unloadScript(fullPath)
 }
 
 export function resolveVersion(

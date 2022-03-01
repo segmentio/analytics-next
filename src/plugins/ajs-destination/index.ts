@@ -115,14 +115,13 @@ export class LegacyDestination implements Plugin {
       return
     }
 
-    // Figure out how to consume options.obfuscate or settings.obfuscate here
-
     this.integration = await loadIntegration(
       ctx,
       analyticsInstance,
       this.name,
       this.version,
-      this.settings
+      this.settings,
+      this.options.obfuscate
     )
 
     this.onReady = new Promise((resolve) => {
@@ -161,7 +160,7 @@ export class LegacyDestination implements Plugin {
   }
 
   unload(_ctx: Context, _analyticsInstance: Analytics): Promise<void> {
-    return unloadIntegration(this.name, this.version)
+    return unloadIntegration(this.name, this.version, this.options.obfuscate)
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {

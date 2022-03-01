@@ -52,6 +52,7 @@ export interface InitOptions {
   integrations?: Integrations
   plan?: Plan
   retryQueue?: boolean
+  obfuscate?: boolean
 }
 
 export class Analytics extends Emitter {
