@@ -1,4 +1,4 @@
-import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
+import cookies from 'js-cookie'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
@@ -15,7 +15,7 @@ try {
   domain = undefined
 }
 
-const cookieOptions: CookieAttributes = {
+const cookieOptions: cookies.CookieAttributes = {
   expires: 31536000000, // 1 year
   secure: false,
   path: '/',
@@ -37,13 +37,13 @@ export function getVersionType(): typeof _version {
 }
 
 export function sCookie(key: string, value: string): string | undefined {
-  return setCookie(key, value, cookieOptions)
+  return cookies.set(key, value, cookieOptions)
 }
 
 type Ad = { id: string; type: string }
 
 export function ampId(): string | undefined {
-  const ampId = getCookie('_ga')
+  const ampId = cookies.get('_ga')
   if (ampId && ampId.startsWith('amp')) {
     return ampId
   }
@@ -92,7 +92,7 @@ function ads(query: string): Ad | undefined {
 }
 
 function referrerId(query: string, ctx: SegmentEvent['context']): void {
-  let stored = getCookie('s:context.referrer')
+  let stored = cookies.get('s:context.referrer')
   let ad = ads(query)
 
   stored = stored ? JSON.parse(stored) : undefined
@@ -106,7 +106,7 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
     ctx.referrer = { ...ctx.referrer, ...ad }
   }
 
-  setCookie('s:context.referrer', JSON.stringify(ad), cookieOptions)
+  cookies.set('s:context.referrer', JSON.stringify(ad), cookieOptions)
 }
 
 export function normalize(
