@@ -1,3 +1,4 @@
+import type { Integrations } from '../../core/events/interfaces'
 import { LegacySettings } from '../../browser'
 import { JSONValue } from '../../core/events'
 import { Plugin } from '../../core/plugin'
@@ -42,13 +43,19 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 }
 
 export async function remoteLoader(
-  settings: LegacySettings
+  settings: LegacySettings,
+  integrations: Integrations
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
   const cdn = window.analytics?._cdn ?? getCDN()
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
+      if (
+        (integrations.All === false && !integrations[remotePlugin.name]) ||
+        integrations[remotePlugin.name] === false
+      )
+        return
       try {
         await loadScript(
           remotePlugin.url.replace('https://cdn.segment.com', cdn)
