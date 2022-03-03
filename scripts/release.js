@@ -13,6 +13,8 @@ const bucket =
     ? process.env.PROD_BUCKET
     : process.env.STAGE_BUCKET
 
+const shadowBucket = process.env.SHADOW_BUCKET
+
 const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_CDN_OAI
@@ -68,6 +70,14 @@ async function upload(meta) {
         mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
     }
 
+    const shadowOptions = {
+      Bucket: shadowBucket,
+      Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
+      Body: await fs.readFile(filePath),
+      ContentType:
+        mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
+    }
+
     if (meta.branch !== 'master') {
       options.CacheControl = 'public,max-age=31536000,immutable'
     }
@@ -77,6 +87,7 @@ async function upload(meta) {
     }
 
     const output = await s3.putObject(options).promise()
+    await s3.putObject(shadowOptions).promise() // upload build to shadow pipeline bucket as well
 
     // put latest version with only 5 minutes caching
     await s3
