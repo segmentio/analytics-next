@@ -31,7 +31,7 @@ function levels(url: URL): string[] {
   return levels
 }
 
-export function tld(url: URL): string | undefined {
+function _tld(url: URL): string | undefined {
   const lvls = levels(url)
 
   // Lookup the real top level one.
@@ -45,5 +45,13 @@ export function tld(url: URL): string | undefined {
       cookie.remove(cname, opts)
       return domain
     }
+  }
+}
+
+export function tld(url: URL): string | undefined {
+  try {
+    return _tld(url)
+  } catch (_) {
+    return
   }
 }

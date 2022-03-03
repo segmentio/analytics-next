@@ -12,6 +12,7 @@ import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
+import { PriorityQueue } from '../lib/priority-queue'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -175,6 +176,41 @@ describe('Initialization', () => {
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
+  })
+
+  it('does not use a persisted queue when disableClientPersistance is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistance: true,
+      }
+    )
+
+    expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
+  })
+
+  it('uses a persisted queue by default', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
+  })
+
+  it('disables identity persistance when disableClientPersistance is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistance: true,
+      }
+    )
+
+    expect(ajs.user().options.persist).toBe(false)
+    expect((ajs.group() as Group).options.persist).toBe(false)
   })
 
   describe('options.integrations permutations', () => {
