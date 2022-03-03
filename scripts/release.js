@@ -13,7 +13,10 @@ const bucket =
     ? process.env.PROD_BUCKET
     : process.env.STAGE_BUCKET
 
-const shadowBucket = process.env.SHADOW_BUCKET
+const shadowBucket =
+  process.env.NODE_ENV == 'production'
+    ? process.env.PROD_SHADOW
+    : process.env.STAGE_SHADOW
 
 const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
