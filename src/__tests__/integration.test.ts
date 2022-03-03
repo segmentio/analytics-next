@@ -189,6 +189,7 @@ describe('Initialization', () => {
     )
 
     expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(false)
   })
 
   it('uses a persisted queue by default', async () => {
