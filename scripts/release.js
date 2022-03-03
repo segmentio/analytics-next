@@ -74,11 +74,8 @@ async function upload(meta) {
     }
 
     const shadowOptions = {
+      ...options,
       Bucket: shadowBucket,
-      Key: path.join(`analytics-next`, meta.branch, meta.sha, f),
-      Body: await fs.readFile(filePath),
-      ContentType:
-        mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
     }
 
     if (meta.branch !== 'master') {
