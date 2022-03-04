@@ -4,6 +4,7 @@ import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
 import batch from './batched-dispatcher'
@@ -48,10 +49,12 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  const buffer = new PersistedPriorityQueue(
-    analytics.queue.queue.maxAttempts,
-    `dest-Segment.io`
-  )
+  const buffer = analytics.options.disableClientPersistance
+    ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
+    : new PersistedPriorityQueue(
+        analytics.queue.queue.maxAttempts,
+        `dest-Segment.io`
+      )
   const flushing = false
 
   const apiHost = settings?.apiHost ?? 'api.segment.io/v1'

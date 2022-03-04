@@ -6,47 +6,69 @@ import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import { scheduleFlush } from '../schedule-flush'
 import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
+import { PriorityQueue } from '../../../lib/priority-queue'
+import { Context } from '../../../core/context'
 
 jest.mock('../schedule-flush')
+
+type QueueType = 'priority' | 'persisted'
 
 describe('Segment.io retries', () => {
   let options: SegmentioSettings
   let analytics: Analytics
   let segment: Plugin
-  let queue: PersistedPriorityQueue
+  let queue: (PersistedPriorityQueue | PriorityQueue<Context>) & {
+    __type?: QueueType
+  }
 
-  beforeEach(async () => {
-    jest.resetAllMocks()
-    jest.restoreAllMocks()
+  ;[false, true].forEach((disableClientPersistance) => {
+    describe(`disableClientPersistance: ${disableClientPersistance}`, () => {
+      beforeEach(async () => {
+        jest.resetAllMocks()
+        jest.restoreAllMocks()
 
-    // @ts-expect-error reassign import
-    isOffline = jest.fn().mockImplementation(() => true)
+        // @ts-expect-error reassign import
+        isOffline = jest.fn().mockImplementation(() => true)
 
-    options = { apiKey: 'foo' }
-    analytics = new Analytics(
-      { writeKey: options.apiKey },
-      { retryQueue: true }
-    )
+        options = { apiKey: 'foo' }
+        analytics = new Analytics(
+          { writeKey: options.apiKey },
+          { retryQueue: true, disableClientPersistance }
+        )
 
-    queue = new PersistedPriorityQueue(3, `test-Segment.io`)
-    // @ts-expect-error reassign import
-    PersistedPriorityQueue = jest.fn().mockImplementation(() => queue)
+        queue = disableClientPersistance
+          ? new PriorityQueue(3, [])
+          : new PersistedPriorityQueue(3, `test-Segment.io`)
 
-    segment = segmentio(analytics, options, {})
+        queue['__type'] = disableClientPersistance ? 'priority' : 'persisted'
+        if (disableClientPersistance) {
+          // @ts-expect-error reassign import
+          PriorityQueue = jest.fn().mockImplementation(() => queue)
+        } else {
+          // @ts-expect-error reassign import
+          PersistedPriorityQueue = jest.fn().mockImplementation(() => queue)
+        }
 
-    await analytics.register(segment, pageEnrichment)
-  })
+        segment = segmentio(analytics, options, {})
 
-  test('add events to the queue', async () => {
-    jest.spyOn(queue, 'push')
+        await analytics.register(segment, pageEnrichment)
+      })
 
-    const ctx = await analytics.track('event')
+      test(`add events to the queue`, async () => {
+        jest.spyOn(queue, 'push')
 
-    expect(scheduleFlush).toHaveBeenCalled()
-    /* eslint-disable  @typescript-eslint/unbound-method */
-    expect(queue.push).toHaveBeenCalled()
-    expect(queue.length).toBe(1)
-    expect(ctx.attempts).toBe(1)
-    expect(isOffline).toHaveBeenCalledTimes(2)
+        const ctx = await analytics.track('event')
+
+        expect(scheduleFlush).toHaveBeenCalled()
+        /* eslint-disable  @typescript-eslint/unbound-method */
+        expect(queue.push).toHaveBeenCalled()
+        expect(queue.length).toBe(1)
+        expect(ctx.attempts).toBe(1)
+        expect(isOffline).toHaveBeenCalledTimes(2)
+        expect(queue.__type).toBe<QueueType>(
+          disableClientPersistance ? 'priority' : 'persisted'
+        )
+      })
+    })
   })
 })

@@ -15,7 +15,7 @@ const addSourceMiddleware = jest.fn()
 const on = jest.fn()
 
 jest.mock('../analytics', () => ({
-  Analytics: (): unknown => ({
+  Analytics: (_: unknown, options?: InitOptions): unknown => ({
     track,
     identify,
     page,
@@ -27,10 +27,11 @@ jest.mock('../analytics', () => ({
     queue: {
       queue: new PersistedPriorityQueue(1, 'event-queue'),
     },
+    options,
   }),
 }))
 
-import { Analytics } from '../analytics'
+import { Analytics, InitOptions } from '../analytics'
 
 const fetchSettings = Promise.resolve({
   json: () =>
