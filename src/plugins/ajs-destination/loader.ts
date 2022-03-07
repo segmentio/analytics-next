@@ -13,6 +13,10 @@ function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
 }
 
+function obfuscatePathName(pathName: string, obfuscate = false): string {
+  return obfuscate ? btoa(pathName).replace(/=/g, '') : ''
+}
+
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
   try {
     const [metric] =
@@ -37,10 +41,8 @@ export async function loadIntegration(
   obfuscate?: boolean
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  let obfuscatedPathName = ''
-  if (obfuscate) {
-    obfuscatedPathName = btoa(pathName).replace(/=/g, '')
-  }
+  const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
+
   const fullPath = `${path}/integrations/${
     obfuscate ? obfuscatedPathName : pathName
   }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`
@@ -87,10 +89,8 @@ export async function unloadIntegration(
   obfuscate?: boolean
 ): Promise<void> {
   const pathName = normalizeName(name)
-  let obfuscatedPathName = ''
-  if (obfuscate) {
-    obfuscatedPathName = btoa(pathName).replace(/=/g, '')
-  }
+  const obfuscatedPathName = obfuscatePathName(name, obfuscate)
+
   const fullPath = `${path}/integrations/${
     obfuscate ? obfuscatedPathName : pathName
   }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`

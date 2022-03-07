@@ -85,6 +85,8 @@ export async function run(params: ComparisonParams) {
       '&wk=' +
       source
 
+    console.log(url)
+
     await page.goto(url)
 
     // This forces every timestamp to look exactly the same
