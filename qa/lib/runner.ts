@@ -9,6 +9,7 @@ type ComparisonParams = {
   serverURL: string
   writeKey: string
   script: string
+  key: string
 }
 
 export async function run(params: ComparisonParams) {
@@ -16,7 +17,8 @@ export async function run(params: ComparisonParams) {
     browser: Browser,
     isNext: boolean,
     source: string,
-    execution: string
+    execution: string,
+    key: string
   ) {
     const networkRequests: Array<{ url: string; data: JSONValue }> = []
     const bundleRequests: Array<string> = []
@@ -25,13 +27,26 @@ export async function run(params: ComparisonParams) {
 
     page.route('**', async (route) => {
       const request = route.request()
+
       if (
         request.url().includes('cdn.segment') ||
         request.url().includes('cdn-settings') ||
         request.url().includes('localhost') ||
         request.url().includes('unpkg')
       ) {
-        bundleRequests.push(request.url())
+        if (
+          request.url().includes('next-integrations') &&
+          request.url().includes(key)
+        ) {
+          const obfuscatedKey = btoa(key).replace(/=/g, '')
+          const obfuscatedUrl = request
+            .url()
+            .replace(new RegExp(key, 'g'), obfuscatedKey)
+          bundleRequests.push(request.url())
+          bundleRequests.push(obfuscatedUrl)
+        } else {
+          bundleRequests.push(request.url())
+        }
         route.continue().catch(console.error)
         return
       }
@@ -85,8 +100,6 @@ export async function run(params: ComparisonParams) {
       '&wk=' +
       source
 
-    console.log(url)
-
     await page.goto(url)
 
     // This forces every timestamp to look exactly the same
@@ -124,8 +137,8 @@ export async function run(params: ComparisonParams) {
   }
 
   const [classic, next] = await Promise.all([
-    load(params.browser, false, params.writeKey, params.script),
-    load(params.browser, true, params.writeKey, params.script),
+    load(params.browser, false, params.writeKey, params.script, params.key),
+    load(params.browser, true, params.writeKey, params.script, params.key),
   ])
 
   return {
