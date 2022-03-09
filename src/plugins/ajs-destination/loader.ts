@@ -14,7 +14,7 @@ function normalizeName(name: string): string {
 }
 
 function obfuscatePathName(pathName: string, obfuscate = false): string {
-  return obfuscate ? btoa(pathName).replace(/=/g, '') : ''
+  return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
@@ -44,8 +44,8 @@ export async function loadIntegration(
   const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
 
   const fullPath = `${path}/integrations/${
-    obfuscate ? obfuscatedPathName : pathName
-  }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`
+    obfuscatedPathName ?? pathName
+  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
@@ -92,8 +92,8 @@ export async function unloadIntegration(
   const obfuscatedPathName = obfuscatePathName(name, obfuscate)
 
   const fullPath = `${path}/integrations/${
-    obfuscate ? obfuscatedPathName : pathName
-  }/${version}/${obfuscate ? obfuscatedPathName : pathName}.dynamic.js.gz`
+    obfuscatedPathName ?? pathName
+  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
 
   return unloadScript(fullPath)
 }
