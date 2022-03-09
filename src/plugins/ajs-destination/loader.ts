@@ -13,7 +13,7 @@ function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
 }
 
-function obfuscatePathName(pathName: string, obfuscate = false): string {
+function obfuscatePathName(pathName: string, obfuscate = false): string | void {
   return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
 }
 
