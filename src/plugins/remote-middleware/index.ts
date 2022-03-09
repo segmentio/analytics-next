@@ -10,7 +10,8 @@ const path = cdn + '/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,
-  settings: LegacySettings
+  settings: LegacySettings,
+  obfuscate?: boolean
 ): Promise<MiddlewareFunction[]> {
   if (isServer()) {
     return []
@@ -23,7 +24,11 @@ export async function remoteMiddlewares(
 
   const scripts = names.map(async (name) => {
     const nonNamespaced = name.replace('@segment/', '')
-    const fullPath = `${path}/middleware/${nonNamespaced}/latest/${nonNamespaced}.js.gz`
+    let bundleName = nonNamespaced
+    if (obfuscate) {
+      bundleName = btoa(nonNamespaced).replace(/=/g, '')
+    }
+    const fullPath = `${path}/middleware/${bundleName}/latest/${bundleName}.js.gz`
 
     try {
       await loadScript(fullPath)

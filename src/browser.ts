@@ -202,7 +202,11 @@ async function registerPlugins(
     await import(
       /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
     ).then(async ({ remoteMiddlewares }) => {
-      const middleware = await remoteMiddlewares(ctx, legacySettings)
+      const middleware = await remoteMiddlewares(
+        ctx,
+        legacySettings,
+        options.obfuscate
+      )
       const promises = middleware.map((mdw) =>
         analytics.addSourceMiddleware(mdw)
       )

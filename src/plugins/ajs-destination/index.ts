@@ -120,7 +120,8 @@ export class LegacyDestination implements Plugin {
       analyticsInstance,
       this.name,
       this.version,
-      this.settings
+      this.settings,
+      this.options.obfuscate
     )
 
     this.onReady = new Promise((resolve) => {
@@ -159,7 +160,7 @@ export class LegacyDestination implements Plugin {
   }
 
   unload(_ctx: Context, _analyticsInstance: Analytics): Promise<void> {
-    return unloadIntegration(this.name, this.version)
+    return unloadIntegration(this.name, this.version, this.options.obfuscate)
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
@@ -353,7 +354,6 @@ export async function ajsDestinations(
       if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
         return
       }
-
       const version = resolveVersion(integrationSettings)
       const destination = new LegacyDestination(
         name,
