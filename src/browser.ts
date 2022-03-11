@@ -217,58 +217,56 @@ async function registerPlugins(
   return ctx
 }
 
-export class AnalyticsBrowser {
-  static async load(
-    settings: AnalyticsSettings,
-    options: InitOptions = {}
-  ): Promise<[Analytics, Context]> {
-    const legacySettings = await loadLegacySettings(settings.writeKey)
+export async function loadBrowser(
+  settings: AnalyticsSettings,
+  options: InitOptions = {}
+): Promise<[Analytics, Context]> {
+  const legacySettings = await loadLegacySettings(settings.writeKey)
 
-    const retryQueue: boolean =
-      legacySettings.integrations['Segment.io']?.retryQueue ?? true
+  const retryQueue: boolean =
+    legacySettings.integrations['Segment.io']?.retryQueue ?? true
 
-    const opts: InitOptions = { retryQueue, ...options }
-    const analytics = new Analytics(settings, opts)
+  const opts: InitOptions = { retryQueue, ...options }
+  const analytics = new Analytics(settings, opts)
 
-    const plugins = settings.plugins ?? []
-    Context.initMetrics(legacySettings.metrics)
+  const plugins = settings.plugins ?? []
+  Context.initMetrics(legacySettings.metrics)
 
-    // needs to be flushed before plugins are registered
-    flushPreBuffer(analytics)
+  // needs to be flushed before plugins are registered
+  flushPreBuffer(analytics)
 
-    const ctx = await registerPlugins(
-      legacySettings,
-      analytics,
-      opts,
-      options,
-      plugins
-    )
+  const ctx = await registerPlugins(
+    legacySettings,
+    analytics,
+    opts,
+    options,
+    plugins
+  )
 
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
+  analytics.initialized = true
+  analytics.emit('initialize', settings, options)
 
-    if (options.initialPageview) {
-      analytics.page().catch(console.error)
-    }
-
-    const search = window.location.search ?? ''
-    const hash = window.location.hash ?? ''
-
-    const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-    if (term.includes('ajs_')) {
-      analytics.queryString(term).catch(console.error)
-    }
-
-    await flushBuffered(analytics)
-
-    return [analytics, ctx]
+  if (options.initialPageview) {
+    analytics.page().catch(console.error)
   }
 
-  static standalone(
-    writeKey: string,
-    options?: InitOptions
-  ): Promise<Analytics> {
-    return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
+  const search = window.location.search ?? ''
+  const hash = window.location.hash ?? ''
+
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+
+  if (term.includes('ajs_')) {
+    analytics.queryString(term).catch(console.error)
   }
+
+  await flushBuffered(analytics)
+
+  return [analytics, ctx]
+}
+
+export function standaloneBrowser(
+  writeKey: string,
+  options?: InitOptions
+): Promise<Analytics> {
+  return loadBrowser({ writeKey }, options).then((res) => res[0])
 }

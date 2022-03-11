@@ -1,5 +1,5 @@
 import { Analytics, InitOptions } from './analytics'
-import { AnalyticsBrowser } from './browser'
+import { standaloneBrowser } from './browser'
 import { embeddedWriteKey } from './lib/embedded-write-key'
 
 type FunctionsOf<T> = {
@@ -70,10 +70,9 @@ export function install(): Promise<void> {
     return Promise.resolve()
   }
 
-  return AnalyticsBrowser.standalone(
-    writeKey,
-    window.analytics?._loadOptions ?? {}
-  ).then((an) => {
-    window.analytics = an as StandaloneAnalytics
-  })
+  return standaloneBrowser(writeKey, window.analytics?._loadOptions ?? {}).then(
+    (an) => {
+      window.analytics = an as StandaloneAnalytics
+    }
+  )
 }

@@ -1,6 +1,6 @@
 import { Analytics } from '../../src/analytics'
 import { Context } from '../../src/core/context'
-import { AnalyticsNode } from '../../src/node'
+import { loadNode } from '../../src/node'
 import ex from 'execa'
 
 let analytics: Analytics = undefined
@@ -13,7 +13,7 @@ async function client(): Promise<Analytics> {
     return analytics
   }
 
-  const [nodeAnalytics] = await AnalyticsNode.load({
+  const [nodeAnalytics] = await loadNode({
     writeKey: process.env.STATS_WRITEKEY,
   })
 

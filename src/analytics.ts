@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from './browser'
+import { loadBrowser } from './browser'
 import {
   AliasParams,
   DispatchedEvent,
@@ -427,7 +427,7 @@ export class Analytics extends Emitter {
   ): Promise<Analytics> {
     console.warn(deprecationWarning)
     if (settings) {
-      await AnalyticsBrowser.load(settings, options)
+      await loadBrowser(settings, options)
     }
     this.options = options || {}
     return this

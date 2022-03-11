@@ -6,7 +6,7 @@ import { Group } from '../core/user'
 import { LegacyDestination } from '../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser, loadLegacySettings } from '../browser'
+import { loadBrowser, loadLegacySettings } from '../browser'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
@@ -72,7 +72,7 @@ describe('Initialization', () => {
   })
 
   it('loads plugins', async () => {
-    await AnalyticsBrowser.load({
+    await loadBrowser({
       writeKey,
       plugins: [xt],
     })
@@ -100,7 +100,7 @@ describe('Initialization', () => {
     }
 
     jest.spyOn(lazyPlugin, 'load')
-    await AnalyticsBrowser.load({ writeKey, plugins: [lazyPlugin] })
+    await loadBrowser({ writeKey, plugins: [lazyPlugin] })
 
     expect(lazyPlugin.load).toHaveBeenCalled()
     expect(onLoad).not.toHaveBeenCalled()
@@ -141,7 +141,7 @@ describe('Initialization', () => {
 
     jest.spyOn(lazyPlugin1, 'load')
     jest.spyOn(lazyPlugin2, 'load')
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [lazyPlugin1, lazyPlugin2, xt],
     })
@@ -164,7 +164,7 @@ describe('Initialization', () => {
     const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
     Analytics.prototype.page = mockPage
 
-    await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
+    await loadBrowser({ writeKey }, { initialPageview: true })
 
     expect(mockPage).toHaveBeenCalled()
   })
@@ -173,7 +173,7 @@ describe('Initialization', () => {
     jest.mock('../analytics')
     const mockPage = jest.fn()
     Analytics.prototype.page = mockPage
-    await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
+    await loadBrowser({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
   })
 
@@ -184,7 +184,7 @@ describe('Initialization', () => {
       const options: { integrations: { [key: string]: boolean } } = {
         integrations: { All: false },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+      const analyticsResponse = await loadBrowser(settings, options)
 
       const segmentio = analyticsResponse[0].queue.plugins.find(
         (p) => p.name === 'Segment.io'
@@ -197,7 +197,7 @@ describe('Initialization', () => {
       const options: { integrations?: { [key: string]: boolean } } = {
         integrations: { 'Segment.io': false },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+      const analyticsResponse = await loadBrowser(settings, options)
 
       const segmentio = analyticsResponse[0].queue.plugins.find(
         (p) => p.name === 'Segment.io'
@@ -210,7 +210,7 @@ describe('Initialization', () => {
       const options: { integrations: { [key: string]: boolean } } = {
         integrations: { All: false, 'Segment.io': true },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+      const analyticsResponse = await loadBrowser(settings, options)
 
       const segmentio = analyticsResponse[0].queue.plugins.find(
         (p) => p.name === 'Segment.io'
@@ -223,7 +223,7 @@ describe('Initialization', () => {
       const options: { integrations: { [key: string]: boolean } } = {
         integrations: { 'Segment.io': true },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+      const analyticsResponse = await loadBrowser(settings, options)
 
       const segmentio = analyticsResponse[0].queue.plugins.find(
         (p) => p.name === 'Segment.io'
@@ -236,7 +236,7 @@ describe('Initialization', () => {
       const options: { integrations?: { [key: string]: boolean } } = {
         integrations: undefined,
       }
-      const analyticsResponse = await AnalyticsBrowser.load(settings, options)
+      const analyticsResponse = await loadBrowser(settings, options)
 
       const segmentio = analyticsResponse[0].queue.plugins.find(
         (p) => p.name === 'Segment.io'
@@ -252,7 +252,7 @@ describe('Initialization', () => {
           'Segment.io': false,
         },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(
+      const analyticsResponse = await loadBrowser(
         { ...settings, plugins: [xt] },
         options
       )
@@ -277,7 +277,7 @@ describe('Initialization', () => {
           'Segment.io': false,
         },
       }
-      const analyticsResponse = await AnalyticsBrowser.load(
+      const analyticsResponse = await loadBrowser(
         { ...settings, plugins: [xt] },
         options
       )
@@ -298,7 +298,7 @@ describe('Initialization', () => {
 
 describe('Dispatch', () => {
   it('dispatches events to destinations', async () => {
-    const [ajs] = await AnalyticsBrowser.load({
+    const [ajs] = await loadBrowser({
       writeKey,
       plugins: [amplitude, googleAnalytics],
     })
@@ -316,7 +316,7 @@ describe('Dispatch', () => {
   })
 
   it('does not dispatch events to destinations on deny list', async () => {
-    const [ajs] = await AnalyticsBrowser.load({
+    const [ajs] = await loadBrowser({
       writeKey,
       plugins: [amplitude, googleAnalytics],
     })
@@ -342,7 +342,7 @@ describe('Dispatch', () => {
   })
 
   it('enriches events before dispatching', async () => {
-    const [ajs] = await AnalyticsBrowser.load({
+    const [ajs] = await loadBrowser({
       writeKey,
       plugins: [enrichBilling, amplitude, googleAnalytics],
     })
@@ -360,7 +360,7 @@ describe('Dispatch', () => {
   })
 
   it('collects metrics for every event', async () => {
-    const [ajs] = await AnalyticsBrowser.load({
+    const [ajs] = await loadBrowser({
       writeKey,
       plugins: [amplitude],
     })
@@ -388,7 +388,7 @@ describe('Dispatch', () => {
 
 describe('Group', () => {
   it('manages Group state', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
 
@@ -408,7 +408,7 @@ describe('Group', () => {
 
 describe('Alias', () => {
   it('generates alias events', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude],
     })
@@ -425,7 +425,7 @@ describe('Alias', () => {
 
   it('falls back to userID in cookies if no id passed', async () => {
     jar.set('ajs_user_id', 'dan')
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude],
     })
@@ -453,7 +453,7 @@ describe('pageview', () => {
 
 describe('setAnonymousId', () => {
   it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude],
     })
@@ -471,7 +471,7 @@ describe('setAnonymousId', () => {
 
 describe('addSourceMiddleware', () => {
   it('supports registering source middlewares', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
 
@@ -522,7 +522,7 @@ describe('addDestinationMiddleware', () => {
   })
 
   it('supports registering destination middlewares', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
 
@@ -567,7 +567,7 @@ describe('addDestinationMiddleware', () => {
 
 describe('use', () => {
   it('registers a legacyPlugin', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
 
@@ -580,7 +580,7 @@ describe('use', () => {
 
 describe('timeout', () => {
   it('has a default timeout value', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
     //@ts-ignore
@@ -588,7 +588,7 @@ describe('timeout', () => {
   })
 
   it('can set a timeout value', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
     })
     analytics.timeout(50)
@@ -632,7 +632,7 @@ describe('deregister', () => {
     )
     xt.unload = unload
 
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [xt],
     })
@@ -651,7 +651,7 @@ describe('deregister', () => {
       {}
     )
 
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude],
     })
@@ -690,7 +690,7 @@ describe('retries', () => {
   })
 
   it('does not retry errored events if retryQueue setting is set to false', async () => {
-    const [ajs] = await AnalyticsBrowser.load(
+    const [ajs] = await loadBrowser(
       { writeKey: TEST_WRITEKEY },
       { retryQueue: false }
     )
@@ -726,7 +726,7 @@ describe('retries', () => {
   })
 
   it('does not queue up events when offline if retryQueue setting is set to false', async () => {
-    const [ajs] = await AnalyticsBrowser.load({ writeKey })
+    const [ajs] = await loadBrowser({ writeKey })
 
     await ajs.queue.register(
       Context.system(),
@@ -752,7 +752,7 @@ describe('Segment.io overrides', () => {
   it('allows for overriding Segment.io settings', async () => {
     jest.spyOn(SegmentPlugin, 'segmentio')
 
-    await AnalyticsBrowser.load(
+    await loadBrowser(
       { writeKey },
       {
         integrations: {
@@ -814,7 +814,7 @@ describe('.Integrations', () => {
 
     const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
 
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude, ga],
     })
@@ -842,7 +842,7 @@ describe('.Integrations', () => {
     const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
     const customerIO = new LegacyDestination('Customer.io', 'latest', {}, {})
 
-    const [analytics] = await AnalyticsBrowser.load({
+    const [analytics] = await loadBrowser({
       writeKey,
       plugins: [amplitude, ga, customerIO],
     })

@@ -1,6 +1,6 @@
 import { mocked } from 'ts-jest/utils'
 import { JSDOM } from 'jsdom'
-import { AnalyticsBrowser, LegacySettings } from '../../../browser'
+import { LegacySettings, loadBrowser } from '../../../browser'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -65,7 +65,7 @@ describe.skip('Remote Plugin Integration', () => {
   })
 
   it('loads remote plugins', async () => {
-    await AnalyticsBrowser.load({
+    await loadBrowser({
       writeKey: 'test-write-key',
     })
 
