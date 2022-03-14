@@ -213,7 +213,8 @@ export class EventQueue extends Emitter {
   private availableExtensions(denyList: Integrations): PluginsByType {
     const available = this.plugins.filter(
       (p) =>
-        p.type !== 'destination' || (denyList[p.name] ?? denyList.All) !== false
+        (p.type !== 'destination' && p.name !== 'Segment.io') ||
+        (denyList[p.name] ?? denyList.All) !== false
     )
 
     const {
