@@ -9,7 +9,7 @@ import { server } from '../lib/server'
 jest.setTimeout(100000)
 type RemovePromise<T> = T extends Promise<infer U> ? U : T
 
-const samples = process.env.QA_SOURCES.split(',')
+const sources = process.env.QA_SOURCES.split(',')
 
 function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
   const classicReqs = results.classic.networkRequests
@@ -81,21 +81,39 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
   })
 }
 
+// needs to be written as a string so it's not transpiled
+const code = `(async () => {
+  await window.analytics.identify('Test', {
+    email: 'test@mctesting.org',
+  })
+
+  await window.analytics.track('Track!', {
+    leProp: 'propé',
+  })
+
+  await window.analytics.page()
+})()`
+
+describe('Obfuscated Smoke Tests', () => {
+  test.concurrent.each(sources)(`smoke test`, async (writeKey) => {
+    const [url, chrome] = await Promise.all([server(true), browser()])
+    const results = await run({
+      browser: chrome,
+      script: code,
+      serverURL: url,
+      writeKey,
+    })
+
+    results.next.bundleRequestFailures.forEach((result) => {
+      expect(result).toBe(null)
+    })
+
+    compareSchema(results)
+  })
+})
+
 describe('Smoke Tests', () => {
-  // needs to be written as a string so it's not transpiled
-  const code = `(async () => {
-    await window.analytics.identify('Test', {
-      email: 'test@mctesting.org',
-    })
-
-    await window.analytics.track('Track!', {
-      leProp: 'propé',
-    })
-
-    await window.analytics.page()
-  })()`
-
-  test.concurrent.each(samples)(`smoke test`, async (writekey) => {
+  test.concurrent.each(sources)(`smoke test`, async (writekey) => {
     const [url, chrome] = await Promise.all([server(), browser()])
 
     const results = await run({

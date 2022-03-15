@@ -24,6 +24,7 @@ export async function run(params: ComparisonParams) {
     const bundleRequests: Array<string> = []
     const context = await browser.newContext()
     const page = await context.newPage()
+    const bundleRequestFailures: Array<any> = []
 
     page.route('**', async (route) => {
       const request = route.request()
@@ -34,18 +35,9 @@ export async function run(params: ComparisonParams) {
         request.url().includes('localhost') ||
         request.url().includes('unpkg')
       ) {
-        if (
-          request.url().includes('next-integrations') &&
-          request.url().includes(key)
-        ) {
-          const obfuscatedKey = btoa(key).replace(/=/g, '')
-          const obfuscatedUrl = request
-            .url()
-            .replace(new RegExp(key, 'g'), obfuscatedKey)
-          bundleRequests.push(request.url())
-          bundleRequests.push(obfuscatedUrl)
-        } else {
-          bundleRequests.push(request.url())
+        bundleRequests.push(request.url())
+        if (request.url().includes('next-integration')) {
+          bundleRequestFailures.push(request.failure())
         }
         route.continue().catch(console.error)
         return
@@ -108,9 +100,7 @@ export async function run(params: ComparisonParams) {
 
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(`window.analytics.initialized === true`)
-
     const codeEvaluation = await page.evaluate(execution)
-
     const cookies = await context.cookies()
     const localStorage: Record<string, string | null> = await page.evaluate(
       () => {
@@ -120,7 +110,6 @@ export async function run(params: ComparisonParams) {
         }, {} as Record<string, string | null>)
       }
     )
-
     await page.waitForLoadState('networkidle')
     const metrics = await getMetrics(page)
 
@@ -133,6 +122,7 @@ export async function run(params: ComparisonParams) {
       codeEvaluation,
       metrics,
       bundleRequests,
+      bundleRequestFailures,
     }
   }
 
