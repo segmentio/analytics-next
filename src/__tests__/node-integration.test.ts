@@ -1,10 +1,10 @@
-import { AnalyticsNode } from '../node'
+import { loadNode } from '../node'
 
 const writeKey = 'foo'
 
 describe('Initialization', () => {
   it('loads analytics-node-next plugin', async () => {
-    const [analytics] = await AnalyticsNode.load({
+    const [analytics] = await loadNode({
       writeKey,
     })
 

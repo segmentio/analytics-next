@@ -2,7 +2,7 @@ const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
 import { Analytics } from '../../../analytics'
-import { AnalyticsNode } from '../../../node'
+import { loadNode } from '../../../node'
 
 const myDate = new Date('2016')
 const _Date = Date
@@ -13,7 +13,7 @@ describe('Analytics Node', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
 
-    const [analytics] = await AnalyticsNode.load({
+    const [analytics] = await loadNode({
       writeKey: 'abc123',
     })
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Head from 'next/head'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
@@ -8,7 +8,7 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
+import { AnalyticsSettings, loadBrowser, Analytics, Context } from '../../'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -66,7 +66,7 @@ export default function Home(): React.ReactElement {
   const [ctx, setCtx] = React.useState<Context>()
 
   async function fetchAnalytics() {
-    const [response, ctx] = await AnalyticsBrowser.load({
+    const [response, ctx] = await loadBrowser({
       ...settings,
       writeKey,
     })

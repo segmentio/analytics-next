@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { TEST_WRITEKEY } from '../../../src/__tests__/test-writekeys'
 
-import {
-  AnalyticsSettings,
-  AnalyticsBrowser,
-  Analytics,
-} from '../../../dist/pkg'
+import { AnalyticsSettings, loadBrowser, Analytics } from '../../../dist/pkg'
 
 const settings: AnalyticsSettings = {
   writeKey: TEST_WRITEKEY,
@@ -17,7 +13,7 @@ export default function Iframe(): React.ReactElement {
   const [writeKey] = useState<string>(settings.writeKey)
 
   async function fetchAnalytics() {
-    const [response] = await AnalyticsBrowser.load({
+    const [response] = await loadBrowser({
       ...settings,
       writeKey,
     })

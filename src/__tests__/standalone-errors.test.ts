@@ -1,5 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { AnalyticsBrowser, LegacySettings } from '../browser'
+import { LegacySettings } from '../browser'
+import * as AnalyticsBrowser from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { pWhile } from '../lib/p-while'
 import { mocked } from 'ts-jest/utils'
@@ -100,7 +101,7 @@ describe('standalone bundle', () => {
       })
 
     jest
-      .spyOn(AnalyticsBrowser, 'standalone')
+      .spyOn(AnalyticsBrowser, 'standaloneBrowser')
       .mockRejectedValueOnce(new Error('Ohhh nooo'))
 
     await import('../standalone')

@@ -1,5 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { AnalyticsBrowser, loadLegacySettings } from '../browser'
+import { loadLegacySettings } from '../browser'
+import * as AnalyticsBrowser from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import { mocked } from 'ts-jest/utils'
@@ -102,7 +103,7 @@ describe('standalone bundle', () => {
     }
 
     const spy = jest
-      .spyOn(AnalyticsBrowser, 'standalone')
+      .spyOn(AnalyticsBrowser, 'standaloneBrowser')
       .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
 
     await install()
@@ -117,7 +118,7 @@ describe('standalone bundle', () => {
       },
     }
     const spy = jest
-      .spyOn(AnalyticsBrowser, 'standalone')
+      .spyOn(AnalyticsBrowser, 'standaloneBrowser')
       .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
 
     await install()

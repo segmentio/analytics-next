@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../analytics'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser } from '../browser'
+import { loadBrowser } from '../browser'
 import { TEST_WRITEKEY } from './test-writekeys'
 
 const writeKey = TEST_WRITEKEY
@@ -46,7 +46,7 @@ describe('queryString', () => {
       url: 'https://localhost/?ajs_id=123',
     })
 
-    await AnalyticsBrowser.load({ writeKey })
+    await loadBrowser({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
   })
 
@@ -61,14 +61,14 @@ describe('queryString', () => {
       url: 'https://localhost/#/?ajs_id=123',
     })
 
-    await AnalyticsBrowser.load({ writeKey })
+    await loadBrowser({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
 
     jsd.reconfigure({
       url: 'https://localhost/#about?ajs_id=123',
     })
 
-    await AnalyticsBrowser.load({ writeKey })
+    await loadBrowser({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
   })
 
@@ -83,7 +83,7 @@ describe('queryString', () => {
       url: 'https://localhost/#about?ajs_id=123',
     })
 
-    await AnalyticsBrowser.load({ writeKey })
+    await loadBrowser({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
   })
 })
