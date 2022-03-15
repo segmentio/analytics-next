@@ -352,6 +352,37 @@ describe('Dispatch', () => {
     expect(segmentSpy).not.toHaveBeenCalled()
   })
 
+  it('does dispatch events to Segment.io when All is false', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude, googleAnalytics],
+    })
+
+    const segmentio = ajs.queue.plugins.find((p) => p.name === 'Segment.io')
+    expect(segmentio).toBeDefined()
+
+    const ampSpy = jest.spyOn(amplitude, 'track')
+    const gaSpy = jest.spyOn(googleAnalytics, 'track')
+    const segmentSpy = jest.spyOn(segmentio!, 'track')
+
+    const boo = await ajs.track(
+      'Boo!',
+      {
+        total: 25,
+        userId: '👻',
+      },
+      {
+        integrations: {
+          All: false,
+        },
+      }
+    )
+
+    expect(gaSpy).not.toHaveBeenCalled()
+    expect(ampSpy).not.toHaveBeenCalled()
+    expect(segmentSpy).toHaveBeenCalledWith(boo)
+  })
+
   it('enriches events before dispatching', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,
