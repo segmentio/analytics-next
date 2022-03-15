@@ -13,6 +13,21 @@ import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let fetchCalls: Array<any>[] = []
+// Mock unfetch so we can record any http requests made
+jest.mock('unfetch', () => {
+  const originalModule = jest.requireActual('unfetch')
+  return {
+    __esModule: true,
+    ...originalModule,
+    default: (...args: unknown[]) => {
+      fetchCalls.push(args)
+      return originalModule.apply(originalModule, args)
+    },
+  }
+})
+
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, time)
@@ -69,6 +84,8 @@ const writeKey = TEST_WRITEKEY
 describe('Initialization', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
+    jest.resetModules()
+    fetchCalls = []
   })
 
   it('loads plugins', async () => {
@@ -175,6 +192,24 @@ describe('Initialization', () => {
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
+  })
+
+  it('fetch remote source settings by default', async () => {
+    await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    expect(fetchCalls.length).toBeGreaterThan(0)
+    expect(fetchCalls[0][0]).toMatch(/\/settings$/)
+  })
+
+  it('does not fetch source settings if cdnSettings is set', async () => {
+    await AnalyticsBrowser.load({
+      writeKey,
+      cdnSettings: { integrations: {} },
+    })
+
+    expect(fetchCalls.length).toBe(0)
   })
 
   describe('options.integrations permutations', () => {

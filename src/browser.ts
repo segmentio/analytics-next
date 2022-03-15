@@ -53,6 +53,15 @@ export interface LegacySettings {
   remotePlugins?: RemotePlugin[]
 }
 
+export interface AnalyticsBrowserSettings extends AnalyticsSettings {
+  /**
+   * The settings for the Segment Source.
+   * If provided, `AnalyticsBrowser` will not fetch remote settings
+   * for the source.
+   */
+  cdnSettings?: LegacySettings & Record<string, unknown>
+}
+
 export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
   const cdn = window.analytics?._cdn ?? getCDN()
   return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
@@ -219,10 +228,11 @@ async function registerPlugins(
 
 export class AnalyticsBrowser {
   static async load(
-    settings: AnalyticsSettings,
+    settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): Promise<[Analytics, Context]> {
-    const legacySettings = await loadLegacySettings(settings.writeKey)
+    const legacySettings =
+      settings.cdnSettings ?? (await loadLegacySettings(settings.writeKey))
 
     const retryQueue: boolean =
       legacySettings.integrations['Segment.io']?.retryQueue ?? true
