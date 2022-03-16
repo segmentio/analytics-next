@@ -137,5 +137,19 @@ describe('Smoke Tests', () => {
     expect(classicCookies['ajs_user_id']).toContain('Test')
 
     compareSchema(results)
+
+    const [url2, chrome2] = await Promise.all([server(true), browser()])
+    const obfuscatedresults = await run({
+      browser: chrome2,
+      script: code,
+      serverURL: url2,
+      writeKey: writekey,
+    })
+
+    obfuscatedresults.next.bundleRequestFailures.forEach((result) => {
+      expect(result).toBe(null)
+    })
+
+    compareSchema(obfuscatedresults)
   })
 })

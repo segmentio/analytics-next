@@ -287,7 +287,9 @@ describe('settings', () => {
 })
 
 describe('remote loading', () => {
-  const loadAmplitude = async (): Promise<LegacyDestination> => {
+  const loadAmplitude = async (
+    obfuscate = false
+  ): Promise<LegacyDestination> => {
     const ajs = new Analytics({
       writeKey: 'abc',
     })
@@ -298,7 +300,7 @@ describe('remote loading', () => {
       {
         apiKey: AMPLITUDE_WRITEKEY,
       },
-      {}
+      { obfuscate }
     )
 
     await dest.load(Context.system(), ajs)
@@ -350,6 +352,24 @@ describe('remote loading', () => {
     )
   })
 
+  it('loads obfuscated integrations from the Segment CDN', async () => {
+    await loadAmplitude(true)
+
+    const sources = Array.from(window.document.querySelectorAll('script'))
+      .map((s) => s.src)
+      .filter(Boolean)
+
+    expect(sources).toMatchObject(
+      expect.arrayContaining([
+        'https://cdn.segment.com/next-integrations/integrations/YW1wbGl0dWRl/latest/YW1wbGl0dWRl.dynamic.js.gz',
+        expect.stringContaining(
+          'https://cdn.segment.com/next-integrations/integrations/vendor/commons'
+        ),
+        'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
+      ])
+    )
+  })
+
   it('forwards identify calls to integration', async () => {
     const dest = await loadAmplitude()
     jest.spyOn(dest.integration!, 'identify')
@@ -370,6 +390,32 @@ describe('remote loading', () => {
 
   it('forwards page calls to integration', async () => {
     const dest = await loadAmplitude()
+    jest.spyOn(dest.integration!, 'page')
+
+    await dest.page(new Context({ type: 'page' }))
+    expect(dest.integration?.page).toHaveBeenCalled()
+  })
+
+  it('forwards identify calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
+    jest.spyOn(dest.integration!, 'identify')
+
+    const evt = new Context({ type: 'identify' })
+    await dest.identify(evt)
+
+    expect(dest.integration?.identify).toHaveBeenCalled()
+  })
+
+  it('forwards track calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
+    jest.spyOn(dest.integration!, 'track')
+
+    await dest.track(new Context({ type: 'track' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('forwards page calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
     jest.spyOn(dest.integration!, 'page')
 
     await dest.page(new Context({ type: 'page' }))

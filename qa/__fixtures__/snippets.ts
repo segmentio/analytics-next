@@ -1,4 +1,4 @@
-export function next(writekey: string) {
+export function next(writekey: string, obfuscate: boolean) {
   return `
     <html>
     <head></head>
@@ -57,7 +57,7 @@ export function next(writekey: string) {
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = '${writekey}'
-            analytics.load('${writekey}')
+            analytics.load('${writekey}', { obfuscate: ${obfuscate} })
           }
       })()
     </script>
