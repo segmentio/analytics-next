@@ -138,4 +138,20 @@ describe('Smoke Tests', () => {
 
     compareSchema(results)
   })
+
+  test.concurrent.each(samples)(`obfuscated smoke test`, async (writekey) => {
+    const [url, chrome] = await Promise.all([server(true), browser()])
+    const obfuscatedresults = await run({
+      browser: chrome,
+      script: code,
+      serverURL: url,
+      writeKey: writekey,
+    })
+
+    obfuscatedresults.next.bundleRequestFailures.forEach((result) => {
+      expect(result).toBe(null)
+    })
+
+    compareSchema(obfuscatedresults)
+  })
 })
