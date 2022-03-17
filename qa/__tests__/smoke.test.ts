@@ -137,12 +137,14 @@ describe('Smoke Tests', () => {
     expect(classicCookies['ajs_user_id']).toContain('Test')
 
     compareSchema(results)
+  })
 
-    const [url2, chrome2] = await Promise.all([server(true), browser()])
+  test.concurrent.each(samples)(`obfuscated smoke test`, async (writekey) => {
+    const [url, chrome] = await Promise.all([server(true), browser()])
     const obfuscatedresults = await run({
-      browser: chrome2,
+      browser: chrome,
       script: code,
-      serverURL: url2,
+      serverURL: url,
       writeKey: writekey,
     })
 
