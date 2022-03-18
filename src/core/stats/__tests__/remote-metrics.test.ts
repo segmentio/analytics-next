@@ -80,7 +80,7 @@ describe('remote metrics', () => {
     expect(spy).toHaveBeenCalled()
     expect(spy.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://api.segment.io/v1/m",
+        "https://api.june.so/sdk/m",
         Object {
           "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"npm:next-${version}\\"}}]}",
           "headers": Object {

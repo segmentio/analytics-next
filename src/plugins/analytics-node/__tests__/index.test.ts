@@ -31,37 +31,37 @@ describe('Analytics Node', () => {
     test('fireEvent instantiates the right event types', async () => {
       await ajs.track('track')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/track',
+        'https://api.june.so/sdk/track',
         expect.anything()
       )
 
       await ajs.identify('identify')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/identify',
+        'https://api.june.so/sdk/identify',
         expect.anything()
       )
 
       await ajs.page('page')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/page',
+        'https://api.june.so/sdk/page',
         expect.anything()
       )
 
       await ajs.group('group')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/group',
+        'https://api.june.so/sdk/group',
         expect.anything()
       )
 
       await ajs.alias('alias')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/alias',
+        'https://api.june.so/sdk/alias',
         expect.anything()
       )
 
       await ajs.screen('screen')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/screen',
+        'https://api.june.so/sdk/screen',
         expect.anything()
       )
     })

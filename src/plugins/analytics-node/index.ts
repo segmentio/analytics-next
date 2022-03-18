@@ -17,7 +17,7 @@ export async function post(
   event: SegmentEvent,
   writeKey: string
 ): Promise<SegmentEvent> {
-  const res = await fetch(`https://api.segment.io/v1/${event.type}`, {
+  const res = await fetch(`https://api.june.so/sdk/${event.type}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -17,7 +17,7 @@ async function increment(metric, value = 0, tags = []) {
     userId: 'system',
   }
 
-  return fetch(`https://api.segment.io/v1/track`, {
+  return fetch(`https://api.june.so/sdk/track`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
