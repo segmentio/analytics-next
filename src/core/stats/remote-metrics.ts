@@ -20,7 +20,7 @@ export class RemoteMetrics {
   queue: Metric[]
 
   constructor(options?: MetricsOptions) {
-    this.host = options?.host ?? 'api.segment.io/v1'
+    this.host = options?.host ?? 'api.june.so/sdk'
     this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20

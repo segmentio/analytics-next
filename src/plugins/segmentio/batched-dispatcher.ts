@@ -64,7 +64,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     return fetch(`https://${apiHost}/b`, {
       keepalive: pageUnloaded,
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'application/json',
       },
       method: 'post',
       body: JSON.stringify({ batch, writeKey }),
