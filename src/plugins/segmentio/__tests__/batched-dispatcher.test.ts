@@ -93,7 +93,6 @@ describe('Batching', () => {
           "headers": Object {
             "Content-Type": "text/plain",
           },
-          "keepalive": false,
           "method": "post",
         },
       ]
@@ -153,7 +152,6 @@ describe('Batching', () => {
           "headers": Object {
             "Content-Type": "text/plain",
           },
-          "keepalive": false,
           "method": "post",
         },
       ]
@@ -190,7 +188,6 @@ describe('Batching', () => {
           "headers": Object {
             "Content-Type": "text/plain",
           },
-          "keepalive": false,
           "method": "post",
         },
       ]
@@ -204,7 +201,6 @@ describe('Batching', () => {
           "headers": Object {
             "Content-Type": "text/plain",
           },
-          "keepalive": false,
           "method": "post",
         },
       ]
@@ -212,31 +208,34 @@ describe('Batching', () => {
   })
 
   describe('on unload', () => {
+    let unloadHandler: Function | undefined = undefined
+
+    beforeEach(() => {
+      jest
+        .spyOn(window, 'addEventListener')
+        .mockImplementation((evt, handler) => {
+          if (evt === 'beforeunload') {
+            unloadHandler = handler as Function
+          }
+        })
+    })
+
     it('flushes the batch', async () => {
       const { dispatch } = batch(`https://api.segment.io`)
 
-      dispatch(`https://api.segment.io/v1/t`, {
+      await dispatch(`https://api.segment.io/v1/t`, {
         hello: 'world',
-      }).catch(console.error)
+      })
 
-      dispatch(`https://api.segment.io/v1/t`, {
+      await dispatch(`https://api.segment.io/v1/t`, {
         bye: 'world',
-      }).catch(console.error)
+      })
 
       expect(fetch).not.toHaveBeenCalled()
 
-      window.dispatchEvent(new Event('beforeunload'))
+      unloadHandler?.()
 
       expect(fetch).toHaveBeenCalledTimes(1)
-
-      // any dispatch attempts after the page has unloaded are flushed immediately
-      // this can happen if analytics.track is called right before page is navigated away
-      dispatch(`https://api.segment.io/v1/t`, {
-        afterlife: 'world',
-      }).catch(console.error)
-
-      // no queues, no waiting, instatneous
-      expect(fetch).toHaveBeenCalledTimes(2)
     })
 
     it('flushes in batches of no more than 64kb', async () => {
@@ -254,8 +253,7 @@ describe('Batching', () => {
 
       expect(fetch).not.toHaveBeenCalled()
 
-      window.dispatchEvent(new Event('beforeunload'))
-
+      unloadHandler?.()
       expect(fetch).toHaveBeenCalledTimes(2)
     })
   })

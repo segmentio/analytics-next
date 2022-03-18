@@ -44,13 +44,11 @@ describe('Destination Tests', () => {
     const writeKey = samples[key][0]
 
     const [url, chrome] = await Promise.all([server(), browser()])
-
     const results = await run({
       browser: chrome,
       script: code,
       serverURL: url,
       writeKey,
-      key,
     })
 
     const classicReqs = results.classic.networkRequests

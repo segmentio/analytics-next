@@ -211,18 +211,13 @@ export class EventQueue extends Emitter {
   }
 
   private availableExtensions(denyList: Integrations): PluginsByType {
-    const available = this.plugins.filter((p) => {
-      // Only filter out destination plugins or the Segment.io plugin
-      if (p.type !== 'destination' && p.name !== 'Segment.io') {
-        return true
-      }
-
-      // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
-      return (
-        denyList[p.name] ??
-        (p.name === 'Segment.io' ? true : denyList.All) !== false
-      )
-    })
+    const available =
+      denyList.All === false
+        ? this.plugins.filter(
+            (p) => denyList[p.name] !== undefined || p.type !== 'destination'
+          )
+        : // !== false includes plugins not present on the denyList
+          this.plugins.filter((p) => denyList[p.name] !== false)
 
     const {
       before = [],
