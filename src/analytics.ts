@@ -98,7 +98,6 @@ export class Analytics extends Emitter {
 
   async track(...args: EventParams): Promise<DispatchedEvent> {
     const [name, data, opts, cb] = resolveArguments(...args)
-
     const segmentEvent = this.eventFactory.track(
       name,
       data as SegmentEvent['properties'],
