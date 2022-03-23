@@ -1,6 +1,6 @@
 import { Analytics } from '../../analytics'
 import { groupBy } from '../../lib/group-by'
-import { PriorityQueue } from '../../lib/priority-queue'
+import { ON_REMOVE_FROM_FUTURE, PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { isOnline } from '../connection'
 import { Context, ContextCancelation } from '../context'
@@ -25,7 +25,9 @@ export class EventQueue extends Emitter {
   constructor(priorityQueue?: PriorityQueue<Context>) {
     super()
     this.queue = priorityQueue ?? new PersistedPriorityQueue(4, 'event-queue')
-    this.scheduleFlush()
+    this.queue.on(ON_REMOVE_FROM_FUTURE, () => {
+      this.scheduleFlush(0)
+    })
   }
 
   async register(
@@ -140,8 +142,6 @@ export class EventQueue extends Emitter {
 
           if (this.queue.length) {
             this.scheduleFlush(0)
-          } else {
-            this.scheduleFlush(500)
           }
         }, 0)
       })
