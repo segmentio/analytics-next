@@ -11,16 +11,20 @@ import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
-  let flushed: Context[] = []
-
+  const flushSpy = jest.spyOn(eq, 'flush')
   await pWhile(
     () => eq.queue.length > 0,
     async () => {
-      const res = await eq.flush().catch(() => [])
-      flushed = flushed.concat(res)
+      return new Promise((r) => setTimeout(r, 0))
     }
   )
-  return flushed
+  const results = flushSpy.mock.results.map((r) => r.value)
+  flushSpy.mockClear()
+
+  const flushed = await Promise.all(results)
+  return flushed.reduce((prev, cur) => {
+    return prev.concat(cur)
+  }, [])
 }
 
 const testPlugin: Plugin = {
@@ -97,6 +101,10 @@ test('does not enqueue multiple flushes at once', async () => {
   expect(setTimeout).toHaveBeenCalledTimes(1)
   expect(eq.queue.length).toBe(2)
 
+  // Ensure already enqueued tasks are executed
+  jest.runAllTimers()
+
+  // reset the world to use the real timers
   jest.useRealTimers()
   await flushAll(eq)
 

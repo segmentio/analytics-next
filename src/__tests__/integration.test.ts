@@ -772,9 +772,8 @@ describe('retries', () => {
       { retryQueue: false }
     )
 
-    expect(ajs.queue.queue).toStrictEqual(
-      new PersistedPriorityQueue(1, 'event-queue')
-    )
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBeTruthy()
+    expect(ajs.queue.queue.maxAttempts).toBe(1)
 
     await ajs.queue.register(
       Context.system(),
