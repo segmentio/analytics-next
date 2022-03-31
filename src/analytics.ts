@@ -39,10 +39,8 @@ const _analytics = globalAny.analytics
 
 export interface AnalyticsSettings {
   writeKey: string
-  cdn?: string
   timeout?: number
   plugins?: Plugin[]
-  [key: string]: unknown
 }
 
 export interface InitOptions {

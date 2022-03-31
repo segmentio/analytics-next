@@ -1,5 +1,5 @@
 import { getProcessEnv } from './lib/get-process-env'
-import { getCDN } from './lib/parse-cdn'
+import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
 
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
@@ -60,10 +60,18 @@ export interface AnalyticsBrowserSettings extends AnalyticsSettings {
    * for the source.
    */
   cdnSettings?: LegacySettings & Record<string, unknown>
+  /**
+   * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
+   */
+  cdnURL?: string
 }
 
-export function loadLegacySettings(writeKey: string, cdn?: string): Promise<LegacySettings> {
-  const baseUrl = cdn ?? window.analytics?._cdn ?? getCDN()
+export function loadLegacySettings(
+  writeKey: string,
+  cdnURL?: string
+): Promise<LegacySettings> {
+  const baseUrl = cdnURL ?? getCDN()
+
   return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {
@@ -231,8 +239,11 @@ export class AnalyticsBrowser {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): Promise<[Analytics, Context]> {
+    // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
+    if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
     const legacySettings =
-      settings.cdnSettings ?? (await loadLegacySettings(settings.writeKey, settings.cdn))
+      settings.cdnSettings ??
+      (await loadLegacySettings(settings.writeKey, settings.cdnURL))
 
     const retryQueue: boolean =
       legacySettings.integrations['Segment.io']?.retryQueue ?? true

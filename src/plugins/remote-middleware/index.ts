@@ -5,7 +5,7 @@ import { loadScript } from '../../lib/load-script'
 import { getCDN } from '../../lib/parse-cdn'
 import { MiddlewareFunction } from '../middleware'
 
-const cdn = window.analytics?._cdn ?? getCDN()
+const cdn = getCDN()
 const path = cdn + '/next-integrations'
 
 export async function remoteMiddlewares(

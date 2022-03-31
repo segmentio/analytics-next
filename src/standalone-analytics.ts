@@ -2,23 +2,15 @@ import { Analytics, InitOptions } from './analytics'
 import { AnalyticsBrowser } from './browser'
 import { embeddedWriteKey } from './lib/embedded-write-key'
 
-type FunctionsOf<T> = {
-  [k in keyof T]: T[k] extends Function ? T[k] : never
-}
-
-type AnalyticsMethods = Pick<Analytics, keyof FunctionsOf<Analytics>>
-
-type StandaloneAnalytics = Analytics & {
+export type AnalyticsSnippet = Analytics & {
   _loadOptions?: InitOptions
   _writeKey?: string
   _cdn?: string
-
-  [Symbol.iterator](): Iterator<[keyof AnalyticsMethods, ...unknown[]]>
 }
 
 declare global {
   interface Window {
-    analytics: StandaloneAnalytics
+    analytics: AnalyticsSnippet
   }
 }
 
@@ -61,19 +53,15 @@ function getWriteKey(): string | undefined {
   return writeKey
 }
 
-export function install(): Promise<void> {
+export async function install(): Promise<void> {
   const writeKey = getWriteKey()
+  const options = window.analytics?._loadOptions ?? {}
   if (!writeKey) {
     console.error(
       'Failed to load Write Key. Make sure to use the latest version of the Segment snippet, which can be found in your source settings.'
     )
-    return Promise.resolve()
+    return
   }
 
-  return AnalyticsBrowser.standalone(
-    writeKey,
-    window.analytics?._loadOptions ?? {}
-  ).then((an) => {
-    window.analytics = an as StandaloneAnalytics
-  })
+  window.analytics = await AnalyticsBrowser.standalone(writeKey, options)
 }
