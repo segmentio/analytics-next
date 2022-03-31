@@ -95,6 +95,7 @@ export async function run(params: ComparisonParams) {
     // This forces every timestamp to look exactly the same
     await page.evaluate('Date.prototype.toJSON = () => "<date>";')
     await page.evaluate('Date.prototype.getTime = () => 1614653469;')
+    await page.evaluate('Object.freeze(Date.prototype);')
 
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(`window.analytics.initialized === true`)

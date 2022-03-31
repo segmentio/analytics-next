@@ -72,8 +72,7 @@ export function next(writekey: string, obfuscate: boolean) {
 export function classic(writekey: string) {
   return `
   <html>
-  <head>
-  </head>
+  <head></head>
     <script>!(function () {
     var analytics = (window.analytics = window.analytics || [])
     if (!analytics.initialize)
