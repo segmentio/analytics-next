@@ -9,7 +9,7 @@ declare global {
     }
   }
 }
-
+// Example:  ['hello', 'foo.bar.baz'] -> ['hello', 'foo', 'foo.bar', 'foo.bar.baz']
 function injectAncestorKeys(keys: string[]): string[] {
   const allKeys = new Set(keys)
   for (const key of keys) {
