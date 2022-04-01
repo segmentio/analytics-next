@@ -59,7 +59,17 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
       'properties.url',
 
       'messageId',
-      'anonymousId'
+      'anonymousId',
+
+      // We do an integrations specific check below since 'next'
+      // may have action-destinations that 'classic' does not
+      'integrations'
+    )
+
+    expect((req.data as Record<string, JSONValue>).integrations).toEqual(
+      expect.objectContaining(
+        (classic.data as Record<string, JSONValue>).integrations
+      )
     )
 
     const flatNext = flat(req.data) as Record<string, JSONValue>
