@@ -44,7 +44,8 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 
 export async function remoteLoader(
   settings: LegacySettings,
-  integrations: Integrations
+  integrations: Integrations,
+  obfuscate?: boolean
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
   const cdn = window.analytics?._cdn ?? getCDN()
@@ -57,9 +58,39 @@ export async function remoteLoader(
       )
         return
       try {
-        await loadScript(
-          remotePlugin.url.replace('https://cdn.segment.com', cdn)
-        )
+        if (obfuscate) {
+          const urlToArray = remotePlugin.url.split('/')
+          // Not every url has the full remotePlugin.name in the url, but we know the shape of the url ends with name/bundle
+          const actionName = urlToArray[urlToArray.length - 2]
+          const obfuscatedURL = urlToArray
+            .map((value, index) => {
+              if (actionName === value) {
+                return btoa(value).replace(/=/g, '')
+              }
+              if (index === urlToArray.length - 1) {
+                // bundle file
+                return `${btoa(actionName).replace(/=/g, '')}.js`
+              }
+              return value
+            })
+            .join('/')
+
+          try {
+            await loadScript(
+              obfuscatedURL.replace('https://cdn.segment.com', cdn)
+            )
+          } catch (error) {
+            // Due to syncing concerns it is possible that the obfuscated action destination might not exist at a given point.
+            // We should use the unobfuscated version as a fallback.
+            await loadScript(
+              remotePlugin.url.replace('https://cdn.segment.com', cdn)
+            )
+          }
+        } else {
+          await loadScript(
+            remotePlugin.url.replace('https://cdn.segment.com', cdn)
+          )
+        }
 
         const libraryName = remotePlugin.libraryName
 
