@@ -21,6 +21,7 @@ function withTag(tag: string) {
   })
 
   const windowSpy = jest.spyOn(global, 'window', 'get')
+
   const documentSpy = jest.spyOn(global, 'document', 'get')
 
   jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
@@ -42,6 +43,25 @@ beforeEach(async () => {
 it('detects the existing segment cdn', () => {
   withTag(`
     <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+  `)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
+})
+
+it('should return the overridden cdn if window.analytics._cdn is mutated', () => {
+  withTag(`
+  <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+  `)
+  ;(window.analytics as any) = {
+    _cdn: 'http://foo.cdn.com',
+  }
+  expect(getCDN()).toMatchInlineSnapshot(`"http://foo.cdn.com"`)
+})
+
+it('if analytics is not loaded yet, should still return cdn', () => {
+  // is this an impossible state?
+  window.analytics = undefined as any
+  withTag(`
+  <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
   expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
 })

@@ -41,7 +41,6 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: Plugin[]
-  [key: string]: unknown
 }
 
 export interface InitOptions {

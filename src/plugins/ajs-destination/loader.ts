@@ -6,7 +6,7 @@ import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
-const cdn = window.analytics?._cdn ?? getCDN()
+const cdn = getCDN()
 const path = cdn + '/next-integrations'
 
 function normalizeName(name: string): string {
