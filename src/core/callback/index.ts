@@ -23,15 +23,16 @@ function sleep(timeoutInMs: number): Promise<void> {
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
+/**
+ * @param delayTimeout - The amount of time in ms to wait before invoking the callback.
+ * @param timeout - The maximum amount of time in ms to allow the callback to run for.
+ */
 export function invokeCallback(
   ctx: Context,
-  callback?: Callback,
+  callback: Callback,
+  delayTimeout: number,
   timeout?: number
 ): Promise<Context> {
-  if (!callback) {
-    return Promise.resolve(ctx)
-  }
-
   const cb = () => {
     try {
       return asPromise(callback(ctx))
@@ -41,7 +42,7 @@ export function invokeCallback(
   }
 
   return (
-    sleep(timeout ?? 300)
+    sleep(delayTimeout)
       // pTimeout ensures that the callback can't cause the context to hang
       .then(() => pTimeout(cb(), timeout ?? 1000))
       .catch((err) => {

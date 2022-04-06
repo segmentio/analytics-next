@@ -323,7 +323,8 @@ export class Analytics extends Emitter {
       dispatched = await invokeCallback(
         dispatched,
         callback,
-        Math.max((this.settings.timeout ?? 300) - elapsedTime, 0)
+        Math.max((this.settings.timeout ?? 300) - elapsedTime, 0),
+        this.settings.timeout
       )
     }
     if (this._debug) {

@@ -12,18 +12,9 @@ describe(invokeCallback, () => {
     })
 
     const fn = jest.fn()
-    const returned = await invokeCallback(ctx, fn)
+    const returned = await invokeCallback(ctx, fn, 0)
 
     expect(fn).toHaveBeenCalledWith(ctx)
-    expect(returned).toBe(ctx)
-  })
-
-  it('ignores unexisting callbacks', async () => {
-    const ctx = new Context({
-      type: 'track',
-    })
-
-    const returned = await invokeCallback(ctx)
     expect(returned).toBe(ctx)
   })
 
@@ -58,7 +49,7 @@ describe(invokeCallback, () => {
       })
     }
 
-    const returned = await invokeCallback(ctx, slow, 50)
+    const returned = await invokeCallback(ctx, slow, 0, 50)
     expect(returned).toBe(ctx)
 
     const logs = returned.logs()
@@ -80,7 +71,7 @@ describe(invokeCallback, () => {
       throw new Error('👻 boo!')
     }
 
-    const returned = await invokeCallback(ctx, boo)
+    const returned = await invokeCallback(ctx, boo, 0)
     expect(returned).toBe(ctx)
 
     const logs = returned.logs()
