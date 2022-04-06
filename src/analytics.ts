@@ -309,18 +309,21 @@ export class Analytics extends Emitter {
       return ctx
     }
 
+    const startTime = Date.now()
     let dispatched: Context
     if (this.queue.isEmpty()) {
       dispatched = await this.queue.dispatchSingle(ctx)
     } else {
       dispatched = await this.queue.dispatch(ctx)
     }
+    const endTime = Date.now()
+    const elapsedTime = endTime - startTime
 
     if (callback) {
       dispatched = await invokeCallback(
         dispatched,
         callback,
-        this.settings.timeout
+        Math.max((this.settings.timeout ?? 300) - elapsedTime, 0)
       )
     }
     if (this._debug) {
