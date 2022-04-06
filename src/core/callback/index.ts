@@ -17,6 +17,10 @@ export function pTimeout(
   })
 }
 
+function sleep(timeoutInMs: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
+}
+
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 export function invokeCallback(
@@ -36,10 +40,14 @@ export function invokeCallback(
     }
   }
 
-  return pTimeout(cb(), timeout ?? 1000)
-    .catch((err) => {
-      ctx?.log('warn', 'Callback Error', { error: err })
-      ctx?.stats.increment('callback_error')
-    })
-    .then(() => ctx)
+  return (
+    sleep(timeout ?? 300)
+      // pTimeout ensures that the callback can't cause the context to hang
+      .then(() => pTimeout(cb(), timeout ?? 1000))
+      .catch((err) => {
+        ctx?.log('warn', 'Callback Error', { error: err })
+        ctx?.stats.increment('callback_error')
+      })
+      .then(() => ctx)
+  )
 }
