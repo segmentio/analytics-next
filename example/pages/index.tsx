@@ -36,6 +36,7 @@ const jsontheme = {
   base0F: '#a3685a',
 }
 
+// This function runs on dependency change but not on initial render.
 const useDidMountEffect = (func, deps) => {
   const didMount = useRef(false)
 
