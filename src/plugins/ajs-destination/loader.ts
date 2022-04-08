@@ -1,13 +1,10 @@
 import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
-import { getCDN } from '../../lib/parse-cdn'
+import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
-
-const cdn = getCDN()
-const path = cdn + '/next-integrations'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
@@ -42,6 +39,7 @@ export async function loadIntegration(
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
+  const path = getNextIntegrationsURL()
 
   const fullPath = `${path}/integrations/${
     obfuscatedPathName ?? pathName
@@ -88,6 +86,7 @@ export async function unloadIntegration(
   version: string,
   obfuscate?: boolean
 ): Promise<void> {
+  const path = getNextIntegrationsURL()
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(name, obfuscate)
 

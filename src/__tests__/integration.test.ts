@@ -12,6 +12,7 @@ import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
+import { getCDN } from '../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -174,6 +175,26 @@ describe('Initialization', () => {
 
     await sleep(200)
     expect(ready).toHaveBeenCalled()
+  })
+  describe('cdn', () => {
+    it('should get the correct CDN in plugins if the CDN overridden', async () => {
+      const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
+      await AnalyticsBrowser.load({
+        cdnURL: overriddenCDNUrl,
+        writeKey,
+        plugins: [
+          {
+            ...xt,
+            load: async () => {
+              expect(window.analytics).toBeUndefined()
+              expect(getCDN()).toContain(overriddenCDNUrl)
+            },
+          },
+        ],
+      })
+      expect(fetchCalls[0][0]).toContain(overriddenCDNUrl)
+      expect.assertions(3)
+    })
   })
 
   it('calls page if initialpageview is set', async () => {

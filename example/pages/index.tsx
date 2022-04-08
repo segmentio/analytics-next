@@ -7,6 +7,8 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
+import { useLocalStorage } from '../utils/hooks/useLocalStorage'
+import { useDidMountEffect } from '../utils/hooks/useDidMountEffect'
 
 import {
   AnalyticsBrowserSettings,
@@ -36,24 +38,20 @@ const jsontheme = {
   base0F: '#a3685a',
 }
 
-// This function runs on dependency change but not on initial render.
-const useDidMountEffect = (func, deps) => {
-  const didMount = useRef(false)
-
-  useEffect(() => {
-    if (didMount.current) func()
-    else didMount.current = true
-  }, deps)
-}
-
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
   const [settings, setSettings] = useState<
     AnalyticsBrowserSettings | undefined
   >(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useState<string>('')
-  const [url, setURL] = useState<string>('https://cdn.segment.com')
+  const [writeKey, setWriteKey] = useLocalStorage(
+    'segment_playground_write_key',
+    ''
+  )
+  const [url, setURL] = useLocalStorage(
+    'segment_playground_cdn_url',
+    'https://cdn.segment.com'
+  )
 
   useDidMountEffect(() => {
     fetchAnalytics()
@@ -86,18 +84,23 @@ export default function Home(): React.ReactElement {
   const [ctx, setCtx] = React.useState<Context>()
 
   async function fetchAnalytics() {
-    const [response, ctx] = await AnalyticsBrowser.load({
-      ...settings,
-      writeKey,
-    })
-
-    if (response) {
+    try {
+      const [response, ctx] = await AnalyticsBrowser.load({
+        ...settings,
+        writeKey,
+      })
       setCtx(ctx)
       setAnalytics(response)
       setAnalyticsReady(true)
       setEvent(newEvent())
       // @ts-ignore
       window.analytics = response
+    } catch (err) {
+      console.error(err)
+      setCtx(undefined)
+      setAnalytics(undefined)
+      setAnalyticsReady(false)
+      setEvent('')
     }
   }
 
