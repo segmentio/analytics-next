@@ -8,7 +8,13 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 
-import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
+import {
+  AnalyticsSettings,
+  AnalyticsBrowser,
+  Analytics,
+  Context,
+  AnalyticsBrowserSettings,
+} from '../../'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -73,10 +79,14 @@ function useLocalStorage<T extends any>(key: string, initialValue: T) {
 
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [settings, setSettings] = useState<AnalyticsSettings | undefined>(
-    undefined
-  )
   const [writeKey, setWriteKey] = useLocalStorage<string>('__dev_writeKey', '')
+  const [settings, setSettings] = useState<
+    AnalyticsBrowserSettings | undefined
+  >({
+    writeKey,
+    cdnURL: 'https://cdn.segment.com',
+  })
+
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
 
   const newEvent = () => {
