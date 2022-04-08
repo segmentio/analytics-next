@@ -17,14 +17,17 @@ const getCDNUrlFromScriptTag = (): string | undefined => {
   return cdn
 }
 
+let _globalCDN: string | undefined // set globalCDN as in-memory singleton
 const getGlobalCDNUrl = (): string | undefined => {
-  return window.analytics?._cdn
+  const result = _globalCDN ?? window.analytics?._cdn
+  return result
 }
 
 export const setGlobalCDNUrl = (cdn: string) => {
   if (window.analytics) {
     window.analytics._cdn = cdn
   }
+  _globalCDN = cdn
 }
 
 export const getCDN = (): string => {
@@ -43,6 +46,11 @@ export const getCDN = (): string => {
     // in this case, we fall back to the default Segment CDN
     return `https://cdn.segment.com`
   }
+}
+
+export const getNextIntegrationsURL = () => {
+  const cdn = getCDN()
+  return `${cdn}/next-integrations`
 }
 
 /**

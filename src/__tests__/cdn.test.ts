@@ -1,6 +1,7 @@
 import { AnalyticsBrowser } from '..'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
+import { setGlobalCDNUrl } from '../lib/parse-cdn'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -15,10 +16,14 @@ const settingsResponse = Promise.resolve({
     }),
 }) as Promise<Response>
 
+afterEach(() => {
+  setGlobalCDNUrl(undefined as any)
+})
+
 mocked(unfetch).mockImplementation(() => settingsResponse)
 
 it('supports overriding the CDN', async () => {
-  const mockCdn = 'https://cdn.foo.com'
+  const mockCdn = 'https://cdn.foobar.com'
 
   await AnalyticsBrowser.load({
     writeKey,

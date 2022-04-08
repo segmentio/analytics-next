@@ -30,7 +30,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "24.7 KB"
+      "limit": "24.8 KB"
     }
   ],
   "prettier": {
