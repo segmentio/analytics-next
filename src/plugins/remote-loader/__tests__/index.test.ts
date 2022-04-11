@@ -54,7 +54,7 @@ describe('Remote Loader', () => {
     )
     const btoaName = btoa('to').replace(/=/g, '')
     expect(loader.loadScript).toHaveBeenCalledWith(
-      `cdn/path/${btoaName}/${btoaName}.js`
+      `cdn/path/${btoaName}/file.js`
     )
   })
 

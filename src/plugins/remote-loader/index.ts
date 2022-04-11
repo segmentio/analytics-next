@@ -59,28 +59,18 @@ export async function remoteLoader(
         return
       try {
         if (obfuscate) {
-          const urlToArray = remotePlugin.url.split('/')
-          // Not every url has the full remotePlugin.name in the url, but we know the shape of the url ends with name/bundle
-          const actionName = urlToArray[urlToArray.length - 2]
-          const obfuscatedURL = urlToArray
-            .map((value, index) => {
-              if (actionName === value) {
-                return btoa(value).replace(/=/g, '')
-              }
-              if (index === urlToArray.length - 1) {
-                // bundle file
-                return `${btoa(actionName).replace(/=/g, '')}.js`
-              }
-              return value
-            })
-            .join('/')
-
+          const urlSplit = remotePlugin.url.split('/')
+          const name = urlSplit[urlSplit.length - 2]
+          const obfuscatedURL = remotePlugin.url.replace(
+            name,
+            btoa(name).replace(/=/g, '')
+          )
           try {
             await loadScript(
               obfuscatedURL.replace('https://cdn.segment.com', cdn)
             )
           } catch (error) {
-            // Due to syncing concerns it is possible that the obfuscated action destination might not exist at a given point.
+            // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
             // We should use the unobfuscated version as a fallback.
             await loadScript(
               remotePlugin.url.replace('https://cdn.segment.com', cdn)
