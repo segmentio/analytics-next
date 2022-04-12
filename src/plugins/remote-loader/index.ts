@@ -48,7 +48,7 @@ export async function remoteLoader(
   obfuscate?: boolean
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
-  const cdn = window.analytics?._cdn ?? getCDN()
+  const cdn = getCDN()
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {

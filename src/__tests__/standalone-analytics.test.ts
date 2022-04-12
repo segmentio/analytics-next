@@ -1,7 +1,7 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
-import { install } from '../standalone-analytics'
+import { install, AnalyticsSnippet } from '../standalone-analytics'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
@@ -29,8 +29,6 @@ jest.mock('../analytics', () => ({
     },
   }),
 }))
-
-import { Analytics } from '../analytics'
 
 const fetchSettings = Promise.resolve({
   json: () =>
@@ -103,7 +101,7 @@ describe('standalone bundle', () => {
 
     const spy = jest
       .spyOn(AnalyticsBrowser, 'standalone')
-      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+      .mockResolvedValueOnce(fakeAjs as AnalyticsSnippet)
 
     await install()
 
@@ -118,7 +116,7 @@ describe('standalone bundle', () => {
     }
     const spy = jest
       .spyOn(AnalyticsBrowser, 'standalone')
-      .mockResolvedValueOnce((fakeAjs as unknown) as Analytics)
+      .mockResolvedValueOnce(fakeAjs as AnalyticsSnippet)
 
     await install()
 
@@ -134,6 +132,17 @@ describe('standalone bundle', () => {
     expect(unfetch).toHaveBeenCalledWith(
       'https://cdn.foo.com/v1/projects/foo/settings'
     )
+  })
+
+  it('is capable of having the CDN overridden', async () => {
+    // @ts-ignore ignore Response required fields
+    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    const mockCdn = 'http://my-overridden-cdn.com'
+
+    window.analytics._cdn = mockCdn
+    await loadLegacySettings(segmentDotCom)
+
+    expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
 
   it('runs any buffered operations after load', async (done) => {
