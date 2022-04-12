@@ -44,7 +44,8 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 
 export async function remoteLoader(
   settings: LegacySettings,
-  integrations: Integrations
+  integrations: Integrations,
+  obfuscate?: boolean
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
   const cdn = getCDN()
@@ -57,9 +58,29 @@ export async function remoteLoader(
       )
         return
       try {
-        await loadScript(
-          remotePlugin.url.replace('https://cdn.segment.com', cdn)
-        )
+        if (obfuscate) {
+          const urlSplit = remotePlugin.url.split('/')
+          const name = urlSplit[urlSplit.length - 2]
+          const obfuscatedURL = remotePlugin.url.replace(
+            name,
+            btoa(name).replace(/=/g, '')
+          )
+          try {
+            await loadScript(
+              obfuscatedURL.replace('https://cdn.segment.com', cdn)
+            )
+          } catch (error) {
+            // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
+            // We should use the unobfuscated version as a fallback.
+            await loadScript(
+              remotePlugin.url.replace('https://cdn.segment.com', cdn)
+            )
+          }
+        } else {
+          await loadScript(
+            remotePlugin.url.replace('https://cdn.segment.com', cdn)
+          )
+        }
 
         const libraryName = remotePlugin.libraryName
 

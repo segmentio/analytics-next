@@ -36,6 +36,28 @@ describe('Remote Loader', () => {
     expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js')
   })
 
+  it('should attempt to load a script from the obfuscated url of each remotePlugin', async () => {
+    await remoteLoader(
+      {
+        integrations: {},
+        remotePlugins: [
+          {
+            name: 'remote plugin',
+            url: 'cdn/path/to/file.js',
+            libraryName: 'testPlugin',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      true
+    )
+    const btoaName = btoa('to').replace(/=/g, '')
+    expect(loader.loadScript).toHaveBeenCalledWith(
+      `cdn/path/${btoaName}/file.js`
+    )
+  })
+
   it('should attempt to load a script from a custom CDN', async () => {
     window.analytics = {}
     window.analytics._cdn = 'foo.com'

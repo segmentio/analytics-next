@@ -180,7 +180,8 @@ async function registerPlugins(
   const mergedSettings = mergedOptions(legacySettings, options)
   const remotePlugins = await remoteLoader(
     legacySettings,
-    analytics.integrations
+    analytics.integrations,
+    options.obfuscate
   ).catch(() => [])
 
   const toRegister = [
