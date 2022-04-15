@@ -2,7 +2,6 @@ import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
 import { Analytics } from '../../analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
-import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
@@ -62,7 +61,7 @@ export function utm(query: string): Record<string, string> {
       if (utmParam === 'campaign') {
         utmParam = 'name'
       }
-      acc[utmParam] = gracefulDecodeURIComponent(v)
+      acc[utmParam] = decodeURIComponent(v.replace(/\+/g, ' '))
     }
     return acc
   }, {} as Record<string, string>)

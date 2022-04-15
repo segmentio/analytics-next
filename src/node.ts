@@ -9,6 +9,8 @@ import { PriorityQueue } from './lib/priority-queue'
 export class AnalyticsNode {
   static async load(settings: {
     writeKey: string
+    apiHost?: string
+    httpScheme?: string
   }): Promise<[Analytics, Context]> {
     const cookieOptions = {
       persist: false,
@@ -20,6 +22,8 @@ export class AnalyticsNode {
 
     const nodeSettings = {
       writeKey: settings.writeKey,
+      apiHost: settings.apiHost ?? "api.june.so/sdk",
+      httpScheme: settings.httpScheme ?? "https",
       name: 'analytics-node-next',
       type: 'after' as Plugin['type'],
       version: 'latest',

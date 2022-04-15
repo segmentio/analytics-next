@@ -155,13 +155,9 @@ export interface SegmentEvent {
  * A Plan allows users to specify events and which destinations they would like them to be sent to
  */
 export interface Plan {
-  track?: TrackPlan
-}
-
-export interface TrackPlan {
-  [key: string]: PlanEvent | undefined
-  // __default SHOULD always exist, but marking as optional for extra safety.
-  __default?: PlanEvent
+  track?: {
+    [key: string]: PlanEvent
+  }
 }
 
 export interface PlanEvent {
@@ -175,36 +171,4 @@ export interface PlanEvent {
   integrations: {
     [key: string]: boolean
   }
-}
-
-export interface ReservedTraits {
-  address: Partial<{
-    city: string
-    country: string
-    postalCode: string
-    state: string
-    street: string
-  }>
-  age: number
-  avatar: string
-  birthday: Date
-  company: Partial<{
-    name: string
-    id: string | number
-    industry: string
-    employee_count: number
-  }>
-  plan: string
-  createdAt: Date
-  description: string
-  email: string
-  firstName: string
-  gender: string
-  id: string
-  lastName: string
-  name: string
-  phone: string
-  title: string
-  username: string
-  website: string
 }

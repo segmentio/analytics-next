@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
+import { getCDN } from './lib/parse-cdn'
 import { setVersionType } from './plugins/segmentio/normalize'
 
 if (process.env.ASSET_PATH) {
@@ -8,8 +8,8 @@ if (process.env.ASSET_PATH) {
     // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
   } else {
-    const cdn = getCDN()
-    setGlobalCDNUrl(cdn)
+    const cdn = window.analytics?._cdn ?? getCDN()
+    if (window.analytics) window.analytics._cdn = cdn
 
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/camelcase
@@ -35,6 +35,7 @@ function onError(err?: Error) {
     'type:initialization',
     `message:${err?.message}`,
     `name:${err?.name}`,
+    `host:${window.location.hostname}`,
     `wk:${embeddedWriteKey()}`,
   ])
 }

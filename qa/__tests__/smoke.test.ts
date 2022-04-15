@@ -59,17 +59,7 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
       'properties.url',
 
       'messageId',
-      'anonymousId',
-
-      // We do an integrations specific check below since 'next'
-      // may have action-destinations that 'classic' does not
-      'integrations'
-    )
-
-    expect((req.data as Record<string, JSONValue>).integrations).toEqual(
-      expect.objectContaining(
-        (classic.data as Record<string, JSONValue>).integrations
-      )
+      'anonymousId'
     )
 
     const flatNext = flat(req.data) as Record<string, JSONValue>
@@ -147,21 +137,5 @@ describe('Smoke Tests', () => {
     expect(classicCookies['ajs_user_id']).toContain('Test')
 
     compareSchema(results)
-  })
-
-  test.concurrent.each(samples)(`obfuscated smoke test`, async (writekey) => {
-    const [url, chrome] = await Promise.all([server(true), browser()])
-    const obfuscatedresults = await run({
-      browser: chrome,
-      script: code,
-      serverURL: url,
-      writeKey: writekey,
-    })
-
-    obfuscatedresults.next.bundleRequestFailures.forEach((result) => {
-      expect(result).toBe(null)
-    })
-
-    compareSchema(obfuscatedresults)
   })
 })

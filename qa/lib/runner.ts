@@ -22,11 +22,9 @@ export async function run(params: ComparisonParams) {
     const bundleRequests: Array<string> = []
     const context = await browser.newContext()
     const page = await context.newPage()
-    const bundleRequestFailures: Array<any> = []
 
     page.route('**', async (route) => {
       const request = route.request()
-
       if (
         request.url().includes('cdn.segment') ||
         request.url().includes('cdn-settings') ||
@@ -34,9 +32,6 @@ export async function run(params: ComparisonParams) {
         request.url().includes('unpkg')
       ) {
         bundleRequests.push(request.url())
-        if (request.url().includes('next-integration')) {
-          bundleRequestFailures.push(request.failure())
-        }
         route.continue().catch(console.error)
         return
       }
@@ -95,11 +90,12 @@ export async function run(params: ComparisonParams) {
     // This forces every timestamp to look exactly the same
     await page.evaluate('Date.prototype.toJSON = () => "<date>";')
     await page.evaluate('Date.prototype.getTime = () => 1614653469;')
-    await page.evaluate('Object.freeze(Date.prototype);')
 
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(`window.analytics.initialized === true`)
+
     const codeEvaluation = await page.evaluate(execution)
+
     const cookies = await context.cookies()
     const localStorage: Record<string, string | null> = await page.evaluate(
       () => {
@@ -109,6 +105,7 @@ export async function run(params: ComparisonParams) {
         }, {} as Record<string, string | null>)
       }
     )
+
     await page.waitForLoadState('networkidle')
     const metrics = await getMetrics(page)
 
@@ -121,7 +118,6 @@ export async function run(params: ComparisonParams) {
       codeEvaluation,
       metrics,
       bundleRequests,
-      bundleRequestFailures,
     }
   }
 

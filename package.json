@@ -1,16 +1,14 @@
 {
   "name": "@june-so/analytics-next",
+<<<<<<< HEAD
   "version": "1.36.4",
+=======
+  "version": "1.36.3",
+>>>>>>> 00ee5c2 (Downgrade everything to the work Sergio did)
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/pkg/index.js",
   "types": "dist/pkg/index.d.ts",
-  "browser": {
-    "./dist/cjs/node": "dist/cjs/node.browser.js",
-    "./dist/cjs/node.js": "dist/cjs/node.browser.js",
-    "./dist/pkg/node.js": "dist/pkg/node.browser.js",
-    "./dist/pkg/node": "./dist/pkg/node.browser.js"
-  },
   "files": [
     "dist/",
     "src/"
@@ -18,7 +16,7 @@
   "sideEffects": false,
   "scripts": {
     "build-prep": "echo \"// This file is generated.\\nexport const version = '$npm_package_version'\" > src/generated/version.ts",
-    "version": "npm run build-prep && git add src/generated/version.ts",
+    "version": "npm run build-prep",
     "umd": "webpack",
     "pkg": "tsc",
     "cjs": "tsc -p tsconfig.cjs.json",
@@ -30,7 +28,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "24.9 KB"
+      "limit": "24.7 KB"
     }
   ],
   "prettier": {
@@ -54,11 +52,12 @@
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
-    "@segment/facade": "^3.4.9",
-    "@segment/tsub": "^0.1.10",
+    "@segment/facade": "3.4.7",
+    "@segment/tsub": "^0.1.9",
     "dset": "^3.0.0",
+    "encoding": "^0.1.13",
     "js-cookie": "^2.2.1",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.6.1",
     "spark-md5": "^3.0.1",
     "tslib": "^2.1.0",
     "unfetch": "^4.1.0"
@@ -113,10 +112,10 @@
     "log-update": "^4.0.0",
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
-    "ngrok": "^3.3.0",
+    "ngrok": "^4.1.0",
     "np": "^7.5.0",
     "p-map": "^4.0.0",
-    "playwright": "^1.20.0",
+    "playwright": "^1.17.0",
     "prettier": "^2.0.2",
     "serve": "^12.0.0",
     "serve-handler": "^6.1.3",
@@ -133,10 +132,5 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.8.0",
     "yarn": "^1.22.10"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   }
 }

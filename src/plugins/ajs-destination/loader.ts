@@ -1,17 +1,16 @@
 import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
-import { getNextIntegrationsURL } from '../../lib/parse-cdn'
+import { getCDN } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
+const cdn = window.analytics?._cdn ?? getCDN()
+const path = cdn + '/next-integrations'
+
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
-}
-
-function obfuscatePathName(pathName: string, obfuscate = false): string | void {
-  return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
@@ -34,16 +33,10 @@ export async function loadIntegration(
   analyticsInstance: Analytics,
   name: string,
   version: string,
-  settings?: { [key: string]: any },
-  obfuscate?: boolean
+  settings?: object
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
-  const path = getNextIntegrationsURL()
-
-  const fullPath = `${path}/integrations/${
-    obfuscatedPathName ?? pathName
-  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
+  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
@@ -83,18 +76,12 @@ export async function loadIntegration(
 
 export async function unloadIntegration(
   name: string,
-  version: string,
-  obfuscate?: boolean
+  version: string
 ): Promise<void> {
-  const path = getNextIntegrationsURL()
   const pathName = normalizeName(name)
-  const obfuscatedPathName = obfuscatePathName(name, obfuscate)
-
-  const fullPath = `${path}/integrations/${
-    obfuscatedPathName ?? pathName
-  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
-
-  return unloadScript(fullPath)
+  return unloadScript(
+    `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  )
 }
 
 export function resolveVersion(

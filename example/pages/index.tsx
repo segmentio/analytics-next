@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
@@ -7,15 +7,9 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
-import { useLocalStorage } from '../utils/hooks/useLocalStorage'
-import { useDidMountEffect } from '../utils/hooks/useDidMountEffect'
 
-import {
-  AnalyticsBrowserSettings,
-  AnalyticsBrowser,
-  Analytics,
-  Context,
-} from '../../'
+import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
+import { CONFIG_BROWSER } from '../config'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -40,22 +34,11 @@ const jsontheme = {
 
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [settings, setSettings] = useState<
-    AnalyticsBrowserSettings | undefined
-  >(undefined)
+  const [settings, setSettings] = useState<AnalyticsSettings | undefined>(
+    undefined
+  )
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useLocalStorage(
-    'segment_playground_write_key',
-    ''
-  )
-  const [url, setURL] = useLocalStorage(
-    'segment_playground_cdn_url',
-    'https://cdn.segment.com'
-  )
-
-  useDidMountEffect(() => {
-    fetchAnalytics()
-  }, [settings])
+  const [writeKey, setWriteKey] = useState<string>('')
 
   const newEvent = () => {
     const fakerFns = [
@@ -84,23 +67,19 @@ export default function Home(): React.ReactElement {
   const [ctx, setCtx] = React.useState<Context>()
 
   async function fetchAnalytics() {
-    try {
-      const [response, ctx] = await AnalyticsBrowser.load({
-        ...settings,
-        writeKey,
-      })
+    const [response, ctx] = await AnalyticsBrowser.load({
+      ...settings,
+      writeKey,
+     ...CONFIG_BROWSER
+    })
+
+    if (response) {
       setCtx(ctx)
       setAnalytics(response)
       setAnalyticsReady(true)
       setEvent(newEvent())
       // @ts-ignore
       window.analytics = response
-    } catch (err) {
-      console.error(err)
-      setCtx(undefined)
-      setAnalytics(undefined)
-      setAnalyticsReady(false)
-      setEvent('')
     }
   }
 
@@ -134,6 +113,58 @@ export default function Home(): React.ReactElement {
     ctx.flush()
   }
 
+  const group = async (e) => {
+    e.preventDefault()
+
+    if (!analyticsReady) {
+      console.log('not ready yet')
+    }
+
+    const evt = JSON.parse(event)
+    const ctx = await analytics.group('UNIVAC Working Group', {
+      principles: ['Eckert', 'Mauchly'],
+      site: 'Eckert–Mauchly Computer Corporation',
+      statedGoals: 'Develop the first commercial computer',
+      industry: 'Technology'
+    });
+
+    setCtx(ctx)
+
+    ctx.flush()
+  }
+
+  const nodeTest = async (e) => {
+    e.preventDefault()
+
+    if (!analyticsReady) {
+      console.log('not ready yet')
+    }
+
+    const ctx = await fetch(`/api/test-node?writeKey=${writeKey}`);
+
+    console.table(ctx)
+    alert(JSON.stringify(ctx.json()))
+  }
+
+  const testPage = async (e) => {
+    e.preventDefault()
+
+    if (!analyticsReady) {
+      console.log('not ready yet')
+    }
+
+    const ctx = await analytics.page('Pricing', {
+      title: 'Segment Pricing',
+      url: 'https://segment.com/pricing',
+      path: '/pricing',
+      referrer: 'https://segment.com/warehouses'
+    });
+
+    setCtx(ctx)
+
+    ctx.flush()
+  }
+
   return (
     <div className="drac-spacing-md-x">
       <Head>
@@ -141,24 +172,16 @@ export default function Home(): React.ReactElement {
       </Head>
 
       <h1 className="drac-text">
-        <span className="drac-text-purple-cyan">Analytics Next</span> Tester
+        June SDK Tester
       </h1>
 
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          setSettings({ cdnURL: url, writeKey: writeKey })
+          setSettings({ writeKey: writeKey })
+          fetchAnalytics()
         }}
       >
-        <label>
-          CDN:
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setURL(e.target.value)}
-          />
-        </label>{' '}
-        <br />
         <label>
           Writekey:
           <input
@@ -222,6 +245,40 @@ export default function Home(): React.ReactElement {
             >
               Identify
             </button>
+
+            <button
+              style={{
+                marginRight: 20,
+              }}
+              className="drac-btn drac-bg-purple-cyan"
+              disabled={!analyticsReady}
+              onClick={(e) => group(e)}
+            >
+              Test Group
+            </button>
+
+            <button
+              style={{
+                marginRight: 20,
+              }}
+              className="drac-btn drac-bg-purple-cyan"
+              disabled={!analyticsReady}
+              onClick={(e) => testPage(e)}
+            >
+              Test Page
+            </button>
+
+            <button
+              style={{
+                marginRight: 20,
+              }}
+              className="drac-btn drac-bg-purple-cyan"
+              disabled={!analyticsReady}
+              onClick={(e) => nodeTest(e)}
+            >
+              Test NodeJS
+            </button>
+
 
             <button
               id="shuffle"

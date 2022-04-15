@@ -82,22 +82,6 @@ describe('track helpers', () => {
       mockTrack.mockImplementation(Analytics.prototype.track)
     })
 
-    it('should respect options object', async () => {
-      await analytics.trackLink(
-        link!,
-        'foo',
-        {},
-        { context: { ip: '0.0.0.0' } }
-      )
-      link.click()
-
-      expect(mockTrack).toHaveBeenCalledWith(
-        'foo',
-        {},
-        { context: { ip: '0.0.0.0' } }
-      )
-    })
-
     it('should stay on same page with blank href', async () => {
       link.href = ''
       await analytics.trackLink(link!, 'foo')
@@ -310,17 +294,6 @@ describe('track helpers', () => {
       })
       submit.click()
       expect(mockTrack).not.toBeCalled()
-    })
-
-    it('should respect options object', async () => {
-      await analytics.trackForm(form, 'foo', {}, { context: { ip: '0.0.0.0' } })
-      submit.click()
-
-      expect(mockTrack).toHaveBeenCalledWith(
-        'foo',
-        {},
-        { context: { ip: '0.0.0.0' } }
-      )
     })
 
     it('should trigger a track on a form submit', async () => {
