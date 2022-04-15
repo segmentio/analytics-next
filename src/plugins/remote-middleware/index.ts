@@ -2,30 +2,26 @@ import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
-import { getNextIntegrationsURL } from '../../lib/parse-cdn'
+import { getCDN } from '../../lib/parse-cdn'
 import { MiddlewareFunction } from '../middleware'
+
+const cdn = window.analytics?._cdn ?? getCDN()
+const path = cdn + '/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,
-  settings: LegacySettings,
-  obfuscate?: boolean
+  settings: LegacySettings
 ): Promise<MiddlewareFunction[]> {
   if (isServer()) {
     return []
   }
-  const path = getNextIntegrationsURL()
+
   const remoteMiddleware = settings.enabledMiddleware ?? {}
-  const names = Object.entries(remoteMiddleware)
-    .filter(([_, enabled]) => enabled)
-    .map(([name]) => name)
+  const names = Object.keys(remoteMiddleware)
 
   const scripts = names.map(async (name) => {
     const nonNamespaced = name.replace('@segment/', '')
-    let bundleName = nonNamespaced
-    if (obfuscate) {
-      bundleName = btoa(nonNamespaced).replace(/=/g, '')
-    }
-    const fullPath = `${path}/middleware/${bundleName}/latest/${bundleName}.js.gz`
+    const fullPath = `${path}/middleware/${nonNamespaced}/latest/${nonNamespaced}.js.gz`
 
     try {
       await loadScript(fullPath)

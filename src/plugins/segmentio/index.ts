@@ -54,8 +54,10 @@ export function segmentio(
   )
   const flushing = false
 
-  const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
-  const remote = `https://${apiHost}`
+  const apiHost = settings?.apiHost ?? 'api.june.so/sdk'
+  const remote = apiHost.includes('localhost')
+    ? `http://${apiHost}`
+    : `https://${apiHost}`
 
   const client =
     settings?.deliveryStrategy?.strategy === 'batching'
@@ -70,7 +72,7 @@ export function segmentio(
       return ctx
     }
 
-    const path = ctx.event.type.charAt(0)
+    const path = ctx.event.type //.charAt(0)
     let json = toFacade(ctx.event).json()
 
     if (ctx.event.type === 'track') {

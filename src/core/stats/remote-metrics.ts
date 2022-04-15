@@ -20,7 +20,8 @@ export class RemoteMetrics {
   queue: Metric[]
 
   constructor(options?: MetricsOptions) {
-    this.host = options?.host ?? 'api.segment.io/v1'
+    // This works only in the browser.
+    this.host = options?.host ?? 'api.june.so/sdk'
     this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20
@@ -105,11 +106,11 @@ export class RemoteMetrics {
     })
   }
 
-  private async send(): Promise<Response> {
+  private async send(): Promise<any> {
     const payload = { series: this.queue }
     this.queue = []
 
-    const headers = { 'Content-Type': 'text/plain' }
+    const headers = { 'Content-Type': 'application/json' }
     const url = `https://${this.host}/m`
 
     return fetch(url, {

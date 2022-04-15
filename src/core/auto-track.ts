@@ -1,5 +1,5 @@
 import { Analytics } from '../analytics'
-import { SegmentEvent, Options } from '../core/events'
+import { SegmentEvent } from '../core/events'
 import { pTimeout } from './callback'
 
 declare global {
@@ -46,8 +46,7 @@ export function link(
   this: Analytics,
   links: Element | Array<Element> | JQueryShim | null,
   event: string | Function,
-  properties?: SegmentEvent['properties'] | Function,
-  options?: Options
+  properties?: SegmentEvent['properties'] | Function
 ): Analytics {
   let elements: Array<Element> = []
   // always arrays, handles jquery
@@ -76,7 +75,7 @@ export function link(
           el.getElementsByTagName('a')[0]?.getAttribute('href')
 
         const trackEvent = pTimeout(
-          this.track(ev, props, options ?? {}),
+          this.track(ev, props),
           this.settings.timeout ?? 500
         )
 
@@ -110,8 +109,7 @@ export function form(
   this: Analytics,
   forms: HTMLFormElement | Array<HTMLFormElement> | null,
   event: string | Function,
-  properties?: SegmentEvent['properties'] | Function,
-  options?: Options
+  properties?: SegmentEvent['properties'] | Function
 ): Analytics {
   // always arrays, handles jquery
   if (!forms) return this
@@ -131,7 +129,7 @@ export function form(
       const props = properties instanceof Function ? properties(el) : properties
 
       const trackEvent = pTimeout(
-        this.track(ev, props, options ?? {}),
+        this.track(ev, props),
         this.settings.timeout ?? 500
       )
 

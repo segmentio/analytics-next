@@ -29,6 +29,7 @@ describe('Segment.io', () => {
 
     window.localStorage.clear()
 
+    // @ts-expect-error
     spyMock = mocked(unfetch).mockResolvedValue({
       ok: true,
     } as Response)

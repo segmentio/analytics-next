@@ -1,12 +1,11 @@
 import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
-import { PlanEvent, TrackPlan } from '../../core/events/interfaces'
+import { PlanEvent } from '../../core/events/interfaces'
 import { Plugin } from '../../core/plugin'
-import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { RemotePlugin } from '../remote-loader'
 
 function disabledActionDestinations(
-  plan: PlanEvent | undefined,
+  plan: PlanEvent,
   settings: LegacySettings
 ): { [destination: string]: string[] } {
   if (!plan || !Object.keys(plan)) {
@@ -44,7 +43,7 @@ function disabledActionDestinations(
 }
 
 export function schemaFilter(
-  track: TrackPlan | undefined,
+  track: { [key: string]: PlanEvent } | undefined,
   settings: LegacySettings
 ): Plugin {
   function filter(ctx: Context): Context {
@@ -53,7 +52,7 @@ export function schemaFilter(
 
     if (plan && ev) {
       const planEvent = plan[ev]
-      if (!isPlanEventEnabled(plan, planEvent)) {
+      if (planEvent?.enabled === false) {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,

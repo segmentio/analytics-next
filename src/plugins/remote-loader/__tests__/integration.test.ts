@@ -56,6 +56,7 @@ describe.skip('Remote Plugin Integration', () => {
 
     // @ts-ignore mocking fetch is *hard*
     mocked(unfetch).mockImplementation(
+      // @ts-expect-error
       (): Promise<Response> =>
         // @ts-expect-error
         Promise.resolve({
