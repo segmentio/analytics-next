@@ -31,7 +31,7 @@ function levels(url: URL): string[] {
   return levels
 }
 
-function _tld(url: URL): string | undefined {
+export function tld(url: URL): string | undefined {
   const lvls = levels(url)
 
   // Lookup the real top level one.
@@ -40,20 +40,15 @@ function _tld(url: URL): string | undefined {
     const domain = lvls[i]
     const opts = { domain: '.' + domain }
 
-    cookie.set(cname, '1', opts)
-    if (cookie.get(cname)) {
-      cookie.remove(cname, opts)
-      return domain
+    try {
+      // cookie access throw an error if the library is ran inside a sandboxed environment (e.g. sandboxed iframe)
+      cookie.set(cname, '1', opts)
+      if (cookie.get(cname)) {
+        cookie.remove(cname, opts)
+        return domain
+      }
+    } catch (_) {
+      return
     }
-  }
-}
-
-export function tld(url: URL): string | undefined {
-  try {
-    // _tld can throw an error while getting/setting cookies
-    // if the library is ran inside a sandboxed environment (e.g. sandboxed iframe)
-    return _tld(url)
-  } catch (_) {
-    return
   }
 }
