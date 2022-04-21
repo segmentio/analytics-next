@@ -1,16 +1,17 @@
 import { Analytics } from '../../analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
-import { getCDN } from '../../lib/parse-cdn'
+import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import { LegacyIntegration } from './types'
 
-const cdn = window.analytics?._cdn ?? getCDN()
-const path = cdn + '/next-integrations'
-
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
+}
+
+function obfuscatePathName(pathName: string, obfuscate = false): string | void {
+  return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
@@ -33,10 +34,16 @@ export async function loadIntegration(
   analyticsInstance: Analytics,
   name: string,
   version: string,
-  settings?: object
+  settings?: { [key: string]: any },
+  obfuscate?: boolean
 ): Promise<LegacyIntegration> {
   const pathName = normalizeName(name)
-  const fullPath = `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
+  const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
+  const path = getNextIntegrationsURL()
+
+  const fullPath = `${path}/integrations/${
+    obfuscatedPathName ?? pathName
+  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
 
   try {
     await loadScript(fullPath)
@@ -76,12 +83,18 @@ export async function loadIntegration(
 
 export async function unloadIntegration(
   name: string,
-  version: string
+  version: string,
+  obfuscate?: boolean
 ): Promise<void> {
+  const path = getNextIntegrationsURL()
   const pathName = normalizeName(name)
-  return unloadScript(
-    `${path}/integrations/${pathName}/${version}/${pathName}.dynamic.js.gz`
-  )
+  const obfuscatedPathName = obfuscatePathName(name, obfuscate)
+
+  const fullPath = `${path}/integrations/${
+    obfuscatedPathName ?? pathName
+  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
+
+  return unloadScript(fullPath)
 }
 
 export function resolveVersion(

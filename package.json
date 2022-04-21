@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.33.5",
+  "version": "1.35.1",
   "repository": "segmentio/analytics-next",
   "license": "MIT",
   "main": "dist/cjs/index.js",
@@ -31,7 +31,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "24.7 KB"
+      "limit": "24.9 KB"
     }
   ],
   "prettier": {
@@ -55,11 +55,11 @@
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
-    "@segment/facade": "3.4.8",
+    "@segment/facade": "^3.4.9",
     "@segment/tsub": "^0.1.10",
     "dset": "^3.0.0",
     "js-cookie": "^2.2.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "spark-md5": "^3.0.1",
     "tslib": "^2.1.0",
     "unfetch": "^4.1.0"
@@ -117,7 +117,7 @@
     "ngrok": "^3.3.0",
     "np": "^7.5.0",
     "p-map": "^4.0.0",
-    "playwright": "^1.10.0",
+    "playwright": "^1.20.0",
     "prettier": "^2.0.2",
     "serve": "^12.0.0",
     "serve-handler": "^6.1.3",

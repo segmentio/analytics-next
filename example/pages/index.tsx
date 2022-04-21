@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Head from 'next/head'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
@@ -7,8 +7,15 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
+import { useLocalStorage } from '../utils/hooks/useLocalStorage'
+import { useDidMountEffect } from '../utils/hooks/useDidMountEffect'
 
-import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
+import {
+  AnalyticsBrowserSettings,
+  AnalyticsBrowser,
+  Analytics,
+  Context,
+} from '../../'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -33,11 +40,22 @@ const jsontheme = {
 
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [settings, setSettings] = useState<AnalyticsSettings | undefined>(
-    undefined
-  )
+  const [settings, setSettings] = useState<
+    AnalyticsBrowserSettings | undefined
+  >(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useState<string>('')
+  const [writeKey, setWriteKey] = useLocalStorage(
+    'segment_playground_write_key',
+    ''
+  )
+  const [url, setURL] = useLocalStorage(
+    'segment_playground_cdn_url',
+    'https://cdn.segment.com'
+  )
+
+  useDidMountEffect(() => {
+    fetchAnalytics()
+  }, [settings])
 
   const newEvent = () => {
     const fakerFns = [
@@ -66,18 +84,23 @@ export default function Home(): React.ReactElement {
   const [ctx, setCtx] = React.useState<Context>()
 
   async function fetchAnalytics() {
-    const [response, ctx] = await AnalyticsBrowser.load({
-      ...settings,
-      writeKey,
-    })
-
-    if (response) {
+    try {
+      const [response, ctx] = await AnalyticsBrowser.load({
+        ...settings,
+        writeKey,
+      })
       setCtx(ctx)
       setAnalytics(response)
       setAnalyticsReady(true)
       setEvent(newEvent())
       // @ts-ignore
       window.analytics = response
+    } catch (err) {
+      console.error(err)
+      setCtx(undefined)
+      setAnalytics(undefined)
+      setAnalyticsReady(false)
+      setEvent('')
     }
   }
 
@@ -124,10 +147,18 @@ export default function Home(): React.ReactElement {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          setSettings({ writeKey: writeKey })
-          fetchAnalytics()
+          setSettings({ cdnURL: url, writeKey: writeKey })
         }}
       >
+        <label>
+          CDN:
+          <input
+            type="text"
+            value={url}
+            onChange={(e) => setURL(e.target.value)}
+          />
+        </label>{' '}
+        <br />
         <label>
           Writekey:
           <input

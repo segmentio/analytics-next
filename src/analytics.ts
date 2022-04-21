@@ -50,7 +50,6 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: Plugin[]
-  [key: string]: unknown
 }
 
 export interface InitOptions {
@@ -67,6 +66,7 @@ export interface InitOptions {
   integrations?: Integrations
   plan?: Plan
   retryQueue?: boolean
+  obfuscate?: boolean
 }
 
 export class Analytics extends Emitter {

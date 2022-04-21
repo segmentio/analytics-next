@@ -1,5 +1,5 @@
 import { getProcessEnv } from './lib/get-process-env'
-import { getCDN } from './lib/parse-cdn'
+import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
 
 import fetch from 'unfetch'
 import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
@@ -53,9 +53,26 @@ export interface LegacySettings {
   remotePlugins?: RemotePlugin[]
 }
 
-export function loadLegacySettings(writeKey: string): Promise<LegacySettings> {
-  const cdn = window.analytics?._cdn ?? getCDN()
-  return fetch(`${cdn}/v1/projects/${writeKey}/settings`)
+export interface AnalyticsBrowserSettings extends AnalyticsSettings {
+  /**
+   * The settings for the Segment Source.
+   * If provided, `AnalyticsBrowser` will not fetch remote settings
+   * for the source.
+   */
+  cdnSettings?: LegacySettings & Record<string, unknown>
+  /**
+   * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
+   */
+  cdnURL?: string
+}
+
+export function loadLegacySettings(
+  writeKey: string,
+  cdnURL?: string
+): Promise<LegacySettings> {
+  const baseUrl = cdnURL ?? getCDN()
+
+  return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
     .then((res) => res.json())
     .catch((err) => {
       console.warn('Failed to load settings', err)
@@ -161,7 +178,11 @@ async function registerPlugins(
     : undefined
 
   const mergedSettings = mergedOptions(legacySettings, options)
-  const remotePlugins = await remoteLoader(legacySettings).catch(() => [])
+  const remotePlugins = await remoteLoader(
+    legacySettings,
+    analytics.integrations,
+    options.obfuscate
+  ).catch(() => [])
 
   const toRegister = [
     validation,
@@ -199,7 +220,11 @@ async function registerPlugins(
     await import(
       /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
     ).then(async ({ remoteMiddlewares }) => {
-      const middleware = await remoteMiddlewares(ctx, legacySettings)
+      const middleware = await remoteMiddlewares(
+        ctx,
+        legacySettings,
+        options.obfuscate
+      )
       const promises = middleware.map((mdw) =>
         analytics.addSourceMiddleware(mdw)
       )
@@ -212,10 +237,14 @@ async function registerPlugins(
 
 export class AnalyticsBrowser {
   static async load(
-    settings: AnalyticsSettings,
+    settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): Promise<[Analytics, Context]> {
-    const legacySettings = await loadLegacySettings(settings.writeKey)
+    // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
+    if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+    const legacySettings =
+      settings.cdnSettings ??
+      (await loadLegacySettings(settings.writeKey, settings.cdnURL))
 
     const retryQueue: boolean =
       legacySettings.integrations['Segment.io']?.retryQueue ?? true

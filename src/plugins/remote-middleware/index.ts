@@ -2,20 +2,18 @@ import { LegacySettings } from '../../browser'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
-import { getCDN } from '../../lib/parse-cdn'
+import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { MiddlewareFunction } from '../middleware'
-
-const cdn = window.analytics?._cdn ?? getCDN()
-const path = cdn + '/next-integrations'
 
 export async function remoteMiddlewares(
   ctx: Context,
-  settings: LegacySettings
+  settings: LegacySettings,
+  obfuscate?: boolean
 ): Promise<MiddlewareFunction[]> {
   if (isServer()) {
     return []
   }
-
+  const path = getNextIntegrationsURL()
   const remoteMiddleware = settings.enabledMiddleware ?? {}
   const names = Object.entries(remoteMiddleware)
     .filter(([_, enabled]) => enabled)
@@ -23,7 +21,11 @@ export async function remoteMiddlewares(
 
   const scripts = names.map(async (name) => {
     const nonNamespaced = name.replace('@segment/', '')
-    const fullPath = `${path}/middleware/${nonNamespaced}/latest/${nonNamespaced}.js.gz`
+    let bundleName = nonNamespaced
+    if (obfuscate) {
+      bundleName = btoa(nonNamespaced).replace(/=/g, '')
+    }
+    const fullPath = `${path}/middleware/${bundleName}/latest/${bundleName}.js.gz`
 
     try {
       await loadScript(fullPath)

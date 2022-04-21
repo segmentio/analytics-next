@@ -13,6 +13,22 @@ import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 import { PriorityQueue } from '../lib/priority-queue'
+import { getCDN } from '../lib/parse-cdn'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let fetchCalls: Array<any>[] = []
+// Mock unfetch so we can record any http requests made
+jest.mock('unfetch', () => {
+  const originalModule = jest.requireActual('unfetch')
+  return {
+    __esModule: true,
+    ...originalModule,
+    default: (...args: unknown[]) => {
+      fetchCalls.push(args)
+      return originalModule.apply(originalModule, args)
+    },
+  }
+})
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {
@@ -70,6 +86,8 @@ const writeKey = TEST_WRITEKEY
 describe('Initialization', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
+    jest.resetModules()
+    fetchCalls = []
   })
 
   it('loads plugins', async () => {
@@ -159,6 +177,26 @@ describe('Initialization', () => {
     await sleep(200)
     expect(ready).toHaveBeenCalled()
   })
+  describe('cdn', () => {
+    it('should get the correct CDN in plugins if the CDN overridden', async () => {
+      const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
+      await AnalyticsBrowser.load({
+        cdnURL: overriddenCDNUrl,
+        writeKey,
+        plugins: [
+          {
+            ...xt,
+            load: async () => {
+              expect(window.analytics).toBeUndefined()
+              expect(getCDN()).toContain(overriddenCDNUrl)
+            },
+          },
+        ],
+      })
+      expect(fetchCalls[0][0]).toContain(overriddenCDNUrl)
+      expect.assertions(3)
+    })
+  })
 
   it('calls page if initialpageview is set', async () => {
     jest.mock('../analytics')
@@ -212,6 +250,24 @@ describe('Initialization', () => {
 
     expect(ajs.user().options.persist).toBe(false)
     expect((ajs.group() as Group).options.persist).toBe(false)
+  })
+
+  it('fetch remote source settings by default', async () => {
+    await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    expect(fetchCalls.length).toBeGreaterThan(0)
+    expect(fetchCalls[0][0]).toMatch(/\/settings$/)
+  })
+
+  it('does not fetch source settings if cdnSettings is set', async () => {
+    await AnalyticsBrowser.load({
+      writeKey,
+      cdnSettings: { integrations: {} },
+    })
+
+    expect(fetchCalls.length).toBe(0)
   })
 
   describe('options.integrations permutations', () => {
@@ -340,8 +396,12 @@ describe('Dispatch', () => {
       plugins: [amplitude, googleAnalytics],
     })
 
+    const segmentio = ajs.queue.plugins.find((p) => p.name === 'Segment.io')
+    expect(segmentio).toBeDefined()
+
     const ampSpy = jest.spyOn(amplitude, 'track')
     const gaSpy = jest.spyOn(googleAnalytics, 'track')
+    const segmentSpy = jest.spyOn(segmentio!, 'track')
 
     const boo = await ajs.track('Boo!', {
       total: 25,
@@ -350,6 +410,7 @@ describe('Dispatch', () => {
 
     expect(ampSpy).toHaveBeenCalledWith(boo)
     expect(gaSpy).toHaveBeenCalledWith(boo)
+    expect(segmentSpy).toHaveBeenCalledWith(boo)
   })
 
   it('does not dispatch events to destinations on deny list', async () => {
@@ -358,8 +419,12 @@ describe('Dispatch', () => {
       plugins: [amplitude, googleAnalytics],
     })
 
+    const segmentio = ajs.queue.plugins.find((p) => p.name === 'Segment.io')
+    expect(segmentio).toBeDefined()
+
     const ampSpy = jest.spyOn(amplitude, 'track')
     const gaSpy = jest.spyOn(googleAnalytics, 'track')
+    const segmentSpy = jest.spyOn(segmentio!, 'track')
 
     const boo = await ajs.track(
       'Boo!',
@@ -370,12 +435,45 @@ describe('Dispatch', () => {
       {
         integrations: {
           Amplitude: false,
+          'Segment.io': false,
         },
       }
     )
 
     expect(gaSpy).toHaveBeenCalledWith(boo)
     expect(ampSpy).not.toHaveBeenCalled()
+    expect(segmentSpy).not.toHaveBeenCalled()
+  })
+
+  it('does dispatch events to Segment.io when All is false', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [amplitude, googleAnalytics],
+    })
+
+    const segmentio = ajs.queue.plugins.find((p) => p.name === 'Segment.io')
+    expect(segmentio).toBeDefined()
+
+    const ampSpy = jest.spyOn(amplitude, 'track')
+    const gaSpy = jest.spyOn(googleAnalytics, 'track')
+    const segmentSpy = jest.spyOn(segmentio!, 'track')
+
+    const boo = await ajs.track(
+      'Boo!',
+      {
+        total: 25,
+        userId: '👻',
+      },
+      {
+        integrations: {
+          All: false,
+        },
+      }
+    )
+
+    expect(gaSpy).not.toHaveBeenCalled()
+    expect(ampSpy).not.toHaveBeenCalled()
+    expect(segmentSpy).toHaveBeenCalledWith(boo)
   })
 
   it('enriches events before dispatching', async () => {
@@ -732,9 +830,8 @@ describe('retries', () => {
       { retryQueue: false }
     )
 
-    expect(ajs.queue.queue).toStrictEqual(
-      new PersistedPriorityQueue(1, 'event-queue')
-    )
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBeTruthy()
+    expect(ajs.queue.queue.maxAttempts).toBe(1)
 
     await ajs.queue.register(
       Context.system(),
