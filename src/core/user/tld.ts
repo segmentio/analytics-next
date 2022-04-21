@@ -50,6 +50,8 @@ function _tld(url: URL): string | undefined {
 
 export function tld(url: URL): string | undefined {
   try {
+    // _tld can throw an error while getting/setting cookies
+    // if the library is ran inside a sandboxed environment (e.g. sandboxed iframe)
     return _tld(url)
   } catch (_) {
     return
