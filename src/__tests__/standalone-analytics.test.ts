@@ -1,4 +1,5 @@
 import jsdom, { JSDOM } from 'jsdom'
+import { InitOptions } from '../analytics'
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsSnippet } from '../standalone-analytics'
@@ -15,7 +16,7 @@ const addSourceMiddleware = jest.fn()
 const on = jest.fn()
 
 jest.mock('../analytics', () => ({
-  Analytics: (): unknown => ({
+  Analytics: (_: unknown, options?: InitOptions): unknown => ({
     track,
     identify,
     page,
@@ -27,6 +28,7 @@ jest.mock('../analytics', () => ({
     queue: {
       queue: new PersistedPriorityQueue(1, 'event-queue'),
     },
+    options,
   }),
 }))
 

@@ -28,6 +28,7 @@ import type {
   MiddlewareFunction,
 } from './plugins/middleware'
 import { version } from './generated/version'
+import { PriorityQueue } from './lib/priority-queue'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -37,6 +38,14 @@ const deprecationWarning =
 const globalAny: any = global
 const _analytics = globalAny.analytics
 
+function createDefaultQueue(retryQueue = false, disablePersistance = false) {
+  const maxAttempts = retryQueue ? 4 : 1
+  const priorityQueue = disablePersistance
+    ? new PriorityQueue(maxAttempts, [])
+    : new PersistedPriorityQueue(maxAttempts, 'event-queue')
+  return new EventQueue(priorityQueue)
+}
+
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
@@ -44,6 +53,12 @@ export interface AnalyticsSettings {
 }
 
 export interface InitOptions {
+  /**
+   * Disables storing any data on the client-side via cookies or localstorage.
+   * Defaults to `false`.
+   *
+   */
+  disableClientPersistance?: boolean
   initialPageview?: boolean
   cookie?: CookieOptions
   user?: UserOptions
@@ -75,15 +90,27 @@ export class Analytics extends Emitter {
   ) {
     super()
     const cookieOptions = options?.cookie
+    const disablePersistance = options?.disableClientPersistance ?? false
     this.settings = settings
     this.settings.timeout = this.settings.timeout ?? 300
     this.queue =
-      queue ??
-      new EventQueue(
-        new PersistedPriorityQueue(options?.retryQueue ? 4 : 1, 'event-queue')
-      )
-    this._user = user ?? new User(options?.user, cookieOptions).load()
-    this._group = group ?? new Group(options?.group, cookieOptions).load()
+      queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
+    this._user =
+      user ??
+      new User(
+        disablePersistance
+          ? { ...options?.user, persist: false }
+          : options?.user,
+        cookieOptions
+      ).load()
+    this._group =
+      group ??
+      new Group(
+        disablePersistance
+          ? { ...options?.group, persist: false }
+          : options?.group,
+        cookieOptions
+      ).load()
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}

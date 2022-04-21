@@ -33,9 +33,21 @@ describe('user', () => {
       assert(new User().anonymousId() === 'new-anonymous-id')
     })
 
-    it('should create anonymous id if missing', () => {
+    it('should create anonymous id if missing (persist: default (true))', () => {
       const user = new User()
       assert(user.anonymousId()?.length === 36)
+      expect(jar.get('ajs_anonymous_id')?.length).toBe(36)
+      expect(localStorage.getItem('ajs_anonymous_id')?.length).toBe(38)
+    })
+
+    it('should create anonymous id if missing (persist: false)', () => {
+      const setCookieSpy = spyOn(jar, 'set').and.callThrough()
+
+      const user = new User({ persist: false })
+      assert(user.anonymousId()?.length === 36)
+      expect(jar.get('ajs_anonymous_id')).toBeUndefined()
+      expect(localStorage.getItem('ajs_anonymous_id')).toBeNull()
+      expect(setCookieSpy.calls.count()).toBe(0)
     })
 
     it('should not overwrite anonymous id', () => {
@@ -166,6 +178,55 @@ describe('user', () => {
         user.id(null)
         assert(user.anonymousId() === prev)
         assert(user.anonymousId()?.length === 36)
+      })
+    })
+
+    describe('when persist is disabled', () => {
+      let setCookieSpy: jasmine.Spy
+      beforeEach(() => {
+        setCookieSpy = spyOn(jar, 'set').and.callThrough()
+        user = new User({ persist: false })
+        clear()
+      })
+
+      it('should get an id from memory', () => {
+        user.id('id')
+        assert(user.id() === 'id')
+
+        expect(jar.get(cookieKey)).toBeFalsy()
+        expect(store.get(cookieKey)).toBeFalsy()
+      })
+
+      it('should be null by default', () => {
+        assert(user.id() === null)
+      })
+
+      it('should not reset anonymousId if the user didnt have previous id', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id('foo')
+        user.id('foo')
+
+        assert(user.anonymousId() === prev)
+        expect(setCookieSpy.calls.count()).toBe(0)
+      })
+
+      it('should reset anonymousId if the user id changed', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id('baz')
+        assert(user.anonymousId() !== prev)
+        assert(user.anonymousId()?.length === 36)
+        expect(setCookieSpy.calls.count()).toBe(0)
+      })
+
+      it('should not reset anonymousId if the user id changed to null', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id(null)
+        assert(user.anonymousId() === prev)
+        assert(user.anonymousId()?.length === 36)
+        expect(setCookieSpy.calls.count()).toBe(0)
       })
     })
 
@@ -641,7 +702,7 @@ describe('group', () => {
     clear()
   })
 
-  it('should net reset id and traits', () => {
+  it('should not reset id and traits', () => {
     let group = new Group()
     group.id('gid')
     group.traits({ trait: true })
@@ -660,6 +721,18 @@ describe('group', () => {
     assert.equal(jar.get('ajs_group_id'), null)
     assert.equal(group.id(), 'gid')
     assert.equal(store.get('ajs_group_id'), 'gid')
+  })
+
+  it('id() should not persist when persist disabled', () => {
+    const setCookieSpy = spyOn(jar, 'set').and.callThrough()
+
+    const group = new Group({ persist: false })
+    group.id('gid')
+
+    expect(group.id()).toBe('gid')
+    expect(jar.get('ajs_group_id')).toBeFalsy()
+    expect(store.get('ajs_group_id')).toBeFalsy()
+    expect(setCookieSpy.calls.count()).toBe(0)
   })
 
   it('behaves the same as user', () => {

@@ -12,6 +12,7 @@ import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
+import { PriorityQueue } from '../lib/priority-queue'
 import { getCDN } from '../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,6 +214,42 @@ describe('Initialization', () => {
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
+  })
+
+  it('does not use a persisted queue when disableClientPersistance is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistance: true,
+      }
+    )
+
+    expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(false)
+  })
+
+  it('uses a persisted queue by default', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
+  })
+
+  it('disables identity persistance when disableClientPersistance is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistance: true,
+      }
+    )
+
+    expect(ajs.user().options.persist).toBe(false)
+    expect((ajs.group() as Group).options.persist).toBe(false)
   })
 
   it('fetch remote source settings by default', async () => {

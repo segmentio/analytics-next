@@ -279,7 +279,7 @@ describe('before loading', () => {
       assert(obj.context.campaign.name === 'overrideName')
     })
 
-    it('should add .referrer.id and .referrer.type', () => {
+    it('should add .referrer.id and .referrer.type (cookies)', () => {
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=source&urid=medium',
       })
@@ -290,6 +290,32 @@ describe('before loading', () => {
       assert(object.context.referrer)
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
+      expect(cookie.get('s:context.referrer')).toEqual(
+        JSON.stringify({
+          id: 'medium',
+          type: 'millennial-media',
+        })
+      )
+    })
+
+    it('should add .referrer.id and .referrer.type (cookieless)', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=source&urid=medium',
+      })
+      const setCookieSpy = spyOn(cookie, 'set').and.callThrough()
+      analytics = new Analytics(
+        { writeKey: options.apiKey },
+        { disableClientPersistance: true }
+      )
+
+      normalize(analytics, object, options, {})
+      assert(object)
+      assert(object.context)
+      assert(object.context.referrer)
+      expect(object.context.referrer.id).toEqual('medium')
+      assert(object.context.referrer.type === 'millennial-media')
+      expect(cookie.get('s:context.referrer')).toBeUndefined()
+      expect(setCookieSpy.calls.count()).toBe(0)
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {

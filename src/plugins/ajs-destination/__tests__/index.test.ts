@@ -9,6 +9,7 @@ import { Context } from '../../../core/context'
 import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
 import { AMPLITUDE_WRITEKEY } from '../../../__tests__/test-writekeys'
+import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -283,6 +284,39 @@ describe('settings', () => {
     )
 
     expect(dest.settings['type']).toBeUndefined()
+  })
+})
+
+describe('options', () => {
+  it('#disableClientPersistance affects underlying queue', () => {
+    const defaultDestWithPersistance = new LegacyDestination(
+      'LocalStorageUser',
+      'latest',
+      {},
+      {}
+    )
+    const destWithPersistance = new LegacyDestination(
+      'LocalStorageUserToo',
+      'latest',
+      {},
+      { disableClientPersistance: false }
+    )
+    const destWithoutPersistance = new LegacyDestination(
+      'MemoryUser',
+      'latest',
+      {},
+      { disableClientPersistance: true }
+    )
+
+    expect(
+      defaultDestWithPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeTruthy()
+    expect(
+      destWithPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeTruthy()
+    expect(
+      destWithoutPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeFalsy()
   })
 })
 
