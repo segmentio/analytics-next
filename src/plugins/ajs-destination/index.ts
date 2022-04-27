@@ -97,7 +97,7 @@ export class LegacyDestination implements Plugin {
     }
 
     this.options = options
-    this.buffer = options.disableClientPersistance
+    this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
       : new PersistedPriorityQueue(4, `dest-${name}`)
 

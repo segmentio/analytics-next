@@ -20,9 +20,8 @@ describe('Segment.io retries', () => {
   let queue: (PersistedPriorityQueue | PriorityQueue<Context>) & {
     __type?: QueueType
   }
-
-  ;[false, true].forEach((disableClientPersistance) => {
-    describe(`disableClientPersistance: ${disableClientPersistance}`, () => {
+  ;[false, true].forEach((disableClientPersistence) => {
+    describe(`disableClientPersistence: ${disableClientPersistence}`, () => {
       beforeEach(async () => {
         jest.resetAllMocks()
         jest.restoreAllMocks()
@@ -33,15 +32,15 @@ describe('Segment.io retries', () => {
         options = { apiKey: 'foo' }
         analytics = new Analytics(
           { writeKey: options.apiKey },
-          { retryQueue: true, disableClientPersistance }
+          { retryQueue: true, disableClientPersistence }
         )
 
-        queue = disableClientPersistance
+        queue = disableClientPersistence
           ? new PriorityQueue(3, [])
           : new PersistedPriorityQueue(3, `test-Segment.io`)
 
-        queue['__type'] = disableClientPersistance ? 'priority' : 'persisted'
-        if (disableClientPersistance) {
+        queue['__type'] = disableClientPersistence ? 'priority' : 'persisted'
+        if (disableClientPersistence) {
           // @ts-expect-error reassign import
           PriorityQueue = jest.fn().mockImplementation(() => queue)
         } else {
@@ -66,7 +65,7 @@ describe('Segment.io retries', () => {
         expect(ctx.attempts).toBe(1)
         expect(isOffline).toHaveBeenCalledTimes(2)
         expect(queue.__type).toBe<QueueType>(
-          disableClientPersistance ? 'priority' : 'persisted'
+          disableClientPersistence ? 'priority' : 'persisted'
         )
       })
     })

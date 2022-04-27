@@ -156,7 +156,7 @@ export function normalize(
     ctx.campaign = utm(query)
   }
 
-  referrerId(query, ctx, analytics.options.disableClientPersistance ?? false)
+  referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
 
   json.userId = json.userId || user.id()
   json.anonymousId = user.anonymousId(anonId)
