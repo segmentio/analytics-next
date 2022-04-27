@@ -49,7 +49,7 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  const buffer = analytics.options.disableClientPersistance
+  const buffer = analytics.options.disableClientPersistence
     ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
     : new PersistedPriorityQueue(
         analytics.queue.queue.maxAttempts,

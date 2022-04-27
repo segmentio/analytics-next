@@ -288,7 +288,7 @@ describe('settings', () => {
 })
 
 describe('options', () => {
-  it('#disableClientPersistance affects underlying queue', () => {
+  it('#disableClientPersistence affects underlying queue', () => {
     const defaultDestWithPersistance = new LegacyDestination(
       'LocalStorageUser',
       'latest',
@@ -299,13 +299,13 @@ describe('options', () => {
       'LocalStorageUserToo',
       'latest',
       {},
-      { disableClientPersistance: false }
+      { disableClientPersistence: false }
     )
     const destWithoutPersistance = new LegacyDestination(
       'MemoryUser',
       'latest',
       {},
-      { disableClientPersistance: true }
+      { disableClientPersistence: true }
     )
 
     expect(

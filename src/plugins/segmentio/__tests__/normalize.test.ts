@@ -305,7 +305,7 @@ describe('before loading', () => {
       const setCookieSpy = spyOn(cookie, 'set').and.callThrough()
       analytics = new Analytics(
         { writeKey: options.apiKey },
-        { disableClientPersistance: true }
+        { disableClientPersistence: true }
       )
 
       normalize(analytics, object, options, {})

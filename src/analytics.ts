@@ -58,7 +58,7 @@ export interface InitOptions {
    * Defaults to `false`.
    *
    */
-  disableClientPersistance?: boolean
+  disableClientPersistence?: boolean
   initialPageview?: boolean
   cookie?: CookieOptions
   user?: UserOptions
@@ -90,7 +90,7 @@ export class Analytics extends Emitter {
   ) {
     super()
     const cookieOptions = options?.cookie
-    const disablePersistance = options?.disableClientPersistance ?? false
+    const disablePersistance = options?.disableClientPersistence ?? false
     this.settings = settings
     this.settings.timeout = this.settings.timeout ?? 300
     this.queue =

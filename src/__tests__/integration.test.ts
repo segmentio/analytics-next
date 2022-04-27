@@ -216,13 +216,13 @@ describe('Initialization', () => {
     expect(mockPage).not.toHaveBeenCalled()
   })
 
-  it('does not use a persisted queue when disableClientPersistance is true', async () => {
+  it('does not use a persisted queue when disableClientPersistence is true', async () => {
     const [ajs] = await AnalyticsBrowser.load(
       {
         writeKey,
       },
       {
-        disableClientPersistance: true,
+        disableClientPersistence: true,
       }
     )
 
@@ -238,13 +238,13 @@ describe('Initialization', () => {
     expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
   })
 
-  it('disables identity persistance when disableClientPersistance is true', async () => {
+  it('disables identity persistance when disableClientPersistence is true', async () => {
     const [ajs] = await AnalyticsBrowser.load(
       {
         writeKey,
       },
       {
-        disableClientPersistance: true,
+        disableClientPersistence: true,
       }
     )
 
