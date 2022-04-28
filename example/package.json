@@ -22,6 +22,7 @@
     "react-simple-code-editor": "^0.11.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^12.1.5",
     "@types/faker": "^5.1.2",
     "@types/react": "^17.0.37",
     "source-map-loader": "^3.0.1"
