@@ -1,4 +1,4 @@
-FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node12
+FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node16:node-16.10
 
 # 2. Install WebKit dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
