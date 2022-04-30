@@ -191,7 +191,7 @@ export class EventQueue extends Emitter {
     try {
       ctx = await this.deliver(ctx)
       this.emit('flush', ctx, true)
-    } catch (err) {
+    } catch (err: any) {
       const accepted = this.enqueuRetry(err, ctx)
 
       if (!accepted) {

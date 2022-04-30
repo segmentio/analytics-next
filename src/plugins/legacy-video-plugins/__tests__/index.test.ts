@@ -25,7 +25,7 @@ beforeEach(async () => {
 
   const windowSpy = jest.spyOn(global, 'window', 'get')
   windowSpy.mockImplementation(() => {
-    return (jsd.window as unknown) as Window & typeof globalThis
+    return jsd.window as unknown as Window & typeof globalThis
   })
 })
 

@@ -72,7 +72,7 @@ export class Context implements AbstractContext {
     throw new ContextCancelation({ reason: 'Context Cancel' })
   }
 
-  log(level: LogLevel, message: string, extras?: object): void {
+  log(level: LogLevel, message: string, extras?: any): void {
     this.logger.log(level, message, extras)
   }
 

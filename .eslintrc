@@ -1,34 +1,52 @@
 {
-  "ignorePatterns": ["/node_modules/", "/dist/", "/example/", "/e2e-tests/", "/qa/"],
+  "ignorePatterns": [
+    "/node_modules/",
+    "/dist/",
+    "/example/",
+    "/e2e-tests/",
+    "/qa/",
+    "/*.tmp.*/"
+  ],
   "parserOptions": {
     "ecmaVersion": 2019
   },
   "env": {
     "node": true
   },
-  "extends": ["eslint:recommended", "prettier"],
   "overrides": [
     {
-      "files": ["*.{ts,tsx}"],
+      "files": [
+        "*.{ts,tsx}"
+      ],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
         "project": "./tsconfig.json"
       },
       "extends": [
+        "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "prettier/@typescript-eslint"
+        "plugin:prettier/recommended"
       ],
       "rules": {
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/ban-ts-ignore": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-non-null-assertion": "off",
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/require-await": "off",
-        "@typescript-eslint/no-empty-function": "off"
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/ban-types": "off" // TODO: turn on
       }
+    },
+    {
+      "files": "*.js",
+      "extends": [
+        "eslint:recommended",
+        "plugin:prettier/recommended"
+      ]
     }
   ]
 }

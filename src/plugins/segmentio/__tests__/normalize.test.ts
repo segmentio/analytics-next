@@ -29,7 +29,7 @@ describe('before loading', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsdom.window as unknown) as Window & typeof globalThis
+      () => jsdom.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -152,7 +152,10 @@ describe('before loading', () => {
 
     it('should add .userAgent', () => {
       normalize(analytics, object, options, {})
-      assert(object.context?.userAgent === navigator.userAgent)
+      const removeVersionNum = (agent: string) => agent.replace(/jsdom\/.*/, '')
+      const userAgent1 = removeVersionNum(object.context?.userAgent)
+      const userAgent2 = removeVersionNum(navigator.userAgent)
+      assert(userAgent1 === userAgent2)
     })
 
     it('should add .locale', () => {
@@ -171,8 +174,7 @@ describe('before loading', () => {
 
     it('should add .campaign', () => {
       jsdom.reconfigure({
-        url:
-          'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
 
       normalize(analytics, object, options, {})
@@ -252,8 +254,7 @@ describe('before loading', () => {
 
     it('should allow override of .campaign', () => {
       jsdom.reconfigure({
-        url:
-          'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
 
       const obj = {

@@ -80,11 +80,11 @@ describe('CSP Detection', () => {
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
     windowSpy.mockImplementation(() => {
-      return (jsd.window as unknown) as Window & typeof globalThis
+      return jsd.window as unknown as Window & typeof globalThis
     })
 
     documentSpy.mockImplementation(
-      () => (jsd.window.document as unknown) as Document
+      () => jsd.window.document as unknown as Document
     )
   })
 
@@ -126,10 +126,10 @@ describe('CSP Detection', () => {
 
     const warnSpy = jest.spyOn(console, 'warn')
 
-    await onCSPError(({
+    await onCSPError({
       blockedURI: 'cdn.segment.com',
       disposition: 'report',
-    } as unknown) as SecurityPolicyViolationEvent)
+    } as unknown as SecurityPolicyViolationEvent)
 
     expect(warnSpy).not.toHaveBeenCalled()
     expect(Array.from(document.scripts)).toEqual(ogScripts)

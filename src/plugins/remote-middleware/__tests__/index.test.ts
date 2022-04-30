@@ -24,7 +24,7 @@ describe('Remote Middleware', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 

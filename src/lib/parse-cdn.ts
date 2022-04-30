@@ -1,6 +1,7 @@
 import { embeddedWriteKey } from './embedded-write-key'
 
-const analyticsScriptRegex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/
+const analyticsScriptRegex =
+  /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/
 const getCDNUrlFromScriptTag = (): string | undefined => {
   let cdn: string | undefined
   const scripts = Array.prototype.slice.call(

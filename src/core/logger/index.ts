@@ -12,7 +12,7 @@ export type LogMessage = {
 export default class Logger {
   private _logs: LogMessage[] = []
 
-  log = (level: LogLevel, message: string, extras?: object): void => {
+  log = (level: LogLevel, message: string, extras?: any): void => {
     const time = new Date()
     this._logs.push({
       level,
