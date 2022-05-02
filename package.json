@@ -34,15 +34,9 @@
       "limit": "25.05 KB"
     }
   ],
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "printWidth": 80
-  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix"
     ],
     "*.{yml,md,json}": [
       "prettier --write"

@@ -13,6 +13,10 @@
   "env": {
     "node": true
   },
+  "extends": [
+    "eslint:recommended",
+    "prettier"
+  ],
   "overrides": [
     {
       "files": [
@@ -23,7 +27,6 @@
         "project": "./tsconfig.json"
       },
       "extends": [
-        "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:prettier/recommended"
@@ -40,13 +43,6 @@
         "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/ban-types": "off" // TODO: turn on
       }
-    },
-    {
-      "files": "*.js",
-      "extends": [
-        "eslint:recommended",
-        "plugin:prettier/recommended"
-      ]
     }
   ]
 }
