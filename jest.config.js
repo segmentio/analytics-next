@@ -14,6 +14,7 @@ module.exports = {
   moduleNameMapper: {
     '@/(.+)': '<rootdir>/../../src/$1',
   },
+  setupFilesAfterEnv: ['./jest.setup.js'],
   globals: {
     'ts-jest': {
       isolatedModules: true,

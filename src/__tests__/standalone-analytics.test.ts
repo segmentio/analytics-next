@@ -84,11 +84,11 @@ describe('standalone bundle', () => {
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
     windowSpy.mockImplementation(() => {
-      return (jsd.window as unknown) as Window & typeof globalThis
+      return jsd.window as unknown as Window & typeof globalThis
     })
 
     documentSpy.mockImplementation(
-      () => (jsd.window.document as unknown) as Document
+      () => jsd.window.document as unknown as Document
     )
   })
 

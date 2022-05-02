@@ -652,7 +652,7 @@ describe('addDestinationMiddleware', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -755,16 +755,14 @@ describe('deregister', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
   it('deregisters a plugin given its name', async () => {
-    const unload = jest.fn(
-      (): Promise<unknown> => {
-        return Promise.resolve()
-      }
-    )
+    const unload = jest.fn((): Promise<unknown> => {
+      return Promise.resolve()
+    })
     xt.unload = unload
 
     const [analytics] = await AnalyticsBrowser.load({
@@ -932,7 +930,7 @@ describe('.Integrations', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 

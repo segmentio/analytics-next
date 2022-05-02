@@ -59,7 +59,6 @@ const cdnResponse: LegacySettings = {
           },
         ],
         scope: 'destinations',
-        // eslint-disable-next-line @typescript-eslint/camelcase
         target_type: 'workspace::project::destination',
         transformers: [[{ type: 'drop' }]],
         destinationName: 'Amplitude',
@@ -364,7 +363,7 @@ describe('remote loading', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -492,7 +491,7 @@ describe('plan', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -751,7 +750,7 @@ describe('option overrides', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 

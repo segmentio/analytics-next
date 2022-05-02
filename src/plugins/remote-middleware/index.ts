@@ -31,7 +31,7 @@ export async function remoteMiddlewares(
       await loadScript(fullPath)
       // @ts-ignore
       return window[`${nonNamespaced}Middleware`] as MiddlewareFunction
-    } catch (error) {
+    } catch (error: any) {
       ctx.log('error', error)
       ctx.stats.increment('failed_remote_middleware')
     }

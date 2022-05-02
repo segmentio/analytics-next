@@ -139,13 +139,8 @@ export class Analytics extends Emitter {
   }
 
   async page(...args: PageParams): Promise<DispatchedEvent> {
-    const [
-      category,
-      page,
-      properties,
-      options,
-      callback,
-    ] = resolvePageArguments(...args)
+    const [category, page, properties, options, callback] =
+      resolvePageArguments(...args)
 
     const segmentEvent = this.eventFactory.page(
       category,
@@ -226,13 +221,8 @@ export class Analytics extends Emitter {
   }
 
   async screen(...args: PageParams): Promise<DispatchedEvent> {
-    const [
-      category,
-      page,
-      properties,
-      options,
-      callback,
-    ] = resolvePageArguments(...args)
+    const [category, page, properties, options, callback] =
+      resolvePageArguments(...args)
 
     const segmentEvent = this.eventFactory.screen(
       category,
