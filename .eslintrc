@@ -14,7 +14,9 @@
     "node": true
   },
   "extends": [
+    // Turn on on eslint recommended rules https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
     "eslint:recommended",
+    // Turn off eslint rules that conflict with prettier https://github.com/prettier/eslint-config-prettier/blob/main/index.js
     "prettier"
   ],
   "overrides": [
@@ -27,8 +29,13 @@
         "project": "./tsconfig.json"
       },
       "extends": [
+        // Disable rules from eslint:recommended which are already handled by TypeScript. Enables eslint (@not typescript-eslint) rules that make sense due to TS's typechecking / transpilation.
+        // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/eslint-recommended.ts
         "plugin:@typescript-eslint/eslint-recommended",
+        // Enable recommended rules from @typescript-eslint
+        // https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/eslint-plugin/src/configs/recommended.ts
         "plugin:@typescript-eslint/recommended",
+        // Handle prettier rules through eslint https://github.com/prettier/eslint-plugin-prettier/blob/master/eslint-plugin-prettier.js#L65
         "plugin:prettier/recommended"
       ],
       "rules": {
