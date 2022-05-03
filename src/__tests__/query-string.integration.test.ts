@@ -35,6 +35,35 @@ describe('queryString', () => {
     )
   })
 
+  it('applies query string logic before analytics is finished initializing', async () => {
+    let analyticsInitializedBeforeQs: boolean | undefined
+    const originalQueryString = Analytics.prototype.queryString
+    const mockQueryString = jest
+      .fn()
+      .mockImplementation(async function (this: Analytics, ...args) {
+        // simulate network latency when retrieving the bundle
+        await new Promise((r) => setTimeout(r, 500))
+        return originalQueryString.apply(this, args).then((result) => {
+          // ensure analytics has not finished initializing before querystring completes
+          analyticsInitializedBeforeQs = this.initialized
+          return result
+        })
+      })
+    Analytics.prototype.queryString = mockQueryString
+
+    jsd.reconfigure({
+      url: 'https://localhost/?ajs_aid=123',
+    })
+
+    const [analytics] = await AnalyticsBrowser.load({ writeKey })
+    expect(mockQueryString).toHaveBeenCalledWith('?ajs_aid=123')
+    expect(analyticsInitializedBeforeQs).toBe(false)
+    // check that calls made immediately after analytics is loaded use correct anonymousId
+    const pageContext = await analytics.page()
+    expect(pageContext.event.anonymousId).toBe('123')
+    expect(analytics.user().anonymousId()).toBe('123')
+  })
+
   it('applies query string logic if window.location.search is present', async () => {
     jest.mock('../analytics')
     const mockQueryString = jest
