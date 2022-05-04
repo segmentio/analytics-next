@@ -45,6 +45,24 @@ describe('Segment.io', () => {
     window.localStorage.clear()
   })
 
+  describe('using a custom protocol', () => {
+    it('should be able to send http requests', async () => {
+      const options: { apiKey: string; protocol: 'http' | 'https' } = {
+        apiKey: 'foo',
+        protocol: 'http',
+      }
+      const analytics = new Analytics({ writeKey: options.apiKey })
+      const segment = segmentio(analytics, options, {})
+      await analytics.register(segment, pageEnrichment)
+
+      // @ts-ignore test a valid ajsc page call
+      await analytics.page(null, { foo: 'bar' })
+
+      const [url] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"http://api.segment.io/v1/p"`)
+    })
+  })
+
   describe('#page', () => {
     it('should enqueue section, name and properties', async () => {
       await analytics.page('section', 'name', { property: true }, { opt: true })

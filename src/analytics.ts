@@ -67,6 +67,7 @@ export interface InitOptions {
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean
+  protocol?: 'http' | 'https'
 }
 
 export class Analytics extends Emitter {
