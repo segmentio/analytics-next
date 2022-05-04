@@ -4,7 +4,7 @@ import { setup, teardown } from 'jest-dev-server'
 // @ts-ignore
 import lighthouse from 'lighthouse/lighthouse-core'
 // @ts-ignore
-import reportGenerator from 'lighthouse/lighthouse-core/report/report-generator'
+import reportGenerator from 'lighthouse/report/generator/report-generator'
 
 export async function gatherLighthouseMetrics(
   page: playwright.Page
