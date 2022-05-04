@@ -266,20 +266,20 @@ export class AnalyticsBrowser {
       plugins
     )
 
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
-
-    if (options.initialPageview) {
-      analytics.page().catch(console.error)
-    }
-
     const search = window.location.search ?? ''
     const hash = window.location.hash ?? ''
 
     const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
 
     if (term.includes('ajs_')) {
-      analytics.queryString(term).catch(console.error)
+      await analytics.queryString(term).catch(console.error)
+    }
+
+    analytics.initialized = true
+    analytics.emit('initialize', settings, options)
+
+    if (options.initialPageview) {
+      analytics.page().catch(console.error)
     }
 
     await flushBuffered(analytics)
