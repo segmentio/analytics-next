@@ -20,11 +20,15 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 
 ## 💡 Using with Segment
 
+**There is a [React example repo](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) which outlines using the Segment snippet.**
+
 1. Create a javascript source at [Segment](https://app.segment.com) - new sources will automatically be using Analytics 2.0! Segment will automatically generate a snippet that you can add to your website. For more information visit our [documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/)).
 
 2. Start tracking!
 
 ## 💻 Using as an NPM package
+
+**There is a [React example repo](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package) which outlines using the Segment npm package.**
 
 1. Install the package
 
@@ -39,51 +43,8 @@ yarn add @segment/analytics-next
 pnpm add @segment/analytics-next
 ```
 
-2. Import the package into your project and you're good to go (with working types)! Example react app:
+2. Import the package into your project and you're good to go (with working types)! 
 
-```ts
-import { Analytics, AnalyticsBrowser, Context } from '@segment/analytics-next'
-import { useEffect, useState } from 'react'
-import logo from './logo.svg'
-
-function App() {
-  const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [writeKey, setWriteKey] = useState('<YOUR_WRITE_KEY>')
-
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      let [response] = await AnalyticsBrowser.load({ writeKey })
-      setAnalytics(response)
-    }
-    loadAnalytics()
-  }, [writeKey])
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          onClick={(e) => {
-            e.preventDefault()
-            analytics?.track('Hello world')
-          }}
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Track
-        </a>
-      </header>
-    </div>
-  )
-}
-
-export default App
-```
 
 ### using `Vite` with `Vue 3`
 
