@@ -47,9 +47,14 @@ describe('Segment.io', () => {
 
   describe('using a custom protocol', () => {
     it('should be able to send http requests', async () => {
-      const options: { apiKey: string; protocol: 'http' | 'https' } = {
+      const options: {
+        apiKey: string
+        deliveryStrategy: { protocol: 'http' | 'https' }
+      } = {
         apiKey: 'foo',
-        protocol: 'http',
+        deliveryStrategy: {
+          protocol: 'http',
+        },
       }
       const analytics = new Analytics({ writeKey: options.apiKey })
       const segment = segmentio(analytics, options, {})

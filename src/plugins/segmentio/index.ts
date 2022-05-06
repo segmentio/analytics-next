@@ -15,7 +15,6 @@ import { scheduleFlush } from './schedule-flush'
 export interface SegmentioSettings {
   apiKey: string
   apiHost?: string
-  protocol?: 'http' | 'https'
 
   addBundledMetadata?: boolean
   unbundledIntegrations?: string[]
@@ -26,6 +25,7 @@ export interface SegmentioSettings {
 
   deliveryStrategy?: {
     strategy?: 'standard' | 'batching'
+    protocol?: 'http' | 'https'
     config?: {
       size?: number
       timeout?: number
@@ -59,7 +59,7 @@ export function segmentio(
   const flushing = false
 
   const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
-  const protocol = settings?.protocol ?? 'https'
+  const protocol = settings?.deliveryStrategy?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
   const client =

@@ -204,10 +204,7 @@ async function registerPlugins(
     toRegister.push(
       segmentio(
         analytics,
-        {
-          ...(mergedSettings['Segment.io'] as SegmentioSettings),
-          protocol: options.protocol,
-        },
+        mergedSettings['Segment.io'] as SegmentioSettings,
         legacySettings.integrations
       )
     )
