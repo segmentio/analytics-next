@@ -98,7 +98,7 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
 }
 
 function flushBuffered(analytics: Analytics, calls: PreInitMethodCall[]) {
-  flushAddSourceMiddleware(analytics, calls)
+  void flushAddSourceMiddleware(analytics, calls)
   flushAllAnalyticsCallsInNewTask(analytics, calls)
 }
 
@@ -115,7 +115,7 @@ async function flushPreBuffer(
   calls: PreInitMethodCall[]
 ): Promise<void> {
   await flushSetAnonymousID(analytics, calls)
-  flushOn(analytics, calls)
+  void flushOn(analytics, calls)
 }
 
 async function registerPlugins(

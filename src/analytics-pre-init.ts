@@ -1,5 +1,6 @@
 import { Analytics } from './analytics'
 import { Context } from './core/context'
+import { allSettled } from './lib/all-settled'
 
 /**
  * The names of any Analytics instance methods that can be called pre-initialization.
@@ -51,11 +52,13 @@ function flushAnalyticsCallsByName(
   name: PreInitMethodName,
   analytics: Analytics,
   calls: PreInitMethodCall[]
-): void {
+) {
   const methodCalls = getMethodCallsByMethodName([name], calls)
-  methodCalls.forEach((c) => {
-    callAnalyticsMethod(analytics, c).catch(console.error)
-  })
+  return allSettled(
+    methodCalls.map((c) => {
+      return callAnalyticsMethod(analytics, c).catch(console.error)
+    })
+  )
 }
 
 export const flushAddSourceMiddleware = flushAnalyticsCallsByName.bind(
@@ -65,17 +68,10 @@ export const flushAddSourceMiddleware = flushAnalyticsCallsByName.bind(
 
 export const flushOn = flushAnalyticsCallsByName.bind(this, 'on')
 
-export async function flushSetAnonymousID(
-  analytics: Analytics,
-  calls: PreInitMethodCall[]
-) {
-  // I guess we just ignore multiple calls? This is the original business logic.
-  const [setAnonymousId] = getMethodCallsByMethodName(['setAnonymousId'], calls)
-  if (setAnonymousId) {
-    return callAnalyticsMethod(analytics, setAnonymousId).catch(console.error)
-  }
-}
-
+export const flushSetAnonymousID = flushAnalyticsCallsByName.bind(
+  this,
+  'setAnonymousId'
+)
 /**
  *  Represents a buffered method call that occurred before initialization.
  */
