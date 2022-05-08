@@ -37,7 +37,7 @@ describe('Pre-initialization', () => {
   beforeEach(() => {
     AnalyticsBrowser._resetGlobalState()
     mockFetchSettingsResponse()
-    delete window.analytics
+    ;(window as any).analytics = undefined
   })
   afterEach(() => {
     jest.clearAllMocks()
@@ -227,7 +227,7 @@ describe('Pre-initialization', () => {
 
     it('should return the correct item if .then has a function registered', async () => {
       const analyticsThenable = AnalyticsBrowser.load({ writeKey: 'abc' })
-      const obj = analyticsThenable.then(() => ({ foo: 123 }))
+      const obj = analyticsThenable.then(() => ({ foo: 123 } as const))
       expect(obj).toBeInstanceOf(Promise)
       const result = await obj
       expect(result.foo).toBe(123)

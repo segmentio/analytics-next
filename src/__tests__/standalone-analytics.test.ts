@@ -47,7 +47,7 @@ describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
   beforeEach(async () => {
-    delete window.analytics
+    ;(window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>
       <head>

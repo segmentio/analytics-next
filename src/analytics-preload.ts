@@ -1,5 +1,5 @@
-import type { Analytics } from './analytics'
-import type { Context } from './core/context'
+import { Analytics } from './analytics'
+import { Context } from './core/context'
 
 /**
  * The names of any Analytics instance methods that can be called pre-initialization.
@@ -31,12 +31,12 @@ type PreInitMethodName =
  *  Represents a buffered method call that occurred before initialization.
  */
 export interface PreInitMethodCall<
-  T extends PreInitMethodName = PreInitMethodName
+  MethodName extends PreInitMethodName = PreInitMethodName
 > {
-  method: T
-  args: Parameters<Analytics[T]>
+  method: MethodName
+  args: PreInitMethodParams<MethodName>
   called: boolean
-  resolve: (v: ReturnTypeUnwrap<Analytics[T]>) => void
+  resolve: (v: ReturnTypeUnwrap<Analytics[MethodName]>) => void
   reject: (reason: any) => void
 }
 
@@ -53,12 +53,13 @@ const normalizeSnippetBuffer = (buffer: SnippetBuffer): PreInitMethodCall[] => {
   )
 }
 
-type SnippetWindowBufferedMethodArgs = any[]
+type PreInitMethodParams<MethodName extends PreInitMethodName> = Parameters<
+  Analytics[MethodName]
+>
 
-type SnippetWindowBufferedMethodCall = [
-  PreInitMethodName,
-  ...SnippetWindowBufferedMethodArgs
-]
+type SnippetWindowBufferedMethodCall<
+  MethodName extends PreInitMethodName = PreInitMethodName
+> = [MethodName, ...PreInitMethodParams<MethodName>]
 
 /**
  * A list of the method calls before initialization for snippet users
@@ -176,15 +177,30 @@ export class AnalyticsBuffered {
     }
   }
 
-  then(...args: Parameters<Promise<[Analytics, Context]>['then']>) {
+  async then<T1, T2 = never>(
+    ...args: [
+      onfulfilled:
+        | ((instance: [Analytics, Context]) => T1 | PromiseLike<T1>)
+        | null
+        | undefined,
+      onrejected?: (reason: unknown) => T2 | PromiseLike<T2>
+    ]
+  ) {
     return this.promise.then(...args)
   }
 
-  catch(...args: Parameters<Promise<[Analytics, Context]>['catch']>) {
+  catch<TResult = never>(
+    ...args: [
+      onrejected?:
+        | ((reason: any) => TResult | PromiseLike<TResult>)
+        | undefined
+        | null
+    ]
+  ) {
     return this.promise.catch(...args)
   }
 
-  finally(...args: Parameters<Promise<[Analytics, Context]>['finally']>) {
+  finally(...args: [onfinally?: (() => void) | undefined | null]) {
     return this.promise.finally(...args)
   }
 
