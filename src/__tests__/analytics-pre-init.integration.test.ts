@@ -2,7 +2,7 @@ import { AnalyticsBrowser } from '..'
 import unfetch from 'unfetch'
 import { mocked } from 'ts-jest/utils'
 import { Analytics } from '../analytics'
-import { AnalyticsBuffered } from '../analytics-preload'
+import { AnalyticsBuffered } from '../analytics-pre-init'
 import { Context } from '../core/context'
 
 jest.mock('unfetch')

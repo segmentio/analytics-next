@@ -1,4 +1,4 @@
-import { AnalyticsBuffered } from '../analytics-preload'
+import { AnalyticsBuffered } from '../analytics-pre-init'
 import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 

@@ -139,7 +139,7 @@ type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
 ) => Promise<[Analytics, Context]>
 
-export class AnalyticsBuffered {
+export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   public instance?: Analytics
   public ctx?: Context
   private preInitBuffer = new PreInitMethodCallBuffer()

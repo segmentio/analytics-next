@@ -17,7 +17,7 @@ import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
   PreInitMethodCall,
-} from './analytics-preload'
+} from './analytics-pre-init'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
