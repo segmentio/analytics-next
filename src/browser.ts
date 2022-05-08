@@ -17,6 +17,8 @@ import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
   PreInitMethodCall,
+  // getMethodCallsByMethodName,
+  callAnalyticsMethod,
 } from './analytics-pre-init'
 
 export interface LegacyIntegrationConfiguration {
@@ -103,12 +105,12 @@ function flushBuffered(analytics: Analytics, buffer: PreInitMethodCallBuffer) {
       )
     }
     if (method === 'addSourceMiddleware') {
-      await buffer.callMethod(analytics, methodCall)
+      await callAnalyticsMethod(analytics, methodCall)
     } else {
       // flush each individual event as its own task, so not to block initial page loads
       setTimeout(() => {
         // should never throw an error
-        void buffer.callMethod(analytics, methodCall).catch(console.error)
+        void callAnalyticsMethod(analytics, methodCall).catch(console.error)
       }, 0)
     }
   }
@@ -136,7 +138,7 @@ async function flushPreBuffer(
   if (setAnonymousId) {
     // callMethod treats every method as async to be  runtime / typesafe, since await works on promise values and non-promise values.
     // in my testing on chrome, the performance burden of this added await (awaiting two promise wrapped values with Promise.all) is less than a half a millisecond.
-    await buffer.callMethod(analytics, setAnonymousId)
+    await callAnalyticsMethod(analytics, setAnonymousId)
   }
 
   // promise.all will not work, since we don't want terminate if there's an error.
@@ -146,7 +148,7 @@ async function flushPreBuffer(
   const onMethods = buffer.list.filter((el) => el.method === 'on')
   onMethods.forEach((m) => {
     // call method will never reject
-    void buffer.callMethod(analytics, m)
+    void callAnalyticsMethod(analytics, m)
   })
 }
 

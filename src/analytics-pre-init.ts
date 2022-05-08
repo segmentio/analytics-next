@@ -27,6 +27,15 @@ type PreInitMethodName =
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
+export function getMethodCallsByMethodName<
+  T extends PreInitMethodName,
+  U extends PreInitMethodCall[]
+>(list: U, methodNames: T[]): PreInitMethodCall<T>[] {
+  return list.filter((call): call is PreInitMethodCall<T> =>
+    methodNames.includes(call.method as T)
+  )
+}
+
 /**
  *  Represents a buffered method call that occurred before initialization.
  */
@@ -110,31 +119,29 @@ export class PreInitMethodCallBuffer {
   clear(): void {
     this._list = []
   }
-
-  /**
-   *  Call method and mark as "called"
-   *  This function should never throw an error
-   */
-  async callMethod<T extends PreInitMethodName>(
-    analytics: Analytics,
-    methodCall: PreInitMethodCall<T>
-  ): Promise<void> {
-    const { method, args, resolve, reject } = methodCall
-    try {
-      if (methodCall.called) {
-        return undefined
-      }
-
-      methodCall.called = true
-
-      const result = await (analytics[method] as Function)(...args)
-      resolve(result)
-    } catch (err) {
-      reject(err)
+}
+/**
+ *  Call method and mark as "called"
+ *  This function should never throw an error
+ */
+export async function callAnalyticsMethod<T extends PreInitMethodName>(
+  analytics: Analytics,
+  methodCall: PreInitMethodCall<T>
+): Promise<void> {
+  const { method, args, resolve, reject } = methodCall
+  try {
+    if (methodCall.called) {
+      return undefined
     }
+
+    methodCall.called = true
+
+    const result = await (analytics[method] as Function)(...args)
+    resolve(result)
+  } catch (err) {
+    reject(err)
   }
 }
-
 type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
 ) => Promise<[Analytics, Context]>
