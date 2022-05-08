@@ -30,10 +30,50 @@ type PreInitMethodName =
 export function getMethodCallsByMethodName<
   T extends PreInitMethodName,
   U extends PreInitMethodCall[]
->(list: U, methodNames: T[]): PreInitMethodCall<T>[] {
-  return list.filter((call): call is PreInitMethodCall<T> =>
+>(methodNames: T[], calls: U): PreInitMethodCall<T>[] {
+  return calls.filter((call): call is PreInitMethodCall<T> =>
     methodNames.includes(call.method as T)
   )
+}
+
+export function flushAllAnalyticsCallsInNewTask(
+  analytics: Analytics,
+  calls: PreInitMethodCall[]
+): void {
+  calls.forEach((m) => {
+    setTimeout(() => {
+      callAnalyticsMethod(analytics, m).catch(console.error)
+    }, 0)
+  })
+}
+
+function flushAnalyticsCallsByName(
+  name: PreInitMethodName,
+  analytics: Analytics,
+  calls: PreInitMethodCall[]
+): void {
+  const methodCalls = getMethodCallsByMethodName([name], calls)
+  methodCalls.forEach((c) => {
+    callAnalyticsMethod(analytics, c).catch(console.error)
+  })
+}
+
+export const flushAddSourceMiddleware = flushAnalyticsCallsByName.bind(
+  this,
+  'addSourceMiddleware'
+)
+
+export const flushOn = flushAnalyticsCallsByName.bind(this, 'on')
+
+export async function flushSetAnonymousID(
+  analytics: Analytics,
+  calls: PreInitMethodCall[]
+) {
+  // I guess we just ignore multiple calls? This is the original business logic.
+  const [setAnonymousId] = getMethodCallsByMethodName(['setAnonymousId'], calls)
+  if (setAnonymousId) {
+    return callAnalyticsMethod(analytics, setAnonymousId).catch(console.error)
+  }
 }
 
 /**
@@ -142,6 +182,7 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
     reject(err)
   }
 }
+
 type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
 ) => Promise<[Analytics, Context]>

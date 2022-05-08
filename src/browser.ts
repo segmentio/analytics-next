@@ -16,9 +16,11 @@ import { validation } from './plugins/validation'
 import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
+  flushAllAnalyticsCallsInNewTask,
+  flushAddSourceMiddleware,
+  flushSetAnonymousID,
+  flushOn,
   PreInitMethodCall,
-  // getMethodCallsByMethodName,
-  callAnalyticsMethod,
 } from './analytics-pre-init'
 
 export interface LegacyIntegrationConfiguration {
@@ -95,29 +97,9 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
-function flushBuffered(analytics: Analytics, buffer: PreInitMethodCallBuffer) {
-  const callBufferedAnalyticsMethod = async (methodCall: PreInitMethodCall) => {
-    const { method } = methodCall
-    // this guard is probably not needed.
-    if (typeof analytics[method] !== 'function') {
-      return console.warn(
-        `invariant error: method call "${method}" does not exist on analytics instance: ${analytics}`
-      )
-    }
-    if (method === 'addSourceMiddleware') {
-      await callAnalyticsMethod(analytics, methodCall)
-    } else {
-      // flush each individual event as its own task, so not to block initial page loads
-      setTimeout(() => {
-        // should never throw an error
-        void callAnalyticsMethod(analytics, methodCall).catch(console.error)
-      }, 0)
-    }
-  }
-
-  buffer.list.forEach((m) => {
-    callBufferedAnalyticsMethod(m).catch(console.error)
-  })
+function flushBuffered(analytics: Analytics, calls: PreInitMethodCall[]) {
+  flushAddSourceMiddleware(analytics, calls)
+  flushAllAnalyticsCallsInNewTask(analytics, calls)
 }
 
 /**
@@ -130,26 +112,10 @@ function flushBuffered(analytics: Analytics, buffer: PreInitMethodCallBuffer) {
  */
 async function flushPreBuffer(
   analytics: Analytics,
-  buffer: PreInitMethodCallBuffer
+  calls: PreInitMethodCall[]
 ): Promise<void> {
-  const setAnonymousId = buffer.list.find(
-    (el) => el.method === 'setAnonymousId'
-  )
-  if (setAnonymousId) {
-    // callMethod treats every method as async to be  runtime / typesafe, since await works on promise values and non-promise values.
-    // in my testing on chrome, the performance burden of this added await (awaiting two promise wrapped values with Promise.all) is less than a half a millisecond.
-    await callAnalyticsMethod(analytics, setAnonymousId)
-  }
-
-  // promise.all will not work, since we don't want terminate if there's an error.
-  // promise.allSettled would be an option here (if browser compat was less of an issue)
-
-  // Return immediately without waiting for promises to resolve
-  const onMethods = buffer.list.filter((el) => el.method === 'on')
-  onMethods.forEach((m) => {
-    // call method will never reject
-    void callAnalyticsMethod(analytics, m)
-  })
+  await flushSetAnonymousID(analytics, calls)
+  flushOn(analytics, calls)
 }
 
 async function registerPlugins(
@@ -283,7 +249,7 @@ export class AnalyticsBrowser {
     preInitBuffer.saveSnippetWindowBuffer()
 
     // needs to be flushed before plugins are registered
-    await flushPreBuffer(analytics, preInitBuffer)
+    await flushPreBuffer(analytics, preInitBuffer.list)
 
     const ctx = await registerPlugins(
       legacySettings,
@@ -309,7 +275,7 @@ export class AnalyticsBrowser {
       analytics.page().catch(console.error)
     }
 
-    flushBuffered(analytics, preInitBuffer)
+    flushBuffered(analytics, preInitBuffer.list)
 
     // Clear preInitQueue, just in case analytics is loaded twice; we don't want to fire events off again.
     // The snippet buffer automatically gets cleared (since window.analytics gets completely overwritten)
