@@ -1,7 +1,6 @@
 import { AnalyticsBrowser } from '..'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { setGlobalCDNUrl } from '../lib/parse-cdn'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -16,8 +15,8 @@ const settingsResponse = Promise.resolve({
     }),
 }) as Promise<Response>
 
-afterEach(() => {
-  setGlobalCDNUrl(undefined as any)
+beforeEach(() => {
+  AnalyticsBrowser._resetGlobalState()
 })
 
 mocked(unfetch).mockImplementation(() => settingsResponse)

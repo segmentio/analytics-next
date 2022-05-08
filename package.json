@@ -32,7 +32,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "25.13 KB"
+      "limit": "26.0 KB"
     }
   ],
   "lint-staged": {

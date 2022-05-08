@@ -33,6 +33,7 @@ describe('queryString', () => {
     windowSpy.mockImplementation(
       () => jsd.window as unknown as Window & typeof globalThis
     )
+    AnalyticsBrowser._resetGlobalState()
   })
 
   it('applies query string logic before analytics is finished initializing', async () => {
@@ -97,6 +98,7 @@ describe('queryString', () => {
       url: 'https://localhost/#about?ajs_id=123',
     })
 
+    AnalyticsBrowser._resetGlobalState()
     await AnalyticsBrowser.load({ writeKey })
     expect(mockQueryString).toHaveBeenCalledWith('?ajs_id=123')
   })

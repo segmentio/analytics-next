@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
@@ -82,6 +83,10 @@ const enrichBilling: Plugin = {
 }
 
 const writeKey = TEST_WRITEKEY
+
+beforeEach(() => {
+  AnalyticsBrowser._resetGlobalState()
+})
 
 describe('Initialization', () => {
   beforeEach(async () => {
@@ -177,6 +182,7 @@ describe('Initialization', () => {
     await sleep(200)
     expect(ready).toHaveBeenCalled()
   })
+
   describe('cdn', () => {
     it('should get the correct CDN in plugins if the CDN overridden', async () => {
       const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
