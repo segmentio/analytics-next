@@ -19,9 +19,6 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you can [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
 
 ## 💡 Using with Segment
-
-**There is a [React example repo](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) which outlines using the Segment snippet.**
-
 1. Create a javascript source at [Segment](https://app.segment.com) - new sources will automatically be using Analytics 2.0! Segment will automatically generate a snippet that you can add to your website. For more information visit our [documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/)).
 
 2. Start tracking!
@@ -44,7 +41,17 @@ pnpm add @segment/analytics-next
 ```
 
 2. Import the package into your project and you're good to go (with working types)! 
+```
+import { Analytics, AnalyticsBrowser, Context } from '@segment/analytics-next' 
 
+async function loadAnalytics(): Promise<Analytics> { 
+  const [ analytics, context ] = await AnalyticsBrowser.load({ writeKey }) 
+  return analytics 
+}
+```
+
+### using `React`
+There is a [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vite` with `Vue 3`
 
