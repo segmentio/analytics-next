@@ -16,7 +16,7 @@ import { validation } from './plugins/validation'
 import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
-  flushAllAnalyticsCallsInNewTask,
+  flushAnalyticsCallsInNewTask,
   flushAddSourceMiddleware,
   flushSetAnonymousID,
   flushOn,
@@ -122,7 +122,7 @@ function flushFinalBuffer(
   buffer: PreInitMethodCallBuffer
 ) {
   void flushAddSourceMiddleware(analytics, buffer.value)
-  flushAllAnalyticsCallsInNewTask(analytics, buffer.value)
+  flushAnalyticsCallsInNewTask(analytics, buffer.value)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
 }

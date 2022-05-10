@@ -37,7 +37,7 @@ function getMethodCallsByMethodName<
   )
 }
 
-export function flushAllAnalyticsCallsInNewTask(
+export function flushAnalyticsCallsInNewTask(
   analytics: Analytics,
   calls: PreInitMethodCall[]
 ): void {
