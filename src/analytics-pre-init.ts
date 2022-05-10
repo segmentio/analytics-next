@@ -28,20 +28,11 @@ type PreInitMethodName =
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
-function getMethodCallsByMethodName<
-  T extends PreInitMethodName,
-  U extends PreInitMethodCall[]
->(methodNames: T[], calls: U): PreInitMethodCall<T>[] {
-  return calls.filter((call): call is PreInitMethodCall<T> =>
-    methodNames.includes(call.method as T)
-  )
-}
-
 export function flushAnalyticsCallsInNewTask(
   analytics: Analytics,
-  calls: PreInitMethodCall[]
+  buffer: PreInitMethodCallBuffer
 ): void {
-  calls.forEach((m) => {
+  buffer.toArray().forEach((m) => {
     setTimeout(() => {
       callAnalyticsMethod(analytics, m).catch(console.error)
     }, 0)
@@ -51,10 +42,10 @@ export function flushAnalyticsCallsInNewTask(
 async function flushAnalyticsCallsConcurrentlyByName(
   name: PreInitMethodName,
   analytics: Analytics,
-  calls: PreInitMethodCall[]
+  buffer: PreInitMethodCallBuffer
 ): Promise<void> {
   await allSettled(
-    getMethodCallsByMethodName([name], calls).map((c) => {
+    buffer.getCalls(name).map((c) => {
       return callAnalyticsMethod(analytics, c).catch(console.error)
     })
   )
@@ -63,12 +54,10 @@ async function flushAnalyticsCallsConcurrentlyByName(
 async function flushAnalyticsCallsSeriallyByName(
   name: PreInitMethodName,
   analytics: Analytics,
-  calls: PreInitMethodCall[]
+  buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  for (const c of calls) {
-    if (c.method === name) {
-      await callAnalyticsMethod(analytics, c).catch(console.error)
-    }
+  for (const c of buffer.getCalls(name)) {
+    await callAnalyticsMethod(analytics, c).catch(console.error)
   }
 }
 
@@ -143,22 +132,36 @@ type ReturnTypeUnwrap<Fn> = Fn extends (...args: any[]) => infer ReturnT
     : ReturnT
   : never
 
+type MethodCallMap = Partial<Record<PreInitMethodName, PreInitMethodCall[]>>
+
 /**
  *  Represents any and all the buffered method calls that occurred before initialization.
  */
 export class PreInitMethodCallBuffer {
-  private _value: PreInitMethodCall[] = []
+  private _value = {} as MethodCallMap
 
-  public get value(): PreInitMethodCall[] {
-    return this._value
+  public toArray(): PreInitMethodCall[] {
+    return Object.values(this._value).reduce((acc, v) => {
+      return acc.concat(...v)
+    }, [] as PreInitMethodCall[])
   }
 
-  push(...calls: PreInitMethodCall[]) {
-    this._value.push(...calls)
+  public getCalls(methodName: PreInitMethodName): PreInitMethodCall[] {
+    return this._value[methodName] || []
+  }
+
+  push(...calls: PreInitMethodCall[]): void {
+    calls.forEach((el) => {
+      if (this._value[el.method]) {
+        this._value[el.method]?.push(el)
+      } else {
+        this._value[el.method] = [el]
+      }
+    })
   }
 
   clear(): void {
-    this._value = []
+    this._value = {} as MethodCallMap
   }
 }
 

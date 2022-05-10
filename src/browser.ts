@@ -110,8 +110,8 @@ async function flushPreBuffer(
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
   buffer.push(...getSnippetWindowBuffer())
-  await flushSetAnonymousID(analytics, buffer.value)
-  void flushOn(analytics, buffer.value)
+  await flushSetAnonymousID(analytics, buffer)
+  void flushOn(analytics, buffer)
 }
 
 /**
@@ -123,8 +123,8 @@ async function flushFinalBuffer(
 ): Promise<void> {
   // TODO: there are no tests for verifying that addSourceMiddleware is flushed serially vs concurrently. I don't know the context behind this optimization, so I preserved it
   // there doesn't seem to be any unit tests for "addSourceMiddleware" in general?
-  await flushAddSourceMiddleware(analytics, buffer.value)
-  flushAnalyticsCallsInNewTask(analytics, buffer.value)
+  await flushAddSourceMiddleware(analytics, buffer)
+  flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
 }
