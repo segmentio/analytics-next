@@ -216,6 +216,59 @@ async function registerPlugins(
   return ctx
 }
 
+async function loadAnalytics(
+  settings: AnalyticsBrowserSettings,
+  options: InitOptions = {},
+  preInitBuffer: PreInitMethodCallBuffer
+): Promise<[Analytics, Context]> {
+  // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
+  if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+
+  const legacySettings =
+    settings.cdnSettings ??
+    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+
+  const retryQueue: boolean =
+    legacySettings.integrations['Segment.io']?.retryQueue ?? true
+
+  const opts: InitOptions = { retryQueue, ...options }
+  const analytics = new Analytics(settings, opts)
+
+  const plugins = settings.plugins ?? []
+  Context.initMetrics(legacySettings.metrics)
+
+  // needs to be flushed before plugins are registered
+  await flushPreBuffer(analytics, preInitBuffer)
+
+  const ctx = await registerPlugins(
+    legacySettings,
+    analytics,
+    opts,
+    options,
+    plugins
+  )
+
+  const search = window.location.search ?? ''
+  const hash = window.location.hash ?? ''
+
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+
+  if (term.includes('ajs_')) {
+    await analytics.queryString(term).catch(console.error)
+  }
+
+  analytics.initialized = true
+  analytics.emit('initialize', settings, options)
+
+  if (options.initialPageview) {
+    analytics.page().catch(console.error)
+  }
+
+  flushFinalBuffer(analytics, preInitBuffer)
+
+  return [analytics, ctx]
+}
+
 export class AnalyticsBrowser {
   /**
    * Clear the global state. Useful mainly for testing.
@@ -229,61 +282,8 @@ export class AnalyticsBrowser {
     options: InitOptions = {}
   ): AnalyticsBuffered {
     return new AnalyticsBuffered((preInitBuffer) =>
-      this._load(settings, options, preInitBuffer)
+      loadAnalytics(settings, options, preInitBuffer)
     )
-  }
-
-  private static async _load(
-    settings: AnalyticsBrowserSettings,
-    options: InitOptions = {},
-    preInitBuffer: PreInitMethodCallBuffer
-  ): Promise<[Analytics, Context]> {
-    // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
-    if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
-
-    const legacySettings =
-      settings.cdnSettings ??
-      (await loadLegacySettings(settings.writeKey, settings.cdnURL))
-
-    const retryQueue: boolean =
-      legacySettings.integrations['Segment.io']?.retryQueue ?? true
-
-    const opts: InitOptions = { retryQueue, ...options }
-    const analytics = new Analytics(settings, opts)
-
-    const plugins = settings.plugins ?? []
-    Context.initMetrics(legacySettings.metrics)
-
-    // needs to be flushed before plugins are registered
-    await flushPreBuffer(analytics, preInitBuffer)
-
-    const ctx = await registerPlugins(
-      legacySettings,
-      analytics,
-      opts,
-      options,
-      plugins
-    )
-
-    const search = window.location.search ?? ''
-    const hash = window.location.hash ?? ''
-
-    const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-    if (term.includes('ajs_')) {
-      await analytics.queryString(term).catch(console.error)
-    }
-
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
-
-    if (options.initialPageview) {
-      analytics.page().catch(console.error)
-    }
-
-    flushFinalBuffer(analytics, preInitBuffer)
-
-    return [analytics, ctx]
   }
 
   static standalone(
