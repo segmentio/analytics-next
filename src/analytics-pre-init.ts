@@ -28,7 +28,7 @@ type PreInitMethodName =
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
-export function getMethodCallsByMethodName<
+function getMethodCallsByMethodName<
   T extends PreInitMethodName,
   U extends PreInitMethodCall[]
 >(methodNames: T[], calls: U): PreInitMethodCall<T>[] {
