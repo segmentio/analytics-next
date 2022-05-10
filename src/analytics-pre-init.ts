@@ -48,13 +48,13 @@ export function flushAllAnalyticsCallsInNewTask(
   })
 }
 
-function flushAnalyticsCallsByName(
+async function flushAnalyticsCallsByName(
   name: PreInitMethodName,
   analytics: Analytics,
   calls: PreInitMethodCall[]
-) {
+): Promise<void> {
   const methodCalls = getMethodCallsByMethodName([name], calls)
-  return allSettled(
+  await allSettled(
     methodCalls.map((c) => {
       return callAnalyticsMethod(analytics, c).catch(console.error)
     })
