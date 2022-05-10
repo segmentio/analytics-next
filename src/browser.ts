@@ -117,11 +117,13 @@ async function flushPreBuffer(
 /**
  * Finish flushing buffer and cleanup.
  */
-function flushFinalBuffer(
+async function flushFinalBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
-) {
-  void flushAddSourceMiddleware(analytics, buffer.value)
+): Promise<void> {
+  // TODO: there are no tests for verifying that addSourceMiddleware is flushed serially vs concurrently. I don't know the context behind this optimization, so I preserved it
+  // there doesn't seem to be any unit tests for "addSourceMiddleware" in general?
+  await flushAddSourceMiddleware(analytics, buffer.value)
   flushAnalyticsCallsInNewTask(analytics, buffer.value)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
@@ -264,7 +266,7 @@ async function loadAnalytics(
     analytics.page().catch(console.error)
   }
 
-  flushFinalBuffer(analytics, preInitBuffer)
+  await flushFinalBuffer(analytics, preInitBuffer)
 
   return [analytics, ctx]
 }
