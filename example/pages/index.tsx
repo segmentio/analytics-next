@@ -112,7 +112,7 @@ export default function Home(): React.ReactElement {
     }
 
     const evt = JSON.parse(event)
-    const ctx = await AnalyticsBrowser.track(evt?.event ?? 'Track Event', evt)
+    const ctx = await analytics.track(evt?.event ?? 'Track Event', evt)
     setCtx(ctx)
 
     ctx.flush()
@@ -127,7 +127,7 @@ export default function Home(): React.ReactElement {
 
     const evt = JSON.parse(event)
     const { userId = 'Test User', ...traits } = evt
-    const ctx = await AnalyticsBrowser.identify(userId, traits)
+    const ctx = await analytics.identify(userId, traits)
 
     setCtx(ctx)
 
