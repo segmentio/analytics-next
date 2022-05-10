@@ -48,27 +48,38 @@ export function flushAllAnalyticsCallsInNewTask(
   })
 }
 
-async function flushAnalyticsCallsByName(
+async function flushAnalyticsCallsConcurrentlyByName(
   name: PreInitMethodName,
   analytics: Analytics,
   calls: PreInitMethodCall[]
 ): Promise<void> {
-  const methodCalls = getMethodCallsByMethodName([name], calls)
   await allSettled(
-    methodCalls.map((c) => {
+    getMethodCallsByMethodName([name], calls).map((c) => {
       return callAnalyticsMethod(analytics, c).catch(console.error)
     })
   )
 }
 
-export const flushAddSourceMiddleware = flushAnalyticsCallsByName.bind(
+async function flushAnalyticsCallsSeriallyByName(
+  name: PreInitMethodName,
+  analytics: Analytics,
+  calls: PreInitMethodCall[]
+): Promise<void> {
+  for (const c of calls) {
+    if (c.method === name) {
+      await callAnalyticsMethod(analytics, c).catch(console.error)
+    }
+  }
+}
+
+export const flushAddSourceMiddleware = flushAnalyticsCallsSeriallyByName.bind(
   this,
   'addSourceMiddleware'
 )
 
-export const flushOn = flushAnalyticsCallsByName.bind(this, 'on')
+export const flushOn = flushAnalyticsCallsConcurrentlyByName.bind(this, 'on')
 
-export const flushSetAnonymousID = flushAnalyticsCallsByName.bind(
+export const flushSetAnonymousID = flushAnalyticsCallsConcurrentlyByName.bind(
   this,
   'setAnonymousId'
 )
@@ -150,6 +161,7 @@ export class PreInitMethodCallBuffer {
     this._value = []
   }
 }
+
 /**
  *  Call method and mark as "called"
  *  This function should never throw an error
