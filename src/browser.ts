@@ -20,7 +20,7 @@ import {
   flushAddSourceMiddleware,
   flushSetAnonymousID,
   flushOn,
-  PreInitMethodCall,
+  getSnippetWindowBuffer,
 } from './analytics-pre-init'
 
 export interface LegacyIntegrationConfiguration {
@@ -97,11 +97,6 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
-function flushBuffered(analytics: Analytics, calls: PreInitMethodCall[]) {
-  void flushAddSourceMiddleware(analytics, calls)
-  flushAllAnalyticsCallsInNewTask(analytics, calls)
-}
-
 /**
  * With AJS classic, we allow users to call setAnonymousId before the library initialization.
  * This is important because some of the destinations will use the anonymousId during the initialization,
@@ -112,10 +107,24 @@ function flushBuffered(analytics: Analytics, calls: PreInitMethodCall[]) {
  */
 async function flushPreBuffer(
   analytics: Analytics,
-  calls: PreInitMethodCall[]
+  buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  await flushSetAnonymousID(analytics, calls)
-  void flushOn(analytics, calls)
+  buffer.push(...getSnippetWindowBuffer())
+  await flushSetAnonymousID(analytics, buffer.value)
+  void flushOn(analytics, buffer.value)
+}
+
+/**
+ * Finish flushing buffer and cleanup.
+ */
+function flushFinalBuffer(
+  analytics: Analytics,
+  buffer: PreInitMethodCallBuffer
+) {
+  void flushAddSourceMiddleware(analytics, buffer.value)
+  flushAllAnalyticsCallsInNewTask(analytics, buffer.value)
+  // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
+  buffer.clear()
 }
 
 async function registerPlugins(
@@ -245,11 +254,8 @@ export class AnalyticsBrowser {
     const plugins = settings.plugins ?? []
     Context.initMetrics(legacySettings.metrics)
 
-    // for snippet users, store all the cached window.analytics calls on the instance
-    preInitBuffer.saveSnippetWindowBuffer()
-
     // needs to be flushed before plugins are registered
-    await flushPreBuffer(analytics, preInitBuffer.list)
+    await flushPreBuffer(analytics, preInitBuffer)
 
     const ctx = await registerPlugins(
       legacySettings,
@@ -275,11 +281,7 @@ export class AnalyticsBrowser {
       analytics.page().catch(console.error)
     }
 
-    flushBuffered(analytics, preInitBuffer.list)
-
-    // Clear preInitQueue, just in case analytics is loaded twice; we don't want to fire events off again.
-    // The snippet buffer automatically gets cleared (since window.analytics gets completely overwritten)
-    preInitBuffer.clear()
+    flushFinalBuffer(analytics, preInitBuffer)
 
     return [analytics, ctx]
   }

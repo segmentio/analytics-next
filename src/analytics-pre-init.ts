@@ -115,13 +115,14 @@ type SnippetBuffer = SnippetWindowBufferedMethodCall[]
 /**
  * Fetch the buffered method calls from the window object and normalize them.
  */
-const getSnippetWindowBuffer = (): PreInitMethodCall[] => {
+export const getSnippetWindowBuffer = (): PreInitMethodCall[] => {
   const wa = window.analytics
   const buffered =
     // @ts-expect-error
     (wa && wa[0] ? [...wa] : []) as SnippetBuffer
   return normalizeSnippetBuffer(buffered)
 }
+
 /**
  * Infer return type; if return type is promise, unwrap it.
  */
@@ -131,29 +132,22 @@ type ReturnTypeUnwrap<Fn> = Fn extends (...args: any[]) => infer ReturnT
     : ReturnT
   : never
 
+/**
+ *  Represents any and all the buffered method calls that occurred before initialization.
+ */
 export class PreInitMethodCallBuffer {
-  /**
-   *  Represents any and all the buffered method calls that occurred before initialization.
-   */
-  private _list: PreInitMethodCall[] = []
+  private _value: PreInitMethodCall[] = []
 
-  private _windowBuffer: PreInitMethodCall[] = []
-
-  public saveSnippetWindowBuffer() {
-    // store reference in order to be be to mutate 'method.called' field from callers.
-    this._windowBuffer = getSnippetWindowBuffer()
-  }
-
-  public get list(): PreInitMethodCall[] {
-    return [...this._list, ...this._windowBuffer]
+  public get value(): PreInitMethodCall[] {
+    return this._value
   }
 
   push(...calls: PreInitMethodCall[]) {
-    this._list.push(...calls)
+    this._value.push(...calls)
   }
 
   clear(): void {
-    this._list = []
+    this._value = []
   }
 }
 /**
@@ -221,7 +215,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
     }
   }
 
-  async then<T1, T2 = never>(
+  then<T1, T2 = never>(
     ...args: [
       onfulfilled:
         | ((instance: [Analytics, Context]) => T1 | PromiseLike<T1>)
