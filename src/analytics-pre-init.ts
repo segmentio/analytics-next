@@ -271,7 +271,21 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   page = this._createMethod('page')
   once = this._createMethod('once')
   off = this._createMethod('off')
-  on = this._createMethod('on')
+  on(...args: Parameters<Analytics['on']>) {
+    if (this.instance) {
+      return this.instance.on(...args)
+    }
+
+    this.preInitBuffer.push({
+      method: 'on',
+      args,
+      resolve: () => {},
+      reject: console.error,
+      called: false,
+    } as PreInitMethodCall)
+
+    return this
+  }
   addSourceMiddleware = this._createMethod('addSourceMiddleware')
   addIntegrationMiddleware = this._createMethod('addIntegrationMiddleware')
   setAnonymousId = this._createMethod('setAnonymousId')
