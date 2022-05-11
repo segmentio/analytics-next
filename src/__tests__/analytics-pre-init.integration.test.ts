@@ -42,18 +42,37 @@ describe('Pre-initialization', () => {
   afterEach(() => {
     jest.clearAllMocks()
   })
-  test('load should instantiate an analytics object', async () => {
+  test('load should instantiate an AnalyticsBuffered object that resolves into an Analytics object', async () => {
     const analytics = AnalyticsBrowser.load({ writeKey })
+    expect(analytics).toBeInstanceOf(AnalyticsBuffered)
     expect(analytics.instance).toBeUndefined()
-    await analytics
-    expect(analytics.instance).toBeDefined()
+    const [ajs, ctx] = await analytics
+    expect(ajs).toBeInstanceOf(Analytics)
+    expect(ctx).toBeInstanceOf(Context)
   })
+
   test('If a user sends a single pre-initialized track event, that event gets flushed', async () => {
     const analytics = AnalyticsBrowser.load({ writeKey })
     const trackCtxPromise = analytics.track('foo', { name: 'john' })
-    await trackCtxPromise
+    const result = await trackCtxPromise
+    expect(result).toBeInstanceOf(Context)
     expect(trackSpy).toBeCalledWith('foo', { name: 'john' })
     expect(trackSpy).toBeCalledTimes(1)
+  })
+
+  test('"return types should not change over the lifecycle for ordinary methods', async () => {
+    const analytics = AnalyticsBrowser.load({ writeKey })
+
+    const trackCtxPromise1 = analytics.track('foo', { name: 'john' })
+    expect(trackCtxPromise1).toBeInstanceOf(Promise)
+    const ctx1 = await trackCtxPromise1
+    expect(ctx1).toBeInstanceOf(Context)
+
+    // loaded
+    const trackCtxPromise2 = analytics.track('foo', { name: 'john' })
+    expect(trackCtxPromise2).toBeInstanceOf(Promise)
+    const ctx2 = await trackCtxPromise2
+    expect(ctx2).toBeInstanceOf(Context)
   })
 
   describe('errors', () => {
@@ -158,10 +177,10 @@ describe('Pre-initialization', () => {
     test('If, before initialization, .on("track") is called, the .on method should be called after analytics load', async () => {
       const analytics = AnalyticsBrowser.load({ writeKey })
       const args = ['track', jest.fn()] as const
-      const promise = analytics.on(...args)
+      analytics.on(...args)
       expect(onSpy).not.toHaveBeenCalledWith(...args)
 
-      await promise
+      await analytics
       expect(onSpy).toBeCalledWith(...args)
       expect(onSpy).toHaveBeenCalledTimes(1)
     })
@@ -169,12 +188,12 @@ describe('Pre-initialization', () => {
     test('If, before initialization .on("track") is called and then .track is called, the callback method should be called after analytics loads', async () => {
       const onFnCb = jest.fn()
       const analytics = AnalyticsBrowser.load({ writeKey })
-      const analyticsPromise = analytics.on('track', onFnCb)
+      analytics.on('track', onFnCb)
       const trackCtxPromise = analytics.track('foo', { name: 123 })
 
       expect(onFnCb).not.toHaveBeenCalled()
 
-      await Promise.all([analyticsPromise, trackCtxPromise])
+      await Promise.all([analytics, trackCtxPromise])
 
       expect(onSpy).toBeCalledWith('track', onFnCb)
       expect(onSpy).toHaveBeenCalledTimes(1)
@@ -197,12 +216,58 @@ describe('Pre-initialization', () => {
     test('Should work with "on" events if a track event is called after load is complete', async () => {
       const onTrackCb = jest.fn()
       const analytics = AnalyticsBrowser.load({ writeKey })
-      void analytics.on('track', onTrackCb)
+      analytics.on('track', onTrackCb)
       await analytics
       await analytics.track('foo', { name: 123 })
 
       expect(onTrackCb).toHaveBeenCalledTimes(1)
       expect(onTrackCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
+    })
+  })
+
+  describe('emitter-like events', () => {
+    test('"on, off, once" should return AnalyticsBuffered', () => {
+      const analytics = AnalyticsBrowser.load({ writeKey })
+      expect(
+        [
+          analytics.on('track', jest.fn),
+          analytics.off('track', jest.fn),
+          analytics.once('track', jest.fn),
+        ].map((el) => el instanceof AnalyticsBuffered)
+      ).toEqual([true, true, true])
+    })
+
+    test('"emitted" events should be chainable', async () => {
+      const onTrackCb = jest.fn()
+      const onIdentifyCb = jest.fn()
+      const analytics = AnalyticsBrowser.load({ writeKey })
+      const identifyResult = analytics.identify('bar')
+      const result = analytics
+        .on('track', onTrackCb)
+        .on('identify', onIdentifyCb)
+        .once('group', jest.fn)
+        .off('alias', jest.fn)
+
+      expect(result instanceof AnalyticsBuffered).toBeTruthy()
+      await analytics
+      await analytics.track('foo', { name: 123 })
+      await identifyResult
+      expect(onTrackCb).toHaveBeenCalledTimes(1)
+      expect(onTrackCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
+
+      expect(onIdentifyCb).toHaveBeenCalledTimes(1)
+      expect(onIdentifyCb).toHaveBeenCalledWith('bar', {}, undefined)
+    })
+
+    test('"return types should not change over the lifecycle for chainable methods', async () => {
+      const analytics = AnalyticsBrowser.load({ writeKey })
+
+      const result1 = analytics.on('track', jest.fn)
+      expect(result1).toBeInstanceOf(AnalyticsBuffered)
+      await result1
+      // loaded
+      const result2 = analytics.on('track', jest.fn)
+      expect(result2).toBeInstanceOf(AnalyticsBuffered)
     })
   })
 

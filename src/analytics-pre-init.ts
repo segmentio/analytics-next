@@ -247,7 +247,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   track = this._createMethod('track')
   ready = this._createMethod('ready')
   alias = this._createMethod('alias')
-  debug = this._createMethod('debug')
+  debug = this._createChainableMethod('debug')
   page = this._createMethod('page')
   once = this._createChainableMethod('once')
   off = this._createChainableMethod('off')
@@ -262,7 +262,10 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
       ...args: Parameters<Analytics[T]>
     ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
       if (this.instance) {
-        return (this.instance[methodName] as any)(...args)
+        const method = this.instance[methodName] as (
+          ...args: any[]
+        ) => ReturnTypeUnwrap<Analytics[T]>
+        return method(...args)
       }
 
       return new Promise((resolve, reject) => {
@@ -277,19 +280,26 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
     }
   }
 
+  /**
+   *  These are for methods that will ignore the  where resolving when the method gets "flushed" is not important.
+   *  These methods will resolve when analytics is fully initialized, and return type (other than Analytics)will not be available.
+   */
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
     return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
       if (this.instance) {
-        return (this.instance[methodName] as any)(...args)
+        const method = this.instance[methodName] as (
+          ...args: any[]
+        ) => ReturnType<Analytics[T]>
+        void method(...args)
+      } else {
+        this.preInitBuffer.push({
+          method: methodName,
+          args,
+          resolve: () => {},
+          reject: console.error,
+          called: false,
+        } as PreInitMethodCall)
       }
-
-      this.preInitBuffer.push({
-        method: methodName,
-        args,
-        resolve: () => {},
-        reject: console.error,
-        called: false,
-      } as PreInitMethodCall)
 
       return this
     }
