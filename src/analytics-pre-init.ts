@@ -193,8 +193,8 @@ type AnalyticsLoader = (
 ) => Promise<[Analytics, Context]>
 
 export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
-  public instance?: Analytics
-  public ctx?: Context
+  instance?: Analytics
+  ctx?: Context
   private preInitBuffer = new PreInitMethodCallBuffer()
   private promise: Promise<[Analytics, Context]>
   constructor(loader: AnalyticsLoader) {
@@ -208,26 +208,6 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
         // intentionally do nothing...
         // this result of this promise will be caught by the 'catch' block on this class.
       })
-  }
-
-  private _createMethod<T extends PreInitMethodName>(methodName: T) {
-    return async (
-      ...args: Parameters<Analytics[T]>
-    ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
-      if (this.instance) {
-        return (this.instance[methodName] as any)(...args)
-      }
-
-      return new Promise((resolve, reject) => {
-        this.preInitBuffer.push({
-          method: methodName,
-          args,
-          resolve: resolve,
-          reject: reject,
-          called: false,
-        } as PreInitMethodCall)
-      })
-    }
   }
 
   then<T1, T2 = never>(
@@ -269,25 +249,49 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   alias = this._createMethod('alias')
   debug = this._createMethod('debug')
   page = this._createMethod('page')
-  once = this._createMethod('once')
-  off = this._createMethod('off')
-  on(...args: Parameters<Analytics['on']>) {
-    if (this.instance) {
-      return this.instance.on(...args)
-    }
-
-    this.preInitBuffer.push({
-      method: 'on',
-      args,
-      resolve: () => {},
-      reject: console.error,
-      called: false,
-    } as PreInitMethodCall)
-
-    return this
-  }
+  once = this._createChainableMethod('once')
+  off = this._createChainableMethod('off')
+  on = this._createChainableMethod('on')
   addSourceMiddleware = this._createMethod('addSourceMiddleware')
   addIntegrationMiddleware = this._createMethod('addIntegrationMiddleware')
   setAnonymousId = this._createMethod('setAnonymousId')
   addDestinationMiddleware = this._createMethod('addDestinationMiddleware')
+
+  private _createMethod<T extends PreInitMethodName>(methodName: T) {
+    return async (
+      ...args: Parameters<Analytics[T]>
+    ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
+      if (this.instance) {
+        return (this.instance[methodName] as any)(...args)
+      }
+
+      return new Promise((resolve, reject) => {
+        this.preInitBuffer.push({
+          method: methodName,
+          args,
+          resolve: resolve,
+          reject: reject,
+          called: false,
+        } as PreInitMethodCall)
+      })
+    }
+  }
+
+  private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
+    return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
+      if (this.instance) {
+        return (this.instance[methodName] as any)(...args)
+      }
+
+      this.preInitBuffer.push({
+        method: methodName,
+        args,
+        resolve: () => {},
+        reject: console.error,
+        called: false,
+      } as PreInitMethodCall)
+
+      return this
+    }
+  }
 }
