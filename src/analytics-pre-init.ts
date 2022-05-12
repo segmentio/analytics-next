@@ -281,7 +281,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   }
 
   /**
-   *  These are for methods that will ignore the  where resolving when the method gets "flushed" is not important.
+   *  These are for methods that where determining when the method gets "flushed" is not important.
    *  These methods will resolve when analytics is fully initialized, and return type (other than Analytics)will not be available.
    */
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
