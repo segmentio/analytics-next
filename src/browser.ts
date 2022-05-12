@@ -121,8 +121,6 @@ async function flushFinalBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  // TODO: there are no tests for verifying that addSourceMiddleware is flushed serially vs concurrently. I don't know the context behind this optimization, so I preserved it
-  // there doesn't seem to be any unit tests for "addSourceMiddleware" in general?
   await flushAddSourceMiddleware(analytics, buffer)
   flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.

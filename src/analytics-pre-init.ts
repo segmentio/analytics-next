@@ -262,9 +262,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
       ...args: Parameters<Analytics[T]>
     ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
       if (this.instance) {
-        const method = this.instance[methodName] as (
-          ...args: any[]
-        ) => ReturnTypeUnwrap<Analytics[T]>
+        const method = this.instance[methodName] as Function
         return method(...args)
       }
 
@@ -287,9 +285,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
     return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
       if (this.instance) {
-        const method = this.instance[methodName] as (
-          ...args: any[]
-        ) => ReturnType<Analytics[T]>
+        const method = this.instance[methodName] as (...args: any[]) => void
         void method(...args)
       } else {
         this.preInitBuffer.push({
