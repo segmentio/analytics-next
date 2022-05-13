@@ -243,7 +243,7 @@ export class User {
 
   id = (id?: ID): ID => {
     if (this.options.disable) {
-      return
+      return null
     }
 
     const prevId = this.chainGet(this.idKey)
@@ -275,7 +275,7 @@ export class User {
 
   anonymousId = (id?: ID): ID => {
     if (this.options.disable) {
-      return
+      return null
     }
 
     if (id === undefined) {

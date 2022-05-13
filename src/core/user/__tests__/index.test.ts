@@ -230,6 +230,18 @@ describe('user', () => {
       })
     })
 
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be null', () => {
+        expect(user.id()).toBeNull()
+        expect(user.id('foo')).toBeNull()
+        expect(user.id()).toBeNull()
+      })
+    })
+
     describe('when cookies are enabled', () => {
       it('should get an id from the cookie', () => {
         jar.set(cookieKey, 'id')
@@ -413,6 +425,18 @@ describe('user', () => {
         assert.equal(store.get('ajs_anonymous_id'), null)
       })
     })
+
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be null', () => {
+        expect(user.anonymousId()).toBeNull()
+        expect(user.anonymousId('foo')).toBeNull()
+        expect(user.anonymousId()).toBeNull()
+      })
+    })
   })
 
   describe('#traits', () => {
@@ -459,6 +483,18 @@ describe('user', () => {
       user.traits({ trait: true })
       user = new User()
       expect(user.traits()).toEqual({ trait: true })
+    })
+
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be undefined', () => {
+        expect(user.traits()).toBeUndefined()
+        expect(user.traits({})).toBeUndefined()
+        expect(user.traits()).toBeUndefined()
+      })
     })
   })
 
@@ -771,6 +807,25 @@ describe('group', () => {
     })
     expect(store.get(User.defaults.localStorage.key)).not.toEqual({
       coolkids: true,
+    })
+  })
+
+  describe('when disabled', () => {
+    let group: Group
+    beforeEach(() => {
+      group = new Group({ disable: true })
+    })
+
+    it('id should always be null', () => {
+      expect(group.id()).toBeNull()
+      expect(group.id('foo')).toBeNull()
+      expect(group.id()).toBeNull()
+    })
+
+    it('traits should always be undefined', () => {
+      expect(group.traits()).toBeUndefined()
+      expect(group.traits({})).toBeUndefined()
+      expect(group.traits()).toBeUndefined()
     })
   })
 
