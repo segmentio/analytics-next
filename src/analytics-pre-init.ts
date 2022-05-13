@@ -42,10 +42,12 @@ const flushSyncAnalyticsCalls = (
   buffer: PreInitMethodCallBuffer
 ): void => {
   buffer.getCalls(name).forEach((c) => {
-    callSyncAnalyticsMethod(
+    // While the underlying methods are synchronous, the callAnalyticsMethod returns a promise,
+    // which normalizes success and error states between async and non-async methods, with no perf penalty.
+    callAnalyticsMethod(
       analytics,
       c as PreInitMethodCall<SyncPreInitMethodName>
-    )
+    ).catch(console.error)
   })
 }
 
@@ -168,18 +170,6 @@ export class PreInitMethodCallBuffer {
     this._value = {} as MethodCallMap
   }
 }
-export const callAnalyticsMethodHelper = <T extends PreInitMethodName>(
-  analytics: Analytics,
-  call: PreInitMethodCall<T>
-): ReturnType<Analytics[T]> | undefined => {
-  if (call.called) {
-    return undefined
-  }
-  call.called = true
-  const result = (analytics[call.method] as Function)(...call.args)
-  call.resolve(result)
-  return result
-}
 
 /**
  *  Call method and mark as "called"
@@ -187,23 +177,26 @@ export const callAnalyticsMethodHelper = <T extends PreInitMethodName>(
  */
 export async function callAnalyticsMethod<T extends PreInitMethodName>(
   analytics: Analytics,
-  methodCall: PreInitMethodCall<T>
+  call: PreInitMethodCall<T>
 ): Promise<void> {
   try {
-    await callAnalyticsMethodHelper(analytics, methodCall)
-  } catch (err) {
-    methodCall.reject(err)
-  }
-}
+    if (call.called) {
+      return undefined
+    }
+    call.called = true
 
-export function callSyncAnalyticsMethod<T extends SyncPreInitMethodName>(
-  analytics: Analytics,
-  methodCall: PreInitMethodCall<T>
-): void {
-  try {
-    callAnalyticsMethodHelper(analytics, methodCall)
+    const result: ReturnType<Analytics[T]> = (
+      analytics[call.method] as Function
+    )(...call.args)
+
+    if (result instanceof Promise) {
+      // do not defer for non-async methods
+      await result
+    }
+
+    call.resolve(result)
   } catch (err) {
-    methodCall.reject(err)
+    call.reject(err)
   }
 }
 

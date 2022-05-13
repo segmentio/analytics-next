@@ -188,19 +188,48 @@ describe('callAnalyticsMethod', () => {
     expect(resolveSpy).toBeCalled()
   })
 
-  it('should never throw an error / reject for async functions. Instead, it should just call the reject callback and log', async () => {
-    jest.spyOn(ajs, 'track').mockImplementationOnce(() => {
-      throw 'foo'
+  it('should not defer if a synchronous method is called, like "on"', () => {
+    void callAnalyticsMethod(ajs, {
+      ...methodCall,
+      method: 'on',
+      args: ['foo', jest.fn],
+    })
+    expect(resolveSpy).toBeCalled()
+  })
+  describe('error handling', () => {
+    it('should be capable of catching errors for async functions', async () => {
+      jest.spyOn(ajs, 'track').mockImplementationOnce(() => {
+        return Promise.reject('foo')
+      })
+
+      methodCall.reject = jest.fn()
+      try {
+        await callAnalyticsMethod(ajs, methodCall as PreInitMethodCall<'track'>)
+        throw 'fail test'
+      } catch (err) {
+        expect(methodCall.reject).toHaveBeenCalledWith('foo')
+        expect(methodCall.resolve).not.toBeCalled()
+      }
     })
 
-    methodCall.reject = jest.fn()
-    try {
-      await callAnalyticsMethod(ajs, methodCall as PreInitMethodCall<'track'>)
-      throw 'fail test'
-    } catch (err) {
-      expect(methodCall.resolve).not.toBeCalled()
-      expect(methodCall.reject).toHaveBeenCalledWith('foo')
-    }
+    it('should be capable of catching errors for non-async functions', async () => {
+      jest.spyOn(ajs, 'on').mockImplementationOnce(() => {
+        throw 'foo'
+      })
+
+      methodCall.reject = jest.fn()
+      try {
+        await callAnalyticsMethod(ajs, {
+          ...methodCall,
+          method: 'on',
+          args: ['foo', jest.fn()],
+        } as PreInitMethodCall<'on'>)
+        throw 'fail test'
+      } catch (err) {
+        expect(methodCall.reject).toHaveBeenCalledWith('foo')
+        expect(methodCall.resolve).not.toBeCalled()
+      }
+    })
   })
 
   it('should not resolve and return undefined if previously called', async () => {
