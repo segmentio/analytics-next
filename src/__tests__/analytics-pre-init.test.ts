@@ -1,4 +1,8 @@
-import { AnalyticsBuffered } from '../analytics-pre-init'
+import {
+  AnalyticsBuffered,
+  callAnalyticsMethod,
+  PreInitMethodCall,
+} from '../analytics-pre-init'
 import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 
@@ -148,3 +152,72 @@ describe('buffered class', () => {
     }
   }
 }
+
+describe('callAnalyticsMethod', () => {
+  let ajs!: Analytics
+  let resolveSpy!: jest.Mock<any, any>
+  let rejectSpy!: jest.Mock<any, any>
+  let methodCall!: PreInitMethodCall
+  // const trackSpy = spyOn(Analytics.prototype, 'track')
+  beforeEach(() => {
+    resolveSpy = jest.fn().mockImplementation((el) => `resolved: ${el}`)
+    rejectSpy = jest.fn().mockImplementation((el) => `rejected: ${el}`)
+    methodCall = {
+      args: ['foo', {}],
+      called: false,
+      method: 'track',
+      resolve: resolveSpy,
+      reject: rejectSpy,
+    } as PreInitMethodCall
+
+    ajs = new Analytics({
+      writeKey: 'abc',
+    })
+  })
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should change called to true', async () => {
+    methodCall.called = false
+    await callAnalyticsMethod(ajs, methodCall)
+    expect(methodCall.called).toBe(true)
+  })
+  it('should  resolve if an async method is called, like track', async () => {
+    await callAnalyticsMethod(ajs, methodCall)
+    expect(resolveSpy).toBeCalled()
+  })
+
+  it('should never throw an error / reject for async functions. Instead, it should just call the reject callback and log', async () => {
+    jest.spyOn(ajs, 'track').mockImplementationOnce(() => {
+      throw 'foo'
+    })
+
+    methodCall.reject = jest.fn()
+    try {
+      await callAnalyticsMethod(ajs, methodCall as PreInitMethodCall<'track'>)
+      throw 'fail test'
+    } catch (err) {
+      expect(methodCall.resolve).not.toBeCalled()
+      expect(methodCall.reject).toHaveBeenCalledWith('foo')
+    }
+  })
+
+  it('should not resolve and return undefined if previously called', async () => {
+    methodCall.called = true
+    const result = await callAnalyticsMethod(ajs, methodCall)
+    expect(resolveSpy).not.toBeCalled()
+    expect(result).toBeUndefined()
+  })
+})
+
+// describe('flushAnalyticsCallsInNewTask', () => {
+//   it('should work', () => {
+//     const foo = {}
+//     flushAnalyticsCallsInNewTask({} as Analytics, {
+//       args: '1',
+//       called: false,
+//       method: 'addSourceMiddleware',
+//     })
+//   })
+// })

@@ -105,13 +105,13 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
  * Also Ensures events can be registered before library initialization.
  * This is important so users can register to 'initialize' and any events that may fire early during setup.
  */
-async function flushPreBuffer(
+function flushPreBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
-): Promise<void> {
+): void {
   buffer.push(...getSnippetWindowBuffer())
-  await flushSetAnonymousID(analytics, buffer)
-  void flushOn(analytics, buffer)
+  flushSetAnonymousID(analytics, buffer)
+  flushOn(analytics, buffer)
 }
 
 /**
@@ -238,7 +238,7 @@ async function loadAnalytics(
   Context.initMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
-  await flushPreBuffer(analytics, preInitBuffer)
+  flushPreBuffer(analytics, preInitBuffer)
 
   const ctx = await registerPlugins(
     legacySettings,
