@@ -26,7 +26,8 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "prepare": "yarn pkg && husky install"
+    "prepare": "yarn pkg && husky install",
+    "test": "jest"
   },
   "size-limit": [
     {

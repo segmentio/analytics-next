@@ -32,35 +32,35 @@ clean: ## Clean the build directory
 ## Test Commands
 
 tdd: node_modules ## Runs unit tests in watch mode
-	$(BIN)/jest --watch
+	yarn test --watch
 .PHONY: tdd
 
 test-unit: node_modules ## Runs unit tests
-	$(BIN)/jest
+	yarn test
 .PHONY: test-unit
 
 test-coverage: node_modules ## Runs unit tests with coverage
-	$(BIN)/jest --coverage --forceExit
+	yarn test --coverage --forceExit
 .PHONY: test-coverage
 
 test-qa: build-browser ## Runs all QA tests in a single command
-	$(BIN)/jest --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	yarn test --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTINATION=amplitude DEBUG=true
-	$(BIN)/jest --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	yarn test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-integration: build-browser ## Runs all integration tests in a single command
-	$(BIN)/jest --runTestsByPath e2e-tests/**/*.test.ts ${args}
+	yarn test --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
 test-perf: build-browser ## Runs all integration tests in a single command
-	$(BIN)/jest --runTestsByPath e2e-tests/performance/*.test.ts ${args}
+	yarn test --runTestsByPath e2e-tests/performance/*.test.ts ${args}
 .PHONY: test-coverage
 
 lint: node_modules ## Lints the source code
-	$(BIN)/eslint '**/*.{js,jsx,ts,tsx}'
+	yarn lint
 .PHONY: lint
 
 ci:
@@ -98,7 +98,7 @@ rebuild-sources-stage: # Rebuilds all sources that are using ajs-next in stage
 	@robo --config ~/dev/src/github.com/segmentio/robofiles/development/robo.yml rebuild-all-stage
 .PHONY: rebuild-sources-stage
 
-analyze: 
+analyze:
 	NODE_ENV=production $(BIN)/webpack --profile --json > stats.json && $(BIN)/webpack-bundle-analyzer --port 4200 stats.json
 .PHONY: analyze
 
