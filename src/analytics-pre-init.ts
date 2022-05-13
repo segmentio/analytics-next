@@ -44,10 +44,7 @@ const flushSyncAnalyticsCalls = (
   buffer.getCalls(name).forEach((c) => {
     // While the underlying methods are synchronous, the callAnalyticsMethod returns a promise,
     // which normalizes success and error states between async and non-async methods, with no perf penalty.
-    callAnalyticsMethod(
-      analytics,
-      c as PreInitMethodCall<SyncPreInitMethodName>
-    ).catch(console.error)
+    callAnalyticsMethod(analytics, c).catch(console.error)
   })
 }
 
@@ -152,8 +149,10 @@ export class PreInitMethodCallBuffer {
     }, [] as PreInitMethodCall[])
   }
 
-  public getCalls(methodName: PreInitMethodName): PreInitMethodCall[] {
-    return this._value[methodName] || []
+  public getCalls<T extends PreInitMethodName>(
+    methodName: T
+  ): PreInitMethodCall<T>[] {
+    return (this._value[methodName] ?? []) as PreInitMethodCall<T>[]
   }
 
   push(...calls: PreInitMethodCall[]): void {
