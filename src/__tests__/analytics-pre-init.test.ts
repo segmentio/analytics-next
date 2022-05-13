@@ -6,34 +6,27 @@ import {
 import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 
-const analyticsLoadRes = Promise.resolve<[Analytics, Context]>([
-  { addIntegration: 'foo' } as any,
-  { logger: 'bar' } as any,
-])
+const mockAjs = new Analytics({ writeKey: 'foo' })
+const mockCtx = new Context({ type: 'track' })
+const mockAjsRes = Promise.resolve<[Analytics, Context]>([mockAjs, mockCtx])
 
 describe('buffered class', () => {
   describe('success', () => {
-    it('should handle a success', async () => {
-      const buffered = new AnalyticsBuffered(() => analyticsLoadRes)
-
-      expect(buffered).not.toBeInstanceOf(Promise)
-      expect(typeof buffered.addDestinationMiddleware).toBe('function')
-    })
-
-    it('should handle a success', async () => {
-      const buffered = new AnalyticsBuffered(() => analyticsLoadRes)
-
-      expect(buffered).not.toBeInstanceOf(Promise)
-      expect(typeof buffered.addDestinationMiddleware).toBe('function')
+    it('should return a promise-like object', async () => {
+      const buffered = new AnalyticsBuffered(() => mockAjsRes)
+      expect(buffered).toBeInstanceOf(AnalyticsBuffered)
+      expect(typeof buffered.then).toBe('function')
+      expect(typeof buffered.catch).toBe('function')
+      expect(typeof buffered.finally).toBe('function')
     })
 
     it('should convert to a promise on await', async () => {
       const [analytics, context] = await new AnalyticsBuffered(() => {
-        return analyticsLoadRes
+        return mockAjsRes
       })
 
-      expect(typeof analytics.addIntegration).toBeDefined()
-      expect(typeof context.logger).toBeDefined()
+      expect(analytics).toEqual(mockAjs)
+      expect(context).toEqual(mockCtx)
     })
   })
 
@@ -158,7 +151,6 @@ describe('callAnalyticsMethod', () => {
   let resolveSpy!: jest.Mock<any, any>
   let rejectSpy!: jest.Mock<any, any>
   let methodCall!: PreInitMethodCall
-  // const trackSpy = spyOn(Analytics.prototype, 'track')
   beforeEach(() => {
     resolveSpy = jest.fn().mockImplementation((el) => `resolved: ${el}`)
     rejectSpy = jest.fn().mockImplementation((el) => `rejected: ${el}`)
@@ -239,14 +231,3 @@ describe('callAnalyticsMethod', () => {
     expect(result).toBeUndefined()
   })
 })
-
-// describe('flushAnalyticsCallsInNewTask', () => {
-//   it('should work', () => {
-//     const foo = {}
-//     flushAnalyticsCallsInNewTask({} as Analytics, {
-//       args: '1',
-//       called: false,
-//       method: 'addSourceMiddleware',
-//     })
-//   })
-// })
