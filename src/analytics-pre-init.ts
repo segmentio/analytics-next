@@ -27,55 +27,36 @@ type PreInitMethodName =
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
-// Union of all analytics methods that return a Promise
-type AsyncPreInitMethodName = {
+// Union of all analytics methods that _do not_ return a Promise
+type SyncPreInitMethodName = {
   [MethodName in PreInitMethodName]: ReturnType<
     Analytics[MethodName]
   > extends Promise<any>
-    ? MethodName
-    : never
+    ? never
+    : MethodName
 }[PreInitMethodName]
 
-// Union of all analytics methods that _do not_ return a Promise
-type SyncPreInitMethodName = Exclude<PreInitMethodName, AsyncPreInitMethodName>
-
-type SyncMethodCalls = PreInitMethodCall<SyncPreInitMethodName>
-
-export function flushAnalyticsCallsInNewTask(
-  analytics: Analytics,
-  buffer: PreInitMethodCallBuffer
-): void {
-  buffer.toArray().forEach((m) => {
-    setTimeout(() => {
-      callAnalyticsMethod(analytics, m).catch(console.error)
-    }, 0)
-  })
-}
-
-function flushSyncAnalyticsCalls(
+const flushSyncAnalyticsCalls = (
   name: SyncPreInitMethodName,
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
-): void {
+): void => {
   buffer.getCalls(name).forEach((c) => {
-    callSyncAnalyticsMethod(analytics, c as SyncMethodCalls)
+    callSyncAnalyticsMethod(
+      analytics,
+      c as PreInitMethodCall<SyncPreInitMethodName>
+    )
   })
 }
 
-async function flushAsyncAnalyticsCalls(
-  name: AsyncPreInitMethodName,
+export const flushAddSourceMiddleware = async (
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
-): Promise<void> {
-  for (const c of buffer.getCalls(name)) {
+) => {
+  for (const c of buffer.getCalls('addSourceMiddleware')) {
     await callAnalyticsMethod(analytics, c).catch(console.error)
   }
 }
-
-export const flushAddSourceMiddleware = flushAsyncAnalyticsCalls.bind(
-  this,
-  'addSourceMiddleware'
-)
 
 export const flushOn = flushSyncAnalyticsCalls.bind(this, 'on')
 
@@ -83,6 +64,18 @@ export const flushSetAnonymousID = flushSyncAnalyticsCalls.bind(
   this,
   'setAnonymousId'
 )
+
+export const flushAnalyticsCallsInNewTask = (
+  analytics: Analytics,
+  buffer: PreInitMethodCallBuffer
+): void => {
+  buffer.toArray().forEach((m) => {
+    setTimeout(() => {
+      callAnalyticsMethod(analytics, m).catch(console.error)
+    }, 0)
+  })
+}
+
 /**
  *  Represents a buffered method call that occurred before initialization.
  */
@@ -179,10 +172,13 @@ export const callAnalyticsMethodHelper = <T extends PreInitMethodName>(
   analytics: Analytics,
   call: PreInitMethodCall<T>
 ): ReturnType<Analytics[T]> | undefined => {
-  if (!call.called) {
-    call.called = true
-    return (analytics[call.method] as Function)(...call.args)
+  if (call.called) {
+    return undefined
   }
+  call.called = true
+  const result = (analytics[call.method] as Function)(...call.args)
+  call.resolve(result)
+  return result
 }
 
 /**
@@ -193,15 +189,10 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
   analytics: Analytics,
   methodCall: PreInitMethodCall<T>
 ): Promise<void> {
-  const { resolve, reject } = methodCall
   try {
-    const result = await callAnalyticsMethodHelper(analytics, methodCall)
-    if (!result) {
-      return
-    }
-    resolve(result)
+    await callAnalyticsMethodHelper(analytics, methodCall)
   } catch (err) {
-    reject(err)
+    methodCall.reject(err)
   }
 }
 
@@ -209,15 +200,10 @@ export function callSyncAnalyticsMethod<T extends SyncPreInitMethodName>(
   analytics: Analytics,
   methodCall: PreInitMethodCall<T>
 ): void {
-  const { resolve, reject } = methodCall
   try {
-    const result = callAnalyticsMethodHelper(analytics, methodCall)
-    if (!result) {
-      return
-    }
-    resolve(result)
+    callAnalyticsMethodHelper(analytics, methodCall)
   } catch (err) {
-    reject(err)
+    methodCall.reject(err)
   }
 }
 
