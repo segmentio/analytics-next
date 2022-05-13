@@ -155,11 +155,15 @@ export class EventFactory {
       options: {},
     }
 
-    if (this.user.id()) {
-      base.userId = this.user.id()
+    const user = this.user
+
+    if (user.id()) {
+      base.userId = user.id()
     }
 
-    base.anonymousId = this.user.anonymousId()
+    if (user.anonymousId()) {
+      base.anonymousId = user.anonymousId()
+    }
 
     return base
   }

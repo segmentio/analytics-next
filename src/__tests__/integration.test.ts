@@ -249,7 +249,7 @@ describe('Initialization', () => {
     )
 
     expect(ajs.user().options.persist).toBe(false)
-    expect((ajs.group() as Group).options.persist).toBe(false)
+    expect(ajs.group().options.persist).toBe(false)
   })
 
   it('fetch remote source settings by default', async () => {

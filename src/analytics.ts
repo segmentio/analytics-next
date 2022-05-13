@@ -163,8 +163,8 @@ export class Analytics extends Emitter {
 
     this._user.identify(id, _traits)
     const segmentEvent = this.eventFactory.identify(
-      this._user.id(),
-      this._user.traits(),
+      this._user.id() ?? id,
+      this._user.traits() ?? (_traits as ReturnType<User['traits']>),
       options,
       this.integrations
     )
@@ -180,7 +180,9 @@ export class Analytics extends Emitter {
     })
   }
 
-  group(...args: UserParams): Promise<DispatchedEvent> | Group {
+  group(): Group
+  group(...args: UserParams): Promise<DispatchedEvent>
+  group(...args: UserParams | undefined[]): Promise<DispatchedEvent> | Group {
     if (args.length === 0) {
       return this._group
     }
@@ -190,8 +192,9 @@ export class Analytics extends Emitter {
     )
 
     this._group.identify(id, _traits)
-    const groupId = this._group.id()
-    const groupTraits = this._group.traits()
+    const groupId = this._group.id() ?? id
+    const groupTraits =
+      this._group.traits() ?? (_traits as ReturnType<Group['traits']>)
 
     const segmentEvent = this.eventFactory.group(
       groupId,

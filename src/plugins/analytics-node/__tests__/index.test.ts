@@ -1,19 +1,18 @@
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { Analytics } from '../../../analytics'
-import { AnalyticsNode } from '../../../node'
+import { load, AnalyticsNodeJs } from '../../../node'
 
 const myDate = new Date('2016')
 const _Date = Date
 
 describe('Analytics Node', () => {
-  let ajs: Analytics
+  let ajs: AnalyticsNodeJs
 
   beforeEach(async () => {
     jest.resetAllMocks()
 
-    const [analytics] = await AnalyticsNode.load({
+    const [analytics] = await load({
       writeKey: 'abc123',
     })
 
@@ -29,7 +28,17 @@ describe('Analytics Node', () => {
 
   describe('AJS', () => {
     test('fireEvent instantiates the right event types', async () => {
-      await ajs.track('track')
+      try {
+        await ajs.track(
+          'track',
+          {},
+          {
+            anonymousId: 'foo',
+          }
+        )
+      } catch (err) {
+        console.log(err)
+      }
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/track',
         expect.anything()
@@ -41,25 +50,31 @@ describe('Analytics Node', () => {
         expect.anything()
       )
 
-      await ajs.page('page')
+      await ajs.page(
+        'page',
+        {},
+        {
+          anonymousId: 'foo',
+        }
+      )
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/page',
         expect.anything()
       )
 
-      await ajs.group('group')
+      await ajs.group('group', {}, { anonymousId: 'foo' })
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/group',
         expect.anything()
       )
 
-      await ajs.alias('alias')
+      await ajs.alias('alias', 'previous')
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/alias',
         expect.anything()
       )
 
-      await ajs.screen('screen')
+      await ajs.screen('screen', {}, { anonymousId: 'foo' })
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/screen',
         expect.anything()

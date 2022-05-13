@@ -1,6 +1,6 @@
 import { Analytics } from '../analytics'
 import { Plugin } from '../core/plugin'
-import { load } from '../node'
+import { AnalyticsNode } from '../index'
 
 const writeKey = 'foo'
 const TEST_FAILURE = 'Test failure'
@@ -27,7 +27,7 @@ describe('AnalyticsNode', () => {
 
   describe('Initialization', () => {
     it('loads analytics-node-next plugin', async () => {
-      const [analytics] = await load({
+      const [analytics] = await AnalyticsNode.load({
         writeKey,
       })
 
@@ -43,7 +43,7 @@ describe('AnalyticsNode', () => {
 
   describe('alias', () => {
     it('generates alias events', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const ctx = await analytics.alias('chris radek', 'chris')
 
@@ -53,7 +53,7 @@ describe('AnalyticsNode', () => {
     })
 
     it('populates anonymousId if provided', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const ctx = await analytics.alias('chris radek', 'chris', {
         anonymousId: 'foo',
@@ -67,20 +67,7 @@ describe('AnalyticsNode', () => {
 
   describe('group', () => {
     it('generates group events', async () => {
-      const [analytics] = await load({ writeKey })
-
-      const ctx = await analytics.group('coolKids', {
-        anonymousId: 'foo',
-      })
-
-      expect(ctx.event.groupId).toEqual('coolKids')
-      expect(ctx.event.traits).toBeUndefined()
-      expect(ctx.event.userId).toBeUndefined()
-      expect(ctx.event.anonymousId).toEqual('foo')
-    })
-
-    it('generates group events with traits', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const ctx = await analytics.group(
         'coolKids',
@@ -97,10 +84,10 @@ describe('AnalyticsNode', () => {
     })
 
     it('requires userId or anonymousId to be provided', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       try {
-        await analytics.group('coolKids', {} as any)
+        await analytics.group('coolKids2', {}, {} as any)
         throw new Error(TEST_FAILURE)
       } catch (err: any) {
         expect(err.message).not.toEqual(TEST_FAILURE)
@@ -108,7 +95,7 @@ describe('AnalyticsNode', () => {
     })
 
     it('invocations are isolated', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const ctx1 = await analytics.group(
         'coolKids',
@@ -138,26 +125,25 @@ describe('AnalyticsNode', () => {
 
   describe('identify', () => {
     it('generates identify events', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
-      const ctx1 = await analytics.identify(
-        {
-          name: 'Chris Radek',
-        },
-        {
-          userId: 'user-id',
-        }
-      )
+      const ctx1 = await analytics.identify('user-id', {
+        name: 'Chris Radek',
+      })
 
       expect(ctx1.event.userId).toEqual('user-id')
       expect(ctx1.event.anonymousId).toBeUndefined()
       expect(ctx1.event.traits).toEqual({ name: 'Chris Radek' })
 
-      const ctx2 = await analytics.identify({
-        anonymousId: 'unknown',
-      })
+      const ctx2 = await analytics.identify(
+        'user-id',
+        {},
+        {
+          anonymousId: 'unknown',
+        }
+      )
 
-      expect(ctx2.event.userId).toBeUndefined
+      expect(ctx2.event.userId).toEqual('user-id')
       expect(ctx2.event.anonymousId).toEqual('unknown')
       expect(ctx2.event.traits).toEqual({})
     })
@@ -165,7 +151,7 @@ describe('AnalyticsNode', () => {
 
   describe('page', () => {
     it('generates page events', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const category = 'Docs'
       const name = 'How to write a test'
@@ -206,11 +192,22 @@ describe('AnalyticsNode', () => {
       expect(ctx3.event.userId).toEqual('user-id')
       expect(ctx3.event.properties).toEqual({ title: 'invisible' })
     })
+
+    it('requires userId or anonymousId to be provided', async () => {
+      const [analytics] = await AnalyticsNode.load({ writeKey })
+
+      try {
+        await analytics.page({}, {} as any)
+        throw new Error(TEST_FAILURE)
+      } catch (err: any) {
+        expect(err.message).not.toEqual(TEST_FAILURE)
+      }
+    })
   })
 
   describe('screen', () => {
     it('generates screen events', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const name = 'Home Screen'
 
@@ -237,11 +234,22 @@ describe('AnalyticsNode', () => {
       expect(ctx2.event.userId).toEqual('user-id')
       expect(ctx2.event.properties).toEqual({ title: 'invisible' })
     })
+
+    it('requires userId or anonymousId to be provided', async () => {
+      const [analytics] = await AnalyticsNode.load({ writeKey })
+
+      try {
+        await analytics.screen({}, {} as any)
+        throw new Error(TEST_FAILURE)
+      } catch (err: any) {
+        expect(err.message).not.toEqual(TEST_FAILURE)
+      }
+    })
   })
 
   describe('track', () => {
     it('generates track events', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       const eventName = 'Test Event'
 
@@ -274,11 +282,22 @@ describe('AnalyticsNode', () => {
       expect(ctx2.event.anonymousId).toBeUndefined()
       expect(ctx2.event.userId).toEqual('known')
     })
+
+    it('requires userId or anonymousId to be provided', async () => {
+      const [analytics] = await AnalyticsNode.load({ writeKey })
+
+      try {
+        await analytics.track('test', {}, {} as any)
+        throw new Error(TEST_FAILURE)
+      } catch (err: any) {
+        expect(err.message).not.toEqual(TEST_FAILURE)
+      }
+    })
   })
 
   describe('register', () => {
     it('registers a plugin', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
 
       await analytics.register(testPlugin)
 
@@ -288,7 +307,7 @@ describe('AnalyticsNode', () => {
 
   describe('deregister', () => {
     it('deregisters a plugin given its name', async () => {
-      const [analytics] = await load({ writeKey })
+      const [analytics] = await AnalyticsNode.load({ writeKey })
       await analytics.register(testPlugin)
 
       await analytics.deregister(testPlugin.name)
