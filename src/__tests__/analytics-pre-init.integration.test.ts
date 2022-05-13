@@ -4,17 +4,14 @@ import { mocked } from 'ts-jest/utils'
 import { Analytics } from '../analytics'
 import { AnalyticsBuffered } from '../analytics-pre-init'
 import { Context } from '../core/context'
+import * as Factory from './test-helpers/factories'
 
 jest.mock('unfetch')
 
 const mockFetchSettingsResponse = () => {
-  const settingsResponse = Promise.resolve({
-    json: () =>
-      Promise.resolve({
-        integrations: {},
-      }),
-  }) as Promise<Response>
-  mocked(unfetch).mockImplementationOnce(() => settingsResponse)
+  mocked(unfetch).mockImplementation(() =>
+    Factory.createSuccess({ integrations: {} })
+  )
 }
 
 const writeKey = 'foo'
@@ -310,12 +307,14 @@ describe('Pre-initialization', () => {
     })
   })
 
-  describe.skip('multi-instance', () => {
+  describe('multi-instance', () => {
     it('should not throw an error', async () => {
       const analytics1 = AnalyticsBrowser.load({ writeKey: 'foo' })
       const analytics2 = AnalyticsBrowser.load({ writeKey: 'abc' })
-      expect(analytics1).toBeDefined()
-      expect(analytics2).toBeDefined()
+      expect(analytics1).toBeInstanceOf(AnalyticsBuffered)
+      expect(analytics2).toBeInstanceOf(AnalyticsBuffered)
+      await analytics1
+      await analytics2
     })
   })
 })

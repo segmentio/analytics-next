@@ -7,6 +7,7 @@ module.exports = {
     '<rootDir>/src/__tests__/test-writekeys',
     '<rootDir>/src/__tests__/stats-writekey',
   ],
+  testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
   testEnvironmentOptions: {
     resources: 'usable',
