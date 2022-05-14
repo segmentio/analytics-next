@@ -4,8 +4,6 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/e2e-tests',
     '<rootDir>/qa',
-    '<rootDir>/src/__tests__/test-writekeys',
-    '<rootDir>/src/__tests__/stats-writekey',
   ],
   testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
