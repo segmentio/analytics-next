@@ -2,9 +2,12 @@ import {
   AnalyticsBuffered,
   callAnalyticsMethod,
   PreInitMethodCall,
+  flushAnalyticsCallsInNewTask,
+  PreInitMethodCallBuffer,
 } from '../analytics-pre-init'
 import { Analytics } from '../analytics'
 import { Context } from '../core/context'
+import { sleep } from './test-helpers/sleep'
 
 describe('buffered class', () => {
   describe('success', () => {
@@ -226,5 +229,90 @@ describe('callAnalyticsMethod', () => {
     const result = await callAnalyticsMethod(ajs, methodCall)
     expect(resolveSpy).not.toBeCalled()
     expect(result).toBeUndefined()
+  })
+})
+
+describe('flushAnalyticsCallsInNewTask', () => {
+  test('should defer buffered method calls, regardless of whether or not they are async', async () => {
+    // @ts-ignore
+    Analytics.prototype['synchronousMethod'] = () => 123
+
+    // @ts-ignore
+    Analytics.prototype['asyncMethod'] = () => Promise.resolve(123)
+
+    const synchronousMethod = {
+      method: 'synchronousMethod' as any,
+      args: ['foo'],
+      called: false,
+      resolve: jest.fn(),
+      reject: jest.fn(),
+    } as PreInitMethodCall<any>
+
+    const asyncMethod = {
+      method: 'asyncMethod' as any,
+      args: ['foo'],
+      called: false,
+      resolve: jest.fn(),
+      reject: jest.fn(),
+    } as PreInitMethodCall<any>
+
+    const buffer = new PreInitMethodCallBuffer([synchronousMethod, asyncMethod])
+
+    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    expect(synchronousMethod.resolve).not.toBeCalled()
+    expect(asyncMethod.resolve).not.toBeCalled()
+    await sleep(0)
+    expect(synchronousMethod.resolve).toBeCalled()
+    expect(asyncMethod.resolve).toBeCalled()
+  })
+
+  test('should handle promise rejections', async () => {
+    // @ts-ignore
+    Analytics.prototype['asyncMethod'] = () => Promise.reject('oops!')
+
+    const asyncMethod = {
+      method: 'asyncMethod' as any,
+      args: ['foo'],
+      called: false,
+      resolve: jest.fn(),
+      reject: jest.fn(),
+    } as PreInitMethodCall<any>
+
+    const buffer = new PreInitMethodCallBuffer([asyncMethod])
+    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    await sleep(0)
+    expect(asyncMethod.reject).toBeCalledWith('oops!')
+  })
+
+  test('a thrown error by a synchronous method should not terminate the queue', async () => {
+    // @ts-ignore
+    Analytics.prototype['asyncMethod'] = () => Promise.resolve(123)
+
+    // @ts-ignore
+    Analytics.prototype['synchronousMethod'] = () => {
+      throw new Error('Ooops!')
+    }
+
+    const synchronousMethod = {
+      method: 'synchronousMethod' as any,
+      args: ['foo'],
+      called: false,
+      resolve: jest.fn(),
+      reject: jest.fn(),
+    } as PreInitMethodCall<any>
+
+    const asyncMethod = {
+      method: 'asyncMethod' as any,
+      args: ['foo'],
+      called: false,
+      resolve: jest.fn(),
+      reject: jest.fn(),
+    } as PreInitMethodCall<any>
+
+    const buffer = new PreInitMethodCallBuffer([synchronousMethod, asyncMethod])
+    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    await sleep(0)
+    expect(synchronousMethod.reject).toBeCalled()
+    expect(asyncMethod.resolve).toBeCalled()
   })
 })

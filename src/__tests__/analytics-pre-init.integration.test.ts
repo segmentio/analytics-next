@@ -5,6 +5,7 @@ import { Analytics } from '../analytics'
 import { AnalyticsBuffered } from '../analytics-pre-init'
 import { Context } from '../core/context'
 import * as Factory from './test-helpers/factories'
+import { sleep } from './test-helpers/sleep'
 
 jest.mock('unfetch')
 
@@ -17,11 +18,6 @@ const mockFetchSettingsResponse = () => {
 const writeKey = 'foo'
 
 const errMsg = 'errMsg'
-
-const sleep = (time: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, time)
-  })
 
 describe('Pre-initialization', () => {
   const trackSpy = jest.spyOn(Analytics.prototype, 'track')
