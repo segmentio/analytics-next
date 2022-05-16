@@ -6,14 +6,14 @@ import {
 import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 
-const mockAjs = new Analytics({ writeKey: 'foo' })
-const mockCtx = new Context({ type: 'track' })
-const mockAjsRes = Promise.resolve<[Analytics, Context]>([mockAjs, mockCtx])
-
 describe('buffered class', () => {
   describe('success', () => {
     it('should return a promise-like object', async () => {
-      const buffered = new AnalyticsBuffered(() => mockAjsRes)
+      const ajs = new Analytics({ writeKey: 'foo' })
+      const ctx = new Context({ type: 'track' })
+      const buffered = new AnalyticsBuffered(() =>
+        Promise.resolve<[Analytics, Context]>([ajs, ctx])
+      )
       expect(buffered).toBeInstanceOf(AnalyticsBuffered)
       expect(typeof buffered.then).toBe('function')
       expect(typeof buffered.catch).toBe('function')
@@ -21,12 +21,14 @@ describe('buffered class', () => {
     })
 
     it('should convert to a promise on await', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      const ctx = new Context({ type: 'track' })
       const [analytics, context] = await new AnalyticsBuffered(() => {
-        return mockAjsRes
+        return Promise.resolve<[Analytics, Context]>([ajs, ctx])
       })
 
-      expect(analytics).toEqual(mockAjs)
-      expect(context).toEqual(mockCtx)
+      expect(analytics).toEqual(ajs)
+      expect(context).toEqual(ctx)
     })
   })
 
@@ -189,38 +191,33 @@ describe('callAnalyticsMethod', () => {
     expect(resolveSpy).toBeCalled()
   })
   describe('error handling', () => {
-    it('should be capable of catching errors for async functions', async () => {
+    it('will catch a promise rejection for async functions', async () => {
+      const genericError = new Error('An Error')
       jest.spyOn(ajs, 'track').mockImplementationOnce(() => {
-        return Promise.reject('foo')
+        return Promise.reject(genericError)
       })
+      await callAnalyticsMethod(ajs, {
+        ...methodCall,
+        method: 'track',
+      } as PreInitMethodCall<'track'>)
 
-      methodCall.reject = jest.fn()
-      try {
-        await callAnalyticsMethod(ajs, methodCall as PreInitMethodCall<'track'>)
-        throw 'fail test'
-      } catch (err) {
-        expect(methodCall.reject).toHaveBeenCalledWith('foo')
-        expect(methodCall.resolve).not.toBeCalled()
-      }
+      expect(methodCall.resolve).not.toHaveBeenCalled()
+      expect(methodCall.reject).toBeCalledWith(genericError)
     })
 
-    it('should be capable of catching errors for non-async functions', async () => {
+    it('will catch any thrown errors for a non-async functions', () => {
+      const genericError = new Error('An Error')
       jest.spyOn(ajs, 'on').mockImplementationOnce(() => {
-        throw 'foo'
+        throw genericError
       })
+      void callAnalyticsMethod(ajs, {
+        ...methodCall,
+        method: 'on',
+        args: ['foo', jest.fn()],
+      } as PreInitMethodCall<'on'>)
 
-      methodCall.reject = jest.fn()
-      try {
-        await callAnalyticsMethod(ajs, {
-          ...methodCall,
-          method: 'on',
-          args: ['foo', jest.fn()],
-        } as PreInitMethodCall<'on'>)
-        throw 'fail test'
-      } catch (err) {
-        expect(methodCall.reject).toHaveBeenCalledWith('foo')
-        expect(methodCall.resolve).not.toBeCalled()
-      }
+      expect(methodCall.resolve).not.toHaveBeenCalled()
+      expect(methodCall.reject).toBeCalledWith(genericError)
     })
   })
 
