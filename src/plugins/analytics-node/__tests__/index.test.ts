@@ -28,17 +28,13 @@ describe('Analytics Node', () => {
 
   describe('AJS', () => {
     test('fireEvent instantiates the right event types', async () => {
-      try {
-        await ajs.track(
-          'track',
-          {},
-          {
-            anonymousId: 'foo',
-          }
-        )
-      } catch (err) {
-        console.log(err)
-      }
+      await ajs.track(
+        'track',
+        {},
+        {
+          anonymousId: 'foo',
+        }
+      )
       expect(fetcher).toHaveBeenCalledWith(
         'https://api.segment.io/v1/track',
         expect.anything()
