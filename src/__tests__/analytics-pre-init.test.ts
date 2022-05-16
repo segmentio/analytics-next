@@ -9,8 +9,8 @@ import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 import { sleep } from './test-helpers/sleep'
 
-describe('buffered class', () => {
-  describe('success', () => {
+describe('AnalyticsBuffered', () => {
+  describe('Happy path', () => {
     it('should return a promise-like object', async () => {
       const ajs = new Analytics({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
@@ -35,45 +35,39 @@ describe('buffered class', () => {
     })
   })
 
-  describe('errors', () => {
-    it('should handle a thrown error error', async () => {
-      expect(() => {
-        void new AnalyticsBuffered(() => {
-          throw new Error('oops')
+  describe('Unhappy path', () => {
+    test('Will throw an error if the callback throws', async () => {
+      try {
+        new AnalyticsBuffered(() => {
+          throw 'oops!'
         })
-      }).toThrow('oops')
-    })
-    it('should handle a promise rejection', () => {
-      new AnalyticsBuffered(() => Promise.reject('cannot insantiate')).catch(
-        (err) => {
-          expect(err).toBe('cannot insantiate')
-          return err
-        }
-      )
+      } catch (err) {
+        expect(err).toBe('oops!')
+      }
       expect.assertions(1)
     })
-    it('should handle mixed rejection', (done) => {
-      new AnalyticsBuffered(() => {
-        return Promise.reject('nope') as any
-      })
-        .then((el) => el)
-        .catch((err) => {
-          expect(err).toBe('nope')
-          done()
-        })
+    test('Will throw if a promise rejection', async () => {
+      try {
+        await new AnalyticsBuffered(() => Promise.reject('oops!'))
+      } catch (err) {
+        expect(err).toBe('oops!')
+      }
+      expect.assertions(1)
     })
-    it('should handle chained rejection', (done) => {
+
+    test('Will ignore the .then if there is a catch block', () => {
+      const thenCb = jest.fn()
       new AnalyticsBuffered(() => {
         return Promise.reject('nope') as any
       })
         .then(() => {
-          return 1
-          // throw new Error('fail')
+          thenCb()
         })
         .catch((err) => {
           expect(err).toBe('nope')
-          done()
         })
+      expect(thenCb).not.toBeCalled()
+      expect.assertions(2)
     })
   })
 })
