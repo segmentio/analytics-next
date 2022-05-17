@@ -318,6 +318,21 @@ describe('Pre-initialization', () => {
       expect(onIdentifyCb).toHaveBeenCalledWith('bar', {}, undefined)
     })
 
+    test('the "this" value of event callbacks should be Analytics', async () => {
+      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
+      ajsBuffered.on('track', function onTrackCb(this: any) {
+        expect(this).toBeInstanceOf(Analytics)
+      })
+      ajsBuffered.once('group', function trackOnceCb(this: any) {
+        expect(this).toBeInstanceOf(Analytics)
+      })
+
+      await Promise.all([
+        ajsBuffered.track('foo', { name: 123 }),
+        ajsBuffered.group('foo'),
+      ])
+    })
+
     test('"return types should not change over the lifecycle for chainable methods', async () => {
       const ajsBuffered = AnalyticsBrowser.load({ writeKey })
 
