@@ -161,6 +161,7 @@ describe('Pre-initialization', () => {
       } catch (err) {
         expect(err).toBe(errMsg)
       }
+      expect.assertions(1)
     })
 
     test('rejected promise should work as expected for initialized analytics instances', async () => {
@@ -171,6 +172,7 @@ describe('Pre-initialization', () => {
       } catch (err) {
         expect(err).toBe(errMsg)
       }
+      expect.assertions(1)
     })
   })
 
@@ -307,12 +309,11 @@ describe('Pre-initialization', () => {
         .off('alias', jest.fn)
 
       expect(result instanceof AnalyticsBuffered).toBeTruthy()
-      await ajsBuffered
       await ajsBuffered.track('foo', { name: 123 })
-      await identifyResult
       expect(onTrackCb).toHaveBeenCalledTimes(1)
       expect(onTrackCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
 
+      await identifyResult
       expect(onIdentifyCb).toHaveBeenCalledTimes(1)
       expect(onIdentifyCb).toHaveBeenCalledWith('bar', {}, undefined)
     })
