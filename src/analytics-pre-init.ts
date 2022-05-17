@@ -1,5 +1,6 @@
 import { Analytics } from './analytics'
 import { Context } from './core/context'
+import { isThenable } from './lib/is-thenable'
 
 /**
  * The names of any Analytics instance methods that can be called pre-initialization.
@@ -190,7 +191,7 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
       analytics[call.method] as Function
     )(...call.args)
 
-    if (result instanceof Promise) {
+    if (isThenable(result)) {
       // do not defer for non-async methods
       await result
     }
