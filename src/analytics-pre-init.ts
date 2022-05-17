@@ -272,7 +272,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   addDestinationMiddleware = this._createMethod('addDestinationMiddleware')
 
   private _createMethod<T extends PreInitMethodName>(methodName: T) {
-    return async (
+    return (
       ...args: Parameters<Analytics[T]>
     ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
       if (this.instance) {
