@@ -270,13 +270,6 @@ async function loadAnalytics(
 }
 
 export class AnalyticsBrowser {
-  /**
-   * Clear the global state. Useful mainly for testing.
-   */
-  static _resetGlobalState() {
-    setGlobalCDNUrl(undefined as any)
-  }
-
   static load(
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}

@@ -6,6 +6,7 @@ import { AnalyticsBuffered } from '../analytics-pre-init'
 import { Context } from '../core/context'
 import * as Factory from './test-helpers/factories'
 import { sleep } from './test-helpers/sleep'
+import { setGlobalCDNUrl } from '../lib/parse-cdn'
 
 jest.mock('unfetch')
 
@@ -28,7 +29,7 @@ describe('Pre-initialization', () => {
   const consoleErrorSpy = jest.spyOn(console, 'error')
 
   beforeEach(() => {
-    AnalyticsBrowser._resetGlobalState()
+    setGlobalCDNUrl(undefined as any)
     mockFetchSettingsResponse()
     ;(window as any).analytics = undefined
   })

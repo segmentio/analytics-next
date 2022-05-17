@@ -14,7 +14,7 @@ import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 import { PriorityQueue } from '../lib/priority-queue'
-import { getCDN } from '../lib/parse-cdn'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -85,7 +85,7 @@ const enrichBilling: Plugin = {
 const writeKey = TEST_WRITEKEY
 
 beforeEach(() => {
-  AnalyticsBrowser._resetGlobalState()
+  setGlobalCDNUrl(undefined as any)
 })
 
 describe('Initialization', () => {
