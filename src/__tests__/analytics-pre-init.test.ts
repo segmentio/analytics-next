@@ -9,6 +9,58 @@ import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 import { sleep } from './test-helpers/sleep'
 
+describe('PreInitMethodCallBuffer', () => {
+  describe('push', () => {
+    it('should return this', async () => {
+      const buffer = new PreInitMethodCallBuffer()
+      const result = buffer.push({} as any)
+      expect(result).toBeInstanceOf(PreInitMethodCallBuffer)
+    })
+  })
+  describe('toArray should return an array', () => {
+    it('toArray() should convert the map back to an array', async () => {
+      const buffer = new PreInitMethodCallBuffer()
+      const method1 = { method: 'foo' } as any
+      const method2 = { method: 'foo', args: [1] } as any
+      const method3 = { method: 'bar' } as any
+      buffer.push(method1, method2, method3)
+      expect(buffer.toArray()).toEqual([method1, method2, method3])
+    })
+  })
+
+  describe('clear', () => {
+    it('should return this', async () => {
+      const buffer = new PreInitMethodCallBuffer()
+      const result = buffer.push({} as any)
+      expect(result).toBeInstanceOf(PreInitMethodCallBuffer)
+    })
+  })
+  describe('getCalls', () => {
+    it('should return calls', async () => {
+      const buffer = new PreInitMethodCallBuffer()
+
+      const fooCall1 = {
+        method: 'foo',
+        args: ['bar'],
+      } as any
+
+      const barCall = {
+        method: 'bar',
+        args: ['foobar'],
+      } as any
+
+      const fooCall2 = {
+        method: 'foo',
+        args: ['baz'],
+      } as any
+
+      const calls: PreInitMethodCall<any>[] = [fooCall1, fooCall2, barCall]
+      const result = buffer.push(...calls)
+      expect(result.getCalls('foo' as any)).toEqual([fooCall1, fooCall2])
+    })
+  })
+})
+
 describe('AnalyticsBuffered', () => {
   describe('Happy path', () => {
     it('should return a promise-like object', async () => {
@@ -177,7 +229,10 @@ describe('flushAnalyticsCallsInNewTask', () => {
       reject: jest.fn(),
     } as PreInitMethodCall<any>
 
-    const buffer = new PreInitMethodCallBuffer([synchronousMethod, asyncMethod])
+    const buffer = new PreInitMethodCallBuffer().push(
+      synchronousMethod,
+      asyncMethod
+    )
 
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     expect(synchronousMethod.resolve).not.toBeCalled()
@@ -199,7 +254,7 @@ describe('flushAnalyticsCallsInNewTask', () => {
       reject: jest.fn(),
     } as PreInitMethodCall<any>
 
-    const buffer = new PreInitMethodCallBuffer([asyncMethod])
+    const buffer = new PreInitMethodCallBuffer().push(asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     await sleep(0)
     expect(asyncMethod.reject).toBeCalledWith('oops!')
@@ -230,7 +285,10 @@ describe('flushAnalyticsCallsInNewTask', () => {
       reject: jest.fn(),
     } as PreInitMethodCall<any>
 
-    const buffer = new PreInitMethodCallBuffer([synchronousMethod, asyncMethod])
+    const buffer = new PreInitMethodCallBuffer().push(
+      synchronousMethod,
+      asyncMethod
+    )
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     await sleep(0)
     expect(synchronousMethod.reject).toBeCalled()

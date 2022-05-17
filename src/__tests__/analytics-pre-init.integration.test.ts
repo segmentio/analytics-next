@@ -318,7 +318,7 @@ describe('Pre-initialization', () => {
       expect(onIdentifyCb).toHaveBeenCalledWith('bar', {}, undefined)
     })
 
-    test('the "this" value of event callbacks should be Analytics', async () => {
+    test('the "this" value of "emitted" event callbacks should be Analytics', async () => {
       const ajsBuffered = AnalyticsBrowser.load({ writeKey })
       ajsBuffered.on('track', function onTrackCb(this: any) {
         expect(this).toBeInstanceOf(Analytics)

@@ -141,12 +141,6 @@ type MethodCallMap = Partial<Record<PreInitMethodName, PreInitMethodCall[]>>
  *  Represents any and all the buffered method calls that occurred before initialization.
  */
 export class PreInitMethodCallBuffer {
-  constructor(calls?: PreInitMethodCall[]) {
-    if (calls) {
-      this.push(...calls)
-    }
-  }
-
   private _value = {} as MethodCallMap
 
   public toArray(): PreInitMethodCall[] {
@@ -161,7 +155,7 @@ export class PreInitMethodCallBuffer {
     return (this._value[methodName] ?? []) as PreInitMethodCall<T>[]
   }
 
-  push(...calls: PreInitMethodCall[]): void {
+  push(...calls: PreInitMethodCall[]): PreInitMethodCallBuffer {
     calls.forEach((el) => {
       if (this._value[el.method]) {
         this._value[el.method]?.push(el)
@@ -169,10 +163,12 @@ export class PreInitMethodCallBuffer {
         this._value[el.method] = [el]
       }
     })
+    return this
   }
 
-  clear(): void {
+  clear(): PreInitMethodCallBuffer {
     this._value = {} as MethodCallMap
+    return this
   }
 }
 
