@@ -157,11 +157,11 @@ export class PreInitMethodCallBuffer {
   }
 
   push(...calls: PreInitMethodCall[]): PreInitMethodCallBuffer {
-    calls.forEach((el) => {
-      if (this._value[el.method]) {
-        this._value[el.method]?.push(el)
+    calls.forEach((call) => {
+      if (this._value[call.method]) {
+        this._value[call.method]!.push(call)
       } else {
-        this._value[el.method] = [el]
+        this._value[call.method] = [call]
       }
     })
     return this
