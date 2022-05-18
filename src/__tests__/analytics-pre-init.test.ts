@@ -9,6 +9,10 @@ import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 import { sleep } from './test-helpers/sleep'
 
+afterEach(() => {
+  jest.clearAllMocks()
+})
+
 describe('PreInitMethodCallBuffer', () => {
   describe('push', () => {
     it('should return this', async () => {
@@ -75,6 +79,19 @@ describe('AnalyticsBuffered', () => {
       expect(typeof buffered.finally).toBe('function')
     })
 
+    it('should have instance and ctx properties defined when loader is done', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      const ctx = new Context({ type: 'track' })
+      const buffered = new AnalyticsBuffered(() =>
+        Promise.resolve<[Analytics, Context]>([ajs, ctx])
+      )
+      expect(buffered.instance).not.toBeDefined()
+      expect(buffered.ctx).not.toBeDefined()
+      await buffered // finish loading
+      expect(buffered.instance).toBe(ajs)
+      expect(buffered.ctx).toBe(ctx)
+    })
+
     it('should convert to a promise on await', async () => {
       const ajs = new Analytics({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
@@ -84,6 +101,20 @@ describe('AnalyticsBuffered', () => {
 
       expect(analytics).toEqual(ajs)
       expect(context).toEqual(ctx)
+    })
+
+    it('should set the "this" value of any proxied analytics methods to the analytics instance', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      jest.spyOn(ajs, 'track').mockImplementation(function (this: Analytics) {
+        expect(this).toBe(ajs)
+        return Promise.resolve(ctx)
+      })
+      const ctx = new Context({ type: 'track' })
+      const result: [Analytics, Context] = [ajs, ctx]
+      const buffered = new AnalyticsBuffered(() => Promise.resolve(result))
+      await buffered // finish loading
+      void buffered.track('foo', {})
+      expect.assertions(1)
     })
   })
 
@@ -144,10 +175,6 @@ describe('callAnalyticsMethod', () => {
       writeKey: 'abc',
     })
   })
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
-
   it('should change called to true', async () => {
     methodCall.called = false
     await callAnalyticsMethod(ajs, methodCall)
