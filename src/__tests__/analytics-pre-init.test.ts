@@ -9,10 +9,6 @@ import { Analytics } from '../analytics'
 import { Context } from '../core/context'
 import { sleep } from './test-helpers/sleep'
 
-afterEach(() => {
-  jest.clearAllMocks()
-})
-
 describe('PreInitMethodCallBuffer', () => {
   describe('push', () => {
     it('should return this', async () => {

@@ -33,9 +33,7 @@ describe('Pre-initialization', () => {
     mockFetchSettingsResponse()
     ;(window as any).analytics = undefined
   })
-  afterEach(() => {
-    jest.clearAllMocks()
-  })
+
   describe('Smoke', () => {
     test('load should instantiate an ajsBuffered object that resolves into an Analytics object', async () => {
       const ajsBuffered = AnalyticsBrowser.load({ writeKey })
