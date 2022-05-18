@@ -1,8 +1,8 @@
 import { Analytics } from '@/analytics'
-import { AnalyticsBuffered } from '@/analytics-pre-init'
+import { AnalyticsBuffered } from '@/core/buffer'
 import { Context } from '@/core/context'
-import { AnalyticsBrowser } from '../../browser'
-import { assertNotAny, assertIs } from '../test-helpers/type-assertions'
+import { AnalyticsBrowser } from '@/browser'
+import { assertNotAny, assertIs } from '@/test-helpers/type-assertions'
 
 /**
  * These are general typescript definition tests;

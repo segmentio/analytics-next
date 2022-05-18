@@ -1,6 +1,6 @@
-import { Analytics } from './analytics'
-import { Context } from './core/context'
-import { isThenable } from './lib/is-thenable'
+import { Analytics } from '../../analytics'
+import { Context } from '../context'
+import { isThenable } from '../../lib/is-thenable'
 
 /**
  * The names of any Analytics instance methods that can be called pre-initialization.

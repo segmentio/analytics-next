@@ -66,6 +66,10 @@ describe('RetryQueue', () => {
 })
 
 describe('backoffs', () => {
+  afterEach(() => {
+    jest.clearAllTimers()
+  })
+
   it('accepts new work', () => {
     const queue = new PriorityQueue<Item>(10, [])
 

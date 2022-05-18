@@ -21,7 +21,7 @@ import {
   flushSetAnonymousID,
   flushOn,
   getSnippetWindowBuffer,
-} from './analytics-pre-init'
+} from './core/buffer'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */

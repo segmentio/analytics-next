@@ -4,10 +4,10 @@ import {
   PreInitMethodCall,
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
-} from '../analytics-pre-init'
-import { Analytics } from '../analytics'
-import { Context } from '../core/context'
-import { sleep } from './test-helpers/sleep'
+} from '..'
+import { Analytics } from '../../../analytics'
+import { Context } from '../../context'
+import { sleep } from '@/test-helpers/sleep'
 
 describe('PreInitMethodCallBuffer', () => {
   describe('push', () => {
