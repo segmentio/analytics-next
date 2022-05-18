@@ -20,8 +20,8 @@ import {
   flushAddSourceMiddleware,
   flushSetAnonymousID,
   flushOn,
-  getSnippetWindowBuffer,
 } from './core/buffer'
+import { getSnippetWindowBuffer } from './core/buffer/snippet'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
