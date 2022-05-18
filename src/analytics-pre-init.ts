@@ -276,8 +276,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
       ...args: Parameters<Analytics[T]>
     ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
       if (this.instance) {
-        const method = this.instance[methodName] as Function
-        return method.call(this.instance, ...args)
+        return (this.instance[methodName] as Function)(...args)
       }
 
       return new Promise((resolve, reject) => {
