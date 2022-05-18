@@ -25,14 +25,14 @@
     "cjs": "tsc -p tsconfig.cjs.json",
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
-    "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
+    "lint": "tsc --noEmit && eslint '**/*.{js,jsx,ts,tsx}'",
     "prepare": "yarn pkg && husky install",
     "test": "jest"
   },
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "25.13 KB"
+      "limit": "25.9 KB"
     }
   ],
   "lint-staged": {

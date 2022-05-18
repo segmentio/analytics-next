@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom'
 import { Analytics } from '../analytics'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
 import { AnalyticsBrowser } from '../browser'
+import { setGlobalCDNUrl } from '../lib/parse-cdn'
 import { TEST_WRITEKEY } from './test-writekeys'
 
 const writeKey = TEST_WRITEKEY
@@ -33,6 +34,7 @@ describe('queryString', () => {
     windowSpy.mockImplementation(
       () => jsd.window as unknown as Window & typeof globalThis
     )
+    setGlobalCDNUrl(undefined as any)
   })
 
   it('applies query string logic before analytics is finished initializing', async () => {

@@ -47,8 +47,7 @@ describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
   beforeEach(async () => {
-    jest.restoreAllMocks()
-    jest.resetAllMocks()
+    ;(window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>
       <head>
@@ -220,25 +219,22 @@ describe('standalone bundle', () => {
     }, 0)
   })
   it('sets buffered event emitters before loading destinations', async (done) => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    mocked(unfetch).mockImplementation(() => fetchSettings as Promise<Response>)
 
     const operations: string[] = []
 
     track.mockImplementationOnce(() => operations.push('track'))
-    on.mockImplementationOnce(() => operations.push('on', 'on'))
+    on.mockImplementationOnce(() => operations.push('on'))
     register.mockImplementationOnce(() => operations.push('register'))
 
     await install()
 
     setTimeout(() => {
-      expect(on).toHaveBeenCalledTimes(2)
-      expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+      expect(on).toHaveBeenCalledTimes(1)
       expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
 
       expect(operations).toEqual([
         // should run before any plugin is registered
-        'on',
         'on',
         // should run before any events are sent downstream
         'register',

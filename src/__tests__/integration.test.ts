@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
@@ -13,7 +14,7 @@ import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
 import { PriorityQueue } from '../lib/priority-queue'
-import { getCDN } from '../lib/parse-cdn'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -82,6 +83,10 @@ const enrichBilling: Plugin = {
 }
 
 const writeKey = TEST_WRITEKEY
+
+beforeEach(() => {
+  setGlobalCDNUrl(undefined as any)
+})
 
 describe('Initialization', () => {
   beforeEach(async () => {
@@ -177,6 +182,7 @@ describe('Initialization', () => {
     await sleep(200)
     expect(ready).toHaveBeenCalled()
   })
+
   describe('cdn', () => {
     it('should get the correct CDN in plugins if the CDN overridden', async () => {
       const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
