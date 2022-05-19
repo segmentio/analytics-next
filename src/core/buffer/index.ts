@@ -24,7 +24,6 @@ export type PreInitMethodName =
   | 'off'
   | 'on'
   | 'addSourceMiddleware'
-  | 'addIntegrationMiddleware'
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
@@ -174,11 +173,11 @@ type AnalyticsLoader = (
 export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   instance?: Analytics
   ctx?: Context
-  private preInitBuffer = new PreInitMethodCallBuffer()
-  private promise: Promise<[Analytics, Context]>
+  private _preInitBuffer = new PreInitMethodCallBuffer()
+  private _promise: Promise<[Analytics, Context]>
   constructor(loader: AnalyticsLoader) {
-    this.promise = loader(this.preInitBuffer)
-    this.promise
+    this._promise = loader(this._preInitBuffer)
+    this._promise
       .then(([ajs, ctx]) => {
         this.instance = ajs
         this.ctx = ctx
@@ -198,7 +197,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
       onrejected?: (reason: unknown) => T2 | PromiseLike<T2>
     ]
   ) {
-    return this.promise.then(...args)
+    return this._promise.then(...args)
   }
 
   catch<TResult = never>(
@@ -209,11 +208,11 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
         | null
     ]
   ) {
-    return this.promise.catch(...args)
+    return this._promise.catch(...args)
   }
 
   finally(...args: [onfinally?: (() => void) | undefined | null]) {
-    return this.promise.finally(...args)
+    return this._promise.finally(...args)
   }
 
   trackSubmit = this._createMethod('trackSubmit')
@@ -232,7 +231,6 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   off = this._createChainableMethod('off')
   on = this._createChainableMethod('on')
   addSourceMiddleware = this._createMethod('addSourceMiddleware')
-  addIntegrationMiddleware = this._createMethod('addIntegrationMiddleware')
   setAnonymousId = this._createMethod('setAnonymousId')
   addDestinationMiddleware = this._createMethod('addDestinationMiddleware')
 
@@ -245,7 +243,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
       }
 
       return new Promise((resolve, reject) => {
-        this.preInitBuffer.push({
+        this._preInitBuffer.push({
           method: methodName,
           args,
           resolve: resolve,
@@ -263,10 +261,10 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
     return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
       if (this.instance) {
-        const method = this.instance[methodName] as (...args: any[]) => void
-        void method(...args)
+        void (this.instance[methodName] as Function)(...args)
+        return this
       } else {
-        this.preInitBuffer.push({
+        this._preInitBuffer.push({
           method: methodName,
           args,
           resolve: () => {},
