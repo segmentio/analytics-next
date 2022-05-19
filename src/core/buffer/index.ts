@@ -261,8 +261,8 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
     return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
       if (this.instance) {
-        const method = this.instance[methodName] as (...args: any[]) => void
-        void method(...args)
+        void (this.instance[methodName] as Function)(...args)
+        return this
       } else {
         this.preInitBuffer.push({
           method: methodName,

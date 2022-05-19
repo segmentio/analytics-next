@@ -99,17 +99,32 @@ describe('AnalyticsBuffered', () => {
       expect(context).toEqual(ctx)
     })
 
-    it('should set the "this" value of any proxied analytics methods to the analytics instance', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
-      jest.spyOn(ajs, 'track').mockImplementation(function (this: Analytics) {
-        expect(this).toBe(ajs)
-        return Promise.resolve(ctx)
+    describe('the "this" value of proxied analytics methods', () => {
+      test('should be set to the analytics instances for buffered methods that return a promise', async () => {
+        const ajs = new Analytics({ writeKey: 'foo' })
+        jest.spyOn(ajs, 'track').mockImplementation(function (this: Analytics) {
+          expect(this).toBe(ajs)
+          return Promise.resolve(ctx)
+        })
+        const ctx = new Context({ type: 'track' })
+        const result: [Analytics, Context] = [ajs, ctx]
+        const buffered = new AnalyticsBuffered(() => Promise.resolve(result))
+        await buffered // finish loading
+        void buffered.track('foo', {})
+        expect.assertions(1)
       })
-      const ctx = new Context({ type: 'track' })
+    })
+    test('should be set to the AnalyticsBuffered instances for chainable methods', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      jest.spyOn(ajs, 'on').mockImplementation(function (this: Analytics) {
+        expect(this).toBe(ajs)
+        return ajs
+      })
+      const ctx = new Context({ type: 'page' })
       const result: [Analytics, Context] = [ajs, ctx]
       const buffered = new AnalyticsBuffered(() => Promise.resolve(result))
-      await buffered // finish loading
-      void buffered.track('foo', {})
+      await buffered // finish loadingf
+      void buffered.on('foo', jest.fn)
       expect.assertions(1)
     })
   })
