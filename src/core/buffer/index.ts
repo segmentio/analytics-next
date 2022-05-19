@@ -24,7 +24,6 @@ export type PreInitMethodName =
   | 'off'
   | 'on'
   | 'addSourceMiddleware'
-  | 'addIntegrationMiddleware'
   | 'setAnonymousId'
   | 'addDestinationMiddleware'
 
@@ -232,7 +231,6 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   off = this._createChainableMethod('off')
   on = this._createChainableMethod('on')
   addSourceMiddleware = this._createMethod('addSourceMiddleware')
-  addIntegrationMiddleware = this._createMethod('addIntegrationMiddleware')
   setAnonymousId = this._createMethod('setAnonymousId')
   addDestinationMiddleware = this._createMethod('addDestinationMiddleware')
 
