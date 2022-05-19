@@ -83,8 +83,8 @@ describe('loading ajsDestinations', () => {
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
   })
 
-  it('loads version overrides', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('loads version overrides', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
 
     const withVersionSettings = destinations.find(
       (d) => d.name === 'WithVersionSettings'
@@ -102,15 +102,15 @@ describe('loading ajsDestinations', () => {
   })
 
   // This test should temporary. It must be deleted once we fix the Iterable metadata
-  it('ignores Iterable', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('ignores Iterable', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     const iterable = destinations.find((d) => d.name === 'Iterable')
     expect(iterable).toBeUndefined()
   })
 
   describe('versionSettings.components', () => {
-    it('ignores [componentType:browser] when bundlingStatus is unbundled', async () => {
-      const destinations = await ajsDestinations(
+    it('ignores [componentType:browser] when bundlingStatus is unbundled', () => {
+      const destinations = ajsDestinations(
         {
           integrations: {
             'Some server destination': {
@@ -139,8 +139,8 @@ describe('loading ajsDestinations', () => {
       expect(destinations.length).toBe(1)
     })
 
-    it('loads [componentType:browser] when bundlingStatus is not defined', async () => {
-      const destinations = await ajsDestinations(
+    it('loads [componentType:browser] when bundlingStatus is not defined', () => {
+      const destinations = ajsDestinations(
         {
           integrations: {
             'Some server destination': {
@@ -169,14 +169,14 @@ describe('loading ajsDestinations', () => {
     })
   })
 
-  it('loads type:browser legacy ajs destinations from cdn', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('loads type:browser legacy ajs destinations from cdn', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     // ignores segment.io
     expect(destinations.length).toBe(5)
   })
 
-  it('ignores type:browser when bundlingStatus is unbundled', async () => {
-    const destinations = await ajsDestinations(
+  it('ignores type:browser when bundlingStatus is unbundled', () => {
+    const destinations = ajsDestinations(
       {
         integrations: {
           'Some server destination': {
@@ -199,8 +199,8 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(1)
   })
 
-  it('loads type:browser when bundlingStatus is not defined', async () => {
-    const destinations = await ajsDestinations(
+  it('loads type:browser when bundlingStatus is not defined', () => {
+    const destinations = ajsDestinations(
       {
         integrations: {
           'Some server destination': {
@@ -222,13 +222,13 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(2)
   })
 
-  it('ignores destinations of type:server', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('ignores destinations of type:server', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
-  it('does not load integrations when All:false', async () => {
-    const destinations = await ajsDestinations(
+  it('does not load integrations when All:false', () => {
+    const destinations = ajsDestinations(
       cdnResponse,
       {
         All: false,
@@ -238,8 +238,8 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(0)
   })
 
-  it('loads integrations when All:false, <integration>: true', async () => {
-    const destinations = await ajsDestinations(
+  it('loads integrations when All:false, <integration>: true', () => {
+    const destinations = ajsDestinations(
       cdnResponse,
       {
         All: false,
@@ -252,8 +252,8 @@ describe('loading ajsDestinations', () => {
     expect(destinations[0].name).toEqual('Amplitude')
   })
 
-  it('adds a tsub middleware for matching rules', async () => {
-    const destinations = await ajsDestinations(cdnResponse)
+  it('adds a tsub middleware for matching rules', () => {
+    const destinations = ajsDestinations(cdnResponse)
     const amplitude = destinations.find((d) => d.name === 'Amplitude')
     expect(amplitude?.middleware.length).toBe(1)
   })
@@ -341,7 +341,7 @@ describe('remote loading', () => {
     return dest
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
 
@@ -774,7 +774,7 @@ describe('option overrides', () => {
       },
     }
 
-    const destinations = await ajsDestinations(cdnSettings, {}, initOptions)
+    const destinations = ajsDestinations(cdnSettings, {}, initOptions)
     const amplitude = destinations[0]
 
     await amplitude.load(Context.system(), {} as Analytics)

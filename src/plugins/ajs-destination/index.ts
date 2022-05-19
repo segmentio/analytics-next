@@ -305,11 +305,11 @@ export class LegacyDestination implements Plugin {
   }
 }
 
-export async function ajsDestinations(
+export function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
   options: InitOptions = {}
-): Promise<LegacyDestination[]> {
+): LegacyDestination[] {
   if (isServer()) {
     return []
   }
