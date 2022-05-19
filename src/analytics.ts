@@ -364,7 +364,8 @@ export class Analytics extends Emitter {
     return this
   }
 
-  async addDestinationMiddleware(
+  /* TODO: This does not have to return a promise? */
+  addDestinationMiddleware(
     integrationName: string,
     ...middlewares: DestinationMiddlewareFunction[]
   ): Promise<Analytics> {
@@ -377,7 +378,7 @@ export class Analytics extends Emitter {
     legacyDestinations.forEach((destination) => {
       destination.addMiddleware(...middlewares)
     })
-    return this
+    return Promise.resolve(this)
   }
 
   setAnonymousId(id?: string): ID {

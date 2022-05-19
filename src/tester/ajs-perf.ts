@@ -6,7 +6,7 @@ import lighthouse from 'lighthouse/lighthouse-core'
 // @ts-ignore
 import reportGenerator from 'lighthouse/report/generator/report-generator'
 
-export async function gatherLighthouseMetrics(
+export function gatherLighthouseMetrics(
   page: playwright.Page
 ): Promise<unknown> {
   return lighthouse(page.url(), {
