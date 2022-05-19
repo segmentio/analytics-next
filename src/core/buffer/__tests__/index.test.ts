@@ -100,7 +100,7 @@ describe('AnalyticsBuffered', () => {
     })
 
     describe('the "this" value of proxied analytics methods', () => {
-      test('should be set to the analytics instances for buffered methods that return a promise', async () => {
+      test('should be the ajs instance for non-chainable methods (that return a promise)', async () => {
         const ajs = new Analytics({ writeKey: 'foo' })
         jest.spyOn(ajs, 'track').mockImplementation(function (this: Analytics) {
           expect(this).toBe(ajs)
@@ -115,7 +115,7 @@ describe('AnalyticsBuffered', () => {
       })
     })
 
-    test('should be set to the AnalyticsBuffered instances for chainable methods', async () => {
+    test('should be the ajs instance for chainable methods', async () => {
       const ajs = new Analytics({ writeKey: 'foo' })
       jest.spyOn(ajs, 'on').mockImplementation(function (this: Analytics) {
         expect(this).toBe(ajs)
