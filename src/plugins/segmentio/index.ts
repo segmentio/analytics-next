@@ -12,7 +12,7 @@ import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 
-export interface SegmentioSettings {
+export type SegmentioSettings = {
   apiKey: string
   apiHost?: string
   protocol?: 'http' | 'https'

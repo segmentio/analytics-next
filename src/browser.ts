@@ -162,6 +162,7 @@ async function registerPlugins(
   const remotePlugins = await remoteLoader(
     legacySettings,
     analytics.integrations,
+    mergedSettings,
     options.obfuscate
   ).catch(() => [])
 
