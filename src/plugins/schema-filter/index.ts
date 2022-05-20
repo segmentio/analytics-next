@@ -29,7 +29,6 @@ function disabledActionDestinations(
   })
 
   return (settings.remotePlugins ?? []).reduce((acc, p) => {
-    // @ts-expect-error element implicitly has an 'any' type because p.settings is a JSONValue
     if (p.settings['subscriptions']) {
       if (disabledRemotePlugins.includes(p.name)) {
         // @ts-expect-error element implicitly has an 'any' type because p.settings is a JSONValue
