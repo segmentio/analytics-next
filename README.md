@@ -19,6 +19,7 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you can [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
 
 ## 💡 Using with Segment
+
 1. Create a javascript source at [Segment](https://app.segment.com) - new sources will automatically be using Analytics 2.0! Segment will automatically generate a snippet that you can add to your website. For more information visit our [documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/)).
 
 2. Start tracking!
@@ -30,7 +31,7 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 1. Install the package
 
 ```sh
-# npm 
+# npm
 npm install @segment/analytics-next
 
 # yarn
@@ -40,22 +41,37 @@ yarn add @segment/analytics-next
 pnpm add @segment/analytics-next
 ```
 
-2. Import the package into your project and you're good to go (with working types)! 
-```
-import { Analytics, AnalyticsBrowser, Context } from '@segment/analytics-next' 
+2. Import the package into your project and you're good to go (with working types)!
 
-async function loadAnalytics(): Promise<Analytics> { 
-  const [ analytics, context ] = await AnalyticsBrowser.load({ writeKey }) 
-  return analytics 
-}
+```ts
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+
+document.getElementById('foo').addEventListener('click', () => {
+  analytics.track('clicked!')
+})
 ```
 
 ### using `React`
+
+```tsx
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+
+const App = () => (
+  <div>
+    <button onClick={() => analytics.track('clicked!')}>Track</button>
+  </div>
+)
+```
+
 There is a [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vite` with `Vue 3`
 
-1. add to your `index.html` 
+1. add to your `index.html`
 
 ```html
 <script>
@@ -89,10 +105,9 @@ export const useSegment = () => {
     analytics,
   })
 }
-
 ```
 
-3. in component 
+3. in component
 
 ```vue
 <template>
@@ -106,20 +121,18 @@ import { useSegment } from './services/segment'
 export default defineComponent({
   setup() {
     const { analytics } = useSegment()
-    
-    function track() { 
+
+    function track() {
       analytics?.track('Hello world')
     }
-    
+
     return {
-      track
+      track,
     }
-  }
+  },
 })
 </script>
-
 ```
-
 
 # 🐒 Development
 
