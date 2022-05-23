@@ -271,11 +271,25 @@ async function loadAnalytics(
   return [analytics, ctx]
 }
 
+/**
+ * The public browser interface for this package.
+ * Use AnalyticsBrowser.load to create an instance.
+ */
 export class AnalyticsBrowser extends AnalyticsBuffered {
   private constructor(loader: AnalyticsLoader) {
     super(loader)
   }
 
+  /**
+   * Instantiates an object exposing Analytics methods.
+   *
+   * ```ts
+   * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+   *
+   * ajs.track("foo")
+   * ...
+   * ```
+   */
   static load(
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
