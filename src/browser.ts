@@ -18,6 +18,7 @@ import {
   PreInitMethodCallBuffer,
   flushAnalyticsCallsInNewTask,
   flushAddSourceMiddleware,
+  AnalyticsLoader,
   flushSetAnonymousID,
   flushOn,
 } from './core/buffer'
@@ -270,12 +271,16 @@ async function loadAnalytics(
   return [analytics, ctx]
 }
 
-export class AnalyticsBrowser {
+export class AnalyticsBrowser extends AnalyticsBuffered {
+  private constructor(loader: AnalyticsLoader) {
+    super(loader)
+  }
+
   static load(
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
-  ): AnalyticsBuffered {
-    return new AnalyticsBuffered((preInitBuffer) =>
+  ): AnalyticsBrowser {
+    return new this((preInitBuffer) =>
       loadAnalytics(settings, options, preInitBuffer)
     )
   }

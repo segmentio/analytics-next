@@ -166,7 +166,7 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
   }
 }
 
-type AnalyticsLoader = (
+export type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
 ) => Promise<[Analytics, Context]>
 
