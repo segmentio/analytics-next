@@ -16,6 +16,7 @@ import {
   Analytics,
   Context,
 } from '../../'
+import { useWriteKey } from '../utils/hooks/useWritekey'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -44,10 +45,7 @@ export default function Home(): React.ReactElement {
     AnalyticsBrowserSettings | undefined
   >(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useLocalStorage(
-    'segment_playground_write_key',
-    ''
-  )
+  const [writeKey, setWriteKey] = useWriteKey()
   const [url, setURL] = useLocalStorage(
     'segment_playground_cdn_url',
     'https://cdn.segment.com'
