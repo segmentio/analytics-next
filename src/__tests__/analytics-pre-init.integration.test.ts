@@ -2,7 +2,6 @@ import { AnalyticsBrowser } from '..'
 import unfetch from 'unfetch'
 import { mocked } from 'ts-jest/utils'
 import { Analytics } from '../analytics'
-import { AnalyticsBuffered } from '../core/buffer'
 import { Context } from '../core/context'
 import * as Factory from '../test-helpers/factories'
 import { sleep } from '../test-helpers/sleep'
@@ -35,22 +34,22 @@ describe('Pre-initialization', () => {
   })
 
   describe('Smoke', () => {
-    test('load should instantiate an ajsBuffered object that resolves into an Analytics object', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      expect(ajsBuffered).toBeInstanceOf<typeof AnalyticsBuffered>(
-        AnalyticsBuffered
+    test('load should instantiate an object that resolves into an Analytics object', async () => {
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      expect(ajsBrowser).toBeInstanceOf<typeof AnalyticsBrowser>(
+        AnalyticsBrowser
       )
-      expect(ajsBuffered.instance).toBeUndefined()
-      const [ajs, ctx] = await ajsBuffered
-      expect(ajsBuffered.instance).toBeInstanceOf<typeof Analytics>(Analytics)
-      expect(ajsBuffered.ctx).toBeInstanceOf<typeof Context>(Context)
+      expect(ajsBrowser.instance).toBeUndefined()
+      const [ajs, ctx] = await ajsBrowser
+      expect(ajsBrowser.instance).toBeInstanceOf<typeof Analytics>(Analytics)
+      expect(ajsBrowser.ctx).toBeInstanceOf<typeof Context>(Context)
       expect(ajs).toBeInstanceOf<typeof Analytics>(Analytics)
       expect(ctx).toBeInstanceOf<typeof Context>(Context)
     })
 
     test('If a user sends a single pre-initialized track event, that event gets flushed', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      const trackCtxPromise = ajsBuffered.track('foo', { name: 'john' })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      const trackCtxPromise = ajsBrowser.track('foo', { name: 'john' })
       const result = await trackCtxPromise
       expect(result).toBeInstanceOf(Context)
       expect(trackSpy).toBeCalledWith('foo', { name: 'john' })
@@ -58,25 +57,25 @@ describe('Pre-initialization', () => {
     })
 
     test('"return types should not change over the lifecycle for ordinary methods', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
 
-      const trackCtxPromise1 = ajsBuffered.track('foo', { name: 'john' })
+      const trackCtxPromise1 = ajsBrowser.track('foo', { name: 'john' })
       expect(trackCtxPromise1).toBeInstanceOf(Promise)
       const ctx1 = await trackCtxPromise1
       expect(ctx1).toBeInstanceOf(Context)
 
       // loaded
-      const trackCtxPromise2 = ajsBuffered.track('foo', { name: 'john' })
+      const trackCtxPromise2 = ajsBrowser.track('foo', { name: 'john' })
       expect(trackCtxPromise2).toBeInstanceOf(Promise)
       const ctx2 = await trackCtxPromise2
       expect(ctx2).toBeInstanceOf(Context)
     })
 
     test('If a user sends multiple events, all of those event gets flushed', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      const trackCtxPromise = ajsBuffered.track('foo', { name: 'john' })
-      const trackCtxPromise2 = ajsBuffered.track('bar', { age: 123 })
-      const identifyCtxPromise = ajsBuffered.identify('hello')
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      const trackCtxPromise = ajsBrowser.track('foo', { name: 'john' })
+      const trackCtxPromise2 = ajsBrowser.track('bar', { age: 123 })
+      const identifyCtxPromise = ajsBrowser.identify('hello')
 
       await Promise.all([trackCtxPromise, trackCtxPromise2, identifyCtxPromise])
 
@@ -92,8 +91,8 @@ describe('Pre-initialization', () => {
   describe('Promise API', () => {
     describe('.then', () => {
       test('.then should be called on success', (done) => {
-        const ajsBuffered = AnalyticsBrowser.load({ writeKey: 'abc' })
-        const newPromise = ajsBuffered.then(([analytics, context]) => {
+        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
+        const newPromise = ajsBrowser.then(([analytics, context]) => {
           expect(analytics).toBeInstanceOf<typeof Analytics>(Analytics)
           expect(context).toBeInstanceOf<typeof Context>(Context)
           done()
@@ -102,8 +101,8 @@ describe('Pre-initialization', () => {
       })
 
       it('.then should pass to the next .then', async () => {
-        const ajsBuffered = AnalyticsBrowser.load({ writeKey: 'abc' })
-        const obj = ajsBuffered.then(() => ({ foo: 123 } as const))
+        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
+        const obj = ajsBrowser.then(() => ({ foo: 123 } as const))
         expect(obj).toBeInstanceOf(Promise)
         await obj.then((el) => expect(el.foo).toBe(123))
       })
@@ -113,8 +112,8 @@ describe('Pre-initialization', () => {
       it('should be capable of handling errors if using promise syntax', () => {
         browserLoadSpy.mockImplementationOnce((): any => Promise.reject(errMsg))
 
-        const ajsBuffered = AnalyticsBrowser.load({ writeKey: 'abc' })
-        const newPromise = ajsBuffered.catch((reason) => {
+        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
+        const newPromise = ajsBrowser.catch((reason) => {
           expect(reason).toBe(errMsg)
         })
         expect(newPromise).toBeInstanceOf(Promise)
@@ -124,20 +123,20 @@ describe('Pre-initialization', () => {
 
     describe('.finally', () => {
       test('success', async () => {
-        const ajsBuffered = AnalyticsBrowser.load({ writeKey: 'abc' })
+        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
         const thenCb = jest.fn()
         const finallyCb = jest.fn()
         const catchCb = jest.fn()
-        await ajsBuffered.then(thenCb).catch(catchCb).finally(finallyCb)
+        await ajsBrowser.then(thenCb).catch(catchCb).finally(finallyCb)
         expect(catchCb).not.toBeCalled()
         expect(finallyCb).toBeCalledTimes(1)
         expect(thenCb).toBeCalledTimes(1)
       })
       test('rejection', async () => {
         browserLoadSpy.mockImplementationOnce((): any => Promise.reject(errMsg))
-        const ajsBuffered = AnalyticsBrowser.load({ writeKey: 'abc' })
+        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
         const onFinallyCb = jest.fn()
-        await ajsBuffered
+        await ajsBrowser
           .catch((reason) => {
             expect(reason).toBe(errMsg)
           })
@@ -153,9 +152,9 @@ describe('Pre-initialization', () => {
   describe('Load failures', () => {
     test('rejected promise should work as expected for buffered analytics instances', async () => {
       trackSpy.mockImplementationOnce(() => Promise.reject(errMsg))
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
       try {
-        await ajsBuffered.track('foo', { name: 'john' })
+        await ajsBrowser.track('foo', { name: 'john' })
       } catch (err) {
         expect(err).toBe(errMsg)
       }
@@ -236,12 +235,12 @@ describe('Pre-initialization', () => {
 
   describe('Emitter methods', () => {
     test('If, before initialization, .on("track") is called, the .on method should be called after analytics load', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
       const args = ['track', jest.fn()] as const
-      ajsBuffered.on(...args)
+      ajsBrowser.on(...args)
       expect(onSpy).not.toHaveBeenCalledWith(...args)
 
-      await ajsBuffered
+      await ajsBrowser
       expect(onSpy).toBeCalledWith(...args)
       expect(onSpy).toHaveBeenCalledTimes(1)
     })
@@ -276,38 +275,38 @@ describe('Pre-initialization', () => {
 
     test('Should work with "on" events if a track event is called after load is complete', async () => {
       const onTrackCb = jest.fn()
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      ajsBuffered.on('track', onTrackCb)
-      await ajsBuffered
-      await ajsBuffered.track('foo', { name: 123 })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      ajsBrowser.on('track', onTrackCb)
+      await ajsBrowser
+      await ajsBrowser.track('foo', { name: 123 })
 
       expect(onTrackCb).toHaveBeenCalledTimes(1)
       expect(onTrackCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
     })
-    test('"on, off, once" should return ajsBuffered', () => {
+    test('"on, off, once" should return ajsBrowser', () => {
       const analytics = AnalyticsBrowser.load({ writeKey })
       expect(
         [
           analytics.on('track', jest.fn),
           analytics.off('track', jest.fn),
           analytics.once('track', jest.fn),
-        ].map((el) => el instanceof AnalyticsBuffered)
+        ].map((el) => el instanceof AnalyticsBrowser)
       ).toEqual([true, true, true])
     })
 
     test('"emitted" events should be chainable', async () => {
       const onTrackCb = jest.fn()
       const onIdentifyCb = jest.fn()
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      const identifyResult = ajsBuffered.identify('bar')
-      const result = ajsBuffered
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      const identifyResult = ajsBrowser.identify('bar')
+      const result = ajsBrowser
         .on('track', onTrackCb)
         .on('identify', onIdentifyCb)
         .once('group', jest.fn)
         .off('alias', jest.fn)
 
-      expect(result instanceof AnalyticsBuffered).toBeTruthy()
-      await ajsBuffered.track('foo', { name: 123 })
+      expect(result instanceof AnalyticsBrowser).toBeTruthy()
+      await ajsBrowser.track('foo', { name: 123 })
       expect(onTrackCb).toHaveBeenCalledTimes(1)
       expect(onTrackCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
 
@@ -317,40 +316,40 @@ describe('Pre-initialization', () => {
     })
 
     test('the "this" value of "emitted" event callbacks should be Analytics', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
-      ajsBuffered.on('track', function onTrackCb(this: any) {
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      ajsBrowser.on('track', function onTrackCb(this: any) {
         expect(this).toBeInstanceOf(Analytics)
       })
-      ajsBuffered.once('group', function trackOnceCb(this: any) {
+      ajsBrowser.once('group', function trackOnceCb(this: any) {
         expect(this).toBeInstanceOf(Analytics)
       })
 
       await Promise.all([
-        ajsBuffered.track('foo', { name: 123 }),
-        ajsBuffered.group('foo'),
+        ajsBrowser.track('foo', { name: 123 }),
+        ajsBrowser.group('foo'),
       ])
     })
 
     test('"return types should not change over the lifecycle for chainable methods', async () => {
-      const ajsBuffered = AnalyticsBrowser.load({ writeKey })
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
 
-      const result1 = ajsBuffered.on('track', jest.fn)
-      expect(result1).toBeInstanceOf(AnalyticsBuffered)
+      const result1 = ajsBrowser.on('track', jest.fn)
+      expect(result1).toBeInstanceOf(AnalyticsBrowser)
       await result1
       // loaded
-      const result2 = ajsBuffered.on('track', jest.fn)
-      expect(result2).toBeInstanceOf(AnalyticsBuffered)
+      const result2 = ajsBrowser.on('track', jest.fn)
+      expect(result2).toBeInstanceOf(AnalyticsBrowser)
     })
   })
 
   describe('Multi-instance', () => {
     it('should not throw an error', async () => {
-      const ajsBuffered1 = AnalyticsBrowser.load({ writeKey: 'foo' })
-      const ajsBuffered2 = AnalyticsBrowser.load({ writeKey: 'abc' })
-      expect(ajsBuffered1).toBeInstanceOf(AnalyticsBuffered)
-      expect(ajsBuffered2).toBeInstanceOf(AnalyticsBuffered)
-      await ajsBuffered1
-      await ajsBuffered2
+      const ajsBrowser1 = AnalyticsBrowser.load({ writeKey: 'foo' })
+      const ajsBrowser2 = AnalyticsBrowser.load({ writeKey: 'abc' })
+      expect(ajsBrowser1).toBeInstanceOf(AnalyticsBrowser)
+      expect(ajsBrowser2).toBeInstanceOf(AnalyticsBrowser)
+      await ajsBrowser1
+      await ajsBrowser2
     })
   })
 })

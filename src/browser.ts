@@ -18,6 +18,7 @@ import {
   PreInitMethodCallBuffer,
   flushAnalyticsCallsInNewTask,
   flushAddSourceMiddleware,
+  AnalyticsLoader,
   flushSetAnonymousID,
   flushOn,
 } from './core/buffer'
@@ -270,12 +271,30 @@ async function loadAnalytics(
   return [analytics, ctx]
 }
 
-export class AnalyticsBrowser {
+/**
+ * The public browser interface for this package.
+ * Use AnalyticsBrowser.load to create an instance.
+ */
+export class AnalyticsBrowser extends AnalyticsBuffered {
+  private constructor(loader: AnalyticsLoader) {
+    super(loader)
+  }
+
+  /**
+   * Instantiates an object exposing Analytics methods.
+   *
+   * ```ts
+   * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+   *
+   * ajs.track("foo")
+   * ...
+   * ```
+   */
   static load(
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
-  ): AnalyticsBuffered {
-    return new AnalyticsBuffered((preInitBuffer) =>
+  ): AnalyticsBrowser {
+    return new this((preInitBuffer) =>
       loadAnalytics(settings, options, preInitBuffer)
     )
   }
