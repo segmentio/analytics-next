@@ -1,11 +1,9 @@
 import Link from 'next/link'
-import React, { useEffect } from 'react'
-import { analytics } from '.'
+import React from 'react'
+import { useAnalytics } from '../../context/analytics'
 
 const OtherPage: React.FC = () => {
-  useEffect(() => {
-    analytics.identify('hello').then((res) => console.log('identified!', res))
-  }, [])
+  const { analytics } = useAnalytics()
   return (
     <div>
       <input
@@ -22,7 +20,7 @@ const OtherPage: React.FC = () => {
         }}
         type="submit"
       />
-      <Link href={'/vanilla'}>Vanilla Home Link</Link>
+      <Link href={'/vanilla'}>Go Back</Link>
     </div>
   )
 }

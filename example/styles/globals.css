@@ -19,3 +19,8 @@ a {
 * {
   box-sizing: border-box;
 }
+
+label > input,
+label > button {
+  margin: 1px 5px;
+}

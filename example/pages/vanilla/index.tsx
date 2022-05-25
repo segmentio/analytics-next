@@ -1,13 +1,9 @@
 import Link from 'next/link'
-import { AnalyticsBrowser } from '../../../'
-
-export const analytics = AnalyticsBrowser.load({
-  writeKey: process.env.NEXT_PUBLIC_WRITEKEY,
-})
-
-analytics.then(() => console.log('loaded!'))
+import React from 'react'
+import { useAnalytics } from '../../context/analytics'
 
 const Vanilla: React.FC = () => {
+  const { analytics } = useAnalytics()
   analytics.identify('hello').then((res) => console.log('identified!', res))
   return (
     <div>
