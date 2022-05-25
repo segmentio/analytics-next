@@ -7,16 +7,10 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
-import { useLocalStorage } from '../utils/hooks/useLocalStorage'
 import { useDidMountEffect } from '../utils/hooks/useDidMountEffect'
-
-import {
-  AnalyticsBrowserSettings,
-  AnalyticsBrowser,
-  Analytics,
-  Context,
-} from '../../'
-import { useWriteKey } from '../utils/hooks/useWritekey'
+import { useAnalytics } from '../context/analytics'
+import { AnalyticsBrowserSettings, Analytics, Context } from '../../'
+import { useCDNUrl, useWriteKey } from '../utils/hooks/useConfig'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -46,10 +40,8 @@ export default function Home(): React.ReactElement {
   >(undefined)
   const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
   const [writeKey, setWriteKey] = useWriteKey()
-  const [url, setURL] = useLocalStorage(
-    'segment_playground_cdn_url',
-    'https://cdn.segment.com'
-  )
+  const [url, setURL] = useCDNUrl()
+  const analyticsBrowser = useAnalytics()
 
   useDidMountEffect(() => {
     fetchAnalytics()
@@ -83,10 +75,7 @@ export default function Home(): React.ReactElement {
 
   async function fetchAnalytics() {
     try {
-      const [response, ctx] = await AnalyticsBrowser.load({
-        ...settings,
-        writeKey,
-      })
+      const [response, ctx] = await analyticsBrowser
       setCtx(ctx)
       setAnalytics(response)
       setAnalyticsReady(true)

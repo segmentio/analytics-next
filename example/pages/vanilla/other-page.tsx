@@ -1,11 +1,9 @@
 import Link from 'next/link'
 import React, { useEffect } from 'react'
-import { analytics } from '.'
+import { useAnalytics } from '../../context/analytics'
 
 const OtherPage: React.FC = () => {
-  useEffect(() => {
-    analytics.identify('hello').then((res) => console.log('identified!', res))
-  }, [])
+  const analytics = useAnalytics()
   return (
     <div>
       <input
