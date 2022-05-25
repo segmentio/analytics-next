@@ -55,7 +55,7 @@ document.body?.addEventListener('click', () => {
 })
 ```
 
-### using `React` (Simple)
+### using `React` (Simple / client-side only)
 
 ```tsx
 import { AnalyticsBrowser } from '@segment/analytics-next'
