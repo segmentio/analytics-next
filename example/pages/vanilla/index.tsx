@@ -3,7 +3,7 @@ import React from 'react'
 import { useAnalytics } from '../../context/analytics'
 
 const Vanilla: React.FC = () => {
-  const analytics = useAnalytics()
+  const { analytics } = useAnalytics()
   analytics.identify('hello').then((res) => console.log('identified!', res))
   return (
     <div>
