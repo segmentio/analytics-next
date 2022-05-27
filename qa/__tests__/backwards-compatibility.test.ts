@@ -2,7 +2,7 @@ import { difference } from 'lodash'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
-import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
+import { TEST_WRITEKEY } from '../../src/test-helpers/test-writekeys'
 
 describe('Backwards compatibility', () => {
   test('provides all same properties', async () => {

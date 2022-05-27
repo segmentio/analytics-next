@@ -1,7 +1,7 @@
 import * as loader from '../../../lib/load-script'
 import { remoteLoader } from '..'
 import { AnalyticsBrowser } from '../../../browser'
-import { InitOptions } from '../../../analytics'
+import { InitOptions } from '../../../core/analytics'
 
 const pluginFactory = jest.fn()
 

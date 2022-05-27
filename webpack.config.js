@@ -26,14 +26,14 @@ const config = {
   devtool: 'source-map',
   entry: {
     index: {
-      import: path.resolve(__dirname, 'src/browser-umd.ts'),
+      import: path.resolve(__dirname, 'src/browser/browser-umd.ts'),
       library: {
         name: 'AnalyticsNext',
         type: 'umd',
       },
     },
     standalone: {
-      import: path.resolve(__dirname, 'src/standalone.ts'),
+      import: path.resolve(__dirname, 'src/browser/standalone.ts'),
       library: {
         name: 'AnalyticsNext',
         type: 'window',

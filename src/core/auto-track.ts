@@ -1,4 +1,4 @@
-import { Analytics } from '../analytics'
+import { Analytics } from './analytics'
 import { SegmentEvent, Options } from '../core/events'
 import { pTimeout } from './callback'
 

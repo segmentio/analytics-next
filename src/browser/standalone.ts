@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
-import { setVersionType } from './plugins/segmentio/normalize'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
+import { setVersionType } from '../plugins/segmentio/normalize'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
@@ -20,11 +20,11 @@ if (process.env.ASSET_PATH) {
 setVersionType('web')
 
 import { install } from './standalone-analytics'
-import './lib/csp-detection'
-import { shouldPolyfill } from './lib/browser-polyfill'
-import { RemoteMetrics } from './core/stats/remote-metrics'
-import { embeddedWriteKey } from './lib/embedded-write-key'
-import { onCSPError } from './lib/csp-detection'
+import '../lib/csp-detection'
+import { shouldPolyfill } from '../lib/browser-polyfill'
+import { RemoteMetrics } from '../core/stats/remote-metrics'
+import { embeddedWriteKey } from '../lib/embedded-write-key'
+import { onCSPError } from '../lib/csp-detection'
 
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)

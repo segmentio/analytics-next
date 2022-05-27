@@ -1,4 +1,4 @@
-import { AnalyticsNode } from '../node'
+import { AnalyticsNode } from '../..'
 
 const writeKey = 'foo'
 

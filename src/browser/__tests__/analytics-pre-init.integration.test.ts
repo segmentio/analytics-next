@@ -1,11 +1,11 @@
-import { AnalyticsBrowser } from '..'
+import { AnalyticsBrowser } from '../..'
 import unfetch from 'unfetch'
 import { mocked } from 'ts-jest/utils'
-import { Analytics } from '../analytics'
-import { Context } from '../core/context'
-import * as Factory from '../test-helpers/factories'
-import { sleep } from '../test-helpers/sleep'
-import { setGlobalCDNUrl } from '../lib/parse-cdn'
+import { Analytics } from '../../core/analytics'
+import { Context } from '../../core/context'
+import * as Factory from '../../test-helpers/factories'
+import { sleep } from '../../test-helpers/sleep'
+import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 
 jest.mock('unfetch')
 

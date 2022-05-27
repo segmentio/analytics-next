@@ -1,11 +1,11 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { InitOptions } from '../analytics'
-import { AnalyticsBrowser, loadLegacySettings } from '../browser'
-import { snippet } from '../tester/__fixtures__/segment-snippet'
+import { InitOptions } from '../../'
+import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
+import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsSnippet } from '../standalone-analytics'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -15,7 +15,7 @@ const register = jest.fn()
 const addSourceMiddleware = jest.fn()
 const on = jest.fn()
 
-jest.mock('../analytics', () => ({
+jest.mock('@/core/analytics', () => ({
   Analytics: (_: unknown, options?: InitOptions): unknown => ({
     track,
     identify,

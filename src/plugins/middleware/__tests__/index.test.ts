@@ -1,5 +1,5 @@
 import { MiddlewareFunction, sourceMiddlewarePlugin } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
 import { asPromise } from '../../../lib/as-promise'

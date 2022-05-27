@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import { Analytics } from '../analytics'
 import { Context } from '../context'
 import { isThenable } from '../../lib/is-thenable'
 

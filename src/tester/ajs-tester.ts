@@ -1,4 +1,4 @@
-import { Analytics } from '../analytics'
+import { Analytics } from '../core/analytics'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
 import playwright from 'playwright'

@@ -1,9 +1,10 @@
 import jsdom, { JSDOM } from 'jsdom'
+import { AnalyticsBrowser, LegacySettings } from '..'
+import { snippet } from '../../tester/__fixtures__/segment-snippet'
+import { pWhile } from '../../lib/p-while'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { LegacySettings } from '../browser'
-import { pWhile } from '../lib/p-while'
-import { snippet } from '../tester/__fixtures__/segment-snippet'
+import { RemoteMetrics } from '../../core/stats/remote-metrics'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -36,8 +37,6 @@ describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
   let jsd: JSDOM
-  let windowSpy: jest.SpyInstance
-  let documentSpy: jest.SpyInstance
 
   beforeEach(() => {
     jest.restoreAllMocks()
@@ -68,8 +67,8 @@ describe('standalone bundle', () => {
       virtualConsole,
     })
 
-    windowSpy = jest.spyOn(global, 'window', 'get')
-    documentSpy = jest.spyOn(global, 'document', 'get')
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    const documentSpy = jest.spyOn(global, 'document', 'get')
 
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
@@ -82,15 +81,52 @@ describe('standalone bundle', () => {
     )
   })
 
-  it('loads AJS on execution', async () => {
+  it('catches initialization errors and reports them', async () => {
+    window.analyticsWriteKey = 'write_key_abc_123'
+    const errorMessages: string[] = []
+    const metrics: { metric: string; tags: string[] }[] = []
+
+    jest.spyOn(console, 'error').mockImplementationOnce((...args) => {
+      errorMessages.push(args.join(','))
+    })
+
+    jest
+      .spyOn(RemoteMetrics.prototype, 'increment')
+      .mockImplementationOnce((metric, tags) => {
+        metrics.push({
+          metric,
+          tags,
+        })
+      })
+
+    jest
+      .spyOn(AnalyticsBrowser, 'standalone')
+      .mockRejectedValueOnce(new Error('Ohhh nooo'))
+
     await import('../standalone')
 
     await pWhile(
-      () => window.analytics?.initialized !== true,
+      () => errorMessages.length === 0,
       () => {}
     )
 
-    expect(window.analytics).not.toBeUndefined()
-    expect(window.analytics.initialized).toBe(true)
+    expect(metrics).toMatchInlineSnapshot(`
+      Array [
+        Object {
+          "metric": "analytics_js.invoke.error",
+          "tags": Array [
+            "type:initialization",
+            "message:Ohhh nooo",
+            "name:Error",
+            "wk:write_key_abc_123",
+          ],
+        },
+      ]
+    `)
+    expect(errorMessages).toMatchInlineSnapshot(`
+      Array [
+        "[analytics.js],Failed to load Analytics.js,Error: Ohhh nooo",
+      ]
+    `)
   })
 })

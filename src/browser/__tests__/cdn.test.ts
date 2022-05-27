@@ -1,8 +1,8 @@
-import { AnalyticsBrowser } from '..'
+import { AnalyticsBrowser } from '../..'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { createSuccess } from '../test-helpers/factories'
-import { setGlobalCDNUrl } from '../lib/parse-cdn'
+import { createSuccess } from '../../test-helpers/factories'
+import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 
 jest.mock('unfetch', () => {
   return jest.fn()

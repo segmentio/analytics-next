@@ -1,5 +1,5 @@
 import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
-import { Analytics } from '../../analytics'
+import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'

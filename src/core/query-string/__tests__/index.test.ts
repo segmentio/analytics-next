@@ -1,5 +1,5 @@
 import { queryString } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../analytics'
 
 let analytics: Analytics
 

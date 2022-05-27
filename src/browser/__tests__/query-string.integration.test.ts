@@ -1,9 +1,9 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../analytics'
+import { Analytics } from '../../core/analytics'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser } from '../browser'
-import { setGlobalCDNUrl } from '../lib/parse-cdn'
-import { TEST_WRITEKEY } from './test-writekeys'
+import { AnalyticsBrowser } from '..'
+import { setGlobalCDNUrl } from '../../lib/parse-cdn'
+import { TEST_WRITEKEY } from '../../test-helpers/test-writekeys'
 
 const writeKey = TEST_WRITEKEY
 
@@ -67,11 +67,9 @@ describe('queryString', () => {
   })
 
   it('applies query string logic if window.location.search is present', async () => {
-    jest.mock('../analytics')
     const mockQueryString = jest
-      .fn()
-      .mockImplementation(() => Promise.resolve())
-    Analytics.prototype.queryString = mockQueryString
+      .spyOn(Analytics.prototype, 'queryString')
+      .mockImplementation(() => Promise.resolve([]))
 
     jsd.reconfigure({
       url: 'https://localhost/?ajs_id=123',
@@ -82,11 +80,9 @@ describe('queryString', () => {
   })
 
   it('applies query string logic if window.location.hash is present', async () => {
-    jest.mock('../analytics')
     const mockQueryString = jest
-      .fn()
-      .mockImplementation(() => Promise.resolve())
-    Analytics.prototype.queryString = mockQueryString
+      .spyOn(Analytics.prototype, 'queryString')
+      .mockImplementation(() => Promise.resolve([]))
 
     jsd.reconfigure({
       url: 'https://localhost/#/?ajs_id=123',
@@ -104,7 +100,7 @@ describe('queryString', () => {
   })
 
   it('applies query string logic if window.location.hash is present in different formats', async () => {
-    jest.mock('../analytics')
+    jest.mock('@/core/analytics')
     const mockQueryString = jest
       .fn()
       .mockImplementation(() => Promise.resolve())

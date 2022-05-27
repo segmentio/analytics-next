@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../analytics'
 import { pWhile } from '../../../lib/p-while'
 import * as timer from '../../../lib/priority-queue/backoff'
 import {

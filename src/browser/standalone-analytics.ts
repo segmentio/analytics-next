@@ -1,6 +1,6 @@
-import { Analytics, InitOptions } from './analytics'
-import { AnalyticsBrowser } from './browser'
-import { embeddedWriteKey } from './lib/embedded-write-key'
+import { Analytics, InitOptions } from '../core/analytics'
+import { AnalyticsBrowser } from '.'
+import { embeddedWriteKey } from '../lib/embedded-write-key'
 
 export type AnalyticsSnippet = Analytics & {
   _loadOptions?: InitOptions
