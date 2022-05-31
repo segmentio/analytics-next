@@ -333,15 +333,15 @@ export class Analytics extends Emitter {
     } else {
       dispatched = await this.queue.dispatch(ctx)
     }
-    const endTime = Date.now()
-    const elapsedTime = endTime - startTime
+    const elapsedTime = Date.now() - startTime
+    const timeoutInMs = this.settings.timeout
 
     if (callback) {
       dispatched = await invokeCallback(
         dispatched,
         callback,
-        Math.max((this.settings.timeout ?? 300) - elapsedTime, 0),
-        this.settings.timeout
+        Math.max((timeoutInMs ?? 300) - elapsedTime, 0),
+        timeoutInMs
       )
     }
     if (this._debug) {
