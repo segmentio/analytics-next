@@ -1,4 +1,8 @@
-module.exports = {
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+module.exports = withBundleAnalyzer({
   webpack: (config) => {
     if (config.mode === 'development') {
       config.module.rules.push({
@@ -15,4 +19,4 @@ module.exports = {
 
     return config
   },
-}
+})

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { tsubMiddleware } from '..'
 import { toFacade } from '../../../lib/to-facade'
 

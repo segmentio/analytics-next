@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
@@ -12,6 +13,8 @@ import { isOffline } from '../core/connection'
 import * as SegmentPlugin from '../plugins/segmentio'
 import jar from 'js-cookie'
 import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
+import { PriorityQueue } from '../lib/priority-queue'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -80,6 +83,10 @@ const enrichBilling: Plugin = {
 }
 
 const writeKey = TEST_WRITEKEY
+
+beforeEach(() => {
+  setGlobalCDNUrl(undefined as any)
+})
 
 describe('Initialization', () => {
   beforeEach(async () => {
@@ -176,6 +183,27 @@ describe('Initialization', () => {
     expect(ready).toHaveBeenCalled()
   })
 
+  describe('cdn', () => {
+    it('should get the correct CDN in plugins if the CDN overridden', async () => {
+      const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
+      await AnalyticsBrowser.load({
+        cdnURL: overriddenCDNUrl,
+        writeKey,
+        plugins: [
+          {
+            ...xt,
+            load: async () => {
+              expect(window.analytics).toBeUndefined()
+              expect(getCDN()).toContain(overriddenCDNUrl)
+            },
+          },
+        ],
+      })
+      expect(fetchCalls[0][0]).toContain(overriddenCDNUrl)
+      expect.assertions(3)
+    })
+  })
+
   it('calls page if initialpageview is set', async () => {
     jest.mock('../analytics')
     const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
@@ -192,6 +220,42 @@ describe('Initialization', () => {
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
     expect(mockPage).not.toHaveBeenCalled()
+  })
+
+  it('does not use a persisted queue when disableClientPersistence is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistence: true,
+      }
+    )
+
+    expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(false)
+  })
+
+  it('uses a persisted queue by default', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
+  })
+
+  it('disables identity persistance when disableClientPersistence is true', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        disableClientPersistence: true,
+      }
+    )
+
+    expect(ajs.user().options.persist).toBe(false)
+    expect((ajs.group() as Group).options.persist).toBe(false)
   })
 
   it('fetch remote source settings by default', async () => {
@@ -594,7 +658,7 @@ describe('addDestinationMiddleware', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -697,16 +761,14 @@ describe('deregister', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
   it('deregisters a plugin given its name', async () => {
-    const unload = jest.fn(
-      (): Promise<unknown> => {
-        return Promise.resolve()
-      }
-    )
+    const unload = jest.fn((): Promise<unknown> => {
+      return Promise.resolve()
+    })
     xt.unload = unload
 
     const [analytics] = await AnalyticsBrowser.load({
@@ -874,7 +936,7 @@ describe('.Integrations', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 

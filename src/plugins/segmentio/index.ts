@@ -4,6 +4,7 @@ import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
 import batch from './batched-dispatcher'
@@ -11,9 +12,10 @@ import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 
-export interface SegmentioSettings {
+export type SegmentioSettings = {
   apiKey: string
   apiHost?: string
+  protocol?: 'http' | 'https'
 
   addBundledMetadata?: boolean
   unbundledIntegrations?: string[]
@@ -48,14 +50,17 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  const buffer = new PersistedPriorityQueue(
-    analytics.queue.queue.maxAttempts,
-    `dest-Segment.io`
-  )
+  const buffer = analytics.options.disableClientPersistence
+    ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
+    : new PersistedPriorityQueue(
+        analytics.queue.queue.maxAttempts,
+        `dest-Segment.io`
+      )
   const flushing = false
 
   const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
-  const remote = `https://${apiHost}`
+  const protocol = settings?.protocol ?? 'https'
+  const remote = `${protocol}://${apiHost}`
 
   const client =
     settings?.deliveryStrategy?.strategy === 'batching'

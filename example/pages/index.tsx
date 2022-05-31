@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Head from 'next/head'
 import Editor from 'react-simple-code-editor'
 import { highlight, languages } from 'prismjs/components/prism-core'
@@ -7,8 +7,14 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
-
-import { AnalyticsSettings, AnalyticsBrowser, Analytics, Context } from '../../'
+import { useDidMountEffect } from '../utils/hooks/useDidMountEffect'
+import { useAnalytics } from '../context/analytics'
+import {
+  AnalyticsBrowserSettings,
+  Analytics,
+  Context,
+  AnalyticsBrowser,
+} from '../../'
 
 const jsontheme = {
   scheme: 'tomorrow',
@@ -33,13 +39,19 @@ const jsontheme = {
 
 export default function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [settings, setSettings] = useState<AnalyticsSettings | undefined>(
-    undefined
-  )
-  const [analyticsReady, setAnalyticsReady] = useState<boolean>(false)
-  const [writeKey, setWriteKey] = useState<string>('')
 
-  const newEvent = () => {
+  const writeKeyRef = useRef<HTMLInputElement>()
+  const cdnURLRef = useRef<HTMLInputElement>()
+
+  const {
+    analytics: analyticsBrowser,
+    cdnURL,
+    setCDNUrl,
+    writeKey,
+    setWriteKey,
+  } = useAnalytics()
+
+  const mockTraits = (): any => {
     const fakerFns = [
       ...Object.entries(faker.name),
       ...Object.entries(faker.commerce),
@@ -59,57 +71,34 @@ export default function Home(): React.ReactElement {
       }
     }, {})
 
-    return JSON.stringify(event, null, '  ')
+    return event
   }
 
-  const [event, setEvent] = React.useState('')
+  const [event, setEvent] = React.useState({} as ReturnType<typeof mockTraits>)
   const [ctx, setCtx] = React.useState<Context>()
 
-  async function fetchAnalytics() {
-    const [response, ctx] = await AnalyticsBrowser.load({
-      ...settings,
-      writeKey,
-    })
-
-    if (response) {
-      setCtx(ctx)
-      setAnalytics(response)
-      setAnalyticsReady(true)
-      setEvent(newEvent())
-      // @ts-ignore
-      window.analytics = response
+  useEffect(() => {
+    async function handleAnalyticsLoading(browser: AnalyticsBrowser) {
+      try {
+        const [response, ctx] = await browser
+        setCtx(ctx)
+        setAnalytics(response)
+        setEvent(mockTraits())
+        // @ts-ignore
+        window.analytics = response
+      } catch (err) {
+        console.error(err)
+        setCtx(undefined)
+        setAnalytics(undefined)
+        setEvent({})
+      }
     }
-  }
+    handleAnalyticsLoading(analyticsBrowser)
+  }, [analyticsBrowser])
 
-  const track = async (e) => {
-    e.preventDefault()
+  const track = async (e: any) => {}
 
-    if (!analyticsReady) {
-      console.log('not ready yet')
-    }
-
-    const evt = JSON.parse(event)
-    const ctx = await analytics.track(evt?.event ?? 'Track Event', evt)
-    setCtx(ctx)
-
-    ctx.flush()
-  }
-
-  const identify = async (e) => {
-    e.preventDefault()
-
-    if (!analyticsReady) {
-      console.log('not ready yet')
-    }
-
-    const evt = JSON.parse(event)
-    const { userId = 'Test User', ...traits } = evt
-    const ctx = await analytics.identify(userId, traits)
-
-    setCtx(ctx)
-
-    ctx.flush()
-  }
+  const identify = async (e: any) => {}
 
   return (
     <div className="drac-spacing-md-x">
@@ -124,19 +113,20 @@ export default function Home(): React.ReactElement {
       <form
         onSubmit={(e) => {
           e.preventDefault()
-          setSettings({ writeKey: writeKey })
-          fetchAnalytics()
+          setWriteKey(writeKeyRef!.current!.value)
+          setCDNUrl(cdnURLRef!.current!.value)
         }}
       >
         <label>
-          Writekey:
-          <input
-            type="text"
-            value={writeKey}
-            onChange={(e) => setWriteKey(e.target.value)}
-          />
+          CDN:
+          <input type="text" ref={cdnURLRef} defaultValue={cdnURL} />
         </label>
-        <input type="submit" value="Submit" />
+        <br />
+        <label>
+          Writekey:
+          <input type="text" ref={writeKeyRef} defaultValue={writeKey} />
+        </label>
+        <input type="submit" value="Load Analytics" />
       </form>
 
       <main
@@ -162,8 +152,10 @@ export default function Home(): React.ReactElement {
             >
               <Editor
                 value={event}
-                onValueChange={(event) => setEvent(event)}
-                highlight={(code) => highlight(code, languages.json)}
+                onValueChange={(event) => setEvent(JSON.parse(event))}
+                highlight={(code) =>
+                  highlight(JSON.stringify(code, undefined, 2), languages.json)
+                }
                 padding={10}
                 style={{
                   fontFamily: '"Fira code", "Fira Mono", monospace',
@@ -176,8 +168,12 @@ export default function Home(): React.ReactElement {
               style={{
                 marginRight: 20,
               }}
-              disabled={!analyticsReady}
-              onClick={(e) => track(e)}
+              onClick={(e) => {
+                e.preventDefault()
+                analytics
+                  .track(event?.event ?? 'Track Event', event)
+                  .then(setCtx)
+              }}
             >
               Track
             </button>
@@ -186,8 +182,11 @@ export default function Home(): React.ReactElement {
                 marginRight: 20,
               }}
               className="drac-btn drac-bg-purple-cyan"
-              disabled={!analyticsReady}
-              onClick={(e) => identify(e)}
+              onClick={(e) => {
+                e.preventDefault()
+                const { userId = 'Test User', ...traits } = event
+                analytics.identify(userId, traits).then(setCtx)
+              }}
             >
               Identify
             </button>
@@ -197,7 +196,7 @@ export default function Home(): React.ReactElement {
               className="drac-btn drac-bg-purple"
               onClick={(e) => {
                 e.preventDefault()
-                setEvent(newEvent())
+                setEvent(mockTraits())
               }}
             >
               Shuffle Event

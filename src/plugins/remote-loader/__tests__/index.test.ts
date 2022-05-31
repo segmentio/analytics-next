@@ -1,5 +1,7 @@
 import * as loader from '../../../lib/load-script'
 import { remoteLoader } from '..'
+import { AnalyticsBrowser } from '../../../browser'
+import { InitOptions } from '../../../analytics'
 
 const pluginFactory = jest.fn()
 
@@ -30,10 +32,34 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
     expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js')
+  })
+
+  it('should attempt to load a script from the obfuscated url of each remotePlugin', async () => {
+    await remoteLoader(
+      {
+        integrations: {},
+        remotePlugins: [
+          {
+            name: 'remote plugin',
+            url: 'cdn/path/to/file.js',
+            libraryName: 'testPlugin',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      {},
+      true
+    )
+    const btoaName = btoa('to').replace(/=/g, '')
+    expect(loader.loadScript).toHaveBeenCalledWith(
+      `cdn/path/${btoaName}/file.js`
+    )
   })
 
   it('should attempt to load a script from a custom CDN', async () => {
@@ -51,6 +77,7 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
@@ -72,6 +99,7 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
@@ -98,7 +126,8 @@ describe('Remote Loader', () => {
           },
         ],
       },
-      { All: false }
+      { All: false },
+      {}
     )
 
     expect(pluginFactory).toHaveBeenCalledTimes(0)
@@ -119,7 +148,8 @@ describe('Remote Loader', () => {
           },
         ],
       },
-      { All: false, 'remote plugin': true }
+      { All: false, 'remote plugin': true },
+      {}
     )
 
     expect(pluginFactory).toHaveBeenCalledTimes(1)
@@ -145,7 +175,8 @@ describe('Remote Loader', () => {
           },
         ],
       },
-      { 'remote plugin': false }
+      { 'remote plugin': false },
+      {}
     )
 
     expect(pluginFactory).toHaveBeenCalledTimes(0)
@@ -164,6 +195,7 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
@@ -225,6 +257,7 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
@@ -266,6 +299,7 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
@@ -317,11 +351,105 @@ describe('Remote Loader', () => {
           },
         ],
       },
+      {},
       {}
     )
 
     expect(plugins).toHaveLength(1)
     expect(plugins).toEqual(expect.arrayContaining([validPlugin]))
     expect(console.warn).toHaveBeenCalledTimes(1)
+  })
+
+  it('accepts settings overrides from merged integrations', async () => {
+    const cdnSettings = {
+      integrations: {
+        remotePlugin: {
+          name: 'Charlie Brown',
+          version: '1.0',
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'remotePlugin',
+          libraryName: 'testPlugin',
+          url: 'cdn/path/to/file.js',
+          settings: {
+            name: 'Charlie Brown',
+            version: '1.0',
+            subscriptions: [],
+          },
+        },
+      ],
+    }
+
+    const userOverrides = {
+      remotePlugin: {
+        name: 'Chris Radek',
+      },
+    }
+
+    await remoteLoader(cdnSettings, userOverrides, {
+      remotePlugin: {
+        ...cdnSettings.integrations.remotePlugin,
+        ...userOverrides.remotePlugin,
+      },
+    })
+
+    expect(pluginFactory).toHaveBeenCalledTimes(1)
+    expect(pluginFactory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Chris Radek',
+        version: '1.0',
+        subscriptions: [],
+      })
+    )
+  })
+
+  it('accepts settings overrides from options (AnalyticsBrowser)', async () => {
+    const cdnSettings = {
+      integrations: {
+        remotePlugin: {
+          name: 'Charlie Brown',
+          version: '1.0',
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'remotePlugin',
+          libraryName: 'testPlugin',
+          url: 'cdn/path/to/file.js',
+          settings: {
+            name: 'Charlie Brown',
+            version: '1.0',
+            subscriptions: [],
+          },
+        },
+      ],
+    }
+
+    const initOptions: InitOptions = {
+      integrations: {
+        remotePlugin: {
+          name: 'Chris Radek',
+        },
+      },
+    }
+
+    await AnalyticsBrowser.load(
+      {
+        writeKey: 'key',
+        cdnSettings,
+      },
+      initOptions
+    )
+
+    expect(pluginFactory).toHaveBeenCalledTimes(1)
+    expect(pluginFactory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Chris Radek',
+        version: '1.0',
+        subscriptions: [],
+      })
+    )
   })
 })

@@ -8,21 +8,23 @@ import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
 
-let domain: string | undefined = undefined
-try {
-  domain = tld(new URL(window.location.href))
-} catch (_) {
-  domain = undefined
-}
+let cookieOptions: CookieAttributes | undefined
+function getCookieOptions(): CookieAttributes {
+  if (cookieOptions) {
+    return cookieOptions
+  }
 
-const cookieOptions: CookieAttributes = {
-  expires: 31536000000, // 1 year
-  secure: false,
-  path: '/',
-}
+  const domain = tld(new URL(window.location.href))
+  cookieOptions = {
+    expires: 31536000000, // 1 year
+    secure: false,
+    path: '/',
+  }
+  if (domain) {
+    cookieOptions.domain = domain
+  }
 
-if (domain) {
-  cookieOptions.domain = domain
+  return cookieOptions
 }
 
 // Default value will be updated to 'web' in `bundle-umd.ts` for web build.
@@ -34,10 +36,6 @@ export function setVersionType(version: typeof _version) {
 
 export function getVersionType(): typeof _version {
   return _version
-}
-
-export function sCookie(key: string, value: string): string | undefined {
-  return setCookie(key, value, cookieOptions)
 }
 
 type Ad = { id: string; type: string }
@@ -91,7 +89,11 @@ function ads(query: string): Ad | undefined {
   }
 }
 
-function referrerId(query: string, ctx: SegmentEvent['context']): void {
+function referrerId(
+  query: string,
+  ctx: SegmentEvent['context'],
+  disablePersistance: boolean
+): void {
   let stored = getCookie('s:context.referrer')
   let ad = ads(query)
 
@@ -106,7 +108,9 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
     ctx.referrer = { ...ctx.referrer, ...ad }
   }
 
-  setCookie('s:context.referrer', JSON.stringify(ad), cookieOptions)
+  if (!disablePersistance) {
+    setCookie('s:context.referrer', JSON.stringify(ad), getCookieOptions())
+  }
 }
 
 export function normalize(
@@ -152,7 +156,7 @@ export function normalize(
     ctx.campaign = utm(query)
   }
 
-  referrerId(query, ctx)
+  referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
 
   json.userId = json.userId || user.id()
   json.anonymousId = user.anonymousId(anonId)

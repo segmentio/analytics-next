@@ -22,7 +22,6 @@ export function queryString(
 
   const calls = []
 
-  /* eslint-disable @typescript-eslint/camelcase */
   const { ajs_uid, ajs_event, ajs_aid } = params
 
   if (ajs_aid) {
@@ -49,8 +48,6 @@ export function queryString(
     const props = pickPrefix('ajs_prop_', params)
     calls.push(analytics.track(event, props))
   }
-
-  /* eslint-enable @typescript-eslint/camelcase */
 
   return Promise.all(calls)
 }

@@ -2,7 +2,7 @@
 set -e
 
 echo '--- Install development dependencies'
-yarn install
+yarn install --frozen-lockfile
 
 echo '--- Build bundles'
 make build-prod

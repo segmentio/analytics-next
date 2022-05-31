@@ -4,14 +4,12 @@ import { setVersionType } from './plugins/segmentio/normalize'
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
   } else {
     const cdn = getCDN()
     setGlobalCDNUrl(cdn) // preserving original behavior -- TODO: neccessary?
 
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = cdn + '/analytics-next/bundles/'
   }
 }

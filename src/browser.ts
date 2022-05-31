@@ -13,6 +13,16 @@ import { remoteLoader, RemotePlugin } from './plugins/remote-loader'
 import type { RoutingRule } from './plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from './plugins/segmentio'
 import { validation } from './plugins/validation'
+import {
+  AnalyticsBuffered,
+  PreInitMethodCallBuffer,
+  flushAnalyticsCallsInNewTask,
+  flushAddSourceMiddleware,
+  AnalyticsLoader,
+  flushSetAnonymousID,
+  flushOn,
+} from './core/buffer'
+import { getSnippetWindowBuffer } from './core/buffer/snippet'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -88,33 +98,6 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
-async function flushBuffered(analytics: Analytics): Promise<void> {
-  const wa = window.analytics
-  const buffered =
-    // @ts-expect-error
-    wa && wa[0] ? [...wa] : []
-
-  for (const [operation, ...args] of buffered) {
-    if (
-      // @ts-expect-error
-      analytics[operation] &&
-      // @ts-expect-error
-      typeof analytics[operation] === 'function'
-    ) {
-      if (operation === 'addSourceMiddleware') {
-        // @ts-expect-error
-        await analytics[operation].call(analytics, ...args)
-      } else {
-        // flush each individual event as its own task, so not to block initial page loads
-        setTimeout(() => {
-          // @ts-expect-error
-          analytics[operation].call(analytics, ...args)
-        }, 0)
-      }
-    }
-  }
-}
-
 /**
  * With AJS classic, we allow users to call setAnonymousId before the library initialization.
  * This is important because some of the destinations will use the anonymousId during the initialization,
@@ -123,27 +106,26 @@ async function flushBuffered(analytics: Analytics): Promise<void> {
  * Also Ensures events can be registered before library initialization.
  * This is important so users can register to 'initialize' and any events that may fire early during setup.
  */
-function flushPreBuffer(analytics: Analytics): void {
-  const wa = window.analytics
-  const buffered =
-    // @ts-expect-error
-    wa && wa[0] ? [...wa] : []
+function flushPreBuffer(
+  analytics: Analytics,
+  buffer: PreInitMethodCallBuffer
+): void {
+  buffer.push(...getSnippetWindowBuffer())
+  flushSetAnonymousID(analytics, buffer)
+  flushOn(analytics, buffer)
+}
 
-  const anon = buffered.find(([op]) => op === 'setAnonymousId')
-  if (anon) {
-    const [, id] = anon
-    analytics.setAnonymousId(id)
-  }
-
-  const onHandlers = buffered.filter(
-    ([operation]: [string]) => operation === 'on'
-  )
-  if (onHandlers.length) {
-    onHandlers.forEach(([operation, ...args]) => {
-      // @ts-expect-error
-      analytics[operation].call(analytics, ...args)
-    })
-  }
+/**
+ * Finish flushing buffer and cleanup.
+ */
+async function flushFinalBuffer(
+  analytics: Analytics,
+  buffer: PreInitMethodCallBuffer
+): Promise<void> {
+  await flushAddSourceMiddleware(analytics, buffer)
+  flushAnalyticsCallsInNewTask(analytics, buffer)
+  // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
+  buffer.clear()
 }
 
 async function registerPlugins(
@@ -180,7 +162,9 @@ async function registerPlugins(
   const mergedSettings = mergedOptions(legacySettings, options)
   const remotePlugins = await remoteLoader(
     legacySettings,
-    analytics.integrations
+    analytics.integrations,
+    mergedSettings,
+    options.obfuscate
   ).catch(() => [])
 
   const toRegister = [
@@ -234,56 +218,85 @@ async function registerPlugins(
   return ctx
 }
 
-export class AnalyticsBrowser {
-  static async load(
+async function loadAnalytics(
+  settings: AnalyticsBrowserSettings,
+  options: InitOptions = {},
+  preInitBuffer: PreInitMethodCallBuffer
+): Promise<[Analytics, Context]> {
+  // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
+  if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+
+  const legacySettings =
+    settings.cdnSettings ??
+    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+
+  const retryQueue: boolean =
+    legacySettings.integrations['Segment.io']?.retryQueue ?? true
+
+  const opts: InitOptions = { retryQueue, ...options }
+  const analytics = new Analytics(settings, opts)
+
+  const plugins = settings.plugins ?? []
+  Context.initMetrics(legacySettings.metrics)
+
+  // needs to be flushed before plugins are registered
+  flushPreBuffer(analytics, preInitBuffer)
+
+  const ctx = await registerPlugins(
+    legacySettings,
+    analytics,
+    opts,
+    options,
+    plugins
+  )
+
+  const search = window.location.search ?? ''
+  const hash = window.location.hash ?? ''
+
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+
+  if (term.includes('ajs_')) {
+    await analytics.queryString(term).catch(console.error)
+  }
+
+  analytics.initialized = true
+  analytics.emit('initialize', settings, options)
+
+  if (options.initialPageview) {
+    analytics.page().catch(console.error)
+  }
+
+  await flushFinalBuffer(analytics, preInitBuffer)
+
+  return [analytics, ctx]
+}
+
+/**
+ * The public browser interface for this package.
+ * Use AnalyticsBrowser.load to create an instance.
+ */
+export class AnalyticsBrowser extends AnalyticsBuffered {
+  private constructor(loader: AnalyticsLoader) {
+    super(loader)
+  }
+
+  /**
+   * Instantiates an object exposing Analytics methods.
+   *
+   * ```ts
+   * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+   *
+   * ajs.track("foo")
+   * ...
+   * ```
+   */
+  static load(
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
-  ): Promise<[Analytics, Context]> {
-    // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
-    if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
-    const legacySettings =
-      settings.cdnSettings ??
-      (await loadLegacySettings(settings.writeKey, settings.cdnURL))
-
-    const retryQueue: boolean =
-      legacySettings.integrations['Segment.io']?.retryQueue ?? true
-
-    const opts: InitOptions = { retryQueue, ...options }
-    const analytics = new Analytics(settings, opts)
-
-    const plugins = settings.plugins ?? []
-    Context.initMetrics(legacySettings.metrics)
-
-    // needs to be flushed before plugins are registered
-    flushPreBuffer(analytics)
-
-    const ctx = await registerPlugins(
-      legacySettings,
-      analytics,
-      opts,
-      options,
-      plugins
+  ): AnalyticsBrowser {
+    return new this((preInitBuffer) =>
+      loadAnalytics(settings, options, preInitBuffer)
     )
-
-    analytics.initialized = true
-    analytics.emit('initialize', settings, options)
-
-    if (options.initialPageview) {
-      analytics.page().catch(console.error)
-    }
-
-    const search = window.location.search ?? ''
-    const hash = window.location.hash ?? ''
-
-    const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-    if (term.includes('ajs_')) {
-      analytics.queryString(term).catch(console.error)
-    }
-
-    await flushBuffered(analytics)
-
-    return [analytics, ctx]
   }
 
   static standalone(

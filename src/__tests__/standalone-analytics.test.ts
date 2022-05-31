@@ -1,4 +1,5 @@
 import jsdom, { JSDOM } from 'jsdom'
+import { InitOptions } from '../analytics'
 import { AnalyticsBrowser, loadLegacySettings } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsSnippet } from '../standalone-analytics'
@@ -15,7 +16,7 @@ const addSourceMiddleware = jest.fn()
 const on = jest.fn()
 
 jest.mock('../analytics', () => ({
-  Analytics: (): unknown => ({
+  Analytics: (_: unknown, options?: InitOptions): unknown => ({
     track,
     identify,
     page,
@@ -27,6 +28,7 @@ jest.mock('../analytics', () => ({
     queue: {
       queue: new PersistedPriorityQueue(1, 'event-queue'),
     },
+    options,
   }),
 }))
 
@@ -45,8 +47,7 @@ describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
   beforeEach(async () => {
-    jest.restoreAllMocks()
-    jest.resetAllMocks()
+    ;(window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>
       <head>
@@ -82,11 +83,11 @@ describe('standalone bundle', () => {
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
     windowSpy.mockImplementation(() => {
-      return (jsd.window as unknown) as Window & typeof globalThis
+      return jsd.window as unknown as Window & typeof globalThis
     })
 
     documentSpy.mockImplementation(
-      () => (jsd.window.document as unknown) as Document
+      () => jsd.window.document as unknown as Document
     )
   })
 
@@ -218,25 +219,22 @@ describe('standalone bundle', () => {
     }, 0)
   })
   it('sets buffered event emitters before loading destinations', async (done) => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    mocked(unfetch).mockImplementation(() => fetchSettings as Promise<Response>)
 
     const operations: string[] = []
 
     track.mockImplementationOnce(() => operations.push('track'))
-    on.mockImplementationOnce(() => operations.push('on', 'on'))
+    on.mockImplementationOnce(() => operations.push('on'))
     register.mockImplementationOnce(() => operations.push('register'))
 
     await install()
 
     setTimeout(() => {
-      expect(on).toHaveBeenCalledTimes(2)
-      expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+      expect(on).toHaveBeenCalledTimes(1)
       expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
 
       expect(operations).toEqual([
         // should run before any plugin is registered
-        'on',
         'on',
         // should run before any events are sent downstream
         'register',

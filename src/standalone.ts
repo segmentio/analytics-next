@@ -5,14 +5,12 @@ import { setVersionType } from './plugins/segmentio/normalize'
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = '/dist/umd/'
   } else {
     const cdn = getCDN()
     setGlobalCDNUrl(cdn)
 
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/camelcase
     __webpack_public_path__ = cdn
       ? cdn + '/analytics-next/bundles/'
       : 'https://cdn.segment.com/analytics-next/bundles/'
@@ -28,13 +26,14 @@ import { RemoteMetrics } from './core/stats/remote-metrics'
 import { embeddedWriteKey } from './lib/embedded-write-key'
 import { onCSPError } from './lib/csp-detection'
 
-function onError(err?: Error) {
+function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
 
   new RemoteMetrics().increment('analytics_js.invoke.error', [
     'type:initialization',
-    `message:${err?.message}`,
-    `name:${err?.name}`,
+    ...(err instanceof Error
+      ? [`message:${err?.message}`, `name:${err?.name}`]
+      : []),
     `wk:${embeddedWriteKey()}`,
   ])
 }

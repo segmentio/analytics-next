@@ -26,10 +26,12 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 
 ## 💻 Using as an NPM package
 
+**There is a [React example repo](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package) which outlines using the Segment npm package.**
+
 1. Install the package
 
 ```sh
-# npm 
+# npm
 npm install @segment/analytics-next
 
 # yarn
@@ -39,55 +41,93 @@ yarn add @segment/analytics-next
 pnpm add @segment/analytics-next
 ```
 
-2. Import the package into your project and you're good to go (with working types)! Example react app:
+2. Import the package into your project and you're good to go (with working types)!
 
 ```ts
-import { Analytics, AnalyticsBrowser, Context } from '@segment/analytics-next'
-import { useEffect, useState } from 'react'
-import logo from './logo.svg'
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
-function App() {
-  const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
-  const [writeKey, setWriteKey] = useState('<YOUR_WRITE_KEY>')
+const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      let [response] = await AnalyticsBrowser.load({ writeKey })
-      setAnalytics(response)
-    }
-    loadAnalytics()
-  }, [writeKey])
+analytics.identify('hello world')
 
+document.body?.addEventListener('click', () => {
+  analytics.track('document body clicked!')
+})
+```
+
+### using `React` (Simple / client-side only)
+
+```tsx
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+// we can export this instance to share with rest of our codebase.
+export const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+
+const App = () => (
+  <div>
+    <button onClick={() => analytics.track('hello world')}>Track</button>
+  </div>
+)
+```
+
+### using `React` (Advanced w/ React Context)
+
+```tsx
+import React from 'react'
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined)
+
+export const AnalyticsProvider: React.FC<{ writeKey: string }> = ({
+  children,
+  writeKey,
+}) => {
+  const analytics = React.useMemo(
+    () => AnalyticsBrowser.load({ writeKey }),
+    [writeKey]
+  )
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          onClick={(e) => {
-            e.preventDefault()
-            analytics?.track('Hello world')
-          }}
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Track
-        </a>
-      </header>
-    </div>
+    <AnalyticsContext.Provider value={analytics}>
+      {children}
+    </AnalyticsContext.Provider>
   )
 }
 
-export default App
+// Create an analytics hook that we can use with other components.
+export const useAnalytics = () => {
+ const result =  React.useContext(AnalyticsContext)
+ if (!result) {
+   throw new Error('Context used outside of its Provider!')
+ }
+ return result
+}
+
+// use the context we just created...
+const TrackButton = () => {
+  const analytics = useAnalytics()
+  return (
+    <button onClick={() => analytics.track('hello world').then(console.log)}>
+      Track!
+    </button>
+  )
+}
+
+const App = () => {
+  return (
+    <AnalyticsProvider writeKey='<YOUR_WRITE_KEY>'>
+      <TrackButton />
+    </AnalyticsProvider>
+  )
 ```
+
+More React Examples:
+
+- Our [playground](example/pages/_app.tsx) (written in NextJS) -- this can be run with `make dev`.
+- Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vite` with `Vue 3`
 
-1. add to your `index.html` 
+1. add to your `index.html`
 
 ```html
 <script>
@@ -102,29 +142,12 @@ export default App
 import { ref, reactive } from 'vue'
 import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
 
-const analytics = ref<Analytics>()
-
-export const useSegment = () => {
-  if (!analytics.value) {
-    AnalyticsBrowser.load({
-      writeKey: '<YOUR_WRITE_KEY>',
-    })
-      .then(([response]) => {
-        analytics.value = response
-      })
-      .catch((e) => {
-        console.log('error loading segment')
-      })
-  }
-
-  return reactive({
-    analytics,
-  })
-}
-
+export const analytics = AnalyticsBrowser.load({
+  writeKey: '<YOUR_WRITE_KEY>',
+})
 ```
 
-3. in component 
+3. in component
 
 ```vue
 <template>
@@ -133,25 +156,21 @@ export const useSegment = () => {
 
 <script>
 import { defineComponent } from 'vue'
-import { useSegment } from './services/segment'
+import { analytics } from './services/segment'
 
 export default defineComponent({
   setup() {
-    const { analytics } = useSegment()
-    
-    function track() { 
-      analytics?.track('Hello world')
+    function track() {
+      analytics.track('Hello world')
     }
-    
+
     return {
-      track
+      track,
     }
-  }
+  },
 })
 </script>
-
 ```
-
 
 # 🐒 Development
 

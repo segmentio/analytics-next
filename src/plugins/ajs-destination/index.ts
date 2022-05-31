@@ -97,7 +97,9 @@ export class LegacyDestination implements Plugin {
     }
 
     this.options = options
-    this.buffer = new PersistedPriorityQueue(4, `dest-${name}`)
+    this.buffer = options.disableClientPersistence
+      ? new PriorityQueue(4, [])
+      : new PersistedPriorityQueue(4, `dest-${name}`)
 
     this.scheduleFlush()
   }
@@ -303,11 +305,11 @@ export class LegacyDestination implements Plugin {
   }
 }
 
-export async function ajsDestinations(
+export function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
-  options?: InitOptions
-): Promise<LegacyDestination[]> {
+  options: InitOptions = {}
+): LegacyDestination[] {
   if (isServer()) {
     return []
   }
@@ -359,7 +361,7 @@ export async function ajsDestinations(
         name,
         version,
         integrationOptions[name],
-        options as object
+        options
       )
 
       const routing = routingRules.filter(

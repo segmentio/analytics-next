@@ -13,9 +13,14 @@ body {
 
 a {
   color: inherit;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 * {
   box-sizing: border-box;
+}
+
+label > input,
+label > button {
+  margin: 1px 5px;
 }

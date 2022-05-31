@@ -1,6 +1,6 @@
 import type { Integrations } from '../../core/events/interfaces'
 import { LegacySettings } from '../../browser'
-import { JSONValue } from '../../core/events'
+import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin } from '../../core/plugin'
 import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
@@ -14,7 +14,7 @@ export interface RemotePlugin {
   /** The UMD/global name the plugin uses. Plugins are expected to exist here with the `PluginFactory` method signature */
   libraryName: string
   /** The settings related to this plugin. */
-  settings: JSONValue
+  settings: JSONObject
 }
 
 type PluginFactory = (
@@ -44,7 +44,9 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 
 export async function remoteLoader(
   settings: LegacySettings,
-  integrations: Integrations
+  userIntegrations: Integrations,
+  mergedIntegrations: Record<string, JSONObject>,
+  obfuscate?: boolean
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
   const cdn = getCDN()
@@ -52,14 +54,35 @@ export async function remoteLoader(
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
       if (
-        (integrations.All === false && !integrations[remotePlugin.name]) ||
-        integrations[remotePlugin.name] === false
+        (userIntegrations.All === false &&
+          !userIntegrations[remotePlugin.name]) ||
+        userIntegrations[remotePlugin.name] === false
       )
         return
       try {
-        await loadScript(
-          remotePlugin.url.replace('https://cdn.segment.com', cdn)
-        )
+        if (obfuscate) {
+          const urlSplit = remotePlugin.url.split('/')
+          const name = urlSplit[urlSplit.length - 2]
+          const obfuscatedURL = remotePlugin.url.replace(
+            name,
+            btoa(name).replace(/=/g, '')
+          )
+          try {
+            await loadScript(
+              obfuscatedURL.replace('https://cdn.segment.com', cdn)
+            )
+          } catch (error) {
+            // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
+            // We should use the unobfuscated version as a fallback.
+            await loadScript(
+              remotePlugin.url.replace('https://cdn.segment.com', cdn)
+            )
+          }
+        } else {
+          await loadScript(
+            remotePlugin.url.replace('https://cdn.segment.com', cdn)
+          )
+        }
 
         const libraryName = remotePlugin.libraryName
 
@@ -67,7 +90,12 @@ export async function remoteLoader(
         if (typeof window[libraryName] === 'function') {
           // @ts-expect-error
           const pluginFactory = window[libraryName] as PluginFactory
-          const plugin = await asPromise(pluginFactory(remotePlugin.settings))
+          const plugin = await asPromise(
+            pluginFactory({
+              ...remotePlugin.settings,
+              ...mergedIntegrations[remotePlugin.name],
+            })
+          )
           const plugins = Array.isArray(plugin) ? plugin : [plugin]
 
           validate(plugins)

@@ -48,13 +48,6 @@ class Store {
   }
 }
 
-let domain: string | undefined = undefined
-try {
-  domain = tld(new URL(window.location.href))
-} catch (_) {
-  domain = undefined
-}
-
 const ONE_YEAR = 365
 
 export class Cookie extends Store {
@@ -70,11 +63,13 @@ export class Cookie extends Store {
     return cookieEnabled
   }
 
-  static defaults: CookieOptions = {
-    maxage: ONE_YEAR,
-    domain,
-    path: '/',
-    sameSite: 'Lax',
+  static get defaults(): CookieOptions {
+    return {
+      maxage: ONE_YEAR,
+      domain: tld(new URL(window.location.href)),
+      path: '/',
+      sameSite: 'Lax',
+    }
   }
 
   private options: Required<CookieOptions>
