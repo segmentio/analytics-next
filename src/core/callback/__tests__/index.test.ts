@@ -2,24 +2,39 @@ import { invokeCallback } from '..'
 import { Context } from '../../context'
 
 describe(invokeCallback, () => {
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
   it('invokes a callback asynchronously', async () => {
     const ctx = new Context({
       type: 'track',
     })
 
     const fn = jest.fn()
-    const returned = await invokeCallback(ctx, fn)
+    const returned = await invokeCallback(ctx, fn, 0)
 
     expect(fn).toHaveBeenCalledWith(ctx)
     expect(returned).toBe(ctx)
   })
 
-  it('ignores unexisting callbacks', async () => {
+  // Fixes GitHub issue: https://github.com/segmentio/analytics-next/issues/409
+  // A.JS classic waited for the timeout before invoking callback,
+  // so keep same behavior in A.JS next.
+  it('calls the callback after a timeout', async () => {
     const ctx = new Context({
       type: 'track',
     })
 
-    const returned = await invokeCallback(ctx)
+    const fn = jest.fn()
+    const timeout = 100
+
+    const startTime = Date.now()
+    const returned = await invokeCallback(ctx, fn, timeout)
+    const endTime = Date.now()
+
+    expect(fn).toHaveBeenCalled()
+    expect(endTime - startTime).toBeGreaterThanOrEqual(timeout)
     expect(returned).toBe(ctx)
   })
 
@@ -34,7 +49,7 @@ describe(invokeCallback, () => {
       })
     }
 
-    const returned = await invokeCallback(ctx, slow, 50)
+    const returned = await invokeCallback(ctx, slow, 0, 50)
     expect(returned).toBe(ctx)
 
     const logs = returned.logs()
@@ -56,7 +71,7 @@ describe(invokeCallback, () => {
       throw new Error('👻 boo!')
     }
 
-    const returned = await invokeCallback(ctx, boo)
+    const returned = await invokeCallback(ctx, boo, 0)
     expect(returned).toBe(ctx)
 
     const logs = returned.logs()
