@@ -1,5 +1,5 @@
 import { Facade } from '@segment/facade'
-import { Analytics } from '../../analytics'
+import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'

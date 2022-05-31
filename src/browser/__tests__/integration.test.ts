@@ -2,19 +2,22 @@
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../analytics'
-import { Group } from '../core/user'
-import { LegacyDestination } from '../plugins/ajs-destination'
-import { PersistedPriorityQueue } from '../lib/priority-queue/persisted'
+import { Analytics } from '../../core/analytics'
+import { Group } from '../../core/user'
+import { LegacyDestination } from '../../plugins/ajs-destination'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser, loadLegacySettings } from '../browser'
+import { AnalyticsBrowser, loadLegacySettings } from '..'
 // @ts-ignore isOffline mocked dependency is accused as unused
-import { isOffline } from '../core/connection'
-import * as SegmentPlugin from '../plugins/segmentio'
+import { isOffline } from '../../core/connection'
+import * as SegmentPlugin from '../../plugins/segmentio'
 import jar from 'js-cookie'
-import { AMPLITUDE_WRITEKEY, TEST_WRITEKEY } from './test-writekeys'
-import { PriorityQueue } from '../lib/priority-queue'
-import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
+import {
+  AMPLITUDE_WRITEKEY,
+  TEST_WRITEKEY,
+} from '../../test-helpers/test-writekeys'
+import { PriorityQueue } from '../../lib/priority-queue'
+import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -205,7 +208,7 @@ describe('Initialization', () => {
   })
 
   it('calls page if initialpageview is set', async () => {
-    jest.mock('../analytics')
+    jest.mock('@/core/analytics')
     const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
     Analytics.prototype.page = mockPage
 
@@ -215,7 +218,7 @@ describe('Initialization', () => {
   })
 
   it('does not call page if initialpageview is not set', async () => {
-    jest.mock('../analytics')
+    jest.mock('@/core/analytics')
     const mockPage = jest.fn()
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })

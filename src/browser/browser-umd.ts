@@ -1,5 +1,5 @@
-import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
-import { setVersionType } from './plugins/segmentio/normalize'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
+import { setVersionType } from '../plugins/segmentio/normalize'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
@@ -16,4 +16,4 @@ if (process.env.ASSET_PATH) {
 
 setVersionType('web')
 
-export * from './browser'
+export * from '.'

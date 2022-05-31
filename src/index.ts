@@ -1,4 +1,4 @@
-export * from './analytics'
+export * from './core/analytics'
 export * from './browser'
 export * from './node'
 

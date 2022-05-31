@@ -5,7 +5,7 @@ import {
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
 } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../analytics'
 import { Context } from '../../context'
 import { sleep } from '@/test-helpers/sleep'
 

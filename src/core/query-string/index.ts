@@ -1,6 +1,6 @@
 import { pickPrefix } from './pickPrefix'
 import { gracefulDecodeURIComponent } from './gracefulDecodeURIComponent'
-import { Analytics } from '../../analytics'
+import { Analytics } from '../analytics'
 import { Context } from '../context'
 
 export interface QueryStringParams {

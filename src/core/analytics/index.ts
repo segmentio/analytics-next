@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from './browser'
+import { AnalyticsBrowser } from '../../browser'
 import {
   AliasParams,
   DispatchedEvent,
@@ -9,26 +9,26 @@ import {
   resolvePageArguments,
   resolveUserArguments,
   UserParams,
-} from './core/arguments-resolver'
-import type { FormArgs, LinkArgs } from './core/auto-track'
-import { Callback, invokeCallback } from './core/callback'
-import { isOffline } from './core/connection'
-import { Context } from './core/context'
-import { Emitter } from './core/emitter'
-import { EventFactory, Integrations, Plan, SegmentEvent } from './core/events'
-import { Plugin } from './core/plugin'
-import { EventQueue } from './core/queue/event-queue'
-import { CookieOptions, Group, ID, User, UserOptions } from './core/user'
-import autoBind from './lib/bind-all'
-import { PersistedPriorityQueue } from './lib/priority-queue/persisted'
-import type { LegacyDestination } from './plugins/ajs-destination'
-import type { LegacyIntegration } from './plugins/ajs-destination/types'
+} from '../arguments-resolver'
+import type { FormArgs, LinkArgs } from '../auto-track'
+import { Callback, invokeCallback } from '../callback'
+import { isOffline } from '../connection'
+import { Context } from '../context'
+import { Emitter } from '../emitter'
+import { EventFactory, Integrations, Plan, SegmentEvent } from '../events'
+import { Plugin } from '../plugin'
+import { EventQueue } from '../queue/event-queue'
+import { CookieOptions, Group, ID, User, UserOptions } from '../user'
+import autoBind from '../../lib/bind-all'
+import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
+import type { LegacyDestination } from '../../plugins/ajs-destination'
+import type { LegacyIntegration } from '../../plugins/ajs-destination/types'
 import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
-} from './plugins/middleware'
-import { version } from './generated/version'
-import { PriorityQueue } from './lib/priority-queue'
+} from '../../plugins/middleware'
+import { version } from '../../generated/version'
+import { PriorityQueue } from '../../lib/priority-queue'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -245,28 +245,28 @@ export class Analytics extends Emitter {
 
   async trackClick(...args: LinkArgs): Promise<Analytics> {
     const autotrack = await import(
-      /* webpackChunkName: "auto-track" */ './core/auto-track'
+      /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.link.call(this, ...args)
   }
 
   async trackLink(...args: LinkArgs): Promise<Analytics> {
     const autotrack = await import(
-      /* webpackChunkName: "auto-track" */ './core/auto-track'
+      /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.link.call(this, ...args)
   }
 
   async trackSubmit(...args: FormArgs): Promise<Analytics> {
     const autotrack = await import(
-      /* webpackChunkName: "auto-track" */ './core/auto-track'
+      /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.form.call(this, ...args)
   }
 
   async trackForm(...args: FormArgs): Promise<Analytics> {
     const autotrack = await import(
-      /* webpackChunkName: "auto-track" */ './core/auto-track'
+      /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.form.call(this, ...args)
   }
@@ -353,7 +353,7 @@ export class Analytics extends Emitter {
 
   async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {
     const { sourceMiddlewarePlugin } = await import(
-      /* webpackChunkName: "middleware" */ './plugins/middleware'
+      /* webpackChunkName: "middleware" */ '../../plugins/middleware'
     )
 
     const integrations: Record<string, boolean> = {}
@@ -391,7 +391,7 @@ export class Analytics extends Emitter {
 
   async queryString(query: string): Promise<Context[]> {
     const { queryString } = await import(
-      /* webpackChunkName: "queryString" */ './core/query-string'
+      /* webpackChunkName: "queryString" */ '../query-string'
     )
     return queryString(this, query)
   }

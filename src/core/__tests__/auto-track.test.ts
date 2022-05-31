@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../analytics'
+import { Analytics } from '../analytics'
 
 const sleep = (time: number): Promise<void> =>
   new Promise((resolve) => {

@@ -1,4 +1,4 @@
-import { Analytics } from '@/analytics'
+import { Analytics } from '@/core/analytics'
 import { Context } from '@/core/context'
 import { AnalyticsBrowser } from '@/browser'
 import { assertNotAny, assertIs } from '@/test-helpers/type-assertions'

@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { loadLegacyVideoPlugins } from '../index'
 
 beforeEach(async () => {

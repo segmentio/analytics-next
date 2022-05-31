@@ -1,5 +1,5 @@
 import { shuffle } from 'lodash'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../analytics'
 import { PriorityQueue } from '../../../lib/priority-queue'
 import { Context } from '../../context'
 import { Plugin } from '../../plugin'

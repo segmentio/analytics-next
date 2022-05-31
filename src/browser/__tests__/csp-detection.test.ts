@@ -1,10 +1,10 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
-import { LegacySettings } from '../browser'
-import { onCSPError } from '../lib/csp-detection'
-import { pWhile } from '../lib/p-while'
-import { snippet } from '../tester/__fixtures__/segment-snippet'
+import { LegacySettings } from '..'
+import { onCSPError } from '../../lib/csp-detection'
+import { pWhile } from '../../lib/p-while'
+import { snippet } from '../../tester/__fixtures__/segment-snippet'
 
 const cdnResponse: LegacySettings = {
   integrations: {

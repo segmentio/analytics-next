@@ -1,10 +1,10 @@
-import { Analytics } from './analytics'
-import { Context } from './core/context'
-import { validation } from './plugins/validation'
-import { analyticsNode } from './plugins/analytics-node'
-import { Plugin } from './core/plugin'
-import { EventQueue } from './core/queue/event-queue'
-import { PriorityQueue } from './lib/priority-queue'
+import { Analytics } from '../core/analytics'
+import { Context } from '../core/context'
+import { validation } from '../plugins/validation'
+import { analyticsNode } from '../plugins/analytics-node'
+import { Plugin } from '../core/plugin'
+import { EventQueue } from '../core/queue/event-queue'
+import { PriorityQueue } from '../lib/priority-queue'
 
 export class AnalyticsNode {
   static async load(settings: {

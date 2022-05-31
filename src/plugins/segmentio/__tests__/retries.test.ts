@@ -1,5 +1,5 @@
 import { segmentio, SegmentioSettings } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../../core/connection'
 import { Plugin } from '../../../core/plugin'

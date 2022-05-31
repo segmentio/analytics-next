@@ -4,7 +4,7 @@ import {
   globalSetup,
   globalTeardown,
 } from '../../src/tester/ajs-perf'
-import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
+import { TEST_WRITEKEY } from '../../src/test-helpers/test-writekeys'
 
 describe('Performance', () => {
   beforeAll(async () => {
@@ -27,7 +27,7 @@ describe('Performance', () => {
       true
     )
 
-    const results = await gatherLighthouseMetrics(analyticsStub.browserPage)
+    const results: any = await gatherLighthouseMetrics(analyticsStub.browserPage)
     const audits = results.audits // Lighthouse audits
 
     // lighthouse perf score of 100

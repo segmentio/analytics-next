@@ -1,18 +1,18 @@
-import { getProcessEnv } from './lib/get-process-env'
-import { getCDN, setGlobalCDNUrl } from './lib/parse-cdn'
+import { getProcessEnv } from '../lib/get-process-env'
+import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 import fetch from 'unfetch'
-import { Analytics, AnalyticsSettings, InitOptions } from './analytics'
-import { Context } from './core/context'
-import { Plan } from './core/events'
-import { Plugin } from './core/plugin'
-import { MetricsOptions } from './core/stats/remote-metrics'
-import { mergedOptions } from './lib/merged-options'
-import { pageEnrichment } from './plugins/page-enrichment'
-import { remoteLoader, RemotePlugin } from './plugins/remote-loader'
-import type { RoutingRule } from './plugins/routing-middleware'
-import { segmentio, SegmentioSettings } from './plugins/segmentio'
-import { validation } from './plugins/validation'
+import { Analytics, AnalyticsSettings, InitOptions } from '../core/analytics'
+import { Context } from '../core/context'
+import { Plan } from '../core/events'
+import { Plugin } from '../core/plugin'
+import { MetricsOptions } from '../core/stats/remote-metrics'
+import { mergedOptions } from '../lib/merged-options'
+import { pageEnrichment } from '../plugins/page-enrichment'
+import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
+import type { RoutingRule } from '../plugins/routing-middleware'
+import { segmentio, SegmentioSettings } from '../plugins/segmentio'
+import { validation } from '../plugins/validation'
 import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
@@ -21,8 +21,8 @@ import {
   AnalyticsLoader,
   flushSetAnonymousID,
   flushOn,
-} from './core/buffer'
-import { getSnippetWindowBuffer } from './core/buffer/snippet'
+} from '../core/buffer'
+import { getSnippetWindowBuffer } from '../core/buffer/snippet'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -137,7 +137,7 @@ async function registerPlugins(
 ): Promise<Context> {
   const legacyDestinations = hasLegacyDestinations(legacySettings)
     ? await import(
-        /* webpackChunkName: "ajs-destination" */ './plugins/ajs-destination'
+        /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
       ).then((mod) => {
         return mod.ajsDestinations(legacySettings, analytics.integrations, opts)
       })
@@ -145,7 +145,7 @@ async function registerPlugins(
 
   if (legacySettings.legacyVideoPluginsEnabled) {
     await import(
-      /* webpackChunkName: "legacyVideos" */ './plugins/legacy-video-plugins'
+      /* webpackChunkName: "legacyVideos" */ '../plugins/legacy-video-plugins'
     ).then((mod) => {
       return mod.loadLegacyVideoPlugins(analytics)
     })
@@ -153,7 +153,7 @@ async function registerPlugins(
 
   const schemaFilter = opts.plan?.track
     ? await import(
-        /* webpackChunkName: "schemaFilter" */ './plugins/schema-filter'
+        /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
       ).then((mod) => {
         return mod.schemaFilter(opts.plan?.track, legacySettings)
       })
@@ -201,7 +201,7 @@ async function registerPlugins(
     )
   ) {
     await import(
-      /* webpackChunkName: "remoteMiddleware" */ './plugins/remote-middleware'
+      /* webpackChunkName: "remoteMiddleware" */ '../plugins/remote-middleware'
     ).then(async ({ remoteMiddlewares }) => {
       const middleware = await remoteMiddlewares(
         ctx,

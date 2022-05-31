@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import { Analytics } from '../analytics'
 import { groupBy } from '../../lib/group-by'
 import { ON_REMOVE_FROM_FUTURE, PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'

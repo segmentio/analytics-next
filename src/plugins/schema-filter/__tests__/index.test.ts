@@ -1,5 +1,5 @@
 import { Plugin } from '../../../core/plugin'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
 import { LegacySettings } from '../../../browser'

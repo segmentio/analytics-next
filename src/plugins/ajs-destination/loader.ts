@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import { Analytics } from '../../core/analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
