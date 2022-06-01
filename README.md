@@ -122,7 +122,7 @@ const App = () => {
 
 More React Examples:
 
-- Our [playground](example/pages/_app.tsx) (written in NextJS) -- this can be run with `make dev`.
+- Our [playground](example/pages/_app.tsx) (written in NextJS) -- this can be run with `yarn dev`.
 - Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vite` with `Vue 3`
@@ -178,8 +178,8 @@ First, clone the repo and then startup our local dev environment:
 
 ```sh
 $ git clone git@github.com:segmentio/analytics-next.git
-$ cd analytics-next
-$ make dev
+$ cd analytics-next && yarn
+$ yarn dev
 ```
 
 Then, make your changes and test them out in the test app!

@@ -1,0 +1,6 @@
+{
+  "extends": ["../../.eslintrc", "plugin:@next/next/recommended"],
+  "env": {
+    "browser": true
+  }
+}

@@ -1,17 +1,8 @@
 {
-  "ignorePatterns": [
-    "/node_modules/",
-    "/dist/",
-    "/example/",
-    "/e2e-tests/",
-    "/qa/",
-    "/*.tmp.*/"
-  ],
+  "root": true,
+  "ignorePatterns": ["node_modules", "dist"],
   "parserOptions": {
     "ecmaVersion": 2019
-  },
-  "env": {
-    "node": true
   },
   "extends": [
     // Turn on on eslint recommended rules https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
@@ -24,7 +15,11 @@
       "files": ["*.{ts,tsx}"],
       "parser": "@typescript-eslint/parser",
       "parserOptions": {
-        "project": "./tsconfig.json"
+        "project": [
+          "./tsconfig.json",
+          "./packages/*/tsconfig.json",
+          "./examples/*/tsconfig.json"
+        ]
       },
       "extends": [
         // Disable rules from eslint:recommended which are already handled by TypeScript. Enables eslint (@not typescript-eslint) rules that make sense due to TS's typechecking / transpilation.

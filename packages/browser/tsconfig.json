@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "importHelpers": true,
+    "module": "esnext",
+    "target": "ES5",
+    "declaration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "sourceMap": true,
+    "incremental": true,
+    "outDir": "dist/pkg",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "lib": ["es2020", "DOM"],
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"]
+}
