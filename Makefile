@@ -9,7 +9,8 @@ help: ## Lists all available make tasks and some short documentation about them
 
 # Installs npm dependencies
 node_modules: package.json yarn.lock
-	yarn install
+	yarn set version self
+	yarn install --immutable
 	@touch $@
 
 build: ## Builds typescript files and UMD library

@@ -2,7 +2,7 @@
 set -e
 
 echo '--- Install development dependencies'
-yarn install
+make node_modules
 
 echo '--- Build bundles'
 make build-prod
