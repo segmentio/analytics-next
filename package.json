@@ -9,8 +9,8 @@
   "browser": {
     "./dist/cjs/node": "dist/cjs/node.browser.js",
     "./dist/cjs/node.js": "dist/cjs/node.browser.js",
-    "./dist/pkg/node.js": "dist/pkg/node.browser.js",
-    "./dist/pkg/node": "./dist/pkg/node.browser.js"
+    "./dist/pkg/node": "./dist/pkg/node.browser.js",
+    "./dist/pkg/node.js": "dist/pkg/node.browser.js"
   },
   "files": [
     "dist/",
@@ -18,7 +18,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build-prep": "echo \"// This file is generated.\\nexport const version = '$npm_package_version'\" > src/generated/version.ts",
+    "build-prep": "sh scripts/build-prep.sh",
     "version": "npm run build-prep && git add src/generated/version.ts",
     "umd": "webpack",
     "pkg": "tsc",
@@ -110,6 +110,7 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "ngrok": "^4.3.1",
+    "node-gyp": "^9.0.0",
     "np": "^7.6.1",
     "p-map": "^4.0.0",
     "playwright": "^1.20.0",
@@ -127,7 +128,7 @@
     "wdio-chromedriver-service": "^6.0.4",
     "webpack": "^5.36.1",
     "webpack-bundle-analyzer": "^4.4.2",
-    "webpack-cli": "^4.8.0",
-    "yarn": "^1.22.10"
-  }
+    "webpack-cli": "^4.8.0"
+  },
+  "packageManager": "yarn@3.2.1"
 }

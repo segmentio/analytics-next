@@ -21,7 +21,7 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - yarn install
+      - make node_modules
       - yarn add --dev playwright
       - echo "+++ Running QA Tests :pray:"
       - make test-qa
@@ -45,7 +45,7 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - yarn install
+      - make node_modules
       - yarn add --dev playwright
       - echo "+++ Running Destinations QA Tests :pray:"
       - make test-qa-destinations
@@ -63,7 +63,7 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - yarn install
+      - make node_modules
       - make build-prod
       - NODE_ENV=production bash ./scripts/release.sh
     plugins:
@@ -79,7 +79,7 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - yarn install
+      - make node_modules
       - make build-prod
       - NODE_ENV=production RELEASE=true bash ./scripts/release.sh
       - npm publish
