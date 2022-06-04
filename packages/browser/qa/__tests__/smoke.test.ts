@@ -9,6 +9,9 @@ import { server } from '../lib/server'
 jest.setTimeout(100000)
 type RemovePromise<T> = T extends Promise<infer U> ? U : T
 
+if (!process.env.QA_SOURCES) {
+  throw new Error('no process.env.QA_SOURCES')
+}
 const samples = process.env.QA_SOURCES.split(',')
 
 function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
