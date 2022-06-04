@@ -23,8 +23,8 @@
     "umd": "webpack",
     "build:dev": "yarn clean && yarn build-prep && yarn concurrently 'yarn umd' 'yarn pkg' 'yarn cjs'",
     "build:prod": "NODE_ENV=production yarn clean && yarn build-prep && yarn concurrently 'NODE_ENV=production yarn umd' 'NODE_ENV=production yarn pkg' 'NODE_ENV=production yarn cjs'",
-    "pkg": "tsc",
-    "cjs": "tsc -p tsconfig.cjs.json",
+    "pkg": "tsc -p tsconfig.build.json",
+    "cjs": "tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
     "lint": "yarn constraints && tsc --noEmit && eslint '**/*.{js,jsx,ts,tsx}'",
     "test": "jest"

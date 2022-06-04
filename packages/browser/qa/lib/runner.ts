@@ -9,6 +9,7 @@ type ComparisonParams = {
   serverURL: string
   writeKey: string
   script: string
+  key?: string | number | symbol,
 }
 
 export async function run(params: ComparisonParams) {

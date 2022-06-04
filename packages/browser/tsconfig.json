@@ -11,7 +11,6 @@
     "strict": true,
     "sourceMap": true,
     "incremental": true,
-    "outDir": "dist/pkg",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "lib": ["es2020", "DOM"],
@@ -20,6 +19,5 @@
       "@/*": ["./*"]
     }
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist"]
 }
