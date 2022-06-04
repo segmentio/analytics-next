@@ -7,11 +7,13 @@
 !.yarn/sdks
 !.yarn/versions
 
-/node_modules/
-/dist/
+node_modules
+dist
+package-lock.json
 .DS_Store
 *.log
 stats.json
-/coverage
-e2e-tests/data/requests/*.json
-*tmp*
+.tmp
+*.tsbuildinfo
+coverage
+reports/*
