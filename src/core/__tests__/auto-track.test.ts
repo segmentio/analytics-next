@@ -370,7 +370,7 @@ describe('track helpers', () => {
       expect(mockTrack).toBeCalledWith('event', { property: true }, {})
     })
 
-    it('should call submit after a timeout', async (done) => {
+    it('should call submit after a timeout', async () => {
       const submitSpy = jest.spyOn(form, 'submit')
       const mockedTrack = jest.fn()
 
@@ -382,30 +382,35 @@ describe('track helpers', () => {
 
       submit.click()
 
-      setTimeout(function () {
-        expect(submitSpy).toHaveBeenCalled()
-        done()
-      }, 500)
+      await sleep(500)
+
+      expect(submitSpy).toHaveBeenCalled()
     })
 
-    it('should trigger an existing submit handler', async (done) => {
-      form.addEventListener('submit', () => {
-        done()
+    it('should trigger an existing submit handler', async () => {
+      const submitPromise = new Promise<void>((resolve) => {
+        form.addEventListener('submit', () => {
+          resolve()
+        })
       })
 
       await analytics.trackForm(form, 'foo')
       submit.click()
+      await submitPromise
     })
 
-    it('should trigger an existing jquery submit handler', async (done) => {
+    it('should trigger an existing jquery submit handler', async () => {
       const $form = jQuery(form)
 
-      $form.submit(function () {
-        done()
+      const submitPromise = new Promise<void>((resolve) => {
+        $form.submit(function () {
+          resolve()
+        })
       })
 
       await analytics.trackForm(form, 'foo')
       submit.click()
+      await submitPromise
     })
 
     it('should track on a form submitted via jquery', async () => {
@@ -417,15 +422,18 @@ describe('track helpers', () => {
       expect(mockTrack).toBeCalled()
     })
 
-    it('should trigger an existing jquery submit handler on a form submitted via jquery', async (done) => {
+    it('should trigger an existing jquery submit handler on a form submitted via jquery', async () => {
       const $form = jQuery(form)
 
-      $form.submit(function () {
-        done()
+      const submitPromise = new Promise<void>((resolve) => {
+        $form.submit(function () {
+          resolve()
+        })
       })
 
       await analytics.trackForm(form, 'foo')
       $form.submit()
+      await submitPromise
     })
   })
 })
