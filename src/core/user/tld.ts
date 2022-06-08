@@ -31,8 +31,19 @@ function levels(url: URL): string[] {
   return levels
 }
 
-export function tld(url: URL): string | undefined {
-  const lvls = levels(url)
+function parseUrl(url: string): URL | undefined {
+  try {
+    return new URL(url)
+  } catch {
+    return
+  }
+}
+
+export function tld(url: string): string | undefined {
+  const parsedUrl = parseUrl(url)
+  if (!parsedUrl) return
+
+  const lvls = levels(parsedUrl)
 
   // Lookup the real top level one.
   for (let i = 0; i < lvls.length; ++i) {

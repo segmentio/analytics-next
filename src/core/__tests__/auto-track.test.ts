@@ -125,7 +125,7 @@ describe('track helpers', () => {
       expect(mockTrack).toHaveBeenCalled()
     })
 
-    it.only('should still navigate even if the track call fails', async () => {
+    it('should still navigate even if the track call fails', async () => {
       mockTrack.mockClear()
 
       let rejected = false
@@ -183,7 +183,7 @@ describe('track helpers', () => {
       await analytics.trackLink(link, 'event', { property: true })
       link.click()
 
-      expect(mockTrack).toBeCalledWith('event', { property: true })
+      expect(mockTrack).toBeCalledWith('event', { property: true }, {})
     })
 
     it('should accept an event function', async () => {
@@ -193,7 +193,7 @@ describe('track helpers', () => {
       await analytics.trackLink(link, event, { foo: 'bar' })
       link.click()
 
-      expect(mockTrack).toBeCalledWith('A', { foo: 'bar' })
+      expect(mockTrack).toBeCalledWith('A', { foo: 'bar' }, {})
     })
 
     it('should accept a properties function', async () => {
@@ -203,7 +203,7 @@ describe('track helpers', () => {
       await analytics.trackLink(link, 'event', properties)
       link.click()
 
-      expect(mockTrack).toBeCalledWith('event', { type: 'A' })
+      expect(mockTrack).toBeCalledWith('event', { type: 'A' }, {})
     })
 
     it('should load an href on click', async () => {
@@ -349,7 +349,7 @@ describe('track helpers', () => {
     it('should send an event and properties', async () => {
       await analytics.trackForm(form, 'event', { property: true })
       submit.click()
-      expect(mockTrack).toBeCalledWith('event', { property: true })
+      expect(mockTrack).toBeCalledWith('event', { property: true }, {})
     })
 
     it('should accept an event function', async () => {
@@ -358,7 +358,7 @@ describe('track helpers', () => {
       }
       await analytics.trackForm(form, event, { foo: 'bar' })
       submit.click()
-      expect(mockTrack).toBeCalledWith('event', { foo: 'bar' })
+      expect(mockTrack).toBeCalledWith('event', { foo: 'bar' }, {})
     })
 
     it('should accept a properties function', async () => {
@@ -367,7 +367,7 @@ describe('track helpers', () => {
       }
       await analytics.trackForm(form, 'event', properties)
       submit.click()
-      expect(mockTrack).toBeCalledWith('event', { property: true })
+      expect(mockTrack).toBeCalledWith('event', { property: true }, {})
     })
 
     it('should call submit after a timeout', async (done) => {
