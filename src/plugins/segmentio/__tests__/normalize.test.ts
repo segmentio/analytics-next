@@ -316,7 +316,7 @@ describe('before loading', () => {
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
       expect(cookie.get('s:context.referrer')).toBeUndefined()
-      expect(setCookieSpy.mock.calls.length).toBe(0)
+      expect(setCookieSpy).not.toHaveBeenCalled()
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {
