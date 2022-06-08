@@ -1,5 +1,4 @@
 import { AnalyticsBrowser } from '../..'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { createSuccess } from '../../test-helpers/factories'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
@@ -14,7 +13,9 @@ beforeEach(() => {
   setGlobalCDNUrl(undefined as any)
 })
 
-mocked(unfetch).mockImplementation(() => createSuccess({ integrations: {} }))
+jest
+  .mocked(unfetch)
+  .mockImplementation(() => createSuccess({ integrations: {} }))
 
 it('supports overriding the CDN', async () => {
   const mockCdn = 'https://cdn.foobar.com'

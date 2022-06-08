@@ -1,5 +1,4 @@
 import assert from 'assert'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { segmentio, SegmentioSettings } from '..'
 import { Analytics } from '../../../core/analytics'
@@ -29,7 +28,7 @@ describe('Segment.io', () => {
 
     window.localStorage.clear()
 
-    spyMock = mocked(unfetch).mockResolvedValue({
+    spyMock = jest.mocked(unfetch).mockResolvedValue({
       ok: true,
     } as Response)
   })

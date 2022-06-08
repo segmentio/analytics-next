@@ -71,7 +71,7 @@ describe(sourceMiddlewarePlugin, () => {
       expect(type).toEqual(type)
     })
 
-    it('cancels the event if `next` is not called', async (done) => {
+    it('cancels the event if `next` is not called', async () => {
       const hangs: MiddlewareFunction = () => {}
       const hangsXT = sourceMiddlewarePlugin(hangs, {})
 
@@ -94,7 +94,6 @@ describe(sourceMiddlewarePlugin, () => {
             "type": "middleware_cancellation",
           }
         `)
-        done()
       })
     })
   })

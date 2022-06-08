@@ -1,6 +1,5 @@
 import { AnalyticsBrowser } from '../..'
 import unfetch from 'unfetch'
-import { mocked } from 'ts-jest/utils'
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import * as Factory from '../../test-helpers/factories'
@@ -10,9 +9,9 @@ import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 jest.mock('unfetch')
 
 const mockFetchSettingsResponse = () => {
-  mocked(unfetch).mockImplementation(() =>
-    Factory.createSuccess({ integrations: {} })
-  )
+  jest
+    .mocked(unfetch)
+    .mockImplementation(() => Factory.createSuccess({ integrations: {} }))
 }
 
 const writeKey = 'foo'

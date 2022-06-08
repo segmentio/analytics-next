@@ -1,5 +1,4 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { LegacySettings } from '..'
 import { onCSPError } from '../../lib/csp-detection'
@@ -51,8 +50,10 @@ describe('CSP Detection', () => {
 
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     const html = `
     <!DOCTYPE html>

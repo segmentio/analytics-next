@@ -41,13 +41,13 @@ describe('user', () => {
     })
 
     it('should create anonymous id if missing (persist: false)', () => {
-      const setCookieSpy = spyOn(jar, 'set').and.callThrough()
+      const setCookieSpy = jest.spyOn(jar, 'set')
 
       const user = new User({ persist: false })
       assert(user.anonymousId()?.length === 36)
       expect(jar.get('ajs_anonymous_id')).toBeUndefined()
       expect(localStorage.getItem('ajs_anonymous_id')).toBeNull()
-      expect(setCookieSpy.calls.count()).toBe(0)
+      expect(setCookieSpy.mock.calls.length).toBe(0)
     })
 
     it('should not overwrite anonymous id', () => {
@@ -182,9 +182,9 @@ describe('user', () => {
     })
 
     describe('when persist is disabled', () => {
-      let setCookieSpy: jasmine.Spy
+      let setCookieSpy: jest.SpyInstance
       beforeEach(() => {
-        setCookieSpy = spyOn(jar, 'set').and.callThrough()
+        setCookieSpy = jest.spyOn(jar, 'set')
         user = new User({ persist: false })
         clear()
       })
@@ -208,7 +208,7 @@ describe('user', () => {
         user.id('foo')
 
         assert(user.anonymousId() === prev)
-        expect(setCookieSpy.calls.count()).toBe(0)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
       })
 
       it('should reset anonymousId if the user id changed', () => {
@@ -217,7 +217,7 @@ describe('user', () => {
         user.id('baz')
         assert(user.anonymousId() !== prev)
         assert(user.anonymousId()?.length === 36)
-        expect(setCookieSpy.calls.count()).toBe(0)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
       })
 
       it('should not reset anonymousId if the user id changed to null', () => {
@@ -226,7 +226,7 @@ describe('user', () => {
         user.id(null)
         assert(user.anonymousId() === prev)
         assert(user.anonymousId()?.length === 36)
-        expect(setCookieSpy.calls.count()).toBe(0)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
       })
     })
 
@@ -724,7 +724,7 @@ describe('group', () => {
   })
 
   it('id() should not persist when persist disabled', () => {
-    const setCookieSpy = spyOn(jar, 'set').and.callThrough()
+    const setCookieSpy = jest.spyOn(jar, 'set')
 
     const group = new Group({ persist: false })
     group.id('gid')
@@ -732,7 +732,7 @@ describe('group', () => {
     expect(group.id()).toBe('gid')
     expect(jar.get('ajs_group_id')).toBeFalsy()
     expect(store.get('ajs_group_id')).toBeFalsy()
-    expect(setCookieSpy.calls.count()).toBe(0)
+    expect(setCookieSpy.mock.calls.length).toBe(0)
   })
 
   it('behaves the same as user', () => {

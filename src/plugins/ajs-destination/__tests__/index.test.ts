@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import jsdom from 'jsdom'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { ajsDestinations, LegacyDestination } from '..'
 import { Analytics } from '../../../core/analytics'
@@ -79,8 +78,10 @@ describe('loading ajsDestinations', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
 
-    // @ts-ignore: ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore: ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
   })
 
   it('loads version overrides', () => {

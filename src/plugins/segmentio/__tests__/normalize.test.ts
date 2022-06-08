@@ -303,7 +303,7 @@ describe('before loading', () => {
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=source&urid=medium',
       })
-      const setCookieSpy = spyOn(cookie, 'set').and.callThrough()
+      const setCookieSpy = jest.spyOn(cookie, 'set')
       analytics = new Analytics(
         { writeKey: options.apiKey },
         { disableClientPersistence: true }
@@ -316,7 +316,7 @@ describe('before loading', () => {
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
       expect(cookie.get('s:context.referrer')).toBeUndefined()
-      expect(setCookieSpy.calls.count()).toBe(0)
+      expect(setCookieSpy.mock.calls.length).toBe(0)
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {

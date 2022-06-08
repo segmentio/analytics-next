@@ -76,7 +76,7 @@ test('delivers events out of band', async () => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   eq.dispatch(fruitBasket)
 
-  expect(setTimeout).toHaveBeenCalled()
+  expect(jest.getTimerCount()).toBe(1)
   expect(eq.queue.includes(fruitBasket)).toBe(true)
 
   // run timers and deliver events
@@ -98,7 +98,7 @@ test('does not enqueue multiple flushes at once', async () => {
   eq.dispatch(fruitBasket)
   eq.dispatch(anothaOne)
 
-  expect(setTimeout).toHaveBeenCalledTimes(1)
+  expect(jest.getTimerCount()).toBe(1)
   expect(eq.queue.length).toBe(2)
 
   // Ensure already enqueued tasks are executed

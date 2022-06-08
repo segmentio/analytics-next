@@ -49,10 +49,13 @@ describe('Batching', () => {
   beforeEach(() => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
+    jest.useFakeTimers()
   })
 
   afterEach(() => {
-    window.close()
+    // clear any pending sendBatch calls
+    jest.runAllTimers()
+    jest.useRealTimers()
   })
 
   it('does not send requests right away', async () => {
@@ -126,8 +129,6 @@ describe('Batching', () => {
   })
 
   it('sends requests when the timeout expires', async () => {
-    jest.useFakeTimers()
-
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 100,
       timeout: 10000, // 10 seconds
@@ -161,8 +162,6 @@ describe('Batching', () => {
   })
 
   it('clears the buffer between flushes', async () => {
-    jest.useFakeTimers()
-
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 100,
       timeout: 10000, // 10 seconds

@@ -1,4 +1,3 @@
-import { mocked } from 'ts-jest/utils'
 import { JSDOM } from 'jsdom'
 import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 
@@ -54,7 +53,7 @@ describe.skip('Remote Plugin Integration', () => {
     }
 
     // @ts-ignore mocking fetch is *hard*
-    mocked(unfetch).mockImplementation(
+    jest.mocked(unfetch).mockImplementation(
       (): Promise<Response> =>
         // @ts-expect-error
         Promise.resolve({

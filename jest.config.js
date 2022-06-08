@@ -5,6 +5,7 @@ module.exports = {
     '<rootDir>/e2e-tests',
     '<rootDir>/qa',
   ],
+  testEnvironment: 'jsdom',
   testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
   testEnvironmentOptions: {

@@ -1,4 +1,3 @@
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { RemoteMetrics } from '../remote-metrics'
 import { version } from '../../../generated/version'
@@ -68,7 +67,7 @@ describe('remote metrics', () => {
   })
 
   test('sends requests on flush', async () => {
-    const spy = mocked(unfetch).mockImplementation()
+    const spy = jest.mocked(unfetch).mockImplementation()
 
     const remote = new RemoteMetrics({
       sampleRate: 100,
@@ -108,7 +107,7 @@ describe('remote metrics', () => {
     const errorSpy = jest.spyOn(console, 'error').mockImplementation()
 
     const error = new Error('aaay')
-    mocked(unfetch).mockImplementation(() => {
+    jest.mocked(unfetch).mockImplementation(() => {
       throw error
     })
 
@@ -126,7 +125,7 @@ describe('remote metrics', () => {
     jest.spyOn(console, 'error').mockImplementation()
 
     const error = new Error('aaay')
-    mocked(unfetch).mockImplementation(() => {
+    jest.mocked(unfetch).mockImplementation(() => {
       throw error
     })
 
