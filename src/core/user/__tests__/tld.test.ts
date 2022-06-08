@@ -22,18 +22,15 @@ describe('topDomain', function () {
   })
 
   it('should match the following urls', function () {
-    assert.strictEqual(tld(new URL('http://www.google.com')), 'google.com')
+    assert.strictEqual(tld('http://www.google.com'), 'google.com')
     assert.strictEqual(
-      tld(new URL('http://gist.github.com/calvinfo/some_file')),
+      tld('http://gist.github.com/calvinfo/some_file'),
       'github.com'
     )
-    assert.strictEqual(tld(new URL('http://localhost:3000')), undefined)
-    assert.strictEqual(
-      tld(new URL('https://google.com:443/stuff')),
-      'google.com'
-    )
-    assert.strictEqual(tld(new URL('http://dev:3000')), undefined)
-    assert.strictEqual(tld(new URL('http://app.jut.io')), 'jut.io')
-    assert.strictEqual(tld(new URL('http://app.segment.io')), 'segment.io')
+    assert.strictEqual(tld('http://localhost:3000'), undefined)
+    assert.strictEqual(tld('https://google.com:443/stuff'), 'google.com')
+    assert.strictEqual(tld('http://dev:3000'), undefined)
+    assert.strictEqual(tld('http://app.jut.io'), 'jut.io')
+    assert.strictEqual(tld('http://app.segment.io'), 'segment.io')
   })
 })

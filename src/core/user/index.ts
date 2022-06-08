@@ -66,7 +66,7 @@ export class Cookie extends Store {
   static get defaults(): CookieOptions {
     return {
       maxage: ONE_YEAR,
-      domain: tld(new URL(window.location.href)),
+      domain: tld(window.location.href),
       path: '/',
       sameSite: 'Lax',
     }

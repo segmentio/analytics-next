@@ -14,7 +14,7 @@ function getCookieOptions(): CookieAttributes {
     return cookieOptions
   }
 
-  const domain = tld(new URL(window.location.href))
+  const domain = tld(window.location.href)
   cookieOptions = {
     expires: 31536000000, // 1 year
     secure: false,
