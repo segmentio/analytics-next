@@ -79,6 +79,13 @@ describe('before loading', () => {
       assert(object.userId === 'user-id')
     })
 
+    it('should not replace the .timestamp', () => {
+      const timestamp = new Date()
+      object.timestamp = timestamp
+      normalize(analytics, object, options, {})
+      assert(object.timestamp === timestamp)
+    })
+
     it('should not replace the .userId', () => {
       analytics.user().id('user-id')
       object.userId = 'existing-id'

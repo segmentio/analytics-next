@@ -161,7 +161,6 @@ export function normalize(
   json.userId = json.userId || user.id()
   json.anonymousId = user.anonymousId(anonId)
   json.sentAt = new Date()
-  json.timestamp = new Date()
 
   const failed = analytics.queue.failedInitializations || []
   if (failed.length > 0) {

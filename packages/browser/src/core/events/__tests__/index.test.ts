@@ -101,6 +101,11 @@ describe('Event Factory', () => {
       expect(track.messageId).toContain('ajs-next')
     })
 
+    test('adds a timestamp', () => {
+      const track = factory.track('Order Completed', shoes)
+      expect(track.timestamp).toBeInstanceOf(Date)
+    })
+
     test('adds a random message id even when random is mocked', () => {
       jest.useFakeTimers()
       jest.spyOn(uuid, 'v4').mockImplementation(() => 'abc-123')
@@ -331,6 +336,9 @@ describe('Event Factory', () => {
 
         expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
         delete normalized.messageId
+
+        expect(normalized.timestamp).toBeInstanceOf(Date)
+        delete normalized.timestamp
 
         expect(normalized).toStrictEqual({
           integrations: { Segment: true },

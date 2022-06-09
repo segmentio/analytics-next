@@ -221,6 +221,7 @@ export class EventFactory {
     const { options, ...rest } = event
 
     const body = {
+      timestamp: new Date(),
       ...rest,
       context,
       integrations: allIntegrations,
