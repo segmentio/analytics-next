@@ -226,14 +226,15 @@ export const lowercase: Plugin = {
 For further examples check out our [existing plugins](https://github.com/segmentio/analytics-next/tree/master/src/plugins).
 
 # 🧪 QA
+
 Feature work and bug fixes should include tests. Run all [Jest](https://jestjs.io) tests:
+
 ```
 $ yarn test
 ```
+
 Lint all with [ESLint](https://github.com/typescript-eslint/typescript-eslint/):
+
 ```
 $ yarn lint
 ```
-
-
-

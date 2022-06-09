@@ -22,6 +22,7 @@ jobs:
             ${{ runner.os }}-yarn-
 
       - run: make ci
+        working-directory: packages/browser
         env:
           SAUCELABS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_RO_TOKEN }}

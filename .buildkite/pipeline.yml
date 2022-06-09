@@ -1,89 +1,105 @@
 env:
-  SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
-  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
+  SEGMENT_CONTEXTS: "snyk,npm,aws-credentials,ecr,npm-publish"
+  SEGMENT_BUILDKITE_IMAGE: "analytics-next-ci-agent"
 steps:
-  - label: ':hammer: Build Libraries'
+  - label: ":hammer: [Browser] Lint + Test"
     key: build
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - make ci
+      - yarn install --immutable
+      - yarn workspace @segment/analytics-next exec make ci
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['node_modules/']
+          paths: [".yarn/cache/"]
           save: true
 
-  - label: ':perfection: QA'
+  - label: ":hammer: [Examples] Lint + Test"
+    key: examples
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - yarn install --immutable
+      - yarn workspace @segment/analytics-next build:dev
+      - yarn workspace with-next-js lint
+      - echo "+++ Testing build capability :pray"
+      - yarn workspace with-next-js build
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: [".yarn/cache/"]
+          save: true
+
+  - label: ":perfection: [Browser] QA / E2E"
     key: qa
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - make node_modules
-      - yarn add --dev playwright
+      - yarn install --immutable
       - echo "+++ Running QA Tests :pray:"
-      - make test-qa
+      - yarn workspace @segment/analytics-next exec make test-qa
     retry:
       automatic:
-        - exit_status: '*'
+        - exit_status: "*"
           limit: 2
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['node_modules/']
+          paths: [".yarn/cache/"]
 
-  - label: ':lock: Snyk'
+  - label: ":lock: Snyk"
     agents:
       queue: v1
-    command: 'bk-snyk'
+    command: "bk-snyk"
 
-  - label: ':thisisfine: Destinations QA'
+  - label: ":thisisfine: [Browser] Destinations QA / E2E"
     key: destinations
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - make node_modules
-      - yarn add --dev playwright
+      - yarn install --immutable
       - echo "+++ Running Destinations QA Tests :pray:"
-      - make test-qa-destinations
+      - yarn workspace @segment/analytics-next exec make test-qa-destinations
     soft_fail:
-      - exit_status: '*'
+      - exit_status: "*"
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['node_modules/']
+          paths: [".yarn/cache/"]
 
   # Auto deploys branches
-  - label: ':rocket: Release Branch'
-    branches: '!master !v*'
+  - label: ":rocket: [Browser] Release Branch"
+    branches: "!master !v*"
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - make node_modules
-      - make build-prod
-      - NODE_ENV=production bash ./scripts/release.sh
+      - yarn install --immutable
+      - yarn workspace @segment/analytics-next exec make build-prod
+      - NODE_ENV=production yarn workspace @segment/analytics-next exec bash ./scripts/release.sh
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['node_modules/']
+          paths: [".yarn/cache/"]
 
   # Deploy and NPM publish releases
-  - label: ':rocket: Release Production'
+  - label: ":rocket: [Browser] Release Production"
     depends_on: [build]
-    branches: 'v*'
+    branches: "v*"
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - make node_modules
-      - make build-prod
-      - NODE_ENV=production RELEASE=true bash ./scripts/release.sh
-      - npm publish
+      - yarn install --immutable
+      - yarn workspace @segment/analytics-next exec make build-prod
+      - NODE_ENV=production RELEASE=true yarn workspace @segment/analytics-next exec bash ./scripts/release.sh
+      - yarn workspace @segment/analytics-next exec npm publish
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['node_modules/']
+          paths: [".yarn/cache/"]
