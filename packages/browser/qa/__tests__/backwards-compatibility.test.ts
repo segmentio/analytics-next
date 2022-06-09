@@ -134,8 +134,8 @@ describe('Backwards compatibility', () => {
       writeKey: TEST_WRITEKEY,
     })
 
-    const classic = result.classic.codeEvaluation
-    const next = result.next.codeEvaluation
+    const classic = result.classic.codeEvaluation as any
+    const next = result.next.codeEvaluation as any
 
     expect(next['track']).toEqual(classic['track'])
     expect(next['identify']).toEqual(classic['identify'])

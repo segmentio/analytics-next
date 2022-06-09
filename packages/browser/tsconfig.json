@@ -8,13 +8,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "sourceMap": true,
-    "outDir": "dist/pkg",
     "lib": ["es2020", "DOM"],
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
     }
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist"]
 }
