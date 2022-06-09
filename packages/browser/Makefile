@@ -50,11 +50,11 @@ test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTI
 .PHONY: test-coverage
 
 test-integration: build-browser ## Runs all integration tests in a single command
-	$(yarn_run) test --runTestsByPath e2e-tests/**/*.test.ts ${args}
+	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
 test-perf: build-browser ## Runs all integration tests in a single command
-	$(yarn_run) test --runTestsByPath e2e-tests/performance/*.test.ts ${args}
+	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/performance/*.test.ts ${args}
 .PHONY: test-coverage
 
 lint: node_modules ## Lints the source code

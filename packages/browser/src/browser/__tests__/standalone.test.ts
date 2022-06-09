@@ -1,5 +1,4 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { LegacySettings } from '..'
 import { pWhile } from '../../lib/p-while'
@@ -45,8 +44,10 @@ describe('standalone bundle', () => {
 
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     const html = `
     <!DOCTYPE html>

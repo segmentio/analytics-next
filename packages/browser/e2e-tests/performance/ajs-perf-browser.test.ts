@@ -18,8 +18,6 @@ describe('Performance', () => {
 
   // These tests are now biased because of the massive number of tests running during our QA process
   it('gather lighthouse', async () => {
-    jest.setTimeout(50000)
-
     const analyticsStub = await tester(
       TEST_WRITEKEY,
       'http://localhost:3001',
@@ -53,10 +51,9 @@ describe('Performance', () => {
     )
 
     await analyticsStub.browserPage.close()
-  })
+  }, 50000)
 
   it('loads ajs in a browser', async () => {
-    jest.setTimeout(10000)
     const analyticsStub = await tester(
       TEST_WRITEKEY,
       'http://localhost:3001',
@@ -74,5 +71,5 @@ describe('Performance', () => {
     })
 
     await analyticsStub.browserPage.close()
-  })
+  }, 10000)
 })

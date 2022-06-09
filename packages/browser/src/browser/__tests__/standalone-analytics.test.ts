@@ -3,9 +3,9 @@ import { InitOptions } from '../../'
 import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsSnippet } from '../standalone-analytics'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
+import { sleep } from '../../test-helpers/sleep'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -125,8 +125,10 @@ describe('standalone bundle', () => {
   })
 
   it('derives the CDN from scripts on the page', async () => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     await loadLegacySettings(segmentDotCom)
 
@@ -136,8 +138,10 @@ describe('standalone bundle', () => {
   })
 
   it('is capable of having the CDN overridden', async () => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
     const mockCdn = 'http://my-overridden-cdn.com'
 
     window.analytics._cdn = mockCdn
@@ -146,28 +150,31 @@ describe('standalone bundle', () => {
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
 
-  it('runs any buffered operations after load', async (done) => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+  it('runs any buffered operations after load', async () => {
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     await install()
 
-    setTimeout(() => {
-      expect(track).toHaveBeenCalledWith('fruit basket', {
-        fruits: ['🍌', '🍇'],
-      })
-      expect(identify).toHaveBeenCalledWith('netto', {
-        employer: 'segment',
-      })
+    await sleep(0)
 
-      expect(page).toHaveBeenCalled()
-      done()
-    }, 0)
+    expect(track).toHaveBeenCalledWith('fruit basket', {
+      fruits: ['🍌', '🍇'],
+    })
+    expect(identify).toHaveBeenCalledWith('netto', {
+      employer: 'segment',
+    })
+
+    expect(page).toHaveBeenCalled()
   })
 
-  it('adds buffered source middleware before other buffered operations', async (done) => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+  it('adds buffered source middleware before other buffered operations', async () => {
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     const operations: string[] = []
 
@@ -178,21 +185,22 @@ describe('standalone bundle', () => {
 
     await install()
 
-    setTimeout(() => {
-      expect(addSourceMiddleware).toHaveBeenCalled()
+    await sleep(0)
 
-      expect(operations).toEqual([
-        // should run before page call in the snippet
-        'addSourceMiddleware',
-        'page',
-      ])
-      done()
-    }, 0)
+    expect(addSourceMiddleware).toHaveBeenCalled()
+
+    expect(operations).toEqual([
+      // should run before page call in the snippet
+      'addSourceMiddleware',
+      'page',
+    ])
   })
 
-  it('sets buffered anonymousId before loading destinations', async (done) => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+  it('sets buffered anonymousId before loading destinations', async () => {
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
 
     const operations: string[] = []
 
@@ -204,22 +212,23 @@ describe('standalone bundle', () => {
 
     await install()
 
-    setTimeout(() => {
-      expect(setAnonymousId).toHaveBeenCalledWith('anonNetto')
+    await sleep(0)
 
-      expect(operations).toEqual([
-        // should run before any plugin is registered
-        'setAnonymousId',
-        // should run before any events are sent downstream
-        'register',
-        // should run after all plugins have been registered
-        'track',
-      ])
-      done()
-    }, 0)
+    expect(setAnonymousId).toHaveBeenCalledWith('anonNetto')
+
+    expect(operations).toEqual([
+      // should run before any plugin is registered
+      'setAnonymousId',
+      // should run before any events are sent downstream
+      'register',
+      // should run after all plugins have been registered
+      'track',
+    ])
   })
-  it('sets buffered event emitters before loading destinations', async (done) => {
-    mocked(unfetch).mockImplementation(() => fetchSettings as Promise<Response>)
+  it('sets buffered event emitters before loading destinations', async () => {
+    jest
+      .mocked(unfetch)
+      .mockImplementation(() => fetchSettings as Promise<Response>)
 
     const operations: string[] = []
 
@@ -229,19 +238,18 @@ describe('standalone bundle', () => {
 
     await install()
 
-    setTimeout(() => {
-      expect(on).toHaveBeenCalledTimes(1)
-      expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+    await sleep(0)
 
-      expect(operations).toEqual([
-        // should run before any plugin is registered
-        'on',
-        // should run before any events are sent downstream
-        'register',
-        // should run after all plugins have been registered
-        'track',
-      ])
-      done()
-    }, 0)
+    expect(on).toHaveBeenCalledTimes(1)
+    expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+
+    expect(operations).toEqual([
+      // should run before any plugin is registered
+      'on',
+      // should run before any events are sent downstream
+      'register',
+      // should run after all plugins have been registered
+      'track',
+    ])
   })
 })
