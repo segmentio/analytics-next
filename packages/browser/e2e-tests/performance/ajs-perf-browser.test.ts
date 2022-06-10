@@ -28,8 +28,8 @@ describe('Performance', () => {
     const results: any = await gatherLighthouseMetrics(analyticsStub.browserPage)
     const audits = results.audits // Lighthouse audits
 
-    // lighthouse perf score of 100
-    expect(results['categories'].performance.score).toEqual(1)
+    // lighthouse perf score
+    expect(results['categories'].performance.score).toBeGreaterThanOrEqual(0.99)
     // no render blocking resource
     expect(audits['render-blocking-resources'].details.items).toHaveLength(0)
     // first contentful paint in the first second
