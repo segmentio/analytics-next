@@ -571,7 +571,7 @@ describe('user', () => {
       user.save()
       user.logout()
 
-      expect(jar.getJSON(cookieKey)).toBeFalsy()
+      expect(jar.get(cookieKey)).toBeFalsy()
     })
 
     it('should clear id in local storage', () => {
@@ -616,7 +616,7 @@ describe('user', () => {
       expect(user.id()).toEqual('id')
       expect(user.traits()).toEqual({ trait: true })
 
-      expect(jar.getJSON(cookieKey)).toEqual('id')
+      expect(jar.get(cookieKey)).toEqual('id')
       expect(store.get(localStorageKey)).toEqual({ trait: true })
     })
 
@@ -675,10 +675,13 @@ describe('user', () => {
     })
 
     it('should load from an old cookie', () => {
-      jar.set(User.defaults.cookie.oldKey, {
-        id: 'old',
-        traits: { trait: true },
-      })
+      jar.set(
+        User.defaults.cookie.oldKey,
+        JSON.stringify({
+          id: 'old',
+          traits: { trait: true },
+        })
+      )
 
       user.load()
       expect(user.id()).toEqual('old')

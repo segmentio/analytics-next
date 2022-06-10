@@ -1,4 +1,4 @@
-import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
+import jar from 'js-cookie'
 import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
@@ -8,8 +8,8 @@ import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
 
-let cookieOptions: CookieAttributes | undefined
-function getCookieOptions(): CookieAttributes {
+let cookieOptions: jar.CookieAttributes | undefined
+function getCookieOptions(): jar.CookieAttributes {
   if (cookieOptions) {
     return cookieOptions
   }
@@ -41,7 +41,7 @@ export function getVersionType(): typeof _version {
 type Ad = { id: string; type: string }
 
 export function ampId(): string | undefined {
-  const ampId = getCookie('_ga')
+  const ampId = jar.get('_ga')
   if (ampId && ampId.startsWith('amp')) {
     return ampId
   }
@@ -94,7 +94,7 @@ function referrerId(
   ctx: SegmentEvent['context'],
   disablePersistance: boolean
 ): void {
-  let stored = getCookie('s:context.referrer')
+  let stored = jar.get('s:context.referrer')
   let ad = ads(query)
 
   stored = stored ? JSON.parse(stored) : undefined
@@ -109,7 +109,7 @@ function referrerId(
   }
 
   if (!disablePersistance) {
-    setCookie('s:context.referrer', JSON.stringify(ad), getCookieOptions())
+    jar.set('s:context.referrer', JSON.stringify(ad), getCookieOptions())
   }
 }
 

@@ -92,7 +92,21 @@ export class Cookie extends Store {
   }
 
   get<T>(key: string): T | null {
-    return jar.getJSON(key)
+    try {
+      const value = jar.get(key)
+
+      if (!value) {
+        return null
+      }
+
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return value as unknown as T
+      }
+    } catch (e) {
+      return null
+    }
   }
 
   set<T>(key: string, value: T): T | null {
