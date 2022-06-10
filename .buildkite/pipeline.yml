@@ -2,6 +2,13 @@ env:
   SEGMENT_CONTEXTS: "snyk,npm,aws-credentials,ecr,npm-publish"
   SEGMENT_BUILDKITE_IMAGE: "analytics-next-ci-agent"
 steps:
+  - label: ":hammer: [Monorepo] Lint"
+    key: monorepo
+    agents:
+      queue: v1
+    commands:
+      - yarn constraints
+
   - label: ":hammer: [Browser] Lint + Test"
     key: build
     agents:
@@ -31,7 +38,6 @@ steps:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
-          save: true
 
   - label: ":perfection: [Browser] QA / E2E"
     key: qa

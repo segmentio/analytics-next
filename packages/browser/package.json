@@ -26,7 +26,7 @@
     "pkg": "tsc -p tsconfig.build.json",
     "cjs": "tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
-    "lint": "yarn constraints && tsc --noEmit && eslint '**/*.{js,jsx,ts,tsx}'",
+    "lint": "tsc --noEmit && eslint '**/*.{js,jsx,ts,tsx}'",
     "test": "jest"
   },
   "size-limit": [
@@ -35,18 +35,6 @@
       "limit": "25.83 KB"
     }
   ],
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "yarn workspace @segment/analytics-next eslint --fix"
-    ],
-    "*.{yml,md,json}": [
-      "yarn workspace @segment/analytics-next prettier --write"
-    ]
-  },
-  "resolutions": {
-    "glob-parent": "^5.1.2",
-    "dot-prop": "^4.2.1"
-  },
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
