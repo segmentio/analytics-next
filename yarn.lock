@@ -1131,6 +1131,7 @@ __metadata:
     "@typescript-eslint/parser": ^5.21.0
     add: ^2.0.6
     aws-sdk: ^2.814.0
+    circular-dependency-plugin: ^5.2.2
     compression-webpack-plugin: ^8.0.1
     concurrently: ^7.2.1
     delay: ^4.4.0
@@ -4415,6 +4416,15 @@ __metadata:
   version: 1.2.2
   resolution: "ci-job-number@npm:1.2.2"
   checksum: 9da8edd2c1d79e59f28e1c62e8f9f2611c29d6e470cd02551fcb8b5f5eaed6385711b9c5e3fb3b9c456dc716058fc48b4a9e38783bc378a26a8c7d4ed1348211
+  languageName: node
+  linkType: hard
+
+"circular-dependency-plugin@npm:^5.2.2":
+  version: 5.2.2
+  resolution: "circular-dependency-plugin@npm:5.2.2"
+  peerDependencies:
+    webpack: ">=4.0.1"
+  checksum: d1a51e7f86e72d9e7a08c47234511cc7a5c3050781c2d6dcc77c0b22214f94f272702488c952e59b2af589c67944160ad1c9c0b7b3e0d4f89222f2a27ebf085e
   languageName: node
   linkType: hard
 

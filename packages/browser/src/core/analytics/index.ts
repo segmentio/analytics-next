@@ -1,4 +1,3 @@
-import { AnalyticsBrowser } from '../../browser'
 import {
   AliasParams,
   DispatchedEvent,
@@ -442,16 +441,13 @@ export class Analytics extends Emitter {
     return version
   }
 
+  /* @deprecated - noop */
   async initialize(
-    settings?: AnalyticsSettings,
-    options?: InitOptions
+    _settings?: AnalyticsSettings,
+    _options?: InitOptions
   ): Promise<Analytics> {
     console.warn(deprecationWarning)
-    if (settings) {
-      await AnalyticsBrowser.load(settings, options)
-    }
-    this.options = options || {}
-    return this
+    return Promise.resolve(this)
   }
 
   init = this.initialize.bind(this)
