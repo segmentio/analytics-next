@@ -34,7 +34,7 @@ describe(invokeCallback, () => {
     const endTime = Date.now()
 
     expect(fn).toHaveBeenCalled()
-    expect(endTime - startTime).toBeGreaterThanOrEqual(timeout)
+    expect(endTime - startTime).toBeGreaterThanOrEqual(timeout - 1)
     expect(returned).toBe(ctx)
   })
 
