@@ -10,8 +10,8 @@
     "node": "^14.15.0"
   },
   "scripts": {
-    "test": "echo 'Running tests...' && yarn workspaces foreach run test",
-    "lint": "echo 'Running lint...' && yarn workspaces foreach -pt run lint",
+    "test": "echo 'Running all tests...' && yarn workspaces foreach run test",
+    "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
     "prepare": "husky install"

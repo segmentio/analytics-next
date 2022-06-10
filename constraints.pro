@@ -39,3 +39,7 @@ gen_enforced_field(WorkspaceCwd, FieldName, ExpectedValue) :-
   \+ atom_concat('./', _, CurrentValue),
   % Store './' + CurrentValue in ExpectedValue
   atom_concat('./', CurrentValue, ExpectedValue).
+
+% Lint staged _not_ a key in package.json. Use .lintstagedrc.js instead!
+gen_enforced_field(WorkspaceCwd, 'lint-staged', null) :-
+  workspace_field(WorkspaceCwd, 'lint-staged', _).
