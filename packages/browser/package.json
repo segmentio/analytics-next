@@ -35,10 +35,6 @@
       "limit": "25.83 KB"
     }
   ],
-  "resolutions": {
-    "glob-parent": "^5.1.2",
-    "dot-prop": "^4.2.1"
-  },
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
