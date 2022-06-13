@@ -11858,6 +11858,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"standalone-playground@workspace:examples/standalone-playground":
+  version: 0.0.0-use.local
+  resolution: "standalone-playground@workspace:examples/standalone-playground"
+  dependencies:
+    "@segment/analytics-next": "workspace:^"
+    concurrently: ^7.2.1
+  languageName: unknown
+  linkType: soft
+
 "statuses@npm:>= 1.5.0 < 2, statuses@npm:~1.5.0":
   version: 1.5.0
   resolution: "statuses@npm:1.5.0"

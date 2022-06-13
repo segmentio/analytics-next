@@ -30,9 +30,9 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - yarn install --immutable
+      - echo "+++ Testing with-next-js"
       - yarn workspace @segment/analytics-next build:dev
       - yarn workspace with-next-js lint
-      - echo "+++ Testing build capability :pray"
       - yarn workspace with-next-js build
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:

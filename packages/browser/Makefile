@@ -21,7 +21,7 @@ build-browser:
 
 build-prod: ## Builds libraries in prod mode
 	$(yarn_run) build:prod
-.PHONY: build
+.PHONY: build-prod
 
 clean: ## Clean the build directory
 	rm -rf dist generated
@@ -49,11 +49,11 @@ test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTI
 	$(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
-test-integration: build-browser ## Runs all integration tests in a single command
+test-integration: build-prod ## Runs all integration tests in a single command
 	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
-test-perf: build-browser ## Runs all integration tests in a single command
+test-perf: build-prod ## Runs all integration tests in a single command
 	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/performance/*.test.ts ${args}
 .PHONY: test-coverage
 
