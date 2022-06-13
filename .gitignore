@@ -23,3 +23,7 @@ stats.json
 *.tsbuildinfo
 coverage
 reports/*
+
+# ignore archives
+*.tgz
+*.gz
