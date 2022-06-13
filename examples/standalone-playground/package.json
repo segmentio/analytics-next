@@ -2,8 +2,7 @@
   "name": "standalone-playground",
   "private": true,
   "installConfig": {
-    "selfReferences": false,
-    "hoistingLimits": "dependencies"
+    "hoistingLimits": "workspaces"
   },
   "scripts": {
     "watch": "NODE_ENV=production yarn workspace @segment/analytics-next umd --watch",
