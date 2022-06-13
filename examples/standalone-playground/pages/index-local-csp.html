@@ -1,0 +1,168 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Security-Policy" content="connect-src 'self' api.segment.io;" />
+  <style>
+    body {
+      font-family: monospace;
+    }
+
+    #event {
+      margin: 2em 0;
+      min-height: 200px;
+      min-width: 700px;
+    }
+  </style>
+
+  <form method="get">
+    <input type="text" name="writeKey" placeholder="Writekey" />
+    <button>Load</button>
+  </form>
+
+  <script>
+    const { searchParams } = new URL(document.location);
+    const writeKey = searchParams.get("writeKey");
+    document.querySelector("input").value = writeKey;
+
+    if (writeKey) {
+      console.profile('snippet')
+      console.time('snippet')
+      !(function () {
+        var analytics = (window.analytics = window.analytics || [])
+        if (!analytics.initialize)
+          if (analytics.invoked)
+            window.console &&
+              console.error &&
+              console.error('Segment snippet included twice.')
+          else {
+            analytics.invoked = !0
+            analytics.methods = [
+              'trackSubmit',
+              'trackClick',
+              'trackLink',
+              'trackForm',
+              'pageview',
+              'identify',
+              'reset',
+              'group',
+              'track',
+              'ready',
+              'alias',
+              'debug',
+              'page',
+              'once',
+              'off',
+              'on',
+              'addSourceMiddleware',
+              'addIntegrationMiddleware',
+              'setAnonymousId',
+              'addDestinationMiddleware',
+            ]
+            analytics.factory = function (e) {
+              return function () {
+                var t = Array.prototype.slice.call(arguments)
+                t.unshift(e)
+                analytics.push(t)
+                return analytics
+              }
+            }
+            for (var e = 0; e < analytics.methods.length; e++) {
+              var key = analytics.methods[e]
+              analytics[key] = analytics.factory(key)
+            }
+            analytics.load = function (key, e) {
+              var t = document.createElement('script')
+              t.type = 'text/javascript'
+              t.async = !0
+              t.src = '/node_modules/@segment/analytics-next/dist/umd/standalone.js'
+              var n = document.getElementsByTagName('script')[0]
+              n.parentNode.insertBefore(t, n)
+              analytics._loadOptions = e
+            }
+            analytics.SNIPPET_VERSION = '4.13.1'
+            analytics._writeKey = writeKey
+            analytics.load()
+            analytics.page()
+          }
+      })()
+    }
+  </script>
+</head>
+
+<body>
+  <form>
+    <textarea name="event" id="event">
+{
+  "name": "hi",
+  "properties": { },
+  "traits": { },
+  "options": { }
+}
+    </textarea>
+    <div>
+      <button id="track">Track</button>
+      <button id="identify">Identify</button>
+    </div>
+  </form>
+
+  <pre id="ready-logs"></pre>
+  <pre id="logs"></pre>
+
+  <script type="text/javascript">
+    if (window.analytics) {
+      window.analytics.ready(function onReady() {
+        console.profileEnd('snippet')
+        console.timeEnd('snippet')
+        document.querySelector('#ready-logs').textContent = 'ready!'
+      })
+
+      document.querySelector('#track').addEventListener('click', function (e) {
+        e.preventDefault()
+        var contents = document.querySelector('#event').value
+        var evt = JSON.parse(contents)
+        var promise = window.analytics.track(
+          evt.name || '',
+          evt.properties || {},
+          evt.options || {}
+        )
+
+        promise &&
+          promise.then &&
+          promise.then(function (ctx) {
+            ctx.flush()
+            document.querySelector('#logs').textContent = JSON.stringify(
+              ctx.event,
+              null,
+              '  '
+            )
+          })
+      })
+
+      document
+        .querySelector('#identify')
+        .addEventListener('click', function (e) {
+          e.preventDefault()
+          var contents = document.querySelector('#event').value
+          var evt = JSON.parse(contents)
+          var promise = window.analytics.identify(
+            evt.name || '',
+            evt.properties || {},
+            evt.options || {}
+          )
+
+          promise &&
+            promise.then &&
+            promise.then(function (ctx) {
+              ctx.flush()
+              document.querySelector('#logs').textContent = JSON.stringify(
+                ctx.event,
+                null,
+                '  '
+              )
+            })
+        })
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "standalone-playground",
+  "private": true,
+  "installConfig": {
+    "selfReferences": false,
+    "hoistingLimits": "dependencies"
+  },
+  "scripts": {
+    "watch": "NODE_ENV=production yarn workspace @segment/analytics-next umd --watch",
+    "start": "yarn concurrently 'yarn watch' 'npx http-server .'",
+    "dev": "yarn start"
+  },
+  "dependencies": {
+    "@segment/analytics-next": "workspace:^"
+  },
+  "devDependencies": {
+    "concurrently": "^7.2.1"
+  }
+}
