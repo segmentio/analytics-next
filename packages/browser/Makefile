@@ -103,7 +103,3 @@ analyze:
 dev: ## Starts a dev server that is ready for development
 	$(yarn_run) concurrently "yarn workspace with-next-js dev" "$(yarn_run) pkg -w"
 .PHONY: dev
-
-standalone-example: ## Runs a server with standalone ajs examples
-	$(yarn_run) concurrently "$(yarn_run) webpack -w" "$(yarn_run) serve"
-.PHONY: standalone-example
