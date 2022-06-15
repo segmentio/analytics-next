@@ -81,7 +81,7 @@ function mutex(key: string, onUnlock: Function, attempt = 0): void {
       mutex(key, onUnlock, attempt + 1)
     }, lockTimeout)
   } else {
-    throw new Error('Unable to retrieve lock')
+    console.error('Unable to retrieve lock')
   }
 }
 
