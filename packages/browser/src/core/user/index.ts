@@ -7,6 +7,10 @@ import autoBind from '../../lib/bind-all'
 export type ID = string | null | undefined
 
 export interface UserOptions {
+  /**
+   * Disables storing any data about the user.
+   */
+  disable?: boolean
   localStorageFallbackDisabled?: boolean
   persist?: boolean
 
@@ -183,7 +187,7 @@ export class User {
 
   private cookies: Store
   private localStorage: Store
-  private mem = new Store()
+  private mem: Store
 
   private idKey: string
   private traitsKey: string
@@ -200,9 +204,11 @@ export class User {
     this.traitsKey = options.localStorage?.key ?? defaults.localStorage.key
     this.anonKey = 'ajs_anonymous_id'
 
+    const isDisabled = options.disable === true
     const shouldPersist = options.persist !== false
 
     this.localStorage =
+      isDisabled ||
       options.localStorageFallbackDisabled ||
       !shouldPersist ||
       !LocalStorage.available()
@@ -210,9 +216,11 @@ export class User {
         : new LocalStorage()
 
     this.cookies =
-      shouldPersist && Cookie.available()
+      !isDisabled && shouldPersist && Cookie.available()
         ? new Cookie(cookieOptions)
         : new NullStorage()
+
+    this.mem = isDisabled ? new NullStorage() : new Store()
 
     const legacyUser = this.cookies.get<{ id?: string; traits?: object }>(
       defaults.cookie.oldKey
@@ -251,6 +259,10 @@ export class User {
   }
 
   id = (id?: ID): ID => {
+    if (this.options.disable) {
+      return null
+    }
+
     const prevId = this.chainGet(this.idKey)
 
     if (id !== undefined) {
@@ -279,6 +291,10 @@ export class User {
   }
 
   anonymousId = (id?: ID): ID => {
+    if (this.options.disable) {
+      return null
+    }
+
     if (id === undefined) {
       const val = this.chainGet<ID>(this.anonKey) ?? this.legacySIO()?.[0]
 
@@ -297,6 +313,10 @@ export class User {
   }
 
   traits = (traits?: object | null): SegmentEvent['traits'] => {
+    if (this.options.disable) {
+      return
+    }
+
     if (traits === null) {
       traits = {}
     }
@@ -314,6 +334,10 @@ export class User {
   }
 
   identify(id?: ID, traits?: object): void {
+    if (this.options.disable) {
+      return
+    }
+
     traits = traits ?? {}
     const currentId = this.id()
 
