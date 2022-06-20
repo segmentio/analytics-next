@@ -1,4 +1,5 @@
-import { Analytics, InitOptions } from './analytics'
+import { Analytics } from './analytics'
+import type { InitOptions } from './analytics-core'
 import { AnalyticsBrowser } from './browser'
 import { embeddedWriteKey } from './lib/embedded-write-key'
 

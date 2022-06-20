@@ -1,5 +1,5 @@
 import { Facade } from '@segment/facade'
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
@@ -33,7 +33,7 @@ export interface SegmentioSettings {
 
 type JSON = ReturnType<Facade['json']>
 
-function onAlias(analytics: Analytics, json: JSON): JSON {
+function onAlias(analytics: AnalyticsCore, json: JSON): JSON {
   const user = analytics.user()
   json.previousId =
     json.previousId ?? json.from ?? user.id() ?? user.anonymousId()
@@ -44,7 +44,7 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
 }
 
 export function segmentio(
-  analytics: Analytics,
+  analytics: AnalyticsCore,
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {

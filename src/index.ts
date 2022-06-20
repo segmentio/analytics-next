@@ -1,4 +1,5 @@
 export * from './analytics'
+export * from './analytics-core'
 export * from './browser'
 
 export * from './core/context'

@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { LegacyIntegrationConfiguration } from '../../browser'
 import { getCDN } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
@@ -30,7 +30,7 @@ function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
 
 export async function loadIntegration(
   ctx: Context,
-  analyticsInstance: Analytics,
+  analyticsInstance: AnalyticsCore,
   name: string,
   version: string,
   settings?: object

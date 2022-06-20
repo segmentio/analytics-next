@@ -1,5 +1,5 @@
 import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
 import { tld } from '../../core/user/tld'
@@ -109,7 +109,7 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
 }
 
 export function normalize(
-  analytics: Analytics,
+  analytics: AnalyticsCore,
   json: ReturnType<SegmentFacade['json']>,
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']

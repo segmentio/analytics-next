@@ -1,5 +1,5 @@
 import { pickPrefix } from './pickPrefix'
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { Context } from '../context'
 
 export interface QueryStringParams {
@@ -7,7 +7,7 @@ export interface QueryStringParams {
 }
 
 export function queryString(
-  analytics: Analytics,
+  analytics: AnalyticsCore,
   query: string
 ): Promise<Context[]> {
   const a = document.createElement('a')

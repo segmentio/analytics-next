@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { groupBy } from '../../lib/group-by'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
@@ -31,7 +31,7 @@ export class EventQueue extends Emitter {
   async register(
     ctx: Context,
     plugin: Plugin,
-    instance: Analytics
+    instance: AnalyticsCore
   ): Promise<void> {
     await Promise.resolve(plugin.load(ctx, instance))
       .then(() => {
@@ -57,7 +57,7 @@ export class EventQueue extends Emitter {
   async deregister(
     ctx: Context,
     plugin: Plugin,
-    instance: Analytics
+    instance: AnalyticsCore
   ): Promise<void> {
     try {
       if (plugin.unload) {

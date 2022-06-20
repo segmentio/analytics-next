@@ -1,4 +1,4 @@
-import { Analytics } from '../analytics'
+import type { AnalyticsCore } from '../analytics-core'
 import { SegmentEvent } from '../core/events'
 import { pTimeout } from './callback'
 
@@ -39,11 +39,11 @@ function linkNewTab(element: HTMLAnchorElement, href: string | null): boolean {
 }
 
 export function link(
-  this: Analytics,
+  this: AnalyticsCore,
   links: Element | Array<Element> | JQuery | null,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
-): Analytics {
+): AnalyticsCore {
   let elements: Array<Element> = []
   // always arrays, handles jquery
   if (!links) {
@@ -102,11 +102,11 @@ export function link(
 export type LinkArgs = Parameters<typeof link>
 
 export function form(
-  this: Analytics,
+  this: AnalyticsCore,
   forms: HTMLFormElement | Array<HTMLFormElement> | null,
   event: string | Function,
   properties?: SegmentEvent['properties'] | Function
-): Analytics {
+): AnalyticsCore {
   // always arrays, handles jquery
   if (!forms) return this
   if (forms instanceof HTMLFormElement) forms = [forms]

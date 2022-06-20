@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { Context } from '../context'
 
 interface PluginConfig {
@@ -19,11 +19,11 @@ export interface Plugin {
   isLoaded: () => boolean
   load: (
     ctx: Context,
-    instance: Analytics,
+    instance: AnalyticsCore,
     config?: PluginConfig
   ) => Promise<unknown>
 
-  unload?: (ctx: Context, instance: Analytics) => Promise<unknown> | unknown
+  unload?: (ctx: Context, instance: AnalyticsCore) => Promise<unknown> | unknown
 
   ready?: () => Promise<unknown>
   track?: (ctx: Context) => Promise<Context> | Context

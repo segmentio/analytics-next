@@ -1,9 +1,9 @@
 import { Group, Identify, Track, Page, Alias } from '@segment/facade'
-import { Analytics } from '../../analytics'
+import type { AnalyticsCore } from '../../analytics-core'
 import { Emitter } from '../../core/emitter'
 
 export interface LegacyIntegration extends Emitter {
-  analytics?: Analytics
+  analytics?: AnalyticsCore
   initialize: () => void
   loaded: () => boolean
 
