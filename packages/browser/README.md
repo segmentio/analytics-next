@@ -120,7 +120,7 @@ const App = () => {
 
 More React Examples:
 
-- Our [playground](example/pages/_app.tsx) (written in NextJS) -- this can be run with `yarn dev`.
+- Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
 - Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vite` with `Vue 3`
@@ -223,7 +223,7 @@ export const lowercase: Plugin = {
 }
 ```
 
-For further examples check out our [existing plugins](https://github.com/segmentio/analytics-next/tree/master/src/plugins).
+For further examples check out our [existing plugins](/packages/browser/src/plugins).
 
 # 🧪 QA
 

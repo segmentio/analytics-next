@@ -43,3 +43,13 @@ gen_enforced_field(WorkspaceCwd, FieldName, ExpectedValue) :-
 % Lint staged _not_ a key in package.json. Use .lintstagedrc.js instead!
 gen_enforced_field(WorkspaceCwd, 'lint-staged', null) :-
   workspace_field(WorkspaceCwd, 'lint-staged', _).
+
+% Enforces the repository field for all public workspaces while removing it from private workspaces
+gen_enforced_field(WorkspaceCwd, 'repository.type', 'git') :-
+  \+ workspace_field(WorkspaceCwd, 'private', true).
+gen_enforced_field(WorkspaceCwd, 'repository.url', 'https://github.com/segmentio/analytics-next') :-
+  \+ workspace_field(WorkspaceCwd, 'private', true).
+gen_enforced_field(WorkspaceCwd, 'repository.directory', WorkspaceCwd) :-
+  \+ workspace_field(WorkspaceCwd, 'private', true).
+gen_enforced_field(WorkspaceCwd, 'repository', null) :-
+  workspace_field(WorkspaceCwd, 'private', true).
