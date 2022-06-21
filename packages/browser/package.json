@@ -1,7 +1,11 @@
 {
   "name": "@segment/analytics-next",
   "version": "1.38.0",
-  "repository": "segmentio/analytics-next",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next",
+    "directory": "packages/browser"
+  },
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/pkg/index.js",
