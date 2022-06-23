@@ -22,6 +22,9 @@ if (process.env.ANALYZE) {
 }
 
 const config = {
+  node: {
+    global: false, // do not polyfill global object, we can use getGlobal function if needed.
+  },
   mode: process.env.NODE_ENV || 'development',
   devtool: 'source-map',
   entry: {
