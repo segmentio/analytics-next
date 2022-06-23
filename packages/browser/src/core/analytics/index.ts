@@ -34,9 +34,9 @@ const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
 
 // reference any pre-existing "analytics" object so a user can restore the reference
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const globalAny: any = global
-const _analytics = globalAny.analytics
+const _analytics: Analytics | undefined = (
+  (typeof window !== 'undefined' ? window : global) as any
+)?.analytics
 
 function createDefaultQueue(retryQueue = false, disablePersistance = false) {
   const maxAttempts = retryQueue ? 4 : 1
