@@ -29,14 +29,14 @@ import type {
 } from '../../plugins/middleware'
 import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
+import { getGlobal } from '../../lib/get-global'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
 
 // reference any pre-existing "analytics" object so a user can restore the reference
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const globalAny: any = global
-const _analytics = globalAny.analytics
+const global: any = getGlobal()
+const _analytics = global?.analytics
 
 function createDefaultQueue(retryQueue = false, disablePersistance = false) {
   const maxAttempts = retryQueue ? 4 : 1

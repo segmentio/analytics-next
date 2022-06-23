@@ -11,10 +11,10 @@
   "module": "./dist/pkg/index.js",
   "types": "./dist/pkg/index.d.ts",
   "browser": {
-    "./dist/cjs/node": "./dist/cjs/node.browser.js",
-    "./dist/cjs/node.js": "./dist/cjs/node.browser.js",
-    "./dist/pkg/node": "./dist/pkg/node.browser.js",
-    "./dist/pkg/node.js": "./dist/pkg/node.browser.js"
+    "./dist/cjs/node": "./dist/cjs/node/node.browser.js",
+    "./dist/cjs/node.js": "./dist/cjs/node/node.browser.js",
+    "./dist/pkg/node": "./dist/pkg/node/node.browser.js",
+    "./dist/pkg/node.js": "./dist/pkg/node/node.browser.js"
   },
   "files": [
     "dist/",
@@ -36,7 +36,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "25.53 KB"
+      "limit": "25.6 KB"
     }
   ],
   "dependencies": {

@@ -71,34 +71,32 @@ const App = () => (
 ### using `React` (Advanced w/ React Context)
 
 ```tsx
-import React from 'react'
-import { AnalyticsBrowser } from '@segment/analytics-next'
+const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined!);
 
-const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined)
-
-export const AnalyticsProvider: React.FC<{ writeKey: string }> = ({
-  children,
-  writeKey,
-}) => {
+type Props = {
+  writeKey: string;
+  children: React.ReactNode;
+};
+export const AnalyticsProvider = ({ children, writeKey }: Props) => {
   const analytics = React.useMemo(
     () => AnalyticsBrowser.load({ writeKey }),
     [writeKey]
-  )
+  );
   return (
     <AnalyticsContext.Provider value={analytics}>
       {children}
     </AnalyticsContext.Provider>
-  )
-}
+  );
+};
 
 // Create an analytics hook that we can use with other components.
 export const useAnalytics = () => {
- const result =  React.useContext(AnalyticsContext)
- if (!result) {
-   throw new Error('Context used outside of its Provider!')
- }
- return result
-}
+  const result = React.useContext(AnalyticsContext);
+  if (!result) {
+    throw new Error("Context used outside of its Provider!");
+  }
+  return result;
+};
 
 // use the context we just created...
 const TrackButton = () => {
@@ -123,18 +121,9 @@ More React Examples:
 - Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
 - Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
-### using `Vite` with `Vue 3`
+### using `Vue 3`
 
-1. add to your `index.html`
-
-```html
-<script>
-  window.global = window
-  var exports = {}
-</script>
-```
-
-2. create composable file `segment.ts` with factory ref analytics:
+1. create composable file `segment.ts` with factory ref analytics:
 
 ```ts
 import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
@@ -144,7 +133,7 @@ export const analytics = AnalyticsBrowser.load({
 })
 ```
 
-3. in component
+2. in component
 
 ```vue
 <template>
@@ -226,15 +215,14 @@ export const lowercase: Plugin = {
 For further examples check out our [existing plugins](/packages/browser/src/plugins).
 
 # 🧪 QA
-
 Feature work and bug fixes should include tests. Run all [Jest](https://jestjs.io) tests:
-
 ```
 $ yarn test
 ```
-
 Lint all with [ESLint](https://github.com/typescript-eslint/typescript-eslint/):
-
 ```
 $ yarn lint
 ```
+
+
+
