@@ -4,6 +4,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const ASSET_PATH = isProd
@@ -15,7 +16,11 @@ const plugins = [
   new webpack.EnvironmentPlugin({
     ASSET_PATH,
   }),
+  new CircularDependencyPlugin({
+    failOnError: true,
+  })
 ]
+
 
 if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())
