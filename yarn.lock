@@ -1263,6 +1263,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@segment/analytics-node@workspace:packages/node":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-node@workspace:packages/node"
+  dependencies:
+    "@types/node": ^12.12.14
+    node-fetch: ^2.6.7
+    tslib: ^2.4.0
+  languageName: unknown
+  linkType: soft
+
 "@segment/analytics.js-video-plugins@npm:^0.2.1":
   version: 0.2.1
   resolution: "@segment/analytics.js-video-plugins@npm:0.2.1"
