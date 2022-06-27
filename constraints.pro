@@ -59,3 +59,8 @@ gen_enforced_field(WorkspaceCwd, 'repository.directory', WorkspaceCwd) :-
   \+ workspace_field(WorkspaceCwd, 'private', true).
 gen_enforced_field(WorkspaceCwd, 'repository', null) :-
   workspace_field(WorkspaceCwd, 'private', true).
+
+% Do not allow a `dependencies` field in root workspace -- we only want to share devDependencies
+gen_enforced_field(WorkspaceCwd, 'dependencies', null) :-
+  member(WorkspaceCwd, ['.']),
+  workspace_field(WorkspaceCwd, 'dependencies', _).
