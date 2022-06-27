@@ -5,6 +5,9 @@
     "skipLibCheck": true,
     "incremental": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
   }
 }
