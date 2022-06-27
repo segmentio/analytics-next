@@ -18,23 +18,45 @@ describe('Analytics', () => {
         retriesEnabled ? 'enabled' : 'disabled'
       }`, () => {
         let analytics: Analytics
+        const attemptCount = retriesEnabled ? 2 : 1
 
         beforeEach(() => {
-          const queue = new EventQueue(
-            new PriorityQueue(retriesEnabled ? 3 : 1, [])
-          )
+          const queue = new EventQueue(new PriorityQueue(attemptCount, []))
           analytics = new Analytics({ writeKey: 'writeKey' }, {}, queue)
         })
 
         // Indicates plugins should throw
         const shouldThrow = true
+
+        it(`"before" plugin errors should not throw (single dispatched event)`, async () => {
+          const plugin = new BeforePlugin({ shouldThrow })
+          const trackSpy = jest.spyOn(plugin, 'track')
+
+          await analytics.register(plugin)
+          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
+
+          expect(trackSpy).toHaveBeenCalledTimes(attemptCount)
+        })
+
+        it(`"before" plugin errors should not throw (multiple dispatched events)`, async () => {
+          const plugin = new BeforePlugin({ shouldThrow })
+          const trackSpy = jest.spyOn(plugin, 'track')
+
+          await analytics.register(plugin)
+          await Promise.all([
+            expect(analytics.track('test1')).resolves.toBeInstanceOf(Context),
+            expect(analytics.track('test2')).resolves.toBeInstanceOf(Context),
+            expect(analytics.track('test3')).resolves.toBeInstanceOf(Context),
+          ])
+
+          expect(trackSpy).toHaveBeenCalledTimes(3 * attemptCount)
+        })
+
         const testPlugins = [
-          new BeforePlugin({ shouldThrow }),
           new EnrichmentPlugin({ shouldThrow }),
           new DestinationPlugin({ shouldThrow }),
           new AfterPlugin({ shouldThrow }),
         ]
-
         testPlugins.forEach((plugin) => {
           it(`"${plugin.type}" plugin errors should not throw (single dispatched event)`, async () => {
             const trackSpy = jest.spyOn(plugin, 'track')
@@ -61,14 +83,49 @@ describe('Analytics', () => {
           })
         })
 
+        it('"before" plugin supports cancelation (single dispatched event)', async () => {
+          const plugin = new BeforePlugin({ shouldCancel: true })
+          const trackSpy = jest.spyOn(plugin, 'track')
+
+          await analytics.register(plugin)
+          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
+
+          expect(trackSpy).toHaveBeenCalledTimes(1)
+        })
+
+        it('"before" plugin supports cancelation (multiple dispatched events)', async () => {
+          const plugin = new BeforePlugin({ shouldCancel: true })
+          const trackSpy = jest.spyOn(plugin, 'track')
+
+          await analytics.register(plugin)
+          await Promise.all([
+            expect(analytics.track('test1')).resolves.toBeInstanceOf(Context),
+            expect(analytics.track('test2')).resolves.toBeInstanceOf(Context),
+            expect(analytics.track('test3')).resolves.toBeInstanceOf(Context),
+          ])
+
+          expect(trackSpy).toHaveBeenCalledTimes(3)
+        })
+
         it(`source middleware should not throw when "next" not called`, async () => {
           const sourceMiddleware = jest.fn<void, MiddlewareParams[]>(() => {})
 
           await analytics.addSourceMiddleware(sourceMiddleware)
 
-          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
+          const context = await analytics.track('test')
 
           expect(sourceMiddleware).toHaveBeenCalledTimes(1)
+          expect(context).toBeInstanceOf(Context)
+          expect(
+            context.logs().find(({ message }) => {
+              return message === 'Failed to deliver'
+            })
+          ).toBeDefined()
+          expect(
+            context.stats.metrics.find(({ metric }) => {
+              return metric === 'delivery_failed'
+            })
+          ).toBeDefined()
         })
 
         it(`source middleware errors should not throw`, async () => {
@@ -80,7 +137,7 @@ describe('Analytics', () => {
 
           await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
 
-          expect(sourceMiddleware).toHaveBeenCalledTimes(1)
+          expect(sourceMiddleware).toHaveBeenCalledTimes(1 * attemptCount)
         })
       })
     })

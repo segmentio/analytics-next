@@ -226,18 +226,46 @@ describe('Flushing', () => {
       ajs
     )
 
-    eq.dispatch(fruitBasket)
-    eq.dispatch(basketView)
-    eq.dispatch(shopper)
+    const dispatches = [
+      eq.dispatch(fruitBasket),
+      eq.dispatch(basketView),
+      eq.dispatch(shopper),
+    ]
 
     expect(eq.queue.length).toBe(3)
 
-    const flushed = await flushAll(eq)
-    // delivered both basket and shopper
-    expect(flushed).toEqual([basketView, shopper])
+    const flushed = await Promise.all(dispatches)
 
-    // nothing to retry
+    // delivered both basket and shopper
+    expect(flushed).toEqual([fruitBasket, basketView, shopper])
+
+    // nothing was retried
+    expect(basketView.attempts).toEqual(1)
+    expect(shopper.attempts).toEqual(1)
+    expect(fruitBasket.attempts).toEqual(1)
     expect(eq.queue.length).toBe(0)
+  })
+
+  test('does not retry non retriable cancelations (dispatchSingle)', async () => {
+    const eq = new EventQueue()
+
+    await eq.register(
+      Context.system(),
+      {
+        ...testPlugin,
+        track: async (ctx) => {
+          if (ctx === fruitBasket) {
+            throw new ContextCancelation({ retry: false, reason: 'Test!' })
+          }
+          return ctx
+        },
+      },
+      ajs
+    )
+
+    const context = await eq.dispatchSingle(fruitBasket)
+
+    expect(context.attempts).toEqual(1)
   })
 
   test('retries retriable cancelations', async () => {
