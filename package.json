@@ -2,6 +2,10 @@
   "name": "analytics-monorepo",
   "private": true,
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  },
   "workspaces": [
     "examples/*",
     "packages/*"
@@ -14,7 +18,7 @@
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
-    "pkg:version": "lerna version --no-private",
+    "pkg:version": "lerna version --no-private --no-push && lerna-changelog",
     "pkg:publish": "lerna publish --no-private",
     "postinstall": "husky install"
   },
@@ -30,6 +34,7 @@
     "husky": "^8.0.0",
     "jest": "^28.1.0",
     "lerna": "^5.1.6",
+    "lerna-changelog": "^2.2.0",
     "lint-staged": "^13.0.0",
     "node-gyp": "^9.0.0",
     "prettier": "^2.6.2",
