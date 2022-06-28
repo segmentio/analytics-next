@@ -14,10 +14,17 @@
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "changeset": "changeset",
+    "update-versions-and-changelogs": "changeset version && yarn version-run-all",
+    "release": "yarn prepublish-run-all && changeset publish && git push --follow-tags",
+    "prepublish-run-all": "yarn workspaces foreach -pt --no-private run prepublish",
+    "version-run-all": "yarn workspaces foreach -pt --no-private run version"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.4.5",
+    "@changesets/cli": "^2.23.0",
     "@types/jest": "^28.1.1",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
@@ -33,5 +40,9 @@
     "ts-jest": "^28.0.4",
     "ts-node": "^10.8.0",
     "typescript": "^4.6.4"
+  },
+  "resolutions": {
+    "@segment/analytics-next": "workspace:*",
+    "@segment/analytics-node": "workspace:*"
   }
 }
