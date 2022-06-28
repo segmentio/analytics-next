@@ -27,3 +27,5 @@ reports/*
 # ignore archives
 *.tgz
 *.gz
+
+.changelog
