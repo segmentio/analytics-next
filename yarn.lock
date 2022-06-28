@@ -2341,7 +2341,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-next@workspace:^, @segment/analytics-next@workspace:packages/browser":
+"@segment/analytics-next@workspace:*, @segment/analytics-next@workspace:packages/browser":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-next@workspace:packages/browser"
   dependencies:
