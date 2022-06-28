@@ -33,9 +33,10 @@ describe('Analytics', () => {
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
-          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
-
+          const context = await analytics.track('test')
           expect(trackSpy).toHaveBeenCalledTimes(attemptCount)
+          expect(context).toBeInstanceOf(Context)
+          expect(context.failedDelivery()).toBeTruthy()
         })
 
         it(`"before" plugin errors should not throw (multiple dispatched events)`, async () => {
@@ -43,13 +44,32 @@ describe('Analytics', () => {
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
-          await Promise.all([
-            expect(analytics.track('test1')).resolves.toBeInstanceOf(Context),
-            expect(analytics.track('test2')).resolves.toBeInstanceOf(Context),
-            expect(analytics.track('test3')).resolves.toBeInstanceOf(Context),
+          const contexts = await Promise.all([
+            analytics.track('test1'),
+            analytics.track('test2'),
+            analytics.track('test3'),
           ])
-
           expect(trackSpy).toHaveBeenCalledTimes(3 * attemptCount)
+
+          for (const context of contexts) {
+            expect(context).toBeInstanceOf(Context)
+            expect(context.failedDelivery()).toBeTruthy()
+          }
+        })
+
+        it(`"before" plugin errors should not impact callbacks`, async () => {
+          const plugin = new BeforePlugin({ shouldThrow })
+          const trackSpy = jest.spyOn(plugin, 'track')
+
+          await analytics.register(plugin)
+
+          const context = await new Promise<Context>((resolve) => {
+            void analytics.track('test', resolve)
+          })
+
+          expect(trackSpy).toHaveBeenCalledTimes(attemptCount)
+          expect(context).toBeInstanceOf(Context)
+          expect(context.failedDelivery()).toBeTruthy()
         })
 
         const testPlugins = [
@@ -62,24 +82,43 @@ describe('Analytics', () => {
             const trackSpy = jest.spyOn(plugin, 'track')
 
             await analytics.register(plugin)
-            await expect(analytics.track('test')).resolves.toBeInstanceOf(
-              Context
-            )
 
+            const context = await analytics.track('test')
             expect(trackSpy).toHaveBeenCalledTimes(1)
+            expect(context).toBeInstanceOf(Context)
+            expect(context.failedDelivery()).toBeFalsy()
           })
 
           it(`"${plugin.type}" plugin errors should not throw (multiple dispatched events)`, async () => {
             const trackSpy = jest.spyOn(plugin, 'track')
 
             await analytics.register(plugin)
-            await Promise.all([
-              expect(analytics.track('test1')).resolves.toBeInstanceOf(Context),
-              expect(analytics.track('test2')).resolves.toBeInstanceOf(Context),
-              expect(analytics.track('test3')).resolves.toBeInstanceOf(Context),
+
+            const contexts = await Promise.all([
+              analytics.track('test1'),
+              analytics.track('test2'),
+              analytics.track('test3'),
             ])
 
             expect(trackSpy).toHaveBeenCalledTimes(3)
+            for (const context of contexts) {
+              expect(context).toBeInstanceOf(Context)
+              expect(context.failedDelivery()).toBeFalsy()
+            }
+          })
+
+          it(`"${plugin.type}" plugin errors should not impact callbacks`, async () => {
+            const trackSpy = jest.spyOn(plugin, 'track')
+
+            await analytics.register(plugin)
+
+            const context = await new Promise<Context>((resolve) => {
+              void analytics.track('test', resolve)
+            })
+
+            expect(trackSpy).toHaveBeenCalledTimes(1)
+            expect(context).toBeInstanceOf(Context)
+            expect(context.failedDelivery()).toBeFalsy()
           })
         })
 
@@ -88,9 +127,11 @@ describe('Analytics', () => {
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
-          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
 
+          const context = await analytics.track('test')
           expect(trackSpy).toHaveBeenCalledTimes(1)
+          expect(context).toBeInstanceOf(Context)
+          expect(context.failedDelivery()).toBeTruthy()
         })
 
         it('"before" plugin supports cancelation (multiple dispatched events)', async () => {
@@ -98,13 +139,17 @@ describe('Analytics', () => {
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
-          await Promise.all([
-            expect(analytics.track('test1')).resolves.toBeInstanceOf(Context),
-            expect(analytics.track('test2')).resolves.toBeInstanceOf(Context),
-            expect(analytics.track('test3')).resolves.toBeInstanceOf(Context),
+          const contexts = await Promise.all([
+            analytics.track('test1'),
+            analytics.track('test2'),
+            analytics.track('test3'),
           ])
-
           expect(trackSpy).toHaveBeenCalledTimes(3)
+
+          for (const context of contexts) {
+            expect(context).toBeInstanceOf(Context)
+            expect(context.failedDelivery()).toBeTruthy()
+          }
         })
 
         it(`source middleware should not throw when "next" not called`, async () => {
@@ -116,16 +161,7 @@ describe('Analytics', () => {
 
           expect(sourceMiddleware).toHaveBeenCalledTimes(1)
           expect(context).toBeInstanceOf(Context)
-          expect(
-            context.logs().find(({ message }) => {
-              return message === 'Failed to deliver'
-            })
-          ).toBeDefined()
-          expect(
-            context.stats.metrics.find(({ metric }) => {
-              return metric === 'delivery_failed'
-            })
-          ).toBeDefined()
+          expect(context.failedDelivery()).toBeTruthy()
         })
 
         it(`source middleware errors should not throw`, async () => {
@@ -135,9 +171,27 @@ describe('Analytics', () => {
 
           await analytics.addSourceMiddleware(sourceMiddleware)
 
-          await expect(analytics.track('test')).resolves.toBeInstanceOf(Context)
+          const context = await analytics.track('test')
 
           expect(sourceMiddleware).toHaveBeenCalledTimes(1 * attemptCount)
+          expect(context).toBeInstanceOf(Context)
+          expect(context.failedDelivery()).toBeTruthy()
+        })
+
+        it(`source middleware errors should not impact callbacks`, async () => {
+          const sourceMiddleware = jest.fn<void, MiddlewareParams[]>(() => {
+            throw new Error('Source middleware error')
+          })
+
+          await analytics.addSourceMiddleware(sourceMiddleware)
+
+          const context = await new Promise<Context>((resolve) => {
+            void analytics.track('test', resolve)
+          })
+
+          expect(sourceMiddleware).toHaveBeenCalledTimes(1 * attemptCount)
+          expect(context).toBeInstanceOf(Context)
+          expect(context.failedDelivery()).toBeTruthy()
         })
       })
     })

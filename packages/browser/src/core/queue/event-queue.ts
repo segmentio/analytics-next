@@ -159,6 +159,7 @@ export class EventQueue extends Emitter {
     } catch (err) {
       ctx.log('error', 'Failed to deliver', err as object)
       ctx.stats.increment('delivery_failed')
+      ctx.setFailedDelivery({ reason: err })
       throw err
     }
   }
