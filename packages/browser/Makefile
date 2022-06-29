@@ -77,11 +77,11 @@ release: ## Releases Analytics Next to stage
 	$(yarn_run) np --yolo --no-publish --no-release-draft
 .PHONY: release
 
-release-manual: ## Releases Analytics Next to production
+
+release-manual:
 	make build-prod
-	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.js
-	npm publish
-.PHONY: release-prod-manual
+	NODE_ENV=production RELEASE=true bash ./scripts/release.sh
+	$(yarn_run) npm publish --dry-run
 
 handshake:
 	@echo "📡  Establishing Remote connection"
