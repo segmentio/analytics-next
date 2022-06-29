@@ -94,6 +94,7 @@ steps:
           paths: [".yarn/cache/"]
 
   # Auto deploys branches
+  # TODO: is this still in use?
   - label: ":rocket: [Browser] Release Branch"
     branches: "!master !v*"
     agents:
