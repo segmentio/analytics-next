@@ -18,8 +18,9 @@
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
+    "postinstall": "husky install",
     "version": "changeset version",
-    "release": "changeset publish"
+    "release": "echo 'should publish now'"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
