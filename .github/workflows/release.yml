@@ -22,7 +22,7 @@ jobs:
           cache: "yarn"
 
       - name: Install Dependencies
-        run: yarn install --immutable
+        run: HUSKY=0 yarn install --immutable
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
