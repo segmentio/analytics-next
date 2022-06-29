@@ -19,7 +19,7 @@
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
     "release-ci": "lerna publish from-package --y --no-verify-access ",
-    "release:dry-run": "yarn release-ci --no-git-tag-version --no-push --dist-tag beta --yes",
+    "release:dry-run": "yarn release-ci --no-git-tag-version --no-push --dist-tag beta",
     "changeset": "changeset"
   },
   "packageManager": "yarn@3.2.1",
