@@ -1,12 +1,8 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.0/schema.json",
-  "changelog": [
-    "@changesets/changelog-github",
-    {
-      "repo": "segmentio/analytics-next"
-    }
-  ],
+  "changelog": "@changesets/cli/changelog",
   "commit": false,
   "access": "restricted",
-  "baseBranch": "master"
+  "baseBranch": "master",
+  "linked": []
 }
