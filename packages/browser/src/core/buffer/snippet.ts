@@ -4,17 +4,21 @@ import type {
   PreInitMethodParams,
 } from '.'
 
+export function transformSnippetCall([
+  methodName,
+  ...args
+]: SnippetWindowBufferedMethodCall): PreInitMethodCall {
+  return {
+    method: methodName,
+    resolve: () => {},
+    reject: console.error,
+    args,
+    called: false,
+  }
+}
+
 const normalizeSnippetBuffer = (buffer: SnippetBuffer): PreInitMethodCall[] => {
-  return buffer.map(
-    ([methodName, ...args]) =>
-      ({
-        method: methodName,
-        resolve: () => {},
-        reject: console.error,
-        args,
-        called: false,
-      } as PreInitMethodCall)
-  )
+  return buffer.map(transformSnippetCall)
 }
 
 type SnippetWindowBufferedMethodCall<

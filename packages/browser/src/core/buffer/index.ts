@@ -173,9 +173,13 @@ export type AnalyticsLoader = (
 export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   instance?: Analytics
   ctx?: Context
-  private _preInitBuffer = new PreInitMethodCallBuffer()
+  private _preInitBuffer: PreInitMethodCallBuffer
   private _promise: Promise<[Analytics, Context]>
-  constructor(loader: AnalyticsLoader) {
+  constructor(
+    loader: AnalyticsLoader,
+    preInitBuffer?: PreInitMethodCallBuffer
+  ) {
+    this._preInitBuffer = preInitBuffer ?? new PreInitMethodCallBuffer()
     this._promise = loader(this._preInitBuffer)
     this._promise
       .then(([ajs, ctx]) => {

@@ -276,8 +276,11 @@ async function loadAnalytics(
  * Use AnalyticsBrowser.load to create an instance.
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private constructor(loader: AnalyticsLoader) {
-    super(loader)
+  private constructor(
+    loader: AnalyticsLoader,
+    preInitBuffer?: PreInitMethodCallBuffer
+  ) {
+    super(loader, preInitBuffer)
   }
 
   /**
@@ -292,17 +295,24 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
    */
   static load(
     settings: AnalyticsBrowserSettings,
-    options: InitOptions = {}
+    options: InitOptions = {},
+    preInitMethodCallBuffer?: PreInitMethodCallBuffer
   ): AnalyticsBrowser {
-    return new this((preInitBuffer) =>
-      loadAnalytics(settings, options, preInitBuffer)
+    return new this(
+      (preInitBuffer) => loadAnalytics(settings, options, preInitBuffer),
+      preInitMethodCallBuffer
     )
   }
 
   static standalone(
     writeKey: string,
-    options?: InitOptions
+    options?: InitOptions,
+    preInitMethodCallBuffer?: PreInitMethodCallBuffer
   ): Promise<Analytics> {
-    return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
+    return AnalyticsBrowser.load(
+      { writeKey },
+      options,
+      preInitMethodCallBuffer
+    ).then((res) => res[0])
   }
 }

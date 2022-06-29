@@ -1,6 +1,11 @@
 import { Analytics, InitOptions } from '../core/analytics'
 import { AnalyticsBrowser } from '.'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
+import { PreInitMethodCallBuffer } from '../core/buffer'
+import {
+  getSnippetWindowBuffer,
+  transformSnippetCall,
+} from '../core/buffer/snippet'
 
 export type AnalyticsSnippet = Analytics & {
   _loadOptions?: InitOptions
@@ -63,5 +68,25 @@ export async function install(): Promise<void> {
     return
   }
 
-  window.analytics = await AnalyticsBrowser.standalone(writeKey, options)
+  // This part is trippy.
+  // The goal is to get any existing buffered calls from `window.analytics` once
+  // then never worry about the `window.analytics` buffer again.
+  // This is accomplished by:
+  //  - mapping all the buffered calls into a preInitBuffer
+  //  - clearing the window.analytics array
+  //  - redirecting all future window.analytics.push calls to preInitBuffer
+  const preInitBuffer = new PreInitMethodCallBuffer()
+  preInitBuffer.push(...getSnippetWindowBuffer())
+  Array.isArray(window.analytics) &&
+    window.analytics.splice(0, window.analytics.length)
+
+  window.analytics.push = (args) => {
+    preInitBuffer.push(transformSnippetCall(args as unknown as any))
+  }
+
+  window.analytics = await AnalyticsBrowser.standalone(
+    writeKey,
+    options,
+    preInitBuffer
+  )
 }
