@@ -5157,6 +5157,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "analytics-monorepo@workspace:."
   dependencies:
+    "@changesets/changelog-github": ^0.4.5
     "@changesets/cli": ^2.23.0
     "@types/jest": ^28.1.1
     "@typescript-eslint/eslint-plugin": ^5.21.0
@@ -15740,7 +15741,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "standalone-playground@workspace:examples/standalone-playground"
   dependencies:
-    "@segment/analytics-next": "workspace:*"
+    "@segment/analytics-next": "workspace:^"
     concurrently: ^7.2.1
   languageName: unknown
   linkType: soft
@@ -17463,7 +17464,7 @@ __metadata:
   resolution: "with-next-js@workspace:examples/with-next-js"
   dependencies:
     "@next/bundle-analyzer": ^12.1.5
-    "@segment/analytics-next": "workspace:*"
+    "@segment/analytics-next": "workspace:^"
     "@types/faker": ^5.1.2
     "@types/react": ^17.0.37
     eslint-config-next: ^12.1.6
@@ -17484,7 +17485,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "with-vite@workspace:examples/with-vite"
   dependencies:
-    "@segment/analytics-next": "workspace:*"
+    "@segment/analytics-next": "workspace:^"
     "@types/react": ^18.0.0
     "@types/react-dom": ^18.0.0
     "@vitejs/plugin-react": ^1.3.0
