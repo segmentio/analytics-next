@@ -106,7 +106,7 @@ describe('standalone bundle', () => {
 
     await install()
 
-    expect(spy.mock.lastCall[0]).toBe('write_key_abc_123')
+    expect(spy).toHaveBeenCalledWith('write_key_abc_123', {})
   })
 
   it('derives the write key from scripts on the page', async () => {
@@ -121,7 +121,7 @@ describe('standalone bundle', () => {
 
     await install()
 
-    expect(spy.mock.lastCall[0]).toBe(segmentDotCom)
+    expect(spy).toHaveBeenCalledWith(segmentDotCom, {})
   })
 
   it('derives the CDN from scripts on the page', async () => {
