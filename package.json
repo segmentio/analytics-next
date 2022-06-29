@@ -35,8 +35,6 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.0",
     "jest": "^28.1.0",
-    "lerna": "^5.1.6",
-    "lerna-changelog": "^2.2.0",
     "lint-staged": "^13.0.0",
     "node-gyp": "^9.0.0",
     "prettier": "^2.6.2",
