@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-next': minor
+'@segment/analytics-next': patch
 ---
 
-analytics-next is awesome
+Add changeset publish pipeline
