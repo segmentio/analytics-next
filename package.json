@@ -22,7 +22,7 @@
     "pkg:publish": "lerna publish --no-private",
     "postinstall": "husky install",
     "release-ci": "lerna publish from-package --y --no-verify-access",
-    "changeset": "changeset add"
+    "changeset": "changeset"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
