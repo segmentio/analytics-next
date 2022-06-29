@@ -18,12 +18,15 @@
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
     "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
-    "pkg:version": "lerna version --no-private --no-push && lerna-changelog",
+    "pkg:version": "lerna version --no-private --no-push",
     "pkg:publish": "lerna publish --no-private",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "release-ci": "lerna publish from-package --y --no-verify-access",
+    "changeset": "changeset add"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
+    "@changesets/cli": "^2.23.0",
     "@types/jest": "^28.1.1",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
