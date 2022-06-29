@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - publish-test
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -19,15 +19,16 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 12.x
+          cache: "yarn"
 
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --immutable
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn release-ci
+          publish: yarn release:dry-run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
