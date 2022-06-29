@@ -33,8 +33,9 @@ type SnippetBuffer = SnippetWindowBufferedMethodCall[]
 
 /**
  * Fetch the buffered method calls from the window object and normalize them.
+ * This removes existing buffered calls from the window object.
  */
-export const getSnippetWindowBuffer = (): PreInitMethodCall[] => {
+export const popSnippetWindowBuffer = (): PreInitMethodCall[] => {
   const wa = window.analytics
   if (!Array.isArray(wa)) return []
   const buffered = wa.splice(0, wa.length)
