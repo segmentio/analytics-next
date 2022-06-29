@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.0/schema.json",
+  "ignore": ["standalone-playground", "with-next-js", "with-vite"],
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "access": "restricted",
