@@ -122,7 +122,11 @@ async function flushFinalBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
+  // Call getSnippetWindowBuffer before each flush task since there may be
+  // analytics calls during async function calls.
+  buffer.push(...getSnippetWindowBuffer())
   await flushAddSourceMiddleware(analytics, buffer)
+  buffer.push(...getSnippetWindowBuffer())
   flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
@@ -276,11 +280,8 @@ async function loadAnalytics(
  * Use AnalyticsBrowser.load to create an instance.
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private constructor(
-    loader: AnalyticsLoader,
-    preInitBuffer?: PreInitMethodCallBuffer
-  ) {
-    super(loader, preInitBuffer)
+  private constructor(loader: AnalyticsLoader) {
+    super(loader)
   }
 
   /**
@@ -295,24 +296,17 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
    */
   static load(
     settings: AnalyticsBrowserSettings,
-    options: InitOptions = {},
-    preInitMethodCallBuffer?: PreInitMethodCallBuffer
+    options: InitOptions = {}
   ): AnalyticsBrowser {
-    return new this(
-      (preInitBuffer) => loadAnalytics(settings, options, preInitBuffer),
-      preInitMethodCallBuffer
+    return new this((preInitBuffer) =>
+      loadAnalytics(settings, options, preInitBuffer)
     )
   }
 
   static standalone(
     writeKey: string,
-    options?: InitOptions,
-    preInitMethodCallBuffer?: PreInitMethodCallBuffer
+    options?: InitOptions
   ): Promise<Analytics> {
-    return AnalyticsBrowser.load(
-      { writeKey },
-      options,
-      preInitMethodCallBuffer
-    ).then((res) => res[0])
+    return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
   }
 }

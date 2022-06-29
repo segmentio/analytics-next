@@ -36,8 +36,7 @@ type SnippetBuffer = SnippetWindowBufferedMethodCall[]
  */
 export const getSnippetWindowBuffer = (): PreInitMethodCall[] => {
   const wa = window.analytics
-  const buffered =
-    // @ts-expect-error
-    (wa && wa[0] ? [...wa] : []) as SnippetBuffer
+  if (!Array.isArray(wa)) return []
+  const buffered = wa.splice(0, wa.length)
   return normalizeSnippetBuffer(buffered)
 }
