@@ -23,7 +23,7 @@
   "sideEffects": false,
   "scripts": {
     "build-prep": "sh scripts/build-prep.sh",
-    "version": "npm run build-prep && git add src/generated/version.ts",
+    "version": "yarn run build-prep && git add src/generated/version.ts",
     "umd": "webpack",
     "eslint": "yarn run -T eslint",
     "tsc": "yarn run -T tsc",
