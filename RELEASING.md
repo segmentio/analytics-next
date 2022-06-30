@@ -8,7 +8,5 @@ Feature branches are automatically released under:
 
 ### Production
 
-Once you have tested your changes and they have been approved for a new release, merge your pull request and follow the steps:
+To test what the changelog will look like beforehand (locally), you can do `yarn version`. Once you have tested your changes and they have been approved for a new release, merge the changeset pull request into master.
 
-- `make release`
-  > creates a release tag that is then compiled and published in CI
