@@ -1,6 +1,7 @@
 import { PriorityQueue } from '../../../lib/priority-queue'
 import { MiddlewareParams } from '../../../plugins/middleware'
 import { Context } from '../../context'
+import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
 import { Analytics } from '../index'
 import {
@@ -71,6 +72,30 @@ describe('Analytics', () => {
           expect(context).toBeInstanceOf(Context)
           expect(context.failedDelivery()).toBeTruthy()
         })
+
+        if (retriesEnabled) {
+          it(`will not mark delivery failed if retry succeeds`, async () => {
+            const plugin: Plugin = {
+              name: 'Test Retries Plugin',
+              type: 'before',
+              version: '1.0.0',
+              isLoaded: () => true,
+              load: () => Promise.resolve(),
+              track: jest.fn((ctx) => {
+                if (ctx.attempts < attemptCount) {
+                  throw new Error(`Plugin failed!`)
+                }
+                return ctx
+              }),
+            }
+            await analytics.register(plugin)
+
+            const context = await analytics.track('test')
+            expect(plugin.track).toHaveBeenCalledTimes(attemptCount)
+            expect(context).toBeInstanceOf(Context)
+            expect(context.failedDelivery()).toBeFalsy()
+          })
+        }
 
         const testPlugins = [
           new EnrichmentPlugin({ shouldThrow }),

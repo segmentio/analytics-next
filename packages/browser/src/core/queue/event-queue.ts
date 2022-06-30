@@ -111,11 +111,13 @@ export class EventQueue extends Emitter {
 
     return this.deliver(ctx).catch((err) => {
       if (err instanceof ContextCancelation && err.retry === false) {
+        ctx.setFailedDelivery({ reason: err })
         return ctx
       }
 
       const accepted = this.enqueuRetry(err, ctx)
       if (!accepted) {
+        ctx.setFailedDelivery({ reason: err })
         return ctx
       }
 
@@ -159,7 +161,6 @@ export class EventQueue extends Emitter {
     } catch (err) {
       ctx.log('error', 'Failed to deliver', err as object)
       ctx.stats.increment('delivery_failed')
-      ctx.setFailedDelivery({ reason: err })
       throw err
     }
   }
@@ -196,6 +197,7 @@ export class EventQueue extends Emitter {
       const accepted = this.enqueuRetry(err, ctx)
 
       if (!accepted) {
+        ctx.setFailedDelivery({ reason: err })
         this.emit('flush', ctx, false)
       }
 
