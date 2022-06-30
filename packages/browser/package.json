@@ -31,7 +31,8 @@
     "concurrently": "yarn run -T concurrently",
     "build:dev": "yarn clean && yarn build-prep && yarn concurrently 'yarn umd' 'yarn pkg' 'yarn cjs'",
     "build:prod": "NODE_ENV=production yarn clean && yarn build-prep && yarn concurrently 'NODE_ENV=production yarn umd' 'NODE_ENV=production yarn pkg' 'NODE_ENV=production yarn cjs'",
-    "prepublish": "echo 'running Prepublish build step...' && yarn build:prod && NODE_ENV=production RELEASE=true bash ./scripts/release.sh",
+    "build": "yarn build:prod",
+    "prepublish": "echo 'running Prepublish build step...' && yarn build:prod && NODE_ENV=production RELEASE=true bash scripts/release.sh",
     "pkg": "yarn tsc -p tsconfig.build.json",
     "cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
@@ -57,8 +58,6 @@
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.4.5",
-    "@changesets/cli": "^2.23.0",
     "@size-limit/preset-big-lib": "^7.0.8",
     "@types/flat": "^5.0.1",
     "@types/fs-extra": "^9.0.2",

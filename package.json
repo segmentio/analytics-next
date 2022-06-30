@@ -16,7 +16,8 @@
     "dev": "yarn workspace @segment/analytics-next exec make dev",
     "postinstall": "husky install",
     "version": "changeset version",
-    "release": "echo 'should publish now'"
+    "release": "yarn prepublish-run-all && changeset publish",
+    "prepublish-run-all": "yarn workspaces foreach -pt --no-private run prepublish"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {

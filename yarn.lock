@@ -1488,8 +1488,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-next@workspace:packages/browser"
   dependencies:
-    "@changesets/changelog-github": ^0.4.5
-    "@changesets/cli": ^2.23.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
