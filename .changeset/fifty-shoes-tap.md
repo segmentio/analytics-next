@@ -2,4 +2,4 @@
 '@segment/analytics-next': patch
 ---
 
-Add changeset publish pipeline
+Add changeset publish pipeline!
