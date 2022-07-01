@@ -23,7 +23,7 @@
     "build:esm": "yarn tsc -p tsconfig.build.json --outDir ./dist/esm --module esnext",
     "watch:build": "yarn concurrently 'yarn:build:cjs --watch --sourceMap' 'yarn:build:esm --watch --sourceMap'",
     "watch:test": "yarn test --watch",
-    "prepublish": "echo 'Prepublish script...\n' && yarn build",
+    "prepare": "echo 'Prepare script...\n' && yarn build",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently",
