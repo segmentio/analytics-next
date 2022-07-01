@@ -8,10 +8,13 @@ const path = require('path')
 const mime = require('mime')
 const logUpdate = require('log-update')
 
+const shouldReleaseToProdMasterBranch = process.env.RELEASE
+
 const bucket =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_BUCKET
     : process.env.STAGE_BUCKET
+if (!bucket) throw new Error('Missing one of PROD_BUCKET or STAGE_BUCKET')
 
 const shadowBucket =
   process.env.NODE_ENV == 'production'
@@ -22,15 +25,21 @@ const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_CDN_OAI
     : process.env.STAGE_CDN_OAI
+  if (!cloudfrontCanonicalUserId) throw new Error('Missing one of PROD_CDN_OAI or STAGE_CDN_OAI')
 
 const customDomainCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_CUSTOM_DOMAIN_OAI
     : process.env.STAGE_CUSTOM_DOMAIN_OAI
+if (!customDomainCanonicalUserId) throw new Error('Missing one of PROD_CUSTOM_DOMAIN_OAI or STAGE_CUSTOM_DOMAIN_OAI')
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+if (!accessKeyId) throw new Error('Missing AWS_ACCESS_KEY_ID')
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+if (!secretAccessKey) throw new Error('Missing AWS_SECRET_ACCESS_KEY')
 const sessionToken = process.env.AWS_SESSION_TOKEN
+if (!sessionToken) throw new Error('Missing AWS_SESSION_TOKEN')
+
 
 const getBranch = async () =>
   (await ex('git', ['branch', '--show-current'])).stdout
@@ -128,7 +137,7 @@ async function release() {
 
   // this means we're deploying production
   // from a release branch
-  if (process.env.RELEASE) {
+  if (shouldReleaseToProdMasterBranch) {
     branch = 'master'
   }
 
