@@ -56,7 +56,7 @@ export GITHUB_TOKEN="???" ## changelog generator requirement (https://github.com
 yarn update-versions-and-changelogs && ## bump +  generate changelog + delete old changesets
 git add . && # add generated artifacts
 git commit -m "v1.X.X" &&
-yarn release && ### run prepublish scripts + publish all packages to npm
+yarn release && ### run prepare scripts + publish all packages to npm
 git push --follow-tags ### push generated tags to git (e.g @segment/analytics-next@1.X.X)
 ```
 
