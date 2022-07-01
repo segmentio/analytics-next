@@ -17,8 +17,9 @@
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
-    "release": "yarn prepublish-run-all && changeset publish && git push --follow-tags",
+    "release": "yarn prepublish-run-all && changeset publish && git push --follow-tags && yarn postpublish-run-all",
     "prepublish-run-all": "yarn workspaces foreach -pt --no-private run prepublish",
+    "postpublish-run-all": "yarn workspaces foreach -pt --no-private run postpublish",
     "version-run-all": "yarn workspaces foreach -pt --no-private run version"
   },
   "packageManager": "yarn@3.2.1",
