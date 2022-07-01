@@ -109,16 +109,19 @@ steps:
           paths: [".yarn/cache/"]
 
   # Deploy and NPM publish releases
-  # - label: ":rocket: [Browser] Release Production"
-  #   if: build.message =~ /Version Packages/i
-  #   depends_on: [build]
-  #   agents:
-  #     queue: v1
-  #   commands:
-  #     - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-  #     - HUSKY=0 yarn install --immutable
-  #     - yarn release
-  #   plugins:
-  #     - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-  #         key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-  #         paths: [".yarn/cache/"]
+  - label: ":rocket: [Browser] Release Production"
+    if: |
+      // Only run when Version Packages PR is merged into master
+      build.message =~ /Version Packages/ &&
+      build.branch == "publish-test"
+    depends_on: [build]
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - HUSKY=0 yarn install --immutable
+      - yarn release
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: [".yarn/cache/"]
