@@ -17,7 +17,8 @@
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
-    "release": "yarn prepublish-run-all && changeset publish && git push --follow-tags && yarn postpublish-run-all",
+    "release": "yarn prepublish-run-all && yarn publish && git push --follow-tags && yarn postpublish-run-all",
+    "publish": "lerna publish from-package --y --no-verify-access",
     "prepublish-run-all": "yarn workspaces foreach -pt --no-private run prepublish",
     "postpublish-run-all": "yarn workspaces foreach -pt --no-private run postpublish",
     "version-run-all": "yarn workspaces foreach -pt --no-private run version"
@@ -35,6 +36,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "husky": "^8.0.0",
     "jest": "^28.1.0",
+    "lerna": "^5.1.6",
     "lint-staged": "^13.0.0",
     "node-gyp": "^9.0.0",
     "prettier": "^2.6.2",
