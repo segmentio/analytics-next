@@ -10,7 +10,7 @@ const logUpdate = require('log-update')
 
 const PROD_BRANCH_NAME = 'master'
 
-const shouldReleaseToProduction = process.env.RELEASE
+const shouldReleaseToProduction = process.env.PROD_RELEASE
 
 const bucket =
   process.env.NODE_ENV == 'production'
@@ -141,9 +141,9 @@ async function release() {
   let branch = process.env.BUILDKITE_BRANCH || (await getBranch())
 
   if (branch === PROD_BRANCH_NAME && !shouldReleaseToProduction) {
-    // prevent accidental release via force push to master
+    // guard to prevent an accidental production release
     console.warn(
-      `Release aborted. If you want to release to ${PROD_BRANCH_NAME} branch, set RELEASE=true.`
+      `Release aborted. If you want to release to ${PROD_BRANCH_NAME} branch, set PROD_RELEASE=true.`
     )
     return undefined
   }
