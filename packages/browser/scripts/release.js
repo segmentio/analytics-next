@@ -8,7 +8,9 @@ const path = require('path')
 const mime = require('mime')
 const logUpdate = require('log-update')
 
-const shouldReleaseToProdMasterBranch = process.env.RELEASE
+const PROD_BRANCH_NAME = 'master'
+
+const shouldReleaseToProduction = process.env.RELEASE
 
 const bucket =
   process.env.NODE_ENV == 'production'
@@ -87,7 +89,7 @@ async function upload(meta) {
       Bucket: shadowBucket,
     }
 
-    if (meta.branch !== 'master') {
+    if (meta.branch !== PROD_BRANCH_NAME) {
       options.CacheControl = 'public,max-age=31536000,immutable'
     }
 
@@ -135,10 +137,17 @@ async function release() {
   const sha = await getSha()
   let branch = process.env.BUILDKITE_BRANCH || (await getBranch())
 
+
+  if (branch === PROD_BRANCH_NAME && !shouldReleaseToProduction) {
+    // prevent accidental release via force push to master
+    throw new Error(`Release aborted. If you want to release to ${PROD_BRANCH_NAME} branch, set RELEASE=true.`)
+  }
+
+
   // this means we're deploying production
   // from a release branch
-  if (shouldReleaseToProdMasterBranch) {
-    branch = 'master'
+  if (shouldReleaseToProduction) {
+    branch = PROD_BRANCH_NAME
   }
 
   const meta = {
