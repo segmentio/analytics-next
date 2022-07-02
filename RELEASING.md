@@ -29,12 +29,14 @@ Once you have tested your changes and they have been approved for a new release,
 1. As PRs are merged into master, we use a [special GitHub action](https://github.com/changesets/action) to updates the package versions and changelogs, automatically creating a `Versions Packages` PR.
 2. Once we're ready to publish a new release, we can look at the `Version Packages` PR. If we like the way the Changelog looks, we can merge it in right there. If we want to edit the generated changelog, we can edit the changelog directly on that PR and then merge. If we aren't ready to merge things in and we want to add more detail to a changeset, we can always edit the changeset in .changesets/* and merge those in. Changesets are just text files, and are meant to be human-editable.
 
-### Releasing is handled for us by the [Release GitHub Action](/.github/workflows/release.yml).
+### Creating a Changelog and releasse is handled for us by the [Release GitHub Action](https://github.com/changesets/action).
 
 As PRs are opened against `master`, this action will open and update a PR which generates the appropriate `CHANGELOG.md` entries and `package.json` version bumps.
 The generated PR has the title "Version Packages"
 
 Once ready for a release, approve the "Version Packages" PR and merge it into `master`.
+
+Feel free to edit the "Version Packages" PR. If you see a merge conflict in Version Packages, that PR can be closed and a new PR should automatically re-open.
 
 ## FAQ
 
