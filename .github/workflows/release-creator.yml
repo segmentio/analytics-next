@@ -1,4 +1,4 @@
-name: Release
+name: Changeset Release Creator
 
 on:
   push:
@@ -11,35 +11,23 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  release-pr:
+    name: Create or Update Release PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v2
 
       - name: Setup Node.js 12.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 12.x
           cache: "yarn"
 
-      - name: Get Yarn cache path
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Load Yarn cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
       - name: Install Dependencies
         run: HUSKY=0 yarn install --immutable
 
-      - name: Create Release Pull Request
+      - name: Create or Update Release PR
         id: changesets
         uses: changesets/action@v1
         with:
