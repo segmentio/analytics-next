@@ -95,7 +95,7 @@ steps:
 
   # Auto deploys branches
   - label: ":rocket: [Browser] Release Branch (non-prod)"
-    branches: "!master !v*"
+    branches: "!master !v* !publish-test"
     agents:
       queue: v1
     commands:
