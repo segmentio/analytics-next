@@ -17,7 +17,7 @@
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
-    "release": "yarn prepare-run-all && changeset publish && git push --follow-tags && yarn postpublish-run-all",
+    "release": "yarn prepare-run-all && echo 'publish to NPM step goes here.' && yarn postpublish-run-all",
     "prepare-run-all": "yarn workspaces foreach -pt --no-private run prepare",
     "postpublish-run-all": "yarn workspaces foreach -pt --no-private run postpublish",
     "version-run-all": "yarn workspaces foreach -pt --no-private run version"
