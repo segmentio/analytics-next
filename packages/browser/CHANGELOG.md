@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.40.0
+
+### Minor Changes
+
+- [`323cf85`](https://github.com/segmentio/analytics-next/commit/323cf8543e6bb7905ea01e2f8492898bceab9314) Thanks [@silesky](https://github.com/silesky)! - foo
+
 ## 1.39.3
 
 ### Patch Changes
