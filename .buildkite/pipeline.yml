@@ -1,4 +1,4 @@
-env:
+t senv:
   SEGMENT_CONTEXTS: "snyk,npm,aws-credentials,ecr,npm-publish"
   SEGMENT_BUILDKITE_IMAGE: "analytics-next-ci-agent"
 steps:
@@ -111,10 +111,10 @@ steps:
   # Deploy and NPM publish releases
   - label: ":rocket: [Browser] Release Production"
     if: |
-      // Run when the commit message starts with "Version Packages"
-      // Only run when Version Packages PR is merged into
+      // Only run when Version Packages PR is merged in
       build.message =~ /^Version Packages/ &&
-      build.branch == "publish-test"
+      build.branch == "publish-test" &&
+      build.message !~ /\[skip\]/i
     depends_on: [build]
     agents:
       queue: v1
