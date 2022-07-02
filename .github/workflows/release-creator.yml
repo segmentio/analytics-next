@@ -1,4 +1,4 @@
-name: Release
+name: Changeset Release Creator
 
 on:
   push:
@@ -12,8 +12,8 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  release-pr:
+    name: Create or Update Release PR
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
