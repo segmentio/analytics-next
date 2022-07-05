@@ -15,6 +15,7 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
       - yarn workspace @segment/analytics-next exec make ci
     plugins:
@@ -29,8 +30,9 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
-      - echo "+++ Testing with-next-js"
+      - echo "+++ Run tests"
       - yarn workspace @segment/analytics-next build:dev
       - yarn workspace with-next-js lint
       - yarn workspace with-next-js build
@@ -45,8 +47,9 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
-      - echo "+++ Running QA Tests :pray:"
+      - echo "+++ Run QA Tests :pray:"
       - yarn workspace @segment/analytics-next exec make test-qa
     retry:
       automatic:
@@ -63,7 +66,9 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
+      - echo "+++ Run tests"
       - yarn workspace @segment/analytics-node lint
       - yarn workspace @segment/analytics-node test
       - yarn workspace @segment/analytics-node build
@@ -83,8 +88,9 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
-      - echo "+++ Running Destinations QA Tests :pray:"
+      - echo "+++ Run Destinations QA Tests :pray:"
       - yarn workspace @segment/analytics-next exec make test-qa-destinations
     soft_fail:
       - exit_status: "*"
@@ -99,7 +105,8 @@ steps:
     agents:
       queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - npm config set "//regi      - echo "--- Install dependencies"stry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - yarn install --immutable
       - yarn workspace @segment/analytics-next exec make build-prod
       - NODE_ENV=production yarn workspace @segment/analytics-next exec bash ./scripts/release.sh
@@ -120,7 +127,9 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
+      - echo +++ Release packages"
       - yarn release
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:

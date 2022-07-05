@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo '--- Install development dependencies'
+echo '--- Install dependencies'
 yarn install --immutable
 
 echo '--- Build bundles'
