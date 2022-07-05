@@ -1,9 +1,6 @@
 #!/bin/sh
 set -e
 
-echo '--- Install dependencies'
-yarn install --immutable
-
 echo '--- Build bundles'
 make build-prod
 
