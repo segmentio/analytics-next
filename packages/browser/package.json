@@ -33,7 +33,7 @@
     "build:prod": "NODE_ENV=production yarn clean && yarn build-prep && yarn concurrently 'NODE_ENV=production yarn umd' 'NODE_ENV=production yarn pkg' 'NODE_ENV=production yarn cjs'",
     "build": "yarn build:prod",
     "prepare": "echo 'running prepare build step...' && yarn build:prod",
-    "postpublish": "echo 'running postpublish build step...' && NODE_ENV=production RELEASE=true bash scripts/release.sh",
+    "postpublish": "echo 'running postpublish build step...' && NODE_ENV=production PROD_RELEASE=true bash scripts/release.sh",
     "pkg": "yarn tsc -p tsconfig.build.json",
     "cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",

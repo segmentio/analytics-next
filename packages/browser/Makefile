@@ -65,10 +65,6 @@ ci:
 	bash ./scripts/ci.sh
 .PHONY: ci
 
-actions-ci:
-	bash ./scripts/actions-ci.sh
-.PHONY: ci
-
 size: ## Verify the final size of Analytics-Next
 	NODE_ENV=production $(yarn_run) umd > /dev/null && $(yarn_run) size-limit
 .PHONY: size
