@@ -108,7 +108,7 @@ describe('Smoke Tests', () => {
     await window.analytics.page()
   })()`
 
-  test.concurrent.each(samples)(`smoke test`, async (writekey) => {
+  test.concurrent.each(samples)(`smoke test (writekey: %p)`, async (writekey) => {
     const [url, chrome] = await Promise.all([server(), browser()])
 
     const results = await run({
@@ -152,7 +152,7 @@ describe('Smoke Tests', () => {
     compareSchema(results)
   })
 
-  test.concurrent.each(samples)(`obfuscated smoke test`, async (writekey) => {
+  test.concurrent.each(samples)(`obfuscated smoke test (writekey: %p)`, async (writekey) => {
     const [url, chrome] = await Promise.all([server(true), browser()])
     const obfuscatedresults = await run({
       browser: chrome,

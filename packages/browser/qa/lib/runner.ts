@@ -93,13 +93,17 @@ export async function run(params: ComparisonParams) {
 
     await page.goto(url)
 
-    // This forces every timestamp to look exactly the same
-    await page.evaluate('Date.prototype.toJSON = () => "<date>";')
-    await page.evaluate('Date.prototype.getTime = () => 1614653469;')
-    await page.evaluate('Object.freeze(Date.prototype);')
-
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(`window.analytics.initialized === true`)
+
+    // This forces every timestamp to look exactly the same.
+    // Moving this prototype manipulation after networkidle fixed a race condition around Object.freeze that interfered with certain scripts.
+    await page.evaluate(`{
+      Date.prototype.toJSON = () => "<date>";
+      Date.prototype.getTime = () => 1614653469;
+      Object.freeze(Date.prototype);
+    };`)
+
     const codeEvaluation = await page.evaluate(execution)
     const cookies = await context.cookies()
     const localStorage: Record<string, string | null> = await page.evaluate(
@@ -113,7 +117,7 @@ export async function run(params: ComparisonParams) {
     await page.waitForLoadState('networkidle')
     const metrics = await getMetrics(page)
 
-    !DEBUG && (await page.close({ runBeforeUnload: true }))
+    !DEBUG && (await page.close({ runBeforeUnload: true, }))
 
     return {
       networkRequests,
