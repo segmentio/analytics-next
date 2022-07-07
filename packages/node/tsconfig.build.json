@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "exclude": ["**/__tests__/**"],
+  "compilerOptions": {
+    "incremental": false /* do not include .tsbuildinfo in prod build */
+  }
+}

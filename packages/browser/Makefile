@@ -65,23 +65,9 @@ ci:
 	bash ./scripts/ci.sh
 .PHONY: ci
 
-actions-ci:
-	bash ./scripts/actions-ci.sh
-.PHONY: ci
-
 size: ## Verify the final size of Analytics-Next
 	NODE_ENV=production $(yarn_run) umd > /dev/null && $(yarn_run) size-limit
 .PHONY: size
-
-release: ## Releases Analytics Next to stage
-	$(yarn_run) np --yolo --no-publish --no-release-draft
-.PHONY: release
-
-release-manual: ## Releases Analytics Next to production
-	make build-prod
-	NODE_ENV=production aws-okta exec plat-write -- ./scripts/release.js
-	npm publish
-.PHONY: release-prod-manual
 
 handshake:
 	@echo "📡  Establishing Remote connection"

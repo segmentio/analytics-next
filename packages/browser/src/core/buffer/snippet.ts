@@ -4,17 +4,21 @@ import type {
   PreInitMethodParams,
 } from '.'
 
+export function transformSnippetCall([
+  methodName,
+  ...args
+]: SnippetWindowBufferedMethodCall): PreInitMethodCall {
+  return {
+    method: methodName,
+    resolve: () => {},
+    reject: console.error,
+    args,
+    called: false,
+  }
+}
+
 const normalizeSnippetBuffer = (buffer: SnippetBuffer): PreInitMethodCall[] => {
-  return buffer.map(
-    ([methodName, ...args]) =>
-      ({
-        method: methodName,
-        resolve: () => {},
-        reject: console.error,
-        args,
-        called: false,
-      } as PreInitMethodCall)
-  )
+  return buffer.map(transformSnippetCall)
 }
 
 type SnippetWindowBufferedMethodCall<
@@ -29,11 +33,11 @@ type SnippetBuffer = SnippetWindowBufferedMethodCall[]
 
 /**
  * Fetch the buffered method calls from the window object and normalize them.
+ * This removes existing buffered calls from the window object.
  */
-export const getSnippetWindowBuffer = (): PreInitMethodCall[] => {
+export const popSnippetWindowBuffer = (): PreInitMethodCall[] => {
   const wa = window.analytics
-  const buffered =
-    // @ts-expect-error
-    (wa && wa[0] ? [...wa] : []) as SnippetBuffer
+  if (!Array.isArray(wa)) return []
+  const buffered = wa.splice(0, wa.length)
   return normalizeSnippetBuffer(buffered)
 }

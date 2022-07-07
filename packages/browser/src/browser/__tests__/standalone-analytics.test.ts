@@ -252,4 +252,30 @@ describe('standalone bundle', () => {
       'track',
     ])
   })
+
+  it('runs any buffered operations created after preFlush after load', async () => {
+    jest
+      .mocked(unfetch)
+      // @ts-ignore ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
+
+    // register is called after flushPreBuffer in `loadAnalytics`
+    register.mockImplementationOnce(() =>
+      window.analytics.track('race conditions', { foo: 'bar' })
+    )
+
+    await install()
+
+    await sleep(0)
+
+    expect(track).toHaveBeenCalledWith('fruit basket', {
+      fruits: ['🍌', '🍇'],
+    })
+    expect(track).toHaveBeenCalledWith('race conditions', { foo: 'bar' })
+    expect(identify).toHaveBeenCalledWith('netto', {
+      employer: 'segment',
+    })
+
+    expect(page).toHaveBeenCalled()
+  })
 })

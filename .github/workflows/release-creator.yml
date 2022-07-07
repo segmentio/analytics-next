@@ -1,0 +1,36 @@
+name: Changeset Release Creator
+
+on:
+  push:
+    paths:
+      - ".changeset/**"
+      - "packages/**"
+    branches:
+      - master
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release-pr:
+    name: Create or Update Release PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js 12.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12.x
+          cache: "yarn"
+
+      - name: Install Dependencies
+        run: HUSKY=0 yarn install --immutable
+
+      - name: Create or Update Release PR
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: yarn update-versions-and-changelogs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
