@@ -87,5 +87,6 @@ analyze:
 .PHONY: analyze
 
 dev: ## Starts a dev server that is ready for development
-	$(yarn_run) concurrently "yarn workspace with-next-js dev" "$(yarn_run) pkg -w"
+	$(yarn_run) pkg --incremental
+	$(yarn_run) concurrently "sleep 2 && yarn workspace with-next-js dev" "$(yarn_run) pkg -w"
 .PHONY: dev

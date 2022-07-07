@@ -5,7 +5,7 @@ Analytics-Next contains a comprehensive QA test suite that verifies that E2E fun
 1. Compile Analytics-Next (browser)
 
 ```sh
-$ yarn build:dev
+$ yarn build
 ```
 
 2. Grab list of test sources

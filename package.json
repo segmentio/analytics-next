@@ -12,8 +12,8 @@
   "scripts": {
     "test": "echo 'Running all tests...' && yarn workspaces foreach run test",
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
-    "build:dev": "yarn workspace @segment/analytics-next build:dev",
     "dev": "yarn workspace @segment/analytics-next exec make dev",
+    "build": "yarn workspaces foreach -pt --no-private run build",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
