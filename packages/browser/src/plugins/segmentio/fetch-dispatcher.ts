@@ -12,10 +12,13 @@ export default function (): { dispatch: Dispatcher } {
   function dispatch(url: string, body: object): Promise<unknown> {
     const headers: Record<string, string> = {}
 
-    if (objectHasProperty(body, 'anonymousId')) {
+    if (
+      objectHasProperty(body, 'anonymousId') &&
+      typeof body.anonymousId === 'string'
+    ) {
       headers['anon-id'] = body.anonymousId as string
     }
-    if (objectHasProperty(body, 'userId')) {
+    if (objectHasProperty(body, 'userId') && typeof body.userId === 'string') {
       headers['user-id'] = body.userId as string
     }
 
