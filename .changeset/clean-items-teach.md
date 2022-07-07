@@ -2,4 +2,4 @@
 '@justatestnpmpublish/analytics-next': patch
 ---
 
-justatest
+just a test!
