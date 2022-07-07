@@ -17,7 +17,7 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
-      - yarn workspace @segment/analytics-next exec make ci
+      - yarn workspace @justatestnpmpublish/analytics-next exec make ci
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -33,7 +33,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run QA Tests :pray:"
-      - yarn workspace @segment/analytics-next exec make test-qa
+      - yarn workspace @justatestnpmpublish/analytics-next exec make test-qa
     retry:
       automatic:
         - exit_status: "*"
@@ -69,7 +69,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
-      - yarn workspace @segment/analytics-next exec make test-qa-destinations
+      - yarn workspace @justatestnpmpublish/analytics-next exec make test-qa-destinations
     soft_fail:
       - exit_status: "*"
     plugins:
@@ -86,8 +86,8 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
-      - yarn workspace @segment/analytics-next exec make build-prod
-      - NODE_ENV=production yarn workspace @segment/analytics-next exec bash ./scripts/release.sh
+      - yarn workspace @justatestnpmpublish/analytics-next exec make build-prod
+      - NODE_ENV=production yarn workspace @justatestnpmpublish/analytics-next exec bash ./scripts/release.sh
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -102,7 +102,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run tests"
-      - yarn workspace @segment/analytics-next build:dev
+      - yarn workspace @justatestnpmpublish/analytics-next build:dev
       - yarn workspace with-next-js lint
       - yarn workspace with-next-js build
     plugins:

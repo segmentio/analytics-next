@@ -5,12 +5,12 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "watch": "NODE_ENV=production yarn workspace @segment/analytics-next umd --watch",
+    "watch": "NODE_ENV=production yarn workspace @justatestnpmpublish/analytics-next umd --watch",
     "start": "yarn concurrently 'yarn watch' 'npx http-server .'",
     "dev": "yarn start"
   },
   "dependencies": {
-    "@segment/analytics-next": "workspace:^"
+    "@justatestnpmpublish/analytics-next": "workspace:^"
   },
   "devDependencies": {
     "concurrently": "^7.2.1"

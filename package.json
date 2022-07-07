@@ -12,8 +12,8 @@
   "scripts": {
     "test": "echo 'Running all tests...' && yarn workspaces foreach run test",
     "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
-    "build:dev": "yarn workspace @segment/analytics-next build:dev",
-    "dev": "yarn workspace @segment/analytics-next exec make dev",
+    "build:dev": "yarn workspace @justatestnpmpublish/analytics-next build:dev",
+    "dev": "yarn workspace @justatestnpmpublish/analytics-next exec make dev",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
@@ -43,7 +43,7 @@
     "typescript": "^4.6.4"
   },
   "resolutions": {
-    "@segment/analytics-next": "workspace:*",
+    "@justatestnpmpublish/analytics-next": "workspace:*",
     "@segment/analytics-node": "workspace:*"
   }
 }

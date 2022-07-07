@@ -1,5 +1,5 @@
 import React from 'react'
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@justatestnpmpublish/analytics-next'
 import { useCDNUrl, useWriteKey } from '../utils/hooks/useConfig'
 
 const AnalyticsContext = React.createContext<{

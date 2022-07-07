@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@segment/analytics-next": "workspace:^",
+    "@justatestnpmpublish/analytics-next": "workspace:^",
     "faker": "^5.1.0",
     "lodash": "^4.17.21",
     "next": "^12.1.0",

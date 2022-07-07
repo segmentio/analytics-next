@@ -5,7 +5,7 @@ echo '--- Build bundles'
 make build-prod
 
 echo '--- Check Size'
-yarn workspace @segment/analytics-next size-limit
+yarn workspace @justatestnpmpublish/analytics-next size-limit
 
 echo '--- Lint files'
 make lint

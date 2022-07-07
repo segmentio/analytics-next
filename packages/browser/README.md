@@ -30,19 +30,19 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 
 ```sh
 # npm
-npm install @segment/analytics-next
+npm install @justatestnpmpublish/analytics-next
 
 # yarn
-yarn add @segment/analytics-next
+yarn add @justatestnpmpublish/analytics-next
 
 # pnpm
-pnpm add @segment/analytics-next
+pnpm add @justatestnpmpublish/analytics-next
 ```
 
 2. Import the package into your project and you're good to go (with working types)!
 
 ```ts
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@justatestnpmpublish/analytics-next'
 
 const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
@@ -56,7 +56,7 @@ document.body?.addEventListener('click', () => {
 ### using `React` (Simple / client-side only)
 
 ```tsx
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@justatestnpmpublish/analytics-next'
 
 // we can export this instance to share with rest of our codebase.
 export const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
@@ -126,7 +126,7 @@ More React Examples:
 1. create composable file `segment.ts` with factory ref analytics:
 
 ```ts
-import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
+import { Analytics, AnalyticsBrowser } from '@justatestnpmpublish/analytics-next'
 
 export const analytics = AnalyticsBrowser.load({
   writeKey: '<YOUR_WRITE_KEY>',

@@ -1,4 +1,4 @@
-# @segment/analytics-next
+# @justatestnpmpublish/analytics-next
 
 ## 1.39.2
 

@@ -8,7 +8,11 @@ import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
 import { useAnalytics } from '../context/analytics'
-import { Analytics, Context, AnalyticsBrowser } from '@segment/analytics-next'
+import {
+  Analytics,
+  Context,
+  AnalyticsBrowser,
+} from '@justatestnpmpublish/analytics-next'
 
 const jsontheme = {
   scheme: 'tomorrow',
