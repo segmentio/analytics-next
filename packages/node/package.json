@@ -4,7 +4,7 @@
   "private": true,
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     "require": "./dist/cjs/index.js",
     "import": "./dist/esm/index.js"
@@ -21,7 +21,7 @@
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:esm": "yarn tsc -p tsconfig.build.json --outDir ./dist/esm --module esnext",
-    "watch:build": "yarn concurrently 'yarn:build:cjs --watch --sourceMap' 'yarn:build:esm --watch --sourceMap'",
+    "watch:build": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
     "watch:test": "yarn test --watch",
     "prepare": "echo 'Prepare script...\n' && yarn build",
     "tsc": "yarn run -T tsc",
