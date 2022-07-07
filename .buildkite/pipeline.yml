@@ -102,7 +102,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run tests"
-      - yarn workspace @segment/analytics-next build:dev
+      - yarn workspace @segment/analytics-next build
       - yarn workspace with-next-js lint
       - yarn workspace with-next-js build
     plugins:

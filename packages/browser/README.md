@@ -168,6 +168,8 @@ $ cd analytics-next
 $ yarn dev
 ```
 
+> If you get "Cannot find module '@segment/analytics-next' or its corresponding type declarations.ts(2307)" (in VSCode), you may have to "cmd+shift+p -> "TypeScript: Restart TS server"
+
 Then, make your changes and test them out in the test app!
 
 <img src="https://user-images.githubusercontent.com/2866515/135407053-7561d522-b969-484d-8d3a-6f1c4d9c025b.gif" alt="Example of the development app" width="500px">
