@@ -124,7 +124,7 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
-      - echo +++ Release packages"
+      - echo "+++ Release packages"
       - yarn release
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
