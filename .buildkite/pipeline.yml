@@ -117,14 +117,14 @@ steps:
       build.message =~ /^Version Packages/ &&
       build.branch == "publish-test" &&
       build.message !~ /\[skip\]/i
-    depends_on: [build]
+    # depends_on: [build]
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
-      - echo +++ Release packages"
+      - echo "+++ Release packages"
       - yarn release
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
