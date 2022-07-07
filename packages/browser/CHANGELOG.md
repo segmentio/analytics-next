@@ -1,5 +1,11 @@
 # @justatestnpmpublish/analytics-next
 
+## 1.39.3
+
+### Patch Changes
+
+- [`ee4f94c`](https://github.com/segmentio/analytics-next/commit/ee4f94cf2234decfe25f099e4790e8f29f8e93b8) Thanks [@silesky](https://github.com/silesky)! - justatest
+
 ## 1.39.2
 
 ### Patch Changes
