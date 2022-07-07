@@ -7,7 +7,14 @@
     "target": "es2019",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    // publish sourceMaps
+    "sourceMap": true,
+    // publish declarationMaps (enable go-to-definition in IDE)
+    "declarationMap": true,
+    // add type declarations to "types" folder
+    "declaration": true,
+    "declarationDir": "./dist/types"
   },
   "exclude": ["node_modules", "dist"]
 }
