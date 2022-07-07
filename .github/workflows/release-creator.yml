@@ -6,7 +6,7 @@ on:
       - ".changeset/**"
       - "packages/**"
     branches:
-      - master
+      - publish-test
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 

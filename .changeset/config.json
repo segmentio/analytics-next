@@ -9,6 +9,6 @@
   ],
   "commit": false,
   "access": "public",
-  "baseBranch": "master",
+  "baseBranch": "publish-test",
   "linked": []
 }

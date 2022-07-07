@@ -8,7 +8,7 @@ const path = require('path')
 const mime = require('mime')
 const logUpdate = require('log-update')
 
-const PROD_BRANCH_NAME = 'master'
+const PROD_BRANCH_NAME = 'publish-test'
 
 const shouldReleaseToProduction = process.env.PROD_RELEASE
 
