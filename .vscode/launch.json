@@ -6,9 +6,15 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest Current File",
+      "name": "(packages/browser) Jest Current File",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["--testTimeout=100000", "--runTestsByPath", "${relativeFile}"],
+      "args": [
+        "--testTimeout=100000",
+        "-c",
+        "${workspaceFolder}/packages/browser/jest.config.js",
+        "--runTestsByPath",
+        "${relativeFile}"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": [
@@ -18,9 +24,13 @@
     },
     {
       "type": "node",
-      "name": "Jest All",
+      "name": "(packages/browser) Jest All",
       "request": "launch",
-      "args": ["--runInBand"],
+      "args": [
+        "--runInBand",
+        "-c",
+        "${workspaceFolder}/packages/browser/jest.config.js"
+      ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

@@ -14,7 +14,7 @@ async function tryOperation(
 export function attempt(
   ctx: Context,
   plugin: Plugin
-): Promise<Context | Error | undefined> {
+): Promise<Context | ContextCancelation | Error | undefined> {
   ctx.log('debug', 'plugin', { plugin: plugin.name })
   const start = new Date().getTime()
 
@@ -43,7 +43,7 @@ export function attempt(
           error: err,
         })
 
-        return
+        return err
       }
 
       ctx.log('error', 'plugin Error', {
@@ -63,13 +63,12 @@ export function ensure(
   plugin: Plugin
 ): Promise<Context | undefined> {
   return attempt(ctx, plugin).then((newContext) => {
-    if (newContext === undefined || newContext instanceof Error) {
-      ctx.log('debug', 'Context canceled')
-      ctx.stats.increment('context_canceled')
-      ctx.cancel(newContext)
-      return undefined
+    if (newContext instanceof Context) {
+      return newContext
     }
 
-    return newContext
+    ctx.log('debug', 'Context canceled')
+    ctx.stats.increment('context_canceled')
+    ctx.cancel(newContext)
   })
 }

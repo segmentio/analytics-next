@@ -24,6 +24,10 @@ interface CancelationOptions {
   type?: string
 }
 
+export interface ContextFailedDelivery {
+  reason: unknown
+}
+
 export class ContextCancelation {
   retry: boolean
   type: string
@@ -44,6 +48,7 @@ export class Context implements AbstractContext {
   public logger = new Logger()
   public stats: Stats
   private _id: string
+  private _failedDelivery?: ContextFailedDelivery
 
   constructor(event: SegmentEvent, id?: string) {
     this._attempts = 0
@@ -108,6 +113,14 @@ export class Context implements AbstractContext {
 
     dset(this._event, path, val)
     return this._event
+  }
+
+  public failedDelivery(): ContextFailedDelivery | undefined {
+    return this._failedDelivery
+  }
+
+  public setFailedDelivery(options: ContextFailedDelivery) {
+    this._failedDelivery = options
   }
 
   public logs(): LogMessage[] {

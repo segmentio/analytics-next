@@ -86,14 +86,14 @@ export class EventQueue extends Emitter {
   }
 
   private async subscribeToDelivery(ctx: Context): Promise<Context> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const onDeliver = (flushed: Context, delivered: boolean): void => {
         if (flushed.isSame(ctx)) {
           this.off('flush', onDeliver)
           if (delivered) {
             resolve(flushed)
           } else {
-            reject(flushed)
+            resolve(flushed)
           }
         }
       }
@@ -111,12 +111,14 @@ export class EventQueue extends Emitter {
 
     return this.deliver(ctx).catch((err) => {
       if (err instanceof ContextCancelation && err.retry === false) {
+        ctx.setFailedDelivery({ reason: err })
         return ctx
       }
 
       const accepted = this.enqueuRetry(err, ctx)
       if (!accepted) {
-        throw err
+        ctx.setFailedDelivery({ reason: err })
+        return ctx
       }
 
       return this.subscribeToDelivery(ctx)
@@ -195,6 +197,7 @@ export class EventQueue extends Emitter {
       const accepted = this.enqueuRetry(err, ctx)
 
       if (!accepted) {
+        ctx.setFailedDelivery({ reason: err })
         this.emit('flush', ctx, false)
       }
 
@@ -250,16 +253,13 @@ export class EventQueue extends Emitter {
 
     for (const beforeWare of before) {
       const temp: Context | undefined = await ensure(ctx, beforeWare)
-      if (temp !== undefined) {
+      if (temp instanceof Context) {
         ctx = temp
       }
     }
 
     for (const enrichmentWare of enrichment) {
-      const temp: Context | Error | undefined = await attempt(
-        ctx,
-        enrichmentWare
-      )
+      const temp = await attempt(ctx, enrichmentWare)
       if (temp instanceof Context) {
         ctx = temp
       }
