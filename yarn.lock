@@ -1484,11 +1484,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@segment/analytics-core@1.0.0, @segment/analytics-core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-core@workspace:packages/core"
+  dependencies:
+    tslib: ^2.4.0
+  languageName: unknown
+  linkType: soft
+
 "@segment/analytics-next@workspace:*, @segment/analytics-next@workspace:packages/browser":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-next@workspace:packages/browser"
   dependencies:
     "@lukeed/uuid": ^2.0.0
+    "@segment/analytics-core": 1.0.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
     "@segment/inspector-core": ^1.0.0

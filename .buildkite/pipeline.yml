@@ -60,6 +60,21 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
 
+  - label: "[analytics-core] Lint + Test"
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - yarn install --immutable
+      - echo "+++ Run tests"
+      - yarn workspace @segment/analytics-core lint
+      - yarn workspace @segment/analytics-core test
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: [".yarn/cache/"]
+
   - label: ":thisisfine: [Browser] Destinations QA / E2E"
     key: destinations
     agents:

@@ -6,6 +6,7 @@
     "incremental": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
     }

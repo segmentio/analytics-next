@@ -48,6 +48,7 @@
   ],
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
+    "@segment/analytics-core": "1.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
     "@segment/tsub": "^0.1.12",
