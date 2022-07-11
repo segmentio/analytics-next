@@ -10,17 +10,23 @@
     "node": "^14.15.0"
   },
   "scripts": {
-    "test": "echo 'Running all tests...' && yarn workspaces foreach run test",
-    "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -p run lint",
-    "dev": "yarn workspace @segment/analytics-next exec make dev",
-    "build": "yarn workspaces foreach -pt --no-private run build",
+    "test": "echo 'Running all tests...' && yarn workspaces foreach -vpt run test",
+    "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -vpt run lint",
+    "dev": "yarn browser exec make dev",
+    "build": "echo 'Building all public workspaces...' && yarn workspaces foreach -vpt --no-private run build",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
     "release": "yarn prepare-run-all && changeset publish && git push --no-verify origin --tags && yarn postpublish-run-all",
-    "prepare-run-all": "yarn workspaces foreach -pt --no-private run prepare",
-    "postpublish-run-all": "yarn workspaces foreach -pt --no-private run postpublish",
-    "version-run-all": "yarn workspaces foreach -pt --no-private run version"
+    "prepare-run-all": "yarn workspaces foreach -vpt --no-private run prepare",
+    "postpublish-run-all": "yarn workspaces foreach -vpt --no-private run postpublish",
+    "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
+    "core": "yarn workspace @segment/analytics-core",
+    "core+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-core' run",
+    "browser": "yarn workspace @segment/analytics-next",
+    "browser+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-next' run",
+    "node": "yarn workspace @segment/analytics-node",
+    "node+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-node' run"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {

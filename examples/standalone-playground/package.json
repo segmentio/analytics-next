@@ -5,7 +5,7 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "watch": "NODE_ENV=production yarn workspace @segment/analytics-next umd --watch",
+    "watch": "NODE_ENV=production yarn run -T browser umd --watch",
     "start": "yarn concurrently 'yarn watch' 'npx http-server .'",
     "dev": "yarn start"
   },

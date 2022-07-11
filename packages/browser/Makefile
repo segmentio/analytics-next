@@ -1,5 +1,5 @@
 BIN := ./node_modules/.bin
-yarn_run := yarn workspace @segment/analytics-next
+yarn_run := yarn run -T browser
 
 help: ## Lists all available make tasks and some short documentation about them
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-24s\033[0m %s\n", $$1, $$2}'
@@ -14,14 +14,13 @@ node_modules:
 	yarn install --immutable
 	@touch $@
 
-build-browser:
-	@rm -rf dist/umd
+build-browser: build # build dependencies
 	$(yarn_run) umd --no-stats
 .PHONY: build-browser
 
-build-prod: ## Builds libraries in prod mode
-	$(yarn_run) build:prod
-.PHONY: build-prod
+build: ## Builds libraries in prod mode, and all dependencies
+	yarn run -T browser+deps build
+.PHONY: build
 
 clean: ## Clean the build directory
 	rm -rf dist generated
@@ -49,11 +48,11 @@ test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTI
 	$(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
-test-integration: build-prod ## Runs all integration tests in a single command
+test-integration: build ## Runs all integration tests in a single command
 	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
-test-perf: build-prod ## Runs all integration tests in a single command
+test-perf: build ## Runs all integration tests in a single command
 	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/performance/*.test.ts ${args}
 .PHONY: test-coverage
 
@@ -64,10 +63,6 @@ lint: node_modules ## Lints the source code
 ci:
 	bash ./scripts/ci.sh
 .PHONY: ci
-
-size: ## Verify the final size of Analytics-Next
-	NODE_ENV=production $(yarn_run) umd > /dev/null && $(yarn_run) size-limit
-.PHONY: size
 
 handshake:
 	@echo "📡  Establishing Remote connection"
@@ -86,7 +81,6 @@ analyze:
 	NODE_ENV=production $(BIN)/webpack --profile --json > stats.json && $(BIN)/webpack-bundle-analyzer --port 4200 stats.json
 .PHONY: analyze
 
-dev: ## Starts a dev server that is ready for development
-	$(yarn_run) pkg --incremental
-	$(yarn_run) concurrently "sleep 2 && yarn workspace with-next-js dev" "$(yarn_run) pkg -w"
+dev: build ## Starts a dev server that is ready for development
+	$(yarn_run) concurrently "sleep 2 && yarn workspace with-next-js dev" "$(yarn_run) pkg -w" "yarn run -T core watch:build"
 .PHONY: dev
