@@ -1491,6 +1491,7 @@ __metadata:
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
+    "@segment/inspector-core": ^1.0.0
     "@segment/tsub": ^0.1.12
     "@size-limit/preset-big-lib": ^7.0.8
     "@types/flat": ^5.0.1
@@ -1567,6 +1568,13 @@ __metadata:
     new-date: ^1.0.3
     obj-case: 0.2.1
   checksum: c6e139fd16464a1adb204bc13b958c95c96e5fa82c7281a4e71be4589b1a50a1d072f41d2bd8533c5fe1891e5a124af8c856ce26c493a0c5f548dff80c5ce572
+  languageName: node
+  linkType: hard
+
+"@segment/inspector-core@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@segment/inspector-core@npm:1.0.0"
+  checksum: 4c04303301f54cab9fe8d0502fe0a755ad21206b8917ebbfb5edb8be5888cd7ed4dc948cf34e52b957863de44f9152551d78571ba12c00106f573fdb2136f4ef
   languageName: node
   linkType: hard
 

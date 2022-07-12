@@ -29,6 +29,7 @@ import type {
 import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
+import { inspectorHost } from '../inspector'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -113,6 +114,13 @@ export class Analytics extends Emitter {
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
+
+    inspectorHost.start({
+      user: {
+        id: this.user().id() || null,
+        traits: this.user().traits(),
+      },
+    })
 
     autoBind(this)
   }
@@ -320,6 +328,13 @@ export class Analytics extends Emitter {
     callback?: Callback
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
+
+    inspectorHost.trace({
+      stage: 'triggered',
+      id: ctx.id,
+      event: event as any,
+      timestamp: new Date().toISOString(),
+    })
 
     if (isOffline() && !this.options.retryQueue) {
       return ctx
