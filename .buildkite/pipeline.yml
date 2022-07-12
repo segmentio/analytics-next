@@ -43,7 +43,7 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
 
-  - label: "[analytics-node] Lint + Test"
+  - label: "[Node] Lint + Test"
     key: analytics-node-test
     agents:
       queue: v1
@@ -61,7 +61,7 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
 
-  - label: "[analytics-core] Lint + Test"
+  - label: "[Core] Lint + Test"
     agents:
       queue: v1
     commands:
