@@ -1,6 +1,6 @@
 import { Group, Identify, Track, Page, Alias } from '@segment/facade'
 import { Analytics } from '../../core/analytics'
-import { Emitter } from '../../core/emitter'
+import { Emitter } from '@segment/analytics-core'
 
 export interface LegacyIntegration extends Emitter {
   analytics?: Analytics

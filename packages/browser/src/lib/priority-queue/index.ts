@@ -1,4 +1,4 @@
-import { Emitter } from '../../core/emitter'
+import { Emitter } from '@segment/analytics-core'
 import { backoff } from './backoff'
 
 /**

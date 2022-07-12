@@ -17,7 +17,7 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
-      - yarn workspace @segment/analytics-next exec make ci
+      - yarn run -T browser exec make ci
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -33,7 +33,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run QA Tests :pray:"
-      - yarn workspace @segment/analytics-next exec make test-qa
+      - yarn run -T browser exec make test-qa
     retry:
       automatic:
         - exit_status: "*"
@@ -43,7 +43,7 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
 
-  - label: "[analytics-node] Lint + Test"
+  - label: "[Node] Lint + Test"
     key: analytics-node-test
     agents:
       queue: v1
@@ -51,10 +51,28 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn run -T node+deps build
       - echo "+++ Run tests"
-      - yarn workspace @segment/analytics-node lint
-      - yarn workspace @segment/analytics-node test
-      - yarn workspace @segment/analytics-node build
+      - yarn run -T node lint
+      - yarn run -T node test
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: [".yarn/cache/"]
+
+  - label: "[Core] Lint + Test"
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn run -T core+deps build
+      - echo "+++ Run tests"
+      - yarn run -T core lint
+      - yarn run -T core test
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -69,7 +87,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
-      - yarn workspace @segment/analytics-next exec make test-qa-destinations
+      - yarn run -T browser exec make test-qa-destinations
     soft_fail:
       - exit_status: "*"
     plugins:
@@ -86,8 +104,10 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
-      - yarn workspace @segment/analytics-next exec make build-prod
-      - NODE_ENV=production yarn workspace @segment/analytics-next exec bash ./scripts/release.sh
+      - echo "--- Build bundles"
+      - yarn run -T browser+deps build
+      - echo "+++ Release Branch"
+      - NODE_ENV=production yarn run -T browser exec bash ./scripts/release.sh
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -101,10 +121,10 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn workspaces foreach -vtR --from '{with-next-js,with-vite}' run build
       - echo "+++ Run tests"
-      - yarn workspace @segment/analytics-next build
-      - yarn workspace with-next-js lint
-      - yarn workspace with-next-js build
+      - yarn workspaces foreach -vt --from 'with-next-js' run lint
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

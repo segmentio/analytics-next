@@ -2,10 +2,10 @@
 set -e
 
 echo '--- Build bundles'
-make build-prod
+make build
 
 echo '--- Check Size'
-yarn workspace @segment/analytics-next size-limit
+yarn run -T browser size-limit
 
 echo '--- Lint files'
 make lint
