@@ -29,3 +29,4 @@ reports/*
 *.gz
 
 .changelog
+.turbo
