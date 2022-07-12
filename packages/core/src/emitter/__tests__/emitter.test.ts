@@ -1,4 +1,4 @@
-import { Emitter } from '..'
+import { Emitter } from '../'
 
 describe(Emitter, () => {
   it('emits events', () => {
