@@ -1,4 +1,5 @@
 import type { Inspector } from '@segment/inspector-core'
+import { getGlobal } from '../../lib/get-global'
 
 declare global {
   interface Window {
@@ -6,8 +7,7 @@ declare global {
   }
 }
 
-// FIXME: Replace this with `globalThis` to support all environments
-const env = typeof window !== 'undefined' ? window : null
+const env = getGlobal()
 
 export const inspectorHost: Inspector = {
   start: (...args) => (env as any)?.['__SEGMENT_INSPECTOR__']?.start(...args),
