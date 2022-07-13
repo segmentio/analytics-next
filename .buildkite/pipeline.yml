@@ -50,7 +50,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T node+deps build
       - echo "+++ Run tests"
@@ -67,7 +67,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T core+deps build
       - echo "+++ Run tests"
@@ -103,7 +103,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T browser+deps build
       - echo "+++ Release Branch"
@@ -120,7 +120,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn workspaces foreach -vtR --from '{with-next-js,with-vite}' run build
       - echo "+++ Run tests"
@@ -145,7 +145,7 @@ steps:
       - git config --global user.name "buildkite-agent"
       - git config --global user.email "buildkite-agent@segment.com"
       - echo "--- Install dependencies"
-      - HUSKY=0 yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Release packages"
       - yarn release
     plugins:
