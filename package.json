@@ -1,6 +1,6 @@
 {
   "name": "@june-so/analytics-next",
-  "version": "1.35.2",
+  "version": "1.36.4",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/pkg/index.js",
