@@ -58,6 +58,7 @@ describe.skip('Remote Plugin Integration', () => {
     mocked(unfetch).mockImplementation(
       // @ts-ignore
       (): Promise<Response> =>
+        // @ts-ignore
         Promise.resolve({
           json: () => Promise.resolve(cdnResponse),
         })
