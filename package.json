@@ -1,10 +1,6 @@
 {
   "name": "@june-so/analytics-next",
-<<<<<<< HEAD
   "version": "1.36.4",
-=======
-  "version": "1.36.3",
->>>>>>> 00ee5c2 (Downgrade everything to the work Sergio did)
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/pkg/index.js",

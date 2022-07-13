@@ -3,11 +3,7 @@ import { SegmentEvent } from '../../core/events'
 
 let fetch = unfetch
 if (typeof window !== 'undefined') {
-<<<<<<< HEAD
   // @ts-ignore
-=======
-  // @ts-expect-error
->>>>>>> 00ee5c2 (Downgrade everything to the work Sergio did)
   fetch = window.fetch || unfetch
 }
 
@@ -66,7 +62,6 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
 
     flushing = true
 
-    const remote = `https://${apiHost}/b`
     const batch = buffer.map(([_url, blob]) => {
       return blob
     })

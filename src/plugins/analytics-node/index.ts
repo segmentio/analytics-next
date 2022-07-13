@@ -16,7 +16,6 @@ interface AnalyticsNodeSettings {
 export async function post(
   event: SegmentEvent,
   writeKey: string,
-  settings: AnalyticsNodeSettings
 ): Promise<SegmentEvent> {
   const res = await fetch(`https://api.june.so/sdk/${event.type}`, {
     method: 'POST',
@@ -37,7 +36,7 @@ export function analyticsNode(settings: AnalyticsNodeSettings): Plugin {
     ctx.updateEvent('context.library.version', version)
     ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
 
-    await post(ctx.event, settings.writeKey, settings)
+    await post(ctx.event, settings.writeKey)
     return ctx
   }
 
