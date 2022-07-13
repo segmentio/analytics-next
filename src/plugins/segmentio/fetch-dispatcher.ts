@@ -2,6 +2,7 @@ import unfetch from 'unfetch'
 
 let fetch = unfetch
 if (typeof window !== 'undefined') {
+  // @ts-ignore
   fetch = window.fetch || unfetch
 }
 

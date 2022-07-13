@@ -112,6 +112,7 @@ export class RemoteMetrics {
     const headers = { 'Content-Type': 'text/plain' }
     const url = `https://${this.host}/m`
 
+    // @ts-ignore
     return fetch(url, {
       headers,
       body: JSON.stringify(payload),

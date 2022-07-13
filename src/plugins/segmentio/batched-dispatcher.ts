@@ -3,6 +3,7 @@ import { SegmentEvent } from '../../core/events'
 
 let fetch = unfetch
 if (typeof window !== 'undefined') {
+  // @ts-ignore
   fetch = window.fetch || unfetch
 }
 
@@ -62,6 +63,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
 
     return fetch(`https://${apiHost}/b`, {
+      // @ts-ignore
       keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'application/json',
