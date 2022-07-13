@@ -1,6 +1,6 @@
 {
   "name": "@june-so/analytics-next",
-  "version": "1.35.1",
+  "version": "1.35.2",
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "module": "dist/pkg/index.js",
@@ -25,7 +25,7 @@
     "run-example": "cd example && yarn && yarn dev",
     "clean": "rm -rf dist",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "prepare": "yarn pkg"
+    "prepare": "yarn pkg && yarn cjs"
   },
   "size-limit": [
     {

@@ -33,7 +33,7 @@ describe.skip('Remote Plugin Integration', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
 
     const cdnResponse: LegacySettings = {
@@ -44,8 +44,7 @@ describe.skip('Remote Plugin Integration', () => {
         // but I'd like to have a full integration test if possible
         {
           name: 'amplitude',
-          url:
-            'https://ajs-next-integrations.s3-us-west-2.amazonaws.com/fab-5/amplitude-plugins.js',
+          url: 'https://ajs-next-integrations.s3-us-west-2.amazonaws.com/fab-5/amplitude-plugins.js',
           libraryName: 'amplitude-pluginsDestination',
           settings: {
             subscriptions: `[{"partnerAction":"sessionId","name":"SessionId","enabled":true,"subscribe":"type = \\"track\\"", "mapping":{}}]`,
@@ -55,9 +54,10 @@ describe.skip('Remote Plugin Integration', () => {
     }
 
     // @ts-ignore mocking fetch is *hard*
+    // @ts-ignore
     mocked(unfetch).mockImplementation(
+      // @ts-ignore
       (): Promise<Response> =>
-        // @ts-expect-error
         Promise.resolve({
           json: () => Promise.resolve(cdnResponse),
         })
