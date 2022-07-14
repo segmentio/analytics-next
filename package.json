@@ -10,10 +10,10 @@
     "node": "^14.15.0"
   },
   "scripts": {
-    "test": "echo 'Running all tests...' && yarn workspaces foreach -vpt run test",
-    "lint": "echo 'Linting all workspaces...' && yarn constraints && yarn workspaces foreach -vpt run lint",
+    "test": "turbo run test",
+    "lint": "yarn constraints && turbo run lint",
+    "build": "turbo run build",
     "dev": "yarn browser exec make dev",
-    "build": "echo 'Building all public workspaces...' && yarn workspaces foreach -vpt --no-private run build",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all",
@@ -22,11 +22,11 @@
     "postpublish-run-all": "yarn workspaces foreach -vpt --no-private run postpublish",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @segment/analytics-core",
-    "core+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-core' run",
+    "core+deps": "turbo run --filter='analytics-core'",
     "browser": "yarn workspace @segment/analytics-next",
-    "browser+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-next' run",
+    "browser+deps": "turbo run --filter='analytics-next'",
     "node": "yarn workspace @segment/analytics-node",
-    "node+deps": "yarn workspaces foreach -vtR --from '@segment/analytics-node' run"
+    "node+deps": "turbo run --filter='analytics-node'"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
@@ -46,6 +46,7 @@
     "prettier": "^2.6.2",
     "ts-jest": "^28.0.4",
     "ts-node": "^10.8.0",
+    "turbo": "^1.3.1",
     "typescript": "^4.6.4"
   },
   "resolutions": {
