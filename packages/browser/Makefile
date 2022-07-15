@@ -81,6 +81,6 @@ analyze:
 	NODE_ENV=production $(BIN)/webpack --profile --json > stats.json && $(BIN)/webpack-bundle-analyzer --port 4200 stats.json
 .PHONY: analyze
 
-dev: build ## Starts a dev server that is ready for development
-	$(yarn_run) concurrently "sleep 2 && yarn workspace with-next-js dev" "$(yarn_run) pkg -w" "yarn run -T core watch:build"
+dev: ## Starts a dev server that is ready for development
+	yarn workspace with-next-js run dev
 .PHONY: dev

@@ -14,9 +14,13 @@
       "outputs": ["dist/**"]
     },
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["build:packages"],
       "outputs": [],
       "inputs": ["src/**", "test*/**"]
+    },
+    "watch": {
+      "cache": false,
+      "dependsOn": ["build:packages"]
     },
     "lint": {
       "dependsOn": ["build:packages"],

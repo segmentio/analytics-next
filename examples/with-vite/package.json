@@ -2,7 +2,8 @@
   "name": "with-vite",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "concurrently": "yarn run -T concurrently",
+    "dev": "yarn concurrently 'yarn run -T watch --filter=with-vite' 'sleep 10 && vite'",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
