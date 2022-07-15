@@ -13,6 +13,7 @@
     "test": "turbo run test",
     "lint": "yarn constraints && turbo run lint",
     "build": "turbo run build",
+    "build:packages": "turbo run build:packages",
     "dev": "yarn browser exec make dev",
     "postinstall": "husky install",
     "changeset": "changeset",

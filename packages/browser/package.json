@@ -35,7 +35,7 @@
     "pkg": "yarn tsc -p tsconfig.build.json",
     "cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
-    "lint": "yarn tsc --noEmit && yarn eslint '**/*.{js,jsx,ts,tsx}'",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "test": "yarn jest"
   },
   "size-limit": [
