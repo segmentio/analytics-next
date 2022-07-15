@@ -5,14 +5,23 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**"]
     },
+    "build:packages": {
+      "dependsOn": [
+        "@segment/analytics-next#build",
+        "@segment/analytics-node#build",
+        "@segment/analytics-core#build"
+      ],
+      "outputs": ["dist/**"]
+    },
     "test": {
       "dependsOn": ["build"],
       "outputs": [],
       "inputs": ["src/**", "test*/**"]
     },
     "lint": {
+      "dependsOn": ["build:packages"],
       "outputs": [],
-      "inputs": ["**/*.ts?x", "**/*.js", "**/*.json"]
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js"]
     }
   }
 }

@@ -16,7 +16,7 @@
   "sideEffects": false,
   "scripts": {
     "test": "yarn jest",
-    "lint": "yarn concurrently 'yarn:eslint' 'yarn:tsc --noEmit'",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
