@@ -158,6 +158,41 @@ export default defineComponent({
 </script>
 ```
 
+
+
+### For snippet users only: How to add typescript support
+
+1. Install npm package `@segment/analytics-next`
+
+2. Create `./typings/analytics.d.ts`
+```ts
+// ./typings/analytics.d.ts
+import type { AnalyticsSnippet } from "@segment/analytics-next";
+
+declare global {
+  interface Window {
+    analytics: AnalyticsSnippet;
+  }
+}
+
+```
+3. Configure typescript to read from the custom `./typings` folder
+```jsonc
+// tsconfig.json
+{
+  ...
+  "compilerOptions": {
+    ....
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ]
+  }
+  ....
+}
+```
+
+
 # 🐒 Development
 
 First, clone the repo and then startup our local dev environment:
