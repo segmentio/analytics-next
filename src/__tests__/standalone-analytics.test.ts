@@ -124,20 +124,6 @@ describe('standalone bundle', () => {
     expect(spy).toHaveBeenCalledWith(segmentDotCom, {})
   })
 
-  it('derives the CDN from scripts on the page', async () => {
-    // @ts-ignore ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
-
-    const settings: AnalyticsSettings = {
-      writeKey: segmentDotCom,
-    }
-    await loadLegacySettings(segmentDotCom, settings)
-
-    expect(unfetch).toHaveBeenCalledWith(
-      'https://cdn.foo.com/v1/projects/foo/settings'
-    )
-  })
-
   it('runs any buffered operations after load', async (done) => {
     // @ts-ignore ignore Response required fields
     mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)

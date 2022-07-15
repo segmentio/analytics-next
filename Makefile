@@ -4,7 +4,11 @@ help: ## Lists all available make tasks and some short documentation about them
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-24s\033[0m %s\n", $$1, $$2}'
 .PHONY: help
 
-install: package.json yarn.lock
+
+## Basic repo maintenance
+
+# Installs npm dependencies
+node_modules: package.json yarn.lock
 	yarn install
 	@touch $@
 
@@ -25,22 +29,6 @@ clean: ## Clean the build directory
 	rm -rf dist generated
 .PHONY: clean
 
-size: ## Verify the final size of Analytics-Next
-	NODE_ENV=production yarn umd > /dev/null && yarn size-limit
-.PHONY: size
-
-release: ## Releases Analytics Next to stage
-	yarn np --branch master
-.PHONY: release
-
-analyze: 
-	NODE_ENV=production $(BIN)/webpack --profile --json > stats.json && $(BIN)/webpack-bundle-analyzer --port 4200 stats.json
-.PHONY: analyze
-
-dev: build ## Starts a dev server that is ready for development
-	yarn concurrently "yarn run-example" "yarn pkg -w"
-.PHONY: build
-
 ## Test Commands
 
 tdd: node_modules ## Runs unit tests in watch mode
@@ -50,6 +38,10 @@ tdd: node_modules ## Runs unit tests in watch mode
 test-unit: node_modules ## Runs unit tests
 	$(BIN)/jest
 .PHONY: test-unit
+
+test-unit-update-snapshots: node_modules ## Runs unit tests and updates snapshots
+	$(BIN)/jest --updateSnapshot
+.PHONY: test-unit-update-snapshots
 
 test-coverage: node_modules ## Runs unit tests with coverage
 	$(BIN)/jest --coverage --forceExit

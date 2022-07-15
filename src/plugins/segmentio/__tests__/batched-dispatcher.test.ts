@@ -223,11 +223,11 @@ describe('Batching', () => {
     it('flushes the batch', async () => {
       const { dispatch } = batch(`https://api.segment.io`)
 
-      dispatch(`https://api.june.so/sdk/t`, {
+      await dispatch(`https://api.june.so/sdk/t`, {
         hello: 'world',
       })
 
-      dispatch(`https://api.june.so/sdk/t`, {
+      await dispatch(`https://api.june.so/sdk/t`, {
         bye: 'world',
       })
 
@@ -244,7 +244,7 @@ describe('Batching', () => {
       }).catch(console.error)
 
       // no queues, no waiting, instatneous
-      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch).toHaveBeenCalledTimes(1)
     })
 
     it('flushes in batches of no more than 64kb', async () => {

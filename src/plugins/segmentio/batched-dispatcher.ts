@@ -73,7 +73,6 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
 
     return fetch(`https://${apiHost}/b`, {
       // @ts-ignore
-      keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'application/json',
       },

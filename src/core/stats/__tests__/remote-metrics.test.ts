@@ -20,14 +20,7 @@ describe('remote metrics', () => {
           "metric": "analytics_js.banana",
           "tags": Object {
             "library": "analytics.js",
-            "library_version": "npm:next-${version}",
-            "phone": "1",
-          },
-          "type": "Counter",
-          "value": 1,
-        },
-      ]
-    `)
+            "library_version": "npm:next-`)
   })
 
   test('does not store when not sampling', () => {
@@ -82,9 +75,9 @@ describe('remote metrics', () => {
       Array [
         "https://api.june.so/sdk/m",
         Object {
-          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"npm:next-${version}\\"}}]}",
+          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"npm:next-1.36.5\\"}}]}",
           "headers": Object {
-            "Content-Type": "text/plain",
+            "Content-Type": "application/json",
           },
           "method": "POST",
         },
