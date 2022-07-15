@@ -49,22 +49,30 @@ function chunks(batch: object[]): Array<object[]> {
 }
 
 export default function batch(apiHost: string, config?: BatchingConfig) {
-  let buffer: object[] = []
-  let pageUnloaded = false
+  let buffer: Array<[string, object]> = []
+  let flushing = false
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
 
-  function sendBatch(batch: object[]) {
-    if (batch.length === 0) {
+  function flush(): unknown {
+    if (flushing) {
       return
     }
+
+    flushing = true
+
+    const batch = buffer.map(([_url, blob]) => {
+      return blob
+    })
+
+    buffer = []
+    flushing = false
 
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
 
     return fetch(`https://${apiHost}/b`, {
       // @ts-ignore
-      keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -73,43 +81,66 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     })
   }
 
-  async function flush(): Promise<unknown> {
-    if (buffer.length) {
-      const batch = buffer
-      buffer = []
-      return sendBatch(batch)
-    }
-  }
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  let schedule: NodeJS.Timeout | undefined = scheduleFlush()
 
-  let schedule: NodeJS.Timeout | undefined
-
-  function scheduleFlush(): void {
-    if (schedule) {
-      return
-    }
-
-    schedule = setTimeout(() => {
+  function scheduleFlush(): NodeJS.Timeout {
+    return setTimeout(() => {
       schedule = undefined
-      flush().catch(console.error)
+      if (buffer.length && !flushing) {
+        flush()
+      }
     }, timeout)
   }
 
   window.addEventListener('beforeunload', () => {
-    pageUnloaded = true
-
-    if (buffer.length) {
-      const reqs = chunks(buffer).map(sendBatch)
-      Promise.all(reqs).catch(console.error)
+    if (buffer.length === 0) {
+      return
     }
+
+    const batch = buffer.map(([_url, blob]) => {
+      return blob
+    })
+
+    const chunked = chunks(batch)
+
+    const reqs = chunked.map(async (chunk) => {
+      if (chunk.length === 0) {
+        return
+      }
+
+      const remote = `https://${apiHost}/b`
+      const writeKey = (chunk[0] as SegmentEvent)?.writeKey
+
+      return fetch(remote, {
+        // @ts-expect-error
+        keepalive: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'post',
+        body: JSON.stringify({ batch: chunk, writeKey }),
+      })
+    })
+
+    Promise.all(reqs).catch(console.error)
   })
 
-  async function dispatch(_url: string, body: object): Promise<unknown> {
-    buffer.push(body)
+  async function dispatch(url: string, body: object): Promise<unknown> {
+    buffer.push([url, body])
 
     const bufferOverflow =
       buffer.length >= limit || approachingTrackingAPILimit(buffer)
 
-    return bufferOverflow || pageUnloaded ? flush() : scheduleFlush()
+    if (bufferOverflow && !flushing) {
+      flush()
+    } else {
+      if (!schedule) {
+        schedule = scheduleFlush()
+      }
+    }
+
+    return true
   }
 
   return {

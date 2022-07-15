@@ -1,16 +1,10 @@
-import { Emitter } from '../../core/emitter'
 import { backoff } from './backoff'
-
-/**
- * @internal
- */
-export const ON_REMOVE_FROM_FUTURE = 'onRemoveFromFuture'
 
 export type WithID = {
   id: string
 }
 
-export class PriorityQueue<T extends WithID> extends Emitter {
+export class PriorityQueue<T extends WithID> {
   protected future: T[] = []
   protected queue: T[]
   protected seen: Record<string, number>
@@ -18,7 +12,6 @@ export class PriorityQueue<T extends WithID> extends Emitter {
   public maxAttempts: number
 
   constructor(maxAttempts: number, queue: T[], seen?: Record<string, number>) {
-    super()
     this.maxAttempts = maxAttempts
     this.queue = queue
     this.seen = seen ?? {}
@@ -59,8 +52,6 @@ export class PriorityQueue<T extends WithID> extends Emitter {
       this.queue.push(operation)
       // remove from future list
       this.future = this.future.filter((f) => f.id !== operation.id)
-      // Lets listeners know that a 'future' message is now available in the queue
-      this.emit(ON_REMOVE_FROM_FUTURE)
     }, timeout)
 
     this.future.push(operation)

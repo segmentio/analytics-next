@@ -39,6 +39,10 @@ test-unit: node_modules ## Runs unit tests
 	$(BIN)/jest
 .PHONY: test-unit
 
+test-unit-update-snapshots: node_modules ## Runs unit tests and updates snapshots
+	$(BIN)/jest --updateSnapshot
+.PHONY: test-unit-update-snapshots
+
 test-coverage: node_modules ## Runs unit tests with coverage
 	$(BIN)/jest --coverage --forceExit
 .PHONY: test-coverage

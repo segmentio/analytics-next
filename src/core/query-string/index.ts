@@ -1,5 +1,4 @@
 import { pickPrefix } from './pickPrefix'
-import { gracefulDecodeURIComponent } from './gracefulDecodeURIComponent'
 import { Analytics } from '../../analytics'
 import { Context } from '../context'
 
@@ -14,9 +13,10 @@ export function queryString(
   const a = document.createElement('a')
   a.href = query
   const parsed = a.search.slice(1)
+
   const params = parsed.split('&').reduce((acc: QueryStringParams, str) => {
     const [k, v] = str.split('=')
-    acc[k] = gracefulDecodeURIComponent(v)
+    acc[k] = decodeURI(v).replace('+', ' ')
     return acc
   }, {})
 
@@ -24,14 +24,6 @@ export function queryString(
 
   /* eslint-disable @typescript-eslint/camelcase */
   const { ajs_uid, ajs_event, ajs_aid } = params
-
-  if (ajs_aid) {
-    const anonId = Array.isArray(params.ajs_aid)
-      ? params.ajs_aid[0]
-      : params.ajs_aid
-
-    analytics.setAnonymousId(anonId)
-  }
 
   if (ajs_uid) {
     const uid = Array.isArray(params.ajs_uid)
@@ -50,6 +42,12 @@ export function queryString(
     calls.push(analytics.track(event, props))
   }
 
+  if (ajs_aid) {
+    const anonId = Array.isArray(params.ajs_aid)
+      ? params.ajs_aid[0]
+      : params.ajs_aid
+    analytics.setAnonymousId(anonId)
+  }
   /* eslint-enable @typescript-eslint/camelcase */
 
   return Promise.all(calls)

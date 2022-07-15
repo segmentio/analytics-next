@@ -13,8 +13,8 @@
   "dependencies": {
     "faker": "^5.1.0",
     "lodash": "^4.17.21",
-    "next": "^12.1.0",
-    "prismjs": "^1.27.0",
+    "next": "^11.1.1",
+    "prismjs": "^1.24.0",
     "rc-table": "^7.10.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -23,7 +23,6 @@
   },
   "devDependencies": {
     "@types/faker": "^5.1.2",
-    "@types/react": "^17.0.37",
-    "source-map-loader": "^3.0.1"
+    "@types/react": "^17.0.37"
   }
 }

@@ -13,7 +13,6 @@ import { isServer } from '../../core/environment'
 import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
 import { asPromise } from '../../lib/as-promise'
-import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
@@ -120,8 +119,7 @@ export class LegacyDestination implements Plugin {
       analyticsInstance,
       this.name,
       this.version,
-      this.settings,
-      this.options.obfuscate
+      this.settings
     )
 
     this.onReady = new Promise((resolve) => {
@@ -160,7 +158,7 @@ export class LegacyDestination implements Plugin {
   }
 
   unload(_ctx: Context, _analyticsInstance: Analytics): Promise<void> {
-    return unloadIntegration(this.name, this.version, this.options.obfuscate)
+    return unloadIntegration(this.name, this.version)
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
@@ -192,7 +190,7 @@ export class LegacyDestination implements Plugin {
     if (plan && ev && this.name !== 'Segment.io') {
       // events are always sent to segment (legacy behavior)
       const planEvent = plan[ev]
-      if (!isPlanEventEnabled(plan, planEvent)) {
+      if (planEvent?.enabled === false) {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,
@@ -354,6 +352,7 @@ export async function ajsDestinations(
       if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
         return
       }
+
       const version = resolveVersion(integrationSettings)
       const destination = new LegacyDestination(
         name,

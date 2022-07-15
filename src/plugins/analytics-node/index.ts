@@ -6,25 +6,21 @@ import { version } from '../../generated/version'
 
 interface AnalyticsNodeSettings {
   writeKey: string
+  apiHost: string
+  httpScheme: string
   name: string
   type: Plugin['type']
   version: string
 }
 
-const btoa = (val: string): string => Buffer.from(val).toString('base64')
-
 export async function post(
   event: SegmentEvent,
-  writeKey: string
+  writeKey: string,
 ): Promise<SegmentEvent> {
   const res = await fetch(`https://api.june.so/sdk/${event.type}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'User-Agent': 'analytics-node-next/latest',
-      Authorization: `Basic ${btoa(writeKey)}`,
-    },
-    body: JSON.stringify(event),
+    body: JSON.stringify({...event, writeKey}),
+    headers: { 'Content-Type': 'application/json' },
   })
 
   if (!res.ok) {

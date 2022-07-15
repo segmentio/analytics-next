@@ -18,20 +18,17 @@ describe('Remote Loader', () => {
   })
 
   it('should attempt to load a script from the url of each remotePlugin', async () => {
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'testPlugin',
-            settings: {},
-          },
-        ],
-      },
-      {}
-    )
+    await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'remote plugin',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {},
+        },
+      ],
+    })
 
     expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js')
   })
@@ -39,41 +36,35 @@ describe('Remote Loader', () => {
   it('should attempt to load a script from a custom CDN', async () => {
     window.analytics = {}
     window.analytics._cdn = 'foo.com'
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'https://cdn.segment.com/actions/file.js',
-            libraryName: 'testPlugin',
-            settings: {},
-          },
-        ],
-      },
-      {}
-    )
+    await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'remote plugin',
+          url: 'https://cdn.segment.com/actions/file.js',
+          libraryName: 'testPlugin',
+          settings: {},
+        },
+      ],
+    })
 
     expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
   })
 
   it('should attempt calling the library', async () => {
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'testPlugin',
-            settings: {
-              name: 'Charlie Brown',
-            },
+    await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'remote plugin',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {
+            name: 'Charlie Brown',
           },
-        ],
-      },
-      {}
-    )
+        },
+      ],
+    })
 
     expect(pluginFactory).toHaveBeenCalledTimes(1)
     expect(pluginFactory).toHaveBeenCalledWith(
@@ -81,91 +72,20 @@ describe('Remote Loader', () => {
         name: 'Charlie Brown',
       })
     )
-  })
-
-  it('should not load remote plugins when integrations object contains all: false', async () => {
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'testPlugin',
-            settings: {
-              name: 'Charlie Brown',
-            },
-          },
-        ],
-      },
-      { All: false }
-    )
-
-    expect(pluginFactory).toHaveBeenCalledTimes(0)
-  })
-
-  it('should load remote plugins when integrations object contains all: false but plugin: true', async () => {
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'testPlugin',
-            settings: {
-              name: 'Charlie Brown',
-            },
-          },
-        ],
-      },
-      { All: false, 'remote plugin': true }
-    )
-
-    expect(pluginFactory).toHaveBeenCalledTimes(1)
-    expect(pluginFactory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        name: 'Charlie Brown',
-      })
-    )
-  })
-
-  it('should load remote plugin when integrations object contains plugin: false', async () => {
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'testPlugin',
-            settings: {
-              name: 'Charlie Brown',
-            },
-          },
-        ],
-      },
-      { 'remote plugin': false }
-    )
-
-    expect(pluginFactory).toHaveBeenCalledTimes(0)
   })
 
   it('should skip remote plugins that arent callable functions', async () => {
-    const plugins = await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'remote plugin',
-            url: 'cdn/path/to/file.js',
-            libraryName: 'this wont resolve',
-            settings: {},
-          },
-        ],
-      },
-      {}
-    )
+    const plugins = await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'remote plugin',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'this wont resolve',
+          settings: {},
+        },
+      ],
+    })
 
     expect(pluginFactory).not.toHaveBeenCalled()
     expect(plugins).toHaveLength(0)
@@ -207,26 +127,23 @@ describe('Remote Loader', () => {
       return Promise.resolve(true)
     })
 
-    const plugins = await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'multiple plugins',
-            url: 'multiple-plugins.js',
-            libraryName: 'multiple-plugins',
-            settings: { foo: true },
-          },
-          {
-            name: 'single plugin',
-            url: 'single-plugin.js',
-            libraryName: 'single-plugin',
-            settings: { bar: false },
-          },
-        ],
-      },
-      {}
-    )
+    const plugins = await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'multiple plugins',
+          url: 'multiple-plugins.js',
+          libraryName: 'multiple-plugins',
+          settings: { foo: true },
+        },
+        {
+          name: 'single plugin',
+          url: 'single-plugin.js',
+          libraryName: 'single-plugin',
+          settings: { bar: false },
+        },
+      ],
+    })
 
     expect(plugins).toHaveLength(3)
     expect(plugins).toEqual(expect.arrayContaining([one, two, three]))
@@ -248,26 +165,23 @@ describe('Remote Loader', () => {
       return Promise.resolve(true)
     })
 
-    const plugins = await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'flaky plugin',
-            url: 'cdn/path/to/flaky.js',
-            libraryName: 'flaky',
-            settings: {},
-          },
-          {
-            name: 'async flaky plugin',
-            url: 'cdn/path/to/asyncFlaky.js',
-            libraryName: 'asyncFlaky',
-            settings: {},
-          },
-        ],
-      },
-      {}
-    )
+    const plugins = await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'flaky plugin',
+          url: 'cdn/path/to/flaky.js',
+          libraryName: 'flaky',
+          settings: {},
+        },
+        {
+          name: 'async flaky plugin',
+          url: 'cdn/path/to/asyncFlaky.js',
+          libraryName: 'asyncFlaky',
+          settings: {},
+        },
+      ],
+    })
 
     expect(pluginFactory).not.toHaveBeenCalled()
     expect(plugins).toHaveLength(0)
@@ -299,26 +213,23 @@ describe('Remote Loader', () => {
       return Promise.resolve(true)
     })
 
-    const plugins = await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          {
-            name: 'valid plugin',
-            url: 'valid',
-            libraryName: 'valid',
-            settings: { foo: true },
-          },
-          {
-            name: 'invalid plugin',
-            url: 'invalid',
-            libraryName: 'invalid',
-            settings: { bar: false },
-          },
-        ],
-      },
-      {}
-    )
+    const plugins = await remoteLoader({
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'valid plugin',
+          url: 'valid',
+          libraryName: 'valid',
+          settings: { foo: true },
+        },
+        {
+          name: 'invalid plugin',
+          url: 'invalid',
+          libraryName: 'invalid',
+          settings: { bar: false },
+        },
+      ],
+    })
 
     expect(plugins).toHaveLength(1)
     expect(plugins).toEqual(expect.arrayContaining([validPlugin]))
