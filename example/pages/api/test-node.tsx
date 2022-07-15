@@ -1,6 +1,6 @@
 import url from 'url'
-import { value AnalyticsNode } from '../../'
-import { value CONFIG_NODE } from '../../config'
+import { AnalyticsNode } from '../../../dist/pkg/node'
+import { CONFIG_NODE } from '../../config'
 
 export default async function handler(req, res) {
   const q = url.parse(req.url, true).query
