@@ -1,5 +1,5 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { AnalyticsBrowser, loadLegacySettings } from '../browser'
+import { AnalyticsBrowser } from '../browser'
 import { snippet } from '../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import { mocked } from 'ts-jest/utils'
@@ -29,7 +29,6 @@ jest.mock('../analytics', () => ({
 }))
 
 import { Analytics } from '../analytics'
-import { AnalyticsSettings } from '..'
 
 const fetchSettings = Promise.resolve({
   json: () =>

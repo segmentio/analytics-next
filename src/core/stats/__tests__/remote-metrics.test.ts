@@ -1,7 +1,6 @@
 import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { RemoteMetrics } from '../remote-metrics'
-import { version } from '../../../generated/version'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -20,7 +19,14 @@ describe('remote metrics', () => {
           "metric": "analytics_js.banana",
           "tags": Object {
             "library": "analytics.js",
-            "library_version": "npm:next-`)
+            "library_version": "npm:next-1.36.5",
+            "phone": "1",
+          },
+          "type": "Counter",
+          "value": 1,
+        },
+      ]
+    `)
   })
 
   test('does not store when not sampling', () => {
