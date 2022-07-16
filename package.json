@@ -27,7 +27,8 @@
     "browser": "yarn workspace @segment/analytics-next",
     "browser+deps": "turbo run --filter='analytics-next'",
     "node": "yarn workspace @segment/analytics-node",
-    "node+deps": "turbo run --filter='analytics-node'"
+    "node+deps": "turbo run --filter='analytics-node'",
+    "clean": "bash scripts/clean.sh"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
