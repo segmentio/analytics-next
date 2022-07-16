@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "concurrently": "yarn run -T concurrently",
+    "dev": "yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

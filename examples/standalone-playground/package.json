@@ -5,9 +5,7 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "watch": "NODE_ENV=production yarn run -T browser umd --watch",
-    "start": "yarn concurrently 'yarn watch' 'npx http-server .'",
-    "dev": "yarn start"
+    "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && npx http-server .'"
   },
   "dependencies": {
     "@segment/analytics-next": "workspace:^"

@@ -21,7 +21,7 @@
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:esm": "yarn tsc -p tsconfig.build.json --outDir ./dist/esm --module esnext",
-    "watch:build": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
+    "watch": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
