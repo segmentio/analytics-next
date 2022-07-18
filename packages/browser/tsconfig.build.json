@@ -3,6 +3,15 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/test-helpers/**", "**/tester/**"],
   "compilerOptions": {
-    "outDir": "./dist/pkg"
+    "incremental": false,
+    "outDir": "./dist/pkg",
+    "importHelpers": true,
+    // publish sourceMaps
+    "sourceMap": true,
+    // publish declarationMaps (enable go-to-definition in IDE)
+    "declarationMap": true,
+    // add type declarations to "types" folder
+    "declaration": true,
+    "declarationDir": "./dist/types"
   }
 }
