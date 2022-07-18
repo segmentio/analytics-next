@@ -266,12 +266,7 @@ export class EventQueue extends Emitter {
       }
     }
 
-    inspectorHost.trace({
-      stage: 'enriched',
-      id: ctx.id,
-      event: ctx.event as any,
-      timestamp: new Date().toISOString(),
-    })
+    inspectorHost.enriched?.(ctx as any)
 
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end
@@ -290,14 +285,8 @@ export class EventQueue extends Emitter {
 
     ctx.stats.increment('message_delivered')
 
-    inspectorHost.trace({
-      stage: 'delivered',
-      id: ctx.id,
-      event: ctx.event as any,
-      timestamp: new Date().toISOString(),
-      // FIXME: Resolve browsers destinations that the event was sent to
-      destinations: ['segment.io'],
-    })
+    // FIXME: Resolve browsers destinations that the event was sent to
+    inspectorHost.delivered?.(ctx as any, ['segment.io'])
 
     const afterCalls = after.map((after) => attempt(ctx, after))
     await Promise.all(afterCalls)

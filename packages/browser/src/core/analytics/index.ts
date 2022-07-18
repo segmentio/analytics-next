@@ -115,13 +115,6 @@ export class Analytics extends Emitter {
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
 
-    inspectorHost.start({
-      user: {
-        id: this.user().id() || null,
-        traits: this.user().traits(),
-      },
-    })
-
     autoBind(this)
   }
 
@@ -329,12 +322,7 @@ export class Analytics extends Emitter {
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
 
-    inspectorHost.trace({
-      stage: 'triggered',
-      id: ctx.id,
-      event: event as any,
-      timestamp: new Date().toISOString(),
-    })
+    inspectorHost.triggered?.(ctx as any)
 
     if (isOffline() && !this.options.retryQueue) {
       return ctx
