@@ -1500,7 +1500,7 @@ __metadata:
     "@segment/analytics-core": 1.0.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
-    "@segment/inspector-core": ^1.0.0
+    "@segment/inspector-webext": ^1.1.0
     "@segment/tsub": ^0.1.12
     "@size-limit/preset-big-lib": ^7.0.8
     "@types/flat": ^5.0.1
@@ -1580,10 +1580,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/inspector-core@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@segment/inspector-core@npm:1.0.0"
-  checksum: 4c04303301f54cab9fe8d0502fe0a755ad21206b8917ebbfb5edb8be5888cd7ed4dc948cf34e52b957863de44f9152551d78571ba12c00106f573fdb2136f4ef
+"@segment/inspector-core@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@segment/inspector-core@npm:1.1.0"
+  checksum: 447733b76b9ab645c6ec1d765d907d92def3e8c1e20ded6c06df3406d98d7f63baac1fecd552ebd4afdf8f8bd53c51fb9266c48fe3f18a2f560af46633729a7c
+  languageName: node
+  linkType: hard
+
+"@segment/inspector-webext@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@segment/inspector-webext@npm:1.1.0"
+  dependencies:
+    "@segment/inspector-core": ^1.1.0
+  checksum: 65aacfdb535c10d0954150bb74e54c1cd139ccae8f21d110399bd5e1b6ccee562cdd3d3966228de8d2e3433d169f727d1b31f6a6d59b010e3b8dbb3f1f27d8d3
   languageName: node
   linkType: hard
 
