@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.41.0
+
+### Minor Changes
+
+- [#541](https://github.com/segmentio/analytics-next/pull/541) [`2e0a91c`](https://github.com/segmentio/analytics-next/commit/2e0a91c6989aa87f09c9590c5017806023664119) Thanks [@silesky](https://github.com/silesky)! - Export AnalyticsSnippet type and add directions (for snippet users).
+
+### Patch Changes
+
+- [#549](https://github.com/segmentio/analytics-next/pull/549) [`3413701`](https://github.com/segmentio/analytics-next/commit/34137016239e90deb8ba790a44664534aa7614b9) Thanks [@zikaari](https://github.com/zikaari)! - Simplify interfacing with Inspector
+
 ## 1.40.0
 
 ### Minor Changes
