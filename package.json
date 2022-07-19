@@ -56,6 +56,8 @@
   },
   "resolutions": {
     "@segment/analytics-next": "workspace:*",
-    "@segment/analytics-node": "workspace:*"
+    "@segment/analytics-node": "workspace:*",
+    "@segment/analytics-core": "workspace:*",
+    "@segment/analytics-react": "workspace:*"
   }
 }

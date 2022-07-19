@@ -1,0 +1,45 @@
+{
+  "name": "@segment/analytics-react",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next",
+    "directory": "packages/react"
+  },
+  "license": "MIT",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/pkg/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "test": "yarn jest",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
+    "watch": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
+  },
+  "packageManager": "yarn@3.2.1",
+  "dependencies": {
+    "tslib": "^2.4.0"
+  },
+  "peerDependencies": {
+    "@segment/analytics-next": "^1.40.0",
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@segment/analytics-next": "^1.40.0",
+    "@testing-library/react": "^13.3.0",
+    "@types/react": "16.8.0",
+    "react": "18.0.0",
+    "react-dom": "18.0.0"
+  }
+}

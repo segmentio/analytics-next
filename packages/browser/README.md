@@ -53,73 +53,10 @@ document.body?.addEventListener('click', () => {
 })
 ```
 
-### using `React` (Simple / client-side only)
+### using `React`
 
-```tsx
-import { AnalyticsBrowser } from '@segment/analytics-next'
+See [`@segment/analytics-react`](https://www.npmjs.com/package/@segment/analytics-react) for instructions on using Analytics within a React app.
 
-// we can export this instance to share with rest of our codebase.
-export const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
-
-const App = () => (
-  <div>
-    <button onClick={() => analytics.track('hello world')}>Track</button>
-  </div>
-)
-```
-
-### using `React` (Advanced w/ React Context)
-
-```tsx
-const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined!);
-
-type Props = {
-  writeKey: string;
-  children: React.ReactNode;
-};
-export const AnalyticsProvider = ({ children, writeKey }: Props) => {
-  const analytics = React.useMemo(
-    () => AnalyticsBrowser.load({ writeKey }),
-    [writeKey]
-  );
-  return (
-    <AnalyticsContext.Provider value={analytics}>
-      {children}
-    </AnalyticsContext.Provider>
-  );
-};
-
-// Create an analytics hook that we can use with other components.
-export const useAnalytics = () => {
-  const result = React.useContext(AnalyticsContext);
-  if (!result) {
-    throw new Error("Context used outside of its Provider!");
-  }
-  return result;
-};
-
-// use the context we just created...
-const TrackButton = () => {
-  const analytics = useAnalytics()
-  return (
-    <button onClick={() => analytics.track('hello world').then(console.log)}>
-      Track!
-    </button>
-  )
-}
-
-const App = () => {
-  return (
-    <AnalyticsProvider writeKey='<YOUR_WRITE_KEY>'>
-      <TrackButton />
-    </AnalyticsProvider>
-  )
-```
-
-More React Examples:
-
-- Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
-- Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
 ### using `Vue 3`
 
