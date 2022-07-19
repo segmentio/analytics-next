@@ -1,8 +1,16 @@
 /** @type { import('eslint').Linter.Config } */
 module.exports = {
-  extends: ["../../.eslintrc", "plugin:@next/next/recommended"],
+  extends: ['../../.eslintrc', 'plugin:@next/next/recommended'],
   env: {
-    "browser": true,
-    "node": true
-  }
+    browser: true,
+    node: true,
+  },
+  rules: {
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
+  },
 }
