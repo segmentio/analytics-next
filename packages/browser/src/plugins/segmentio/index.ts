@@ -58,7 +58,7 @@ export function segmentio(
       )
   const flushing = false
 
-  const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
+  const apiHost = settings?.apiHost ?? 'api.journify.io/v1'
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 

@@ -53,7 +53,7 @@ gen_enforced_field(WorkspaceCwd, 'lint-staged', null) :-
 % Enforces the repository field for all public workspaces while removing it from private workspaces
 gen_enforced_field(WorkspaceCwd, 'repository.type', 'git') :-
   \+ workspace_field(WorkspaceCwd, 'private', true).
-gen_enforced_field(WorkspaceCwd, 'repository.url', 'https://github.com/segmentio/analytics-next') :-
+gen_enforced_field(WorkspaceCwd, 'repository.url', 'https://github.com/journifyio/analytics-next') :-
   \+ workspace_field(WorkspaceCwd, 'private', true).
 gen_enforced_field(WorkspaceCwd, 'repository.directory', WorkspaceCwd) :-
   \+ workspace_field(WorkspaceCwd, 'private', true).

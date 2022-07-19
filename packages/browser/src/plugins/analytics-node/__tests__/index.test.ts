@@ -31,37 +31,37 @@ describe('Analytics Node', () => {
     test('fireEvent instantiates the right event types', async () => {
       await ajs.track('track')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/track',
+        'https://api.journify.io/v1/track',
         expect.anything()
       )
 
       await ajs.identify('identify')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/identify',
+        'https://api.journify.io/v1/identify',
         expect.anything()
       )
 
       await ajs.page('page')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/page',
+        'https://api.journify.io/v1/page',
         expect.anything()
       )
 
       await ajs.group('group')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/group',
+        'https://api.journify.io/v1/group',
         expect.anything()
       )
 
       await ajs.alias('alias')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/alias',
+        'https://api.journify.io/v1/alias',
         expect.anything()
       )
 
       await ajs.screen('screen')
       expect(fetcher).toHaveBeenCalledWith(
-        'https://api.segment.io/v1/screen',
+        'https://api.journify.io/v1/screen',
         expect.anything()
       )
     })

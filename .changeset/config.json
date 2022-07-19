@@ -4,7 +4,7 @@
   "changelog": [
     "@changesets/changelog-github",
     {
-      "repo": "segmentio/analytics-next"
+      "repo": "journifyio/analytics-next"
     }
   ],
   "commit": false,

@@ -59,9 +59,9 @@ describe('Batching', () => {
   })
 
   it('does not send requests right away', async () => {
-    const { dispatch } = batch(`https://api.segment.io`)
+    const { dispatch } = batch(`https://api.journify.io`)
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       hello: 'world',
     })
 
@@ -69,28 +69,28 @@ describe('Batching', () => {
   })
 
   it('sends requests after a batch limit is hit', async () => {
-    const { dispatch } = batch(`https://api.segment.io`, {
+    const { dispatch } = batch(`https://api.journify.io`, {
       size: 3,
     })
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       event: 'first',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       event: 'second',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       event: 'third',
     })
 
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
+        "https://https://api.journify.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}]}",
           "headers": Object {
@@ -104,13 +104,13 @@ describe('Batching', () => {
   })
 
   it('sends requests if the size of events exceeds tracking API limits', async () => {
-    const { dispatch } = batch(`https://api.segment.io`, {
+    const { dispatch } = batch(`https://api.journify.io`, {
       size: 600,
     })
 
     // fatEvent is about ~1kb in size
     for (let i = 0; i < 250; i++) {
-      await dispatch(`https://api.segment.io/v1/t`, {
+      await dispatch(`https://api.journify.io/v1/t`, {
         event: 'fat event',
         properties: fatEvent,
       })
@@ -118,7 +118,7 @@ describe('Batching', () => {
     expect(fetch).not.toHaveBeenCalled()
 
     for (let i = 0; i < 250; i++) {
-      await dispatch(`https://api.segment.io/v1/t`, {
+      await dispatch(`https://api.journify.io/v1/t`, {
         event: 'fat event',
         properties: fatEvent,
       })
@@ -129,17 +129,17 @@ describe('Batching', () => {
   })
 
   it('sends requests when the timeout expires', async () => {
-    const { dispatch } = batch(`https://api.segment.io`, {
+    const { dispatch } = batch(`https://api.journify.io`, {
       size: 100,
       timeout: 10000, // 10 seconds
     })
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       event: 'first',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.segment.io/v1/i`, {
+    await dispatch(`https://api.journify.io/v1/i`, {
       event: 'second',
     })
 
@@ -148,7 +148,7 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
+        "https://https://api.journify.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}]}",
           "headers": Object {
@@ -162,18 +162,18 @@ describe('Batching', () => {
   })
 
   it('clears the buffer between flushes', async () => {
-    const { dispatch } = batch(`https://api.segment.io`, {
+    const { dispatch } = batch(`https://api.journify.io`, {
       size: 100,
       timeout: 10000, // 10 seconds
     })
 
-    await dispatch(`https://api.segment.io/v1/t`, {
+    await dispatch(`https://api.journify.io/v1/t`, {
       event: 'first',
     })
 
     jest.advanceTimersByTime(11000) // 11 seconds
 
-    await dispatch(`https://api.segment.io/v1/i`, {
+    await dispatch(`https://api.journify.io/v1/i`, {
       event: 'second',
     })
 
@@ -183,7 +183,7 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
+        "https://https://api.journify.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}]}",
           "headers": Object {
@@ -197,7 +197,7 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[1]).toMatchInlineSnapshot(`
       Array [
-        "https://https://api.segment.io/b",
+        "https://https://api.journify.io/b",
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}]}",
           "headers": Object {
@@ -212,13 +212,13 @@ describe('Batching', () => {
 
   describe('on unload', () => {
     it('flushes the batch', async () => {
-      const { dispatch } = batch(`https://api.segment.io`)
+      const { dispatch } = batch(`https://api.journify.io`)
 
-      dispatch(`https://api.segment.io/v1/t`, {
+      dispatch(`https://api.journify.io/v1/t`, {
         hello: 'world',
       }).catch(console.error)
 
-      dispatch(`https://api.segment.io/v1/t`, {
+      dispatch(`https://api.journify.io/v1/t`, {
         bye: 'world',
       }).catch(console.error)
 
@@ -230,7 +230,7 @@ describe('Batching', () => {
 
       // any dispatch attempts after the page has unloaded are flushed immediately
       // this can happen if analytics.track is called right before page is navigated away
-      dispatch(`https://api.segment.io/v1/t`, {
+      dispatch(`https://api.journify.io/v1/t`, {
         afterlife: 'world',
       }).catch(console.error)
 
@@ -239,13 +239,13 @@ describe('Batching', () => {
     })
 
     it('flushes in batches of no more than 64kb', async () => {
-      const { dispatch } = batch(`https://api.segment.io`, {
+      const { dispatch } = batch(`https://api.journify.io`, {
         size: 1000,
       })
 
       // fatEvent is about ~1kb in size
       for (let i = 0; i < 80; i++) {
-        await dispatch(`https://api.segment.io/v1/t`, {
+        await dispatch(`https://api.journify.io/v1/t`, {
           event: 'fat event',
           properties: fatEvent,
         })

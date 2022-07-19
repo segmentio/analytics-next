@@ -95,7 +95,7 @@ describe(mergedOptions, () => {
   it('works with boolean overrides', () => {
     const cdn = {
       integrations: {
-        'Segment.io': { apiHost: 'api.segment.io' },
+        'Segment.io': { apiHost: 'api.journify.io' },
         'Google Tag Manager': {
           ghost: '👻',
         },
