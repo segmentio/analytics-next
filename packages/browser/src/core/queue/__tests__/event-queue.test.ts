@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
+import { noop } from 'lodash'
 import { Analytics } from '../../analytics'
 import { pWhile } from '../../../lib/p-while'
 import * as timer from '../../../lib/priority-queue/backoff'
@@ -9,6 +10,7 @@ import {
 import { Context, ContextCancelation } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
+import { pTimeout } from '../../callback'
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
@@ -162,6 +164,37 @@ describe('Flushing', () => {
 
     // attempted to deliver multiple times
     expect(eq.queue.getAttempts(fruitBasket)).toEqual(2)
+  })
+
+  test('waits for critical tasks to finish before performing event deliveries', async () => {
+    jest.useRealTimers()
+
+    const eq = new EventQueue()
+
+    let finishCriticalTask: () => void = noop
+    const startTask = () =>
+      new Promise<void>((res) => (finishCriticalTask = res))
+
+    // some preceding events that've been scheduled
+    const p1 = eq.dispatch(fruitBasket)
+    const p2 = eq.dispatch(basketView)
+    // a critical task has been kicked off
+    eq.criticalTasks.run(startTask)
+    // a succeeding event
+    const p3 = eq.dispatch(shopper)
+
+    // even after a good amount of time, none of the events should be delivered
+    await expect(pTimeout(Promise.race([p1, p2, p3]), 1000)).rejects.toThrow()
+
+    // give the green light
+    finishCriticalTask()
+
+    // now that the task is complete, the delivery should resume
+    expect(await Promise.all([p1, p2, p3])).toMatchObject([
+      fruitBasket,
+      basketView,
+      shopper,
+    ])
   })
 
   test('delivers events on retry', async () => {

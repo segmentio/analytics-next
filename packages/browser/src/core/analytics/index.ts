@@ -354,19 +354,22 @@ export class Analytics extends Emitter {
   }
 
   async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {
-    const { sourceMiddlewarePlugin } = await import(
-      /* webpackChunkName: "middleware" */ '../../plugins/middleware'
-    )
+    await this.queue.criticalTasks.run(async () => {
+      const { sourceMiddlewarePlugin } = await import(
+        /* webpackChunkName: "middleware" */ '../../plugins/middleware'
+      )
 
-    const integrations: Record<string, boolean> = {}
-    this.queue.plugins.forEach((plugin) => {
-      if (plugin.type === 'destination') {
-        return (integrations[plugin.name] = true)
-      }
+      const integrations: Record<string, boolean> = {}
+      this.queue.plugins.forEach((plugin) => {
+        if (plugin.type === 'destination') {
+          return (integrations[plugin.name] = true)
+        }
+      })
+
+      const plugin = sourceMiddlewarePlugin(fn, integrations)
+      await this.register(plugin)
     })
 
-    const plugin = sourceMiddlewarePlugin(fn, integrations)
-    await this.register(plugin)
     return this
   }
 

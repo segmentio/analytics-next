@@ -2,7 +2,7 @@
  *  Check if  thenable
  *  (instanceof Promise doesn't respect realms)
  */
-export const isThenable = (value: unknown): boolean =>
+export const isThenable = (value: unknown): value is Promise<unknown> =>
   typeof value === 'object' &&
   value !== null &&
   'then' in value &&

@@ -7,6 +7,7 @@ import { Context, ContextCancelation } from '../context'
 import { Emitter } from '@segment/analytics-core'
 import { Integrations } from '../events'
 import { Plugin } from '../plugin'
+import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
 import { inspectorHost } from '../inspector'
 
@@ -18,6 +19,14 @@ type PluginsByType = {
 }
 
 export class EventQueue extends Emitter {
+  /**
+   * All event deliveries get suspended until all the tasks in this task group are complete.
+   * For example: a middleware that augments the event object should be loaded safely as a
+   * critical task, this way, event queue will wait for it to be ready before sending events.
+   *
+   * This applies to all the events already in the queue, and the upcoming ones
+   */
+  criticalTasks: TaskGroup = createTaskGroup()
   queue: PriorityQueue<Context>
   plugins: Plugin[] = []
   failedInitializations: string[] = []
@@ -152,6 +161,8 @@ export class EventQueue extends Emitter {
   }
 
   private async deliver(ctx: Context): Promise<Context> {
+    await this.criticalTasks.done()
+
     const start = Date.now()
     try {
       ctx = await this.flushOne(ctx)

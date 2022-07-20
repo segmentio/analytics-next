@@ -19,7 +19,6 @@ describe('Inspector interface', () => {
     const deliveryPromise = analytics.track('Test event').catch(() => {})
 
     expect(window.__SEGMENT_INSPECTOR__?.triggered).toHaveBeenCalledTimes(1)
-    expect(window.__SEGMENT_INSPECTOR__?.enriched).toHaveBeenCalledTimes(1)
 
     expect(window.__SEGMENT_INSPECTOR__?.triggered).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -33,6 +32,7 @@ describe('Inspector interface', () => {
 
     await deliveryPromise
 
+    expect(window.__SEGMENT_INSPECTOR__?.enriched).toHaveBeenCalledTimes(1)
     expect(window.__SEGMENT_INSPECTOR__?.delivered).toHaveBeenCalledTimes(1)
   })
 })
