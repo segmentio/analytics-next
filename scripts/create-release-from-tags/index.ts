@@ -111,6 +111,10 @@ const extractPartsFromTag = (rawTag: string): Tag | undefined => {
   }
 }
 
+/**
+ *
+ * @param rawTags - string delimited list of tags (e.g. `@segment/analytics-next@2.1.1 @segment/analytics-core@1.0.0`)
+ */
 export const parseRawTags = (rawTags: string): Tag[] => {
   return rawTags.trim().split(' ').map(extractPartsFromTag).filter(exists)
 }
