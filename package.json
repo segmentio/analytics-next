@@ -34,6 +34,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.5",
     "@changesets/cli": "^2.23.2",
+    "@npmcli/promise-spawn": "^3.0.0",
     "@types/jest": "^28.1.1",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
@@ -41,6 +42,7 @@
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "get-monorepo-packages": "^1.2.0",
     "husky": "^8.0.0",
     "jest": "^28.1.0",
     "lint-staged": "^13.0.0",
