@@ -20,7 +20,7 @@ export type Tag = {
  * @returns list of tags
  * @example ["@segment/analytics-core@1.0.0", "@segment/analytics-next@2.1.1"]
  */
-export const getCurrentGitTags = async (): Promise<string> => {
+export const getCurrentGitTags = async (): Promise<Tag[]> => {
   const { stdout, stderr, code } = await spawn('git', [
     'tag',
     '--points-at',
@@ -30,7 +30,8 @@ export const getCurrentGitTags = async (): Promise<string> => {
   if (code !== 0) {
     throw new Error(stderr.toString())
   }
-  return stdout.toString()
+
+  return parseRawTags(stdout.toString())
 }
 
 export const getConfig = async ({
@@ -38,7 +39,7 @@ export const getConfig = async ({
   TAGS,
 }: NodeJS.ProcessEnv): Promise<Config> => {
   const isDryRun = Boolean(DRY_RUN)
-  const tags = parseRawTags(TAGS || (await getCurrentGitTags()))
+  const tags = TAGS ? parseRawTags(TAGS) : await getCurrentGitTags()
 
   if (!tags.length) {
     throw new Error('No git tags found.')
@@ -81,8 +82,8 @@ const getChangelogPath = (packageName: string): string | undefined => {
 const createGithubRelease = async (
   tag: string,
   releaseNotes?: string
-): Promise<string[]> => {
-  const { stdout, stderr, code } = await spawn('gh', [
+): Promise<void> => {
+  const { stderr, code } = await spawn('gh', [
     'release',
     'create',
     tag,
@@ -94,7 +95,6 @@ const createGithubRelease = async (
   if (code !== 0) {
     throw new Error(stderr.toString())
   }
-  return stdout.toString().trim().split(' ')
 }
 
 /**
