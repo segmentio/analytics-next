@@ -86,8 +86,10 @@ const createGithubRelease = async (
     'release',
     'create',
     tag,
+    '--title',
+    tag,
     '--notes',
-    releaseNotes || tag,
+    releaseNotes || '',
   ])
   if (code !== 0) {
     throw new Error(stderr.toString())
