@@ -56,13 +56,20 @@ const getChangelogPath = (packageName: string): string | undefined => {
   if (!result)
     throw new Error(`could not find package with name: ${packageName}.`)
 
-  const myPath = path.join(result.location, 'CHANGELOG.MD')
-  const pathExists = fs.existsSync(myPath)
+  let changelogPath = undefined
+  for (const fileName of ['CHANGELOG.MD', 'CHANGELOG.md']) {
+    if (changelogPath) break
+    const myPath = path.join(result.location, fileName)
+    const pathExists = fs.existsSync(myPath)
+    if (pathExists) {
+      changelogPath = myPath
+    }
+  }
 
-  if (pathExists) {
-    return myPath
+  if (changelogPath) {
+    return changelogPath
   } else {
-    console.log(`could not find path: ${myPath}`)
+    console.log(`could not find changelog path for ${result.location}`)
   }
 }
 
