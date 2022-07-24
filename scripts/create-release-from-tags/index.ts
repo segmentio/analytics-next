@@ -110,25 +110,25 @@ export const parseRawTags = (rawTags: string): Tag[] => {
  *
  * @returns the release notes that correspond to a given tag.
  */
-const parseReleaseNotes = (
+export const parseReleaseNotes = (
   changelogText: string,
   versionNumber: string
 ): string => {
-  const re = /(##\s.*\d.*)/gi
+  const h2tag = /(##\s.*\d.*)/gi
   let begin: number
   let end: number
 
-  changelogText.split('\n').forEach((el, idx) => {
+  changelogText.split('\n').forEach((line, idx) => {
     if (begin && end) return
-    if (el.includes(versionNumber)) {
+    if (line.includes(versionNumber)) {
       begin = idx + 1
-    } else if (begin && re.test(el)) {
+    } else if (begin && h2tag.test(line)) {
       end = idx - 1
     }
   })
 
   const result = changelogText.split('\n').filter((_, idx) => {
-    return idx >= begin && idx <= end
+    return idx >= begin && idx <= (end ?? Infinity)
   })
   return result.join('\n')
 }

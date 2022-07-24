@@ -4,7 +4,7 @@ declare module '@npmcli/promise-spawn' {
 
   export default function spawn(
     cmd: string,
-    args?: Array<string>,
+    args?: string[],
     opts?: SpawnOptions
   ): Promise<{ stdout: Buffer; code: number; stderr: Buffer }> & EventEmitter
 }

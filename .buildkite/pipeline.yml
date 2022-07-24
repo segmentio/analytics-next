@@ -7,7 +7,12 @@ steps:
     agents:
       queue: v1
     commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - echo "+++ Run tests"
       - yarn constraints
+      - yarn run test:scripts
 
   - label: "[Browser] Lint + Test"
     key: build
