@@ -13,10 +13,17 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+      - name: Setup Node.js 12.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12.x
+          cache: "yarn"
+      - name: Install Dependencies
+        run: HUSKY=0 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - name: Create Github Release From Tags
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "Segment Github"
           git config --global user.email "github-actions@segment.com"
-          bash scripts/create-release-from-tags.sh
+          yarn ts-node-script --files scripts/create-release-from-tags/run.ts
