@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.41.1
+
+### Patch Changes
+
+- [#552](https://github.com/segmentio/analytics-next/pull/552) [`6741775`](https://github.com/segmentio/analytics-next/commit/6741775be068e08eccd84024211b89181094d5b7) Thanks [@zikaari](https://github.com/zikaari)! - Suspend event deliveries until middlewares are ready
+
 ## 1.41.0
 
 ### Minor Changes
