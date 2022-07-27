@@ -8,10 +8,14 @@ import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 
 jest.mock('unfetch')
 
-const mockFetchSettingsResponse = () => {
+const mockFetchSettingsSuccessResponse = () => {
   jest
     .mocked(unfetch)
     .mockImplementation(() => Factory.createSuccess({ integrations: {} }))
+}
+
+const mockFetchSettingsErrorResponse = (response?: Partial<Response>) => {
+  jest.mocked(unfetch).mockImplementation(() => Factory.createError(response))
 }
 
 const writeKey = 'foo'
@@ -28,7 +32,7 @@ describe('Pre-initialization', () => {
 
   beforeEach(() => {
     setGlobalCDNUrl(undefined as any)
-    mockFetchSettingsResponse()
+    mockFetchSettingsSuccessResponse()
     ;(window as any).analytics = undefined
   })
 
@@ -84,6 +88,29 @@ describe('Pre-initialization', () => {
 
       expect(identifySpy).toBeCalledWith('hello')
       expect(identifySpy).toBeCalledTimes(1)
+    })
+
+    test('should not throw on initialization failures', async () => {
+      mockFetchSettingsErrorResponse()
+      const ajs = AnalyticsBrowser.load({ writeKey })
+      await sleep(100)
+      expect(ajs.instance).toBeUndefined()
+      void ajs.track('foo')
+    })
+
+    test('should log errors if network error', async () => {
+      const err = {
+        status: 403,
+        statusText: 'Forbidden',
+        json: undefined,
+      }
+      mockFetchSettingsErrorResponse(err)
+      const consoleSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementationOnce(() => {})
+      AnalyticsBrowser.load({ writeKey: 'abc' })
+      await sleep(500)
+      expect(consoleSpy).toBeCalled()
     })
   })
 

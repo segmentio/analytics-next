@@ -6,3 +6,12 @@ export const createSuccess = (body: any) => {
     statusText: 'OK',
   }) as Promise<Response>
 }
+
+export const createError = (overrides: Partial<Response> = {}) => {
+  return Promise.resolve({
+    ok: false,
+    status: 404,
+    statusText: 'Not Found',
+    ...overrides,
+  }) as Promise<Response>
+}
