@@ -1581,7 +1581,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-react@workspace:packages/react"
   dependencies:
-    "@segment/analytics-next": ^1.40.0
     "@testing-library/react": ^13.3.0
     "@types/react": 16.8.0
     react: 18.0.0
@@ -11815,7 +11814,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "standalone-playground@workspace:examples/standalone-playground"
   dependencies:
-    "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-next": 1.41.1
     concurrently: ^7.2.1
   languageName: unknown
   linkType: soft
@@ -13335,7 +13334,7 @@ __metadata:
   resolution: "with-next-js@workspace:examples/with-next-js"
   dependencies:
     "@next/bundle-analyzer": ^12.1.5
-    "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-next": 1.41.1
     "@types/faker": ^5.1.2
     "@types/react": ^17.0.37
     eslint-config-next: ^12.1.6
@@ -13356,7 +13355,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "with-vite@workspace:examples/with-vite"
   dependencies:
-    "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-next": 1.41.1
     "@types/react": ^18.0.0
     "@types/react-dom": ^18.0.0
     "@vitejs/plugin-react": ^1.3.0
