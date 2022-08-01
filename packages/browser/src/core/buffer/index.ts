@@ -108,14 +108,11 @@ type MethodCallMap = Partial<Record<PreInitMethodName, PreInitMethodCall[]>>
 export class PreInitMethodCallBuffer {
   private _value = {} as MethodCallMap
 
-  public toArray(): PreInitMethodCall[] {
-    const calls = Object.values(this._value)
-    return ([] as PreInitMethodCall[]).concat(...calls)
+  toArray(): PreInitMethodCall[] {
+    return ([] as PreInitMethodCall[]).concat(...Object.values(this._value))
   }
 
-  public getCalls<T extends PreInitMethodName>(
-    methodName: T
-  ): PreInitMethodCall<T>[] {
+  getCalls<T extends PreInitMethodName>(methodName: T): PreInitMethodCall<T>[] {
     return (this._value[methodName] ?? []) as PreInitMethodCall<T>[]
   }
 
