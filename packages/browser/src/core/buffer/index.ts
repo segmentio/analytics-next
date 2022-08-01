@@ -5,8 +5,7 @@ import { AnalyticsBrowserCore } from '../analytics/interfaces'
 import { version } from '../../generated/version'
 
 /**
- * The names of any Analytics instance methods that can be called pre-initialization.
- * These methods should exist statically on AnalyticsBrowser.
+ * The names of any AnalyticsBrowser methods that also exist on Analytics
  */
 export type PreInitMethodName =
   | 'screen'

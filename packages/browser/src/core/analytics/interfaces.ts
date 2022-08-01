@@ -95,12 +95,12 @@ export interface AnalyticsBrowserCore {
   track: AnalyticsSnippetCore['track']
   page: AnalyticsSnippetCore['page']
   identify: AnalyticsSnippetCore['identify']
-  group(): Promise<Group> // Browser always wraps things in a promise, so we can't share a common "Core" interface =(
+  group(): Promise<Group> // Different than AnalyticsSnippetCore ^
   group(...args: UserParams): Promise<DispatchedEvent>
   alias: AnalyticsSnippetCore['alias']
   screen: AnalyticsSnippetCore['screen']
   register: AnalyticsSnippetCore['register']
   deregister: AnalyticsSnippetCore['deregister']
-  user(): Promise<User>
+  user(): Promise<User> // Different than AnalyticsSnippetCore ^
   readonly VERSION: AnalyticsSnippetCore['VERSION']
 }
