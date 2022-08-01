@@ -1,7 +1,13 @@
 import { v4 as uuid } from '@lukeed/uuid'
 import { dset } from 'dset'
 import { ID, User } from '../user'
-import { Options, Integrations, SegmentEvent } from './interfaces'
+import {
+  Options,
+  Integrations,
+  EventProperties,
+  Traits,
+  SegmentEvent,
+} from './interfaces'
 import md5 from 'spark-md5'
 
 export * from './interfaces'
@@ -15,7 +21,7 @@ export class EventFactory {
 
   track(
     event: string,
-    properties?: SegmentEvent['properties'],
+    properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
   ): SegmentEvent {
@@ -32,7 +38,7 @@ export class EventFactory {
   page(
     category: string | null,
     page: string | null,
-    properties?: object,
+    properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
   ): SegmentEvent {
@@ -62,7 +68,7 @@ export class EventFactory {
   screen(
     category: string | null,
     screen: string | null,
-    properties?: object,
+    properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
   ): SegmentEvent {
@@ -89,7 +95,7 @@ export class EventFactory {
 
   identify(
     userId: ID,
-    traits?: SegmentEvent['traits'],
+    traits?: Traits,
     options?: Options,
     globalIntegrations?: Integrations
   ): SegmentEvent {
@@ -105,7 +111,7 @@ export class EventFactory {
 
   group(
     groupId: ID,
-    traits?: SegmentEvent['traits'],
+    traits?: Traits,
     options?: Options,
     globalIntegrations?: Integrations
   ): SegmentEvent {

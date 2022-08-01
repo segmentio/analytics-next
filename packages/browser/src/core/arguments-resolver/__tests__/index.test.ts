@@ -2,9 +2,9 @@ import {
   resolveArguments,
   resolvePageArguments,
   resolveUserArguments,
-  Callback,
   resolveAliasArguments,
 } from '../'
+import { Callback } from '../../events'
 import { User } from '../../user'
 
 const bananaPhone = {

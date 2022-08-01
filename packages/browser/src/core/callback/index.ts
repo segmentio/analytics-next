@@ -1,5 +1,6 @@
 import { Context } from '../context'
 import { asPromise } from '../../lib/as-promise'
+import { Callback } from '../events/interfaces'
 
 export function pTimeout(
   cb: Promise<unknown>,
@@ -20,8 +21,6 @@ export function pTimeout(
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
 }
-
-export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 /**
  * @param delayTimeout - The amount of time in ms to wait before invoking the callback.

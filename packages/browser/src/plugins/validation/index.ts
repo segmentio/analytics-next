@@ -14,7 +14,9 @@ export function isFunction(obj: unknown): obj is Function {
   return typeof obj === 'function'
 }
 
-export function isPlainObject(obj: unknown): obj is object {
+export function isPlainObject(
+  obj: unknown
+): obj is Record<string | symbol | number, any> {
   return (
     Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
   )

@@ -2,6 +2,7 @@ import { Analytics } from '@/core/analytics'
 import { Context } from '@/core/context'
 import { AnalyticsBrowser } from '@/browser'
 import { assertNotAny, assertIs } from '@/test-helpers/type-assertions'
+import { Group } from '../../../core/user'
 
 /**
  * These are general typescript definition tests;
@@ -54,4 +55,16 @@ export default {
           assertIs<number | [Analytics, Context]>(response)
         })
     },
+
+  'Group should have the correct type': () => {
+    const ajs = AnalyticsBrowser.load({ writeKey: 'foo' })
+    {
+      const grpResult = ajs.group()
+      assertIs<Promise<Group>>(grpResult)
+    }
+    {
+      const grpResult = ajs.group('foo')
+      assertIs<Promise<Context>>(grpResult)
+    }
+  },
 }
