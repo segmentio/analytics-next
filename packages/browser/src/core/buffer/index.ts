@@ -109,9 +109,8 @@ export class PreInitMethodCallBuffer {
   private _value = {} as MethodCallMap
 
   public toArray(): PreInitMethodCall[] {
-    return Object.values(this._value).reduce((acc, v) => {
-      return acc.concat(...v)
-    }, [] as PreInitMethodCall[])
+    const calls = Object.values(this._value)
+    return ([] as PreInitMethodCall[]).concat(...calls)
   }
 
   public getCalls<T extends PreInitMethodName>(
