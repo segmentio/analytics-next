@@ -1,20 +1,10 @@
 {
   "extends": "../../tsconfig.json",
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    // https://www.npmjs.com/package/@tsconfig/node12
-    "lib": ["es2019", "es2020.promise", "es2020.bigint", "es2020.string"],
-    "module": "commonjs",
-    "target": "es2019",
+    "module": "esnext",
+    "target": "ES5",
     "moduleResolution": "node",
-    "outDir": "./dist",
-    "baseUrl": "./src",
-    // publish sourceMaps
-    "sourceMap": true,
-    // publish declarationMaps (enable go-to-definition in IDE)
-    "declarationMap": true,
-    // add type declarations to "types" folder
-    "declaration": true,
-    "declarationDir": "./dist/types"
-  },
-  "exclude": ["node_modules", "dist"]
+    "lib": ["es2020"] // TODO: https://www.npmjs.com/package/@tsconfig/node12?
+  }
 }

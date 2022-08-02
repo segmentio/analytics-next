@@ -1,19 +1,10 @@
 {
   "extends": "../../tsconfig.json",
+  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "importHelpers": true,
     "module": "esnext",
-    "lib": ["es2020"],
     "target": "ES5",
-    "outDir": "./dist/esm", // TODO: move to base tsconfig
     "moduleResolution": "node",
-    // publish sourceMaps
-    "sourceMap": true, // TODO: move to base tsconfig
-    // publish declarationMaps (enable go-to-definition in IDE)
-    "declarationMap": true, // TODO: move to base tsconfig
-    // add type declarations to "types" folder
-    "declaration": true, // TODO: move to base tsconfig
-    "declarationDir": "./dist/types" // TODO: move to base tsconfig (once browser is refactored)
-  },
-  "exclude": ["node_modules", "dist"]
+    "lib": ["es2020"]
+  }
 }

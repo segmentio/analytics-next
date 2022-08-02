@@ -10,7 +10,9 @@
     "import": "./dist/esm/index.js"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "src/",
+    "!**/__tests__/**"
   ],
   "engines": {
     "node": ">=12"
@@ -20,7 +22,7 @@
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
-    "build:esm": "yarn tsc -p tsconfig.build.json --outDir ./dist/esm --module esnext",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
     "watch": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",

@@ -9,7 +9,7 @@
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/pkg/index.js",
-  "types": "./dist/pkg/index.d.ts",
+  "types": "./dist/types/index.d.ts",
   "browser": {
     "./dist/cjs/node": "./dist/cjs/node/node.browser.js",
     "./dist/cjs/node.js": "./dist/cjs/node/node.browser.js",
@@ -18,7 +18,9 @@
   },
   "files": [
     "dist/",
-    "src/"
+    "src/",
+    "!**/__tests__/**",
+    "!**/tester/**"
   ],
   "sideEffects": false,
   "scripts": {

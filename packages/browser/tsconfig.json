@@ -1,11 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "importHelpers": true,
     "module": "esnext",
     "target": "ES5",
-    "declaration": true,
     "moduleResolution": "node",
+    "importHelpers": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "lib": ["es2020", "DOM"],

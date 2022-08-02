@@ -1,5 +1,17 @@
 {
   "extends": "./tsconfig.json",
   "include": ["src"],
-  "exclude": ["**/__tests__/**", "**/*.test.*"]
+  "exclude": ["**/__tests__/**", "**/*.test.*"],
+  "compilerOptions": {
+    "incremental": false,
+    "outDir": "./dist/esm",
+    "importHelpers": true,
+    // publish sourceMaps
+    "sourceMap": true,
+    // publish declarationMaps (enable go-to-definition in IDE)
+    "declarationMap": true,
+    // add type declarations to "types" folder
+    "declaration": true,
+    "declarationDir": "./dist/types"
+  }
 }
