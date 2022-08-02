@@ -10,7 +10,9 @@
     "import": "./dist/esm/index.js"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "src/",
+    "!**/__tests__/**"
   ],
   "engines": {
     "node": ">=12"

@@ -17,7 +17,10 @@
     "./dist/pkg/node.js": "./dist/pkg/node/node.browser.js"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "src/",
+    "!**/__tests__/**",
+    "!**/tester/**"
   ],
   "sideEffects": false,
   "scripts": {
