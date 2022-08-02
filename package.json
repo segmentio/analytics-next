@@ -19,7 +19,7 @@
     "dev": "yarn workspace with-next-js run dev",
     "postinstall": "husky install",
     "changeset": "changeset",
-    "update-versions-and-changelogs": "changeset version && yarn version-run-all",
+    "update-versions-and-changelogs": "changeset version && yarn version-run-all && bash scripts/update-lockfile.sh",
     "release": "yarn build:packages --force && changeset publish && yarn postpublish-run-all && git push origin --tags --no-verify",
     "postpublish-run-all": "yarn workspaces foreach -vpt --no-private run postpublish",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
