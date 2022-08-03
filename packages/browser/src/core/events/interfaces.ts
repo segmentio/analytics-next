@@ -7,8 +7,6 @@ export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
 export type JSONArray = Array<JSONValue>
 
-// TODO: the change is that context is no longer "undefined". "Callback" was defined twice in this codebase previously, with that being the only difference.
-// Are there methods where the context object for Callback is undefined? If so, which ones?
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 export type Integrations = {
