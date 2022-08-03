@@ -1,3 +1,4 @@
+import { Context } from '../context'
 import { CompactMetric } from '../stats'
 import { ID } from '../user'
 
@@ -5,6 +6,8 @@ export type JSONPrimitive = string | number | boolean | null
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
 export type JSONArray = Array<JSONValue>
+
+export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 export type Integrations = {
   All?: boolean
@@ -16,7 +19,7 @@ export type Options = {
   anonymousId?: ID
   timestamp?: Date | string
   context?: AnalyticsContext
-  traits?: object
+  traits?: Traits
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
@@ -97,6 +100,11 @@ interface AnalyticsContext {
   [key: string]: any
 }
 
+export type Traits = { [k: string]: JSONValue }
+export type EventProperties = {
+  [k: string]: JSONValue
+}
+
 export interface SegmentEvent {
   messageId?: string
 
@@ -106,13 +114,9 @@ export interface SegmentEvent {
   category?: string
   name?: string
 
-  properties?: object & {
-    [k: string]: JSONValue
-  }
+  properties?: EventProperties
 
-  traits?: object & {
-    [k: string]: JSONValue
-  }
+  traits?: Traits
 
   integrations?: Integrations
   context?: AnalyticsContext | Options

@@ -10,11 +10,18 @@ import {
   UserParams,
 } from '../arguments-resolver'
 import type { FormArgs, LinkArgs } from '../auto-track'
-import { Callback, invokeCallback } from '../callback'
+import { invokeCallback } from '../callback'
 import { isOffline } from '../connection'
 import { Context } from '../context'
 import { Emitter } from '@segment/analytics-core'
-import { EventFactory, Integrations, Plan, SegmentEvent } from '../events'
+import {
+  Callback,
+  EventFactory,
+  Integrations,
+  Plan,
+  EventProperties,
+  SegmentEvent,
+} from '../events'
 import { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
 import { CookieOptions, Group, ID, User, UserOptions } from '../user'
@@ -30,6 +37,7 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { inspectorHost } from '../inspector'
+import { AnalyticsClassic, AnalyticsSnippetCore } from './interfaces'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -69,7 +77,15 @@ export interface InitOptions {
   obfuscate?: boolean
 }
 
-export class Analytics extends Emitter {
+/* analytics-classic stubs */
+function _stub(this: never) {
+  console.warn(deprecationWarning)
+}
+
+export class Analytics
+  extends Emitter
+  implements AnalyticsSnippetCore, AnalyticsClassic
+{
   protected settings: AnalyticsSettings
   private _user: User
   private _group: Group
@@ -127,7 +143,7 @@ export class Analytics extends Emitter {
 
     const segmentEvent = this.eventFactory.track(
       name,
-      data as SegmentEvent['properties'],
+      data as EventProperties,
       opts,
       this.integrations
     )
@@ -180,6 +196,8 @@ export class Analytics extends Emitter {
     })
   }
 
+  group(): Group
+  group(...args: UserParams): Promise<DispatchedEvent>
   group(...args: UserParams): Promise<DispatchedEvent> | Group {
     if (args.length === 0) {
       return this._group
@@ -503,58 +521,16 @@ export class Analytics extends Emitter {
     return integrations
   }
 
-  // analytics-classic stubs
-
-  log() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  addIntegrationMiddleware() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  listeners() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  addEventListener() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  removeAllListeners() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  removeListener() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  removeEventListener() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  hasListeners() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  // This function is only used to add GA and Appcue, but these are already being added to Integrations by AJSN
-  addIntegration() {
-    console.warn(deprecationWarning)
-    return
-  }
-
-  add() {
-    console.warn(deprecationWarning)
-    return
-  }
+  log = _stub
+  addIntegrationMiddleware = _stub
+  listeners = _stub
+  addEventListener = _stub
+  removeAllListeners = _stub
+  removeListener = _stub
+  removeEventListener = _stub
+  hasListeners = _stub
+  add = _stub
+  addIntegration = _stub
 
   // snippet function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -13,6 +13,9 @@ export function next(writekey: string, obfuscate: boolean) {
           else {
             analytics.invoked = !0
             analytics.methods = [
+              'screen',
+              'register',
+              'deregister',
               'trackSubmit',
               'trackClick',
               'trackLink',
@@ -84,6 +87,9 @@ export function classic(writekey: string) {
       else {
         analytics.invoked = !0
         analytics.methods = [
+          'screen',
+          'register',
+          'deregister',
           'trackSubmit',
           'trackClick',
           'trackLink',

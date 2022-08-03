@@ -3,7 +3,6 @@ import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../../core/analytics'
-import { Group } from '../../core/user'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
@@ -258,7 +257,7 @@ describe('Initialization', () => {
     )
 
     expect(ajs.user().options.persist).toBe(false)
-    expect((ajs.group() as Group).options.persist).toBe(false)
+    expect(ajs.group().options.persist).toBe(false)
   })
 
   it('fetch remote source settings by default', async () => {
@@ -536,11 +535,11 @@ describe('Group', () => {
       writeKey,
     })
 
-    const group = analytics.group() as Group
+    const group = analytics.group()
 
-    const ctx = (await analytics.group('coolKids', {
+    const ctx = await analytics.group('coolKids', {
       coolKids: true,
-    })) as Context
+    })
 
     expect(ctx.event.groupId).toEqual('coolKids')
     expect(ctx.event.traits).toEqual({ coolKids: true })

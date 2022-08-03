@@ -1,12 +1,17 @@
 import { Analytics } from '../analytics'
 import { Context } from '../context'
 import { isThenable } from '../../lib/is-thenable'
+import { AnalyticsBrowserCore } from '../analytics/interfaces'
+import { version } from '../../generated/version'
 
 /**
- * The names of any Analytics instance methods that can be called pre-initialization.
- * These methods should exist statically on AnalyticsBrowser.
+ * The names of any AnalyticsBrowser methods that also exist on Analytics
  */
 export type PreInitMethodName =
+  | 'screen'
+  | 'register'
+  | 'deregister'
+  | 'user'
   | 'trackSubmit'
   | 'trackClick'
   | 'trackLink'
@@ -166,7 +171,9 @@ export type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
 ) => Promise<[Analytics, Context]>
 
-export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
+export class AnalyticsBuffered
+  implements PromiseLike<[Analytics, Context]>, AnalyticsBrowserCore
+{
   instance?: Analytics
   ctx?: Context
   private _preInitBuffer = new PreInitMethodCallBuffer()
@@ -217,7 +224,7 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   pageView = this._createMethod('pageview')
   identify = this._createMethod('identify')
   reset = this._createMethod('reset')
-  group = this._createMethod('group')
+  group = this._createMethod('group') as AnalyticsBrowserCore['group']
   track = this._createMethod('track')
   ready = this._createMethod('ready')
   alias = this._createMethod('alias')
@@ -229,6 +236,12 @@ export class AnalyticsBuffered implements PromiseLike<[Analytics, Context]> {
   addSourceMiddleware = this._createMethod('addSourceMiddleware')
   setAnonymousId = this._createMethod('setAnonymousId')
   addDestinationMiddleware = this._createMethod('addDestinationMiddleware')
+
+  screen = this._createMethod('screen')
+  register = this._createMethod('register')
+  deregister = this._createMethod('deregister')
+  user = this._createMethod('user')
+  readonly VERSION = version
 
   private _createMethod<T extends PreInitMethodName>(methodName: T) {
     return (
