@@ -83,9 +83,16 @@ export function loadLegacySettings(
   const baseUrl = cdnURL ?? getCDN()
 
   return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) {
+        return res.text().then((statusText) => {
+          throw { ...res, statusText }
+        })
+      }
+      return res.json()
+    })
     .catch((err) => {
-      console.warn('Failed to load settings', err)
+      console.error(err.statusText)
       throw err
     })
 }
