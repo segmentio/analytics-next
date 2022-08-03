@@ -85,7 +85,12 @@ const config = {
         extractComments: false,
         terserOptions: {
           ecma: '2015',
-          mangle: true,
+          mangle: {
+            properties: {
+              /* minify class properties that start with underscore */
+              regex: /^_/
+            }
+          },
           compress: true,
           output: {
             comments: false,
