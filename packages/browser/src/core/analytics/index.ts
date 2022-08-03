@@ -77,6 +77,11 @@ export interface InitOptions {
   obfuscate?: boolean
 }
 
+/* analytics-classic stubs */
+function _stub(this: never) {
+  console.warn(deprecationWarning)
+}
+
 export class Analytics
   extends Emitter
   implements AnalyticsSnippetCore, AnalyticsClassic
@@ -516,20 +521,16 @@ export class Analytics
     return integrations
   }
 
-  /* analytics-classic stubs */
-  stub(this: never) {
-    console.warn(deprecationWarning)
-  }
-  log = this.stub
-  addIntegrationMiddleware = this.stub
-  listeners = this.stub
-  addEventListener = this.stub
-  removeAllListeners = this.stub
-  removeListener = this.stub
-  removeEventListener = this.stub
-  hasListeners = this.stub
-  add = this.stub
-  addIntegration = this.stub
+  log = _stub
+  addIntegrationMiddleware = _stub
+  listeners = _stub
+  addEventListener = _stub
+  removeAllListeners = _stub
+  removeListener = _stub
+  removeEventListener = _stub
+  hasListeners = _stub
+  add = _stub
+  addIntegration = _stub
 
   // snippet function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
