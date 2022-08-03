@@ -1,5 +1,16 @@
 # @segment/analytics-next
 
+## 1.42.0
+
+### Minor Changes
+
+- [#561](https://github.com/segmentio/analytics-next/pull/561) [`1af2a9f`](https://github.com/segmentio/analytics-next/commit/1af2a9fa13596464d152bcecac19df110cd074bc) Thanks [@silesky](https://github.com/silesky)! - Add 'screen', 'register', 'deregister', 'user' method and 'VERSION' property on AnalyticsBrowser. Allow buffering of 'screen', 'register', 'deregister' methods for snippet users.
+
+### Patch Changes
+
+- Updated dependencies [[`93c8f1f`](https://github.com/segmentio/analytics-next/commit/93c8f1f7dabe6fca5bd0f8f9f0cc0c0e14cd2128)]:
+  - @segment/analytics-core@1.0.1
+
 ## 1.41.1
 
 ### Patch Changes
