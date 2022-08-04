@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.42.1
+
+### Patch Changes
+
+- [#567](https://github.com/segmentio/analytics-next/pull/567) [`5cd9358`](https://github.com/segmentio/analytics-next/commit/5cd9358d0a8ae9711eea22ae719e9f7363581798) Thanks [@silesky](https://github.com/silesky)! - Do not allow the "user" method to change its return types over its lifecycle. We should always return a promise for wrapped methods in AnalyticsBrowser, regardless if the underlying Analytics method is sync or async.
+
 ## 1.42.0
 
 ### Minor Changes
