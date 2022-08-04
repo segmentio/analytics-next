@@ -8,6 +8,7 @@ import {
 import { Analytics } from '../../analytics'
 import { Context } from '../../context'
 import { sleep } from '@/test-helpers/sleep'
+import { User } from '../../user'
 
 describe('PreInitMethodCallBuffer', () => {
   describe('push', () => {
@@ -97,6 +98,57 @@ describe('AnalyticsBuffered', () => {
 
       expect(analytics).toEqual(ajs)
       expect(context).toEqual(ctx)
+    })
+
+    it('should wrap async methods in a promise', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      const ctx = new Context({ type: 'track' })
+
+      ajs.track = () => Promise.resolve(ctx)
+
+      const buffered = new AnalyticsBuffered((buffer) => {
+        return new Promise((resolve) =>
+          setTimeout(() => {
+            flushAnalyticsCallsInNewTask(ajs, buffer)
+            resolve([ajs, ctx])
+          }, 0)
+        )
+      })
+      const result = buffered.track('foo')
+      expect(result).toBeInstanceOf(Promise)
+
+      await buffered
+
+      const result2 = buffered.track('bar')
+      expect(result2).toBeInstanceOf(Promise)
+
+      expect(await result).toBeInstanceOf(Context)
+      expect(await result2).toBeInstanceOf(Context)
+    })
+
+    it('should wrap synchronous methods in a promise', async () => {
+      const ajs = new Analytics({ writeKey: 'foo' })
+      ajs.user = () => new User()
+      const ctx = new Context({ type: 'track' })
+
+      const buffered = new AnalyticsBuffered((buffer) => {
+        return new Promise((resolve) =>
+          setTimeout(() => {
+            flushAnalyticsCallsInNewTask(ajs, buffer)
+            resolve([ajs, ctx])
+          }, 0)
+        )
+      })
+      const result = buffered.user()
+      expect(result).toBeInstanceOf(Promise)
+
+      await buffered
+
+      const result2 = buffered.user()
+      expect(result2).toBeInstanceOf(Promise)
+
+      expect(await result).toBeInstanceOf(User)
+      expect(await result2).toBeInstanceOf(User)
     })
 
     describe('the "this" value of proxied analytics methods', () => {

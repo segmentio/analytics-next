@@ -248,7 +248,8 @@ export class AnalyticsBuffered
       ...args: Parameters<Analytics[T]>
     ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
       if (this.instance) {
-        return (this.instance[methodName] as Function)(...args)
+        const result = (this.instance[methodName] as Function)(...args)
+        return Promise.resolve(result)
       }
 
       return new Promise((resolve, reject) => {

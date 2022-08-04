@@ -2,7 +2,7 @@ import { Analytics } from '@/core/analytics'
 import { Context } from '@/core/context'
 import { AnalyticsBrowser } from '@/browser'
 import { assertNotAny, assertIs } from '@/test-helpers/type-assertions'
-import { Group } from '../../../core/user'
+import { Group, User } from '../../../core/user'
 
 /**
  * These are general typescript definition tests;
@@ -65,6 +65,13 @@ export default {
     {
       const grpResult = ajs.group('foo')
       assertIs<Promise<Context>>(grpResult)
+    }
+  },
+  'User should have the correct type': () => {
+    const ajs = AnalyticsBrowser.load({ writeKey: 'foo' })
+    {
+      const grpResult = ajs.user()
+      assertIs<Promise<User>>(grpResult)
     }
   },
 }
