@@ -126,7 +126,7 @@ More React Examples:
 1. create composable file `segment.ts` with factory ref analytics:
 
 ```ts
-import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const analytics = AnalyticsBrowser.load({
   writeKey: '<YOUR_WRITE_KEY>',
