@@ -123,10 +123,11 @@ describe('Pre-initialization', () => {
         status: 403,
         statusText: 'Forbidden',
         json: undefined,
+        text: () => Promise.resolve('text'),
       }
       mockFetchSettingsErrorResponse(err)
       const consoleSpy = jest
-        .spyOn(console, 'warn')
+        .spyOn(console, 'error')
         .mockImplementationOnce(() => {})
       AnalyticsBrowser.load({ writeKey: 'abc' })
       await sleep(500)

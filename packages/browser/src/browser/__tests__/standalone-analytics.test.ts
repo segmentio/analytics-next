@@ -37,6 +37,8 @@ const fetchSettings = Promise.resolve({
     Promise.resolve({
       integrations: {},
     }),
+  text: () => Promise.resolve('text'),
+  ok: true,
 })
 
 jest.mock('unfetch', () => {
@@ -81,6 +83,7 @@ describe('standalone bundle', () => {
     const documentSpy = jest.spyOn(global, 'document', 'get')
 
     jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'error').mockImplementationOnce(() => {})
 
     windowSpy.mockImplementation(() => {
       return jsd.window as unknown as Window & typeof globalThis

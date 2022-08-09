@@ -26,6 +26,8 @@ const cdnResponse: LegacySettings = {
 
 const fetchSettings = Promise.resolve({
   json: () => Promise.resolve(cdnResponse),
+  text: () => Promise.resolve('text'),
+  ok: true,
 })
 
 jest.mock('unfetch', () => {
