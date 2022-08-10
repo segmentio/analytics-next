@@ -5,7 +5,16 @@ import { ID } from '../user'
 export type JSONPrimitive = string | number | boolean | null
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
-export type JSONArray = Array<JSONValue>
+export type JSONArray = JSONValue[]
+
+/**
+ *  A JSON object that allows undefined key/values which will be completely removed during serialization.
+ */
+export type JSONObjectLoose = {
+  [member: string]: JSONValueLoose | undefined
+}
+
+export type JSONValueLoose = JSONPrimitive | JSONObjectLoose | JSONValueLoose[]
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
@@ -100,10 +109,8 @@ interface AnalyticsContext {
   [key: string]: any
 }
 
-export type Traits = { [k: string]: JSONValue }
-export type EventProperties = {
-  [k: string]: JSONValue
-}
+export type Traits = JSONObjectLoose
+export type EventProperties = JSONObjectLoose
 
 export interface SegmentEvent {
   messageId?: string
