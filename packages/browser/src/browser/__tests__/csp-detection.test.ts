@@ -4,6 +4,7 @@ import { LegacySettings } from '..'
 import { onCSPError } from '../../lib/csp-detection'
 import { pWhile } from '../../lib/p-while'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
+import * as Factory from '../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -24,11 +25,7 @@ const cdnResponse: LegacySettings = {
   },
 }
 
-const fetchSettings = Promise.resolve({
-  json: () => Promise.resolve(cdnResponse),
-  text: () => Promise.resolve('text'),
-  ok: true,
-})
+const fetchSettings = Factory.createSuccess(cdnResponse)
 
 jest.mock('unfetch', () => {
   return jest.fn()

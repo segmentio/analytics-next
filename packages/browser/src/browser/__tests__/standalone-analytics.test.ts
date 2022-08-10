@@ -6,6 +6,7 @@ import { install, AnalyticsSnippet } from '../standalone-analytics'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../test-helpers/sleep'
+import * as Factory from '../../test-helpers/factories'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -32,14 +33,7 @@ jest.mock('@/core/analytics', () => ({
   }),
 }))
 
-const fetchSettings = Promise.resolve({
-  json: () =>
-    Promise.resolve({
-      integrations: {},
-    }),
-  text: () => Promise.resolve('text'),
-  ok: true,
-})
+const fetchSettings = Factory.createSuccess({ integrations: {} })
 
 jest.mock('unfetch', () => {
   return jest.fn()

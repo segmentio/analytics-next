@@ -85,14 +85,14 @@ export function loadLegacySettings(
   return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
     .then((res) => {
       if (!res.ok) {
-        return res.text().then((statusText) => {
-          throw { ...res, statusText }
+        return res.text().then((errorResponseMessage) => {
+          throw { ...res, errorResponseMessage }
         })
       }
       return res.json()
     })
     .catch((err) => {
-      console.error(err.statusText)
+      console.error(err.errorResponseMessage)
       throw err
     })
 }

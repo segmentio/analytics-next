@@ -4,6 +4,7 @@ import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { pWhile } from '../../lib/p-while'
 import unfetch from 'unfetch'
 import { RemoteMetrics } from '../../core/stats/remote-metrics'
+import * as Factory from '../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -24,9 +25,7 @@ const cdnResponse: LegacySettings = {
   },
 }
 
-const fetchSettings = Promise.resolve({
-  json: () => Promise.resolve(cdnResponse),
-})
+const fetchSettings = Factory.createSuccess(cdnResponse)
 
 jest.mock('unfetch', () => {
   return jest.fn()
