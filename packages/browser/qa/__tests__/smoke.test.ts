@@ -1,6 +1,6 @@
 import flat from 'flat'
 import { difference, intersection, uniq, without } from 'lodash'
-import { JSONValue } from '../../src/core/events'
+import { JSONObject } from '../../src/core/events'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { objectSchema } from '../lib/schema'
@@ -69,14 +69,14 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
       'integrations'
     )
 
-    expect((req.data as Record<string, JSONValue>).integrations).toEqual(
+    expect((req.data as JSONObject).integrations).toEqual(
       expect.objectContaining(
-        (classic.data as Record<string, JSONValue>).integrations
+        (classic.data as JSONObject).integrations
       )
     )
 
-    const flatNext = flat(req.data) as Record<string, JSONValue>
-    const flatClassic = flat(classic.data) as Record<string, JSONValue>
+    const flatNext = flat(req.data) as JSONObject
+    const flatClassic = flat(classic.data) as JSONObject
 
     intersectionKeys.forEach((key) => {
       const comparison = {

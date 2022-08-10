@@ -1,9 +1,4 @@
-import {
-  Integrations,
-  JSONObject,
-  JSONValue,
-  SegmentEvent,
-} from '@/core/events'
+import { Integrations, JSONObject, SegmentEvent } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
@@ -65,7 +60,7 @@ async function flushQueue(
 export class LegacyDestination implements Plugin {
   name: string
   version: string
-  settings: Record<string, JSONValue>
+  settings: JSONObject
   options: InitOptions = {}
   type: Plugin['type'] = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
@@ -83,7 +78,7 @@ export class LegacyDestination implements Plugin {
   constructor(
     name: string,
     version: string,
-    settings: Record<string, JSONValue> = {},
+    settings: JSONObject = {},
     options: InitOptions
   ) {
     this.name = name
