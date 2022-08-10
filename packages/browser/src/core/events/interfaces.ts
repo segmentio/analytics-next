@@ -7,15 +7,6 @@ export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
-/**
- *  A JSON object that allows undefined key/values which will be completely removed during serialization.
- */
-export type JSONObjectLoose = {
-  [member: string]: JSONValueLoose | undefined
-}
-
-export type JSONValueLoose = JSONPrimitive | JSONObjectLoose | JSONValueLoose[]
-
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
 export type Integrations = {
@@ -109,8 +100,26 @@ interface AnalyticsContext {
   [key: string]: any
 }
 
-export type Traits = JSONObjectLoose
-export type EventProperties = JSONObjectLoose
+// "object" is not ideal, but with JSONObject, we ran into at least one bad edge case around index sig.
+
+/**
+ * An object literal representing traits
+ * - identify: https://segment.com/docs/connections/spec/identify/#traits
+ * - group: https://segment.com/docs/connections/spec/group/#traits
+ * @example
+ *  { name: "john", age: 25 }
+ */
+export type Traits = object & JSONObject // intersection adds an index signature
+
+/**
+ * An object literal representing Segment event properties
+ * - track: https://segment.com/docs/connections/spec/track/#properties
+ * - page: https://segment.com/docs/connections/spec/page/#properties
+ * - screen: https://segment.com/docs/connections/spec/screen/#properties
+ * @example
+ *  { artistID: 2435325, songID: 13532532 }
+ */
+export type EventProperties = object & JSONObject // intersection adds an index signature
 
 export interface SegmentEvent {
   messageId?: string
