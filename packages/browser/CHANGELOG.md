@@ -1,5 +1,13 @@
 # @segment/analytics-next
 
+## 1.42.2
+
+### Patch Changes
+
+* [#578](https://github.com/segmentio/analytics-next/pull/578) [`ab8cea3`](https://github.com/segmentio/analytics-next/commit/ab8cea3a210a161fcb7c27e07d41edcb78fa4c3f) Thanks [@silesky](https://github.com/silesky)! - Loosen SegmentEvent and Traits typescript interface (Fixes [#570](https://github.com/segmentio/analytics-next/issues/570), [#575](https://github.com/segmentio/analytics-next/issues/575)).
+
+
+
 ## 1.42.1
 
 ### Patch Changes
