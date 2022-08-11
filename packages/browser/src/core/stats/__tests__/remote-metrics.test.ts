@@ -118,7 +118,10 @@ describe('remote metrics', () => {
     remote.increment('analytics_js.banana', ['phone:1'])
     await remote.flush()
 
-    expect(errorSpy).toHaveBeenCalledWith(error)
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Error sending segment performance metrics',
+      error
+    )
   })
 
   test('disables metrics reporting in case of errors', async () => {
