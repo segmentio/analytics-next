@@ -126,7 +126,7 @@ describe('Pre-initialization', () => {
       }
       mockFetchSettingsErrorResponse(err)
       const consoleSpy = jest
-        .spyOn(console, 'warn')
+        .spyOn(console, 'error')
         .mockImplementationOnce(() => {})
       AnalyticsBrowser.load({ writeKey: 'abc' })
       await sleep(500)

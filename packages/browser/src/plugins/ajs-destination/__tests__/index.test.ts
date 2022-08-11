@@ -9,6 +9,7 @@ import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
 import { AMPLITUDE_WRITEKEY } from '../../../test-helpers/test-writekeys'
 import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
+import * as Factory from '../../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -66,9 +67,7 @@ const cdnResponse: LegacySettings = {
   },
 }
 
-const fetchSettings = Promise.resolve({
-  json: () => Promise.resolve(cdnResponse),
-})
+const fetchSettings = Factory.createSuccess(cdnResponse)
 
 jest.mock('unfetch', () => {
   return jest.fn()
