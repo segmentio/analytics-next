@@ -100,26 +100,10 @@ interface AnalyticsContext {
   [key: string]: any
 }
 
-// "object" is not ideal, but with JSONObject, we ran into at least one bad edge case around index sig.
+// This is not ideal, but it works with all the edge cases
+export type Traits = Record<string, any>
 
-/**
- * An object literal representing traits
- * - identify: https://segment.com/docs/connections/spec/identify/#traits
- * - group: https://segment.com/docs/connections/spec/group/#traits
- * @example
- *  { name: "john", age: 25 }
- */
-export type Traits = object & JSONObject // intersection adds an index signature
-
-/**
- * An object literal representing Segment event properties
- * - track: https://segment.com/docs/connections/spec/track/#properties
- * - page: https://segment.com/docs/connections/spec/page/#properties
- * - screen: https://segment.com/docs/connections/spec/screen/#properties
- * @example
- *  { artistID: 2435325, songID: 13532532 }
- */
-export type EventProperties = object & JSONObject // intersection adds an index signature
+export type EventProperties = Record<string, any>
 
 export interface SegmentEvent {
   messageId?: string
@@ -129,9 +113,22 @@ export interface SegmentEvent {
   // page specific
   category?: string
   name?: string
-
+  /**
+   * An object literal representing Segment event properties
+   * - track: https://segment.com/docs/connections/spec/track/#properties
+   * - page: https://segment.com/docs/connections/spec/page/#properties
+   * - screen: https://segment.com/docs/connections/spec/screen/#properties
+   * @example
+   *  { artistID: 2435325, songID: 13532532 }
+   */
   properties?: EventProperties
-
+  /**
+   * An object literal representing traits
+   * - identify: https://segment.com/docs/connections/spec/identify/#traits
+   * - group: https://segment.com/docs/connections/spec/group/#traits
+   * @example
+   *  { name: "john", age: 25 }
+   */
   traits?: Traits
 
   integrations?: Integrations
