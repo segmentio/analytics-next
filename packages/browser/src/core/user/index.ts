@@ -92,6 +92,7 @@ export class Cookie extends Store {
       expires: this.options.maxage,
       domain: this.options.domain,
       path: this.options.path,
+      secure: this.options.secure,
     }
   }
 
