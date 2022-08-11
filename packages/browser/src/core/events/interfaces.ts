@@ -5,7 +5,7 @@ import { ID } from '../user'
 export type JSONPrimitive = string | number | boolean | null
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
-export type JSONArray = Array<JSONValue>
+export type JSONArray = JSONValue[]
 
 export type Callback = (ctx: Context) => Promise<unknown> | unknown
 
@@ -100,10 +100,10 @@ interface AnalyticsContext {
   [key: string]: any
 }
 
-export type Traits = { [k: string]: JSONValue }
-export type EventProperties = {
-  [k: string]: JSONValue
-}
+// This is not ideal, but it works with all the edge cases
+export type Traits = Record<string, any>
+
+export type EventProperties = Record<string, any>
 
 export interface SegmentEvent {
   messageId?: string
@@ -113,9 +113,22 @@ export interface SegmentEvent {
   // page specific
   category?: string
   name?: string
-
+  /**
+   * An object literal representing Segment event properties
+   * - track: https://segment.com/docs/connections/spec/track/#properties
+   * - page: https://segment.com/docs/connections/spec/page/#properties
+   * - screen: https://segment.com/docs/connections/spec/screen/#properties
+   * @example
+   *  { artistID: 2435325, songID: 13532532 }
+   */
   properties?: EventProperties
-
+  /**
+   * An object literal representing traits
+   * - identify: https://segment.com/docs/connections/spec/identify/#traits
+   * - group: https://segment.com/docs/connections/spec/group/#traits
+   * @example
+   *  { name: "john", age: 25 }
+   */
   traits?: Traits
 
   integrations?: Integrations

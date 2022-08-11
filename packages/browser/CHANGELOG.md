@@ -1,5 +1,19 @@
 # @segment/analytics-next
 
+## 1.42.3
+
+### Patch Changes
+
+- [#577](https://github.com/segmentio/analytics-next/pull/577) [`8d48bdc`](https://github.com/segmentio/analytics-next/commit/8d48bdc106a15d6368de215e11712470596e1df7) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes an issue where the 'secure' cookie setting was not being applied correctly when specified.
+
+* [#579](https://github.com/segmentio/analytics-next/pull/579) [`98504e2`](https://github.com/segmentio/analytics-next/commit/98504e2f5514030d782e06df0562ea25f4f01c34) Thanks [@silesky](https://github.com/silesky)! - Fix SegmentEvent and EventProperties and add tests
+
+## 1.42.2
+
+### Patch Changes
+
+- [#578](https://github.com/segmentio/analytics-next/pull/578) [`ab8cea3`](https://github.com/segmentio/analytics-next/commit/ab8cea3a210a161fcb7c27e07d41edcb78fa4c3f) Thanks [@silesky](https://github.com/silesky)! - Loosen SegmentEvent and Traits typescript interface (Fixes [#570](https://github.com/segmentio/analytics-next/issues/570), [#575](https://github.com/segmentio/analytics-next/issues/575)).
+
 ## 1.42.1
 
 ### Patch Changes

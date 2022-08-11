@@ -513,6 +513,22 @@ describe('user', () => {
       expect(cookie['options'].domain).toBe('foo')
       expect(cookie['options'].secure).toBe(true)
       expect(cookie['options'].path).toBe('/test')
+      expect(cookie['options'].secure).toBe(true)
+    })
+
+    it('should pass options when creating cookie', () => {
+      const jarSpy = jest.spyOn(jar, 'set')
+      const cookie = new Cookie({ domain: 'foo', secure: true, path: '/test' })
+
+      cookie.set('foo', 'bar')
+
+      expect(jarSpy).toHaveBeenCalledWith('foo', 'bar', {
+        domain: 'foo',
+        expires: 365,
+        path: '/test',
+        sameSite: 'Lax',
+        secure: true,
+      })
     })
   })
 

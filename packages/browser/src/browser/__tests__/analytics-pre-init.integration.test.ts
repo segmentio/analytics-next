@@ -5,6 +5,7 @@ import { Context } from '../../core/context'
 import * as Factory from '../../test-helpers/factories'
 import { sleep } from '../../test-helpers/sleep'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
+import { User } from '../../core/user'
 
 jest.mock('unfetch')
 
@@ -59,19 +60,38 @@ describe('Pre-initialization', () => {
       expect(trackSpy).toBeCalledTimes(1)
     })
 
-    test('"return types should not change over the lifecycle for ordinary methods', async () => {
+    test('"return types should not change over the lifecycle for async methods', async () => {
       const ajsBrowser = AnalyticsBrowser.load({ writeKey })
 
       const trackCtxPromise1 = ajsBrowser.track('foo', { name: 'john' })
       expect(trackCtxPromise1).toBeInstanceOf(Promise)
-      const ctx1 = await trackCtxPromise1
-      expect(ctx1).toBeInstanceOf(Context)
+      await ajsBrowser
 
       // loaded
       const trackCtxPromise2 = ajsBrowser.track('foo', { name: 'john' })
       expect(trackCtxPromise2).toBeInstanceOf(Promise)
-      const ctx2 = await trackCtxPromise2
-      expect(ctx2).toBeInstanceOf(Context)
+
+      expect(await trackCtxPromise1).toBeInstanceOf(Context)
+      expect(await trackCtxPromise2).toBeInstanceOf(Context)
+    })
+
+    test('return types should not change over lifecycle for sync methods', async () => {
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      const user = ajsBrowser.user()
+      expect(user).toBeInstanceOf(Promise)
+      await ajsBrowser
+
+      // loaded
+      const user2 = ajsBrowser.user()
+      expect(user2).toBeInstanceOf(Promise)
+
+      expect(await user).toBeInstanceOf(User)
+      expect(await user2).toBeInstanceOf(User)
+    })
+
+    test('version should return version', async () => {
+      const ajsBrowser = AnalyticsBrowser.load({ writeKey })
+      expect(typeof ajsBrowser.VERSION).toBe('string')
     })
 
     test('If a user sends multiple events, all of those event gets flushed', async () => {
@@ -103,7 +123,6 @@ describe('Pre-initialization', () => {
         status: 403,
         statusText: 'Forbidden',
         json: undefined,
-        text: () => Promise.resolve('text'),
       }
       mockFetchSettingsErrorResponse(err)
       const consoleSpy = jest
