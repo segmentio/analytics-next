@@ -86,13 +86,13 @@ export function loadLegacySettings(
     .then((res) => {
       if (!res.ok) {
         return res.text().then((errorResponseMessage) => {
-          throw { ...res, errorResponseMessage }
+          throw new Error(errorResponseMessage)
         })
       }
       return res.json()
     })
     .catch((err) => {
-      console.error(err.errorResponseMessage)
+      console.error(err.message)
       throw err
     })
 }
