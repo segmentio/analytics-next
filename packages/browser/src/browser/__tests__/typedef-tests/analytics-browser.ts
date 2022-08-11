@@ -103,4 +103,11 @@ export default {
 
     properties.category.baz = 'hello'
   },
+  'Track should allow undefined properties': () => {
+    type User = {
+      name?: string
+      thing: 123
+    }
+    void AnalyticsBrowser.load({ writeKey: 'foo' }).track('foo', {} as User)
+  },
 }
