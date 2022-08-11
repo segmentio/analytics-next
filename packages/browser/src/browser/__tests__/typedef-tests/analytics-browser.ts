@@ -74,4 +74,40 @@ export default {
       assertIs<Promise<User>>(grpResult)
     }
   },
+  'Identify should work with spread objects ': () => {
+    const user = {
+      name: 'john',
+      id: 12345,
+    }
+    const { id, ...traits } = user
+    void AnalyticsBrowser.load({ writeKey: 'foo' }).identify('foo', traits)
+  },
+  'Track should work with spread objects': () => {
+    const user = {
+      name: 'john',
+      id: 12345,
+    }
+    const { id, ...traits } = user
+    void AnalyticsBrowser.load({ writeKey: 'foo' }).track('foo', traits)
+  },
+  'Identify should work with generic objects ': () => {
+    const user = {
+      name: 'john',
+      id: 12345,
+    }
+    void AnalyticsBrowser.load({ writeKey: 'foo' }).identify('foo', user)
+  },
+  'Context should have a key allowing arbitrary properties': async () => {
+    const [_, ctx] = await AnalyticsBrowser.load({ writeKey: 'foo' })
+    const properties = ctx.event.properties!
+
+    properties.category.baz = 'hello'
+  },
+  'Track should allow undefined properties': () => {
+    type User = {
+      name?: string
+      thing: 123
+    }
+    void AnalyticsBrowser.load({ writeKey: 'foo' }).track('foo', {} as User)
+  },
 }
