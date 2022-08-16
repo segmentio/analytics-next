@@ -82,5 +82,5 @@ analyze:
 .PHONY: analyze
 
 dev: ## Starts a dev server that is ready for development
-	yarn workspace with-next-js run dev
+	yarn run -T dev
 .PHONY: dev

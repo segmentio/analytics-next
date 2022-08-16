@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "concurrently": "yarn run -T concurrently",
-    "dev": "yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -24,8 +23,10 @@
   "devDependencies": {
     "@next/bundle-analyzer": "^12.1.5",
     "@types/faker": "^5.1.2",
+    "@types/node": "^12.12.14",
     "@types/react": "^17.0.37",
     "eslint-config-next": "^12.1.6",
-    "source-map-loader": "^3.0.1"
+    "source-map-loader": "^3.0.1",
+    "typescript": "^4.6.4"
   }
 }

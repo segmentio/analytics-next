@@ -1,0 +1,5 @@
+{
+  "packages": ["packages/core", "packages/browser"],
+  "sandboxes": ["/examples/with-next-js"],
+  "node": "14"
+}
