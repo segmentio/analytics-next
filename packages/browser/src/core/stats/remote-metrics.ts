@@ -11,6 +11,10 @@ export interface MetricsOptions {
 
 type Metric = { type: 'Counter'; metric: string; value: number; tags: object }
 
+function logError(err: unknown): void {
+  console.error('Error sending segment performance metrics', err)
+}
+
 export class RemoteMetrics {
   private host: string
   private flushTimer: number
@@ -36,9 +40,7 @@ export class RemoteMetrics {
         }
 
         flushing = true
-        this.flush().catch((err) => {
-          console.error(err)
-        })
+        this.flush().catch(logError)
 
         flushing = false
 
@@ -90,7 +92,7 @@ export class RemoteMetrics {
     })
 
     if (metric.includes('error')) {
-      this.flush().catch((err) => console.error(err))
+      this.flush().catch(logError)
     }
   }
 
@@ -100,7 +102,7 @@ export class RemoteMetrics {
     }
 
     await this.send().catch((error) => {
-      console.error(error)
+      logError(error)
       this.sampleRate = 0
     })
   }
