@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.43.0
+
+### Minor Changes
+
+- [#573](https://github.com/segmentio/analytics-next/pull/573) [`6203c20`](https://github.com/segmentio/analytics-next/commit/6203c20cd0673f55a29c546440e0c02f6998df5a) Thanks [@arielsilvestri](https://github.com/arielsilvestri)! - Enhances console error logging when requests to settings api fail
+
+### Patch Changes
+
+- [#582](https://github.com/segmentio/analytics-next/pull/582) [`ebafece`](https://github.com/segmentio/analytics-next/commit/ebafeceb5e3b2c6cfe3d29313a443615093170a2) Thanks [@chrisradek](https://github.com/chrisradek)! - Updates error message when sending metrics fails to indicate that metrics failed to send.
+
 ## 1.42.3
 
 ### Patch Changes
