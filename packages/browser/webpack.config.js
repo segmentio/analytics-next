@@ -7,9 +7,7 @@ const BundleAnalyzerPlugin =
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
-const ASSET_PATH = isProd
-  ? 'https://cdn.segment.com/analytics-next/bundles/'
-  : '/dist/umd/'
+const ASSET_PATH = 'https://cdn.segment.com/analytics-next/bundles/'
 
 const plugins = [
   new CompressionPlugin({}),
@@ -18,9 +16,8 @@ const plugins = [
   }),
   new CircularDependencyPlugin({
     failOnError: true,
-  })
+  }),
 ]
-
 
 if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())

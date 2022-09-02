@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "module": "esnext",
-    "target": "ES5",
+    "target": "ES2018",
     "moduleResolution": "node",
     "importHelpers": true,
     "resolveJsonModule": true,
