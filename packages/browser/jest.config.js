@@ -1,3 +1,5 @@
+const { getJestModuleMap } = require('@internal/config')
+
 module.exports = {
   preset: 'ts-jest',
   modulePathIgnorePatterns: [
@@ -11,9 +13,7 @@ module.exports = {
   testEnvironmentOptions: {
     resources: 'usable',
   },
-  moduleNameMapper: {
-    '@/(.+)': '<rootdir>/../../src/$1',
-  },
+  moduleNameMapper: getJestModuleMap(),
   setupFilesAfterEnv: ['./jest.setup.js'],
   globals: {
     'ts-jest': {

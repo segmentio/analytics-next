@@ -7,7 +7,7 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
-  moduleNameMapper: getJestModuleMap("../../"),
+  moduleNameMapper: getJestModuleMap(),
   globals: {
     'ts-jest': {
       isolatedModules: true,

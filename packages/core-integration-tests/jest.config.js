@@ -1,7 +1,7 @@
 const { getJestModuleMap } = require('@internal/config')
 
 module.exports = {
-  moduleNameMapper: getJestModuleMap("../../"),
+  moduleNameMapper: getJestModuleMap(),
   preset: 'ts-jest',
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   testEnvironment: 'node',

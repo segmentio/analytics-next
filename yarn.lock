@@ -1523,6 +1523,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-next@workspace:packages/browser"
   dependencies:
+    "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.0.1
     "@segment/analytics.js-video-plugins": ^0.2.1
