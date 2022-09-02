@@ -26,7 +26,12 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, Depende
   \+ member(DependencyIdent, [
     % Allow examples to use different versions of react and
     'react', 'react-dom',
-    '@types/react'
+    '@types/react',
+    % Allow the usage of workspace^ -- there is a better way to do this =)
+    '@segment/analytics-next',
+    '@segment/analytics-node',
+    '@segment/analytics-core',
+    '@internal/config'
   ]).
 
 % Enforces that a dependency doesn't appear in both `dependencies` and `devDependencies`

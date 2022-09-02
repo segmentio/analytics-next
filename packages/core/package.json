@@ -13,16 +13,17 @@
   "files": [
     "dist/",
     "src/",
-    "!**/__tests__/**"
+    "!**/__tests__/**",
+    "!*.tsbuildinfo"
   ],
   "sideEffects": false,
   "scripts": {
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build": "yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
-    "watch": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
+    "watch": "yarn build:esm --watch --incremental",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
@@ -31,6 +32,8 @@
   },
   "packageManager": "yarn@3.2.1",
   "dependencies": {
+    "@lukeed/uuid": "^2.0.0",
+    "dset": "^3.1.2",
     "tslib": "^2.4.0"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "name": "@internal/config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src",
+  "packageManager": "yarn@3.2.1"
+}

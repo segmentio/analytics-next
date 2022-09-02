@@ -939,6 +939,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:internal/config":
+  version: 0.0.0-use.local
+  resolution: "@internal/config@workspace:internal/config"
+  languageName: unknown
+  linkType: soft
+
+"@internal/core-integration-tests@workspace:packages/core-integration-tests":
+  version: 0.0.0-use.local
+  resolution: "@internal/core-integration-tests@workspace:packages/core-integration-tests"
+  dependencies:
+    "@internal/config": "workspace:^"
+    "@segment/analytics-core": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@istanbuljs/load-nyc-config@npm:^1.0.0":
   version: 1.1.0
   resolution: "@istanbuljs/load-nyc-config@npm:1.1.0"
@@ -1493,10 +1509,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-core@1.0.1, @segment/analytics-core@workspace:packages/core":
+"@segment/analytics-core@1.0.1, @segment/analytics-core@workspace:^, @segment/analytics-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-core@workspace:packages/core"
   dependencies:
+    "@lukeed/uuid": ^2.0.0
+    dset: ^3.1.2
     tslib: ^2.4.0
   languageName: unknown
   linkType: soft
@@ -1562,8 +1580,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-node@workspace:packages/node"
   dependencies:
+    "@internal/config": 0.0.0
+    "@segment/analytics-core": 1.0.1
+    "@segment/analytics-plugin-validation": 0.0.0
     "@types/node": ^12.12.14
     node-fetch: ^2.6.7
+    tslib: ^2.4.0
+  languageName: unknown
+  linkType: soft
+
+"@segment/analytics-plugin-validation@0.0.0, @segment/analytics-plugin-validation@workspace:packages/plugin-validation":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-plugin-validation@workspace:packages/plugin-validation"
+  dependencies:
+    "@segment/analytics-core": 1.0.1
     tslib: ^2.4.0
   languageName: unknown
   linkType: soft

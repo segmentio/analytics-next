@@ -6,6 +6,11 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
+  setupFilesAfterEnv: ['./jest.setup.js'],
+  projects: [
+    "<rootDir>",
+    "<rootDir>/../core-integration-tests"
+  ],
   globals: {
     'ts-jest': {
       isolatedModules: true,

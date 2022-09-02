@@ -1,3 +1,4 @@
+const { getJestModuleMap } = require("@internal/config")
 module.exports = {
   preset: 'ts-jest',
   modulePathIgnorePatterns: [
@@ -6,9 +7,7 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ["**/?(*.)+(test).[jt]s?(x)"],
   clearMocks: true,
-  moduleNameMapper: {
-    '@/(.+)': '<rootdir>/../../src/$1',
-  },
+  moduleNameMapper: getJestModuleMap("../../"),
   globals: {
     'ts-jest': {
       isolatedModules: true,
