@@ -1,4 +1,4 @@
-import { PriorityQueue } from '.'
+import { PriorityQueue, Seen } from '.'
 import { CoreContext, SerializedContext } from '../context'
 
 const nullStorage = (): Storage => ({
@@ -31,16 +31,12 @@ function persistItems(loc: Storage, key: string, items: CoreContext[]): void {
   loc.setItem(key, JSON.stringify(Object.values(merged)))
 }
 
-function seen(loc: Storage, key: string): Record<string, number> {
+function seen(loc: Storage, key: string): Seen {
   const stored = loc.getItem(key)
   return stored ? JSON.parse(stored) : {}
 }
 
-function persistSeen(
-  loc: Storage,
-  key: string,
-  memory: Record<string, number>
-): void {
+function persistSeen(loc: Storage, key: string, memory: Seen): void {
   const stored = seen(loc, key)
 
   loc.setItem(
@@ -103,7 +99,7 @@ export class PersistedPriorityQueue extends PriorityQueue<CoreContext> {
     const seenKey = `persisted-queue:v1:${key}:seen`
 
     let saved: CoreContext[] = []
-    let lastSeen: Record<string, number> = {}
+    let lastSeen: Seen = {}
 
     mutex(this.loc, key, () => {
       try {

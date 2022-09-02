@@ -1,4 +1,5 @@
 import { PriorityQueue } from '..'
+import { calculateMaxTotalRetryTime } from '../backoff'
 
 type Item = {
   id: string
@@ -154,5 +155,66 @@ describe('backoffs', () => {
 
     const thirdDelay = spy.mock.calls[2][1]
     expect(thirdDelay).toBeGreaterThan(3000)
+  })
+})
+
+describe('Seen map clean up', () => {
+  let queue!: PriorityQueue<Item>
+  beforeEach(() => {
+    jest.useFakeTimers()
+    queue = new PriorityQueue<Item>(MAX_RETRIES, [])
+  })
+  const MAX_RETRIES = 3
+  const MAX_TOTAL_RETRY_TIME = calculateMaxTotalRetryTime(MAX_RETRIES)
+
+  it('clear expired on pop', async () => {
+    queue.push({ id: 'abc' })
+
+    jest.advanceTimersByTime(MAX_TOTAL_RETRY_TIME / 2)
+    // retry time has advanced half way, element should still be in "seen"
+    expect('abc' in queue['seen']).toBeTruthy()
+
+    jest.advanceTimersByTime(MAX_TOTAL_RETRY_TIME / 2)
+    // total retry time should be exceeded, garbage collection should happen on pop()
+    queue.pop()
+
+    expect('abc' in queue['seen']).toBeFalsy()
+  })
+
+  it('clear expired on push', async () => {
+    queue.push({ id: 'abc' })
+    jest.advanceTimersByTime(MAX_TOTAL_RETRY_TIME / 2)
+    expect('abc' in queue['seen']).toBeTruthy()
+    jest.advanceTimersByTime(MAX_TOTAL_RETRY_TIME / 2)
+    queue.push({ id: 'def' })
+    expect('abc' in queue['seen']).toBeFalsy()
+  })
+
+  it('should update "lastSeen" on every push', () => {
+    queue.push({ id: 'abc' })
+    const lastSeen1 = queue['seen']['abc'].expiration
+    jest.advanceTimersByTime(99)
+
+    queue.pop()
+    queue.push({ id: 'abc' })
+
+    const lastSeen2 = queue['seen']['abc'].expiration
+    expect(lastSeen2).toBeGreaterThan(lastSeen1)
+  })
+
+  it('should update lastSeen even if retries have been exhausted....', () => {
+    queue.push({ id: 'abc' })
+    const lastSeen1 = queue['seen']['abc'].expiration
+    jest.advanceTimersByTime(99)
+
+    queue.pop()
+    queue.push({ id: 'abc' })
+    queue.pop()
+    queue.push({ id: 'abc' })
+    queue.pop()
+    queue.push({ id: 'abc' })
+
+    const lastSeen2 = queue['seen']['abc'].expiration
+    expect(lastSeen2).toBeGreaterThan(lastSeen1)
   })
 })

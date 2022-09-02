@@ -1,4 +1,4 @@
-import { backoff } from '../backoff'
+import { backoff, calculateMaxTotalRetryTime } from '../backoff'
 
 describe('backoff', () => {
   it('increases with the number of attempts', () => {
@@ -19,5 +19,19 @@ describe('backoff', () => {
     const f3 = backoff({ attempt: 2, factor: 3 })
 
     expect(f3).toBeGreaterThan(f2)
+  })
+
+  it('accepts an optional multiplier', () => {
+    expect(backoff({ attempt: 2, rand: 1 })).toBe(4000)
+  })
+
+  it('works with a rand of 0', () => {
+    expect(backoff({ attempt: 2, rand: 0 })).toBe(2000)
+  })
+})
+
+describe('calculateMaxBackoff', () => {
+  it('gets the max backoff', () => {
+    expect(calculateMaxTotalRetryTime(3)).toBe(14000)
   })
 })

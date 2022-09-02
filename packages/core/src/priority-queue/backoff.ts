@@ -10,10 +10,13 @@ type BackoffParams = {
 
   /** The current attempt */
   attempt: number
+
+  /* an optional multiplier -- typically between 0 and 1 */
+  rand?: number
 }
 
 export function backoff(params: BackoffParams): number {
-  const random = Math.random() + 1
+  const random = (params.rand ?? Math.random()) + 1
   const {
     minTimeout = 500,
     factor = 2,
@@ -21,4 +24,16 @@ export function backoff(params: BackoffParams): number {
     maxTimeout = Infinity,
   } = params
   return Math.min(random * minTimeout * Math.pow(factor, attempt), maxTimeout)
+}
+
+/**
+ *
+ * @returns Max total retry time in MS
+ */
+export const calculateMaxTotalRetryTime = (maxAttempts: number): number => {
+  let retryTime = 0
+  for (let i = maxAttempts; i > 0; i--) {
+    retryTime += backoff({ attempt: i, rand: 1 })
+  }
+  return retryTime
 }

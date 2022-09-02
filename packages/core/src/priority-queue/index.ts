@@ -1,23 +1,46 @@
 import { Emitter } from '../emitter'
-import { backoff } from './backoff'
+import { backoff, calculateMaxTotalRetryTime } from './backoff'
 
 /**
  * @internal
  */
 export const ON_REMOVE_FROM_FUTURE = 'onRemoveFromFuture'
 
-export interface WithID {
+export interface QueueItem {
   id: string
 }
 
-export class PriorityQueue<T extends WithID = WithID> extends Emitter {
+export type Seen = {
+  [id: string]: {
+    /**
+     * Number of retry attempts.
+     */
+    attempts: number
+    /**
+     *  Epoch time representing when this the current key/value is eligible for deletion.
+     */
+    expiration: number
+  }
+}
+
+const _pruneExpiredFromSeenMap = (seen: Seen) => {
+  // moving private methods outside outside of classes allows minification of those method names
+  const now = Date.now()
+  Object.entries(seen).forEach(([id, { expiration }]) => {
+    if (now >= expiration) {
+      delete seen[id]
+    }
+  })
+}
+
+export class PriorityQueue<T extends QueueItem> extends Emitter {
   protected future: T[] = []
   protected queue: T[]
-  protected seen: Record<string, number>
+  protected seen: Seen
 
   public maxAttempts: number
 
-  constructor(maxAttempts: number, queue: T[], seen?: Record<string, number>) {
+  constructor(maxAttempts: number, queue: T[], seen?: Seen) {
     super()
     this.maxAttempts = maxAttempts
     this.queue = queue
@@ -39,6 +62,7 @@ export class PriorityQueue<T extends WithID = WithID> extends Emitter {
     this.queue = this.queue.sort(
       (a, b) => this.getAttempts(a) - this.getAttempts(b)
     )
+
     return accepted
   }
 
@@ -67,13 +91,18 @@ export class PriorityQueue<T extends WithID = WithID> extends Emitter {
     return true
   }
 
-  public getAttempts(operation: T): number {
-    return this.seen[operation.id] ?? 0
+  getAttempts(operation: T): number {
+    return this.seen[operation.id]?.attempts ?? 0
   }
 
-  public updateAttempts(operation: T): number {
-    this.seen[operation.id] = this.getAttempts(operation) + 1
-    return this.getAttempts(operation)
+  updateAttempts(operation: T): number {
+    _pruneExpiredFromSeenMap(this.seen)
+    const attempts = this.getAttempts(operation) + 1
+    this.seen[operation.id] = {
+      attempts: attempts,
+      expiration: Date.now() + calculateMaxTotalRetryTime(this.maxAttempts),
+    }
+    return attempts
   }
 
   includes(operation: T): boolean {
@@ -86,14 +115,15 @@ export class PriorityQueue<T extends WithID = WithID> extends Emitter {
   }
 
   pop(): T | undefined {
+    _pruneExpiredFromSeenMap(this.seen)
     return this.queue.shift()
   }
 
-  public get length(): number {
+  get length(): number {
     return this.queue.length
   }
 
-  public get todo(): number {
+  get todo(): number {
     return this.queue.length + this.future.length
   }
 }
