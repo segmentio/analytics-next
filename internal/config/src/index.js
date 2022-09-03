@@ -1,3 +1,3 @@
 module.exports = {
-  getJestModuleMap: require("./jest").getJestModuleMap
+  createJestTSConfig: require('./jest/config').createJestTSConfig,
 }

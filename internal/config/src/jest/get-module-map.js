@@ -6,8 +6,10 @@ const doNotMapPackages = process.env.JEST_SKIP_PACKAGE_MAP === 'true'
 /**
  * Allows ts-jest to dynamically resolve packages so "build"
  */
-const getJestModuleMap = (packageRoot = '../../', skipPackageMap = doNotMapPackages) => {
-
+const getJestModuleMap = (
+  packageRoot = '../../',
+  skipPackageMap = doNotMapPackages
+) => {
   // get listing of packages in the mono repo
   const createLocation = (name) => {
     return `<rootDir>/./${name}/src/$1`
@@ -22,7 +24,7 @@ const getJestModuleMap = (packageRoot = '../../', skipPackageMap = doNotMapPacka
 
   return {
     '@/(.+)': '<rootdir>/../../src/$1',
-    ...(skipPackageMap ? {}: moduleNameMapper)
+    ...(skipPackageMap ? {} : moduleNameMapper),
   }
 }
 
