@@ -53,7 +53,7 @@ document.body?.addEventListener('click', () => {
 })
 ```
 
-### using `React` (Simple / client-side only)
+### using `React` (Simple)
 
 ```tsx
 import { AnalyticsBrowser } from '@segment/analytics-next'
@@ -71,6 +71,8 @@ const App = () => (
 ### using `React` (Advanced w/ React Context)
 
 ```tsx
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
 const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined!);
 
 type Props = {
@@ -200,7 +202,10 @@ First, clone the repo and then startup our local dev environment:
 ```sh
 $ git clone git@github.com:segmentio/analytics-next.git
 $ cd analytics-next
-$ yarn dev
+$ nvm use  # installs correct version of node defined in .nvmrc.
+$ yarn && yarn build
+$ yarn test
+$ yarn dev  # optional: runs analytics-next playground.
 ```
 
 > If you get "Cannot find module '@segment/analytics-next' or its corresponding type declarations.ts(2307)" (in VSCode), you may have to "cmd+shift+p -> "TypeScript: Restart TS server"
