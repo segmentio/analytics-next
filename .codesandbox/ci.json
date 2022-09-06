@@ -1,5 +1,5 @@
 {
   "packages": ["packages/core", "packages/browser"],
-  "sandboxes": ["/examples/with-next-js"],
+  "sandboxes": ["/examples/with-next-js", "/examples/standalone-playground"],
   "node": "14"
 }

@@ -5,6 +5,7 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
+    "start": "npx http-server .",
     "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && npx http-server .'"
   },
   "dependencies": {
