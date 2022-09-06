@@ -1,4 +1,1 @@
-module.exports = {
-  '*.{js,ts}': ['eslint --fix'],
-  '*.json*': ['prettier --write'],
-}
+module.exports = require("@internal/config").lintStagedConfig
