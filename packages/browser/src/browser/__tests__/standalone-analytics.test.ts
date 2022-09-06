@@ -5,7 +5,7 @@ import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsStandalone } from '../standalone-analytics'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-import { sleep } from '../../test-helpers/sleep'
+import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
 
 const track = jest.fn()

@@ -3,7 +3,7 @@ import unfetch from 'unfetch'
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import * as Factory from '../../test-helpers/factories'
-import { sleep } from '../../test-helpers/sleep'
+import { sleep } from '../../lib/sleep'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { User } from '../../core/user'
 
