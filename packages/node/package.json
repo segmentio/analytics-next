@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "private": true,
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -12,7 +12,8 @@
   "files": [
     "dist/",
     "src/",
-    "!**/__tests__/**"
+    "!**/__tests__/**",
+    "!*.tsbuildinfo"
   ],
   "engines": {
     "node": ">=12"
@@ -20,10 +21,10 @@
   "scripts": {
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build": "yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:esm": "yarn tsc -p tsconfig.build.json",
-    "watch": "yarn concurrently 'yarn:build:cjs --watch' 'yarn:build:esm --watch'",
+    "watch": "yarn build:esm --watch --incremental",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
@@ -31,10 +32,13 @@
     "jest": "yarn run -T jest"
   },
   "dependencies": {
+    "@segment/analytics-core": "1.0.1",
+    "@segment/analytics-plugin-validation": "0.0.0",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.0"
   },
   "devDependencies": {
+    "@internal/config": "0.0.0",
     "@types/node": "^12.12.14"
   },
   "packageManager": "yarn@3.2.1"

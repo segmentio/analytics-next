@@ -5,6 +5,7 @@
     "module": "esnext",
     "target": "ES5",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "lib": ["es2020"]
   }
 }

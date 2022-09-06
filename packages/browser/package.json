@@ -31,7 +31,7 @@
     "tsc": "yarn run -T tsc",
     "jest": "yarn run -T jest",
     "concurrently": "yarn run -T concurrently",
-    "watch": "yarn concurrently 'NODE_ENV=production yarn umd --watch' 'yarn pkg --watch' 'yarn cjs --watch'",
+    "watch": "yarn concurrently 'NODE_ENV=production yarn umd --watch' 'yarn pkg --watch --incremental'",
     "build": "yarn clean && yarn build-prep && yarn concurrently 'NODE_ENV=production yarn umd' 'yarn pkg' 'yarn cjs'",
     "postpublish": "echo 'running postpublish build step...' && NODE_ENV=production PROD_RELEASE=true bash scripts/release.sh",
     "pkg": "yarn tsc -p tsconfig.build.json",
@@ -60,6 +60,7 @@
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
+    "@internal/config": "0.0.0",
     "@segment/inspector-webext": "^1.1.0",
     "@size-limit/preset-big-lib": "^7.0.8",
     "@types/flat": "^5.0.1",

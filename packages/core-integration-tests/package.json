@@ -1,0 +1,20 @@
+{
+  "name": "@internal/core-integration-tests",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "yarn jest",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
+  },
+  "packageManager": "yarn@3.2.1",
+  "devDependencies": {
+    "@internal/config": "workspace:^",
+    "@segment/analytics-core": "workspace:^",
+    "@segment/analytics-next": "workspace:^"
+  }
+}

@@ -3,29 +3,19 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", ":!__tests__/**"],
       "outputs": ["dist/**", ".next/**"]
     },
-    "build:packages": {
-      "dependsOn": [
-        "@segment/analytics-next#build",
-        "@segment/analytics-node#build",
-        "@segment/analytics-core#build"
-      ],
-      "outputs": ["dist/**"]
-    },
     "test": {
-      "dependsOn": ["build:packages"],
-      "outputs": [],
       "inputs": ["src/**", "test*/**"]
     },
     "watch": {
       "cache": false,
-      "dependsOn": ["build:packages"]
+      "outputs": ["dist/**"]
     },
     "lint": {
-      "dependsOn": ["build:packages"],
-      "outputs": [],
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js"]
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js"],
+      "outputs": []
     }
   }
 }
