@@ -3,4 +3,4 @@
 '@segment/analytics-core': minor
 ---
 
-Migrate common code into core.
+Migrate shared code into core.

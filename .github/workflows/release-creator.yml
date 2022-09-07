@@ -27,8 +27,11 @@ jobs:
           node-version: 12.x
           cache: "yarn"
 
+      - name: Set yarn version
+        run: yarn set version self
+
       - name: Install Dependencies
-        run: HUSKY=0 yarn install --immutable
+        run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
 
       - name: Create or Update Release PR
         id: changesets
