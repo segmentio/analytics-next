@@ -18,9 +18,8 @@ const plugins = [
   }),
   new CircularDependencyPlugin({
     failOnError: true,
-  })
+  }),
 ]
-
 
 if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())
