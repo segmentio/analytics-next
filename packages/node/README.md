@@ -5,22 +5,25 @@ https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 NOTE:  @segment/analytics-node is unstable! do not use.
 
+## Basic Usage
 ```ts
-// 1
-const analytics = new AnalyticsNode()
-analytics.track()
+// analytics.ts
+import { AnalyticsNode } from '@segment/analytics-node'
+
+export const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
 
 
-if (analytics.empty()) {
-  // do nothing
-} else {
-  await new Promise(resolve => analytics.on("empty", resolve))
-}
+// app.ts
+import { analytics } from './analytics'
 
-// TODO: Individual Error events should show up on context
-void track = () =>
+analytics.identify('Test User', { loggedIn: true }, { userId: "123456" })
+analytics.track('hello world', {}, { userId: "123456" })
 
-// TODO: Figure out how to allow graceful shut down -- flushing all events out of the queue (queue should not accept new events when shutdown is called). (and global error handling)
-// TODO:
-if ()
 ```
+
+# Event Emitter (Advanced Usage)
+```ts
+// listen globally to events
+analytics.on('identify', (ctx) => console.log(ctx.event))
+```
+

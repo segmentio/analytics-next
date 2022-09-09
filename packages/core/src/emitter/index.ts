@@ -1,5 +1,3 @@
-import { Callback } from '../events'
-
 type EventName = string
 type EventFnArgs = any[]
 type EmitterContract = Record<EventName, EventFnArgs>

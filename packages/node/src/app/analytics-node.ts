@@ -26,11 +26,11 @@ import { version } from '../../package.json'
 /** create a derived class since we may want to add node specific things to Context later  */
 export class NodeContext extends CoreContext {}
 
-export type NodeSegmentEventOptions = CoreOptions & Identity
-
 export type Identity =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
+
+export type NodeSegmentEventOptions = Identity & CoreOptions
 
 /**
  * Map of emitter event names to method args.
@@ -92,7 +92,6 @@ export class AnalyticsNode
       writeKey: settings.writeKey,
     }
 
-    // TODO: add criticalTasks to ensure that captured events dispatch only after registration is complete
     this.ready = this.register(validation, analyticsNode(nodeSettings))
 
     this.emit('initialize', settings)
@@ -299,7 +298,7 @@ export class AnalyticsNode
    * Records actions your users perform.
    * @param event - The name of the event you're tracking.
    * @param properties - A dictionary of properties for the event.
-   * @param options
+   * @param options - must contain *either* an { anonymousId: "abc" } OR { "userId": "456" }
    * @param callback
    */
   track(
