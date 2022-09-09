@@ -1,4 +1,3 @@
-export { load } from './app/load'
 export {
   AnalyticsNode,
   NodeContext,

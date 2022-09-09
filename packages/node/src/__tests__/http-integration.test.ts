@@ -1,9 +1,10 @@
 // I found both of these test files, and there doesn't seem to be a difference.
+import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { load, AnalyticsNode } from '..'
+import { AnalyticsNode } from '..'
 
 const myDate = new Date('2016')
 const _Date = Date
@@ -14,11 +15,9 @@ describe('Analytics Node', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
 
-    const [analytics] = await load({
+    ajs = new AnalyticsNode({
       writeKey: 'abc123',
     })
-
-    ajs = analytics
 
     // @ts-ignore
     global.Date = jest.fn(() => myDate)
@@ -29,49 +28,56 @@ describe('Analytics Node', () => {
   })
 
   test('fireEvent instantiates the right event types', async () => {
-    await ajs.identify('identify')
+    ajs.identify('identify')
+    await resolveCtx(ajs, 'identify')
+
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/identify',
       expect.anything()
     )
 
-    await ajs.track(
+    ajs.track(
       'track',
       {},
       {
         anonymousId: 'foo',
       }
     )
+    await resolveCtx(ajs, 'track')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/track',
       expect.anything()
     )
 
-    await ajs.page(
+    ajs.page(
       'page',
       {},
       {
         anonymousId: 'foo',
       }
     )
+    await resolveCtx(ajs, 'page')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/page',
       expect.anything()
     )
 
-    await ajs.group('group', {}, { anonymousId: 'foo' })
+    ajs.group('group', {}, { anonymousId: 'foo' })
+    await resolveCtx(ajs, 'group')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/group',
       expect.anything()
     )
 
-    await ajs.alias('alias', 'previous')
+    ajs.alias('alias', 'previous')
+    await resolveCtx(ajs, 'alias')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/alias',
       expect.anything()
     )
 
-    await ajs.screen('screen', {}, { anonymousId: 'foo' })
+    ajs.screen('screen', {}, { anonymousId: 'foo' })
+    await resolveCtx(ajs, 'screen')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/screen',
       expect.anything()

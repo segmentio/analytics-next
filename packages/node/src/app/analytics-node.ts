@@ -15,7 +15,11 @@ import {
   Callback,
   CoreSegmentEvent,
   bindAll,
+  PriorityQueue,
 } from '@segment/analytics-core'
+import { validation } from '@segment/analytics-plugin-validation'
+
+import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
 
@@ -27,6 +31,19 @@ export type NodeSegmentEventOptions = CoreOptions & Identity
 export type Identity =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
+
+/**
+ * Map of emitter event names to method args.
+ */
+type NodeEmitterEvents = {
+  initialize: [AnalyticsSettings]
+  alias: [ctx: CoreContext]
+  track: [ctx: CoreContext]
+  identify: [ctx: CoreContext]
+  page: [ctx: CoreContext]
+  screen: NodeEmitterEvents['page']
+  group: [ctx: CoreContext]
+}
 
 type NodeSegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
@@ -46,26 +63,40 @@ export interface InitOptions {
   retryQueue?: boolean
 }
 
-export class AnalyticsNode extends Emitter implements CoreAnalytics {
-  private eventFactory: EventFactory
-  protected settings: AnalyticsSettings
+export class AnalyticsNode
+  extends Emitter<NodeEmitterEvents>
+  implements CoreAnalytics
+{
+  private _eventFactory: EventFactory
+  settings: AnalyticsSettings
   integrations: Integrations
   options: InitOptions
   queue: EventQueue
+  ready: Promise<NodeContext>
   get VERSION() {
     return version
   }
-  constructor(
-    settings: AnalyticsSettings,
-    options: InitOptions,
-    queue: EventQueue
-  ) {
+
+  constructor(settings: AnalyticsSettings, options: InitOptions = {}) {
     super()
     this.settings = settings
-    this.eventFactory = new EventFactory()
+    this._eventFactory = new EventFactory()
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
-    this.queue = queue
+    this.queue = new EventQueue(new PriorityQueue(3, []))
+
+    const nodeSettings: AnalyticsNodePluginSettings = {
+      name: 'analytics-node-next',
+      type: 'after',
+      version: 'latest',
+      writeKey: settings.writeKey,
+    }
+
+    // TODO: add criticalTasks to ensure that captured events dispatch only after registration is complete
+    this.ready = this.register(validation, analyticsNode(nodeSettings))
+
+    this.emit('initialize', settings)
+
     bindAll(this)
   }
 
@@ -81,22 +112,21 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     previousId: string,
     options?: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.alias(
+  ): void {
+    const segmentEvent = this._eventFactory.alias(
       userId,
       previousId,
       options,
       this.integrations
     )
-    return dispatch(segmentEvent, this.queue, this, {
+    dispatch(segmentEvent, this.queue, this, {
       callback: callback,
       retryQueue: this.options.retryQueue,
     })
       .then((ctx) => {
-        this.emit('alias', userId, previousId, ctx.event.options)
-        return ctx
+        this.emit('alias', ctx)
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
 
   /**
@@ -111,20 +141,20 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     traits: Traits,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.group(
+  ): void {
+    const segmentEvent = this._eventFactory.group(
       groupId,
       traits,
       options,
       this.integrations
     )
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
+    dispatch(segmentEvent, this.queue, this, { callback })
       .then((ctx) => {
-        this.emit('group', groupId, ctx.event.traits, ctx.event.options)
+        this.emit('group', ctx)
         return ctx
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
 
   /**
@@ -139,20 +169,20 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     traits: Traits = {},
     options?: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.identify(
+  ): void {
+    const segmentEvent = this._eventFactory.identify(
       userId,
       traits,
       options,
       this.integrations
     )
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
+    dispatch(segmentEvent, this.queue, this, { callback })
       .then((ctx) => {
-        this.emit('identify', userId, ctx.event.traits, ctx.event.options)
+        this.emit('identify', ctx)
         return ctx
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
 
   /**
@@ -166,7 +196,7 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext>
+  ): void
   /**
    * Records page views on your website, along with optional extra information
    * about the page viewed by the user.
@@ -180,7 +210,7 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext>
+  ): void
   /**
    * Records page views on your website, along with optional extra information
    * about the page viewed by the user.
@@ -197,13 +227,13 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext>
+  ): void
 
-  page(...args: PageParams): Promise<NodeContext> {
+  page(...args: PageParams): void {
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.page(
+    const segmentEvent = this._eventFactory.page(
       category,
       page,
       properties,
@@ -211,18 +241,12 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
       this.integrations
     )
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
+    dispatch(segmentEvent, this.queue, this, { callback })
       .then((ctx) => {
-        this.emit(
-          'page',
-          category,
-          page,
-          ctx.event.properties,
-          ctx.event.options
-        )
+        this.emit('page', ctx)
         return ctx
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
 
   /**
@@ -236,7 +260,7 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: object,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext>
+  ): void
   /**
    * Records screen views on your app, along with optional extra information
    * about the screen viewed by the user.
@@ -250,13 +274,13 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: object,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext>
+  ): void
 
-  screen(...args: PageParams): Promise<NodeContext> {
+  screen(...args: PageParams): void {
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.screen(
+    const segmentEvent = this._eventFactory.screen(
       category,
       page,
       properties,
@@ -264,18 +288,12 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
       this.integrations
     )
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
+    dispatch(segmentEvent, this.queue, this, { callback })
       .then((ctx) => {
-        this.emit(
-          'page',
-          category,
-          page,
-          ctx.event.properties,
-          ctx.event.options
-        )
+        this.emit('screen', ctx)
         return ctx
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
   /**
    * Records actions your users perform.
@@ -289,22 +307,21 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     properties: object,
     options: NodeSegmentEventOptions,
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.track(
+  ): void {
+    const segmentEvent = this._eventFactory.track(
       event,
       properties as EventProperties,
       options,
       this.integrations
     )
 
-    return dispatch(segmentEvent, this.queue, this, {
+    dispatch(segmentEvent, this.queue, this, {
       callback,
     })
       .then((ctx) => {
-        this.emit('track', event, ctx.event.properties, ctx.event.options)
-        return ctx
+        this.emit('track', ctx)
       })
-      .catch((ctx) => ctx)
+      .catch(() => {})
   }
 
   /**
@@ -312,14 +329,15 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
    * @param plugins
    */
   async register(...plugins: CorePlugin<any, any>[]): Promise<NodeContext> {
-    const ctx = NodeContext.system()
+    return this.queue.criticalTasks.run(async () => {
+      const ctx = NodeContext.system()
 
-    const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this)
-    )
-    await Promise.all(registrations)
-
-    return ctx
+      const registrations = plugins.map((xt) =>
+        this.queue.register(ctx, xt, this)
+      )
+      await Promise.all(registrations)
+      return ctx
+    })
   }
 
   /**

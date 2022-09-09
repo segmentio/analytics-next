@@ -7,7 +7,7 @@
       "outputs": ["dist/**", ".next/**"]
     },
     "test": {
-      "inputs": ["src/**", "test*/**"]
+      "cache": false
     },
     "watch": {
       "cache": false,

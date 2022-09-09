@@ -5,22 +5,22 @@ https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 NOTE:  @segment/analytics-node is unstable! do not use.
 
-
 ```ts
-// TODO: finalize API
-import { load } from '@segment/analytics-node'
+// 1
+const analytics = new AnalyticsNode()
+analytics.track()
 
 
-// some file
-export const ajsPromise = load({ writeKey: 'abc123' }).then(([ajs]) => ajs)
+if (analytics.empty()) {
+  // do nothing
+} else {
+  await new Promise(resolve => analytics.on("empty", resolve))
+}
 
-// some other file
-import { ajsPromise } from '../analytics'
+// TODO: Individual Error events should show up on context
+void track = () =>
 
-router.post('/user',  async (req, res) => {
-  ajsPromise.then((ajs) => ajs.track(user.id, "some event"))
-  res.json(user)
-})
-
-
+// TODO: Figure out how to allow graceful shut down -- flushing all events out of the queue (queue should not accept new events when shutdown is called). (and global error handling)
+// TODO:
+if ()
 ```

@@ -28,7 +28,7 @@ type EmittedEventNames =
   | 'plugin_error'
   | 'context_cancelled'
 
-export class EventQueue extends Emitter<EmittedEventNames> {
+export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
   /**
    * All event deliveries get suspended until all the tasks in this task group are complete.
    * For example: a middleware that augments the event object should be loaded safely as a
