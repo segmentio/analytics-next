@@ -43,6 +43,8 @@ type NodeEmitterEvents = {
   page: [ctx: CoreContext]
   screen: NodeEmitterEvents['page']
   group: [ctx: CoreContext]
+  register: [pluginNames: string[]]
+  deregister: [pluginNames: string[]]
 }
 
 type NodeSegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
@@ -335,6 +337,10 @@ export class AnalyticsNode
         this.queue.register(ctx, xt, this)
       )
       await Promise.all(registrations)
+      this.emit(
+        'register',
+        plugins.map((el) => el.name)
+      )
       return ctx
     })
   }
@@ -356,7 +362,7 @@ export class AnalyticsNode
     })
 
     await Promise.all(deregistrations)
-
+    this.emit('deregister', pluginNames)
     return ctx
   }
 }

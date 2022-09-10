@@ -251,6 +251,31 @@ describe('register', () => {
 
     expect(testPlugin.load).toHaveBeenCalledTimes(1)
   })
+
+  it('should wait for plugins to be registered before dispatching events', async () => {
+    const analytics = new AnalyticsNode({ writeKey })
+    const events: ('register' | 'identify')[] = []
+
+    analytics.on('register', (plugins) => {
+      if (plugins.includes('Test Plugin')) {
+        events.push('register')
+      }
+    })
+    let resolve: Function
+    const identify = new Promise((_resolve) => {
+      resolve = _resolve
+    })
+    const plugin: Plugin = {
+      ...testPlugin,
+      identify: (ctx) => {
+        events.push('identify')
+        return resolve(ctx)
+      },
+    }
+    analytics.identify('foo')
+    await Promise.all([analytics.register(plugin), identify])
+    expect(events).toEqual(['register', 'identify'])
+  })
 })
 
 describe('deregister', () => {
