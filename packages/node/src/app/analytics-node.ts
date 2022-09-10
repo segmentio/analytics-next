@@ -74,7 +74,7 @@ export class AnalyticsNode
   integrations: Integrations
   options: InitOptions
   queue: EventQueue
-  ready: Promise<NodeContext>
+  ready: Promise<boolean>
   get VERSION() {
     return version
   }
@@ -94,7 +94,9 @@ export class AnalyticsNode
       writeKey: settings.writeKey,
     }
 
-    this.ready = this.register(validation, analyticsNode(nodeSettings))
+    this.ready = this.register(validation, analyticsNode(nodeSettings)).then(
+      () => true
+    )
 
     this.emit('initialize', settings)
 
@@ -127,7 +129,7 @@ export class AnalyticsNode
       .then((ctx) => {
         this.emit('alias', ctx)
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
 
   /**
@@ -155,7 +157,7 @@ export class AnalyticsNode
         this.emit('group', ctx)
         return ctx
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
 
   /**
@@ -183,7 +185,7 @@ export class AnalyticsNode
         this.emit('identify', ctx)
         return ctx
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
 
   /**
@@ -247,7 +249,7 @@ export class AnalyticsNode
         this.emit('page', ctx)
         return ctx
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
 
   /**
@@ -294,7 +296,7 @@ export class AnalyticsNode
         this.emit('screen', ctx)
         return ctx
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
   /**
    * Records actions your users perform.
@@ -322,14 +324,14 @@ export class AnalyticsNode
       .then((ctx) => {
         this.emit('track', ctx)
       })
-      .catch(() => {})
+      .catch((ctx) => ctx)
   }
 
   /**
    * Registers one or more plugins to augment Analytics functionality.
    * @param plugins
    */
-  async register(...plugins: CorePlugin<any, any>[]): Promise<NodeContext> {
+  async register(...plugins: CorePlugin<any, any>[]): Promise<void> {
     return this.queue.criticalTasks.run(async () => {
       const ctx = NodeContext.system()
 
@@ -341,7 +343,6 @@ export class AnalyticsNode
         'register',
         plugins.map((el) => el.name)
       )
-      return ctx
     })
   }
 
@@ -349,7 +350,7 @@ export class AnalyticsNode
    * Deregisters one or more plugins based on their names.
    * @param pluginNames - The names of one or more plugins to deregister.
    */
-  async deregister(...pluginNames: string[]): Promise<NodeContext> {
+  async deregister(...pluginNames: string[]): Promise<void> {
     const ctx = CoreContext.system()
 
     const deregistrations = pluginNames.map(async (pl) => {
@@ -363,6 +364,5 @@ export class AnalyticsNode
 
     await Promise.all(deregistrations)
     this.emit('deregister', pluginNames)
-    return ctx
   }
 }

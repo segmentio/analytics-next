@@ -24,8 +24,7 @@ describe('Initialization', () => {
     const analytics = new AnalyticsNode({
       writeKey,
     })
-    const ctx = await analytics.ready
-    expect(ctx.id).toBeDefined()
+    await analytics.ready
 
     expect(analytics.queue.plugins.length).toBe(2)
 
@@ -253,28 +252,31 @@ describe('register', () => {
   })
 
   it('should wait for plugins to be registered before dispatching events', async () => {
+    // TODO: ensure that this test _actually_ tests criticalTasks =S
     const analytics = new AnalyticsNode({ writeKey })
-    const events: ('register' | 'identify')[] = []
 
-    analytics.on('register', (plugins) => {
-      if (plugins.includes('Test Plugin')) {
-        events.push('register')
-      }
-    })
-    let resolve: Function
-    const identify = new Promise((_resolve) => {
-      resolve = _resolve
+    const register = new Promise((resolve) =>
+      analytics.on('register', (plugins) => {
+        if (plugins.includes('Test Plugin')) {
+          resolve('register')
+        }
+      })
+    )
+    let resolveId: Function
+    const identifyPluginCall = new Promise((_resolve) => {
+      resolveId = _resolve
     })
     const plugin: Plugin = {
       ...testPlugin,
       identify: (ctx) => {
-        events.push('identify')
-        return resolve(ctx)
+        resolveId('identify')
+        return Promise.resolve(ctx)
       },
     }
-    analytics.identify('foo')
-    await Promise.all([analytics.register(plugin), identify])
-    expect(events).toEqual(['register', 'identify'])
+    void analytics.register(plugin)
+
+    const result = await Promise.race([identifyPluginCall, register])
+    expect(result).toEqual('register')
   })
 })
 
