@@ -1,23 +1,9 @@
 import { AnalyticsNode } from '../index'
 import { CorePlugin as Plugin } from '@segment/analytics-core'
 import { resolveCtx } from './test-helpers/resolve-ctx'
+import { testPlugin } from './test-helpers/test-plugin'
 
 const writeKey = 'foo'
-
-const testPlugin: Plugin = {
-  isLoaded: jest.fn().mockReturnValue(true),
-  load: jest.fn().mockResolvedValue(undefined),
-  unload: jest.fn().mockResolvedValue(undefined),
-  name: 'Test Plugin',
-  type: 'destination',
-  version: '0.1.0',
-  alias: jest.fn((ctx) => Promise.resolve(ctx)),
-  group: jest.fn((ctx) => Promise.resolve(ctx)),
-  identify: jest.fn((ctx) => Promise.resolve(ctx)),
-  page: jest.fn((ctx) => Promise.resolve(ctx)),
-  screen: jest.fn((ctx) => Promise.resolve(ctx)),
-  track: jest.fn((ctx) => Promise.resolve(ctx)),
-}
 
 describe('Initialization', () => {
   it('loads analytics-node-next plugin', async () => {
@@ -294,9 +280,19 @@ describe('version', () => {
   it('should return the version', () => {
     const analytics = new AnalyticsNode({ writeKey })
     expect(typeof +analytics.VERSION).toBe('number')
+  })
+})
 
-    /* typedef test: should be a readonly-property */
-    // @ts-expect-error
-    analytics.VERSION = 'abc'
+describe('ready', () => {
+  it('should only resolve when plugin registration is done', async () => {
+    const analytics = new AnalyticsNode({ writeKey })
+    expect(analytics.queue.plugins.length).toBe(0)
+    const result = await analytics.ready
+    expect(result).toBeUndefined()
+    expect(analytics.queue.plugins.length).toBeGreaterThan(0)
+  })
+
+  it.skip('should not reject if a plugin fails registration during initialization?', async () => {
+    // TODO: we should test the unhappy path
   })
 })
