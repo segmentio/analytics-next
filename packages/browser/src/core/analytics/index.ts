@@ -304,8 +304,7 @@ export class Analytics
 
     const registrations = plugins.map((xt) =>
       this.queue.register(ctx, xt, this, {
-        priority: 'critical',
-        options: { storage: this._storage },
+        dependencies: { storage: this._storage },
       })
     )
     await Promise.all(registrations)
