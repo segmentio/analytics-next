@@ -26,7 +26,7 @@ export type Integrations = {
 }
 
 // renamed
-export type CoreOptions = {
+export interface CoreOptions {
   integrations?: Integrations
   timestamp?: Date | string
   context?: CoreAnalyticsContext

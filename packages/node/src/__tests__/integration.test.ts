@@ -289,3 +289,14 @@ describe('deregister', () => {
     expect(testPlugin.unload).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('version', () => {
+  it('should return the version', () => {
+    const analytics = new AnalyticsNode({ writeKey })
+    expect(typeof +analytics.VERSION).toBe('number')
+
+    /* typedef test: should be a readonly-property */
+    // @ts-expect-error
+    analytics.VERSION = 'abc'
+  })
+})

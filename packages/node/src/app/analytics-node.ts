@@ -26,11 +26,11 @@ import { version } from '../../package.json'
 /** create a derived class since we may want to add node specific things to Context later  */
 export class NodeContext extends CoreContext {}
 
-export type Identity =
+type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
 
-export type NodeSegmentEventOptions = Identity & CoreOptions
+export type NodeSegmentEventOptions = IdentityOptions & CoreOptions
 
 /**
  * Map of emitter event names to method args.
@@ -58,6 +58,8 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: CorePlugin[]
+  integrations?: Integrations
+  retryQueue?: boolean
 }
 
 export interface InitOptions {
@@ -70,21 +72,19 @@ export class AnalyticsNode
   implements CoreAnalytics
 {
   private _eventFactory: EventFactory
-  settings: AnalyticsSettings
-  integrations: Integrations
-  options: InitOptions
-  queue: EventQueue
-  ready: Promise<boolean>
-  get VERSION() {
-    return version
-  }
+  private _retryQueue?: boolean
+  private _integrations: Integrations
 
-  constructor(settings: AnalyticsSettings, options: InitOptions = {}) {
+  queue: EventQueue
+
+  ready: Promise<void>
+
+  // TODO: Combine settings and InitOptions
+  constructor(settings: AnalyticsSettings) {
     super()
-    this.settings = settings
+    this._retryQueue = settings.retryQueue
+    this._integrations = settings.integrations ?? {}
     this._eventFactory = new EventFactory()
-    this.integrations = options?.integrations ?? {}
-    this.options = options ?? {}
     this.queue = new EventQueue(new PriorityQueue(3, []))
 
     const nodeSettings: AnalyticsNodePluginSettings = {
@@ -94,13 +94,19 @@ export class AnalyticsNode
       writeKey: settings.writeKey,
     }
 
-    this.ready = this.register(validation, analyticsNode(nodeSettings)).then(
-      () => true
-    )
+    this.ready = this.register(validation, analyticsNode(nodeSettings))
+      .then(() => undefined)
+      .catch((err) => {
+        console.error(err)
+      })
 
     this.emit('initialize', settings)
 
     bindAll(this)
+  }
+
+  get VERSION() {
+    return version
   }
 
   /**
@@ -120,11 +126,11 @@ export class AnalyticsNode
       userId,
       previousId,
       options,
-      this.integrations
+      this._integrations
     )
     dispatch(segmentEvent, this.queue, this, {
       callback: callback,
-      retryQueue: this.options.retryQueue,
+      retryQueue: this._retryQueue,
     })
       .then((ctx) => {
         this.emit('alias', ctx)
@@ -149,7 +155,7 @@ export class AnalyticsNode
       groupId,
       traits,
       options,
-      this.integrations
+      this._integrations
     )
 
     dispatch(segmentEvent, this.queue, this, { callback })
@@ -161,12 +167,14 @@ export class AnalyticsNode
   }
 
   /**
-   * Includes a unique userId and/or anonymousId and any optional traits you know about them.
+   * Includes a unique userId and (maybe anonymousId) and any optional traits you know about them.
    * @param userId
    * @param traits
    * @param options
    * @param callback
    */
+
+  // TODO: make one big object that takes either a userID OR an anonymousID
   identify(
     userId: string,
     traits: Traits = {},
@@ -177,7 +185,7 @@ export class AnalyticsNode
       userId,
       traits,
       options,
-      this.integrations
+      this._integrations
     )
 
     dispatch(segmentEvent, this.queue, this, { callback })
@@ -241,7 +249,7 @@ export class AnalyticsNode
       page,
       properties,
       options,
-      this.integrations
+      this._integrations
     )
 
     dispatch(segmentEvent, this.queue, this, { callback })
@@ -260,7 +268,7 @@ export class AnalyticsNode
    * @param callback
    */
   screen(
-    properties: object,
+    properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
   ): void
@@ -274,7 +282,7 @@ export class AnalyticsNode
    */
   screen(
     name: string,
-    properties: object,
+    properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
   ): void
@@ -288,7 +296,7 @@ export class AnalyticsNode
       page,
       properties,
       options,
-      this.integrations
+      this._integrations
     )
 
     dispatch(segmentEvent, this.queue, this, { callback })
@@ -307,7 +315,7 @@ export class AnalyticsNode
    */
   track(
     event: string,
-    properties: object,
+    properties: EventProperties,
     options: NodeSegmentEventOptions,
     callback?: Callback
   ): void {
@@ -315,7 +323,7 @@ export class AnalyticsNode
       event,
       properties as EventProperties,
       options,
-      this.integrations
+      this._integrations
     )
 
     dispatch(segmentEvent, this.queue, this, {
