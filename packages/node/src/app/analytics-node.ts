@@ -79,7 +79,6 @@ export class AnalyticsNode
 
   ready: Promise<void>
 
-  // TODO: Combine settings and InitOptions
   constructor(settings: AnalyticsSettings) {
     super()
     this._retryQueue = settings.retryQueue
@@ -111,10 +110,7 @@ export class AnalyticsNode
 
   /**
    * Combines two unassociated user identities.
-   * @param userId - The new user id you want to associate with the user.
-   * @param previousId - The previous id that the user was recognized by (this can be either a userId or an anonymousId).
-   * @param options
-   * @param callback
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
   alias({
     userId,
@@ -122,7 +118,9 @@ export class AnalyticsNode
     options,
     callback,
   }: {
+    /* The new user id you want to associate with the user. */
     userId: string
+    /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
     previousId: string
     options?: NodeSegmentEventOptions
     callback?: Callback
@@ -145,6 +143,7 @@ export class AnalyticsNode
 
   /**
    * Associates an identified user with a collective.
+   *  @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#group
    */
   group({
     /* 	The ID of the group. */
@@ -179,13 +178,8 @@ export class AnalyticsNode
 
   /**
    * Includes a unique userId and (maybe anonymousId) and any optional traits you know about them.
-   * @param userId
-   * @param traits
-   * @param options
-   * @param callback
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
-
-  // TODO: make one big object that takes either a userID OR an anonymousID
   identify({
     userId,
     anonymousId,
@@ -200,7 +194,7 @@ export class AnalyticsNode
     const segmentEvent = this._eventFactory.identify(
       userId,
       traits,
-      { ...options, anonymousId },
+      { ...options, anonymousId, userId },
       this._integrations
     )
 
@@ -212,59 +206,73 @@ export class AnalyticsNode
       .catch((ctx) => ctx)
   }
 
-  /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param properties
-   * @param options
-   * @param callback
-   */
-  page(
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): void
-  /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param name - The name of the page.
-   * @param properties - A dictionary of properties of the page.
-   * @param options
-   * @param callback
-   */
-  page(
-    name: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): void
-  /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param category - The category of the page.
-   * Useful for cases like ecommerce where many pages might live under a single category.
-   * @param name - The name of the page.
-   * @param properties - A dictionary of properties of the page.
-   * @param options
-   * @param callback
-   */
-  page(
-    category: string,
-    name: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): void
+  // /**
+  //  * Records page views on your website, along with optional extra information
+  //  * about the page viewed by the user.
+  //  * @param properties
+  //  * @param options
+  //  * @param callback
+  //  */
+  // page(
+  //   properties: EventProperties,
+  //   options: NodeSegmentEventOptions,
+  //   callback?: Callback
+  // ): void
+  // /**
+  //  * Records page views on your website, along with optional extra information
+  //  * about the page viewed by the user.
+  //  * @param name - The name of the page.
+  //  * @param properties - A dictionary of properties of the page.
+  //  * @param options
+  //  * @param callback
+  //  */
+  // page(
+  //   name: string,
+  //   properties: EventProperties,
+  //   options: NodeSegmentEventOptions,
+  //   callback?: Callback
+  // ): void
+  // /**
+  //  * Records page views on your website, along with optional extra information
+  //  * about the page viewed by the user.
+  //  * @param category - The category of the page.
+  //  * Useful for cases like ecommerce where many pages might live under a single category.
+  //  * @param name - The name of the page.
+  //  * @param properties - A dictionary of properties of the page.
+  //  * @param options
+  //  * @param callback
+  //  */
+  // page(
+  //   category: string,
+  //   name: string,
+  //   properties: EventProperties,
+  //   options: NodeSegmentEventOptions,
+  //   callback?: Callback
+  // ): void
 
-  page(...args: PageParams): void {
-    const [category, page, properties, options, callback] =
-      resolvePageArguments(...args)
-
+  /**
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#page
+   */
+  page({
+    userId,
+    anonymousId,
+    category,
+    name,
+    properties,
+    options,
+    callback,
+  }: IdentityOptions & {
+    category?: string
+    properties?: EventProperties
+    callback: Callback
+    name?: string
+    options: CoreOptions
+  }): void {
     const segmentEvent = this._eventFactory.page(
-      category,
-      page,
+      category || null,
+      name || null,
       properties,
-      options,
+      { ...options, anonymousId, userId },
       this._integrations
     )
 
@@ -303,6 +311,9 @@ export class AnalyticsNode
     callback?: Callback
   ): void
 
+  /**
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#screen
+   */
   screen(...args: PageParams): void {
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
@@ -322,12 +333,10 @@ export class AnalyticsNode
       })
       .catch((ctx) => ctx)
   }
+
   /**
    * Records actions your users perform.
-   * @param event - The name of the event you're tracking.
-   * @param properties - A dictionary of properties for the event.
-   * @param options - must contain *either* an { anonymousId: "abc" } OR { "userId": "456" }
-   * @param callback
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#track
    */
   track(
     event: string,

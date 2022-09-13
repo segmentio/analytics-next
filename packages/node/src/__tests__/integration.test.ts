@@ -26,27 +26,19 @@ describe('alias', () => {
   it('generates alias events', async () => {
     const analytics = new AnalyticsNode({ writeKey })
 
-    analytics.alias('chris radek', 'chris')
-  })
-
-  it('populates anonymousId if provided', (done) => {
-    const analytics = new AnalyticsNode({ writeKey })
-
-    analytics.alias('chris radek', 'chris', {
-      anonymousId: 'foo',
+    analytics.alias({
+      userId: 'chris radek',
+      previousId: 'chris',
     })
+    const ctx = await resolveCtx(analytics, 'group')
 
-    analytics.once('alias', (ctx) => {
-      expect(ctx.event.userId).toEqual('chris radek')
-      expect(ctx.event.previousId).toEqual('chris')
-      expect(ctx.event.anonymousId).toEqual('foo')
-      done()
-    })
+    expect(ctx.event.userId).toEqual('chris radek')
+    expect(ctx.event.previousId).toEqual('chris')
   })
 })
 
 describe('group', () => {
-  it.only('generates group events', async () => {
+  it('generates group events', async () => {
     const analytics = new AnalyticsNode({ writeKey })
 
     analytics.group({
@@ -65,22 +57,18 @@ describe('group', () => {
   it('invocations are isolated', async () => {
     const analytics = new AnalyticsNode({ writeKey })
 
-    analytics.group(
-      'coolKids',
-      { foo: 'foo' },
-      {
-        anonymousId: 'unknown',
-      }
-    )
+    analytics.group({
+      groupId: 'coolKids',
+      traits: { foo: 'foo' },
+      anonymousId: 'unknown',
+    })
     const ctx1 = await resolveCtx(analytics, 'group')
 
-    analytics.group(
-      'coolKids',
-      { bar: 'bar' },
-      {
-        userId: 'me',
-      }
-    )
+    analytics.group({
+      groupId: 'coolKids',
+      traits: { bar: 'bar' },
+      userId: 'me',
+    })
 
     const ctx2 = await resolveCtx(analytics, 'group')
 
@@ -94,11 +82,14 @@ describe('group', () => {
   })
 })
 
-describe('identify', () => {
+describe.only('identify', () => {
   it('generates identify events', async () => {
     const analytics = new AnalyticsNode({ writeKey })
-    analytics.identify('user-id', {
-      name: 'Chris Radek',
+    analytics.identify({
+      userId: 'user-id',
+      traits: {
+        name: 'Chris Radek',
+      },
     })
     const ctx1 = await resolveCtx(analytics, 'identify')
 
@@ -106,13 +97,7 @@ describe('identify', () => {
     expect(ctx1.event.anonymousId).toBeUndefined()
     expect(ctx1.event.traits).toEqual({ name: 'Chris Radek' })
 
-    analytics.identify(
-      'user-id',
-      {},
-      {
-        anonymousId: 'unknown',
-      }
-    )
+    analytics.identify({ userId: 'user-id', anonymousId: 'unknown' })
     const ctx2 = await resolveCtx(analytics, 'identify')
 
     expect(ctx2.event.userId).toEqual('user-id')

@@ -67,13 +67,7 @@ describe('Analytics Node', () => {
       expect.anything()
     )
 
-    ajs.page(
-      'page',
-      {},
-      {
-        anonymousId: 'foo',
-      }
-    )
+    ajs.page({ name: 'page', anonymousId: 'foo' })
     await resolveCtx(ajs, 'page')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/page',
