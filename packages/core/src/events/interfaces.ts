@@ -30,6 +30,7 @@ export interface CoreOptions {
   integrations?: Integrations
   timestamp?: Date | string
   context?: CoreAnalyticsContext
+  anonymousId?: string
   traits?: Traits
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

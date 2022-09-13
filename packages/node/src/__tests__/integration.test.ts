@@ -46,23 +46,20 @@ describe('alias', () => {
 })
 
 describe('group', () => {
-  it('generates group events', (done) => {
+  it.only('generates group events', async () => {
     const analytics = new AnalyticsNode({ writeKey })
 
-    analytics.group(
-      'coolKids',
-      { coolKids: true },
-      {
-        userId: 'foo',
-      }
-    )
-    analytics.on('group', (ctx) => {
-      expect(ctx.event.groupId).toEqual('coolKids')
-      expect(ctx.event.traits).toEqual({ coolKids: true })
-      expect(ctx.event.userId).toEqual('foo')
-      expect(ctx.event.anonymousId).toBeUndefined()
-      done()
+    analytics.group({
+      groupId: 'coolKids',
+      traits: { coolKids: true },
+      userId: 'foo',
+      anonymousId: 'bar',
     })
+    const ctx = await resolveCtx(analytics, 'group')
+    expect(ctx.event.groupId).toEqual('coolKids')
+    expect(ctx.event.traits).toEqual({ coolKids: true })
+    expect(ctx.event.userId).toEqual('foo')
+    expect(ctx.event.anonymousId).toBe('bar')
   })
 
   it('invocations are isolated', async () => {

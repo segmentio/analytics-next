@@ -69,7 +69,6 @@
     "@types/jquery": "^3.5.4",
     "@types/js-cookie": "3.0.1",
     "@types/jsdom": "^16.2.14",
-    "@types/lodash": "^4.14.161",
     "@types/mime": "^2.0.3",
     "@types/node": "^12.12.14",
     "@types/node-fetch": "^2.5.7",
