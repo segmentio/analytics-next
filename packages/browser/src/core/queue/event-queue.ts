@@ -6,7 +6,7 @@ import { isOnline } from '../connection'
 import { Context, ContextCancelation } from '../context'
 import { Emitter } from '@segment/analytics-core'
 import { Integrations } from '../events'
-import { Plugin } from '../plugin'
+import { Plugin, PluginConfig } from '../plugin'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
 import { inspectorHost } from '../inspector'
@@ -43,9 +43,10 @@ export class EventQueue extends Emitter {
   async register(
     ctx: Context,
     plugin: Plugin,
-    instance: Analytics
+    instance: Analytics,
+    pluginConfig?: PluginConfig
   ): Promise<void> {
-    await Promise.resolve(plugin.load(ctx, instance))
+    await Promise.resolve(plugin.load(ctx, instance, pluginConfig))
       .then(() => {
         this.plugins.push(plugin)
       })

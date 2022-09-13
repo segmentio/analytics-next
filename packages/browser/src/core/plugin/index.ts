@@ -1,7 +1,7 @@
 import { Analytics } from '../analytics'
 import { Context } from '../context'
 
-interface PluginConfig {
+export interface PluginConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any
   priority: 'critical' | 'non-critical' // whether AJS should expect this plugin to be loaded before starting event delivery

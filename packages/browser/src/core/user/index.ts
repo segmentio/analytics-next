@@ -398,3 +398,53 @@ export class Group extends User {
     return undefined
   }
 }
+
+export class UniversalStorage {
+  private cookies: Store
+  private localStorage: Store
+  private mem: Store
+
+  options: UserOptions = {}
+
+  constructor(isDisabled: boolean, cookieOptions?: CookieOptions) {
+    this.localStorage =
+      isDisabled || !LocalStorage.available()
+        ? new NullStorage()
+        : new LocalStorage()
+
+    this.cookies =
+      !isDisabled && Cookie.available()
+        ? new Cookie(cookieOptions)
+        : new NullStorage()
+
+    this.mem = isDisabled ? new NullStorage() : new Store()
+
+    autoBind(this)
+  }
+
+  chainGet<T>(key: string): T | null {
+    const val =
+      this.localStorage.get(key) ??
+      this.cookies.get(key) ??
+      this.mem.get(key) ??
+      null
+
+    return this.trySet(
+      key,
+      typeof val === 'number' ? val.toString() : val
+    ) as T | null
+  }
+
+  trySet<T>(key: string, value: T): T | null {
+    this.localStorage.set(key, value)
+    this.cookies.set(key, value)
+    this.mem.set(key, value)
+    return value
+  }
+
+  chainClear(key: string): void {
+    this.localStorage.remove(key)
+    this.cookies.remove(key)
+    this.mem.remove(key)
+  }
+}
