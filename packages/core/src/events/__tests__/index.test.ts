@@ -43,6 +43,8 @@ describe('Event Factory', () => {
       expect(group.traits).toEqual({ coolkids: true })
       expect(group.type).toEqual('group')
       expect(group.event).toBeUndefined()
+      expect(group.userId).toBe('foo')
+      expect(group.anonymousId).toBeUndefined()
     })
 
     it('accepts traits', () => {
@@ -53,6 +55,34 @@ describe('Event Factory', () => {
     it('sets the groupId to the message', () => {
       const group = factory.group('coolKidsId', { coolkids: true })
       expect(group.groupId).toEqual('coolKidsId')
+    })
+
+    it('allows userId / anonymousId to be specified as an option', () => {
+      const group = factory.group('my_group_id', undefined, {
+        userId: 'bar',
+        anonymousId: 'foo',
+      })
+      expect(group.userId).toBe('bar')
+      expect(group.anonymousId).toBe('foo')
+    })
+
+    it('allows userId / anonymousId to be overridden', function () {
+      const group = factory.group('my_group_id', undefined, {
+        userId: 'bar',
+        anonymousId: 'foo',
+      })
+      expect(group.userId).toBe('bar')
+      expect(group.anonymousId).toBe('foo')
+    })
+
+    it('uses userId / anonymousId from the user class (if specified)', function () {
+      factory = new EventFactory({
+        id: () => 'abc',
+        anonymousId: () => '123',
+      })
+      const group = factory.group('my_group_id')
+      expect(group.userId).toBe('abc')
+      expect(group.anonymousId).toBe('123')
     })
   })
 
@@ -351,4 +381,6 @@ describe('Event Factory', () => {
       })
     })
   })
+
+  describe('User override behavior', () => {})
 })
