@@ -1,4 +1,3 @@
-// I found both of these test files, and there doesn't seem to be a difference.
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const fetcher = jest.fn()
@@ -22,7 +21,6 @@ describe('Analytics Node', () => {
 
     // @ts-ignore
     global.Date = jest.fn(() => myDate)
-    /* eslint-disable @typescript-eslint/unbound-method */
     global.Date.UTC = _Date.UTC
     global.Date.parse = _Date.parse
     global.Date.now = _Date.now
@@ -53,42 +51,45 @@ describe('Analytics Node', () => {
     })
   })
 
-  test('Fires http requests to the correct endoint', async () => {
-    ajs.track(
-      'track',
-      {},
-      {
-        anonymousId: 'foo',
-      }
-    )
+  test('Track: Fires http requests to the correct endoint', async () => {
+    ajs.track({ event: 'track', userId: 'foo' })
+    ajs.track({ event: 'track', userId: 'foo', properties: { foo: 'bar' } })
     await resolveCtx(ajs, 'track')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/track',
       expect.anything()
     )
+  })
 
+  test('Page: Fires http requests to the correct endoint', async () => {
     ajs.page({ name: 'page', anonymousId: 'foo' })
     await resolveCtx(ajs, 'page')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/page',
       expect.anything()
     )
+  })
 
+  test('Group: Fires http requests to the correct endoint', async () => {
     ajs.group({ groupId: 'group', anonymousId: 'foo' })
     await resolveCtx(ajs, 'group')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/group',
       expect.anything()
     )
+  })
 
+  test('Alias: Fires http requests to the correct endoint', async () => {
     ajs.alias({ userId: 'alias', previousId: 'previous' })
     await resolveCtx(ajs, 'alias')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/alias',
       expect.anything()
     )
+  })
 
-    ajs.screen('screen', {}, { anonymousId: 'foo' })
+  test('Screen', async () => {
+    ajs.screen({ name: 'screen', anonymousId: 'foo' })
     await resolveCtx(ajs, 'screen')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/screen',

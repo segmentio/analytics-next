@@ -113,7 +113,7 @@ describe('page', () => {
     const category = 'Docs'
     const name = 'How to write a test'
 
-    analytics.page(category, name, {}, { anonymousId: 'unknown' })
+    analytics.page({ category, name, anonymousId: 'unknown' })
     const ctx1 = await resolveCtx(analytics, 'page')
     expect(ctx1.event.type).toEqual('page')
     expect(ctx1.event.name).toEqual(name)
@@ -121,7 +121,7 @@ describe('page', () => {
     expect(ctx1.event.userId).toBeUndefined()
     expect(ctx1.event.properties).toEqual({ category })
 
-    analytics.page(name, { title: 'wip' }, { userId: 'user-id' })
+    analytics.page({ name, properties: { title: 'wip' }, userId: 'user-id' })
 
     const ctx2 = await resolveCtx(analytics, 'page')
 
@@ -131,7 +131,7 @@ describe('page', () => {
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.properties).toEqual({ title: 'wip' })
 
-    analytics.page({ title: 'invisible' }, { userId: 'user-id' })
+    analytics.page({ properties: { title: 'invisible' }, userId: 'user-id' })
     const ctx3 = await resolveCtx(analytics, 'page')
 
     expect(ctx3.event.type).toEqual('page')
@@ -148,7 +148,7 @@ describe('screen', () => {
 
     const name = 'Home Screen'
 
-    analytics.screen(name, { title: 'wip' }, { userId: 'user-id' })
+    analytics.screen({ name, properties: { title: 'wip' }, userId: 'user-id' })
 
     const ctx1 = await resolveCtx(analytics, 'screen')
 
@@ -158,7 +158,7 @@ describe('screen', () => {
     expect(ctx1.event.userId).toEqual('user-id')
     expect(ctx1.event.properties).toEqual({ title: 'wip' })
 
-    analytics.screen({ title: 'invisible' }, { userId: 'user-id' })
+    analytics.screen({ properties: { title: 'invisible' }, userId: 'user-id' })
 
     const ctx2 = await resolveCtx(analytics, 'screen')
 
@@ -176,14 +176,11 @@ describe('track', () => {
 
     const eventName = 'Test Event'
 
-    analytics.track(
-      eventName,
-      {},
-      {
-        anonymousId: 'unknown',
-        userId: 'known',
-      }
-    )
+    analytics.track({
+      event: eventName,
+      anonymousId: 'unknown',
+      userId: 'known',
+    })
 
     const ctx1 = await resolveCtx(analytics, 'track')
 
@@ -193,13 +190,11 @@ describe('track', () => {
     expect(ctx1.event.anonymousId).toEqual('unknown')
     expect(ctx1.event.userId).toEqual('known')
 
-    analytics.track(
-      eventName,
-      { foo: 'bar' },
-      {
-        userId: 'known',
-      }
-    )
+    analytics.track({
+      event: eventName,
+      properties: { foo: 'bar' },
+      userId: 'known',
+    })
     const ctx2 = await resolveCtx(analytics, 'track')
 
     expect(ctx2.event.type).toEqual('track')
@@ -222,6 +217,7 @@ describe('register', () => {
   it('should wait for plugins to be registered before dispatching events', async () => {
     // TODO: ensure that this test _actually_ tests criticalTasks =S
     const analytics = new AnalyticsNode({ writeKey })
+    analytics.identify({ userId: 'foo' })
 
     const register = new Promise((resolve) =>
       analytics.on('register', (plugins) => {
@@ -231,6 +227,7 @@ describe('register', () => {
       })
     )
     let resolveId: Function
+
     const identifyPluginCall = new Promise((_resolve) => {
       resolveId = _resolve
     })
@@ -245,6 +242,7 @@ describe('register', () => {
 
     const result = await Promise.race([identifyPluginCall, register])
     expect(result).toEqual('register')
+    await identifyPluginCall
   })
 })
 

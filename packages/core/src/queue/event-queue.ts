@@ -17,18 +17,19 @@ type CorePluginsByType = {
   destinations: CorePlugin[]
 }
 
-type EmittedEventNames =
-  | 'message_dispatched'
-  | 'message_delivered'
-  | 'message_enriched'
-  | 'delivery_success'
-  | 'delivery_failure'
-  | 'flush'
-  | 'plugin_loaded'
-  | 'plugin_error'
-  | 'context_cancelled'
+export type EventQueueEmitterContract = {
+  message_dispatched: [ctx: CoreContext]
+  message_delivered: [ctx: CoreContext]
+  message_enriched: [ctx: CoreContext]
+  delivery_success: [ctx: CoreContext]
+  delivery_failure: [
+    ctx: CoreContext,
+    err: CoreContext | Error | ContextCancelation
+  ]
+  flush: [ctx: CoreContext, delivered: boolean]
+}
 
-export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
+export class EventQueue extends Emitter<EventQueueEmitterContract> {
   /**
    * All event deliveries get suspended until all the tasks in this task group are complete.
    * For example: a middleware that augments the event object should be loaded safely as a
@@ -98,7 +99,7 @@ export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
 
   async dispatch(ctx: CoreContext): Promise<CoreContext> {
     ctx.log('debug', 'Dispatching')
-    this.emit('message_dispatched')
+    this.emit('message_dispatched', ctx)
     ctx.stats?.increment('message_dispatched')
 
     this.queue.push(ctx)
@@ -126,7 +127,7 @@ export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
 
   async dispatchSingle(ctx: CoreContext): Promise<CoreContext> {
     ctx.log('debug', 'Dispatching')
-    this.emit('message_dispatched')
+    this.emit('message_dispatched', ctx)
 
     this.queue.updateAttempts(ctx)
     ctx.attempts = 1
@@ -179,13 +180,14 @@ export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
     try {
       ctx = await this.flushOne(ctx)
       const done = Date.now() - start
-      this.emit('delivery_success', done)
+      this.emit('delivery_success', ctx) // TODO: normalize emitter
       ctx.stats?.gauge('delivered', done)
       ctx.log('debug', 'Delivered', ctx.event)
       return ctx
-    } catch (err) {
-      ctx.log('error', 'Failed to deliver', err as object)
-      this.emit('delivery_failure')
+    } catch (err: any) {
+      const error = err as CoreContext | Error | ContextCancelation
+      ctx.log('error', 'Failed to deliver', error)
+      this.emit('delivery_failure', ctx, error)
       ctx.stats?.increment('delivery_failed')
       throw err
     }
@@ -218,7 +220,7 @@ export class EventQueue extends Emitter<Record<EmittedEventNames, any>> {
 
     try {
       ctx = await this.deliver(ctx)
-      this.emit('flush', ctx, true)
+      this.emit('flush', ctx, true) // TODO: normalize emitter
     } catch (err: any) {
       const accepted = this.enqueuRetry(err, ctx)
 

@@ -7,9 +7,7 @@ import {
   CorePlugin,
   EventFactory,
   EventQueue,
-  dispatch,
-  resolvePageArguments,
-  PageParams,
+  dispatchAndEmit,
   Integrations,
   CoreOptions,
   Callback,
@@ -36,6 +34,7 @@ export type NodeSegmentEventOptions = CoreOptions
  * Map of emitter event names to method args.
  */
 type NodeEmitterEvents = {
+  error: [ctx: CoreContext]
   initialize: [AnalyticsSettings]
   alias: [ctx: CoreContext]
   track: [ctx: CoreContext]
@@ -131,14 +130,10 @@ export class AnalyticsNode
       options,
       this._integrations
     )
-    dispatch(segmentEvent, this.queue, this, {
+    dispatchAndEmit(segmentEvent, this.queue, this, {
       callback: callback,
       retryQueue: this._retryQueue,
-    })
-      .then((ctx) => {
-        this.emit('alias', ctx)
-      })
-      .catch((ctx) => ctx)
+    }).catch(() => {})
   }
 
   /**
@@ -168,12 +163,9 @@ export class AnalyticsNode
       this._integrations
     )
 
-    dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('group', ctx)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback,
+    }).catch(() => {})
   }
 
   /**
@@ -198,59 +190,13 @@ export class AnalyticsNode
       this._integrations
     )
 
-    dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('identify', ctx)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback,
+    }).catch(() => {})
   }
 
-  // /**
-  //  * Records page views on your website, along with optional extra information
-  //  * about the page viewed by the user.
-  //  * @param properties
-  //  * @param options
-  //  * @param callback
-  //  */
-  // page(
-  //   properties: EventProperties,
-  //   options: NodeSegmentEventOptions,
-  //   callback?: Callback
-  // ): void
-  // /**
-  //  * Records page views on your website, along with optional extra information
-  //  * about the page viewed by the user.
-  //  * @param name - The name of the page.
-  //  * @param properties - A dictionary of properties of the page.
-  //  * @param options
-  //  * @param callback
-  //  */
-  // page(
-  //   name: string,
-  //   properties: EventProperties,
-  //   options: NodeSegmentEventOptions,
-  //   callback?: Callback
-  // ): void
-  // /**
-  //  * Records page views on your website, along with optional extra information
-  //  * about the page viewed by the user.
-  //  * @param category - The category of the page.
-  //  * Useful for cases like ecommerce where many pages might live under a single category.
-  //  * @param name - The name of the page.
-  //  * @param properties - A dictionary of properties of the page.
-  //  * @param options
-  //  * @param callback
-  //  */
-  // page(
-  //   category: string,
-  //   name: string,
-  //   properties: EventProperties,
-  //   options: NodeSegmentEventOptions,
-  //   callback?: Callback
-  // ): void
-
   /**
+   * The page method lets you record page views on your website, along with optional extra information about the page being viewed.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#page
    */
   page({
@@ -260,104 +206,88 @@ export class AnalyticsNode
     name,
     properties,
     options,
+    timestamp,
     callback,
   }: IdentityOptions & {
+    /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
     category?: string
-    properties?: EventProperties
-    callback: Callback
+    /* The name of the page.*/
     name?: string
-    options: CoreOptions
+    /* A dictionary of properties of the page. */
+    properties?: EventProperties
+    callback?: Callback
+    timestamp?: string | Date
+    options?: CoreOptions
   }): void {
     const segmentEvent = this._eventFactory.page(
-      category || null,
-      name || null,
+      category ?? null,
+      name ?? null,
       properties,
-      { ...options, anonymousId, userId },
+      { ...options, anonymousId, userId, timestamp },
       this._integrations
     )
 
-    dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('page', ctx)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback,
+    }).catch(() => {})
   }
 
   /**
    * Records screen views on your app, along with optional extra information
    * about the screen viewed by the user.
-   * @param properties
-   * @param options
-   * @param callback
+   *
+   * TODO: This is not documented on the segment docs ATM (for node).
    */
-  screen(
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): void
-  /**
-   * Records screen views on your app, along with optional extra information
-   * about the screen viewed by the user.
-   * @param name - The name of the screen.
-   * @param properties
-   * @param options
-   * @param callback
-   */
-  screen(
-    name: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): void
-
-  /**
-   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#screen
-   */
-  screen(...args: PageParams): void {
-    const [category, page, properties, options, callback] =
-      resolvePageArguments(...args)
-
+  screen({
+    userId,
+    anonymousId,
+    category,
+    name,
+    properties,
+    options,
+    callback,
+    timestamp,
+  }: Parameters<AnalyticsNode['page']>[0]): void {
     const segmentEvent = this._eventFactory.screen(
-      category,
-      page,
+      category ?? null,
+      name ?? null,
       properties,
-      options,
+      { ...options, anonymousId, userId, timestamp },
       this._integrations
     )
 
-    dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('screen', ctx)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback,
+    }).catch(() => {})
   }
 
   /**
    * Records actions your users perform.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#track
    */
-  track(
-    event: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
+  track({
+    userId,
+    anonymousId,
+    event,
+    properties,
+    options,
+    callback,
+  }: IdentityOptions & {
+    event: string
+    properties?: EventProperties
+    options?: NodeSegmentEventOptions
     callback?: Callback
-  ): void {
+  }): void {
     const segmentEvent = this._eventFactory.track(
       event,
-      properties as EventProperties,
-      options,
+      properties,
+      { ...options, userId, anonymousId },
       this._integrations
     )
 
-    dispatch(segmentEvent, this.queue, this, {
+    dispatchAndEmit(segmentEvent, this.queue, this, {
       callback,
-    })
-      .then((ctx) => {
-        this.emit('track', ctx)
-      })
-      .catch((ctx) => ctx)
+    }).catch(() => {})
   }
 
   /**

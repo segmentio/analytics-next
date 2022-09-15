@@ -354,6 +354,12 @@ describe('Event Factory', () => {
         innerProp: '👻',
       })
     })
+
+    test('coerces undefined properties to empty object so validation does not fail', () => {
+      const track = factory.track('Order Completed')
+
+      expect(track.properties).toEqual({})
+    })
   })
 
   describe('normalize', function () {

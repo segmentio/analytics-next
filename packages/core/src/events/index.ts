@@ -28,7 +28,7 @@ export class EventFactory {
       ...this.baseEvent(),
       event,
       type: 'track',
-      properties,
+      properties: properties ?? {},
       options: { ...options },
       integrations: { ...globalIntegrations },
     })
