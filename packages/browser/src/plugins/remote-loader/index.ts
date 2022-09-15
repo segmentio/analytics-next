@@ -56,15 +56,11 @@ class ActionDestination implements Plugin {
       this.middleware
     )
 
-    console.log(this.name)
-    console.log(ctx.event)
-    console.log(this.middleware)
-    console.log(modifiedEvent)
-
     if (modifiedEvent === null) {
       ctx.cancel(
         new ContextCancelation({
           retry: false,
+          reason: 'dropped by destination middleware',
         })
       )
       return ctx
@@ -244,8 +240,6 @@ export async function remoteLoader(
 
             allPlugins.push(wrapper)
           })
-
-          // allPlugins.push(...plugins)
         }
       } catch (error) {
         console.warn('Failed to load Remote Plugin', error)

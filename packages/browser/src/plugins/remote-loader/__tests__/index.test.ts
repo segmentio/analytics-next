@@ -1,7 +1,8 @@
 import * as loader from '../../../lib/load-script'
 import { remoteLoader } from '..'
-import { AnalyticsBrowser } from '../../../browser'
+import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
+import { Context } from '../../../core/context'
 
 const pluginFactory = jest.fn()
 
@@ -262,7 +263,35 @@ describe('Remote Loader', () => {
     )
 
     expect(plugins).toHaveLength(3)
-    expect(plugins).toEqual(expect.arrayContaining([one, two, three]))
+    // expect(plugins).toEqual(expect.arrayContaining([one, two, three]))
+    expect(plugins).toEqual(
+      expect.arrayContaining([
+        {
+          action: one,
+          name: 'multiple plugins',
+          version: '1.0.0',
+          type: 'before',
+          alternativeNames: ['one'],
+          middleware: [],
+        },
+        {
+          action: two,
+          name: 'multiple plugins',
+          version: '1.0.0',
+          type: 'before',
+          alternativeNames: ['two'],
+          middleware: [],
+        },
+        {
+          action: three,
+          name: 'single plugin',
+          version: '1.0.0',
+          type: 'enrichment',
+          alternativeNames: ['three'],
+          middleware: [],
+        },
+      ])
+    )
     expect(multiPluginFactory).toHaveBeenCalledWith({ foo: true })
     expect(singlePluginFactory).toHaveBeenCalledWith({ bar: false })
   })
@@ -356,7 +385,18 @@ describe('Remote Loader', () => {
     )
 
     expect(plugins).toHaveLength(1)
-    expect(plugins).toEqual(expect.arrayContaining([validPlugin]))
+    expect(plugins).toEqual(
+      expect.arrayContaining([
+        {
+          action: validPlugin,
+          name: 'valid plugin',
+          version: '1.0.0',
+          type: 'enrichment',
+          alternativeNames: ['valid'],
+          middleware: [],
+        },
+      ])
+    )
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
 
@@ -451,5 +491,65 @@ describe('Remote Loader', () => {
         subscriptions: [],
       })
     )
+  })
+
+  it('applies remote routing rules', async () => {
+    const validPlugin = {
+      name: 'valid',
+      version: '1.0.0',
+      type: 'enrichment',
+      load: () => {},
+      isLoaded: () => true,
+      track: (ctx: Context) => ctx,
+    }
+
+    const cdnSettings = {
+      integrations: {},
+      middlewareSettings: {
+        routingRules: [
+          {
+            matchers: [
+              {
+                ir: '["=","event",{"value":"Item Impression"}]',
+                type: 'fql',
+              },
+            ],
+            scope: 'destinations',
+            target_type: 'workspace::project::destination::config',
+            transformers: [[{ type: 'drop' }]],
+            destinationName: 'valid',
+          },
+        ],
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          url: 'valid',
+          libraryName: 'valid',
+          settings: { foo: true },
+        },
+      ],
+    }
+
+    // @ts-expect-error not gonna return a script tag sorry
+    jest.spyOn(loader, 'loadScript').mockImplementation((url: string) => {
+      if (url === 'valid') {
+        window['valid'] = jest.fn().mockImplementation(() => validPlugin)
+      }
+
+      return Promise.resolve(true)
+    })
+
+    const plugins = await remoteLoader(cdnSettings, {}, {})
+    const plugin = plugins[0]
+    await expect(() =>
+      plugin.track!(new Context({ type: 'track', event: 'Item Impression' }))
+    ).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "dropped by destination middleware",
+        "retry": false,
+        "type": "plugin Error",
+      }
+    `)
   })
 })
