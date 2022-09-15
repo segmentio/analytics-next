@@ -15,7 +15,6 @@ import {
   bindAll,
   PriorityQueue,
 } from '@segment/analytics-core'
-import { validation } from '@segment/analytics-plugin-validation'
 
 import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
@@ -92,7 +91,7 @@ export class AnalyticsNode
       writeKey: settings.writeKey,
     }
 
-    this.ready = this.register(validation, analyticsNode(nodeSettings))
+    this.ready = this.register(analyticsNode(nodeSettings))
       .then(() => undefined)
       .catch((err) => {
         console.error(err)

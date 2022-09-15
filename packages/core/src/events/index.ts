@@ -10,6 +10,7 @@ import {
   CoreOptions,
 } from './interfaces'
 import md5 from 'spark-md5'
+import { validateEvent } from '../validation/assertions'
 
 export class EventFactory {
   user?: User
@@ -246,6 +247,7 @@ export class EventFactory {
       messageId,
     }
 
+    validateEvent(evt)
     return evt
   }
 }

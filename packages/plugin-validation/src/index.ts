@@ -1,45 +1,7 @@
-import {
-  CoreContext,
-  isString,
-  isPlainObject,
-  hasUser,
-  CorePlugin,
-} from '@segment/analytics-core'
-
-class ValidationError extends Error {
-  field: string
-
-  constructor(field: string, message: string) {
-    super(message)
-    this.field = field
-  }
-}
+import { CoreContext, CorePlugin, validateEvent } from '@segment/analytics-core'
 
 function validate(ctx: CoreContext): CoreContext {
-  const eventType: unknown = ctx && ctx.event && ctx.event.type
-  const event = ctx.event
-
-  if (event === undefined) {
-    throw new ValidationError('event', 'Event is missing')
-  }
-
-  if (!isString(eventType)) {
-    throw new ValidationError('event', 'Event is not a string')
-  }
-
-  if (eventType === 'track' && !isString(event.event)) {
-    throw new ValidationError('event', 'Event is not a string')
-  }
-
-  const props = event.properties ?? event.traits
-  if (eventType !== 'alias' && !isPlainObject(props)) {
-    throw new ValidationError('properties', 'properties is not an object')
-  }
-
-  if (!hasUser(event)) {
-    throw new ValidationError('userId', 'Missing userId or anonymousId')
-  }
-
+  validateEvent(ctx?.event)
   return ctx
 }
 

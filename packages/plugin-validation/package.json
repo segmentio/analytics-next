@@ -1,11 +1,7 @@
 {
   "name": "@segment/analytics-plugin-validation",
   "version": "0.0.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/segmentio/analytics-next",
-    "directory": "packages/plugin-validation"
-  },
+  "private": true,
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
