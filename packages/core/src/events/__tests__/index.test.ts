@@ -354,6 +354,26 @@ describe('Event Factory', () => {
         innerProp: '👻',
       })
     })
+    describe('event validation', () => {
+      test('should be capable of working with empty properties and traits', () => {
+        expect(() => factory.track('track', undefined)).not.toThrow()
+        expect(() => factory.track('track', null as any)).not.toThrow()
+        expect(() => factory.identify('me')).not.toThrow()
+        expect(() => factory.identify('me')).not.toThrow()
+      })
+
+      test('should not accept non-objects as properties', () => {
+        expect(() =>
+          factory.track('track', [])
+        ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+      })
+
+      test('should not allow a number', () => {
+        expect(() =>
+          factory.track(123 as any)
+        ).toThrowErrorMatchingInlineSnapshot(`"Event is not a string"`)
+      })
+    })
 
     test('coerces undefined properties to empty object so validation does not fail', () => {
       const track = factory.track('Order Completed')
@@ -387,6 +407,5 @@ describe('Event Factory', () => {
       })
     })
   })
-
   describe('User override behavior', () => {})
 })
