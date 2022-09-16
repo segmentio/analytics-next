@@ -2,7 +2,7 @@ import uuid from '@lukeed/uuid'
 import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
 import { User } from '../../user'
-import { CoreSegmentEvent, CoreOptions } from '../..'
+import { CoreSegmentEvent } from '../..'
 
 describe('Event Factory', () => {
   let factory: EventFactory
@@ -30,6 +30,7 @@ describe('Event Factory', () => {
     })
 
     it('does not accept traits or properties', () => {
+      // TODO: you can still pass traits here in the options object?
       const alias = factory.alias('netto', 'netto farah')
       expect(alias.traits).toBeUndefined()
       expect(alias.properties).toBeUndefined()
@@ -84,6 +85,11 @@ describe('Event Factory', () => {
       expect(group.userId).toBe('abc')
       expect(group.anonymousId).toBe('123')
     })
+
+    test('should be capable of working with empty traits', () => {
+      expect(() => factory.group('foo')).not.toThrow()
+      expect(() => factory.group('foo', null as any)).not.toThrow()
+    })
   })
 
   describe('page', () => {
@@ -116,9 +122,25 @@ describe('Event Factory', () => {
       expect(identify.type).toEqual('identify')
       expect(identify.event).toBeUndefined()
     })
+    test('should be capable of working with empty traits', () => {
+      expect(() => factory.identify('foo')).not.toThrow()
+      expect(() => factory.identify('foo', null as any)).not.toThrow()
+    })
+
+    test('should coerce nullish traits to empty object', () => {
+      const id = factory.identify('Order Completed')
+      expect(id.traits).toEqual({})
+      expect(id.properties).toBe(undefined)
+    })
   })
 
   describe('track', () => {
+    test('should only accept object literals as properties', () => {
+      expect(() =>
+        factory.track('track', [])
+      ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+    })
+
     test('creates track events', () => {
       const track = factory.track('Order Completed', shoes)
       expect(track.event).toEqual('Order Completed')
@@ -309,6 +331,7 @@ describe('Event Factory', () => {
           cell: '📱',
         },
       })
+      expect(track.traits).toEqual(undefined) // This seems silly -- should we change this??
 
       expect(track.context?.traits).toEqual({
         cell: '📱',
@@ -354,58 +377,35 @@ describe('Event Factory', () => {
         innerProp: '👻',
       })
     })
-    describe('event validation', () => {
-      test('should be capable of working with empty properties and traits', () => {
-        expect(() => factory.track('track', undefined)).not.toThrow()
-        expect(() => factory.track('track', null as any)).not.toThrow()
-        expect(() => factory.identify('me')).not.toThrow()
-        expect(() => factory.identify('me')).not.toThrow()
-      })
-
-      test('should not accept non-objects as properties', () => {
-        expect(() =>
-          factory.track('track', [])
-        ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
-      })
-
-      test('should not allow a number', () => {
-        expect(() =>
-          factory.track(123 as any)
-        ).toThrowErrorMatchingInlineSnapshot(`"Event is not a string"`)
-      })
-    })
-
-    test('coerces undefined properties to empty object so validation does not fail', () => {
-      const track = factory.track('Order Completed')
-
-      expect(track.properties).toEqual({})
-    })
   })
 
-  describe('normalize', function () {
-    const msg: CoreSegmentEvent = { type: 'track' }
-    const opts: CoreOptions = (msg.options = {})
-
-    describe('message', function () {
-      it('should merge original with normalized', function () {
-        msg.userId = 'user-id'
-        opts.integrations = { Segment: true }
-        const normalized = factory['normalize'](msg)
-
-        expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
-        delete normalized.messageId
-
-        expect(normalized.timestamp).toBeInstanceOf(Date)
-        delete normalized.timestamp
-
-        expect(normalized).toStrictEqual({
+  describe('normalize', () => {
+    it('should merge original with normalized', () => {
+      const msg: CoreSegmentEvent = {
+        type: 'track',
+        event: 'My Event',
+        properties: {},
+        options: {
           integrations: { Segment: true },
-          type: 'track',
-          userId: 'user-id',
-          context: {},
-        })
+        },
+        userId: 'user-id',
+      }
+      const normalized = factory['normalize'](msg)
+
+      expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
+      delete normalized.messageId
+
+      expect(normalized.timestamp).toBeInstanceOf(Date)
+      delete normalized.timestamp
+
+      expect(normalized).toStrictEqual({
+        type: msg.type,
+        event: msg.event,
+        userId: msg.userId,
+        properties: msg.properties,
+        integrations: { Segment: true },
+        context: {},
       })
     })
   })
-  describe('User override behavior', () => {})
 })

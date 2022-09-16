@@ -122,7 +122,7 @@ export interface CoreSegmentEvent {
 
   properties?: EventProperties
 
-  traits?: Traits
+  traits?: Traits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
 
   integrations?: Integrations
   context?: CoreAnalyticsContext | CoreOptions

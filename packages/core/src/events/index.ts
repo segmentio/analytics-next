@@ -29,7 +29,7 @@ export class EventFactory {
       ...this.baseEvent(),
       event,
       type: 'track',
-      properties: properties ?? {},
+      properties: properties ?? {}, // TODO: why is this not a shallow copy like everywhere else?
       options: { ...options },
       integrations: { ...globalIntegrations },
     })
@@ -103,7 +103,7 @@ export class EventFactory {
       ...this.baseEvent(),
       type: 'identify',
       userId,
-      traits,
+      traits: traits ?? {},
       options,
       integrations: globalIntegrations,
     })
@@ -118,9 +118,9 @@ export class EventFactory {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group',
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
+      traits: traits ?? {},
+      options: { ...options }, // this spreading is intentional
+      integrations: { ...globalIntegrations }, //
       groupId,
     })
   }
