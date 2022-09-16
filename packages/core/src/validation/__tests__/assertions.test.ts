@@ -7,7 +7,7 @@ const baseEvent: CoreSegmentEvent = {
   event: 'Test Event',
   properties: { name: 'foo' },
 }
-describe('assertions', () => {
+describe('validateEvent', () => {
   test('should be capable of working with empty properties and traits', () => {
     expect(() => validateEvent(undefined)).toThrowErrorMatchingInlineSnapshot(
       `"Event is missing"`
@@ -21,6 +21,16 @@ describe('assertions', () => {
     expect(() =>
       validateEvent('foo' as any)
     ).toThrowErrorMatchingInlineSnapshot(`"Event is missing"`)
+  })
+
+  test('properties / traits should be plain objects', () => {
+    expect(() =>
+      validateEvent({ ...baseEvent, properties: undefined, traits: [] as any })
+    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+
+    expect(() =>
+      validateEvent({ ...baseEvent, properties: [] as any })
+    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
   })
 
   test('track: properties should be an object', () => {
