@@ -1,39 +1,33 @@
 import { CoreSegmentEvent } from '../../events'
 import { validateEvent } from '../assertions'
 
-const baseEvent: CoreSegmentEvent = {
-  type: 'track',
+const baseEvent: Partial<CoreSegmentEvent> = {
   userId: 'foo',
   event: 'Test Event',
-  properties: { name: 'foo' },
 }
 describe('validateEvent', () => {
   test('should be capable of working with empty properties and traits', () => {
-    expect(() => validateEvent(undefined)).toThrowErrorMatchingInlineSnapshot(
-      `"Event is missing"`
-    )
-    expect(() => validateEvent(null)).toThrowErrorMatchingInlineSnapshot(
-      `"Event is missing"`
-    )
-    expect(() => validateEvent({} as any)).toThrowErrorMatchingInlineSnapshot(
-      `".type is missing"`
-    )
-    expect(() =>
-      validateEvent('foo' as any)
-    ).toThrowErrorMatchingInlineSnapshot(`"Event is missing"`)
+    expect(() => validateEvent(undefined)).toThrowError()
+    expect(() => validateEvent(null)).toThrowError()
+    expect(() => validateEvent({} as any)).toThrowError()
+    expect(() => validateEvent('foo' as any)).toThrowError()
   })
 
-  test('properties / traits should be plain objects', () => {
+  test('on track, properties should be plain objects', () => {
     expect(() =>
-      validateEvent({ ...baseEvent, properties: undefined, traits: [] as any })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
-
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: [],
+      })
+    ).toThrowError(/properties/i)
     expect(() =>
-      validateEvent({ ...baseEvent, properties: [] as any })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
-  })
-
-  test('track: properties should be an object', () => {
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: undefined,
+      })
+    ).toThrowError(/properties/i)
     expect(() =>
       validateEvent({
         ...baseEvent,
@@ -41,40 +35,24 @@ describe('validateEvent', () => {
         properties: {},
       })
     ).not.toThrow()
-    expect(() =>
-      validateEvent({
-        ...baseEvent,
-        type: 'track',
-        properties: null as any,
-      })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
-
-    expect(() =>
-      validateEvent({
-        ...baseEvent,
-        type: 'track',
-        properties: undefined,
-      })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
   })
 
   test('identify: traits should be an object', () => {
     expect(() =>
       validateEvent({
-        ...baseEvent,
-        type: 'track',
-        properties: null as any,
+        type: 'identify',
+        traits: undefined,
       })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+    ).toThrowError(/traits/i)
 
     expect(() =>
       validateEvent({
         ...baseEvent,
-        properties: undefined,
+        properties: {},
         type: 'identify',
         traits: undefined,
       })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+    ).toThrowError(/traits/i)
 
     expect(() =>
       validateEvent({
@@ -83,48 +61,69 @@ describe('validateEvent', () => {
         type: 'identify',
         traits: null as any,
       })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+    ).toThrowError(/traits/i)
   })
 
-  test('alias: should allow both traints and properties to be undefined (unlike other events)', () => {
+  test('alias: should allow both traits and properties to be undefined (unlike other events)', () => {
     expect(() =>
       validateEvent({
         ...baseEvent,
+        previousId: 'foo',
         type: 'alias',
         properties: undefined,
         traits: undefined,
       })
     ).not.toThrow()
-
-    expect(() =>
-      validateEvent({
-        ...baseEvent,
-        properties: undefined,
-      })
-    ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
   })
 
-  test('should require either a user ID or anonymous ID for all events', () => {
+  test('should require either a user ID or anonymous ID or previousID or Group ID for all events', () => {
     expect(() =>
       validateEvent({
         ...baseEvent,
+        type: 'track',
+        properties: {},
         userId: undefined,
         anonymousId: 'foo',
       })
     ).not.toThrow()
+
     expect(() =>
       validateEvent({
         ...baseEvent,
+        type: 'identify',
+        traits: {},
         userId: 'foo',
         anonymousId: undefined,
       })
     ).not.toThrow()
+
     expect(() =>
       validateEvent({
         ...baseEvent,
+        type: 'alias',
+        previousId: 'foo',
         userId: undefined,
         anonymousId: undefined,
       })
-    ).toThrowErrorMatchingInlineSnapshot(`"Missing userId or anonymousId"`)
+    ).not.toThrow()
+
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'group',
+        traits: {},
+        groupId: 'foo',
+      })
+    ).not.toThrow()
+
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'alias',
+        previousId: undefined,
+        userId: undefined,
+        anonymousId: undefined,
+      })
+    ).toThrow()
   })
 })

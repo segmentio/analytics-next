@@ -1588,15 +1588,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@segment/analytics-plugin-validation@workspace:packages/plugin-validation":
-  version: 0.0.0-use.local
-  resolution: "@segment/analytics-plugin-validation@workspace:packages/plugin-validation"
-  dependencies:
-    "@segment/analytics-core": 1.0.1
-    tslib: ^2.4.0
-  languageName: unknown
-  linkType: soft
-
 "@segment/analytics.js-video-plugins@npm:^0.2.1":
   version: 0.2.1
   resolution: "@segment/analytics.js-video-plugins@npm:0.2.1"

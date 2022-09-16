@@ -136,9 +136,7 @@ describe('Event Factory', () => {
 
   describe('track', () => {
     test('should only accept object literals as properties', () => {
-      expect(() =>
-        factory.track('track', [])
-      ).toThrowErrorMatchingInlineSnapshot(`"properties is not an object"`)
+      expect(() => factory.track('track', [])).toThrowError(/properties/)
     })
 
     test('creates track events', () => {

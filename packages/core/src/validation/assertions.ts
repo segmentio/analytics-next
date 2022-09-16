@@ -15,26 +15,29 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
     throw new ValidationError('event', 'Event is missing')
   }
 
-  if (!('type' in event)) {
-    throw new ValidationError('event', '.type is missing')
+  if (!isString(event.type)) {
+    throw new ValidationError('type', 'type is not a string')
   }
 
-  const eventType = event.type
-
-  if (!isString(eventType)) {
-    throw new ValidationError('event', 'Event is not a string')
+  if (event.type === 'track') {
+    if (!isString(event.event)) {
+      throw new ValidationError('event', 'Event is not a string')
+    }
+    if (!isPlainObject(event.properties)) {
+      throw new ValidationError('properties', 'properties is not an object')
+    }
   }
 
-  if (eventType === 'track' && !isString(event.event)) {
-    throw new ValidationError('event', 'Event is not a string')
-  }
-
-  const props = event.properties ?? event.traits // TODO: properties can be undefined/null, but traits must be empty object. We should have seperate checks.
-  if (eventType !== 'alias' && !isPlainObject(props)) {
-    throw new ValidationError('properties', 'properties is not an object')
+  if (['group', 'identify'].includes(event.type)) {
+    if (!isPlainObject(event.traits)) {
+      throw new ValidationError('traits', 'traits is not an object')
+    }
   }
 
   if (!hasUser(event)) {
-    throw new ValidationError('userId', 'Missing userId or anonymousId')
+    throw new ValidationError(
+      'userId/anonymousId/previousId/groupId',
+      'Must have userId or anonymousId or previousId or groupId'
+    )
   }
 }
