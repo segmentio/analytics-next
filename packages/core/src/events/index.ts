@@ -104,7 +104,7 @@ export class EventFactory {
       type: 'identify',
       userId,
       traits: traits ?? {},
-      options,
+      options: { ...options },
       integrations: globalIntegrations,
     })
   }
@@ -127,7 +127,7 @@ export class EventFactory {
 
   alias(
     to: string,
-    from: string | null,
+    from: string | null, // TODO: can we make this undefined?
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
