@@ -8,7 +8,6 @@ import {
   EventFactory,
   EventQueue,
   dispatchAndEmit,
-  Integrations,
   CoreOptions,
   Callback,
   CoreSegmentEvent,
@@ -27,6 +26,7 @@ type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
 
+// TODO: This could be tightened up -- should this have that [key: string]: any index sig?
 export type NodeSegmentEventOptions = CoreOptions
 
 /**
@@ -56,13 +56,6 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: CorePlugin[]
-  integrations?: Integrations
-  retryQueue?: boolean
-}
-
-export interface InitOptions {
-  integrations?: Integrations
-  retryQueue?: boolean
 }
 
 export class AnalyticsNode
@@ -70,8 +63,6 @@ export class AnalyticsNode
   implements CoreAnalytics
 {
   private _eventFactory: EventFactory
-  private _retryQueue?: boolean
-  private _integrations: Integrations
 
   queue: EventQueue
 
@@ -79,8 +70,6 @@ export class AnalyticsNode
 
   constructor(settings: AnalyticsSettings) {
     super()
-    this._retryQueue = settings.retryQueue
-    this._integrations = settings.integrations ?? {}
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new PriorityQueue(3, []))
 
@@ -106,6 +95,12 @@ export class AnalyticsNode
     return version
   }
 
+  private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback: callback,
+      retryQueue: false, // this basically just sets "maxAttempts" to 1
+    }).catch((err) => err) // we ignore errors, since we have an event emitter
+  }
   /**
    * Combines two unassociated user identities.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
@@ -123,16 +118,8 @@ export class AnalyticsNode
     options?: NodeSegmentEventOptions
     callback?: Callback
   }): void {
-    const segmentEvent = this._eventFactory.alias(
-      userId,
-      previousId,
-      options,
-      this._integrations
-    )
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback: callback,
-      retryQueue: this._retryQueue,
-    }).catch(() => {})
+    const segmentEvent = this._eventFactory.alias(userId, previousId, options)
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
@@ -155,16 +142,13 @@ export class AnalyticsNode
     options?: NodeSegmentEventOptions
     callback?: Callback
   } & IdentityOptions): void {
-    const segmentEvent = this._eventFactory.group(
-      groupId,
-      traits,
-      { ...options, anonymousId, userId },
-      this._integrations
-    )
+    const segmentEvent = this._eventFactory.group(groupId, traits, {
+      ...options,
+      anonymousId,
+      userId,
+    })
 
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback,
-    }).catch(() => {})
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
@@ -182,16 +166,12 @@ export class AnalyticsNode
     options?: NodeSegmentEventOptions
     callback?: Callback
   } & IdentityOptions): void {
-    const segmentEvent = this._eventFactory.identify(
+    const segmentEvent = this._eventFactory.identify(userId, traits, {
+      ...options,
+      anonymousId,
       userId,
-      traits,
-      { ...options, anonymousId, userId },
-      this._integrations
-    )
-
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback,
-    }).catch(() => {})
+    })
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
@@ -222,13 +202,9 @@ export class AnalyticsNode
       category ?? null,
       name ?? null,
       properties,
-      { ...options, anonymousId, userId, timestamp },
-      this._integrations
+      { ...options, anonymousId, userId, timestamp }
     )
-
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback,
-    }).catch(() => {})
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
@@ -251,13 +227,10 @@ export class AnalyticsNode
       category ?? null,
       name ?? null,
       properties,
-      { ...options, anonymousId, userId, timestamp },
-      this._integrations
+      { ...options, anonymousId, userId, timestamp }
     )
 
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback,
-    }).catch(() => {})
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
@@ -277,16 +250,13 @@ export class AnalyticsNode
     options?: NodeSegmentEventOptions
     callback?: Callback
   }): void {
-    const segmentEvent = this._eventFactory.track(
-      event,
-      properties,
-      { ...options, userId, anonymousId },
-      this._integrations
-    )
+    const segmentEvent = this._eventFactory.track(event, properties, {
+      ...options,
+      userId,
+      anonymousId,
+    })
 
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback,
-    }).catch(() => {})
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
