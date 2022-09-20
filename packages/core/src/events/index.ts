@@ -184,7 +184,7 @@ export class EventFactory {
     const options = event.options ?? {}
     delete options['integrations']
 
-    const providedOptionsKeys = Object.keys(options) as (keyof CoreOptions)[]
+    const providedOptionsKeys = Object.keys(options)
 
     const context = event.options?.context ?? {}
     const overrides = {}

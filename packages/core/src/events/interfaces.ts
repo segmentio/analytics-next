@@ -33,6 +33,9 @@ export interface CoreOptions {
   anonymousId?: string
   userId?: string
   traits?: Traits
+  // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
+  // we may want to remove this...
+  [key: string]: any
 }
 
 interface CoreAnalyticsContext {
