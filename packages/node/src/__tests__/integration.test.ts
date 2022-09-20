@@ -20,6 +20,24 @@ describe('Initialization', () => {
   })
 })
 
+describe('Error handling', () => {
+  test('writekey missing errors are surfaced as thrown errors', () => {
+    expect(
+      () =>
+        new AnalyticsNode({
+          writeKey: undefined as any,
+        })
+    ).toThrowError(/writeKey/i)
+  })
+
+  test('property validation errors are surfaced as thrown errors', async () => {
+    const analytics = new AnalyticsNode({
+      writeKey,
+    })
+    expect(() => analytics.track({} as any)).toThrowError(/event/i)
+  })
+})
+
 describe('alias', () => {
   it('generates alias events', async () => {
     const analytics = new AnalyticsNode({ writeKey })

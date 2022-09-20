@@ -14,7 +14,7 @@ import {
   bindAll,
   PriorityQueue,
 } from '@segment/analytics-core'
-
+import { AnalyticsNodeSettings, validateSettings } from './settings'
 import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
@@ -40,7 +40,7 @@ export interface NodeSegmentEventOptions {
  */
 type NodeEmitterEvents = {
   error: [ctx: NodeContext]
-  initialize: [AnalyticsSettings]
+  initialize: [AnalyticsNodeSettings]
   alias: [ctx: NodeContext]
   track: [ctx: NodeContext]
   identify: [ctx: NodeContext]
@@ -58,12 +58,6 @@ export interface NodeSegmentEvent extends CoreSegmentEvent {
   options?: NodeSegmentEventOptions
 }
 
-export interface AnalyticsSettings {
-  writeKey: string
-  timeout?: number
-  plugins?: CorePlugin[]
-}
-
 export class AnalyticsNode
   extends Emitter<NodeEmitterEvents>
   implements CoreAnalytics
@@ -74,7 +68,8 @@ export class AnalyticsNode
 
   ready: Promise<void>
 
-  constructor(settings: AnalyticsSettings) {
+  constructor(settings: AnalyticsNodeSettings) {
+    validateSettings(settings)
     super()
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new PriorityQueue(3, []))
