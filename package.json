@@ -11,7 +11,7 @@
     "node": "^14.15.0"
   },
   "scripts": {
-    "test": "FORCE_COLOR=1 turbo run test --filter='./packages/*'",
+    "test": "jest",
     "test:scripts": "jest --config scripts/jest.config.js",
     "lint": "yarn constraints && turbo run lint",
     "build": "turbo run build --filter='./packages/*'",
