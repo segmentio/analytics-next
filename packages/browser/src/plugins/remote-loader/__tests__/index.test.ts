@@ -263,7 +263,6 @@ describe('Remote Loader', () => {
     )
 
     expect(plugins).toHaveLength(3)
-    // expect(plugins).toEqual(expect.arrayContaining([one, two, three]))
     expect(plugins).toEqual(
       expect.arrayContaining([
         {

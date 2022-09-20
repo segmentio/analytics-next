@@ -19,6 +19,8 @@ const klona = (evt: SegmentEvent): SegmentEvent =>
 export interface RemotePlugin {
   /** The name of the remote plugin */
   name: string
+  /** The creation name of the remote plugin */
+  creationName: string
   /** The url of the javascript file to load */
   url: string
   /** The UMD/global name the plugin uses. Plugins are expected to exist here with the `PluginFactory` method signature */
@@ -228,11 +230,14 @@ export async function remoteLoader(
           validate(plugins)
 
           const routing = routingRules.filter(
-            (rule) => rule.destinationName === remotePlugin.name
+            (rule) => rule.destinationName === remotePlugin.creationName
           )
 
           plugins.forEach((plugin) => {
-            const wrapper = new ActionDestination(remotePlugin.name, plugin)
+            const wrapper = new ActionDestination(
+              remotePlugin.creationName,
+              plugin
+            )
 
             if (routing.length) {
               wrapper.addMiddleware(routingMiddleware)
