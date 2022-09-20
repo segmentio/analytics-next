@@ -146,37 +146,32 @@ async function registerPlugins(
   options: InitOptions,
   plugins: Plugin[]
 ): Promise<Context> {
-  const legacyDestinations = hasLegacyDestinations(legacySettings)
-    ? await import(
-        /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
-      ).then((mod) => {
-        return mod.ajsDestinations(legacySettings, analytics.integrations, opts)
-      })
-    : []
-
-  if (legacySettings.legacyVideoPluginsEnabled) {
-    await import(
-      /* webpackChunkName: "legacyVideos" */ '../plugins/legacy-video-plugins'
-    ).then((mod) => {
-      return mod.loadLegacyVideoPlugins(analytics)
-    })
-  }
-
-  const schemaFilter = opts.plan?.track
-    ? await import(
-        /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
-      ).then((mod) => {
-        return mod.schemaFilter(opts.plan?.track, legacySettings)
-      })
-    : undefined
-
   const mergedSettings = mergedOptions(legacySettings, options)
-  const remotePlugins = await remoteLoader(
-    legacySettings,
-    analytics.integrations,
-    mergedSettings,
-    options.obfuscate
-  ).catch(() => [])
+  const [legacyDestinations, _, schemaFilter, remotePlugins] =
+    await Promise.all([
+      hasLegacyDestinations(legacySettings)
+        ? import(
+            /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
+          ).then((mod) =>
+            mod.ajsDestinations(legacySettings, analytics.integrations, opts)
+          )
+        : [],
+      legacySettings.legacyVideoPluginsEnabled &&
+        import(
+          /* webpackChunkName: "legacyVideos" */ '../plugins/legacy-video-plugins'
+        ).then((mod) => mod.loadLegacyVideoPlugins(analytics)),
+      opts.plan?.track
+        ? import(
+            /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
+          ).then((mod) => mod.schemaFilter(opts.plan?.track, legacySettings))
+        : undefined,
+      remoteLoader(
+        legacySettings,
+        analytics.integrations,
+        mergedSettings,
+        options.obfuscate
+      ).catch(() => []),
+    ])
 
   const toRegister = [
     validation,
