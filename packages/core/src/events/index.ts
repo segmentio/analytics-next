@@ -181,12 +181,10 @@ export class EventFactory {
    * are provided in the `Options` parameter for an Event
    */
   private context(event: CoreSegmentEvent): [object, object] {
-    const optionsKeys = ['integrations', 'anonymousId', 'timestamp', 'userId']
-
     const options = event.options ?? {}
     delete options['integrations']
 
-    const providedOptionsKeys = Object.keys(options)
+    const providedOptionsKeys = Object.keys(options) as (keyof CoreOptions)[]
 
     const context = event.options?.context ?? {}
     const overrides = {}
@@ -196,7 +194,9 @@ export class EventFactory {
         return
       }
 
-      if (optionsKeys.includes(key)) {
+      if (
+        ['integrations', 'anonymousId', 'timestamp', 'userId'].includes(key)
+      ) {
         dset(overrides, key, options[key])
       } else {
         dset(context, key, options[key])

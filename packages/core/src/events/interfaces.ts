@@ -33,9 +33,6 @@ export interface CoreOptions {
   anonymousId?: string
   userId?: string
   traits?: Traits
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
 }
 
 interface CoreAnalyticsContext {
