@@ -12,8 +12,6 @@ describe('Initialization', () => {
     })
     await analytics.ready
 
-    expect(analytics.queue.plugins.length).toBe(2)
-
     const ajsNodeXt = analytics.queue.plugins.find(
       (xt) => xt.name === 'analytics-node-next'
     )
@@ -30,7 +28,7 @@ describe('alias', () => {
       userId: 'chris radek',
       previousId: 'chris',
     })
-    const ctx = await resolveCtx(analytics, 'group')
+    const ctx = await resolveCtx(analytics, 'alias')
 
     expect(ctx.event.userId).toEqual('chris radek')
     expect(ctx.event.previousId).toEqual('chris')
@@ -82,7 +80,7 @@ describe('group', () => {
   })
 })
 
-describe.only('identify', () => {
+describe('identify', () => {
   it('generates identify events', async () => {
     const analytics = new AnalyticsNode({ writeKey })
     analytics.identify({

@@ -19,28 +19,34 @@ import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
 
-/** create a derived class since we may want to add node specific things to Context later  */
+// create a derived class since we may want to add node specific things to Context later
 export class NodeContext extends CoreContext {}
 
 type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
 
-// TODO: This could be tightened up -- should this have that [key: string]: any index sig?
-export type NodeSegmentEventOptions = CoreOptions
+/** Events from CoreOptions */
+export interface NodeSegmentEventOptions {
+  context?: NodeContext
+  timestamp?: CoreOptions['timestamp']
+  anonymousId?: CoreOptions['anonymousId']
+  userId?: CoreOptions['userId']
+  traits?: CoreOptions['traits']
+}
 
 /**
  * Map of emitter event names to method args.
  */
 type NodeEmitterEvents = {
-  error: [ctx: CoreContext]
+  error: [ctx: NodeContext]
   initialize: [AnalyticsSettings]
-  alias: [ctx: CoreContext]
-  track: [ctx: CoreContext]
-  identify: [ctx: CoreContext]
-  page: [ctx: CoreContext]
+  alias: [ctx: NodeContext]
+  track: [ctx: NodeContext]
+  identify: [ctx: NodeContext]
+  page: [ctx: NodeContext]
   screen: NodeEmitterEvents['page']
-  group: [ctx: CoreContext]
+  group: [ctx: NodeContext]
   register: [pluginNames: string[]]
   deregister: [pluginNames: string[]]
 }
@@ -283,7 +289,7 @@ export class AnalyticsNode
    * @param pluginNames - The names of one or more plugins to deregister.
    */
   async deregister(...pluginNames: string[]): Promise<void> {
-    const ctx = CoreContext.system()
+    const ctx = NodeContext.system()
 
     const deregistrations = pluginNames.map(async (pl) => {
       const plugin = this.queue.plugins.find((p) => p.name === pl)
