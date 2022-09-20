@@ -7,13 +7,17 @@ const path = require('path')
  * @param {object} getJestModuleMap options.
  * @returns {import('jest').Config}
  */
-const createJestTSConfig = (
-  { modulePathIgnorePatterns, testMatch, ...overridesToMerge } = {},
-  { packageRoot, skipPackageMap } = {}
-) => {
+const createJestTSConfig = ({
+  modulePathIgnorePatterns,
+  testMatch,
+  ...overridesToMerge
+} = {}) => {
+  const moduleMap = getJestModuleMap()
   return {
-    displayName: path.basename(process.cwd()),
-    moduleNameMapper: getJestModuleMap(packageRoot, skipPackageMap),
+    ...(global.JEST_ROOT_CONFIG
+      ? {}
+      : { displayName: path.basename(process.cwd()) }),
+    moduleNameMapper: moduleMap,
     preset: 'ts-jest',
     modulePathIgnorePatterns: [
       '<rootDir>/dist/',
