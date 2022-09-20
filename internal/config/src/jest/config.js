@@ -1,4 +1,5 @@
 const { getJestModuleMap } = require('./get-module-map')
+const path = require('path')
 
 /**
  * Create Config
@@ -11,6 +12,7 @@ const createJestTSConfig = (
   { packageRoot, skipPackageMap } = {}
 ) => {
   return {
+    displayName: path.basename(process.cwd()),
     moduleNameMapper: getJestModuleMap(packageRoot, skipPackageMap),
     preset: 'ts-jest',
     modulePathIgnorePatterns: [
