@@ -54,6 +54,20 @@ type NodeEmitterEvents = {
   deregister: [pluginNames: string[]]
 }
 
+class NodePriorityQueue extends PriorityQueue<NodeContext> {
+  constructor(maxAttempts: number) {
+    super(maxAttempts, [])
+  }
+  // do not use an internal "seen" map
+  getAttempts(ctx: NodeContext): number {
+    return ctx.attempts ?? 0
+  }
+  updateAttempts(ctx: NodeContext): number {
+    ctx.attempts = this.getAttempts(ctx) + 1
+    return this.getAttempts(ctx)
+  }
+}
+
 type NodeSegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
 export interface NodeSegmentEvent extends CoreSegmentEvent {
@@ -75,7 +89,7 @@ export class AnalyticsNode
     validateSettings(settings)
     super()
     this._eventFactory = new EventFactory()
-    this.queue = new EventQueue(new PriorityQueue(3, []))
+    this.queue = new EventQueue(new NodePriorityQueue(3))
 
     const nodeSettings: AnalyticsNodePluginSettings = {
       name: 'analytics-node-next',
