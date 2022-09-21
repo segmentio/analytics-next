@@ -7,26 +7,67 @@ import {
   CorePlugin,
   EventFactory,
   EventQueue,
-  dispatch,
-  resolvePageArguments,
-  PageParams,
-  Integrations,
+  dispatchAndEmit,
   CoreOptions,
   Callback,
   CoreSegmentEvent,
   bindAll,
+  PriorityQueue,
 } from '@segment/analytics-core'
+import { AnalyticsNodeSettings, validateSettings } from './settings'
+import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
+import { EmittedError } from './errors'
 
-/** create a derived class since we may want to add node specific things to Context later  */
+// create a derived class since we may want to add node specific things to Context later
 export class NodeContext extends CoreContext {}
 
-export type NodeSegmentEventOptions = CoreOptions & Identity
-
-export type Identity =
+/**
+ * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
+ **/
+type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
+
+/** Events from CoreOptions */
+export interface NodeSegmentEventOptions {
+  context?: NodeContext
+  timestamp?: CoreOptions['timestamp']
+  anonymousId?: CoreOptions['anonymousId']
+  userId?: CoreOptions['userId']
+  traits?: CoreOptions['traits']
+}
+
+/**
+ * Map of emitter event names to method args.
+ */
+type NodeEmitterEvents = {
+  error: [error: EmittedError]
+  initialize: [AnalyticsNodeSettings]
+  alias: [ctx: NodeContext]
+  track: [ctx: NodeContext]
+  identify: [ctx: NodeContext]
+  page: [ctx: NodeContext]
+  screen: NodeEmitterEvents['page']
+  group: [ctx: NodeContext]
+  register: [pluginNames: string[]]
+  deregister: [pluginNames: string[]]
+}
+
+class NodePriorityQueue extends PriorityQueue<NodeContext> {
+  constructor(maxAttempts: number) {
+    super(maxAttempts, [])
+  }
+  // do not use an internal "seen" map
+  getAttempts(ctx: NodeContext): number {
+    return ctx.attempts ?? 0
+  }
+  updateAttempts(ctx: NodeContext): number {
+    ctx.attempts = this.getAttempts(ctx) + 1
+    return this.getAttempts(ctx)
+  }
+}
 
 type NodeSegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
@@ -35,299 +76,229 @@ export interface NodeSegmentEvent extends CoreSegmentEvent {
   options?: NodeSegmentEventOptions
 }
 
-export interface AnalyticsSettings {
-  writeKey: string
-  timeout?: number
-  plugins?: CorePlugin[]
-}
+export class AnalyticsNode
+  extends Emitter<NodeEmitterEvents>
+  implements CoreAnalytics
+{
+  private _eventFactory: EventFactory
 
-export interface InitOptions {
-  integrations?: Integrations
-  retryQueue?: boolean
-}
-
-export class AnalyticsNode extends Emitter implements CoreAnalytics {
-  private eventFactory: EventFactory
-  protected settings: AnalyticsSettings
-  integrations: Integrations
-  options: InitOptions
   queue: EventQueue
-  get VERSION() {
-    return version
-  }
-  constructor(
-    settings: AnalyticsSettings,
-    options: InitOptions,
-    queue: EventQueue
-  ) {
+
+  ready: Promise<void>
+
+  constructor(settings: AnalyticsNodeSettings) {
+    validateSettings(settings)
     super()
-    this.settings = settings
-    this.eventFactory = new EventFactory()
-    this.integrations = options?.integrations ?? {}
-    this.options = options ?? {}
-    this.queue = queue
+    this._eventFactory = new EventFactory()
+    this.queue = new EventQueue(new NodePriorityQueue(3))
+
+    const nodeSettings: AnalyticsNodePluginSettings = {
+      name: 'analytics-node-next',
+      type: 'after',
+      version: 'latest',
+      writeKey: settings.writeKey,
+    }
+
+    this.ready = this.register(analyticsNode(nodeSettings, this))
+      .then(() => undefined)
+      .catch((err) => {
+        console.error(err)
+      })
+
+    this.emit('initialize', settings)
+
     bindAll(this)
   }
 
+  get VERSION() {
+    return version
+  }
+
+  private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
+    dispatchAndEmit(segmentEvent, this.queue, this, {
+      callback: callback,
+    }).catch((err) => err) // we ignore errors, since we have an event emitter
+  }
   /**
    * Combines two unassociated user identities.
-   * @param userId - The new user id you want to associate with the user.
-   * @param previousId - The previous id that the user was recognized by.
-   * @param options
-   * @param callback
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
-  alias(
-    userId: string,
-    previousId: string,
-    options?: NodeSegmentEventOptions,
+  alias({
+    userId,
+    previousId,
+    options,
+    callback,
+  }: {
+    /* The new user id you want to associate with the user. */
+    userId: string
+    /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
+    previousId: string
+    options?: NodeSegmentEventOptions
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.alias(
-      userId,
-      previousId,
-      options,
-      this.integrations
-    )
-    return dispatch(segmentEvent, this.queue, this, {
-      callback: callback,
-      retryQueue: this.options.retryQueue,
-    })
-      .then((ctx) => {
-        this.emit('alias', userId, previousId, ctx.event.options)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+  }): void {
+    const segmentEvent = this._eventFactory.alias(userId, previousId, options)
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
    * Associates an identified user with a collective.
-   * @param groupId - The group id to associate with the provided user.
-   * @param traits - A dictionary of traits for the group.
-   * @param options - A dictionary of options including the user id.
-   * @param callback
+   *  @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#group
    */
-  group(
-    groupId: string,
-    traits: Traits,
-    options: NodeSegmentEventOptions,
+  group({
+    groupId,
+    userId,
+    anonymousId,
+    traits = {},
+    options = {},
+    callback,
+  }: IdentityOptions & {
+    groupId: string
+    traits?: Traits
+    options?: NodeSegmentEventOptions
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.group(
-      groupId,
-      traits,
-      options,
-      this.integrations
-    )
-
-    return dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('group', groupId, ctx.event.traits, ctx.event.options)
-        return ctx
-      })
-      .catch((ctx) => ctx)
-  }
-
-  /**
-   * Includes a unique userId and/or anonymousId and any optional traits you know about them.
-   * @param userId
-   * @param traits
-   * @param options
-   * @param callback
-   */
-  identify(
-    userId: string,
-    traits: Traits = {},
-    options?: NodeSegmentEventOptions,
-    callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.identify(
+  }): void {
+    const segmentEvent = this._eventFactory.group(groupId, traits, {
+      ...options,
+      anonymousId,
       userId,
-      traits,
-      options,
-      this.integrations
-    )
+    })
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit('identify', userId, ctx.event.traits, ctx.event.options)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param properties
-   * @param options
-   * @param callback
+   * Includes a unique userId and (maybe anonymousId) and any optional traits you know about them.
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
-  page(
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
+  identify({
+    userId,
+    anonymousId,
+    traits = {},
+    options,
+    callback,
+  }: IdentityOptions & {
+    traits?: Traits
+    options?: NodeSegmentEventOptions
     callback?: Callback
-  ): Promise<NodeContext>
-  /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param name - The name of the page.
-   * @param properties - A dictionary of properties of the page.
-   * @param options
-   * @param callback
-   */
-  page(
-    name: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): Promise<NodeContext>
-  /**
-   * Records page views on your website, along with optional extra information
-   * about the page viewed by the user.
-   * @param category - The category of the page.
-   * Useful for cases like ecommerce where many pages might live under a single category.
-   * @param name - The name of the page.
-   * @param properties - A dictionary of properties of the page.
-   * @param options
-   * @param callback
-   */
-  page(
-    category: string,
-    name: string,
-    properties: EventProperties,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): Promise<NodeContext>
+  }): void {
+    const segmentEvent = this._eventFactory.identify(userId, traits, {
+      ...options,
+      anonymousId,
+      userId,
+    })
+    this._dispatch(segmentEvent, callback)
+  }
 
-  page(...args: PageParams): Promise<NodeContext> {
-    const [category, page, properties, options, callback] =
-      resolvePageArguments(...args)
-
-    const segmentEvent = this.eventFactory.page(
-      category,
-      page,
+  /**
+   * The page method lets you record page views on your website, along with optional extra information about the page being viewed.
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#page
+   */
+  page({
+    userId,
+    anonymousId,
+    category,
+    name,
+    properties,
+    options,
+    timestamp,
+    callback,
+  }: IdentityOptions & {
+    /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
+    category?: string
+    /* The name of the page.*/
+    name?: string
+    /* A dictionary of properties of the page. */
+    properties?: EventProperties
+    callback?: Callback
+    timestamp?: string | Date
+    options?: CoreOptions
+  }): void {
+    const segmentEvent = this._eventFactory.page(
+      category ?? null,
+      name ?? null,
       properties,
-      options,
-      this.integrations
+      { ...options, anonymousId, userId, timestamp }
     )
-
-    return dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit(
-          'page',
-          category,
-          page,
-          ctx.event.properties,
-          ctx.event.options
-        )
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
    * Records screen views on your app, along with optional extra information
    * about the screen viewed by the user.
-   * @param properties
-   * @param options
-   * @param callback
+   *
+   * TODO: This is not documented on the segment docs ATM (for node).
    */
-  screen(
-    properties: object,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): Promise<NodeContext>
-  /**
-   * Records screen views on your app, along with optional extra information
-   * about the screen viewed by the user.
-   * @param name - The name of the screen.
-   * @param properties
-   * @param options
-   * @param callback
-   */
-  screen(
-    name: string,
-    properties: object,
-    options: NodeSegmentEventOptions,
-    callback?: Callback
-  ): Promise<NodeContext>
-
-  screen(...args: PageParams): Promise<NodeContext> {
-    const [category, page, properties, options, callback] =
-      resolvePageArguments(...args)
-
-    const segmentEvent = this.eventFactory.screen(
-      category,
-      page,
+  screen({
+    userId,
+    anonymousId,
+    category,
+    name,
+    properties,
+    options,
+    callback,
+    timestamp,
+  }: Parameters<AnalyticsNode['page']>[0]): void {
+    const segmentEvent = this._eventFactory.screen(
+      category ?? null,
+      name ?? null,
       properties,
-      options,
-      this.integrations
+      { ...options, anonymousId, userId, timestamp }
     )
 
-    return dispatch(segmentEvent, this.queue, this, { callback })
-      .then((ctx) => {
-        this.emit(
-          'page',
-          category,
-          page,
-          ctx.event.properties,
-          ctx.event.options
-        )
-        return ctx
-      })
-      .catch((ctx) => ctx)
+    this._dispatch(segmentEvent, callback)
   }
+
   /**
    * Records actions your users perform.
-   * @param event - The name of the event you're tracking.
-   * @param properties - A dictionary of properties for the event.
-   * @param options
-   * @param callback
+   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#track
    */
-  track(
-    event: string,
-    properties: object,
-    options: NodeSegmentEventOptions,
+  track({
+    userId,
+    anonymousId,
+    event,
+    properties,
+    options,
+    callback,
+  }: IdentityOptions & {
+    event: string
+    properties?: EventProperties
+    options?: NodeSegmentEventOptions
     callback?: Callback
-  ): Promise<NodeContext> {
-    const segmentEvent = this.eventFactory.track(
-      event,
-      properties as EventProperties,
-      options,
-      this.integrations
-    )
-
-    return dispatch(segmentEvent, this.queue, this, {
-      callback,
+  }): void {
+    const segmentEvent = this._eventFactory.track(event, properties, {
+      ...options,
+      userId,
+      anonymousId,
     })
-      .then((ctx) => {
-        this.emit('track', event, ctx.event.properties, ctx.event.options)
-        return ctx
-      })
-      .catch((ctx) => ctx)
+
+    this._dispatch(segmentEvent, callback)
   }
 
   /**
    * Registers one or more plugins to augment Analytics functionality.
    * @param plugins
    */
-  async register(...plugins: CorePlugin<any, any>[]): Promise<NodeContext> {
-    const ctx = NodeContext.system()
+  async register(...plugins: CorePlugin<any, any>[]): Promise<void> {
+    return this.queue.criticalTasks.run(async () => {
+      const ctx = NodeContext.system()
 
-    const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this)
-    )
-    await Promise.all(registrations)
-
-    return ctx
+      const registrations = plugins.map((xt) =>
+        this.queue.register(ctx, xt, this)
+      )
+      await Promise.all(registrations)
+      this.emit(
+        'register',
+        plugins.map((el) => el.name)
+      )
+    })
   }
 
   /**
    * Deregisters one or more plugins based on their names.
    * @param pluginNames - The names of one or more plugins to deregister.
    */
-  async deregister(...pluginNames: string[]): Promise<NodeContext> {
-    const ctx = CoreContext.system()
+  async deregister(...pluginNames: string[]): Promise<void> {
+    const ctx = NodeContext.system()
 
     const deregistrations = pluginNames.map(async (pl) => {
       const plugin = this.queue.plugins.find((p) => p.name === pl)
@@ -339,7 +310,6 @@ export class AnalyticsNode extends Emitter implements CoreAnalytics {
     })
 
     await Promise.all(deregistrations)
-
-    return ctx
+    this.emit('deregister', pluginNames)
   }
 }

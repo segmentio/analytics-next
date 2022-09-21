@@ -5,22 +5,39 @@ https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 NOTE:  @segment/analytics-node is unstable! do not use.
 
-
+## Basic Usage
 ```ts
-// TODO: finalize API
-import { load } from '@segment/analytics-node'
+// analytics.ts
+import { AnalyticsNode } from '@segment/analytics-node'
+
+export const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
 
 
-// some file
-export const ajsPromise = load({ writeKey: 'abc123' }).then(([ajs]) => ajs)
+// app.ts
+import { analytics } from './analytics'
 
-// some other file
-import { ajsPromise } from '../analytics'
-
-router.post('/user',  async (req, res) => {
-  ajsPromise.then((ajs) => ajs.track(user.id, "some event"))
-  res.json(user)
-})
-
+analytics.identify('Test User', { loggedIn: true }, { userId: "123456" })
+analytics.track('hello world', {}, { userId: "123456" })
 
 ```
+
+# Event Emitter (Advanced Usage)
+```ts
+import { analytics } from './analytics'
+import { ContextCancelation, CoreContext } from '@segment/analytics-node'
+
+// listen globally to events
+analytics.on('identify', (ctx) => console.log(ctx.event))
+
+// listen for errors (if needed)
+analytics.on('error', (err) => {
+  if (err instanceof ContextCancelation) {
+    console.error('event cancelled', err.logs())
+  } else if (err instanceof CoreContext) {
+    console.error('event failed', err.logs())
+  } else {
+    console.error(err)
+  }
+})
+```
+

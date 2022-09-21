@@ -26,13 +26,15 @@ export type Integrations = {
 }
 
 // renamed
-export type CoreOptions = {
+export interface CoreOptions {
   integrations?: Integrations
   timestamp?: Date | string
   context?: CoreAnalyticsContext
+  anonymousId?: string
+  userId?: string
   traits?: Traits
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
+  // we may want to remove this...
   [key: string]: any
 }
 
@@ -120,7 +122,7 @@ export interface CoreSegmentEvent {
 
   properties?: EventProperties
 
-  traits?: Traits
+  traits?: Traits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
 
   integrations?: Integrations
   context?: CoreAnalyticsContext | CoreOptions

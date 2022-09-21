@@ -1537,7 +1537,6 @@ __metadata:
     "@types/jquery": ^3.5.4
     "@types/js-cookie": 3.0.1
     "@types/jsdom": ^16.2.14
-    "@types/lodash": ^4.14.161
     "@types/mime": ^2.0.3
     "@types/node": ^12.12.14
     "@types/node-fetch": ^2.5.7
@@ -1583,18 +1582,8 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@segment/analytics-core": 1.0.1
-    "@segment/analytics-plugin-validation": 0.0.0
     "@types/node": ^12.12.14
     node-fetch: ^2.6.7
-    tslib: ^2.4.0
-  languageName: unknown
-  linkType: soft
-
-"@segment/analytics-plugin-validation@0.0.0, @segment/analytics-plugin-validation@workspace:packages/plugin-validation":
-  version: 0.0.0-use.local
-  resolution: "@segment/analytics-plugin-validation@workspace:packages/plugin-validation"
-  dependencies:
-    "@segment/analytics-core": 1.0.1
     tslib: ^2.4.0
   languageName: unknown
   linkType: soft
@@ -3088,10 +3077,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.14.161":
-  version: 4.14.161
-  resolution: "@types/lodash@npm:4.14.161"
-  checksum: 3b03bde2b0cd8282f864951b70698115a8d9534110b12cc1cf85eef9caa2ea51a58ea790b5568a828406935966d3a23834d487a30774ed51a77eac271f7d97e9
+"@types/lodash@npm:^4":
+  version: 4.14.185
+  resolution: "@types/lodash@npm:4.14.185"
+  checksum: f81d13da5ecab110ca9c5c7cc2bedc3c9802a6acf668576aecd1b8f4b134ed81d06c15f1e600fb08f05975098280a0d97d30cddfc2cb39ec1c6b56e971ca53b3
   languageName: node
   linkType: hard
 
@@ -3960,6 +3949,7 @@ __metadata:
     "@changesets/cli": ^2.23.2
     "@npmcli/promise-spawn": ^3.0.0
     "@types/jest": ^28.1.1
+    "@types/lodash": ^4
     "@typescript-eslint/eslint-plugin": ^5.21.0
     "@typescript-eslint/parser": ^5.21.0
     concurrently: ^7.2.1
@@ -3970,6 +3960,7 @@ __metadata:
     husky: ^8.0.0
     jest: ^28.1.0
     lint-staged: ^13.0.0
+    lodash: ^4.17.21
     node-gyp: ^9.0.0
     prettier: ^2.6.2
     ts-jest: ^28.0.4

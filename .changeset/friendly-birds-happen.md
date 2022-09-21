@@ -1,5 +1,4 @@
 ---
-'@segment/analytics-plugin-validation': major
 '@segment/analytics-core': minor
 ---
 

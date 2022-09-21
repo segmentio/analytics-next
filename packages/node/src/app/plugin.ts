@@ -4,8 +4,9 @@ import {
   PluginType,
   CoreContext,
 } from '@segment/analytics-core'
-import fetch from 'node-fetch'
+import fetch, { Response } from 'node-fetch'
 import { version } from '../../package.json'
+import { AnalyticsNode } from './analytics-node'
 
 export interface AnalyticsNodePluginSettings {
   writeKey: string
@@ -31,21 +32,30 @@ export async function post(
   })
 
   if (!res.ok) {
-    throw new Error('Message Rejected')
+    throw res
   }
 
   return event
 }
 
 export function analyticsNode(
-  settings: AnalyticsNodePluginSettings
+  settings: AnalyticsNodePluginSettings,
+  analytics: AnalyticsNode
 ): CorePlugin {
   const send = async (ctx: CoreContext): Promise<CoreContext> => {
     ctx.updateEvent('context.library.name', 'analytics-node-next')
     ctx.updateEvent('context.library.version', version)
     ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
-
-    await post(ctx.event, settings.writeKey)
+    try {
+      await post(ctx.event, settings.writeKey)
+    } catch (err: any) {
+      analytics.emit('error', {
+        ctx,
+        code: 'http_delivery',
+        message: 'there was an error sending the event to segment',
+        response: err as Response,
+      })
+    }
     return ctx
   }
 

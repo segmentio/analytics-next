@@ -1,4 +1,4 @@
-import { isFunction, isPlainObject, isString } from '../validation'
+import { isFunction, isPlainObject, isString } from '../validation/helpers'
 import { JSONObject, EventProperties, CoreOptions } from '../events'
 import { Callback } from '../events/interfaces'
 
