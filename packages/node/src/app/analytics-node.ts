@@ -117,7 +117,6 @@ export class AnalyticsNode
   private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
     dispatchAndEmit(segmentEvent, this.queue, this, {
       callback: callback,
-      retryQueue: false, // this basically just sets "maxAttempts" to 1
     }).catch((err) => err) // we ignore errors, since we have an event emitter
   }
   /**
