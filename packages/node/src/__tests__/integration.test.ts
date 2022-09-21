@@ -1,9 +1,18 @@
+const fetcher = jest.fn()
+jest.mock('node-fetch', () => fetcher)
+
 import { AnalyticsNode } from '../index'
 import { CorePlugin as Plugin } from '@segment/analytics-core'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { testPlugin } from './test-helpers/test-plugin'
+import { createSuccess, createError } from './test-helpers/factories'
 
 const writeKey = 'foo'
+
+beforeEach(() => {
+  jest.resetAllMocks()
+  fetcher.mockReturnValue(createSuccess())
+})
 
 describe('Initialization', () => {
   it('loads analytics-node-next plugin', async () => {
@@ -35,6 +44,27 @@ describe('Error handling', () => {
       writeKey,
     })
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
+  })
+
+  test('http delivery errors are accessed through the emitter', (done) => {
+    const analytics = new AnalyticsNode({
+      writeKey,
+    })
+    fetcher.mockReturnValue(
+      createError({ statusText: 'Service Unavailable', status: 503 })
+    )
+
+    analytics.track({ event: 'foo', userId: 'sup' })
+    analytics.on('error', (emittedErr) => {
+      if (emittedErr.code !== 'http_delivery') {
+        return done.fail('error code incorrect')
+      }
+      expect(emittedErr.message).toMatch(/segment/)
+      expect(emittedErr.code).toMatch(/http/)
+      expect(emittedErr.response.status).toBe(503)
+      done()
+    })
+    expect.assertions(3)
   })
 })
 

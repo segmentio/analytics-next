@@ -18,6 +18,7 @@ import { AnalyticsNodeSettings, validateSettings } from './settings'
 import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
+import { EmittedError } from './errors'
 
 // create a derived class since we may want to add node specific things to Context later
 export class NodeContext extends CoreContext {}
@@ -42,7 +43,7 @@ export interface NodeSegmentEventOptions {
  * Map of emitter event names to method args.
  */
 type NodeEmitterEvents = {
-  error: [ctx: NodeContext]
+  error: [error: EmittedError]
   initialize: [AnalyticsNodeSettings]
   alias: [ctx: NodeContext]
   track: [ctx: NodeContext]
@@ -98,7 +99,7 @@ export class AnalyticsNode
       writeKey: settings.writeKey,
     }
 
-    this.ready = this.register(analyticsNode(nodeSettings))
+    this.ready = this.register(analyticsNode(nodeSettings, this))
       .then(() => undefined)
       .catch((err) => {
         console.error(err)

@@ -4,15 +4,15 @@ import { AnalyticsNode, NodeContext } from '../../app/analytics-node'
 export const resolveCtx = (
   analytics: AnalyticsNode,
   eventName: 'track' | 'identify' | 'page' | 'screen' | 'group' | 'alias',
-  { log = true } = {}
+  { log = false } = {}
 ): Promise<NodeContext> => {
   return new Promise((resolve, reject) => {
     analytics.once(eventName, resolve)
-    analytics.once('error', (ctx) => {
-      if (typeof ctx === 'object' && typeof ctx['logs'] === 'function') {
-        log && console.error(ctx.logs())
+    analytics.once('error', (err) => {
+      if (typeof err === 'object' && typeof err.ctx?.['logs'] === 'function') {
+        log && console.error(err.ctx.logs())
       }
-      reject(ctx)
+      reject(err)
     })
   })
 }

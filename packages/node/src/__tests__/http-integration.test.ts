@@ -1,10 +1,10 @@
-import { resolveCtx } from './test-helpers/resolve-ctx'
-
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
+import { createSuccess } from './test-helpers/factories'
 import { AnalyticsNode } from '..'
 import { NodeSegmentEvent } from '../app/analytics-node'
+import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const myDate = new Date('2016')
 const _Date = Date
@@ -14,6 +14,7 @@ describe('Analytics Node', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks()
+    fetcher.mockReturnValue(createSuccess())
 
     ajs = new AnalyticsNode({
       writeKey: 'abc123',
