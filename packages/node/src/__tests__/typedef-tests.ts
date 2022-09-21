@@ -1,6 +1,4 @@
-import { method } from 'lodash'
 import { AnalyticsNode } from '../'
-import { analyticsNode } from '../app/plugin'
 
 /**
  * These are general typescript definition tests;
