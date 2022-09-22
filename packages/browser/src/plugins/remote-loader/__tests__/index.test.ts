@@ -461,7 +461,7 @@ describe('Remote Loader', () => {
   })
 
   it('accepts settings overrides from options (AnalyticsBrowser)', async () => {
-    const cdnSettings: LegacySettings = {
+    const cdnSettings = {
       integrations: {
         remotePlugin: {
           name: 'Charlie Brown',
