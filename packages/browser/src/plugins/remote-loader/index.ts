@@ -11,7 +11,6 @@ import {
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
 import { Analytics } from '../../core/analytics'
-import { tsubMiddleware } from '../routing-middleware'
 
 const klona = (evt: SegmentEvent): SegmentEvent =>
   JSON.parse(JSON.stringify(evt))
@@ -172,13 +171,14 @@ export async function remoteLoader(
   settings: LegacySettings,
   userIntegrations: Integrations,
   mergedIntegrations: Record<string, JSONObject>,
-  obfuscate?: boolean
+  obfuscate?: boolean,
+  routingMiddleware?: DestinationMiddlewareFunction
 ): Promise<Plugin[]> {
   const allPlugins: Plugin[] = []
   const cdn = getCDN()
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-  const routingMiddleware = tsubMiddleware(routingRules)
+  // const routingMiddleware = tsubMiddleware(routingRules)
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
@@ -239,7 +239,7 @@ export async function remoteLoader(
               plugin
             )
 
-            if (routing.length) {
+            if (routing.length && routingMiddleware) {
               wrapper.addMiddleware(routingMiddleware)
             }
 

@@ -105,6 +105,13 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
   )
 }
 
+function hasTsubMiddleware(settings: LegacySettings): boolean {
+  return (
+    getProcessEnv().NODE_ENV !== 'test' &&
+    (settings.middlewareSettings?.routingRules?.length ?? 0) > 0
+  )
+}
+
 /**
  * With AJS classic, we allow users to call setAnonymousId before the library initialization.
  * This is important because some of the destinations will use the anonymousId during the initialization,
@@ -146,11 +153,26 @@ async function registerPlugins(
   options: InitOptions,
   plugins: Plugin[]
 ): Promise<Context> {
+  const tsubMiddleware = hasTsubMiddleware(legacySettings)
+    ? await import(
+        /* webpackChunkName: "tsub-middleware" */ '../plugins/routing-middleware'
+      ).then((mod) => {
+        return mod.tsubMiddleware(
+          legacySettings.middlewareSettings!.routingRules
+        )
+      })
+    : undefined
+
   const legacyDestinations = hasLegacyDestinations(legacySettings)
     ? await import(
         /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
       ).then((mod) => {
-        return mod.ajsDestinations(legacySettings, analytics.integrations, opts)
+        return mod.ajsDestinations(
+          legacySettings,
+          analytics.integrations,
+          opts,
+          tsubMiddleware
+        )
       })
     : []
 
@@ -175,7 +197,8 @@ async function registerPlugins(
     legacySettings,
     analytics.integrations,
     mergedSettings,
-    options.obfuscate
+    options.obfuscate,
+    tsubMiddleware
   ).catch(() => [])
 
   const toRegister = [

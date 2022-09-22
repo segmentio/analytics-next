@@ -17,7 +17,6 @@ import {
   applyDestinationMiddleware,
   DestinationMiddlewareFunction,
 } from '../middleware'
-import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
 
@@ -303,7 +302,8 @@ export class LegacyDestination implements Plugin {
 export function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
-  options: InitOptions = {}
+  options: InitOptions = {},
+  routingMiddleware?: DestinationMiddlewareFunction
 ): LegacyDestination[] {
   if (isServer()) {
     return []
@@ -315,7 +315,7 @@ export function ajsDestinations(
   }
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-  const routingMiddleware = tsubMiddleware(routingRules)
+  // const routingMiddleware = tsubMiddleware(routingRules)
 
   // merged remote CDN settings with user provided options
   const integrationOptions = mergedOptions(settings, options ?? {}) as Record<
@@ -362,7 +362,7 @@ export function ajsDestinations(
       const routing = routingRules.filter(
         (rule) => rule.destinationName === name
       )
-      if (routing.length > 0) {
+      if (routing.length > 0 && routingMiddleware) {
         destination.addMiddleware(routingMiddleware)
       }
 
