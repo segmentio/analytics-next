@@ -1,8 +1,9 @@
 import * as loader from '../../../lib/load-script'
 import { remoteLoader } from '..'
-import { AnalyticsBrowser } from '../../../browser'
+import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
+import { tsubMiddleware } from '../../routing-middleware'
 
 const pluginFactory = jest.fn()
 
@@ -414,7 +415,7 @@ describe('Remote Loader', () => {
   })
 
   it('accepts settings overrides from merged integrations', async () => {
-    const cdnSettings = {
+    const cdnSettings: LegacySettings = {
       integrations: {
         remotePlugin: {
           name: 'Charlie Brown',
@@ -460,7 +461,7 @@ describe('Remote Loader', () => {
   })
 
   it('accepts settings overrides from options (AnalyticsBrowser)', async () => {
-    const cdnSettings = {
+    const cdnSettings: LegacySettings = {
       integrations: {
         remotePlugin: {
           name: 'Charlie Brown',
@@ -518,7 +519,7 @@ describe('Remote Loader', () => {
       track: (ctx: Context) => ctx,
     }
 
-    const cdnSettings = {
+    const cdnSettings: LegacySettings = {
       integrations: {},
       middlewareSettings: {
         routingRules: [
@@ -556,7 +557,11 @@ describe('Remote Loader', () => {
       return Promise.resolve(true)
     })
 
-    const plugins = await remoteLoader(cdnSettings, {}, {})
+    const middleware = tsubMiddleware(
+      cdnSettings.middlewareSettings!.routingRules
+    )
+
+    const plugins = await remoteLoader(cdnSettings, {}, {}, false, middleware)
     const plugin = plugins[0]
     await expect(() =>
       plugin.track!(new Context({ type: 'track', event: 'Item Impression' }))
