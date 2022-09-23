@@ -1,4 +1,5 @@
 export * from './emitter'
+export * from './emitter/interface'
 export * from './plugins'
 export * from './plugins/middleware'
 export * from './events/interfaces'

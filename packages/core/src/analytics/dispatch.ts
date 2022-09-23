@@ -2,10 +2,10 @@ import { CoreContext } from '../context'
 import { CoreSegmentEvent, Callback } from '../events/interfaces'
 import { EventQueue } from '../queue/event-queue'
 import { isOffline } from '../connection'
-import { Emitter } from '../emitter'
 import { invokeCallback } from '../callback'
+import { Emitter } from '../emitter'
 
-type DispatchOptions = {
+export type DispatchOptions = {
   timeout?: number
   debug?: boolean
   callback?: Callback
@@ -27,7 +27,8 @@ export async function dispatch(
   options?: DispatchOptions
 ): Promise<CoreContext> {
   const ctx = new CoreContext(event)
-  emitter.emit('message_dispatch_pending', ctx) // TODO: inspectorHost.triggered?.(ctx as any)
+  emitter.emit('dispatch_pending', ctx) // This is just for inspector host
+  // TODO: inspectorHost.triggered?.(ctx as any)
 
   if (isOffline() && !options?.retryQueue) {
     return ctx

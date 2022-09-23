@@ -1,12 +1,6 @@
 import { CoreContext } from '@segment/analytics-core'
 import { Response } from 'node-fetch'
 
-export interface UnknownError {
-  message: string
-  ctx: CoreContext
-  code: 'unknown'
-}
-
 export interface HTTPError {
   message: string
   ctx: CoreContext
@@ -14,4 +8,4 @@ export interface HTTPError {
   response: Response
 }
 
-export type EmittedError = HTTPError | UnknownError
+export type NodeEmittedError = HTTPError
