@@ -13,11 +13,9 @@ type DispatchOptions = {
 }
 
 /* The amount of time in ms to wait before invoking the callback. */
-export const getDelayTimeout = (
-  startTimeInEpochMS: number,
-  timeoutInMS?: number
-) => {
+export const getDelay = (startTimeInEpochMS: number, timeoutInMS?: number) => {
   const elapsedTime = Date.now() - startTimeInEpochMS
+  // increasing the timeout increases the delay by almost the same amount -- this is weird legacy behavior.
   return Math.max((timeoutInMS ?? 300) - elapsedTime, 0)
 }
 /**
@@ -53,7 +51,7 @@ export async function dispatch(
     dispatched = await invokeCallback(
       dispatched,
       options.callback,
-      getDelayTimeout(startTime, options.timeout),
+      getDelay(startTime, options.timeout), //  TODO: I have no idea why this delay is based on the timeout -- so if you set a timeout of 5seconds, it will (in addition) actually delay ~5seconds before invoking.
       options.timeout
     )
   }

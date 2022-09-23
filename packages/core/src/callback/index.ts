@@ -22,13 +22,15 @@ function sleep(timeoutInMs: number): Promise<void> {
 }
 
 /**
- * @param delayTimeout - The amount of time in ms to wait before invoking the callback.
+ * @param delay - The amount of time in ms to wait before invoking the callback.
+ * Ajs 1.0 worked differently so the delay was meant to give ajs a chance to send the event before invoking the callback.
+ * Customers used that behavior to delay navigating to a new page. However, AJS 2.0 resolves a promise once the event has already been sent... so this is likely used to give third party destinations time to flush
  * @param timeout - The maximum amount of time in ms to allow the callback to run for.
  */
 export function invokeCallback(
   ctx: CoreContext,
   callback: Callback,
-  delayTimeout: number,
+  delay: number,
   timeout?: number
 ): Promise<CoreContext> {
   const cb = () => {
@@ -40,7 +42,7 @@ export function invokeCallback(
   }
 
   return (
-    sleep(delayTimeout)
+    sleep(delay)
       // pTimeout ensures that the callback can't cause the context to hang
       .then(() => pTimeout(cb(), timeout ?? 1000))
       .catch((err) => {

@@ -16,7 +16,7 @@ jest.mock('../../callback', () => ({
 
 import { EventQueue } from '../../queue/event-queue'
 import { Emitter } from '../../emitter'
-import { dispatch, getDelayTimeout } from '../dispatch'
+import { dispatch, getDelay } from '../dispatch'
 import { PriorityQueue } from '../../priority-queue'
 
 let emitter!: Emitter
@@ -34,7 +34,7 @@ afterEach(() => {
 })
 
 describe('Dispatch', () => {
-  it('should return ctx if offline and retryQueue is false', async () => {
+  it('should not dispatch if client is currently offline and retries are *disabled* for the main event queue', async () => {
     isOnline.mockReturnValue(false)
     isOffline.mockReturnValue(true)
 
@@ -48,7 +48,7 @@ describe('Dispatch', () => {
     expect(called).toBeFalsy()
   })
 
-  it('should not dispatch if offline and retryQueue is true', async () => {
+  it('should be allowed to dispatch if client is currently offline and retries are *enabled* for the main event queue', async () => {
     isOnline.mockReturnValue(false)
     isOffline.mockReturnValue(true)
 
@@ -61,7 +61,7 @@ describe('Dispatch', () => {
     expect(called).toBeTruthy()
   })
 
-  it('should call dispatchSingle with ctx if queue is empty', async () => {
+  it('should call dispatchSingle correctly if queue is empty', async () => {
     queue.isEmpty = jest.fn().mockReturnValue(true)
     await dispatch({ type: 'screen' }, queue, emitter)
     expect(dispatchSingleSpy).toBeCalledWith(
@@ -70,7 +70,7 @@ describe('Dispatch', () => {
     expect(dispatchSpy).not.toBeCalled()
   })
 
-  it('should call dispatch with ctx if queue is empty', async () => {
+  it('should call dispatch correctly if queue has items', async () => {
     queue.isEmpty = jest.fn().mockReturnValue(false)
     await dispatch({ type: 'screen' }, queue, emitter)
     expect(dispatchSpy).toBeCalledWith(
@@ -90,14 +90,15 @@ describe('Dispatch', () => {
   })
 })
 
-describe('getDelayTimeout', () => {
-  it('should work as expected', () => {
+describe(getDelay, () => {
+  it('should calculate the amount of time to delay before invoking the callback', () => {
     const aShortTimeAgo = Date.now() - 200
-    expect(Math.round(getDelayTimeout(aShortTimeAgo, 500))).toBe(300)
+    const timeout = 5000
+    expect(Math.round(getDelay(aShortTimeAgo, timeout))).toBe(4800)
   })
 
   it('should have a sensible default', () => {
     const aShortTimeAgo = Date.now() - 200
-    expect(Math.round(getDelayTimeout(aShortTimeAgo))).toBe(100)
+    expect(Math.round(getDelay(aShortTimeAgo))).toBe(100)
   })
 })
