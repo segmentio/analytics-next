@@ -12,6 +12,14 @@ type DispatchOptions = {
   retryQueue?: boolean
 }
 
+/* The amount of time in ms to wait before invoking the callback. */
+export const getDelayTimeout = (
+  startTimeInEpochMS: number,
+  timeoutInMS?: number
+) => {
+  const elapsedTime = Date.now() - startTimeInEpochMS
+  return Math.max((timeoutInMS ?? 300) - elapsedTime, 0)
+}
 /**
  * Push an event into the dispatch queue and invoke any callbacks.
  *
@@ -40,15 +48,13 @@ export async function dispatch(
   } else {
     dispatched = await queue.dispatch(ctx)
   }
-  const elapsedTime = Date.now() - startTime
-  const timeoutInMs = options?.timeout
 
   if (options?.callback) {
     dispatched = await invokeCallback(
       dispatched,
       options.callback,
-      Math.max((timeoutInMs ?? 300) - elapsedTime, 0),
-      timeoutInMs
+      getDelayTimeout(startTime, options.timeout),
+      options.timeout
     )
   }
   if (options?.debug) {
