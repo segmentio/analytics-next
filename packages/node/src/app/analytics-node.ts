@@ -34,9 +34,6 @@ type IdentityOptions =
 export interface NodeSegmentEventOptions {
   context?: NodeContext
   timestamp?: CoreOptions['timestamp']
-  anonymousId?: CoreOptions['anonymousId']
-  userId?: CoreOptions['userId']
-  traits?: CoreOptions['traits']
 }
 
 /**
@@ -211,7 +208,7 @@ export class AnalyticsNode
     properties?: EventProperties
     callback?: Callback
     timestamp?: string | Date
-    options?: CoreOptions
+    options?: NodeSegmentEventOptions
   }): void {
     const segmentEvent = this._eventFactory.page(
       category ?? null,

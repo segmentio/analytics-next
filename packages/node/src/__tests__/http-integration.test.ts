@@ -34,22 +34,57 @@ describe('Analytics Node', () => {
     expect(calls.length).toBe(1)
     const call1 = calls[0]
     const [url, httpRes] = call1
-    expect(httpRes.headers['User-Agent']).toBe('analytics-node-next/latest')
-    expect(httpRes.headers['Content-Type']).toBe('application/json')
-    expect(httpRes.headers['Authorization']).toBeTruthy()
     expect(httpRes.method).toBe('POST')
     expect(url).toBe('https://api.segment.io/v1/identify')
-
+    expect(httpRes.headers).toMatchInlineSnapshot(
+      {
+        Authorization: expect.stringContaining('Basic'),
+        'User-Agent': expect.stringContaining('analytics-node-next'),
+      },
+      `
+      Object {
+        "Authorization": StringContaining "Basic",
+        "Content-Type": "application/json",
+        "User-Agent": StringContaining "analytics-node-next",
+      }
+    `
+    )
     const body: NodeSegmentEvent = JSON.parse(httpRes.body)
-    expect(body.integrations).toEqual({})
-    expect(body.messageId).toEqual(expect.stringContaining('ajs-next'))
-    expect(body.type).toBe('identify')
-    expect(body.traits).toEqual({ foo: 'bar' })
-    expect(body.userId).toBe('my_user_id')
-    expect(typeof body.timestamp).toBe('string')
-    expect(body.context).toEqual({
-      library: { name: 'analytics-node-next', version: '0.0.0' },
-    })
+    expect(body).toMatchInlineSnapshot(
+      {
+        messageId: expect.any(String),
+        _metadata: {
+          nodeVersion: expect.any(String),
+        },
+
+        context: {
+          library: {
+            version: expect.any(String),
+          },
+        },
+      },
+      `
+      Object {
+        "_metadata": Object {
+          "nodeVersion": Any<String>,
+        },
+        "context": Object {
+          "library": Object {
+            "name": "analytics-node-next",
+            "version": Any<String>,
+          },
+        },
+        "integrations": Object {},
+        "messageId": Any<String>,
+        "timestamp": "2016-01-01T00:00:00.000Z",
+        "traits": Object {
+          "foo": "bar",
+        },
+        "type": "identify",
+        "userId": "my_user_id",
+      }
+    `
+    )
   })
 
   test('Track: Fires http requests to the correct endoint', async () => {
