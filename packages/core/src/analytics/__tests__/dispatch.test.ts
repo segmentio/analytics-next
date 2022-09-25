@@ -1,3 +1,13 @@
+/**
+ * Properly type mocked functions to make it easy to do assertions
+ * for example, myModule.mock.calls[0] will have the typed parameters instead of any.
+ *
+ * TODO: share with rest of project
+ */
+type JestMockedFn<Fn> = Fn extends (...args: infer Args) => infer ReturnT
+  ? jest.Mock<ReturnT, Args>
+  : never
+
 const isOnline = jest.fn().mockReturnValue(true)
 const isOffline = jest.fn().mockReturnValue(false)
 
@@ -5,11 +15,13 @@ jest.mock('../../connection', () => ({
   isOnline,
   isOffline,
 }))
-const fetcher = jest.fn()
+
+const fetcher: JestMockedFn<typeof import('node-fetch')['default']> = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-const invokeCallback = jest.fn()
-
+const invokeCallback: JestMockedFn<
+  typeof import('../../callback')['invokeCallback']
+> = jest.fn()
 jest.mock('../../callback', () => ({
   invokeCallback: invokeCallback,
 }))
@@ -18,22 +30,26 @@ import { EventQueue } from '../../queue/event-queue'
 import { Emitter } from '../../emitter'
 import { dispatch, getDelay } from '../dispatch'
 import { PriorityQueue } from '../../priority-queue'
+import { CoreContext } from '../../context'
 
 let emitter!: Emitter
 let queue!: EventQueue
 const dispatchSingleSpy = jest.spyOn(EventQueue.prototype, 'dispatchSingle')
 const dispatchSpy = jest.spyOn(EventQueue.prototype, 'dispatch')
-
-beforeEach(() => {
-  queue = new EventQueue(new PriorityQueue(4, []))
-  emitter = new Emitter()
+const screenCtxMatcher = expect.objectContaining<Partial<CoreContext>>({
+  event: { type: 'screen' },
 })
-
-afterEach(() => {
-  jest.resetAllMocks()
-})
-
 describe('Dispatch', () => {
+  beforeEach(() => {
+    jest.resetAllMocks()
+    dispatchSingleSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
+    invokeCallback.mockImplementationOnce((ctx) => Promise.resolve(ctx))
+    dispatchSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
+    queue = new EventQueue(new PriorityQueue(4, []))
+    queue.isEmpty = jest.fn().mockReturnValue(false)
+    emitter = new Emitter()
+  })
+
   it('should not dispatch if client is currently offline and retries are *disabled* for the main event queue', async () => {
     isOnline.mockReturnValue(false)
     isOffline.mockReturnValue(true)
@@ -41,7 +57,7 @@ describe('Dispatch', () => {
     const ctx = await dispatch({ type: 'screen' }, queue, emitter, {
       retryQueue: false,
     })
-    expect(ctx.event.type).toBe('screen')
+    expect(ctx).toEqual(screenCtxMatcher)
     const called = Boolean(
       dispatchSingleSpy.mock.calls.length || dispatchSpy.mock.calls.length
     )
@@ -64,18 +80,13 @@ describe('Dispatch', () => {
   it('should call dispatchSingle correctly if queue is empty', async () => {
     queue.isEmpty = jest.fn().mockReturnValue(true)
     await dispatch({ type: 'screen' }, queue, emitter)
-    expect(dispatchSingleSpy).toBeCalledWith(
-      expect.objectContaining({ event: { type: 'screen' } })
-    )
+    expect(dispatchSingleSpy).toBeCalledWith(screenCtxMatcher)
     expect(dispatchSpy).not.toBeCalled()
   })
 
   it('should call dispatch correctly if queue has items', async () => {
-    queue.isEmpty = jest.fn().mockReturnValue(false)
     await dispatch({ type: 'screen' }, queue, emitter)
-    expect(dispatchSpy).toBeCalledWith(
-      expect.objectContaining({ event: { type: 'screen' } })
-    )
+    expect(dispatchSpy).toBeCalledWith(screenCtxMatcher)
     expect(dispatchSingleSpy).not.toBeCalled()
   })
 
@@ -92,13 +103,13 @@ describe('Dispatch', () => {
     await dispatch({ type: 'screen' }, queue, emitter, {
       callback: cb,
     })
-    expect(invokeCallback).toBeCalledWith(
-      expect.objectContaining({ event: { type: 'screen' } }), // ctx
-      cb, // callback
-      expect.anything(),
-      expect.anything()
-    )
+    expect(dispatchSpy).toBeCalledWith(screenCtxMatcher)
+    expect(invokeCallback).toBeCalledTimes(1)
+    const [ctx, _cb] = invokeCallback.mock.calls[0]
+    expect(ctx).toEqual(screenCtxMatcher)
+    expect(_cb).toBe(cb)
   })
+
   // TODO: Inconsistent behavior? This seems like a bug.
   it('should have inconsistent timeout behavior where the delay is different based on whether timeout is explicitly set to 1000 or not', async () => {
     {
