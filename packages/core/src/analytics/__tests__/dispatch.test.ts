@@ -99,8 +99,8 @@ describe('Dispatch', () => {
       expect.anything()
     )
   })
-  // TODO: Weird and inconsistent behavior
-  it('should have bizarre and inconsistent timeout behavior where the delay is different based on whether timeout is explicitly set to 1000 or not', async () => {
+  // TODO: Inconsistent behavior? This seems like a bug.
+  it('should have inconsistent timeout behavior where the delay is different based on whether timeout is explicitly set to 1000 or not', async () => {
     {
       const TIMEOUT = 1000
       await dispatch({ type: 'screen' }, queue, emitter, {
@@ -108,12 +108,10 @@ describe('Dispatch', () => {
         timeout: TIMEOUT,
       })
       const [, , delay] = invokeCallback.mock.calls[0]
-      // timeout = 1000, delay equals 998
-      expect(delay).toBeGreaterThan(990)
-      expect(delay).toBeLessThanOrEqual(1000)
+      expect(delay).toBeGreaterThan(990) // ???
+      expect(delay).toBeLessThanOrEqual(1000) // ???
     }
     {
-      // wtf
       invokeCallback.mockReset()
       const TIMEOUT = undefined // this defaults to 1000 in the invokeCallback function
       await dispatch({ type: 'screen' }, queue, emitter, {
@@ -121,8 +119,8 @@ describe('Dispatch', () => {
         timeout: TIMEOUT,
       })
       const [, , delay] = invokeCallback.mock.calls[0]
-      expect(delay).toBeGreaterThan(290)
-      expect(delay).toBeLessThanOrEqual(300)
+      expect(delay).toBeGreaterThan(290) // ???
+      expect(delay).toBeLessThanOrEqual(300) // ???
     }
   })
 })
