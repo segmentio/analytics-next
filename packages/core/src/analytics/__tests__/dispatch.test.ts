@@ -79,14 +79,51 @@ describe('Dispatch', () => {
     expect(dispatchSingleSpy).not.toBeCalled()
   })
 
-  it('should not invoke callback if no callback is passed', async () => {
+  it('should only call invokeCallback if callback is passed', async () => {
     await dispatch({ type: 'screen' }, queue, emitter)
     expect(invokeCallback).not.toBeCalled()
-  })
-  it('should call "invokeCallback" if callback is passed', async () => {
+
     const cb = jest.fn()
     await dispatch({ type: 'screen' }, queue, emitter, { callback: cb })
-    expect(invokeCallback).toBeCalled()
+    expect(invokeCallback).toBeCalledTimes(1)
+  })
+  it('should call invokeCallback with correct args', async () => {
+    const cb = jest.fn()
+    await dispatch({ type: 'screen' }, queue, emitter, {
+      callback: cb,
+    })
+    expect(invokeCallback).toBeCalledWith(
+      expect.objectContaining({ event: { type: 'screen' } }), // ctx
+      cb, // callback
+      expect.anything(),
+      expect.anything()
+    )
+  })
+  // TODO: Weird and inconsistent behavior
+  it('should have bizarre and inconsistent timeout behavior where the delay is different based on whether timeout is explicitly set to 1000 or not', async () => {
+    {
+      const TIMEOUT = 1000
+      await dispatch({ type: 'screen' }, queue, emitter, {
+        callback: jest.fn(),
+        timeout: TIMEOUT,
+      })
+      const [, , delay] = invokeCallback.mock.calls[0]
+      // timeout = 1000, delay equals 998
+      expect(delay).toBeGreaterThan(990)
+      expect(delay).toBeLessThanOrEqual(1000)
+    }
+    {
+      // wtf
+      invokeCallback.mockReset()
+      const TIMEOUT = undefined // this defaults to 1000 in the invokeCallback function
+      await dispatch({ type: 'screen' }, queue, emitter, {
+        callback: jest.fn(),
+        timeout: TIMEOUT,
+      })
+      const [, , delay] = invokeCallback.mock.calls[0]
+      expect(delay).toBeGreaterThan(290)
+      expect(delay).toBeLessThanOrEqual(300)
+    }
   })
 })
 
