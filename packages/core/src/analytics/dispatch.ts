@@ -51,8 +51,7 @@ export async function dispatch(
     dispatched = await invokeCallback(
       dispatched,
       options.callback,
-      getDelay(startTime, options.timeout), //  TODO: I have no idea why this delay is based on the timeout -- so if you set a timeout of 5seconds, it will (in addition) actually delay ~5seconds before invoking.
-      options.timeout
+      getDelay(startTime, options.timeout)
     )
   }
   if (options?.debug) {
