@@ -1,4 +1,4 @@
-import type { Integrations, SegmentEvent } from '../../core/events/interfaces'
+import type { Integrations } from '../../core/events/interfaces'
 import { LegacySettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin } from '../../core/plugin'
