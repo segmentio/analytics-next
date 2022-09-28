@@ -1,5 +1,4 @@
 import { dispatch } from './dispatch'
-import { CoreContext } from '../context'
 
 /* Dispatch function, but swallow promise rejections and use event emitter instead */
 export const dispatchAndEmit = async (
@@ -8,13 +7,20 @@ export const dispatchAndEmit = async (
   try {
     const ctx = await dispatch(event, queue, emitter, options)
     if (ctx.failedDelivery()) {
-      throw ctx
+      emitter.emit('error', {
+        code: 'delivery_failure',
+        message: 'failed to deliver event',
+        ctx: ctx,
+      })
     } else {
       emitter.emit(event.type, ctx)
       return ctx
     }
   } catch (err) {
-    emitter.emit('error', err as CoreContext)
-    return err
+    emitter.emit('error', {
+      code: 'unknown',
+      message: 'an unknown error occurred when dispatching an event.',
+      err: err,
+    })
   }
 }

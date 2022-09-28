@@ -13,12 +13,13 @@ import {
   CoreSegmentEvent,
   bindAll,
   PriorityQueue,
+  CoreEmitterContract,
 } from '@segment/analytics-core'
 import { AnalyticsNodeSettings, validateSettings } from './settings'
 import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
 
 import { version } from '../../package.json'
-import { EmittedError } from './errors'
+import { NodeEmittedError } from './emitted-errors'
 
 // create a derived class since we may want to add node specific things to Context later
 export class NodeContext extends CoreContext {}
@@ -39,17 +40,8 @@ export interface NodeSegmentEventOptions {
 /**
  * Map of emitter event names to method args.
  */
-type NodeEmitterEvents = {
-  error: [error: EmittedError]
+type NodeEmitterEvents = CoreEmitterContract<NodeContext, NodeEmittedError> & {
   initialize: [AnalyticsNodeSettings]
-  alias: [ctx: NodeContext]
-  track: [ctx: NodeContext]
-  identify: [ctx: NodeContext]
-  page: [ctx: NodeContext]
-  screen: NodeEmitterEvents['page']
-  group: [ctx: NodeContext]
-  register: [pluginNames: string[]]
-  deregister: [pluginNames: string[]]
 }
 
 class NodePriorityQueue extends PriorityQueue<NodeContext> {
