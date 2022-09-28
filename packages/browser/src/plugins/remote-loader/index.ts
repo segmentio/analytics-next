@@ -11,9 +11,7 @@ import {
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
 import { Analytics } from '../../core/analytics'
-
-const klona = (evt: SegmentEvent): SegmentEvent =>
-  JSON.parse(JSON.stringify(evt))
+import { klona } from '../ajs-destination'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -64,65 +62,30 @@ class ActionDestination implements Plugin {
           reason: 'dropped by destination middleware',
         })
       )
-      return ctx
     }
 
-    return new Context(modifiedEvent)
+    return new Context(modifiedEvent!)
   }
 
-  async alias(ctx: Context): Promise<Context> {
-    if (!this.action.alias) return ctx
+  private _createMethod(
+    methodName: 'track' | 'page' | 'identify' | 'alias' | 'group' | 'screen'
+  ) {
+    return async (ctx: Context): Promise<Context> => {
+      if (!this.action[methodName]) return ctx
 
-    const transformedContext = await this.transform(ctx)
-    await this.action.alias(transformedContext)
+      const transformedContext = await this.transform(ctx)
+      await this.action[methodName]!(transformedContext)
 
-    return ctx
+      return ctx
+    }
   }
 
-  async group(ctx: Context): Promise<Context> {
-    if (!this.action.group) return ctx
-
-    const transformedContext = await this.transform(ctx)
-    await this.action.group(transformedContext)
-
-    return ctx
-  }
-
-  async identify(ctx: Context): Promise<Context> {
-    if (!this.action.identify) return ctx
-
-    const transformedContext = await this.transform(ctx)
-    await this.action.identify(transformedContext)
-
-    return ctx
-  }
-
-  async page(ctx: Context): Promise<Context> {
-    if (!this.action.page) return ctx
-
-    const transformedContext = await this.transform(ctx)
-    await this.action.page(transformedContext)
-
-    return ctx
-  }
-
-  async screen(ctx: Context): Promise<Context> {
-    if (!this.action.screen) return ctx
-
-    const transformedContext = await this.transform(ctx)
-    await this.action.screen(transformedContext)
-
-    return ctx
-  }
-
-  async track(ctx: Context): Promise<Context> {
-    if (!this.action.track) return ctx
-
-    const transformedContext = await this.transform(ctx)
-    await this.action.track(transformedContext)
-
-    return ctx
-  }
+  alias = this._createMethod('alias')
+  group = this._createMethod('group')
+  identify = this._createMethod('identify')
+  page = this._createMethod('page')
+  screen = this._createMethod('screen')
+  track = this._createMethod('track')
 
   /* --- PASSTHROUGH METHODS --- */
   isLoaded(): boolean {
@@ -178,7 +141,6 @@ export async function remoteLoader(
   const cdn = getCDN()
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-  // const routingMiddleware = tsubMiddleware(routingRules)
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
@@ -239,7 +201,11 @@ export async function remoteLoader(
               plugin
             )
 
-            if (routing.length && routingMiddleware) {
+            if (
+              routing.length &&
+              routingMiddleware &&
+              plugin.type === 'destination'
+            ) {
               wrapper.addMiddleware(routingMiddleware)
             }
 

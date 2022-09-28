@@ -15,6 +15,7 @@ export interface Plugin {
   name: string
   version: string
   type: 'before' | 'after' | 'destination' | 'enrichment' | 'utility'
+  alternativeNames?: string[]
 
   isLoaded: () => boolean
   load: (

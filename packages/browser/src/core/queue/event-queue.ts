@@ -232,9 +232,16 @@ export class EventQueue extends Emitter {
         return true
       }
 
+      const alternativeNameMatch =
+        p.alternativeNames &&
+        p.alternativeNames.filter((name) =>
+          Object.keys(denyList).includes(name)
+        )
+
       // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
       return (
         denyList[p.name] ??
+        alternativeNameMatch ??
         (p.name === 'Segment.io' ? true : denyList.All) !== false
       )
     })

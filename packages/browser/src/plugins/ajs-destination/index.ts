@@ -20,7 +20,7 @@ import {
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
 
-const klona = (evt: SegmentEvent): SegmentEvent =>
+export const klona = (evt: SegmentEvent): SegmentEvent =>
   JSON.parse(JSON.stringify(evt))
 
 export type ClassType<T> = new (...args: unknown[]) => T
@@ -315,7 +315,6 @@ export function ajsDestinations(
   }
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-  // const routingMiddleware = tsubMiddleware(routingRules)
 
   // merged remote CDN settings with user provided options
   const integrationOptions = mergedOptions(settings, options ?? {}) as Record<

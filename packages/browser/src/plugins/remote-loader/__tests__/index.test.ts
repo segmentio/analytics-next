@@ -283,6 +283,12 @@ describe('Remote Loader', () => {
           type: 'before',
           alternativeNames: ['one'],
           middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
         },
         {
           action: two,
@@ -291,6 +297,12 @@ describe('Remote Loader', () => {
           type: 'before',
           alternativeNames: ['two'],
           middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
         },
         {
           action: three,
@@ -299,6 +311,12 @@ describe('Remote Loader', () => {
           type: 'enrichment',
           alternativeNames: ['three'],
           middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
         },
       ])
     )
@@ -408,6 +426,12 @@ describe('Remote Loader', () => {
           type: 'enrichment',
           alternativeNames: ['valid'],
           middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
         },
       ])
     )
@@ -513,7 +537,7 @@ describe('Remote Loader', () => {
     const validPlugin = {
       name: 'valid',
       version: '1.0.0',
-      type: 'enrichment',
+      type: 'destination',
       load: () => {},
       isLoaded: () => true,
       track: (ctx: Context) => ctx,
