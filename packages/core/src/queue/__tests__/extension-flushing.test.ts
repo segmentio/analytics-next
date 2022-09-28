@@ -30,6 +30,9 @@ const testPlugin: Plugin = {
 
 const ajs = {} as CoreAnalytics
 
+// get rid of console spam for thrown errors.
+jest.spyOn(console, 'warn').mockImplementation(() => {})
+
 describe('Registration', () => {
   test('can register plugins', async () => {
     const eq = new EventQueue()
@@ -130,6 +133,7 @@ describe('Plugin flushing', () => {
   })
 
   test('atempts `enrichment` plugins', async () => {
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => null)
     const eq = new EventQueue()
 
     await eq.register(
