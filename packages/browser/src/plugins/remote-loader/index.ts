@@ -11,8 +11,7 @@ import {
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
 import { Analytics } from '../../core/analytics'
-import { klona } from '../ajs-destination'
-
+import { klona } from '../../lib/klona'
 export interface RemotePlugin {
   /** The name of the remote plugin */
   name: string

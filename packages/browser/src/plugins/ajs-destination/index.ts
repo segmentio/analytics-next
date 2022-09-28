@@ -1,4 +1,4 @@
-import { Integrations, JSONObject, SegmentEvent } from '@/core/events'
+import { Integrations, JSONObject } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
@@ -19,9 +19,7 @@ import {
 } from '../middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
-
-export const klona = (evt: SegmentEvent): SegmentEvent =>
-  JSON.parse(JSON.stringify(evt))
+import { klona } from '../../lib/klona'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
