@@ -9,6 +9,7 @@ import {
 import { Context, ContextCancelation } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
+import { PriorityQueue } from '../../../lib/priority-queue'
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
@@ -114,6 +115,99 @@ test('does not enqueue multiple flushes at once', async () => {
 describe('Flushing', () => {
   beforeEach(() => {
     jest.useRealTimers()
+  })
+
+  describe('flushAll', () => {
+    test('returns once all events are delivered', async () => {
+      const eq = new EventQueue()
+      const contexts: Context[] = []
+
+      eq.dispatchSingle(fruitBasket).then((ctx) => contexts.push(ctx))
+      eq.dispatch(basketView).then((ctx) => contexts.push(ctx))
+      eq.dispatchSingle(shopper).then((ctx) => contexts.push(ctx))
+
+      expect(eq.length).toBe(3)
+
+      await eq.flushAll()
+
+      expect(eq.length).toBe(0)
+      expect(contexts.length).toBe(3)
+    })
+
+    test('works with retries', async () => {
+      const eq = new EventQueue(new PriorityQueue(2, []))
+      const action = (ctx: Context) => {
+        if (ctx.attempts === 1) {
+          throw new Error('Force a retry')
+        }
+        return ctx
+      }
+      await eq.register(
+        Context.system(),
+        {
+          isLoaded: () => true,
+          load: () => Promise.resolve(),
+          name: 'Retry Plugin',
+          type: 'before',
+          version: '1.0.0',
+          track: action,
+          page: action,
+          group: action,
+          identify: action,
+          alias: action,
+        },
+        {} as any
+      )
+      const contexts: Context[] = []
+
+      eq.dispatchSingle(fruitBasket).then((ctx) => contexts.push(ctx))
+      eq.dispatch(basketView).then((ctx) => contexts.push(ctx))
+      eq.dispatchSingle(shopper).then((ctx) => contexts.push(ctx))
+
+      expect(eq.length).toBe(3)
+
+      await eq.flushAll()
+
+      expect(eq.length).toBe(0)
+      expect(contexts.length).toBe(3)
+      contexts.forEach((ctx) => expect(ctx.failedDelivery()).toBeFalsy())
+    })
+
+    test('works with delivery failures', async () => {
+      const eq = new EventQueue(new PriorityQueue(2, []))
+      const action = () => {
+        throw new Error('Failure!')
+      }
+      await eq.register(
+        Context.system(),
+        {
+          isLoaded: () => true,
+          load: () => Promise.resolve(),
+          name: 'Failure Plugin',
+          type: 'before',
+          version: '1.0.0',
+          track: action,
+          page: action,
+          group: action,
+          identify: action,
+          alias: action,
+        },
+        {} as any
+      )
+      const contexts: Context[] = []
+
+      eq.dispatchSingle(fruitBasket).then((ctx) => contexts.push(ctx))
+      eq.dispatch(basketView).then((ctx) => contexts.push(ctx))
+      eq.dispatchSingle(shopper).then((ctx) => contexts.push(ctx))
+
+      expect(eq.length).toBe(3)
+
+      await eq.flushAll()
+
+      expect(eq.length).toBe(0)
+      expect(contexts.length).toBe(3)
+      contexts.forEach((ctx) => expect(ctx.failedDelivery()).toBeTruthy())
+    })
   })
 
   test('works until the queue is empty', async () => {

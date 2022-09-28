@@ -9,6 +9,7 @@ import { Integrations } from '../events'
 import { Plugin } from '../plugin'
 import { attempt, ensure } from './delivery'
 import { inspectorHost } from '../inspector'
+import { extractPromiseParts } from '../../lib/extract-promise-parts'
 
 type PluginsByType = {
   before: Plugin[]
@@ -22,6 +23,9 @@ export class EventQueue extends Emitter {
   plugins: Plugin[] = []
   failedInitializations: string[] = []
   private flushing = false
+  private eventsInFlightCount = 0
+  private pendingFlush?: Promise<void>
+  private pendingFlushResolver?: () => void
 
   constructor(priorityQueue?: PriorityQueue<Context>) {
     super()
@@ -29,6 +33,10 @@ export class EventQueue extends Emitter {
     this.queue.on(ON_REMOVE_FROM_FUTURE, () => {
       this.scheduleFlush(0)
     })
+  }
+
+  get length(): number {
+    return this.eventsInFlightCount
   }
 
   async register(
@@ -80,10 +88,23 @@ export class EventQueue extends Emitter {
     ctx.log('debug', 'Dispatching')
     ctx.stats.increment('message_dispatched')
 
+    // Wait until any pending flushes are completed before enqueueing more events
+    if (this.pendingFlush) {
+      await this.pendingFlush
+    }
+
+    this.eventsInFlightCount++
+
     this.queue.push(ctx)
     const willDeliver = this.subscribeToDelivery(ctx)
     this.scheduleFlush(0)
-    return willDeliver
+    try {
+      return await willDeliver
+    } catch (err) {
+      return ctx
+    } finally {
+      this.decrementInflight()
+    }
   }
 
   private async subscribeToDelivery(ctx: Context): Promise<Context> {
@@ -107,10 +128,19 @@ export class EventQueue extends Emitter {
     ctx.log('debug', 'Dispatching')
     ctx.stats.increment('message_dispatched')
 
+    // Wait until any pending flushes are completed before enqueueing more events
+    if (this.pendingFlush) {
+      await this.pendingFlush
+    }
+
+    this.eventsInFlightCount++
+
     this.queue.updateAttempts(ctx)
     ctx.attempts = 1
 
-    return this.deliver(ctx).catch((err) => {
+    try {
+      return await this.deliver(ctx)
+    } catch (err) {
       if (err instanceof ContextCancelation && err.retry === false) {
         ctx.setFailedDelivery({ reason: err })
         return ctx
@@ -122,8 +152,11 @@ export class EventQueue extends Emitter {
         return ctx
       }
 
-      return this.subscribeToDelivery(ctx)
-    })
+      // return this.subscribeToDelivery(ctx)
+      return await this.subscribeToDelivery(ctx)
+    } finally {
+      this.decrementInflight()
+    }
   }
 
   isEmpty(): boolean {
@@ -166,7 +199,7 @@ export class EventQueue extends Emitter {
     }
   }
 
-  private enqueuRetry(err: Error, ctx: Context): boolean {
+  private enqueuRetry(err: unknown, ctx: Context): boolean {
     const notRetriable =
       err instanceof ContextCancelation && err.retry === false
     const retriable = !notRetriable
@@ -177,6 +210,27 @@ export class EventQueue extends Emitter {
     }
 
     return false
+  }
+
+  async flushAll() {
+    if (this.eventsInFlightCount <= 0) return
+
+    if (!this.pendingFlush) {
+      const { promise, resolve } = extractPromiseParts<void>()
+      this.pendingFlush = promise
+      this.pendingFlushResolver = resolve
+    }
+
+    return this.pendingFlush
+  }
+
+  private decrementInflight() {
+    this.eventsInFlightCount--
+    if (this.eventsInFlightCount === 0 && this.pendingFlushResolver) {
+      this.pendingFlushResolver()
+      this.pendingFlush = undefined
+      this.pendingFlushResolver = undefined
+    }
   }
 
   async flush(): Promise<Context[]> {
