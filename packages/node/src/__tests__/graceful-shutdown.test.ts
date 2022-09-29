@@ -101,7 +101,8 @@ describe('Ability for users to exit without losing events', () => {
   })
 
   describe('.closeAndFlush()', () => {
-    test('should auto resolve after a certain timeout', async () => {
+    test('should force resolve if method call execution time exceeds specified timeout', async () => {
+      const TIMEOUT = 300
       await ajs.register({
         ...testPlugin,
         track: async (ctx) => {
@@ -111,10 +112,10 @@ describe('Ability for users to exit without losing events', () => {
       })
       _helpers.makeTrackCall(ajs)
       const startTime = Date.now()
-      await ajs.closeAndFlush({ timeout: 500 })
+      await ajs.closeAndFlush({ timeout: TIMEOUT })
       const elapsedTime = Math.round(Date.now() - startTime)
-      expect(elapsedTime).toBeLessThanOrEqual(510)
-      expect(elapsedTime).toBeGreaterThan(490)
+      expect(elapsedTime).toBeLessThanOrEqual(TIMEOUT + 10)
+      expect(elapsedTime).toBeGreaterThan(TIMEOUT - 10)
     })
 
     test('no new events should be accepted (but existing ones should be flushed)', async () => {
