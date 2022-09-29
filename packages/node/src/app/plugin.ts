@@ -1,19 +1,11 @@
 import {
   CorePlugin,
   CoreSegmentEvent,
-  PluginType,
   CoreContext,
 } from '@segment/analytics-core'
 import fetch, { Response } from 'node-fetch'
 import { version } from '../../package.json'
 import { AnalyticsNode } from './analytics-node'
-
-export interface AnalyticsNodePluginSettings {
-  writeKey: string
-  name: string
-  type: PluginType
-  version: string
-}
 
 const btoa = (val: string): string => Buffer.from(val).toString('base64')
 
@@ -39,7 +31,7 @@ export async function post(
 }
 
 export function analyticsNode(
-  settings: AnalyticsNodePluginSettings,
+  settings: { writeKey: string },
   analytics: AnalyticsNode
 ): CorePlugin {
   const send = async (ctx: CoreContext): Promise<CoreContext> => {
@@ -60,10 +52,9 @@ export function analyticsNode(
   }
 
   return {
-    name: settings.name,
-    type: settings.type,
-    version: settings.version,
-
+    name: 'analytics-node-next',
+    type: 'after',
+    version: '1.0.0',
     load: (ctx) => Promise.resolve(ctx),
     isLoaded: () => true,
 

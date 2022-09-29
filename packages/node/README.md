@@ -5,7 +5,7 @@ https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 NOTE:  @segment/analytics-node is unstable! do not use.
 
-## Basic Usage
+## Quick Start
 ```ts
 // analytics.ts
 import { AnalyticsNode } from '@segment/analytics-node'
@@ -21,7 +21,34 @@ analytics.track('hello world', {}, { userId: "123456" })
 
 ```
 
-# Event Emitter (Advanced Usage)
+## Graceful Shutdown
+### Avoid losing events on exit!
+ * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
+  * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
+```ts
+await analytics.closeAndFlush()
+```
+### Graceful Shutdown: Advanced Example
+```ts
+import express from 'express'
+const app = express()
+
+const server = app.listen(3000)
+app.get('/', (req, res) => res.send('Hello World!'));
+
+const onExit = async () => {
+  await analytics.closeAndFlush() // flush all existing events
+  setTimeout(() => {
+    server.close(() => process.exit())
+  }, 0);
+};
+
+process.on('SIGINT', onExit)
+process.on('SIGTERM', onExit);
+
+```
+
+## Event Emitter
 ```ts
 import { analytics } from './analytics'
 import { ContextCancelation, CoreContext } from '@segment/analytics-node'
@@ -31,13 +58,12 @@ analytics.on('identify', (ctx) => console.log(ctx.event))
 
 // listen for errors (if needed)
 analytics.on('error', (err) => {
-  if (err instanceof ContextCancelation) {
-    console.error('event cancelled', err.logs())
-  } else if (err instanceof CoreContext) {
-    console.error('event failed', err.logs())
+  if (err.code === 'http_delivery') {
+    console.error(err.response)
   } else {
     console.error(err)
   }
 })
 ```
+
 

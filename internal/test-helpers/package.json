@@ -1,0 +1,21 @@
+{
+  "name": "@internal/test-helpers",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently"
+  },
+  "dependencies": {
+    "tslib": "^2.4.0"
+  },
+  "packageManager": "yarn@3.2.1",
+  "devDependencies": {
+    "@internal/config": "0.0.0"
+  }
+}
