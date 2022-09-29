@@ -124,11 +124,7 @@ export class AnalyticsNode
         this.once('drained', () => resolve())
       }
     })
-    if (timeout) {
-      return pTimeout(promise, timeout).catch(() => undefined)
-    } else {
-      return promise
-    }
+    return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
   }
 
   private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
