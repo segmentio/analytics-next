@@ -115,11 +115,15 @@ describe(getDelay, () => {
   it('should calculate the amount of time to delay before invoking the callback', () => {
     const aShortTimeAgo = Date.now() - 200
     const timeout = 5000
-    expect(Math.round(getDelay(aShortTimeAgo, timeout))).toBe(4800)
+    const result = getDelay(aShortTimeAgo, timeout)
+    expect(result).toBeLessThanOrEqual(4800)
+    expect(result).toBeGreaterThanOrEqual(4790)
   })
 
   it('should have a sensible default', () => {
     const aShortTimeAgo = Date.now() - 200
-    expect(Math.round(getDelay(aShortTimeAgo))).toBe(100)
+    const result = getDelay(aShortTimeAgo)
+    expect(result).toBeLessThanOrEqual(100)
+    expect(result).toBeGreaterThanOrEqual(90)
   })
 })
