@@ -72,8 +72,6 @@ export class AnalyticsNode
   implements CoreAnalytics
 {
   private _eventFactory: EventFactory
-  private _drainedEventEmitTimeout?: ReturnType<typeof setTimeout>
-  private _drainedDelay: number
   private _isClosed = false
   private _pendingEvents = 0
 
@@ -84,7 +82,6 @@ export class AnalyticsNode
   constructor(settings: AnalyticsNodeSettings) {
     super()
     validateSettings(settings)
-    this._drainedDelay = settings.drainedDelay ?? 500
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new NodePriorityQueue(3))
 
@@ -134,10 +131,6 @@ export class AnalyticsNode
 
     this._pendingEvents++
 
-    if (this._drainedEventEmitTimeout) {
-      clearTimeout(this._drainedEventEmitTimeout)
-    }
-
     dispatchAndEmit(segmentEvent, this.queue, this, {
       callback: callback,
     })
@@ -146,9 +139,7 @@ export class AnalyticsNode
         this._pendingEvents--
 
         if (!this._pendingEvents) {
-          this._drainedEventEmitTimeout = setTimeout(() => {
-            this.emit('drained')
-          }, this._drainedDelay)
+          this.emit('drained')
         }
       })
   }

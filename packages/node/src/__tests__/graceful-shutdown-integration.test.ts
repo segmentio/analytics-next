@@ -20,7 +20,6 @@ describe('Ability for users to exit without losing events', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
     ajs = new AnalyticsNode({
-      drainedDelay: 100,
       writeKey: 'abc123',
     })
   })
@@ -36,45 +35,23 @@ describe('Ability for users to exit without losing events', () => {
   }
 
   describe('drained emitted event', () => {
-    test('Analytics should emit a drained event and respect the drained delay', async () => {
-      const DRAINED_DELAY = 500
-      ajs = new AnalyticsNode({
-        writeKey: 'abc123',
-        drainedDelay: DRAINED_DELAY,
-      })
+    test('emits a drained event if only one event is dispatched', async () => {
       _helpers.makeTrackCall()
-      const startTime = Date.now()
-      const drainedCbArgs = await _helpers.listenOnDrain()
-      const drainedTime = Date.now() - startTime
-      expect(drainedTime).toBeGreaterThan(DRAINED_DELAY)
-      expect(drainedTime).toBeLessThan(DRAINED_DELAY + 200)
-
-      expect(drainedCbArgs).toBeUndefined()
+      return expect(
+        new Promise((resolve) => ajs.once('drained', () => resolve(undefined)))
+      ).resolves.toBe(undefined)
     })
 
-    test('every time a new event enters the queue, the timeout should be reset (like debounce)', async () => {
-      const DRAINED_DELAY = 250
-      ajs = new AnalyticsNode({
-        writeKey: 'abc123',
-        drainedDelay: DRAINED_DELAY,
+    test('emits a drained event if multiple events are dispatched', async () => {
+      let drainedCalls = 0
+      ajs.on('drained', () => {
+        drainedCalls++
       })
-      await ajs.register({
-        ...testPlugin,
-        track: async (ctx) => {
-          await sleep(50) // should be
-          return ctx
-        },
-      })
-      await new Promise((resolve) =>
-        _helpers.makeTrackCall(undefined, () => resolve(undefined))
-      )
       _helpers.makeTrackCall()
-
-      const startTime = Date.now()
-      await _helpers.listenOnDrain()
-      const drainedTime = Date.now() - startTime
-      expect(drainedTime).toBeGreaterThan(DRAINED_DELAY)
-      expect(drainedTime).toBeLessThan(DRAINED_DELAY + 200)
+      _helpers.makeTrackCall()
+      _helpers.makeTrackCall()
+      await sleep(200)
+      expect(drainedCalls).toBe(1)
     })
 
     test('all callbacks should be called ', async () => {
@@ -133,7 +110,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(trackCallCount).toBe(1)
     })
 
-    test('if queue has multiple track events, all of those items should be dispatched, and drain and  track events should be emitted', async () => {
+    test('if queue has multiple track events, all of those items should be dispatched, and drain and track events should be emitted', async () => {
       let drainedCalls = 0
       ajs.on('drained', () => {
         drainedCalls++
