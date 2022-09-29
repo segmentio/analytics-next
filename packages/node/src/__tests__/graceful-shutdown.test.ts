@@ -23,7 +23,6 @@ describe('Ability for users to exit without losing events', () => {
       writeKey: 'abc123',
       drainedDelay: 200,
     })
-    await ajs.ready
   })
   const _helpers = {
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
