@@ -20,8 +20,8 @@ describe('Ability for users to exit without losing events', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
     ajs = new AnalyticsNode({
+      drainedDelay: 100,
       writeKey: 'abc123',
-      drainedDelay: 200,
     })
   })
   const _helpers = {
@@ -37,27 +37,19 @@ describe('Ability for users to exit without losing events', () => {
 
   describe('drained emitted event', () => {
     test('Analytics should emit a drained event and respect the drained delay', async () => {
+      const DRAINED_DELAY = 500
+      ajs = new AnalyticsNode({
+        writeKey: 'abc123',
+        drainedDelay: DRAINED_DELAY,
+      })
       _helpers.makeTrackCall()
       const startTime = Date.now()
       const drainedCbArgs = await _helpers.listenOnDrain()
       const drainedTime = Date.now() - startTime
-      expect(drainedTime).toBeGreaterThan(200)
-      expect(drainedTime).toBeLessThan(250)
+      expect(drainedTime).toBeGreaterThan(DRAINED_DELAY)
+      expect(drainedTime).toBeLessThan(DRAINED_DELAY + 200)
 
       expect(drainedCbArgs).toBeUndefined()
-    })
-
-    test('delay should be customizable', async () => {
-      ajs = new AnalyticsNode({
-        writeKey: 'abc123',
-        drainedDelay: 500,
-      })
-      _helpers.makeTrackCall(undefined)
-      const startTime = Date.now()
-      await _helpers.listenOnDrain()
-      const drainedTime = Date.now() - startTime
-      expect(drainedTime).toBeGreaterThan(500)
-      expect(drainedTime).toBeLessThan(550)
     })
 
     test('every time a new event enters the queue, the timeout should be reset (like debounce)', async () => {
