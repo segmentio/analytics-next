@@ -133,11 +133,6 @@ export class EventQueue extends Emitter<EventQueueEmitterContract> {
     ctx.attempts = 1
 
     return this.deliver(ctx).catch((err) => {
-      if (err instanceof ContextCancelation && err.retry === false) {
-        ctx.setFailedDelivery({ reason: err })
-        return ctx
-      }
-
       const accepted = this.enqueuRetry(err, ctx)
       if (!accepted) {
         ctx.setFailedDelivery({ reason: err })
@@ -194,16 +189,12 @@ export class EventQueue extends Emitter<EventQueueEmitterContract> {
   }
 
   private enqueuRetry(err: Error, ctx: CoreContext): boolean {
-    const notRetriable =
-      err instanceof ContextCancelation && err.retry === false
-    const retriable = !notRetriable
-
-    if (retriable) {
-      const accepted = this.queue.pushWithBackoff(ctx)
-      return accepted
+    const retriable = !(err instanceof ContextCancelation) || err.retry
+    if (!retriable) {
+      return false
     }
 
-    return false
+    return this.queue.pushWithBackoff(ctx)
   }
 
   async flush(): Promise<CoreContext[]> {
