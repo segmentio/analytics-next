@@ -27,6 +27,8 @@ analytics.track('hello world', {}, { userId: "123456" })
   * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
 ```ts
 await analytics.closeAndFlush()
+// or
+await analytics.closeAndFlush({ timeout: 5000 }) // automatically closes after 5000ms
 ```
 ### Graceful Shutdown: Advanced Example
 ```ts
