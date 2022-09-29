@@ -107,12 +107,13 @@ export class AnalyticsNode
 
   /**
    * Call this method to stop collecting new events and flush all existing events.
-   * If a callback on an event call is incluced, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
+   * This method also waits for any event method-specific callbacks to be triggered,
+   * and any of their subsequent promises to be resolved/rejected.
    */
   public closeAndFlush({
     timeout,
   }: {
-    /** Maximum time permitted to wait before resolving. */
+    /** Set a maximum time permitted to wait before resolving. Default = no maximum. */
     timeout?: number
   } = {}): Promise<void> {
     this._isClosed = true
