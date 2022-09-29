@@ -232,11 +232,9 @@ export class EventQueue extends Emitter {
         return true
       }
 
-      const alternativeNameMatch =
-        p.alternativeNames &&
-        p.alternativeNames.filter((name) =>
-          Object.keys(denyList).includes(name)
-        )
+      const alternativeNameMatch = p.alternativeNames?.filter((name) =>
+        Object.keys(denyList).includes(name)
+      )
 
       // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
       return (

@@ -1,3 +1,4 @@
+import { ActionDestination } from '../../plugins/remote-loader'
 import { Context, ContextCancelation } from '../context'
 import { Plugin } from '../plugin'
 
@@ -13,9 +14,12 @@ async function tryOperation(
 
 export function attempt(
   ctx: Context,
-  plugin: Plugin
+  plugin: Plugin | ActionDestination
 ): Promise<Context | ContextCancelation | Error | undefined> {
-  ctx.log('debug', 'plugin', { plugin: plugin.name })
+  const name = 'action' in plugin ? plugin.action.name : plugin.name
+
+  ctx.log('debug', 'plugin', { plugin: name })
+
   const start = new Date().getTime()
 
   const hook = plugin[ctx.event.type]
@@ -26,7 +30,7 @@ export function attempt(
   const newCtx = tryOperation(() => hook.apply(plugin, [ctx]))
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats.gauge('plugin_time', done, [`plugin:${plugin.name}`])
+      ctx.stats.gauge('plugin_time', done, [`plugin:${name}`])
       return ctx
     })
     .catch((err) => {
@@ -39,7 +43,7 @@ export function attempt(
 
       if (err instanceof ContextCancelation) {
         ctx.log('warn', err.type, {
-          plugin: plugin.name,
+          plugin: name,
           error: err,
         })
 
@@ -47,11 +51,11 @@ export function attempt(
       }
 
       ctx.log('error', 'plugin Error', {
-        plugin: plugin.name,
+        plugin: name,
         error: err,
       })
 
-      ctx.stats.increment('plugin_error', 1, [`plugin:${plugin.name}`])
+      ctx.stats.increment('plugin_error', 1, [`plugin:${name}`])
       return err as Error
     })
 

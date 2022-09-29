@@ -25,7 +25,7 @@ export interface RemotePlugin {
   settings: JSONObject
 }
 
-class ActionDestination implements Plugin {
+export class ActionDestination implements Plugin {
   name: string // destination name
   version = '1.0.0'
   type: Plugin['type']
@@ -100,7 +100,7 @@ class ActionDestination implements Plugin {
   }
 
   unload(ctx: Context, analytics: Analytics): Promise<unknown> | unknown {
-    return this.action.unload && this.action.unload(ctx, analytics)
+    return this.action.unload?.(ctx, analytics)
   }
 }
 
@@ -200,6 +200,7 @@ export async function remoteLoader(
               plugin
             )
 
+            /** Make sure we only apply destination filters to actions of the "destination" type to avoid causing issues for hybrid destinations */
             if (
               routing.length &&
               routingMiddleware &&
