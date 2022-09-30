@@ -10,6 +10,7 @@ export interface MiddlewareParams {
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
+analytics.identify('Test User', { loggedIn: true }, { userId: '123456' })
 export interface DestinationMiddlewareParams {
   payload: SegmentFacade
   integration: string

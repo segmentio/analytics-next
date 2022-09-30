@@ -1,25 +1,42 @@
-# TODO: API Documentation is out of date
 
-https://segment.com/docs/connections/sources/catalog/libraries/server/node/
+## Warning: Until 1.x release, use this library at your own risk!
+While the API is very similar, the documentation for the legacy SDK (`analytics-node`) is here: https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
-
-NOTE:  @segment/analytics-node is unstable! do not use.
 
 ## Quick Start
+### Install library
+```bash
+# npm
+npm install @segment/analytics-node
+# yarn
+yarn add @segment/analytics-node
+# pnpm
+pnpm install @segment/analytics-node
+```
+
+### Usage (assuming some express-like web framework)
 ```ts
-// analytics.ts
 import { AnalyticsNode } from '@segment/analytics-node'
 
-export const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
+const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
 
 
-// app.ts
-import { analytics } from './analytics'
+app.post('/login', (req, res) => {
+   analytics.identify({
+      userId: req.body.userId,
+      previousId: req.body.previousId
+  })
+})
 
-analytics.identify('Test User', { loggedIn: true }, { userId: "123456" })
-analytics.track('hello world', {}, { userId: "123456" })
-
+app.post('/cart', (req, res) => {
+  analytics.track({
+    userId: req.body.userId,
+    event: 'Add to cart',
+    properties: { productId: '123456' }
+  })
+});
 ```
+
 ## Graceful Shutdown
 ### Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
@@ -37,7 +54,13 @@ import express from 'express'
 const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
 
 const app = express()
-app.get('/', (req, res) => res.send('Hello World!'));
+app.post('/cart', (req, res) => {
+  analytics.track({
+    userId: req.body.userId,
+    event: 'Add to cart',
+    properties: { productId: '123456' }
+  })
+});
 
 const server = app.listen(3000)
 
