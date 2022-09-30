@@ -20,7 +20,6 @@ analytics.identify('Test User', { loggedIn: true }, { userId: "123456" })
 analytics.track('hello world', {}, { userId: "123456" })
 
 ```
-
 ## Graceful Shutdown
 ### Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
@@ -28,7 +27,7 @@ analytics.track('hello world', {}, { userId: "123456" })
 ```ts
 await analytics.closeAndFlush()
 // or
-await analytics.closeAndFlush({ timeout: 5000 }) // automatically closes after 5000ms
+await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
 ```
 ### Graceful Shutdown: Advanced Example
 ```ts
@@ -38,16 +37,22 @@ const app = express()
 const server = app.listen(3000)
 app.get('/', (req, res) => res.send('Hello World!'));
 
-const onExit = () => {
-  setTimeout(async () => {
-    await analytics.closeAndFlush() // flush all existing events
-    server.close(() => process.exit())
-  }, 0);
+const onExit = async () => {
+   await analytics.closeAndFlush() // flush all existing events
+  console.log("Closing server ...");
+  server.close(() => process.exit());
+  setTimeout(() => {
+    console.log("Force closing!");
+    process.exit(1);
+  }, 5000); // force close if connections are still open after 5 seconds
 };
+
+process.on("SIGINT", onExit);
+process.on("SIGTERM", onExit);
 
 process.on('SIGINT', onExit)
 process.on('SIGTERM', onExit);
-
+```
 ```
 
 ## Event Emitter
