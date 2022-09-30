@@ -27,11 +27,6 @@ describe('Ability for users to exit without losing events', () => {
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
       analytics.track({ userId: 'foo', event: 'Thing Updated', callback: cb })
     },
-    listenOnDrain: (): Promise<undefined> => {
-      return new Promise((resolve) => {
-        ajs.once('drained', () => resolve(undefined))
-      })
-    },
   }
 
   describe('drained emitted event', () => {

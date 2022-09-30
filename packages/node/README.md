@@ -38,7 +38,7 @@ const server = app.listen(3000)
 app.get('/', (req, res) => res.send('Hello World!'));
 
 const onExit = async () => {
-   await analytics.closeAndFlush() // flush all existing events
+  await analytics.closeAndFlush() // flush all existing events
   console.log("Closing server ...");
   server.close(() => process.exit());
   setTimeout(() => {
@@ -49,10 +49,6 @@ const onExit = async () => {
 
 process.on("SIGINT", onExit);
 process.on("SIGTERM", onExit);
-
-process.on('SIGINT', onExit)
-process.on('SIGTERM', onExit);
-```
 ```
 
 ## Event Emitter
