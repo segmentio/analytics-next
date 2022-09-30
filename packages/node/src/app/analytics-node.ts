@@ -43,6 +43,7 @@ export interface NodeSegmentEventOptions {
  */
 type NodeEmitterEvents = CoreEmitterContract<NodeContext, NodeEmittedError> & {
   initialize: [AnalyticsNodeSettings]
+  call_after_close: [NodeSegmentEvent] // any event that did not get dispatched due to close
   drained: []
 }
 
@@ -126,6 +127,7 @@ export class AnalyticsNode
 
   private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
     if (this._isClosed) {
+      this.emit('call_after_close', segmentEvent as NodeSegmentEvent)
       return undefined
     }
 

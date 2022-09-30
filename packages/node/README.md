@@ -51,6 +51,17 @@ process.on("SIGINT", onExit);
 process.on("SIGTERM", onExit);
 ```
 
+### Graceful Shutdown:
+If you absolutely need to preserve all possible events in the event of a forced timeout, even ones that came in after  `analytics.closeAndFlush()` was called, you can collect those events.
+```ts
+const events = []
+ajs.on('call_after_close', (event) => events.push(events))
+await analytics.closeAndFlush()
+console.log(events) // all events that came in after closeAndFlush was called
+
+```
+
+
 ## Event Emitter
 ```ts
 import { analytics } from './analytics'

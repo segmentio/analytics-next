@@ -3,7 +3,7 @@ import { createSuccess } from './test-helpers/factories'
 const fetcher = jest.fn().mockReturnValue(createSuccess())
 jest.mock('node-fetch', () => fetcher)
 
-import { AnalyticsNode } from '../app/analytics-node'
+import { AnalyticsNode, NodeSegmentEvent } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
 
@@ -103,6 +103,19 @@ describe('Ability for users to exit without losing events', () => {
       await closed
       expect(fetcher).toBeCalledTimes(1)
       expect(trackCallCount).toBe(1)
+    })
+    test('any events created after close should emit an error', async () => {
+      const events: NodeSegmentEvent[] = []
+      ajs.on('call_after_close', (event) => {
+        events.push(event)
+      })
+      _helpers.makeTrackCall()
+      const closed = ajs.closeAndFlush()
+      _helpers.makeTrackCall() // should be emitted
+      _helpers.makeTrackCall() // should be emitted
+      expect(events.length).toBe(2)
+      expect(events.every((e) => e.type === 'track')).toBeTruthy()
+      await closed
     })
 
     test('if queue has multiple track events, all of those items should be dispatched, and drain and track events should be emitted', async () => {
