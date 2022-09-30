@@ -31,33 +31,43 @@ await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
 ```
 ### Graceful Shutdown: Advanced Example
 ```ts
+import { AnalyticsNode } from '@segment/analytics-node'
 import express from 'express'
-const app = express()
 
-const server = app.listen(3000)
+const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
+
+const app = express()
 app.get('/', (req, res) => res.send('Hello World!'));
 
+const server = app.listen(3000)
+
+
 const onExit = async () => {
+  console.log("Gracefully closing server...");
+
   await analytics.closeAndFlush() // flush all existing events
-  console.log("Closing server ...");
+
   server.close(() => process.exit());
+
   setTimeout(() => {
-    console.log("Force closing!");
+    console.log("Force closing server!");
     process.exit(1);
-  }, 5000); // force close if connections are still open after 5 seconds
+  }, 5000);
 };
 
 process.on("SIGINT", onExit);
 process.on("SIGTERM", onExit);
 ```
 
-### Graceful Shutdown:
+#### Collecting unflushed events
 If you absolutely need to preserve all possible events in the event of a forced timeout, even ones that came in after  `analytics.closeAndFlush()` was called, you can collect those events.
 ```ts
-const events = []
-ajs.on('call_after_close', (event) => events.push(events))
+const unflushedEvents = []
+
+analytics.on('call_after_close', (event) => unflushedEvents.push(events))
 await analytics.closeAndFlush()
-console.log(events) // all events that came in after closeAndFlush was called
+
+console.log(unflushedEvents) // all events that came in after closeAndFlush was called
 
 ```
 
