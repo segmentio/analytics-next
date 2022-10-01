@@ -104,7 +104,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(fetcher).toBeCalledTimes(1)
       expect(trackCallCount).toBe(1)
     })
-    test('any events created after close should emit an error', async () => {
+    test('any events created after close should be emitted', async () => {
       const events: NodeSegmentEvent[] = []
       ajs.on('call_after_close', (event) => {
         events.push(event)
