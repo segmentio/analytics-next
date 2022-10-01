@@ -67,15 +67,8 @@ const server = app.listen(3000)
 
 const onExit = async () => {
   console.log("Gracefully closing server...");
-
   await analytics.closeAndFlush() // flush all existing events
-
   server.close(() => process.exit());
-
-  setTimeout(() => {
-    console.log("Force closing server!");
-    process.exit(1);
-  }, 5000);
 };
 
 process.on("SIGINT", onExit);
