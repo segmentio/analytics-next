@@ -92,7 +92,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     }, timeout)
   }
 
-  window.addEventListener('beforeunload', () => {
+  window.addEventListener('pagehide', () => {
     pageUnloaded = true
 
     if (buffer.length) {

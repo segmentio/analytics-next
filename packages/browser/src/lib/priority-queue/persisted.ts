@@ -109,7 +109,7 @@ export class PersistedPriorityQueue extends PriorityQueue<Context> {
       }
     })
 
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('pagehide', () => {
       if (this.todo > 0) {
         const items = [...this.queue, ...this.future]
         try {
