@@ -10,7 +10,13 @@ module.exports = () => {
   global.JEST_ROOT_CONFIG = true
 
   const config = createJestTSConfig({
-    projects: ['<rootDir>/packages/*'],
+    projects: [
+      // being explicit here, as a globbing bug means that using packages/* can cause problems in non-worktrees (haven't fully investigated yet).
+      '<rootDir>/packages/core',
+      '<rootDir>/packages/core-integration-tests',
+      '<rootDir>/packages/node',
+      '<rootDir>/packages/browser',
+    ],
   })
   return config
 }
