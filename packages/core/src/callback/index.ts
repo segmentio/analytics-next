@@ -1,23 +1,22 @@
 import { CoreContext } from '../context'
 import type { Callback } from '../events'
 
-export function pTimeout(
-  cb: Promise<unknown>,
-  timeout: number
-): Promise<unknown> {
+export function pTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(Error('Promise timed out'))
     }, timeout)
 
-    cb.then((val) => {
-      clearTimeout(timeoutId)
-      return resolve(val)
-    }).catch(reject)
+    promise
+      .then((val) => {
+        clearTimeout(timeoutId)
+        return resolve(val)
+      })
+      .catch(reject)
   })
 }
 
-function sleep(timeoutInMs: number): Promise<void> {
+export function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
 }
 

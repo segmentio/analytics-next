@@ -88,8 +88,8 @@ describe('Analytics Node', () => {
   })
 
   test('Track: Fires http requests to the correct endoint', async () => {
-    ajs.track({ event: 'track', userId: 'foo' })
-    ajs.track({ event: 'track', userId: 'foo', properties: { foo: 'bar' } })
+    ajs.track({ event: 'foo', userId: 'foo' })
+    ajs.track({ event: 'bar', userId: 'foo', properties: { foo: 'bar' } })
     await resolveCtx(ajs, 'track')
     expect(fetcher).toHaveBeenCalledWith(
       'https://api.segment.io/v1/track',

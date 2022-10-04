@@ -955,6 +955,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/test-helpers@workspace:internal/test-helpers":
+  version: 0.0.0-use.local
+  resolution: "@internal/test-helpers@workspace:internal/test-helpers"
+  dependencies:
+    "@internal/config": 0.0.0
+    tslib: ^2.4.0
+  languageName: unknown
+  linkType: soft
+
 "@istanbuljs/load-nyc-config@npm:^1.0.0":
   version: 1.1.0
   resolution: "@istanbuljs/load-nyc-config@npm:1.1.0"

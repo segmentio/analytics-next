@@ -14,9 +14,10 @@ import {
   bindAll,
   PriorityQueue,
   CoreEmitterContract,
+  pTimeout,
 } from '@segment/analytics-core'
 import { AnalyticsNodeSettings, validateSettings } from './settings'
-import { analyticsNode, AnalyticsNodePluginSettings } from './plugin'
+import { analyticsNode } from './plugin'
 
 import { version } from '../../package.json'
 import { NodeEmittedError } from './emitted-errors'
@@ -42,6 +43,8 @@ export interface NodeSegmentEventOptions {
  */
 type NodeEmitterEvents = CoreEmitterContract<NodeContext, NodeEmittedError> & {
   initialize: [AnalyticsNodeSettings]
+  call_after_close: [NodeSegmentEvent] // any event that did not get dispatched due to close
+  drained: []
 }
 
 class NodePriorityQueue extends PriorityQueue<NodeContext> {
@@ -70,25 +73,22 @@ export class AnalyticsNode
   implements CoreAnalytics
 {
   private _eventFactory: EventFactory
+  private _isClosed = false
+  private _pendingEvents = 0
 
   queue: EventQueue
 
   ready: Promise<void>
 
   constructor(settings: AnalyticsNodeSettings) {
-    validateSettings(settings)
     super()
+    validateSettings(settings)
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new NodePriorityQueue(3))
 
-    const nodeSettings: AnalyticsNodePluginSettings = {
-      name: 'analytics-node-next',
-      type: 'after',
-      version: 'latest',
-      writeKey: settings.writeKey,
-    }
-
-    this.ready = this.register(analyticsNode(nodeSettings, this))
+    this.ready = this.register(
+      analyticsNode({ writeKey: settings.writeKey }, this)
+    )
       .then(() => undefined)
       .catch((err) => {
         console.error(err)
@@ -103,11 +103,49 @@ export class AnalyticsNode
     return version
   }
 
+  /**
+   * Call this method to stop collecting new events and flush all existing events.
+   * This method also waits for any event method-specific callbacks to be triggered,
+   * and any of their subsequent promises to be resolved/rejected.
+   */
+  public closeAndFlush({
+    timeout,
+  }: {
+    /** Set a maximum time permitted to wait before resolving. Default = no maximum. */
+    timeout?: number
+  } = {}): Promise<void> {
+    this._isClosed = true
+    const promise = new Promise<void>((resolve) => {
+      if (!this._pendingEvents) {
+        resolve()
+      } else {
+        this.once('drained', () => resolve())
+      }
+    })
+    return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
+  }
+
   private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
+    if (this._isClosed) {
+      this.emit('call_after_close', segmentEvent as NodeSegmentEvent)
+      return undefined
+    }
+
+    this._pendingEvents++
+
     dispatchAndEmit(segmentEvent, this.queue, this, {
       callback: callback,
-    }).catch((err) => err) // we ignore errors, since we have an event emitter
+    })
+      .catch((ctx) => ctx)
+      .finally(() => {
+        this._pendingEvents--
+
+        if (!this._pendingEvents) {
+          this.emit('drained')
+        }
+      })
   }
+
   /**
    * Combines two unassociated user identities.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
