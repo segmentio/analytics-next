@@ -1,5 +1,6 @@
 import { PriorityQueue } from '../../../lib/priority-queue'
 import { MiddlewareParams } from '../../../plugins/middleware'
+import { retrieveStoredData } from '../../../test-helpers/retrieve-stored-data'
 import { Context } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
@@ -219,6 +220,40 @@ describe('Analytics', () => {
           expect(context.failedDelivery()).toBeTruthy()
         })
       })
+    })
+  })
+
+  describe('reset', () => {
+    it('clears user and group data', async () => {
+      const analytics = new Analytics({ writeKey: '' })
+
+      const cookieNames = ['ajs_user_id', 'ajs_anonymous_id', 'ajs_group_id']
+      const localStorageKeys = ['ajs_user_traits', 'ajs_group_properties']
+
+      analytics.user().anonymousId('unknown-user')
+      analytics.user().id('known-user')
+      analytics.user().traits({ job: 'engineer' })
+      analytics.group().id('known-group')
+      analytics.group().traits({ team: 'analytics' })
+
+      // Ensure all cookies/localstorage is written correctly first
+      let storedData = retrieveStoredData({ cookieNames, localStorageKeys })
+      expect(storedData).toEqual({
+        ajs_user_id: 'known-user',
+        ajs_anonymous_id: 'unknown-user',
+        ajs_group_id: 'known-group',
+        ajs_user_traits: {
+          job: 'engineer',
+        },
+        ajs_group_properties: {
+          team: 'analytics',
+        },
+      })
+
+      // Now make sure everything was cleared on reset
+      analytics.reset()
+      storedData = retrieveStoredData({ cookieNames, localStorageKeys })
+      expect(storedData).toEqual({})
     })
   })
 })
