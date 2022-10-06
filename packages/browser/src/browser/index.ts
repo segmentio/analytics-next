@@ -23,6 +23,7 @@ import {
   flushOn,
 } from '../core/buffer'
 import { popSnippetWindowBuffer } from '../core/buffer/snippet'
+import { inspectorHost } from '../core/inspector'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -269,6 +270,8 @@ async function loadAnalytics(
 
   const opts: InitOptions = { retryQueue, ...options }
   const analytics = new Analytics(settings, opts)
+
+  inspectorHost.attach?.(analytics as any)
 
   const plugins = settings.plugins ?? []
   Context.initMetrics(legacySettings.metrics)
