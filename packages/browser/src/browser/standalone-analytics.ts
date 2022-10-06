@@ -6,6 +6,7 @@ export type AnalyticsSnippet = Analytics & {
   _loadOptions?: InitOptions
   _writeKey?: string
   _cdn?: string
+  load?: (writeKey: string, options?: InitOptions) => void
 }
 
 declare global {
