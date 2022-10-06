@@ -2,7 +2,7 @@ import jsdom, { JSDOM } from 'jsdom'
 import { InitOptions } from '../../'
 import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
-import { install, AnalyticsSnippet } from '../standalone-analytics'
+import { install, AnalyticsStandalone } from '../standalone-analytics'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../test-helpers/sleep'
@@ -99,7 +99,7 @@ describe('standalone bundle', () => {
 
     const spy = jest
       .spyOn(AnalyticsBrowser, 'standalone')
-      .mockResolvedValueOnce(fakeAjs as AnalyticsSnippet)
+      .mockResolvedValueOnce(fakeAjs as AnalyticsStandalone)
 
     await install()
 
@@ -114,7 +114,7 @@ describe('standalone bundle', () => {
     }
     const spy = jest
       .spyOn(AnalyticsBrowser, 'standalone')
-      .mockResolvedValueOnce(fakeAjs as AnalyticsSnippet)
+      .mockResolvedValueOnce(fakeAjs as AnalyticsStandalone)
 
     await install()
 
