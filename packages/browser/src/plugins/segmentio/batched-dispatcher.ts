@@ -1,5 +1,6 @@
 import unfetch from 'unfetch'
 import { SegmentEvent } from '../../core/events'
+import { onPageLeave } from '../../lib/on-page-leave'
 
 let fetch = unfetch
 if (typeof window !== 'undefined') {
@@ -92,7 +93,7 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
     }, timeout)
   }
 
-  window.addEventListener('beforeunload', () => {
+  onPageLeave(() => {
     pageUnloaded = true
 
     if (buffer.length) {
