@@ -1,6 +1,7 @@
 import { PriorityQueue } from '.'
 import { CoreContext, SerializedContext } from '../context'
 
+// TODO: Move this back into browser
 const nullStorage = (): Storage => ({
   getItem: () => null,
   setItem: () => null,
@@ -118,8 +119,7 @@ export class PersistedPriorityQueue extends PriorityQueue<CoreContext> {
         console.error(err)
       }
     })
-
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('pagehide', () => {
       if (this.todo > 0) {
         const items = [...this.queue, ...this.future]
         try {

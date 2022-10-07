@@ -224,7 +224,7 @@ describe('Batching', () => {
 
       expect(fetch).not.toHaveBeenCalled()
 
-      window.dispatchEvent(new Event('beforeunload'))
+      document.dispatchEvent(new Event('pagehide'))
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
@@ -253,7 +253,7 @@ describe('Batching', () => {
 
       expect(fetch).not.toHaveBeenCalled()
 
-      window.dispatchEvent(new Event('beforeunload'))
+      document.dispatchEvent(new Event('pagehide'))
 
       expect(fetch).toHaveBeenCalledTimes(2)
     })
