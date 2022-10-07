@@ -1518,7 +1518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-core@1.0.1, @segment/analytics-core@workspace:^, @segment/analytics-core@workspace:packages/core":
+"@segment/analytics-core@1.1.0, @segment/analytics-core@workspace:^, @segment/analytics-core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-core@workspace:packages/core"
   dependencies:
@@ -1534,7 +1534,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.0.1
+    "@segment/analytics-core": 1.1.0
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
     "@segment/inspector-webext": ^1.1.0
@@ -1590,7 +1590,7 @@ __metadata:
   resolution: "@segment/analytics-node@workspace:packages/node"
   dependencies:
     "@internal/config": 0.0.0
-    "@segment/analytics-core": 1.0.1
+    "@segment/analytics-core": 1.1.0
     "@types/node": ^12.12.14
     node-fetch: ^2.6.7
     tslib: ^2.4.0
