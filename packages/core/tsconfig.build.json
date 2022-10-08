@@ -3,7 +3,7 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/*.test.*"],
   "compilerOptions": {
-    "incremental": true,
+    "incremental": false,
     "outDir": "./dist/esm",
     "importHelpers": true,
     // publish sourceMaps
