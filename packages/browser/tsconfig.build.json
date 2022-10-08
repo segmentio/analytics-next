@@ -3,7 +3,6 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/test-helpers/**", "**/tester/**"],
   "compilerOptions": {
-    "incremental": false,
     "outDir": "./dist/pkg",
     "importHelpers": true,
     // publish sourceMaps

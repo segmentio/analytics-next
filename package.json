@@ -13,7 +13,7 @@
   "scripts": {
     "test": "jest",
     "test:scripts": "jest --config scripts/jest.config.js",
-    "lint": "yarn constraints && turbo run lint",
+    "lint": "yarn constraints && turbo run lint --continue",
     "build": "turbo run build --filter='./packages/*'",
     "watch": "turbo run watch --filter='./packages/*'",
     "dev": "yarn workspace with-next-js run dev",
