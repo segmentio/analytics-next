@@ -37,7 +37,7 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { inspectorHost } from '../inspector'
-import { AnalyticsClassic, AnalyticsSnippetCore } from './interfaces'
+import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -84,7 +84,7 @@ function _stub(this: never) {
 
 export class Analytics
   extends Emitter
-  implements AnalyticsSnippetCore, AnalyticsClassic
+  implements AnalyticsCore, AnalyticsClassic
 {
   protected settings: AnalyticsSettings
   private _user: User

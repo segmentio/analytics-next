@@ -72,9 +72,9 @@ export interface AnalyticsClassic extends AnalyticsClassicStubs {
 }
 
 /**
- * Interface implemented by the snippet ('Analytics')
+ * Interface implemented by concrete Analytics class (commonly accessible if you use "await" on AnalyticsBrowser.load())
  */
-export interface AnalyticsSnippetCore {
+export type AnalyticsCore = {
   track(...args: EventParams): Promise<DispatchedEvent>
   page(...args: PageParams): Promise<DispatchedEvent>
   identify(...args: UserParams): Promise<DispatchedEvent>
@@ -89,18 +89,10 @@ export interface AnalyticsSnippetCore {
 }
 
 /**
- * Interface implemented by AnalyticsBrowser
+ * Interface implemented by AnalyticsBrowser (buffered version of analytics) (commonly accessible through AnalyticsBrowser.load())
  */
-export interface AnalyticsBrowserCore {
-  track: AnalyticsSnippetCore['track']
-  page: AnalyticsSnippetCore['page']
-  identify: AnalyticsSnippetCore['identify']
-  group(): Promise<Group> // Different than AnalyticsSnippetCore ^
+export type AnalyticsBrowserCore = Omit<AnalyticsCore, 'group' | 'user'> & {
+  group(): Promise<Group>
   group(...args: UserParams): Promise<DispatchedEvent>
-  alias: AnalyticsSnippetCore['alias']
-  screen: AnalyticsSnippetCore['screen']
-  register: AnalyticsSnippetCore['register']
-  deregister: AnalyticsSnippetCore['deregister']
-  user(): Promise<User> // Different than AnalyticsSnippetCore ^
-  readonly VERSION: AnalyticsSnippetCore['VERSION']
+  user(): Promise<User>
 }
