@@ -14,7 +14,7 @@ export interface AnalyticsStandalone extends Analytics {
 
 declare global {
   interface Window {
-    analytics: AnalyticsStandalone
+    analytics: AnalyticsSnippet
   }
 }
 
@@ -67,5 +67,8 @@ export async function install(): Promise<void> {
     return
   }
 
-  window.analytics = await AnalyticsBrowser.standalone(writeKey, options)
+  window.analytics = (await AnalyticsBrowser.standalone(
+    writeKey,
+    options
+  )) as AnalyticsSnippet
 }
