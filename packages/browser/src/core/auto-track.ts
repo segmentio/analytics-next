@@ -2,15 +2,6 @@ import { Analytics } from './analytics'
 import { EventProperties, Options } from './events'
 import { pTimeout } from './callback'
 
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jQuery: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Zepto: any
-  }
-}
-
 // Check if a user is opening the link in a new tab
 function userNewTab(event: Event): boolean {
   const typedEvent = event as Event & {
@@ -145,7 +136,8 @@ export function form(
 
     // Support the events happening through jQuery or Zepto instead of through
     // the normal DOM API, because `el.submit` doesn't bubble up events...
-    const $ = window.jQuery || window.Zepto
+
+    const $ = (window as any).jQuery || (window as any).Zepto
     if ($) {
       $(el).submit(handler)
     } else {

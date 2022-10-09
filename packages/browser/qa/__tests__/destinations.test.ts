@@ -14,11 +14,7 @@ let destinations = Object.keys(samples)
 if (process.env.DESTINATION) {
   destinations = [process.env.DESTINATION]
 }
-declare global {
-  interface URLSearchParams {
-    entries(): [string, string][]
-  }
-}
+
 
 jest.retryTimes(10)
 describe('Destination Tests', () => {
