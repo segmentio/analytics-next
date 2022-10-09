@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.43.2
+
+### Patch Changes
+
+- [#621](https://github.com/segmentio/analytics-next/pull/621) [`5026ee1`](https://github.com/segmentio/analytics-next/commit/5026ee1e69a16e4597bd9c95d57158f831e9b983) Thanks [@silesky](https://github.com/silesky)! - Fix ambient import conflict bug
+
 ## 1.43.1
 
 ### Patch Changes
