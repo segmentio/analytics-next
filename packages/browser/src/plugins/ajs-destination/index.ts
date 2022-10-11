@@ -19,7 +19,6 @@ import {
 } from '../middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
-import { klona } from '../../lib/klona'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -221,7 +220,7 @@ export class LegacyDestination implements Plugin {
 
     const afterMiddleware = await applyDestinationMiddleware(
       this.name,
-      klona(ctx.event),
+      ctx.event,
       this.middleware
     )
 
