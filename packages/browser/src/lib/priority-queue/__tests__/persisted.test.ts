@@ -41,9 +41,9 @@ describe('Persisted Priority Queue', () => {
     let onUnload: any = jest.fn()
 
     jest
-      .spyOn(window, 'addEventListener')
+      .spyOn(document, 'addEventListener')
       .mockImplementation((evt, handler) => {
-        if (evt === 'beforeunload') {
+        if (evt === 'pagehide') {
           onUnload = handler
         }
       })
@@ -102,9 +102,9 @@ describe('Persisted Priority Queue', () => {
       let onUnload: any = jest.fn()
 
       jest
-        .spyOn(window, 'addEventListener')
+        .spyOn(document, 'addEventListener')
         .mockImplementation((evt, handler) => {
-          if (evt === 'beforeunload') {
+          if (evt === 'pagehide') {
             onUnload = handler
           }
         })
@@ -200,9 +200,9 @@ describe('Persisted Priority Queue', () => {
       const onUnloadFunctions: any[] = []
 
       jest
-        .spyOn(window, 'addEventListener')
+        .spyOn(document, 'addEventListener')
         .mockImplementation((evt, handler) => {
-          if (evt === 'beforeunload') {
+          if (evt === 'pagehide') {
             onUnloadFunctions.push(handler)
           }
         })

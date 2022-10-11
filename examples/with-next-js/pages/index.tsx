@@ -45,7 +45,7 @@ export default function Home(): React.ReactElement {
     setWriteKey,
   } = useAnalytics()
 
-  const mockTraits = (): any => {
+  const mockTraits = (): string => {
     const fakerFns = [
       ...Object.entries(faker.name),
       ...Object.entries(faker.commerce),
@@ -65,11 +65,14 @@ export default function Home(): React.ReactElement {
       }
     }, {})
 
-    return event
+    return JSON.stringify(event, undefined, 2)
   }
 
-  const [event, setEvent] = React.useState({} as ReturnType<typeof mockTraits>)
+  const [event, setEvent] = React.useState('')
   const [ctx, setCtx] = React.useState<Context>()
+  const [options, setOptions] = React.useState(
+    JSON.stringify({ integrations: { All: true } }, undefined, 2)
+  )
 
   useEffect(() => {
     async function handleAnalyticsLoading(browser: AnalyticsBrowser) {
@@ -84,7 +87,8 @@ export default function Home(): React.ReactElement {
         console.error(err)
         setCtx(undefined)
         setAnalytics(undefined)
-        setEvent({})
+        setEvent('{}')
+        setOptions('{}')
       }
     }
     handleAnalyticsLoading(analyticsBrowser).catch(console.error)
@@ -142,10 +146,18 @@ export default function Home(): React.ReactElement {
             >
               <Editor
                 value={event}
-                onValueChange={(event) => setEvent(JSON.parse(event))}
-                highlight={(code) =>
-                  highlight(JSON.stringify(code, undefined, 2), languages.json)
-                }
+                onValueChange={(event) => setEvent(event)}
+                highlight={(code) => highlight(code, languages.json)}
+                padding={10}
+                style={{
+                  fontFamily: '"Fira code", "Fira Mono", monospace',
+                  fontSize: 12,
+                }}
+              />
+              <Editor
+                value={options}
+                onValueChange={(opts) => setOptions(opts)}
+                highlight={(code) => highlight(code, languages.json)}
                 padding={10}
                 style={{
                   fontFamily: '"Fira code", "Fira Mono", monospace',
@@ -160,8 +172,13 @@ export default function Home(): React.ReactElement {
               }}
               onClick={(e) => {
                 e.preventDefault()
+                const parsedEvent = JSON.parse(event)
                 analytics
-                  .track(event?.event ?? 'Track Event', event)
+                  .track(
+                    parsedEvent?.event ?? 'Track Event',
+                    parsedEvent,
+                    JSON.parse(options)
+                  )
                   .then(setCtx)
                   .catch(console.error)
               }}
@@ -175,9 +192,9 @@ export default function Home(): React.ReactElement {
               className="drac-btn drac-bg-purple-cyan"
               onClick={(e) => {
                 e.preventDefault()
-                const { userId = 'Test User', ...traits } = event
+                const { userId = 'Test User', ...traits } = JSON.parse(event)
                 void analytics
-                  .identify(userId, traits)
+                  .identify(userId, traits, JSON.parse(options))
                   .then(setCtx)
                   .catch(console.error)
               }}

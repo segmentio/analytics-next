@@ -1,5 +1,24 @@
 # @segment/analytics-next
 
+## 1.43.2
+
+### Patch Changes
+
+- [#621](https://github.com/segmentio/analytics-next/pull/621) [`5026ee1`](https://github.com/segmentio/analytics-next/commit/5026ee1e69a16e4597bd9c95d57158f831e9b983) Thanks [@silesky](https://github.com/silesky)! - Fix ambient import conflict bug
+
+## 1.43.1
+
+### Patch Changes
+
+- [#615](https://github.com/segmentio/analytics-next/pull/615) [`6d51d38`](https://github.com/segmentio/analytics-next/commit/6d51d3839d7df8b5241b824fe9c0761d4c18dcf2) Thanks [@silesky](https://github.com/silesky)! - Add the load function type to AnalyticsSnippet
+
+* [#611](https://github.com/segmentio/analytics-next/pull/611) [`29c3bd7`](https://github.com/segmentio/analytics-next/commit/29c3bd7602bed1871b1a0048531ddffd47ce5710) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes analytics.reset() so that it clears group data.
+
+- [#613](https://github.com/segmentio/analytics-next/pull/613) [`503bea2`](https://github.com/segmentio/analytics-next/commit/503bea221643dbd317376c28c7ce60c688329756) Thanks [@silesky](https://github.com/silesky)! - fix change detection bug and add ability to detect tab focus loss events
+
+- Updated dependencies [[`4644afc`](https://github.com/segmentio/analytics-next/commit/4644afc5be2dac90465e16a485ef5c34ff694da3), [`598fc31`](https://github.com/segmentio/analytics-next/commit/598fc318a457ac6e5b04d04406f8d836d83763a4), [`ce90543`](https://github.com/segmentio/analytics-next/commit/ce905439355c1cbd306535600bf356710be147de), [`7b5d3df`](https://github.com/segmentio/analytics-next/commit/7b5d3df8d7d8e479d1dda4557297baedb3cdcf6f)]:
+  - @segment/analytics-core@1.1.0
+
 ## 1.43.0
 
 ### Minor Changes

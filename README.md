@@ -104,7 +104,7 @@ export const useAnalytics = () => {
 const TrackButton = () => {
   const analytics = useAnalytics()
   return (
-    <button onClick={() => analytics.track('hello world').then(console.log)}>
+    <button onClick={() => analytics.track('hello world')}>
       Track!
     </button>
   )

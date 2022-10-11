@@ -1,3 +1,4 @@
+import { CoreContext } from '../context'
 import { Emitter } from '../emitter'
 import { backoff } from './backoff'
 
@@ -10,22 +11,28 @@ export interface WithID {
   id: string
 }
 
-export class PriorityQueue<T extends WithID = WithID> extends Emitter {
-  protected future: T[] = []
-  protected queue: T[]
+export class PriorityQueue<
+  Context extends WithID = CoreContext
+> extends Emitter {
+  protected future: Context[] = []
+  protected queue: Context[]
   protected seen: Record<string, number>
 
   public maxAttempts: number
 
-  constructor(maxAttempts: number, queue: T[], seen?: Record<string, number>) {
+  constructor(
+    maxAttempts: number,
+    queue: Context[],
+    seen?: Record<string, number>
+  ) {
     super()
     this.maxAttempts = maxAttempts
     this.queue = queue
     this.seen = seen ?? {}
   }
 
-  push(...operations: T[]): boolean[] {
-    const accepted = operations.map((operation) => {
+  push(...ctx: Context[]): boolean[] {
+    const accepted = ctx.map((operation) => {
       const attempts = this.updateAttempts(operation)
 
       if (attempts > this.maxAttempts || this.includes(operation)) {
@@ -42,50 +49,50 @@ export class PriorityQueue<T extends WithID = WithID> extends Emitter {
     return accepted
   }
 
-  pushWithBackoff(operation: T): boolean {
-    if (this.getAttempts(operation) === 0) {
-      return this.push(operation)[0]
+  pushWithBackoff(ctx: Context): boolean {
+    if (this.getAttempts(ctx) === 0) {
+      return this.push(ctx)[0]
     }
 
-    const attempt = this.updateAttempts(operation)
+    const attempt = this.updateAttempts(ctx)
 
-    if (attempt > this.maxAttempts || this.includes(operation)) {
+    if (attempt > this.maxAttempts || this.includes(ctx)) {
       return false
     }
 
     const timeout = backoff({ attempt: attempt - 1 })
 
     setTimeout(() => {
-      this.queue.push(operation)
+      this.queue.push(ctx)
       // remove from future list
-      this.future = this.future.filter((f) => f.id !== operation.id)
+      this.future = this.future.filter((f) => f.id !== ctx.id)
       // Lets listeners know that a 'future' message is now available in the queue
       this.emit(ON_REMOVE_FROM_FUTURE)
     }, timeout)
 
-    this.future.push(operation)
+    this.future.push(ctx)
     return true
   }
 
-  public getAttempts(operation: T): number {
-    return this.seen[operation.id] ?? 0
+  public getAttempts(ctx: Context): number {
+    return this.seen[ctx.id] ?? 0
   }
 
-  public updateAttempts(operation: T): number {
-    this.seen[operation.id] = this.getAttempts(operation) + 1
-    return this.getAttempts(operation)
+  public updateAttempts(ctx: Context): number {
+    this.seen[ctx.id] = this.getAttempts(ctx) + 1
+    return this.getAttempts(ctx)
   }
 
-  includes(operation: T): boolean {
+  includes(ctx: Context): boolean {
     return (
-      this.queue.includes(operation) ||
-      this.future.includes(operation) ||
-      Boolean(this.queue.find((i) => i.id === operation.id)) ||
-      Boolean(this.future.find((i) => i.id === operation.id))
+      this.queue.includes(ctx) ||
+      this.future.includes(ctx) ||
+      Boolean(this.queue.find((i) => i.id === ctx.id)) ||
+      Boolean(this.future.find((i) => i.id === ctx.id))
     )
   }
 
-  pop(): T | undefined {
+  pop(): Context | undefined {
     return this.queue.shift()
   }
 

@@ -1,13 +1,11 @@
-import { CoreContext } from '../context'
-
 export interface CoreAnalytics {
-  track(...args: unknown[]): Promise<CoreContext>
-  page(...args: unknown[]): Promise<CoreContext>
-  identify(...args: unknown[]): Promise<CoreContext>
-  group(...args: unknown[]): Promise<CoreContext>
-  alias(...args: unknown[]): Promise<CoreContext>
-  screen(...args: unknown[]): Promise<CoreContext>
-  register(...plugins: unknown[]): Promise<CoreContext>
-  deregister(...plugins: unknown[]): Promise<CoreContext>
+  track(...args: unknown[]): unknown
+  page(...args: unknown[]): unknown
+  identify(...args: unknown[]): unknown
+  group(...args: unknown[]): unknown
+  alias(...args: unknown[]): unknown
+  screen(...args: unknown[]): unknown
+  register(...plugins: unknown[]): Promise<unknown>
+  deregister(...plugins: unknown[]): Promise<unknown>
   readonly VERSION: string
 }
