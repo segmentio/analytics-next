@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -32,8 +32,7 @@
     "jest": "yarn run -T jest"
   },
   "dependencies": {
-    "@segment/analytics-core": "1.0.1",
-    "@segment/analytics-plugin-validation": "0.0.0",
+    "@segment/analytics-core": "1.1.0",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.0"
   },

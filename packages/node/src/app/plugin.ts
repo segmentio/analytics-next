@@ -1,18 +1,11 @@
 import {
   CorePlugin,
   CoreSegmentEvent,
-  PluginType,
   CoreContext,
 } from '@segment/analytics-core'
-import fetch from 'node-fetch'
+import fetch, { Response } from 'node-fetch'
 import { version } from '../../package.json'
-
-export interface AnalyticsNodePluginSettings {
-  writeKey: string
-  name: string
-  type: PluginType
-  version: string
-}
+import { AnalyticsNode } from './analytics-node'
 
 const btoa = (val: string): string => Buffer.from(val).toString('base64')
 
@@ -31,29 +24,37 @@ export async function post(
   })
 
   if (!res.ok) {
-    throw new Error('Message Rejected')
+    throw res
   }
 
   return event
 }
 
 export function analyticsNode(
-  settings: AnalyticsNodePluginSettings
+  settings: { writeKey: string },
+  analytics: AnalyticsNode
 ): CorePlugin {
   const send = async (ctx: CoreContext): Promise<CoreContext> => {
     ctx.updateEvent('context.library.name', 'analytics-node-next')
     ctx.updateEvent('context.library.version', version)
     ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
-
-    await post(ctx.event, settings.writeKey)
+    try {
+      await post(ctx.event, settings.writeKey)
+    } catch (err: any) {
+      analytics.emit('error', {
+        ctx,
+        code: 'http_delivery',
+        message: 'there was an error sending the event to segment',
+        response: err as Response,
+      })
+    }
     return ctx
   }
 
   return {
-    name: settings.name,
-    type: settings.type,
-    version: settings.version,
-
+    name: 'analytics-node-next',
+    type: 'after',
+    version: '1.0.0',
     load: (ctx) => Promise.resolve(ctx),
     isLoaded: () => true,
 

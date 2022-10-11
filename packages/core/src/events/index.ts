@@ -10,6 +10,7 @@ import {
   CoreOptions,
 } from './interfaces'
 import md5 from 'spark-md5'
+import { validateEvent } from '../validation/assertions'
 
 export class EventFactory {
   user?: User
@@ -28,7 +29,7 @@ export class EventFactory {
       ...this.baseEvent(),
       event,
       type: 'track',
-      properties,
+      properties: properties ?? {}, // TODO: why is this not a shallow copy like everywhere else?
       options: { ...options },
       integrations: { ...globalIntegrations },
     })
@@ -102,8 +103,8 @@ export class EventFactory {
       ...this.baseEvent(),
       type: 'identify',
       userId,
-      traits,
-      options,
+      traits: traits ?? {},
+      options: { ...options },
       integrations: globalIntegrations,
     })
   }
@@ -117,16 +118,16 @@ export class EventFactory {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group',
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
+      traits: traits ?? {},
+      options: { ...options }, // this spreading is intentional
+      integrations: { ...globalIntegrations }, //
       groupId,
     })
   }
 
   alias(
     to: string,
-    from: string | null,
+    from: string | null, // TODO: can we make this undefined?
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
@@ -180,8 +181,6 @@ export class EventFactory {
    * are provided in the `Options` parameter for an Event
    */
   private context(event: CoreSegmentEvent): [object, object] {
-    const optionsKeys = ['integrations', 'anonymousId', 'timestamp', 'userId']
-
     const options = event.options ?? {}
     delete options['integrations']
 
@@ -195,7 +194,9 @@ export class EventFactory {
         return
       }
 
-      if (optionsKeys.includes(key)) {
+      if (
+        ['integrations', 'anonymousId', 'timestamp', 'userId'].includes(key)
+      ) {
         dset(overrides, key, options[key])
       } else {
         dset(context, key, options[key])
@@ -246,6 +247,7 @@ export class EventFactory {
       messageId,
     }
 
+    validateEvent(evt)
     return evt
   }
 }

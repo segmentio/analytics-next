@@ -19,37 +19,37 @@ describe(invokeCallback, () => {
   })
 
   // Fixes GitHub issue: https://github.com/segmentio/analytics-next/issues/409
-  // A.JS classic waited for the timeout before invoking callback,
+  // A.JS classic waited for the timeout/delay before invoking callback,
   // so keep same behavior in A.JS next.
-  it('calls the callback after a timeout', async () => {
+  it('calls the callback after a delay', async () => {
     const ctx = new CoreContext({
       type: 'track',
     })
 
     const fn = jest.fn()
-    const timeout = 100
+    const delay = 100
 
     const startTime = Date.now()
-    const returned = await invokeCallback(ctx, fn, timeout)
+    const returned = await invokeCallback(ctx, fn, delay)
     const endTime = Date.now()
 
     expect(fn).toHaveBeenCalled()
-    expect(endTime - startTime).toBeGreaterThanOrEqual(timeout - 1)
+    expect(endTime - startTime).toBeGreaterThanOrEqual(delay - 1)
     expect(returned).toBe(ctx)
   })
 
-  it('ignores the callback after a timeout', async () => {
+  it('ignores the callback if it takes too long to resolve', async () => {
     const ctx = new CoreContext({
       type: 'track',
     })
 
     const slow = (_ctx: CoreContext): Promise<void> => {
       return new Promise((resolve) => {
-        setTimeout(resolve, 200)
+        setTimeout(resolve, 1100)
       })
     }
 
-    const returned = await invokeCallback(ctx, slow, 0, 50)
+    const returned = await invokeCallback(ctx, slow, 0)
     expect(returned).toBe(ctx)
 
     const logs = returned.logs()
