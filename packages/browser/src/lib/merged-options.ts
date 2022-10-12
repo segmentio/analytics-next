@@ -1,4 +1,4 @@
-import { JSONObject, Options } from '@/core/events/interfaces'
+import { JSONObject, Options } from '../core/events/interfaces'
 import { LegacySettings } from '../browser'
 
 /**
