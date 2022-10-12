@@ -5,7 +5,7 @@ import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { isOnline } from '../connection'
 import { Context, ContextCancelation } from '../context'
 import { Emitter } from '@segment/analytics-core'
-import { Integrations } from '../events'
+import { Integrations, JSONObject } from '../events'
 import { Plugin } from '../plugin'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
@@ -232,9 +232,12 @@ export class EventQueue extends Emitter {
         return true
       }
 
-      const alternativeNameMatch = p.alternativeNames?.filter((name) =>
-        Object.keys(denyList).includes(name)
-      )
+      let alternativeNameMatch: boolean | JSONObject | undefined = undefined
+      p.alternativeNames?.forEach((name) => {
+        if (denyList[name] !== undefined) {
+          alternativeNameMatch = denyList[name]
+        }
+      })
 
       // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
       return (

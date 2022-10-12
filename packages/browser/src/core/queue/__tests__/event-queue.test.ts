@@ -4,6 +4,7 @@ import { Analytics } from '../../analytics'
 import { pWhile } from '../../../lib/p-while'
 import * as timer from '../../../lib/priority-queue/backoff'
 import {
+  DestinationMiddlewareFunction,
   MiddlewareFunction,
   sourceMiddlewarePlugin,
 } from '../../../plugins/middleware'
@@ -11,6 +12,7 @@ import { Context, ContextCancelation } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
 import { pTimeout } from '../../callback'
+import { ActionDestination } from '../../../plugins/remote-loader'
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
@@ -608,6 +610,40 @@ describe('Flushing', () => {
       expect(flushed).toEqual([ctx])
 
       expect(amplitude.track).toHaveBeenCalled()
+      expect(segmentio.track).toHaveBeenCalled()
+    })
+
+    test('delivers to action destinations using alternative names', async () => {
+      const eq = new EventQueue()
+      const fullstory = new ActionDestination('fullstory', testPlugin)
+      fullstory.alternativeNames.push('fullstory trackEvent')
+      fullstory.type = 'destination'
+
+      jest.spyOn(fullstory, 'track')
+      jest.spyOn(segmentio, 'track')
+
+      const evt = {
+        type: 'track' as const,
+        integrations: {
+          All: false,
+          'fullstory trackEvent': true,
+          'Segment.io': {},
+        },
+      }
+
+      const ctx = new Context(evt)
+
+      await eq.register(Context.system(), fullstory, ajs)
+      await eq.register(Context.system(), segmentio, ajs)
+
+      eq.dispatch(ctx)
+
+      expect(eq.queue.length).toBe(1)
+      const flushed = await flushAll(eq)
+
+      expect(flushed).toEqual([ctx])
+
+      expect(fullstory.track).toHaveBeenCalled()
       expect(segmentio.track).toHaveBeenCalled()
     })
 
