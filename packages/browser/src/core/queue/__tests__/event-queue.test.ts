@@ -4,7 +4,6 @@ import { Analytics } from '../../analytics'
 import { pWhile } from '../../../lib/p-while'
 import * as timer from '../../../lib/priority-queue/backoff'
 import {
-  DestinationMiddlewareFunction,
   MiddlewareFunction,
   sourceMiddlewarePlugin,
 } from '../../../plugins/middleware'
