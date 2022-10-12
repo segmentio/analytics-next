@@ -15,6 +15,7 @@ const settings: LegacySettings = {
   remotePlugins: [
     {
       name: 'Braze Web Mode (Actions)',
+      creationName: 'Braze Web Mode (Actions)',
       libraryName: 'brazeDestination',
       url: 'https://cdn.segment.com/next-integrations/actions/braze/9850d2cc8308a89db62a.js',
       settings: {
@@ -34,6 +35,7 @@ const settings: LegacySettings = {
     {
       // note that Fullstory name contains 'Actions'
       name: 'Fullstory (Actions)',
+      creationName: 'Fullstory (Actions)',
       libraryName: 'fullstoryDestination',
       url: 'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
       settings: {

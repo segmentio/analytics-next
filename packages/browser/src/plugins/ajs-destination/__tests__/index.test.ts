@@ -253,7 +253,10 @@ describe('loading ajsDestinations', () => {
   })
 
   it('adds a tsub middleware for matching rules', () => {
-    const destinations = ajsDestinations(cdnResponse)
+    const middleware = tsubMiddleware(
+      cdnResponse.middlewareSettings!.routingRules
+    )
+    const destinations = ajsDestinations(cdnResponse, {}, {}, middleware)
     const amplitude = destinations.find((d) => d.name === 'Amplitude')
     expect(amplitude?.middleware.length).toBe(1)
   })

@@ -1,4 +1,4 @@
-import { Integrations, JSONObject, SegmentEvent } from '@/core/events'
+import { Integrations, JSONObject } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
@@ -17,12 +17,8 @@ import {
   applyDestinationMiddleware,
   DestinationMiddlewareFunction,
 } from '../middleware'
-import { tsubMiddleware } from '../routing-middleware'
 import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
 import { LegacyIntegration } from './types'
-
-const klona = (evt: SegmentEvent): SegmentEvent =>
-  JSON.parse(JSON.stringify(evt))
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -224,7 +220,7 @@ export class LegacyDestination implements Plugin {
 
     const afterMiddleware = await applyDestinationMiddleware(
       this.name,
-      klona(ctx.event),
+      ctx.event,
       this.middleware
     )
 
@@ -303,7 +299,8 @@ export class LegacyDestination implements Plugin {
 export function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
-  options: InitOptions = {}
+  options: InitOptions = {},
+  routingMiddleware?: DestinationMiddlewareFunction
 ): LegacyDestination[] {
   if (isServer()) {
     return []
@@ -315,7 +312,6 @@ export function ajsDestinations(
   }
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-  const routingMiddleware = tsubMiddleware(routingRules)
 
   // merged remote CDN settings with user provided options
   const integrationOptions = mergedOptions(settings, options ?? {}) as Record<
@@ -362,7 +358,7 @@ export function ajsDestinations(
       const routing = routingRules.filter(
         (rule) => rule.destinationName === name
       )
-      if (routing.length > 0) {
+      if (routing.length > 0 && routingMiddleware) {
         destination.addMiddleware(routingMiddleware)
       }
 

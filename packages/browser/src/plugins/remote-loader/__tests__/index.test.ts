@@ -1,7 +1,9 @@
 import * as loader from '../../../lib/load-script'
 import { remoteLoader } from '..'
-import { AnalyticsBrowser } from '../../../browser'
+import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
+import { Context } from '../../../core/context'
+import { tsubMiddleware } from '../../routing-middleware'
 
 const pluginFactory = jest.fn()
 
@@ -26,6 +28,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {},
@@ -46,6 +49,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {},
@@ -71,6 +75,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'https://cdn.segment.com/actions/file.js',
             libraryName: 'testPlugin',
             settings: {},
@@ -91,6 +96,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {
@@ -118,6 +124,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {
@@ -140,6 +147,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {
@@ -167,6 +175,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'testPlugin',
             settings: {
@@ -189,6 +198,7 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'remote plugin',
+            creationName: 'remote plugin',
             url: 'cdn/path/to/file.js',
             libraryName: 'this wont resolve',
             settings: {},
@@ -245,12 +255,14 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'multiple plugins',
+            creationName: 'multiple plugins',
             url: 'multiple-plugins.js',
             libraryName: 'multiple-plugins',
             settings: { foo: true },
           },
           {
             name: 'single plugin',
+            creationName: 'single plugin',
             url: 'single-plugin.js',
             libraryName: 'single-plugin',
             settings: { bar: false },
@@ -262,7 +274,52 @@ describe('Remote Loader', () => {
     )
 
     expect(plugins).toHaveLength(3)
-    expect(plugins).toEqual(expect.arrayContaining([one, two, three]))
+    expect(plugins).toEqual(
+      expect.arrayContaining([
+        {
+          action: one,
+          name: 'multiple plugins',
+          version: '1.0.0',
+          type: 'before',
+          alternativeNames: ['one'],
+          middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
+        },
+        {
+          action: two,
+          name: 'multiple plugins',
+          version: '1.0.0',
+          type: 'before',
+          alternativeNames: ['two'],
+          middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
+        },
+        {
+          action: three,
+          name: 'single plugin',
+          version: '1.0.0',
+          type: 'enrichment',
+          alternativeNames: ['three'],
+          middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
+        },
+      ])
+    )
     expect(multiPluginFactory).toHaveBeenCalledWith({ foo: true })
     expect(singlePluginFactory).toHaveBeenCalledWith({ bar: false })
   })
@@ -287,12 +344,14 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'flaky plugin',
+            creationName: 'flaky plugin',
             url: 'cdn/path/to/flaky.js',
             libraryName: 'flaky',
             settings: {},
           },
           {
             name: 'async flaky plugin',
+            creationName: 'async flaky plugin',
             url: 'cdn/path/to/asyncFlaky.js',
             libraryName: 'asyncFlaky',
             settings: {},
@@ -339,12 +398,14 @@ describe('Remote Loader', () => {
         remotePlugins: [
           {
             name: 'valid plugin',
+            creationName: 'valid plugin',
             url: 'valid',
             libraryName: 'valid',
             settings: { foo: true },
           },
           {
             name: 'invalid plugin',
+            creationName: 'invalid plugin',
             url: 'invalid',
             libraryName: 'invalid',
             settings: { bar: false },
@@ -356,12 +417,29 @@ describe('Remote Loader', () => {
     )
 
     expect(plugins).toHaveLength(1)
-    expect(plugins).toEqual(expect.arrayContaining([validPlugin]))
+    expect(plugins).toEqual(
+      expect.arrayContaining([
+        {
+          action: validPlugin,
+          name: 'valid plugin',
+          version: '1.0.0',
+          type: 'enrichment',
+          alternativeNames: ['valid'],
+          middleware: [],
+          track: expect.any(Function),
+          alias: expect.any(Function),
+          group: expect.any(Function),
+          identify: expect.any(Function),
+          page: expect.any(Function),
+          screen: expect.any(Function),
+        },
+      ])
+    )
     expect(console.warn).toHaveBeenCalledTimes(1)
   })
 
   it('accepts settings overrides from merged integrations', async () => {
-    const cdnSettings = {
+    const cdnSettings: LegacySettings = {
       integrations: {
         remotePlugin: {
           name: 'Charlie Brown',
@@ -371,6 +449,7 @@ describe('Remote Loader', () => {
       remotePlugins: [
         {
           name: 'remotePlugin',
+          creationName: 'remotePlugin',
           libraryName: 'testPlugin',
           url: 'cdn/path/to/file.js',
           settings: {
@@ -416,6 +495,7 @@ describe('Remote Loader', () => {
       remotePlugins: [
         {
           name: 'remotePlugin',
+          creationName: 'remotePlugin',
           libraryName: 'testPlugin',
           url: 'cdn/path/to/file.js',
           settings: {
@@ -451,5 +531,70 @@ describe('Remote Loader', () => {
         subscriptions: [],
       })
     )
+  })
+
+  it('applies remote routing rules based on creation name', async () => {
+    const validPlugin = {
+      name: 'valid',
+      version: '1.0.0',
+      type: 'destination',
+      load: () => {},
+      isLoaded: () => true,
+      track: (ctx: Context) => ctx,
+    }
+
+    const cdnSettings: LegacySettings = {
+      integrations: {},
+      middlewareSettings: {
+        routingRules: [
+          {
+            matchers: [
+              {
+                ir: '["=","event",{"value":"Item Impression"}]',
+                type: 'fql',
+              },
+            ],
+            scope: 'destinations',
+            target_type: 'workspace::project::destination::config',
+            transformers: [[{ type: 'drop' }]],
+            destinationName: 'oldValidName',
+          },
+        ],
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'valid',
+          libraryName: 'valid',
+          settings: { foo: true },
+        },
+      ],
+    }
+
+    // @ts-expect-error not gonna return a script tag sorry
+    jest.spyOn(loader, 'loadScript').mockImplementation((url: string) => {
+      if (url === 'valid') {
+        window['valid'] = jest.fn().mockImplementation(() => validPlugin)
+      }
+
+      return Promise.resolve(true)
+    })
+
+    const middleware = tsubMiddleware(
+      cdnSettings.middlewareSettings!.routingRules
+    )
+
+    const plugins = await remoteLoader(cdnSettings, {}, {}, false, middleware)
+    const plugin = plugins[0]
+    await expect(() =>
+      plugin.track!(new Context({ type: 'track', event: 'Item Impression' }))
+    ).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "dropped by destination middleware",
+        "retry": false,
+        "type": "plugin Error",
+      }
+    `)
   })
 })
