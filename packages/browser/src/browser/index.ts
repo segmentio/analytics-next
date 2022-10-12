@@ -108,7 +108,7 @@ function hasLegacyDestinations(settings: LegacySettings): boolean {
 function hasTsubMiddleware(settings: LegacySettings): boolean {
   return (
     getProcessEnv().NODE_ENV !== 'test' &&
-    (settings.middlewareSettings?.routingRules?.length ?? 0) > 0
+    settings.middlewareSettings?.routingRules?.length
   )
 }
 
