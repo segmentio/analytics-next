@@ -3,8 +3,14 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "incremental": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+    "compilerOptions": {
+      "module": "commonjs" // get rid of "Cannot use import statement outside a module" for local scripts
+    }
   }
 }
