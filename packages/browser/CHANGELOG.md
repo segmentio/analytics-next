@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.44.0
+
+### Minor Changes
+
+- [#597](https://github.com/segmentio/analytics-next/pull/597) [`18dc5b0`](https://github.com/segmentio/analytics-next/commit/18dc5b07431276a9b2ff3bdff28da0f3ee1e4fa8) Thanks [@danieljackins](https://github.com/danieljackins)! - Added destination filter support to action destinations
+
 ## 1.43.2
 
 ### Patch Changes
