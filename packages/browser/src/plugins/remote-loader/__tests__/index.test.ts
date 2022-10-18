@@ -1,5 +1,5 @@
 import * as loader from '../../../lib/load-script'
-import { remoteLoader } from '..'
+import { ActionDestination, remoteLoader } from '..'
 import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
@@ -596,5 +596,62 @@ describe('Remote Loader', () => {
         "type": "plugin Error",
       }
     `)
+  })
+
+  it('only applies destination middleware to destination actions', async () => {
+    const validPlugin = {
+      name: 'valid',
+      version: '1.0.0',
+      type: 'enrichment',
+      load: () => {},
+      isLoaded: () => true,
+      track: (ctx: Context) => ctx,
+    }
+
+    const cdnSettings: LegacySettings = {
+      integrations: {},
+      middlewareSettings: {
+        routingRules: [
+          {
+            matchers: [
+              {
+                ir: '["=","event",{"value":"Item Impression"}]',
+                type: 'fql',
+              },
+            ],
+            scope: 'destinations',
+            target_type: 'workspace::project::destination::config',
+            transformers: [[{ type: 'drop' }]],
+            destinationName: 'oldValidName',
+          },
+        ],
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'valid',
+          libraryName: 'valid',
+          settings: { foo: true },
+        },
+      ],
+    }
+
+    // @ts-expect-error not gonna return a script tag sorry
+    jest.spyOn(loader, 'loadScript').mockImplementation((url: string) => {
+      if (url === 'valid') {
+        window['valid'] = jest.fn().mockImplementation(() => validPlugin)
+      }
+
+      return Promise.resolve(true)
+    })
+
+    const middleware = jest.fn().mockImplementation(() => true)
+
+    const plugins = await remoteLoader(cdnSettings, {}, {}, false, middleware)
+    const plugin = plugins[0] as ActionDestination
+    plugin.addMiddleware(middleware)
+    await plugin.track(new Context({ type: 'track' }))
+    expect(middleware).not.toHaveBeenCalled()
   })
 })
