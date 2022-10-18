@@ -44,7 +44,9 @@ export class ActionDestination implements Plugin {
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
-    this.middleware.push(...fn)
+    if (this.type === 'destination') {
+      this.middleware.push(...fn)
+    }
   }
 
   private async transform(ctx: Context): Promise<Context> {
@@ -72,7 +74,12 @@ export class ActionDestination implements Plugin {
     return async (ctx: Context): Promise<Context> => {
       if (!this.action[methodName]) return ctx
 
-      const transformedContext = await this.transform(ctx)
+      let transformedContext: Context = ctx
+      // Transformations only allowed for destination plugins. Other plugin types support mutating events.
+      if (this.type === 'destination') {
+        transformedContext = await this.transform(ctx)
+      }
+
       await this.action[methodName]!(transformedContext)
 
       return ctx
