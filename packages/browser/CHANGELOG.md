@@ -1,5 +1,17 @@
 # @segment/analytics-next
 
+## 1.45.0
+
+### Minor Changes
+
+- [#616](https://github.com/segmentio/analytics-next/pull/616) [`1d6c22d`](https://github.com/segmentio/analytics-next/commit/1d6c22d7565b59ae553de674276ecd0c9aeddfbe) Thanks [@zikaari](https://github.com/zikaari)! - Bundled analytics support in Inspector
+
+### Patch Changes
+
+- [#619](https://github.com/segmentio/analytics-next/pull/619) [`6c35799`](https://github.com/segmentio/analytics-next/commit/6c3579999d8696b3ebd0ff5c52493a73ca11cdec) Thanks [@silesky](https://github.com/silesky)! - Do not expose jquery / zepto as ambient globals. Add dom.iterable lib to typescript.
+
+* [#629](https://github.com/segmentio/analytics-next/pull/629) [`21f05ad`](https://github.com/segmentio/analytics-next/commit/21f05adfd641825abecd096b354bd1ebc17f063b) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix bug where destination middleware were applying to other plugin types
+
 ## 1.44.0
 
 ### Minor Changes
