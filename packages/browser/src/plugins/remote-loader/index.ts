@@ -44,7 +44,9 @@ export class ActionDestination implements Plugin {
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
-    this.middleware.push(...fn)
+    if (this.type === 'destination') {
+      this.middleware.push(...fn)
+    }
   }
 
   private async transform(ctx: Context): Promise<Context> {
