@@ -654,4 +654,48 @@ describe('Remote Loader', () => {
     await plugin.track(new Context({ type: 'track' }))
     expect(middleware).not.toHaveBeenCalled()
   })
+
+  it('non destination type plugins can modify the context', async () => {
+    const validPlugin = {
+      name: 'valid',
+      version: '1.0.0',
+      type: 'enrichment',
+      load: () => {},
+      isLoaded: () => true,
+      track: (ctx: Context) => {
+        ctx.event.name += 'bar'
+        return ctx
+      },
+    }
+
+    const cdnSettings: LegacySettings = {
+      integrations: {},
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'valid',
+          url: 'valid',
+          libraryName: 'valid',
+          settings: { foo: true },
+        },
+      ],
+    }
+
+    // @ts-expect-error not gonna return a script tag sorry
+    jest.spyOn(loader, 'loadScript').mockImplementation((url: string) => {
+      if (url === 'valid') {
+        window['valid'] = jest.fn().mockImplementation(() => validPlugin)
+      }
+
+      return Promise.resolve(true)
+    })
+
+    const plugins = await remoteLoader(cdnSettings, {}, {}, false)
+    const plugin = plugins[0] as ActionDestination
+    const newCtx = await plugin.track(
+      new Context({ type: 'track', name: 'foo' })
+    )
+
+    expect(newCtx.event.name).toEqual('foobar')
+  })
 })

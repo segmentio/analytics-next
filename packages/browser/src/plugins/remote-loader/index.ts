@@ -73,6 +73,7 @@ export class ActionDestination implements Plugin {
       if (!this.action[methodName]) return ctx
 
       let transformedContext: Context = ctx
+      // sev-skinny-viper - make sure that transformations are only applied to destination-actions of 'destination' type.
       if (this.type === 'destination') {
         transformedContext = await this.transform(ctx)
       }
