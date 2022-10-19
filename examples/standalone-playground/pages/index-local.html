@@ -72,17 +72,18 @@
               var key = analytics.methods[e]
               analytics[key] = analytics.factory(key)
             }
-            analytics.load = function (key, e) {
+            analytics.load = function (settings, options) {
               var t = document.createElement('script')
               t.type = 'text/javascript'
               t.async = !0
               t.src = '/node_modules/@segment/analytics-next/dist/umd/standalone.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
-              analytics._loadOptions = e
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = writeKey
+            analytics._loadSettings = { cdnURL: 'https://cdn.segment.com' }
+            analytics._loadOptions = {};
             analytics.load()
             analytics.page()
           }

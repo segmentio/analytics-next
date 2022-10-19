@@ -388,9 +388,9 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
   }
 
   static standalone(
-    writeKey: string,
+    settings?: AnalyticsBrowserSettings,
     options?: InitOptions
   ): Promise<Analytics> {
-    return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
+    return AnalyticsBrowser.load(settings, options).then((res) => res[0])
   }
 }

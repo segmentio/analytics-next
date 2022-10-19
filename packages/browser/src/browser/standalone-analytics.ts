@@ -1,12 +1,13 @@
 import { Analytics, InitOptions } from '../core/analytics'
-import { AnalyticsBrowser } from '.'
+import { AnalyticsBrowser, AnalyticsBrowserSettings } from '.'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
 
 export interface AnalyticsSnippet extends AnalyticsStandalone {
-  load: (writeKey: string, options?: InitOptions) => void
+  load: (settings?: AnalyticsBrowserSettings, options?: InitOptions) => void
 }
 
 export interface AnalyticsStandalone extends Analytics {
+  _loadSettings?: AnalyticsBrowserSettings
   _loadOptions?: InitOptions
   _writeKey?: string
   _cdn?: string
@@ -59,6 +60,7 @@ function getWriteKey(): string | undefined {
 
 export async function install(): Promise<void> {
   const writeKey = getWriteKey()
+  const settings = window.analytics?._loadSettings ?? {}
   const options = window.analytics?._loadOptions ?? {}
   if (!writeKey) {
     console.error(
@@ -68,7 +70,7 @@ export async function install(): Promise<void> {
   }
 
   window.analytics = (await AnalyticsBrowser.standalone(
-    writeKey,
+    { writeKey, ...settings },
     options
   )) as AnalyticsSnippet
 }
