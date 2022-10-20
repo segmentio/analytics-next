@@ -1,9 +1,4 @@
-export interface SnippetProps {
-  writeKey?: string
-  autoLoad?: boolean
-}
-
-export const snippet = ({ writeKey, autoLoad }: SnippetProps) =>
+export const snippet = () =>
   `
 !(function () {
   var analytics = (window.analytics = window.analytics || []);
@@ -56,14 +51,10 @@ export const snippet = ({ writeKey, autoLoad }: SnippetProps) =>
         var n = document.getElementsByTagName("script")[0];
         n.parentNode.insertBefore(t, n);
         analytics._loadOptions = e;
-        analytics._writeKey = ${writeKey || 'key'};
+        analytics._writeKey = key;
       };
       analytics.SNIPPET_VERSION = "4.15.3";
-      ${autoLoad && `analytics.load("${writeKey}");`}
-      analytics.page();
     }
   }
 })();
 `
-
-const t = `/node_modules/@segment/analytics-next/dist/umd/standalone.js`
