@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs'
+import { createReadStream } from 'fs'
 import { join as joinPath } from 'path'
 import { Analytics, InitOptions } from '@segment/analytics-next'
 import { JSDOM, VirtualConsole } from 'jsdom'
@@ -79,7 +79,7 @@ describe('Standalone', () => {
       .optionally()
       .reply(function (uri, _, callback) {
         const fileName = uri.split('/').pop()!
-        const file = readFileSync(joinPath(ajsBasePath, fileName))
+        const file = createReadStream(joinPath(ajsBasePath, fileName))
         callback(null, [
           200,
           file,
