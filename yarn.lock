@@ -1185,7 +1185,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:packages/config":
+"@internal/browser-integration-tests@workspace:packages/browser-integration-tests":
+  version: 0.0.0-use.local
+  resolution: "@internal/browser-integration-tests@workspace:packages/browser-integration-tests"
+  dependencies:
+    "@internal/config": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+    nock: ^13.2.9
+  languageName: unknown
+  linkType: soft
+
+"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:internal/config":
   version: 0.0.0-use.local
   resolution: "@internal/config@workspace:packages/config"
   languageName: unknown
