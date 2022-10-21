@@ -27,6 +27,7 @@ export async function applyDestinationMiddleware(
   evt: SegmentEvent,
   middleware: DestinationMiddlewareFunction[]
 ): Promise<SegmentEvent | null> {
+  // Clone the event so mutations are localized to a single destination.
   let modifiedEvent = toFacade(evt, {
     clone: true,
     traverse: false,
