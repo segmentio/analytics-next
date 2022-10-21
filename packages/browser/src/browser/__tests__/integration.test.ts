@@ -2,7 +2,7 @@
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../core/analytics'
+import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
@@ -996,5 +996,139 @@ describe('.Integrations', () => {
         "Google-Analytics": [Function],
       }
     `)
+  })
+})
+
+describe('Options', () => {
+  beforeEach(async () => {
+    jest.restoreAllMocks()
+    jest.resetAllMocks()
+
+    const html = `
+    <!DOCTYPE html>
+      <head>
+        <script>'hi'</script>
+      </head>
+      <body>
+      </body>
+    </html>
+    `.trim()
+
+    const jsd = new JSDOM(html, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+      url: 'https://localhost',
+    })
+
+    const windowSpy = jest.spyOn(global, 'window', 'get')
+    windowSpy.mockImplementation(
+      () => jsd.window as unknown as Window & typeof globalThis
+    )
+  })
+
+  describe('disableAutoISOConversion', () => {
+    it('converts iso strings to dates be default', async () => {
+      const [analytics] = await AnalyticsBrowser.load({
+        writeKey,
+      })
+
+      const amplitude = new LegacyDestination(
+        'amplitude',
+        'latest',
+        {
+          apiKey: AMPLITUDE_WRITEKEY,
+        },
+        {}
+      )
+
+      await analytics.register(amplitude)
+      await amplitude.ready()
+
+      const integrationMock = jest.spyOn(amplitude.integration!, 'track')
+      await analytics.track('Hello!', {
+        date: new Date(),
+        iso: '2020-10-10',
+      })
+
+      const [integrationEvent] = integrationMock.mock.lastCall
+
+      expect(integrationEvent.properties()).toEqual({
+        date: expect.any(Date),
+        iso: expect.any(Date),
+      })
+      expect(integrationEvent.timestamp()).toBeInstanceOf(Date)
+    })
+
+    it('converts iso strings to dates be default', async () => {
+      const initOptions: InitOptions = { disableAutoISOConversion: false }
+      const [analytics] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        initOptions
+      )
+
+      const amplitude = new LegacyDestination(
+        'amplitude',
+        'latest',
+        {
+          apiKey: AMPLITUDE_WRITEKEY,
+        },
+        initOptions
+      )
+
+      await analytics.register(amplitude)
+      await amplitude.ready()
+
+      const integrationMock = jest.spyOn(amplitude.integration!, 'track')
+      await analytics.track('Hello!', {
+        date: new Date(),
+        iso: '2020-10-10',
+      })
+
+      const [integrationEvent] = integrationMock.mock.lastCall
+
+      expect(integrationEvent.properties()).toEqual({
+        date: expect.any(Date),
+        iso: expect.any(Date),
+      })
+      expect(integrationEvent.timestamp()).toBeInstanceOf(Date)
+    })
+
+    it('does not convert iso strings to dates when `true`', async () => {
+      const initOptions: InitOptions = { disableAutoISOConversion: true }
+      const [analytics] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        initOptions
+      )
+
+      const amplitude = new LegacyDestination(
+        'amplitude',
+        'latest',
+        {
+          apiKey: AMPLITUDE_WRITEKEY,
+        },
+        initOptions
+      )
+
+      await analytics.register(amplitude)
+      await amplitude.ready()
+
+      const integrationMock = jest.spyOn(amplitude.integration!, 'track')
+      await analytics.track('Hello!', {
+        date: new Date(),
+        iso: '2020-10-10',
+      })
+
+      const [integrationEvent] = integrationMock.mock.lastCall
+
+      expect(integrationEvent.properties()).toEqual({
+        date: expect.any(Date),
+        iso: '2020-10-10',
+      })
+      expect(integrationEvent.timestamp()).toBeInstanceOf(Date)
+    })
   })
 })

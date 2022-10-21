@@ -65,6 +65,7 @@ export class LegacyDestination implements Plugin {
   private _initialized = false
   private onReady: Promise<unknown> | undefined
   private onInitialize: Promise<unknown> | undefined
+  private disableAutoISOConversion: boolean
 
   integration: LegacyIntegration | undefined
 
@@ -80,6 +81,7 @@ export class LegacyDestination implements Plugin {
     this.name = name
     this.version = version
     this.settings = { ...settings }
+    this.disableAutoISOConversion = options.disableAutoISOConversion || false
 
     // AJS-Renderer sets an extraneous `type` setting that clobbers
     // existing type defaults. We need to remove it if it's present
@@ -228,7 +230,9 @@ export class LegacyDestination implements Plugin {
       return ctx
     }
 
-    const event = new clz(afterMiddleware, {})
+    const event = new clz(afterMiddleware, {
+      traverse: !this.disableAutoISOConversion,
+    })
 
     ctx.stats.increment('analytics_js.integration.invoke', 1, [
       `method:${eventType}`,

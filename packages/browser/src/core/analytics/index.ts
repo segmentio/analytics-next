@@ -67,6 +67,13 @@ export interface InitOptions {
    *
    */
   disableClientPersistence?: boolean
+  /**
+   * Disables automatically converting ISO string event properties into Dates.
+   * ISO string to Date conversions occur right before sending events to a classic device mode integration,
+   * after any destination middleware have been ran.
+   * Defaults to `false`.
+   */
+  disableAutoISOConversion?: boolean
   initialPageview?: boolean
   cookie?: CookieOptions
   user?: UserOptions
