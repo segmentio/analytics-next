@@ -9,6 +9,12 @@ import { Group, User } from '../../../core/user'
  * They aren't meant to be run by anything but the typescript compiler.
  */
 export default {
+  'AnalyticsBrowser should accept settings': () => {
+    const analytics = new AnalyticsBrowser({ writeKey: 'foo' })
+    assertNotAny(analytics)
+    assertIs<AnalyticsBrowser>(analytics)
+    void analytics.track('foo')
+  },
   'AnalyticsBrowser should return the correct type': () => {
     const result = AnalyticsBrowser.load({ writeKey: 'abc' })
     assertNotAny(result)

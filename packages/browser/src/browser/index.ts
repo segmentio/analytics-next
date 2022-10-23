@@ -75,6 +75,13 @@ export interface AnalyticsBrowserSettings extends AnalyticsSettings {
    * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
    */
   cdnURL?: string
+
+  /**
+   * Wait for .load() call.
+   * Default is "false" for instantiation via AnalyticsBrowser.load (invokes .load immediately)
+   * and "true" for the AnalyticsBrowser constructor
+   */
+  lazy?: boolean
 }
 
 export function loadLegacySettings(
@@ -309,12 +316,42 @@ async function loadAnalytics(
 }
 
 /**
+ * Return a promise that can be externally resolve
+ */
+const createDeferred = () => {
+  let resolve!: () => void
+  const promise = new Promise((_resolve) => {
+    resolve = () => _resolve(undefined)
+  })
+  return {
+    promise,
+    resolve,
+  }
+}
+
+/**
  * The public browser interface for this package.
  * Use AnalyticsBrowser.load to create an instance.
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private constructor(loader: AnalyticsLoader) {
-    super(loader)
+  private _resolve: () => void
+
+  constructor(...args: Parameters<typeof AnalyticsBrowser['load']>) {
+    const [settings, options] = args
+    const lazy = settings.lazy ?? true
+    const { promise, resolve } = createDeferred()
+    super((buffer) =>
+      promise.then(() => loadAnalytics(settings, options, buffer))
+    )
+    if (!lazy) {
+      resolve()
+    }
+    this._resolve = resolve
+  }
+
+  load(): void {
+    // if user wants to invoke .load immediately after instantiation want to resolve immediately
+    this._resolve()
   }
 
   /**
@@ -331,9 +368,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): AnalyticsBrowser {
-    return new this((preInitBuffer) =>
-      loadAnalytics(settings, options, preInitBuffer)
-    )
+    return new this({ ...settings, lazy: false }, options)
   }
 
   static standalone(
