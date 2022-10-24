@@ -24,7 +24,14 @@ import {
 } from '../events'
 import { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
-import { CookieOptions, Group, ID, User, UserOptions } from '../user'
+import {
+  CookieOptions,
+  Group,
+  ID,
+  UniversalStorage,
+  User,
+  UserOptions,
+} from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import type { LegacyDestination } from '../../plugins/ajs-destination'
@@ -102,6 +109,7 @@ export class Analytics
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
+  private _universalStorage: UniversalStorage
 
   initialized = false
   integrations: Integrations
@@ -138,6 +146,11 @@ export class Analytics
           : options?.group,
         cookieOptions
       ).load()
+
+    this._universalStorage = UniversalStorage.getUniversalStorage(
+      !disablePersistance,
+      cookieOptions
+    )
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
@@ -304,7 +317,7 @@ export class Analytics
     const ctx = Context.system()
 
     const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this)
+      this.queue.register(ctx, xt, this, this._universalStorage)
     )
     await Promise.all(registrations)
 

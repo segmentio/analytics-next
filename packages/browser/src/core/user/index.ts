@@ -35,6 +35,8 @@ const defaults = {
   },
 }
 
+export type StoreType = 'cookie' | 'localStorage' | 'memory'
+
 class Store {
   private cache: Record<string, unknown> = {}
 
@@ -50,6 +52,8 @@ class Store {
   remove(key: string): void {
     delete this.cache[key]
   }
+
+  getType = (): StoreType => 'memory'
 }
 
 const ONE_YEAR = 365
@@ -128,12 +132,8 @@ export class Cookie extends Store {
   remove(key: string): void {
     return jar.remove(key, this.opts())
   }
-}
 
-class NullStorage extends Store {
-  get = (_key: string): null => null
-  set = (_key: string, _val: unknown): null => null
-  remove = (_key: string): void => {}
+  getType = (): StoreType => 'cookie'
 }
 
 const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
@@ -186,6 +186,8 @@ export class LocalStorage extends Store {
       localStorageWarning(key, 'unavailable')
     }
   }
+
+  getType = (): StoreType => 'localStorage'
 }
 
 export interface CookieOptions {
@@ -196,21 +198,98 @@ export interface CookieOptions {
   sameSite?: string
 }
 
+export class UniversalStorage {
+  private stores: Store[]
+
+  constructor(stores?: Store[]) {
+    this.stores = stores || []
+  }
+
+  private getStores(storeTypes: StoreType[] | undefined): Store[] {
+    return storeTypes
+      ? this.stores.filter((s) => storeTypes.indexOf(s.getType()) !== -1)
+      : this.stores
+  }
+
+  public push(store: Store) {
+    this.stores.push(store)
+  }
+
+  public getAndSync<T>(key: string, storeTypes?: StoreType[]): T | null {
+    const val = this.get(key, storeTypes)
+
+    return this.set(
+      key,
+      typeof val === 'number' ? val.toString() : val,
+      storeTypes
+    ) as T | null
+  }
+
+  public get<T>(key: string, storeTypes?: StoreType[]): T | null {
+    let val = null
+
+    for (const store of this.getStores(storeTypes)) {
+      val = store.get<T>(key)
+      if (val) {
+        return val
+      }
+    }
+    return null
+  }
+
+  public set<T>(key: string, value: T, storeTypes?: StoreType[]): T | null {
+    for (const store of this.getStores(storeTypes)) {
+      store.set(key, value)
+    }
+    return value
+  }
+
+  public clear(key: string, storeTypes?: StoreType[]): void {
+    for (const store of this.getStores(storeTypes)) {
+      store.remove(key)
+    }
+  }
+
+  static getUniversalStorage(
+    hasBrowserStorage: boolean,
+    cookieOptions?: CookieOptions
+  ): UniversalStorage {
+    const stores = []
+
+    if (hasBrowserStorage && Cookie.available()) {
+      stores.push(new Cookie(cookieOptions))
+    }
+
+    if (hasBrowserStorage && LocalStorage.available()) {
+      stores.push(new LocalStorage())
+    }
+
+    stores.push(new Store())
+
+    return new UniversalStorage(stores)
+  }
+}
+
 export class User {
   static defaults = defaults
-
-  private cookies: Store
-  private localStorage: Store
-  private mem: Store
 
   private idKey: string
   private traitsKey: string
   private anonKey: string
   private cookieOptions?: CookieOptions
+  private universalStore: UniversalStorage
+
+  private legacyUserStoreTargets: StoreType[] = []
+  private traitsStoreTargets: StoreType[] = []
+  private identityStoreTypes: StoreType[] = []
 
   options: UserOptions = {}
 
-  constructor(options: UserOptions = defaults, cookieOptions?: CookieOptions) {
+  constructor(
+    options: UserOptions = defaults,
+    cookieOptions?: CookieOptions,
+    universalStore?: UniversalStorage
+  ) {
     this.options = options
     this.cookieOptions = cookieOptions
 
@@ -221,24 +300,24 @@ export class User {
     const isDisabled = options.disable === true
     const shouldPersist = options.persist !== false
 
-    this.localStorage =
-      isDisabled ||
-      options.localStorageFallbackDisabled ||
-      !shouldPersist ||
-      !LocalStorage.available()
-        ? new NullStorage()
-        : new LocalStorage()
+    this.universalStore =
+      universalStore ||
+      UniversalStorage.getUniversalStorage(shouldPersist, cookieOptions)
 
-    this.cookies =
-      !isDisabled && shouldPersist && Cookie.available()
-        ? new Cookie(cookieOptions)
-        : new NullStorage()
+    if (!isDisabled) {
+      this.identityStoreTypes.push('memory', 'cookie')
+      this.legacyUserStoreTargets.push('cookie')
+      this.traitsStoreTargets.push('memory')
+      if (!options.localStorageFallbackDisabled) {
+        this.traitsStoreTargets.push('localStorage')
+        this.identityStoreTypes.push('localStorage')
+      }
+    }
 
-    this.mem = isDisabled ? new NullStorage() : new Store()
-
-    const legacyUser = this.cookies.get<{ id?: string; traits?: Traits }>(
-      defaults.cookie.oldKey
-    )
+    const legacyUser = this.universalStore.get<{
+      id?: string
+      traits?: Traits
+    }>(defaults.cookie.oldKey, this.legacyUserStoreTargets)
     if (legacyUser) {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
@@ -246,41 +325,18 @@ export class User {
     autoBind(this)
   }
 
-  private chainGet<T>(key: string): T | null {
-    const val =
-      this.localStorage.get(key) ??
-      this.cookies.get(key) ??
-      this.mem.get(key) ??
-      null
-
-    return this.trySet(
-      key,
-      typeof val === 'number' ? val.toString() : val
-    ) as T | null
-  }
-
-  private trySet<T>(key: string, value: T): T | null {
-    this.localStorage.set(key, value)
-    this.cookies.set(key, value)
-    this.mem.set(key, value)
-    return value
-  }
-
-  private chainClear(key: string): void {
-    this.localStorage.remove(key)
-    this.cookies.remove(key)
-    this.mem.remove(key)
-  }
-
   id = (id?: ID): ID => {
     if (this.options.disable) {
       return null
     }
 
-    const prevId = this.chainGet(this.idKey)
+    const prevId = this.universalStore.getAndSync(
+      this.idKey,
+      this.identityStoreTypes
+    )
 
     if (id !== undefined) {
-      this.trySet(this.idKey, id)
+      this.universalStore.set(this.idKey, id, this.identityStoreTypes)
 
       const changingIdentity = id !== prevId && prevId !== null && id !== null
       if (changingIdentity) {
@@ -289,14 +345,20 @@ export class User {
     }
 
     return (
-      this.chainGet(this.idKey) ??
-      this.cookies.get(defaults.cookie.oldKey) ??
+      this.universalStore.getAndSync(this.idKey, this.identityStoreTypes) ??
+      this.universalStore.get(
+        defaults.cookie.oldKey,
+        this.legacyUserStoreTargets
+      ) ??
       null
     )
   }
 
   private legacySIO(): [string, string] | null {
-    const val = this.cookies.get('_sio') as string
+    const val = this.universalStore.get(
+      '_sio',
+      this.legacyUserStoreTargets
+    ) as string
     if (!val) {
       return null
     }
@@ -310,7 +372,11 @@ export class User {
     }
 
     if (id === undefined) {
-      const val = this.chainGet<ID>(this.anonKey) ?? this.legacySIO()?.[0]
+      const val =
+        this.universalStore.getAndSync<ID>(
+          this.anonKey,
+          this.identityStoreTypes
+        ) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
@@ -318,12 +384,15 @@ export class User {
     }
 
     if (id === null) {
-      this.trySet(this.anonKey, null)
-      return this.chainGet(this.anonKey)
+      this.universalStore.set(this.anonKey, null, this.identityStoreTypes)
+      return this.universalStore.getAndSync(
+        this.anonKey,
+        this.identityStoreTypes
+      )
     }
 
-    this.trySet(this.anonKey, id ?? uuid())
-    return this.chainGet(this.anonKey)
+    this.universalStore.set(this.anonKey, id ?? uuid(), this.identityStoreTypes)
+    return this.universalStore.getAndSync(this.anonKey, this.identityStoreTypes)
   }
 
   traits = (traits?: Traits | null): Traits | undefined => {
@@ -336,14 +405,15 @@ export class User {
     }
 
     if (traits) {
-      this.mem.set(this.traitsKey, traits ?? {})
-      this.localStorage.set(this.traitsKey, traits ?? {})
+      this.universalStore.set(
+        this.traitsKey,
+        traits ?? {},
+        this.traitsStoreTargets
+      )
     }
 
     return (
-      this.localStorage.get(this.traitsKey) ??
-      this.mem.get(this.traitsKey) ??
-      {}
+      this.universalStore.get(this.traitsKey, this.traitsStoreTargets) ?? {}
     )
   }
 
@@ -377,9 +447,9 @@ export class User {
 
   reset(): void {
     this.logout()
-    this.chainClear(this.idKey)
-    this.chainClear(this.anonKey)
-    this.chainClear(this.traitsKey)
+    this.universalStore.clear(this.idKey, this.identityStoreTypes)
+    this.universalStore.clear(this.anonKey, this.identityStoreTypes)
+    this.universalStore.clear(this.traitsKey, this.traitsStoreTargets)
   }
 
   load(): User {

@@ -734,10 +734,22 @@ describe('user', () => {
 
     it('load should preserve the original User cookie options', () => {
       user = new User(undefined, {
-        domain: 'foo',
-      }).load()
-      // @ts-ignore - we are testing the private properties here
-      expect(user.cookies['options'].domain).toEqual('foo')
+        domain: 'foo.com',
+      })
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      user.load().anonymousId('anon-id')
+
+      expect(setCookieSpy).toHaveBeenLastCalledWith(
+        'ajs_anonymous_id',
+        'anon-id',
+        {
+          domain: 'foo.com',
+          expires: 365,
+          path: '/',
+          sameSite: 'Lax',
+          secure: undefined,
+        }
+      )
     })
   })
 })
