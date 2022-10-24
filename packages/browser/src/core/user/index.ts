@@ -251,20 +251,22 @@ export class UniversalStorage {
   }
 
   static getUniversalStorage(
-    hasBrowserStorage: boolean,
+    defaultTargets: StoreType[] = ['cookie', 'localStorage', 'memory'],
     cookieOptions?: CookieOptions
   ): UniversalStorage {
     const stores = []
 
-    if (hasBrowserStorage && Cookie.available()) {
+    if (defaultTargets.includes('cookie') && Cookie.available()) {
       stores.push(new Cookie(cookieOptions))
     }
 
-    if (hasBrowserStorage && LocalStorage.available()) {
+    if (defaultTargets.includes('localStorage') && LocalStorage.available()) {
       stores.push(new LocalStorage())
     }
 
-    stores.push(new Store())
+    if (defaultTargets.includes('memory')) {
+      stores.push(new Store())
+    }
 
     return new UniversalStorage(stores)
   }
@@ -277,19 +279,14 @@ export class User {
   private traitsKey: string
   private anonKey: string
   private cookieOptions?: CookieOptions
-  private universalStore: UniversalStorage
 
-  private legacyUserStoreTargets: StoreType[] = []
-  private traitsStoreTargets: StoreType[] = []
-  private identityStoreTypes: StoreType[] = []
+  private legacyUserStore: UniversalStorage
+  private traitsStore: UniversalStorage
+  private identityStore: UniversalStorage
 
   options: UserOptions = {}
 
-  constructor(
-    options: UserOptions = defaults,
-    cookieOptions?: CookieOptions,
-    universalStore?: UniversalStorage
-  ) {
+  constructor(options: UserOptions = defaults, cookieOptions?: CookieOptions) {
     this.options = options
     this.cookieOptions = cookieOptions
 
@@ -300,24 +297,41 @@ export class User {
     const isDisabled = options.disable === true
     const shouldPersist = options.persist !== false
 
-    this.universalStore =
-      universalStore ||
-      UniversalStorage.getUniversalStorage(shouldPersist, cookieOptions)
+    let defaultStorageTargets: StoreType[] = isDisabled
+      ? []
+      : shouldPersist
+      ? ['cookie', 'localStorage', 'memory']
+      : ['memory']
 
-    if (!isDisabled) {
-      this.identityStoreTypes.push('memory', 'cookie')
-      this.legacyUserStoreTargets.push('cookie')
-      this.traitsStoreTargets.push('memory')
-      if (!options.localStorageFallbackDisabled) {
-        this.traitsStoreTargets.push('localStorage')
-        this.identityStoreTypes.push('localStorage')
-      }
+    if (options.localStorageFallbackDisabled) {
+      defaultStorageTargets = defaultStorageTargets.filter(
+        (t) => t !== 'localStorage'
+      )
     }
 
-    const legacyUser = this.universalStore.get<{
+    this.identityStore = UniversalStorage.getUniversalStorage(
+      defaultStorageTargets,
+      cookieOptions
+    )
+
+    // using only cookies for legacy user store
+    this.legacyUserStore = UniversalStorage.getUniversalStorage(
+      defaultStorageTargets.filter(
+        (t) => t !== 'localStorage' && t !== 'memory'
+      ),
+      cookieOptions
+    )
+
+    // using only localStorage / memory for traits store
+    this.traitsStore = UniversalStorage.getUniversalStorage(
+      defaultStorageTargets.filter((t) => t !== 'cookie'),
+      cookieOptions
+    )
+
+    const legacyUser = this.legacyUserStore.get<{
       id?: string
       traits?: Traits
-    }>(defaults.cookie.oldKey, this.legacyUserStoreTargets)
+    }>(defaults.cookie.oldKey)
     if (legacyUser) {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
@@ -330,13 +344,10 @@ export class User {
       return null
     }
 
-    const prevId = this.universalStore.getAndSync(
-      this.idKey,
-      this.identityStoreTypes
-    )
+    const prevId = this.identityStore.getAndSync(this.idKey)
 
     if (id !== undefined) {
-      this.universalStore.set(this.idKey, id, this.identityStoreTypes)
+      this.identityStore.set(this.idKey, id)
 
       const changingIdentity = id !== prevId && prevId !== null && id !== null
       if (changingIdentity) {
@@ -345,20 +356,14 @@ export class User {
     }
 
     return (
-      this.universalStore.getAndSync(this.idKey, this.identityStoreTypes) ??
-      this.universalStore.get(
-        defaults.cookie.oldKey,
-        this.legacyUserStoreTargets
-      ) ??
+      this.identityStore.getAndSync(this.idKey) ??
+      this.legacyUserStore.get(defaults.cookie.oldKey) ??
       null
     )
   }
 
   private legacySIO(): [string, string] | null {
-    const val = this.universalStore.get(
-      '_sio',
-      this.legacyUserStoreTargets
-    ) as string
+    const val = this.legacyUserStore.get('_sio') as string
     if (!val) {
       return null
     }
@@ -373,10 +378,7 @@ export class User {
 
     if (id === undefined) {
       const val =
-        this.universalStore.getAndSync<ID>(
-          this.anonKey,
-          this.identityStoreTypes
-        ) ?? this.legacySIO()?.[0]
+        this.identityStore.getAndSync<ID>(this.anonKey) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
@@ -384,15 +386,12 @@ export class User {
     }
 
     if (id === null) {
-      this.universalStore.set(this.anonKey, null, this.identityStoreTypes)
-      return this.universalStore.getAndSync(
-        this.anonKey,
-        this.identityStoreTypes
-      )
+      this.identityStore.set(this.anonKey, null)
+      return this.identityStore.getAndSync(this.anonKey)
     }
 
-    this.universalStore.set(this.anonKey, id ?? uuid(), this.identityStoreTypes)
-    return this.universalStore.getAndSync(this.anonKey, this.identityStoreTypes)
+    this.identityStore.set(this.anonKey, id ?? uuid())
+    return this.identityStore.getAndSync(this.anonKey)
   }
 
   traits = (traits?: Traits | null): Traits | undefined => {
@@ -405,16 +404,10 @@ export class User {
     }
 
     if (traits) {
-      this.universalStore.set(
-        this.traitsKey,
-        traits ?? {},
-        this.traitsStoreTargets
-      )
+      this.traitsStore.set(this.traitsKey, traits ?? {})
     }
 
-    return (
-      this.universalStore.get(this.traitsKey, this.traitsStoreTargets) ?? {}
-    )
+    return this.traitsStore.get(this.traitsKey) ?? {}
   }
 
   identify(id?: ID, traits?: Traits): void {
@@ -447,9 +440,9 @@ export class User {
 
   reset(): void {
     this.logout()
-    this.universalStore.clear(this.idKey, this.identityStoreTypes)
-    this.universalStore.clear(this.anonKey, this.identityStoreTypes)
-    this.universalStore.clear(this.traitsKey, this.traitsStoreTargets)
+    this.identityStore.clear(this.idKey)
+    this.identityStore.clear(this.anonKey)
+    this.traitsStore.clear(this.traitsKey)
   }
 
   load(): User {
@@ -472,12 +465,8 @@ const groupDefaults: UserOptions = {
 }
 
 export class Group extends User {
-  constructor(
-    options: UserOptions = groupDefaults,
-    cookie?: CookieOptions,
-    store?: UniversalStorage
-  ) {
-    super(options, cookie, store)
+  constructor(options: UserOptions = groupDefaults, cookie?: CookieOptions) {
+    super(options, cookie)
     autoBind(this)
   }
 

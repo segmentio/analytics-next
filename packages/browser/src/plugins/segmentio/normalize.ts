@@ -7,6 +7,7 @@ import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
+import { UniversalStorage } from '../../core/user'
 
 let cookieOptions: jar.CookieAttributes | undefined
 function getCookieOptions(): jar.CookieAttributes {
@@ -94,10 +95,14 @@ function referrerId(
   ctx: SegmentEvent['context'],
   disablePersistance: boolean
 ): void {
-  let stored = jar.get('s:context.referrer')
+  const storage = UniversalStorage.getUniversalStorage(
+    ['cookie'],
+    getCookieOptions()
+  )
+
+  const stored = storage.get('s:context.referrer', ['cookie'])
   let ad = ads(query)
 
-  stored = stored ? JSON.parse(stored) : undefined
   ad = ad ?? (stored as Ad | undefined)
 
   if (!ad) {
@@ -109,7 +114,7 @@ function referrerId(
   }
 
   if (!disablePersistance) {
-    jar.set('s:context.referrer', JSON.stringify(ad), getCookieOptions())
+    storage.set('s:context.referrer', ad, ['cookie'])
   }
 }
 
