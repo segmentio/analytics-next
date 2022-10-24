@@ -130,6 +130,12 @@ export class Analytics
     this.settings.timeout = this.settings.timeout ?? 300
     this.queue =
       queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
+
+    this._universalStorage = UniversalStorage.getUniversalStorage(
+      disablePersistance !== false,
+      cookieOptions
+    )
+
     this._user =
       user ??
       new User(
@@ -146,11 +152,6 @@ export class Analytics
           : options?.group,
         cookieOptions
       ).load()
-
-    this._universalStorage = UniversalStorage.getUniversalStorage(
-      !disablePersistance,
-      cookieOptions
-    )
     this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}

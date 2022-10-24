@@ -472,8 +472,12 @@ const groupDefaults: UserOptions = {
 }
 
 export class Group extends User {
-  constructor(options: UserOptions = groupDefaults, cookie?: CookieOptions) {
-    super(options, cookie)
+  constructor(
+    options: UserOptions = groupDefaults,
+    cookie?: CookieOptions,
+    store?: UniversalStorage
+  ) {
+    super(options, cookie, store)
     autoBind(this)
   }
 
