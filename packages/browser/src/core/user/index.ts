@@ -59,7 +59,12 @@ class Store {
 const ONE_YEAR = 365
 
 export class Cookie extends Store {
+  static _available: boolean | undefined
   static available(): boolean {
+    if (Cookie._available !== undefined) {
+      return Cookie._available
+    }
+
     let cookieEnabled = window.navigator.cookieEnabled
 
     if (!cookieEnabled) {
@@ -67,6 +72,8 @@ export class Cookie extends Store {
       cookieEnabled = document.cookie.includes('ajs:cookies')
       jar.remove('ajs:cookies')
     }
+
+    Cookie._available = cookieEnabled
 
     return cookieEnabled
   }
@@ -141,13 +148,21 @@ const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
 }
 
 export class LocalStorage extends Store {
+  static _available: boolean | undefined
+
   static available(): boolean {
+    if (LocalStorage._available !== undefined) {
+      return LocalStorage._available
+    }
+
     const test = 'test'
     try {
       localStorage.setItem(test, test)
       localStorage.removeItem(test)
+      LocalStorage._available = true
       return true
     } catch (e) {
+      LocalStorage._available = false
       return false
     }
   }
