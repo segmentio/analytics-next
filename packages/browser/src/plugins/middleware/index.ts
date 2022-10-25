@@ -3,7 +3,6 @@ import { SegmentEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
 import { asPromise } from '../../lib/as-promise'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
-import { klona } from '../../lib/klona'
 
 export interface MiddlewareParams {
   payload: SegmentFacade
@@ -28,7 +27,11 @@ export async function applyDestinationMiddleware(
   evt: SegmentEvent,
   middleware: DestinationMiddlewareFunction[]
 ): Promise<SegmentEvent | null> {
-  let modifiedEvent = klona(evt)
+  // Clone the event so mutations are localized to a single destination.
+  let modifiedEvent = toFacade(evt, {
+    clone: true,
+    traverse: false,
+  }).rawEvent() as SegmentEvent
   async function applyMiddleware(
     event: SegmentEvent,
     fn: DestinationMiddlewareFunction
