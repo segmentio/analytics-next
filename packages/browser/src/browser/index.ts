@@ -317,10 +317,10 @@ async function loadAnalytics(
 /**
  * Return a promise that can be externally resolved
  */
-const createDeferred = () => {
-  let resolve!: () => void
-  const promise = new Promise((_resolve) => {
-    resolve = () => _resolve(undefined)
+const createDeferred = <T>() => {
+  let resolve!: (promiseValue?: T) => void
+  const promise = new Promise<T>((_resolve) => {
+    resolve = (promiseValue?: T) => _resolve(promiseValue as T)
   })
   return {
     promise,
@@ -333,23 +333,32 @@ const createDeferred = () => {
  * Use AnalyticsBrowser.load to create an instance.
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private _resolveLoadStart: () => void
+  private _resolveLoadStart: (
+    settings: AnalyticsBrowserSettings | undefined,
+    options?: InitOptions
+  ) => void
 
-  constructor(...args: Parameters<typeof AnalyticsBrowser['load']>) {
-    const [settings, options] = args
-    const lazy = settings.lazy ?? true
-    const { promise: loadStart, resolve: resolveLoadStart } = createDeferred()
+  constructor(settings?: AnalyticsBrowserSettings, options: InitOptions = {}) {
+    const lazy = settings?.lazy ?? true
+    const { promise: loadStart, resolve: resolveLoadStart } =
+      createDeferred<[AnalyticsBrowserSettings, InitOptions]>()
     super((buffer) =>
-      loadStart.then(() => loadAnalytics(settings, options, buffer))
+      loadStart.then(([settings, options]) =>
+        loadAnalytics(settings, options, buffer)
+      )
     )
     if (!lazy) {
-      resolveLoadStart()
+      resolveLoadStart([settings!, options])
     }
-    this._resolveLoadStart = resolveLoadStart
+
+    this._resolveLoadStart = (
+      _overrideSettings = settings,
+      _overrideOptions = options
+    ) => resolveLoadStart([_overrideSettings!, _overrideOptions])
   }
 
-  load(): void {
-    this._resolveLoadStart()
+  load(settings?: AnalyticsBrowserSettings, options?: InitOptions): void {
+    return this._resolveLoadStart(settings, options)
   }
 
   /**
