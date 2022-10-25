@@ -1769,7 +1769,7 @@ __metadata:
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
     "@segment/inspector-webext": ^2.0.3
-    "@segment/tsub": ^0.1.12
+    "@segment/tsub": ^0.2.0
     "@size-limit/preset-big-lib": ^7.0.8
     "@types/flat": ^5.0.1
     "@types/fs-extra": ^9.0.2
@@ -1920,9 +1920,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/tsub@npm:^0.1.12":
-  version: 0.1.12
-  resolution: "@segment/tsub@npm:0.1.12"
+"@segment/tsub@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@segment/tsub@npm:0.2.0"
   dependencies:
     "@stdlib/math-base-special-ldexp": ^0.0.5
     dlv: ^1.1.3
@@ -1930,7 +1930,7 @@ __metadata:
     tiny-hashes: ^1.0.1
   bin:
     tsub: dist/index.js
-  checksum: 2bddf7b49c8cce94d22b642719be9cfee1641e953b73acb5a260722a5aef15691757c75a8b869669f2b37acbab8b9ecc3b32b88d0c668aa1e533f998a5ff3a3c
+  checksum: 869fbe797441f349a466a13e4641e1245d8fe2e6260521e34af6bbac25000740986bbf75799f5447863fdb800c00a2b9781920170789c8bf78394d33f41969db
   languageName: node
   linkType: hard
 
