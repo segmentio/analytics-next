@@ -18,7 +18,6 @@ import {
   PreInitMethodCallBuffer,
   flushAnalyticsCallsInNewTask,
   flushAddSourceMiddleware,
-  AnalyticsLoader,
   flushSetAnonymousID,
   flushOn,
 } from '../core/buffer'
@@ -316,7 +315,7 @@ async function loadAnalytics(
 }
 
 /**
- * Return a promise that can be externally resolve
+ * Return a promise that can be externally resolved
  */
 const createDeferred = () => {
   let resolve!: () => void
@@ -334,24 +333,23 @@ const createDeferred = () => {
  * Use AnalyticsBrowser.load to create an instance.
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private _resolve: () => void
+  private _resolveLoadStart: () => void
 
   constructor(...args: Parameters<typeof AnalyticsBrowser['load']>) {
     const [settings, options] = args
     const lazy = settings.lazy ?? true
-    const { promise, resolve } = createDeferred()
+    const { promise: loadStart, resolve: resolveLoadStart } = createDeferred()
     super((buffer) =>
-      promise.then(() => loadAnalytics(settings, options, buffer))
+      loadStart.then(() => loadAnalytics(settings, options, buffer))
     )
     if (!lazy) {
-      resolve()
+      resolveLoadStart()
     }
-    this._resolve = resolve
+    this._resolveLoadStart = resolveLoadStart
   }
 
   load(): void {
-    // if user wants to invoke .load immediately after instantiation want to resolve immediately
-    this._resolve()
+    this._resolveLoadStart()
   }
 
   /**
@@ -368,7 +366,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): AnalyticsBrowser {
-    return new this({ ...settings, lazy: false }, options)
+    return new this({ lazy: false, ...settings }, options)
   }
 
   static standalone(
