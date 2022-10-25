@@ -46,7 +46,7 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  it.todo('http delivery errors are accessed through the emitter', (done) => {
+  it.skip('http delivery errors are accessed through the emitter', (done) => {
     const analytics = new AnalyticsNode({
       writeKey,
       batchSettings: {

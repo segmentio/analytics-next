@@ -50,6 +50,7 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 
 describe('SegmentNodePlugin', () => {
   const eventFactory = new EventFactory()
+  const realSetTimeout = setTimeout
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -58,8 +59,10 @@ describe('SegmentNodePlugin', () => {
   })
 
   afterEach(() => {
-    jest.runAllTimers()
-    jest.useRealTimers()
+    if (setTimeout !== realSetTimeout) {
+      jest.runAllTimers()
+      jest.useRealTimers()
+    }
   })
 
   describe('methods', () => {
