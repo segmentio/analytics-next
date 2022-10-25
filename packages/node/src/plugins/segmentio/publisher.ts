@@ -36,7 +36,7 @@ export class Publisher {
     writeKey,
   }: PublisherProps) {
     this._maxAttempts = Math.max(maxAttempts, 1)
-    this._maxEventsInBatch = maxEventsInBatch
+    this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._maxWaitTimeInMs = maxWaitTimeInMs
     this._auth = Buffer.from(`${writeKey}:`).toString('base64')
     this._endpoint = endpoint ?? 'https://api.segment.io'

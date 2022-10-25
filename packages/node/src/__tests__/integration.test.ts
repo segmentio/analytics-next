@@ -22,7 +22,7 @@ describe('Initialization', () => {
     await analytics.ready
 
     const ajsNodeXt = analytics.queue.plugins.find(
-      (xt) => xt.name === 'analytics-node-next'
+      (xt) => xt.name === 'Segment.io'
     )
     expect(ajsNodeXt).toBeDefined()
     expect(ajsNodeXt?.isLoaded()).toBeTruthy()
@@ -30,7 +30,7 @@ describe('Initialization', () => {
 })
 
 describe('Error handling', () => {
-  test('writekey missing errors are surfaced as thrown errors', () => {
+  it('writekey missing errors are surfaced as thrown errors', () => {
     expect(
       () =>
         new AnalyticsNode({
@@ -39,16 +39,19 @@ describe('Error handling', () => {
     ).toThrowError(/writeKey/i)
   })
 
-  test('property validation errors are surfaced as thrown errors', async () => {
+  it('property validation errors are surfaced as thrown errors', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
     })
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  test('http delivery errors are accessed through the emitter', (done) => {
+  it.todo('http delivery errors are accessed through the emitter', (done) => {
     const analytics = new AnalyticsNode({
       writeKey,
+      batchSettings: {
+        maxAttempts: 1,
+      },
     })
     fetcher.mockReturnValue(
       createError({ statusText: 'Service Unavailable', status: 503 })

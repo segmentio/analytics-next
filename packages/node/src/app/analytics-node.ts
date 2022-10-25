@@ -17,10 +17,9 @@ import {
   pTimeout,
 } from '@segment/analytics-core'
 import { AnalyticsNodeSettings, validateSettings } from './settings'
-import { analyticsNode } from './plugin'
-
 import { version } from '../../package.json'
 import { NodeEmittedError } from './emitted-errors'
+import { configureNodePlugin } from '../plugins/segmentio'
 
 // create a derived class since we may want to add node specific things to Context later
 export class NodeContext extends CoreContext {}
@@ -85,9 +84,15 @@ export class AnalyticsNode
     validateSettings(settings)
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new NodePriorityQueue(3))
+    const batchSettings = settings.batchSettings || {}
 
     this.ready = this.register(
-      analyticsNode({ writeKey: settings.writeKey }, this)
+      configureNodePlugin({
+        writeKey: settings.writeKey,
+        maxAttempts: batchSettings.maxAttempts ?? 4,
+        maxEventsInBatch: batchSettings.maxEventsInBatch ?? 15,
+        maxWaitTimeInMs: batchSettings.maxWaitTimeInMs ?? 1000,
+      })
     )
       .then(() => undefined)
       .catch((err) => {

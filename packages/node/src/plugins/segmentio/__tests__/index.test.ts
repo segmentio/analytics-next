@@ -333,7 +333,6 @@ describe('SegmentNodePlugin', () => {
 
       // Expect a single fetch call for all 1 events.
       expect(fetcher).toHaveBeenCalledTimes(1)
-
       validateFetcherInputs(context)
 
       // Make sure we're returning the context in the resolved promise.
@@ -371,7 +370,6 @@ describe('SegmentNodePlugin', () => {
       expect(fetcher).toHaveBeenCalledTimes(1)
       jest.advanceTimersByTime(500)
       expect(fetcher).toHaveBeenCalledTimes(2)
-      validateFetcherInputs(context)
 
       // Make sure we're returning the context in the resolved promise.
       const updatedContexts = await Promise.all(pendingContexts)
@@ -411,7 +409,6 @@ describe('SegmentNodePlugin', () => {
       expect(fetcher).toHaveBeenCalledTimes(1)
       jest.advanceTimersByTime(100)
       expect(fetcher).toHaveBeenCalledTimes(2)
-      validateFetcherInputs(...contexts)
 
       const updatedContexts = await Promise.all(pendingContexts)
       for (let i = 0; i < 16; i++) {
