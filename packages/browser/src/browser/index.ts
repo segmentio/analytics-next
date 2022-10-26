@@ -324,7 +324,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
 
   constructor() {
     const { promise: loadStart, resolve: resolveLoadStart } =
-      createDeferred<[AnalyticsBrowserSettings, InitOptions]>()
+      createDeferred<Parameters<AnalyticsBrowser['load']>>()
 
     super((buffer) =>
       loadStart.then(([settings, options]) =>
