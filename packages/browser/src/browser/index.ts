@@ -309,8 +309,12 @@ async function loadAnalytics(
 }
 
 /**
- * The public browser interface for this package.
- * Use AnalyticsBrowser.load to create an instance.
+ * The public browser interface for Segment Analytics
+ * ```ts
+ *  export const analytics = new AnalyticsBrowser()
+ *  analytics.load({ writeKey: 'foo' })
+ * ```
+ * @link https://github.com/segmentio/analytics-next/#readme
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
   private _resolveLoadStart: (
@@ -332,6 +336,16 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
       resolveLoadStart([settings, options])
   }
 
+  /**
+   * Starts loading an analytics instance including:
+   * * Fetching all destinations configured by the user (if applicable).
+   * * Loading all middleware.
+   * * Flushing any analytics events that were captured before this method was called.
+   * ```ts
+   * export const analytics = new AnalyticsBrowser() // nothing loaded yet
+   * analytics.load({ writeKey: 'foo' })
+   * ```
+   */
   load(settings: AnalyticsBrowserSettings, options: InitOptions = {}): this {
     this._resolveLoadStart(settings, options)
     return this
@@ -351,9 +365,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): AnalyticsBrowser {
-    const ajs = new AnalyticsBrowser()
-    ajs.load(settings, options)
-    return ajs
+    return new AnalyticsBrowser().load(settings, options)
   }
 
   static standalone(
