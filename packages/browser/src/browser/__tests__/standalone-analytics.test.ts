@@ -127,10 +127,10 @@ describe('standalone bundle', () => {
       // @ts-ignore ignore Response required fields
       .mockImplementation((): Promise<Response> => fetchSettings)
 
-    await AnalyticsBrowser.standalone('my-write-key')
+    await install()
 
     expect(unfetch).toHaveBeenCalledWith(
-      'https://cdn.foo.com/v1/projects/my-write-key/settings'
+      'https://cdn.foo.com/v1/projects/foo/settings'
     )
   })
 
@@ -142,7 +142,7 @@ describe('standalone bundle', () => {
     const mockCdn = 'http://my-overridden-cdn.com'
 
     window.analytics._cdn = mockCdn
-    await AnalyticsBrowser.standalone('abc')
+    await install()
 
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
