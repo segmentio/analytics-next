@@ -398,16 +398,4 @@ describe('Pre-initialization', () => {
       await ajsBrowser2
     })
   })
-
-  describe('Delayed initialization', () => {
-    it('Should be able to delay initialization ', async () => {
-      const analytics = new AnalyticsBrowser()
-      const track = analytics.track('foo')
-      await sleep(100)
-      expect(trackSpy).not.toBeCalled()
-      analytics.load({ writeKey: 'abc' })
-      await track
-      expect(trackSpy).toBeCalledWith('foo')
-    })
-  })
 })

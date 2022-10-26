@@ -8,6 +8,7 @@ import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
+import { createDeferred } from '../lib/create-deferred'
 import { pageEnrichment } from '../plugins/page-enrichment'
 import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
@@ -308,20 +309,6 @@ async function loadAnalytics(
 }
 
 /**
- * Return a promise that can be externally resolved
- */
-const createDeferred = <T>() => {
-  let resolve!: (promiseValue?: T) => void
-  const promise = new Promise<T>((_resolve) => {
-    resolve = (promiseValue?: T) => _resolve(promiseValue as T)
-  })
-  return {
-    promise,
-    resolve,
-  }
-}
-
-/**
  * The public browser interface for this package.
  * Use AnalyticsBrowser.load to create an instance.
  */
@@ -345,8 +332,9 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
       resolveLoadStart([settings, options])
   }
 
-  load(settings: AnalyticsBrowserSettings, options: InitOptions = {}): void {
-    return this._resolveLoadStart(settings, options)
+  load(settings: AnalyticsBrowserSettings, options: InitOptions = {}): this {
+    this._resolveLoadStart(settings, options)
+    return this
   }
 
   /**
