@@ -74,13 +74,6 @@ export interface AnalyticsBrowserSettings extends AnalyticsSettings {
    * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
    */
   cdnURL?: string
-
-  /**
-   * Wait for .load() call.
-   * Default is "false" for instantiation via AnalyticsBrowser.load (invokes .load immediately)
-   * and "true" for the AnalyticsBrowser constructor
-   */
-  lazy?: boolean
 }
 
 export function loadLegacySettings(
@@ -334,30 +327,25 @@ const createDeferred = <T>() => {
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
   private _resolveLoadStart: (
-    settings: AnalyticsBrowserSettings | undefined,
-    options?: InitOptions
+    settings: AnalyticsBrowserSettings,
+    options: InitOptions
   ) => void
 
-  constructor(settings?: AnalyticsBrowserSettings, options: InitOptions = {}) {
-    const lazy = settings?.lazy ?? true
+  constructor() {
     const { promise: loadStart, resolve: resolveLoadStart } =
       createDeferred<[AnalyticsBrowserSettings, InitOptions]>()
+
     super((buffer) =>
       loadStart.then(([settings, options]) =>
         loadAnalytics(settings, options, buffer)
       )
     )
-    if (!lazy) {
-      resolveLoadStart([settings!, options])
-    }
 
-    this._resolveLoadStart = (
-      _overrideSettings = settings,
-      _overrideOptions = options
-    ) => resolveLoadStart([_overrideSettings!, _overrideOptions])
+    this._resolveLoadStart = (settings, options) =>
+      resolveLoadStart([settings, options])
   }
 
-  load(settings?: AnalyticsBrowserSettings, options?: InitOptions): void {
+  load(settings: AnalyticsBrowserSettings, options: InitOptions = {}): void {
     return this._resolveLoadStart(settings, options)
   }
 
@@ -375,7 +363,9 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): AnalyticsBrowser {
-    return new this({ lazy: false, ...settings }, options)
+    const ajs = new AnalyticsBrowser()
+    ajs.load(settings, options)
+    return ajs
   }
 
   static standalone(
