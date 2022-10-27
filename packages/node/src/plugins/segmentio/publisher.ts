@@ -153,12 +153,14 @@ export class Publisher {
           // Request either malformed or size exceeded - don't retry.
           resolveFailedBatch(
             batch,
-            `[${response.status}] ${response.statusText}`
+            new Error(`[${response.status}] ${response.statusText}`)
           )
           return
         } else {
           // Treat other errors as transient and retry.
-          failureReason = `[${response.status}] ${response.statusText}`
+          failureReason = new Error(
+            `[${response.status}] ${response.statusText}`
+          )
         }
       } catch (err) {
         // Network errors get thrown, retry them.

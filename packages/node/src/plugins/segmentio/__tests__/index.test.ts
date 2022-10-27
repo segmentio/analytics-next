@@ -477,7 +477,7 @@ describe('SegmentNodePlugin', () => {
       expect(updatedContext.failedDelivery()).toBeTruthy()
       expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
         Object {
-          "reason": "[400] Bad Request",
+          "reason": [Error: [400] Bad Request],
         }
       `)
     })
@@ -509,7 +509,7 @@ describe('SegmentNodePlugin', () => {
       expect(updatedContext.failedDelivery()).toBeTruthy()
       expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
         Object {
-          "reason": "[500] Internal Server Error",
+          "reason": [Error: [500] Internal Server Error],
         }
       `)
     })
