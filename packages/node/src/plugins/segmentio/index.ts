@@ -1,13 +1,5 @@
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
-import { Publisher } from './publisher'
-
-export interface PublisherProps {
-  endpoint?: string
-  maxWaitTimeInMs: number
-  maxEventsInBatch: number
-  maxAttempts: number
-  writeKey: string
-}
+import { Publisher, PublisherProps } from './publisher'
 
 function normalizeEvent(ctx: CoreContext) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
@@ -31,7 +23,11 @@ type DefinedPluginFields =
 type SegmentNodePlugin = CorePlugin &
   Required<Pick<CorePlugin, DefinedPluginFields>>
 
-export function configureNodePlugin(props: PublisherProps): SegmentNodePlugin {
+export type ConfigureNodePluginProps = PublisherProps
+
+export function configureNodePlugin(
+  props: ConfigureNodePluginProps
+): SegmentNodePlugin {
   const publisher = new Publisher(props)
 
   function action(ctx: CoreContext): Promise<CoreContext> {

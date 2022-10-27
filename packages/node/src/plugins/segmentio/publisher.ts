@@ -1,6 +1,5 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
 import fetch from 'node-fetch'
-import { PublisherProps } from '.'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 
@@ -13,6 +12,14 @@ function noop() {}
 interface PendingItem {
   resolver: (ctx: CoreContext) => void
   context: CoreContext
+}
+
+export interface PublisherProps {
+  endpoint?: string
+  maxWaitTimeInMs: number
+  maxEventsInBatch: number
+  maxAttempts: number
+  writeKey: string
 }
 
 /**
