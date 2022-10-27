@@ -3,7 +3,6 @@ jest.mock('node-fetch', () => fetcher)
 
 import { createSuccess } from './test-helpers/factories'
 import { AnalyticsNode } from '..'
-import { NodeSegmentEvent } from '../app/analytics-node'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const myDate = new Date('2016')
