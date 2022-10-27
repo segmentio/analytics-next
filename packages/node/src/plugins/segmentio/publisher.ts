@@ -129,8 +129,9 @@ export class Publisher {
     const payload = JSON.stringify({ batch: events })
     const maxAttempts = this._maxAttempts
 
-    while (batch.getAttempts() < maxAttempts) {
-      const currentAttempt = batch.incrementAttempts()
+    let currentAttempt = 0
+    while (currentAttempt < maxAttempts) {
+      currentAttempt++
 
       let failureReason: unknown
       try {
@@ -176,7 +177,7 @@ export class Publisher {
       // Retry after attempt-based backoff.
       await sleep(
         backoff({
-          attempt: batch.getAttempts(),
+          attempt: currentAttempt,
           minTimeout: 25,
           maxTimeout: 1000,
         })

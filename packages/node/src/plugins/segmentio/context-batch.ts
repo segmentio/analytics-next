@@ -13,7 +13,6 @@ export class ContextBatch {
   public id = uuid()
   private items: PendingItem[] = []
   private sizeInBytes = 0
-  private attempts = 0
   private maxEventCount: number
 
   constructor(maxEventCount: number) {
@@ -54,14 +53,5 @@ export class ContextBatch {
 
   resolveEvents(): void {
     this.items.forEach(({ resolver, context }) => resolver(context))
-  }
-
-  getAttempts(): number {
-    return this.attempts
-  }
-
-  incrementAttempts(): number {
-    this.attempts++
-    return this.attempts
   }
 }
