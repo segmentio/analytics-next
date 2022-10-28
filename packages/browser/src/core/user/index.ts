@@ -229,10 +229,6 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
       : this.stores
   }
 
-  public push(store: Store) {
-    this.stores.push(store)
-  }
-
   /*
     This is to support few scenarios where:  
     - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
