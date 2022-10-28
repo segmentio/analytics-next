@@ -1139,9 +1139,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:internal/config":
+"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:packages/config":
   version: 0.0.0-use.local
-  resolution: "@internal/config@workspace:internal/config"
+  resolution: "@internal/config@workspace:packages/config"
   languageName: unknown
   linkType: soft
 
@@ -1159,6 +1159,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/node-integration-tests@workspace:packages/node-integration-tests"
   dependencies:
+    "@internal/test-helpers": "workspace:^"
     "@segment/analytics-node": "workspace:^"
     "@types/analytics-node": ^3.1.9
     "@types/autocannon": ^7
@@ -4378,7 +4379,6 @@ __metadata:
     "@changesets/changelog-github": ^0.4.5
     "@changesets/cli": ^2.23.2
     "@internal/config": "workspace:^"
-    "@internal/test-helpers": "workspace:^"
     "@npmcli/promise-spawn": ^3.0.0
     "@types/jest": ^28.1.1
     "@types/lodash": ^4
