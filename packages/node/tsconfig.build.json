@@ -11,6 +11,7 @@
     "declarationMap": true,
     // add type declarations to "types" folder
     "declaration": true,
-    "declarationDir": "./dist/types"
+    "declarationDir": "./dist/types",
+    "resolveJsonModule": false // workaround - https://stackoverflow.com/questions/55753163/package-json-is-not-under-rootdir/61467483#61467483
   }
 }
