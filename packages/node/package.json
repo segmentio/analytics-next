@@ -2,12 +2,12 @@
   "name": "@segment/analytics-node",
   "version": "0.0.1",
   "private": true,
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "main": "./dist/cjs/src/index.js",
+  "module": "./dist/esm/src/index.js",
+  "types": "./dist/types/src/index.d.ts",
   "exports": {
-    "require": "./dist/cjs/index.js",
-    "import": "./dist/esm/index.js"
+    "require": "./dist/cjs/src/index.js",
+    "import": "./dist/esm/src/index.js"
   },
   "files": [
     "dist/",
