@@ -61,6 +61,8 @@ steps:
       - echo "+++ Run tests"
       - yarn run -T node lint
       - yarn run -T node test
+      - yarn turbo run --filter=node-integration-tests test
+      - yarn turbo run --filter=node-integration-tests lint
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

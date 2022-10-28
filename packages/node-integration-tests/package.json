@@ -1,0 +1,26 @@
+{
+  "name": "@internal/node-integration-tests",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "perf": "yarn ts-node src/perf-tests/perf-tests.ts",
+    "concurrently": "yarn run -T concurrently",
+    "ts-node": "yarn run -T ts-node",
+    "test": "yarn perf"
+  },
+  "devDependencies": {
+    "@internal/test-helpers": "workspace:^",
+    "@segment/analytics-node": "workspace:^",
+    "@types/analytics-node": "^3.1.9",
+    "@types/autocannon": "^7",
+    "@types/express": "^4",
+    "analytics-node": "^6.2.0",
+    "autocannon": "^7.10.0",
+    "express": "^4.17.1",
+    "nock": "^13.2.9"
+  },
+  "packageManager": "yarn@3.2.1"
+}

@@ -3,18 +3,18 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", ":!__tests__/**"],
+      "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", ":!__tests__/**"],
       "outputs": ["dist/**", ".next/**"]
     },
     "test": {
-      "cache": false
+      "dependsOn": ["^build"]
     },
     "watch": {
       "cache": false,
       "outputs": ["dist/**"]
     },
     "lint": {
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.js"],
+      "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
     }
   }
