@@ -97,9 +97,9 @@ function referrerId(
 ): void {
   const storage = UniversalStorage.getUniversalStorage<{
     's:context.referrer': Ad
-  }>(['cookie'], getCookieOptions())
+  }>(disablePersistance ? [] : ['cookie'], getCookieOptions())
 
-  const stored = storage.get('s:context.referrer', ['cookie'])
+  const stored = storage.get('s:context.referrer')
   let ad: Ad | undefined | null = ads(query)
 
   ad = ad ?? stored
@@ -112,9 +112,7 @@ function referrerId(
     ctx.referrer = { ...ctx.referrer, ...ad }
   }
 
-  if (!disablePersistance) {
-    storage.set('s:context.referrer', ad, ['cookie'])
-  }
+  storage.set('s:context.referrer', ad)
 }
 
 export function normalize(
