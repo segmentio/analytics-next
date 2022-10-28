@@ -37,6 +37,9 @@ const defaults = {
 
 export type StoreType = 'cookie' | 'localStorage' | 'memory'
 
+type StringKeys<T> = Exclude<keyof T, number | symbol>
+type StorageObject = Record<string, unknown>
+
 class Store {
   private cache: Record<string, unknown> = {}
 
@@ -213,7 +216,7 @@ export interface CookieOptions {
   sameSite?: string
 }
 
-export class UniversalStorage<Data extends Record<string, unknown>> {
+export class UniversalStorage<Data extends StorageObject = StorageObject> {
   private stores: Store[]
 
   constructor(stores?: Store[]) {
@@ -230,28 +233,33 @@ export class UniversalStorage<Data extends Record<string, unknown>> {
     this.stores.push(store)
   }
 
-  public getAndSync<K extends keyof Data>(
-    key: string,
+  /*
+    This is to support few scenarios where:  
+    - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
+    - read values in AJS 1.0 format ( for customers after 1.0 --> 2.0 migration ) and then re-write them in AJS 2.0 format
+  */
+  public getAndSync<K extends StringKeys<Data>>(
+    key: K,
     storeTypes?: StoreType[]
   ): Data[K] | null {
     const val = this.get(key, storeTypes)
 
     return this.set(
       key,
-      //@ts-ignore TODO: legacy behavior, getAndSync can change the type of a value from number to string
+      //@ts-ignore TODO: legacy behavior, getAndSync can change the type of a value from number to string (AJS 1.0 stores numerical values as a number)
       typeof val === 'number' ? val.toString() : val,
       storeTypes
     ) as Data[K] | null
   }
 
-  public get<K extends keyof Data>(
+  public get<K extends StringKeys<Data>>(
     key: K,
     storeTypes?: StoreType[]
   ): Data[K] | null {
     let val = null
 
     for (const store of this.getStores(storeTypes)) {
-      val = store.get<Data[K]>(key as string)
+      val = store.get<Data[K]>(key)
       if (val) {
         return val
       }
@@ -259,8 +267,8 @@ export class UniversalStorage<Data extends Record<string, unknown>> {
     return null
   }
 
-  public set<K extends keyof Data>(
-    key: string,
+  public set<K extends StringKeys<Data>>(
+    key: K,
     value: Data[K] | null,
     storeTypes?: StoreType[]
   ): Data[K] | null {
@@ -270,9 +278,12 @@ export class UniversalStorage<Data extends Record<string, unknown>> {
     return value
   }
 
-  public clear<K extends keyof Data>(key: K, storeTypes?: StoreType[]): void {
+  public clear<K extends StringKeys<Data>>(
+    key: K,
+    storeTypes?: StoreType[]
+  ): void {
     for (const store of this.getStores(storeTypes)) {
-      store.remove(key as string)
+      store.remove(key)
     }
   }
 

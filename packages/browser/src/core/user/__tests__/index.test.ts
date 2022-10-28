@@ -1,4 +1,11 @@
-import { User, LocalStorage, Cookie, Group } from '..'
+import {
+  User,
+  LocalStorage,
+  Cookie,
+  Group,
+  UniversalStorage,
+  StoreType,
+} from '..'
 import jar from 'js-cookie'
 import assert from 'assert'
 
@@ -935,5 +942,123 @@ describe('Custom cookie params', () => {
     expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id"`)
     expect(customUser.id()).toBe('some_id')
     expect(customUser.traits()).toEqual({ trait: true })
+  })
+})
+
+describe('universal storage', function () {
+  const defaultTargets = ['cookie', 'localStorage', 'memory'] as StoreType[]
+  const getFromLS = (key: string) => JSON.parse(localStorage.getItem(key) ?? '')
+  beforeEach(function () {
+    clear()
+  })
+
+  describe('#get', function () {
+    it('picks data from cookies first', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage(defaultTargets)
+      expect(us.get('ajs_test_key')).toEqual('🍪')
+    })
+
+    it('picks data from localStorage if there is no cookie target', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage([
+        'localStorage',
+        'memory',
+      ])
+      expect(us.get('ajs_test_key')).toEqual('💾')
+    })
+
+    it('get data from memory', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage(['memory'])
+      expect(us.get('ajs_test_key')).toBeNull()
+    })
+
+    it('order of default targets does not matter', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage([
+        'localStorage',
+        'cookie',
+        'memory',
+      ])
+      expect(us.get('ajs_test_key')).toEqual('🍪')
+    })
+
+    it('returns null if there are no storage targets', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage([])
+      expect(us.get('ajs_test_key')).toBeNull()
+    })
+
+    it('can override the default targets', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = UniversalStorage.getUniversalStorage(defaultTargets)
+      expect(us.get('ajs_test_key', ['localStorage'])).toEqual('💾')
+      expect(us.get('ajs_test_key', ['localStorage', 'memory'])).toEqual('💾')
+      expect(us.get('ajs_test_key', ['cookie', 'memory'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['cookie', 'localStorage'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['cookie'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['memory'])).toEqual(null)
+    })
+  })
+
+  describe('#set', function () {
+    it('set the data in all storage types', function () {
+      const us = UniversalStorage.getUniversalStorage<{ ajs_test_key: string }>(
+        defaultTargets
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+    })
+
+    it('skip saving data to localStorage', function () {
+      const us = UniversalStorage.getUniversalStorage(['cookie', 'memory'])
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+    })
+
+    it('skip saving data to cookie', function () {
+      const us = UniversalStorage.getUniversalStorage([
+        'localStorage',
+        'memory',
+      ])
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+    })
+
+    it('can save and retrieve from memory when there is no other storage', function () {
+      const us = UniversalStorage.getUniversalStorage(['memory'])
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
+    it('can override the default targets', function () {
+      const us = UniversalStorage.getUniversalStorage(defaultTargets)
+      us.set('ajs_test_key', '💰', ['localStorage'])
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+      expect(us.get('ajs_test_key')).toEqual('💰')
+
+      us.set('ajs_test_key_2', '🦴', ['cookie'])
+      expect(jar.get('ajs_test_key_2')).toEqual('🦴')
+      expect(localStorage.getItem('ajs_test_key_2')).toEqual(null)
+      expect(us.get('ajs_test_key_2')).toEqual('🦴')
+
+      us.set('ajs_test_key_3', '👻', [])
+      expect(jar.get('ajs_test_key_3')).toEqual(undefined)
+      expect(localStorage.getItem('ajs_test_key_3')).toEqual(null)
+      expect(us.get('ajs_test_key_3')).toEqual(null)
+    })
   })
 })
