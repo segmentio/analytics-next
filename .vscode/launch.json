@@ -39,6 +39,15 @@
         // skip annoying `async_hooks` file for promises
         "<node_internals>/**"
       ]
+    },
+    {
+      "name": "ts-node current file",
+      "type": "node",
+      "request": "launch",
+      "args": ["${relativeFile}"],
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart"
     }
   ]
 }

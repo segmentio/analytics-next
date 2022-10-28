@@ -29,12 +29,16 @@
     "browser+deps": "turbo run --filter=@segment/analytics-next...",
     "node": "yarn workspace @segment/analytics-node",
     "node+deps": "turbo run --filter=@segment/analytics-node...",
+    "node-int-tests": "yarn workspace @internal/node-integration-tests",
+    "node-int-tests+deps": "turbo run --filter=@internal/node-integration-tests...",
     "clean": "bash scripts/clean.sh"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.5",
     "@changesets/cli": "^2.23.2",
+    "@internal/config": "workspace:^",
+    "@internal/test-helpers": "workspace:^",
     "@npmcli/promise-spawn": "^3.0.0",
     "@types/jest": "^28.1.1",
     "@types/lodash": "^4",
