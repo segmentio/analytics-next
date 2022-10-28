@@ -641,8 +641,8 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), fullstory, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), fullstory, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
