@@ -12,6 +12,9 @@ import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
 import { pTimeout } from '../../callback'
 import { ActionDestination } from '../../../plugins/remote-loader'
+import { UniversalStorage } from '../../user'
+
+const storage = {} as UniversalStorage
 
 async function flushAll(eq: EventQueue): Promise<Context[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
@@ -149,7 +152,8 @@ describe('Flushing', () => {
           return Promise.resolve(ctx)
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     eq.dispatch(fruitBasket)
@@ -219,7 +223,8 @@ describe('Flushing', () => {
           return Promise.resolve(ctx)
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     eq.dispatch(fruitBasket)
@@ -257,7 +262,8 @@ describe('Flushing', () => {
           return ctx
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     const dispatches = [
@@ -294,7 +300,8 @@ describe('Flushing', () => {
           return ctx
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     const context = await eq.dispatchSingle(fruitBasket)
@@ -321,7 +328,8 @@ describe('Flushing', () => {
           return Promise.resolve(ctx)
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     eq.dispatch(fruitBasket)
@@ -362,7 +370,8 @@ describe('Flushing', () => {
           return Promise.resolve(ctx)
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     const fruitBasketDelivery = eq.dispatch(fruitBasket)
@@ -429,9 +438,9 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -462,9 +471,9 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -496,9 +505,9 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -530,9 +539,9 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -563,9 +572,9 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -598,8 +607,8 @@ describe('Flushing', () => {
 
       const ctx = new Context(evt)
 
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
 
       eq.dispatch(ctx)
 
@@ -663,9 +672,9 @@ describe('Flushing', () => {
       }
 
       const ctx = new Context(evt)
-      await eq.register(Context.system(), amplitude, ajs)
-      await eq.register(Context.system(), mixPanel, ajs)
-      await eq.register(Context.system(), segmentio, ajs)
+      await eq.register(Context.system(), amplitude, ajs, storage)
+      await eq.register(Context.system(), mixPanel, ajs, storage)
+      await eq.register(Context.system(), segmentio, ajs, storage)
       await eq.dispatch(ctx)
 
       const skipAmplitudeAndSegment: MiddlewareFunction = ({
@@ -684,7 +693,8 @@ describe('Flushing', () => {
       await eq.register(
         Context.system(),
         sourceMiddlewarePlugin(skipAmplitudeAndSegment, {}),
-        ajs
+        ajs,
+        storage
       )
 
       await eq.dispatch(ctx)
@@ -702,7 +712,9 @@ describe('deregister', () => {
     const toBeRemoved = { ...testPlugin, name: 'remove-me' }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) => eq.register(Context.system(), p, ajs))
+    const promises = plugins.map((p) =>
+      eq.register(Context.system(), p, ajs, storage)
+    )
     await Promise.all(promises)
 
     await eq.deregister(Context.system(), toBeRemoved, ajs)
@@ -715,7 +727,9 @@ describe('deregister', () => {
     const toBeRemoved = { ...testPlugin, name: 'remove-me', unload: jest.fn() }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) => eq.register(Context.system(), p, ajs))
+    const promises = plugins.map((p) =>
+      eq.register(Context.system(), p, ajs, storage)
+    )
     await Promise.all(promises)
 
     await eq.deregister(Context.system(), toBeRemoved, ajs)
@@ -778,7 +792,8 @@ describe('dispatchSingle', () => {
           return Promise.resolve(ctx)
         },
       },
-      ajs
+      ajs,
+      storage
     )
 
     expect(eq.queue.length).toBe(0)
