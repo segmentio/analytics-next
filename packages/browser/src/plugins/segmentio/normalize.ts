@@ -95,15 +95,14 @@ function referrerId(
   ctx: SegmentEvent['context'],
   disablePersistance: boolean
 ): void {
-  const storage = UniversalStorage.getUniversalStorage(
-    ['cookie'],
-    getCookieOptions()
-  )
+  const storage = UniversalStorage.getUniversalStorage<{
+    's:context.referrer': Ad
+  }>(['cookie'], getCookieOptions())
 
   const stored = storage.get('s:context.referrer', ['cookie'])
-  let ad = ads(query)
+  let ad: Ad | undefined | null = ads(query)
 
-  ad = ad ?? (stored as Ad | undefined)
+  ad = ad ?? stored
 
   if (!ad) {
     return

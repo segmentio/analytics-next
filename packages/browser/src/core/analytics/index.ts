@@ -109,7 +109,9 @@ export class Analytics
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
-  private _universalStorage: UniversalStorage
+  private _universalStorage: UniversalStorage<{
+    [k: string]: unknown
+  }>
 
   initialized = false
   integrations: Integrations

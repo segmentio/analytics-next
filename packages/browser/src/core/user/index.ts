@@ -213,7 +213,7 @@ export interface CookieOptions {
   sameSite?: string
 }
 
-export class UniversalStorage {
+export class UniversalStorage<Data extends Record<string, unknown>> {
   private stores: Store[]
 
   constructor(stores?: Store[]) {
@@ -230,21 +230,28 @@ export class UniversalStorage {
     this.stores.push(store)
   }
 
-  public getAndSync<T>(key: string, storeTypes?: StoreType[]): T | null {
+  public getAndSync<K extends keyof Data>(
+    key: string,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
     const val = this.get(key, storeTypes)
 
     return this.set(
       key,
+      //@ts-ignore TODO: legacy behavior, getAndSync can change the type of a value from number to string
       typeof val === 'number' ? val.toString() : val,
       storeTypes
-    ) as T | null
+    ) as Data[K] | null
   }
 
-  public get<T>(key: string, storeTypes?: StoreType[]): T | null {
+  public get<K extends keyof Data>(
+    key: K,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
     let val = null
 
     for (const store of this.getStores(storeTypes)) {
-      val = store.get<T>(key)
+      val = store.get<Data[K]>(key as string)
       if (val) {
         return val
       }
@@ -252,23 +259,27 @@ export class UniversalStorage {
     return null
   }
 
-  public set<T>(key: string, value: T, storeTypes?: StoreType[]): T | null {
+  public set<K extends keyof Data>(
+    key: string,
+    value: Data[K] | null,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
     for (const store of this.getStores(storeTypes)) {
       store.set(key, value)
     }
     return value
   }
 
-  public clear(key: string, storeTypes?: StoreType[]): void {
+  public clear<K extends keyof Data>(key: K, storeTypes?: StoreType[]): void {
     for (const store of this.getStores(storeTypes)) {
-      store.remove(key)
+      store.remove(key as string)
     }
   }
 
-  static getUniversalStorage(
+  static getUniversalStorage<T extends Record<string, unknown>>(
     defaultTargets: StoreType[] = ['cookie', 'localStorage', 'memory'],
     cookieOptions?: CookieOptions
-  ): UniversalStorage {
+  ): UniversalStorage<T> {
     const stores = []
 
     if (defaultTargets.includes('cookie') && Cookie.available()) {
@@ -283,7 +294,7 @@ export class UniversalStorage {
       stores.push(new Store())
     }
 
-    return new UniversalStorage(stores)
+    return new UniversalStorage<T>(stores)
   }
 }
 
@@ -295,9 +306,21 @@ export class User {
   private anonKey: string
   private cookieOptions?: CookieOptions
 
-  private legacyUserStore: UniversalStorage
-  private traitsStore: UniversalStorage
-  private identityStore: UniversalStorage
+  private legacyUserStore: UniversalStorage<{
+    [k: string]:
+      | {
+          id?: string
+          traits?: Traits
+        }
+      | string
+  }>
+  private traitsStore: UniversalStorage<{
+    [k: string]: Traits
+  }>
+
+  private identityStore: UniversalStorage<{
+    [k: string]: string
+  }>
 
   options: UserOptions = {}
 
@@ -343,11 +366,8 @@ export class User {
       cookieOptions
     )
 
-    const legacyUser = this.legacyUserStore.get<{
-      id?: string
-      traits?: Traits
-    }>(defaults.cookie.oldKey)
-    if (legacyUser) {
+    const legacyUser = this.legacyUserStore.get(defaults.cookie.oldKey)
+    if (legacyUser && typeof legacyUser === 'object') {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
     }
@@ -370,11 +390,11 @@ export class User {
       }
     }
 
-    return (
-      this.identityStore.getAndSync(this.idKey) ??
-      this.legacyUserStore.get(defaults.cookie.oldKey) ??
-      null
-    )
+    const retId = this.identityStore.getAndSync(this.idKey)
+    if (retId) return retId
+
+    const retLeg = this.legacyUserStore.get(defaults.cookie.oldKey)
+    return retLeg ? (typeof retLeg === 'object' ? retLeg.id : retLeg) : null
   }
 
   private legacySIO(): [string, string] | null {
@@ -393,7 +413,7 @@ export class User {
 
     if (id === undefined) {
       const val =
-        this.identityStore.getAndSync<ID>(this.anonKey) ?? this.legacySIO()?.[0]
+        this.identityStore.getAndSync(this.anonKey) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
