@@ -21,7 +21,9 @@
   "scripts": {
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "build": "yarn concurrently 'yarn:build:*'",
+    "gen-version": "sh scripts/add-generated-version.sh",
+    "version": "yarn gen-version",
+    "build": "yarn gen-version && yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "watch": "yarn build:esm --watch --incremental",

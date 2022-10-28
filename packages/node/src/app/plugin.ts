@@ -4,9 +4,8 @@ import {
   CoreContext,
 } from '@segment/analytics-core'
 import fetch, { Response } from 'node-fetch'
-import { version } from '../../package.json'
 import { AnalyticsNode } from './analytics-node'
-
+import { version } from '../generated/version'
 const btoa = (val: string): string => Buffer.from(val).toString('base64')
 
 export async function post(

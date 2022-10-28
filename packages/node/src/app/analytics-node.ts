@@ -18,8 +18,7 @@ import {
 } from '@segment/analytics-core'
 import { AnalyticsNodeSettings, validateSettings } from './settings'
 import { analyticsNode } from './plugin'
-
-import { version } from '../../package.json'
+import { version } from '../generated/version'
 import { NodeEmittedError } from './emitted-errors'
 
 // create a derived class since we may want to add node specific things to Context later
