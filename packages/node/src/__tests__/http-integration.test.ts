@@ -26,7 +26,7 @@ describe('Analytics Node', () => {
     global.Date.now = _Date.now
   })
 
-  it(`Fires an "identify" request with the expected data`, async () => {
+  test(`Fires an "identify" request with the expected data`, async () => {
     ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
     await resolveCtx(ajs, 'identify')
     const calls = fetcher.mock.calls
@@ -94,7 +94,7 @@ describe('Analytics Node', () => {
     )
   })
 
-  it('Track: Fires http requests to the correct endoint', async () => {
+  test('Track: Fires http requests to the correct endoint', async () => {
     ajs.track({ event: 'foo', userId: 'foo' })
     ajs.track({ event: 'bar', userId: 'foo', properties: { foo: 'bar' } })
     await resolveCtx(ajs, 'track')
@@ -104,7 +104,7 @@ describe('Analytics Node', () => {
     )
   })
 
-  it('Page: Fires http requests to the correct endoint', async () => {
+  test('Page: Fires http requests to the correct endoint', async () => {
     ajs.page({ name: 'page', anonymousId: 'foo' })
     await resolveCtx(ajs, 'page')
     expect(fetcher).toHaveBeenCalledWith(
@@ -113,7 +113,7 @@ describe('Analytics Node', () => {
     )
   })
 
-  it('Group: Fires http requests to the correct endoint', async () => {
+  test('Group: Fires http requests to the correct endoint', async () => {
     ajs.group({ groupId: 'group', anonymousId: 'foo' })
     await resolveCtx(ajs, 'group')
     expect(fetcher).toHaveBeenCalledWith(
@@ -122,7 +122,7 @@ describe('Analytics Node', () => {
     )
   })
 
-  it('Alias: Fires http requests to the correct endoint', async () => {
+  test('Alias: Fires http requests to the correct endoint', async () => {
     ajs.alias({ userId: 'alias', previousId: 'previous' })
     await resolveCtx(ajs, 'alias')
     expect(fetcher).toHaveBeenCalledWith(
@@ -131,7 +131,7 @@ describe('Analytics Node', () => {
     )
   })
 
-  it('Screen', async () => {
+  test('Screen', async () => {
     ajs.screen({ name: 'screen', anonymousId: 'foo' })
     await resolveCtx(ajs, 'screen')
     expect(fetcher).toHaveBeenCalledWith(

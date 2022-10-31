@@ -31,7 +31,7 @@ describe('Initialization', () => {
 })
 
 describe('Error handling', () => {
-  it('writekey missing errors are surfaced as thrown errors', () => {
+  test('writekey missing errors are surfaced as thrown errors', () => {
     expect(
       () =>
         new AnalyticsNode({
@@ -40,7 +40,7 @@ describe('Error handling', () => {
     ).toThrowError(/writeKey/i)
   })
 
-  it('property validation errors are surfaced as thrown errors', async () => {
+  test('property validation errors are surfaced as thrown errors', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
     })

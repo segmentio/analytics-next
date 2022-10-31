@@ -34,14 +34,14 @@ describe('Ability for users to exit without losing events', () => {
   }
 
   describe('drained emitted event', () => {
-    it('emits a drained event if only one event is dispatched', async () => {
+    test('emits a drained event if only one event is dispatched', async () => {
       _helpers.makeTrackCall()
       return expect(
         new Promise((resolve) => ajs.once('drained', () => resolve(undefined)))
       ).resolves.toBe(undefined)
     })
 
-    it('emits a drained event if multiple events are dispatched', async () => {
+    test('emits a drained event if multiple events are dispatched', async () => {
       let drainedCalls = 0
       ajs.on('drained', () => {
         drainedCalls++
@@ -53,7 +53,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(drainedCalls).toBe(1)
     })
 
-    it('all callbacks should be called ', async () => {
+    test('all callbacks should be called ', async () => {
       const cb = jest.fn()
       ajs.track({ userId: 'foo', event: 'bar', callback: cb })
       expect(cb).not.toHaveBeenCalled()
@@ -61,7 +61,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(cb).toBeCalled()
     })
 
-    it('all async callbacks should be called', async () => {
+    test('all async callbacks should be called', async () => {
       const trackCall = new Promise<CoreContext>((resolve) =>
         ajs.track({
           userId: 'abc',
@@ -77,7 +77,7 @@ describe('Ability for users to exit without losing events', () => {
   })
 
   describe('.closeAndFlush()', () => {
-    it('should force resolve if method call execution time exceeds specified timeout', async () => {
+    test('should force resolve if method call execution time exceeds specified timeout', async () => {
       const TIMEOUT = 300
       await ajs.register({
         ...testPlugin,
@@ -94,7 +94,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(elapsedTime).toBeGreaterThan(TIMEOUT - 10)
     })
 
-    it('no new events should be accepted (but existing ones should be flushed)', async () => {
+    test('no new events should be accepted (but existing ones should be flushed)', async () => {
       let trackCallCount = 0
       ajs.on('track', () => {
         // track should only happen after successful dispatch
@@ -108,7 +108,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(fetcher).toBeCalledTimes(1)
       expect(trackCallCount).toBe(1)
     })
-    it('any events created after close should be emitted', async () => {
+    test('any events created after close should be emitted', async () => {
       const events: NodeSegmentEvent[] = []
       ajs.on('call_after_close', (event) => {
         events.push(event)
@@ -122,7 +122,7 @@ describe('Ability for users to exit without losing events', () => {
       await closed
     })
 
-    it('if queue has multiple track events, all of those items should be dispatched, and drain and track events should be emitted', async () => {
+    test('if queue has multiple track events, all of those items should be dispatched, and drain and track events should be emitted', async () => {
       let drainedCalls = 0
       ajs.on('drained', () => {
         drainedCalls++
@@ -150,14 +150,14 @@ describe('Ability for users to exit without losing events', () => {
       expect(drainedCalls).toBe(1)
     })
 
-    it('if no pending events, resolves immediately', async () => {
+    test('if no pending events, resolves immediately', async () => {
       const startTime = Date.now()
       await ajs.closeAndFlush()
       const elapsedTime = startTime - Date.now()
       expect(elapsedTime).toBeLessThan(20)
     })
 
-    it('if no pending events, drained should not be emitted an extra time when close is called', async () => {
+    test('if no pending events, drained should not be emitted an extra time when close is called', async () => {
       let called = false
       ajs.on('drained', () => {
         called = true
