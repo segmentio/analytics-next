@@ -8,6 +8,7 @@ import { testPlugin } from './test-helpers/test-plugin'
 import { createSuccess, createError } from './test-helpers/factories'
 
 const writeKey = 'foo'
+jest.setTimeout(10000)
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -46,8 +47,7 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  // FIXME
-  it.skip('should emit on an error', (done) => {
+  it('should emit on an error', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
       batchSettings: {
@@ -57,14 +57,15 @@ describe('Error handling', () => {
     fetcher.mockReturnValue(
       createError({ statusText: 'Service Unavailable', status: 503 })
     )
-
-    analytics.track({ event: 'foo', userId: 'sup' })
-    analytics.on('error', (emittedErr) => {
-      expect(emittedErr.message).toMatch(/segment/)
-      expect(emittedErr.code).toMatch(/http/)
-      done()
-    })
-    expect.assertions(3)
+    try {
+      const promise = resolveCtx(analytics, 'track')
+      analytics.track({ event: 'foo', userId: 'sup' })
+      await promise
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.message).toMatch(/fail/)
+      expect(err.code).toMatch(/delivery_failure/)
+    }
   })
 })
 
