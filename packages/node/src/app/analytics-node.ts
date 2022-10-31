@@ -18,7 +18,6 @@ import {
 } from '@segment/analytics-core'
 import { AnalyticsNodeSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
-import { NodeEmittedError } from './emitted-errors'
 import { configureNodePlugin } from '../plugins/segmentio'
 
 // create a derived class since we may want to add node specific things to Context later
@@ -40,7 +39,7 @@ export interface NodeSegmentEventOptions {
 /**
  * Map of emitter event names to method args.
  */
-type NodeEmitterEvents = CoreEmitterContract<NodeContext, NodeEmittedError> & {
+type NodeEmitterEvents = CoreEmitterContract<NodeContext> & {
   initialize: [AnalyticsNodeSettings]
   call_after_close: [NodeSegmentEvent] // any event that did not get dispatched due to close
   drained: []

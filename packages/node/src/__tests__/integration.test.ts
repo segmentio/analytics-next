@@ -46,7 +46,8 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  it.skip('http delivery errors are accessed through the emitter', (done) => {
+  // FIXME
+  it.skip('should emit on an error', (done) => {
     const analytics = new AnalyticsNode({
       writeKey,
       batchSettings: {
@@ -59,12 +60,8 @@ describe('Error handling', () => {
 
     analytics.track({ event: 'foo', userId: 'sup' })
     analytics.on('error', (emittedErr) => {
-      if (emittedErr.code !== 'http_delivery') {
-        return done.fail('error code incorrect')
-      }
       expect(emittedErr.message).toMatch(/segment/)
       expect(emittedErr.code).toMatch(/http/)
-      expect(emittedErr.response.status).toBe(503)
       done()
     })
     expect.assertions(3)
