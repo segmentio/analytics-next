@@ -11,6 +11,7 @@ export type EmittedDeliveryFailureError<Ctx extends CoreContext> = {
   code: 'delivery_failure'
   message: string
   ctx: Ctx
+  data?: any
 }
 
 /**

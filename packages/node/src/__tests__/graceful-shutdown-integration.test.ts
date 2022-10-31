@@ -1,6 +1,6 @@
 import { createSuccess } from './test-helpers/factories'
 
-const fetcher = jest.fn().mockReturnValue(createSuccess())
+const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
 import { AnalyticsNode, NodeSegmentEvent } from '../app/analytics-node'
@@ -19,8 +19,12 @@ describe('Ability for users to exit without losing events', () => {
   let ajs!: AnalyticsNode
   beforeEach(async () => {
     jest.resetAllMocks()
+    fetcher.mockReturnValue(createSuccess())
     ajs = new AnalyticsNode({
       writeKey: 'abc123',
+      batchSettings: {
+        maxEventsInBatch: 1,
+      },
     })
   })
   const _helpers = {

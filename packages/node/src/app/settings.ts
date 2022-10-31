@@ -4,6 +4,11 @@ export interface AnalyticsNodeSettings {
   writeKey: string
   timeout?: number
   plugins?: CorePlugin[]
+  batchSettings?: {
+    maxAttempts?: number
+    maxEventsInBatch?: number
+    maxWaitTimeInMs?: number
+  }
 }
 
 export const validateSettings = (settings: AnalyticsNodeSettings) => {

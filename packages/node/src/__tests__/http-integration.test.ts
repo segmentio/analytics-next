@@ -3,7 +3,6 @@ jest.mock('node-fetch', () => fetcher)
 
 import { createSuccess } from './test-helpers/factories'
 import { AnalyticsNode } from '..'
-import { NodeSegmentEvent } from '../app/analytics-node'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const myDate = new Date('2016')
@@ -35,7 +34,7 @@ describe('Analytics Node', () => {
     const call1 = calls[0]
     const [url, httpRes] = call1
     expect(httpRes.method).toBe('POST')
-    expect(url).toBe('https://api.segment.io/v1/identify')
+    expect(url).toBe('https://api.segment.io/v1/batch')
     expect(httpRes.headers).toMatchInlineSnapshot(
       {
         Authorization: expect.stringContaining('Basic'),
@@ -49,39 +48,47 @@ describe('Analytics Node', () => {
       }
     `
     )
-    const body: NodeSegmentEvent = JSON.parse(httpRes.body)
+    const body = JSON.parse(httpRes.body)
     expect(body).toMatchInlineSnapshot(
       {
-        messageId: expect.any(String),
-        _metadata: {
-          nodeVersion: expect.any(String),
-        },
+        batch: [
+          {
+            messageId: expect.any(String),
+            _metadata: {
+              nodeVersion: expect.any(String),
+            },
 
-        context: {
-          library: {
-            version: expect.any(String),
+            context: {
+              library: {
+                version: expect.any(String),
+              },
+            },
           },
-        },
+        ],
       },
       `
       Object {
-        "_metadata": Object {
-          "nodeVersion": Any<String>,
-        },
-        "context": Object {
-          "library": Object {
-            "name": "analytics-node-next",
-            "version": Any<String>,
+        "batch": Array [
+          Object {
+            "_metadata": Object {
+              "nodeVersion": Any<String>,
+            },
+            "context": Object {
+              "library": Object {
+                "name": "AnalyticsNode",
+                "version": Any<String>,
+              },
+            },
+            "integrations": Object {},
+            "messageId": Any<String>,
+            "timestamp": "2016-01-01T00:00:00.000Z",
+            "traits": Object {
+              "foo": "bar",
+            },
+            "type": "identify",
+            "userId": "my_user_id",
           },
-        },
-        "integrations": Object {},
-        "messageId": Any<String>,
-        "timestamp": "2016-01-01T00:00:00.000Z",
-        "traits": Object {
-          "foo": "bar",
-        },
-        "type": "identify",
-        "userId": "my_user_id",
+        ],
       }
     `
     )
@@ -92,7 +99,7 @@ describe('Analytics Node', () => {
     ajs.track({ event: 'bar', userId: 'foo', properties: { foo: 'bar' } })
     await resolveCtx(ajs, 'track')
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/track',
+      'https://api.segment.io/v1/batch',
       expect.anything()
     )
   })
@@ -101,7 +108,7 @@ describe('Analytics Node', () => {
     ajs.page({ name: 'page', anonymousId: 'foo' })
     await resolveCtx(ajs, 'page')
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/page',
+      'https://api.segment.io/v1/batch',
       expect.anything()
     )
   })
@@ -110,7 +117,7 @@ describe('Analytics Node', () => {
     ajs.group({ groupId: 'group', anonymousId: 'foo' })
     await resolveCtx(ajs, 'group')
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/group',
+      'https://api.segment.io/v1/batch',
       expect.anything()
     )
   })
@@ -119,7 +126,7 @@ describe('Analytics Node', () => {
     ajs.alias({ userId: 'alias', previousId: 'previous' })
     await resolveCtx(ajs, 'alias')
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/alias',
+      'https://api.segment.io/v1/batch',
       expect.anything()
     )
   })
@@ -128,7 +135,7 @@ describe('Analytics Node', () => {
     ajs.screen({ name: 'screen', anonymousId: 'foo' })
     await resolveCtx(ajs, 'screen')
     expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/screen',
+      'https://api.segment.io/v1/batch',
       expect.anything()
     )
   })

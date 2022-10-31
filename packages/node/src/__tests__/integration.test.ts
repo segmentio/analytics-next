@@ -8,6 +8,7 @@ import { testPlugin } from './test-helpers/test-plugin'
 import { createSuccess, createError } from './test-helpers/factories'
 
 const writeKey = 'foo'
+jest.setTimeout(10000)
 
 beforeEach(() => {
   jest.resetAllMocks()
@@ -22,7 +23,7 @@ describe('Initialization', () => {
     await analytics.ready
 
     const ajsNodeXt = analytics.queue.plugins.find(
-      (xt) => xt.name === 'analytics-node-next'
+      (xt) => xt.name === 'Segment.io'
     )
     expect(ajsNodeXt).toBeDefined()
     expect(ajsNodeXt?.isLoaded()).toBeTruthy()
@@ -46,25 +47,25 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  test('http delivery errors are accessed through the emitter', (done) => {
+  it('should emit on an error', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
+      batchSettings: {
+        maxAttempts: 1,
+      },
     })
     fetcher.mockReturnValue(
       createError({ statusText: 'Service Unavailable', status: 503 })
     )
-
-    analytics.track({ event: 'foo', userId: 'sup' })
-    analytics.on('error', (emittedErr) => {
-      if (emittedErr.code !== 'http_delivery') {
-        return done.fail('error code incorrect')
-      }
-      expect(emittedErr.message).toMatch(/segment/)
-      expect(emittedErr.code).toMatch(/http/)
-      expect(emittedErr.response.status).toBe(503)
-      done()
-    })
-    expect.assertions(3)
+    try {
+      const promise = resolveCtx(analytics, 'track')
+      analytics.track({ event: 'foo', userId: 'sup' })
+      await promise
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.message).toMatch(/fail/)
+      expect(err.code).toMatch(/delivery_failure/)
+    }
   })
 })
 
