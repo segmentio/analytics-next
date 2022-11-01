@@ -310,6 +310,8 @@ async function loadAnalytics(
 
 /**
  * The public browser interface for Segment Analytics
+ *
+ * @example
  * ```ts
  *  export const analytics = new AnalyticsBrowser()
  *  analytics.load({ writeKey: 'foo' })
@@ -337,12 +339,18 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
   }
 
   /**
-   * Starts loading an analytics instance including:
-   * * Fetching all destinations configured by the user (if applicable).
+   * Fully initialize an analytics instance, including:
+   *
+   * * Fetching settings from the segment CDN (by default).
+   * * Fetching all remote destinations configured by the user (if applicable).
+   * * Flushing buffered analytics events.
    * * Loading all middleware.
-   * * Flushing any analytics events that were captured before this method was called.
+   *
+   * Note:️  This method should only be called *once* in your application.
+   *
+   * @example
    * ```ts
-   * export const analytics = new AnalyticsBrowser() // nothing loaded yet
+   * export const analytics = new AnalyticsBrowser()
    * analytics.load({ writeKey: 'foo' })
    * ```
    */
@@ -354,6 +362,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
   /**
    * Instantiates an object exposing Analytics methods.
    *
+   * @example
    * ```ts
    * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
    *
