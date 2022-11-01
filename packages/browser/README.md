@@ -53,7 +53,30 @@ document.body?.addEventListener('click', () => {
 })
 ```
 
-### using `React` (Simple / client-side only)
+## Lazy / Delayed Loading
+You can load a buffered version of analytics that requires `.load` to be explicitly called before initiating any network activity. This can be useful if you want to wait for a user to consent before fetching any tracking destinations or sending buffered events to segment.
+
+- ⚠️ ️`.load` should only be called _once_.
+
+```ts
+export const analytics = new AnalyticsBrowser()
+
+analytics.identify("hello world")
+
+if (userConsentsToBeingTracked) {
+    analytics.load({ writeKey: '<YOUR_WRITE_KEY>' }) // destinations loaded, enqueued events are flushed
+}
+```
+This strategy also comes in handy if you have some settings that are fetched asynchronously.
+```ts
+const analytics = new AnalyticsBrowser()
+fetchWriteKey().then(writeKey => analytics.load({ writeKey }))
+
+analytics.identify("hello world")
+```
+
+## Usage in Common Frameworks
+### using `React` (Simple)
 
 ```tsx
 import { AnalyticsBrowser } from '@segment/analytics-next'
@@ -71,6 +94,8 @@ const App = () => (
 ### using `React` (Advanced w/ React Context)
 
 ```tsx
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
 const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined!);
 
 type Props = {
@@ -102,7 +127,7 @@ export const useAnalytics = () => {
 const TrackButton = () => {
   const analytics = useAnalytics()
   return (
-    <button onClick={() => analytics.track('hello world').then(console.log)}>
+    <button onClick={() => analytics.track('hello world')}>
       Track!
     </button>
   )
@@ -126,7 +151,7 @@ More React Examples:
 1. create composable file `segment.ts` with factory ref analytics:
 
 ```ts
-import { Analytics, AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const analytics = AnalyticsBrowser.load({
   writeKey: '<YOUR_WRITE_KEY>',
@@ -200,7 +225,10 @@ First, clone the repo and then startup our local dev environment:
 ```sh
 $ git clone git@github.com:segmentio/analytics-next.git
 $ cd analytics-next
-$ yarn dev
+$ nvm use  # installs correct version of node defined in .nvmrc.
+$ yarn && yarn build
+$ yarn test
+$ yarn dev  # optional: runs analytics-next playground.
 ```
 
 > If you get "Cannot find module '@segment/analytics-next' or its corresponding type declarations.ts(2307)" (in VSCode), you may have to "cmd+shift+p -> "TypeScript: Restart TS server"
