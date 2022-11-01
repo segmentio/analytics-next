@@ -29,20 +29,21 @@ describe('Lazy initialization', () => {
     await track
     expect(trackSpy).toBeCalledWith('foo')
   })
-  it('load method return an analytics instance', async () => {
+
+  it('.load method return an analytics instance', async () => {
     const analytics = new AnalyticsBrowser().load({ writeKey: 'foo' })
     expect(analytics instanceof AnalyticsBrowser).toBeTruthy()
-    await analytics.track('foo')
-    expect(trackSpy).toBeCalledWith('foo')
   })
 
   it('should ignore subsequent .load calls', async () => {
     const analytics = new AnalyticsBrowser()
-    await analytics.load({ writeKey: 'abc' })
-    await analytics.load({ writeKey: 'abc' })
+    await analytics.load({ writeKey: 'my-write-key' })
+    await analytics.load({ writeKey: 'def' })
     expect(fetched).toBeCalledTimes(1)
     expect(fetched).toBeCalledWith(
-      expect.stringContaining('https://cdn.segment.com/v1/projects/')
+      expect.stringContaining(
+        'https://cdn.segment.com/v1/projects/my-write-key/settings'
+      )
     )
   })
 })
