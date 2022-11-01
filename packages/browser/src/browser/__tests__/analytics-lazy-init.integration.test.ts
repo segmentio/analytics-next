@@ -7,16 +7,17 @@ import { createSuccess } from '../../test-helpers/factories'
 jest.mock('unfetch')
 
 const mockFetchSettingsSuccessResponse = () => {
-  jest
+  return jest
     .mocked(unfetch)
     .mockImplementation(() => createSuccess({ integrations: {} }))
 }
 
 describe('Lazy initialization', () => {
   let trackSpy: jest.SpiedFunction<Analytics['track']>
+  let fetched: jest.MockedFn<typeof unfetch>
   beforeEach(() => {
+    fetched = mockFetchSettingsSuccessResponse()
     trackSpy = jest.spyOn(Analytics.prototype, 'track')
-    mockFetchSettingsSuccessResponse()
   })
 
   it('Should be able to delay initialization ', async () => {
@@ -33,5 +34,15 @@ describe('Lazy initialization', () => {
     expect(analytics instanceof AnalyticsBrowser).toBeTruthy()
     await analytics.track('foo')
     expect(trackSpy).toBeCalledWith('foo')
+  })
+
+  it('should ignore subsequent .load calls', async () => {
+    const analytics = new AnalyticsBrowser()
+    await analytics.load({ writeKey: 'abc' })
+    await analytics.load({ writeKey: 'abc' })
+    expect(fetched).toBeCalledTimes(1)
+    expect(fetched).toBeCalledWith(
+      expect.stringContaining('https://cdn.segment.com/v1/projects/')
+    )
   })
 })
