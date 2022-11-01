@@ -354,7 +354,10 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
    * analytics.load({ writeKey: 'foo' })
    * ```
    */
-  load(settings: AnalyticsBrowserSettings, options: InitOptions = {}): this {
+  load(
+    settings: AnalyticsBrowserSettings,
+    options: InitOptions = {}
+  ): AnalyticsBrowser {
     this._resolveLoadStart(settings, options)
     return this
   }
