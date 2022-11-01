@@ -54,7 +54,7 @@ document.body?.addEventListener('click', () => {
 ```
 
 ## Lazy / Delayed Loading
-You can load a buffered version of analytics that requires `.load` to be explicitly called before initatiating any network activity. This can be useful if you want to wait for a user to consent before fetching any tracking destinations or sending buffered events to segment.
+You can load a buffered version of analytics that requires `.load` to be explicitly called before initiating any network activity. This can be useful if you want to wait for a user to consent before fetching any tracking destinations or sending buffered events to segment.
 
 - ⚠️ ️`.load` should only be called _once_.
 
