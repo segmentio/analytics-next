@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-next': patch
+'@segment/analytics-next': minor
 ---
 
 Add ability to delay initialization
