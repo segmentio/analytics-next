@@ -110,4 +110,16 @@ export default {
     }
     void AnalyticsBrowser.load({ writeKey: 'foo' }).track('foo', {} as User)
   },
+  'Lazy instantiation should be supported': () => {
+    const analytics = new AnalyticsBrowser()
+    assertNotAny(analytics)
+    assertIs<AnalyticsBrowser>(analytics)
+    analytics.load({ writeKey: 'foo' })
+    void analytics.track('foo')
+  },
+  '.load should return this': () => {
+    const analytics = new AnalyticsBrowser().load({ writeKey: 'foo' })
+    assertNotAny(analytics)
+    assertIs<AnalyticsBrowser>(analytics)
+  },
 }

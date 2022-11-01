@@ -53,6 +53,29 @@ document.body?.addEventListener('click', () => {
 })
 ```
 
+## Lazy / Delayed Loading
+You can load a buffered version of analytics that requires `.load` to be explicitly called before initiating any network activity. This can be useful if you want to wait for a user to consent before fetching any tracking destinations or sending buffered events to segment.
+
+- ⚠️ ️`.load` should only be called _once_.
+
+```ts
+export const analytics = new AnalyticsBrowser()
+
+analytics.identify("hello world")
+
+if (userConsentsToBeingTracked) {
+    analytics.load({ writeKey: '<YOUR_WRITE_KEY>' }) // destinations loaded, enqueued events are flushed
+}
+```
+This strategy also comes in handy if you have some settings that are fetched asynchronously.
+```ts
+const analytics = new AnalyticsBrowser()
+fetchWriteKey().then(writeKey => analytics.load({ writeKey }))
+
+analytics.identify("hello world")
+```
+
+## Usage in Common Frameworks
 ### using `React` (Simple)
 
 ```tsx

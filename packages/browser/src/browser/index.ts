@@ -8,6 +8,7 @@ import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
+import { createDeferred } from '../lib/create-deferred'
 import { pageEnrichment } from '../plugins/page-enrichment'
 import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
@@ -18,7 +19,6 @@ import {
   PreInitMethodCallBuffer,
   flushAnalyticsCallsInNewTask,
   flushAddSourceMiddleware,
-  AnalyticsLoader,
   flushSetAnonymousID,
   flushOn,
 } from '../core/buffer'
@@ -309,17 +309,63 @@ async function loadAnalytics(
 }
 
 /**
- * The public browser interface for this package.
- * Use AnalyticsBrowser.load to create an instance.
+ * The public browser interface for Segment Analytics
+ *
+ * @example
+ * ```ts
+ *  export const analytics = new AnalyticsBrowser()
+ *  analytics.load({ writeKey: 'foo' })
+ * ```
+ * @link https://github.com/segmentio/analytics-next/#readme
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
-  private constructor(loader: AnalyticsLoader) {
-    super(loader)
+  private _resolveLoadStart: (
+    settings: AnalyticsBrowserSettings,
+    options: InitOptions
+  ) => void
+
+  constructor() {
+    const { promise: loadStart, resolve: resolveLoadStart } =
+      createDeferred<Parameters<AnalyticsBrowser['load']>>()
+
+    super((buffer) =>
+      loadStart.then(([settings, options]) =>
+        loadAnalytics(settings, options, buffer)
+      )
+    )
+
+    this._resolveLoadStart = (settings, options) =>
+      resolveLoadStart([settings, options])
+  }
+
+  /**
+   * Fully initialize an analytics instance, including:
+   *
+   * * Fetching settings from the segment CDN (by default).
+   * * Fetching all remote destinations configured by the user (if applicable).
+   * * Flushing buffered analytics events.
+   * * Loading all middleware.
+   *
+   * Note:️  This method should only be called *once* in your application.
+   *
+   * @example
+   * ```ts
+   * export const analytics = new AnalyticsBrowser()
+   * analytics.load({ writeKey: 'foo' })
+   * ```
+   */
+  load(
+    settings: AnalyticsBrowserSettings,
+    options: InitOptions = {}
+  ): AnalyticsBrowser {
+    this._resolveLoadStart(settings, options)
+    return this
   }
 
   /**
    * Instantiates an object exposing Analytics methods.
    *
+   * @example
    * ```ts
    * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
    *
@@ -331,9 +377,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
     settings: AnalyticsBrowserSettings,
     options: InitOptions = {}
   ): AnalyticsBrowser {
-    return new this((preInitBuffer) =>
-      loadAnalytics(settings, options, preInitBuffer)
-    )
+    return new AnalyticsBrowser().load(settings, options)
   }
 
   static standalone(
