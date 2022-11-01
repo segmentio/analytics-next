@@ -70,15 +70,11 @@ if (userConsentsToBeingTracked) {
 This strategy also comes in handy if you have some settings that are fetched asynchronously.
 ```ts
 const analytics = new AnalyticsBrowser()
-
-fetchSettings().then(writeKey => analytics.load({ writeKey }))
+fetchWriteKey().then(writeKey => analytics.load({ writeKey }))
 
 analytics.identify("hello world")
-document.body?.addEventListener('click', () => {
-  analytics.track('document body clicked!')
-})
-
 ```
+
 ## Usage in Common Frameworks
 ### using `React` (Simple)
 
