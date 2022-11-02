@@ -90,9 +90,6 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 
 ## Event Emitter
 ```ts
-import { analytics } from './analytics'
-import { ContextCancelation, CoreContext } from '@segment/analytics-node'
-
 // listen globally to events
 analytics.on('identify', (ctx) => console.log(ctx.event))
 
