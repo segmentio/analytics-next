@@ -97,13 +97,8 @@ import { ContextCancelation, CoreContext } from '@segment/analytics-node'
 analytics.on('identify', (ctx) => console.log(ctx.event))
 
 // listen for errors (if needed)
-analytics.on('error', (err) => {
-  if (err.code === 'http_delivery') {
-    console.error(err.response)
-  } else {
-    console.error(err)
-  }
-})
+analytics.on('error', (err) => console.error(err))
+
 ```
 
 
