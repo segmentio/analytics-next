@@ -1,7 +1,7 @@
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { AnalyticsNode } from '../index'
+import { Analytics } from '../index'
 import { CorePlugin as Plugin } from '@segment/analytics-core'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { testPlugin } from './test-helpers/test-plugin'
@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe('Plugin Init', () => {
   it('loads analytics-node-next plugin', async () => {
-    const analytics = new AnalyticsNode({
+    const analytics = new Analytics({
       writeKey,
     })
     await analytics.ready
@@ -34,14 +34,14 @@ describe('Settings / Configuration Init', () => {
   it('throws if no writeKey', () => {
     expect(
       () =>
-        new AnalyticsNode({
+        new Analytics({
           writeKey: undefined as any,
         })
     ).toThrowError(/writeKey/i)
   })
 
   it('allows host/path to override default client', async () => {
-    const analytics = new AnalyticsNode({
+    const analytics = new Analytics({
       writeKey,
       host: 'http://foo.com',
       path: '/bar',
@@ -55,7 +55,7 @@ describe('Settings / Configuration Init', () => {
   it('throws if host / path is bad', async () => {
     expect(
       () =>
-        new AnalyticsNode({
+        new Analytics({
           writeKey,
           host: 'SHOULD_FAIL',
           path: '/bar',
@@ -66,14 +66,14 @@ describe('Settings / Configuration Init', () => {
 
 describe('Error handling', () => {
   it('surfaces property thrown errors', async () => {
-    const analytics = new AnalyticsNode({
+    const analytics = new Analytics({
       writeKey,
     })
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
   it('should emit on an error', async () => {
-    const analytics = new AnalyticsNode({
+    const analytics = new Analytics({
       writeKey,
       maxAttempts: 1,
     })
@@ -94,7 +94,7 @@ describe('Error handling', () => {
 
 describe('alias', () => {
   it('generates alias events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     analytics.alias({
       userId: 'chris radek',
@@ -109,7 +109,7 @@ describe('alias', () => {
 
 describe('group', () => {
   it('generates group events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     analytics.group({
       groupId: 'coolKids',
@@ -125,7 +125,7 @@ describe('group', () => {
   })
 
   it('invocations are isolated', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     analytics.group({
       groupId: 'coolKids',
@@ -154,7 +154,7 @@ describe('group', () => {
 
 describe('identify', () => {
   it('generates identify events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
     analytics.identify({
       userId: 'user-id',
       traits: {
@@ -178,7 +178,7 @@ describe('identify', () => {
 
 describe('page', () => {
   it('generates page events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     const category = 'Docs'
     const name = 'How to write a test'
@@ -214,7 +214,7 @@ describe('page', () => {
 
 describe('screen', () => {
   it('generates screen events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     const name = 'Home Screen'
 
@@ -242,7 +242,7 @@ describe('screen', () => {
 
 describe('track', () => {
   it('generates track events', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     const eventName = 'Test Event'
 
@@ -277,7 +277,7 @@ describe('track', () => {
 
 describe('register', () => {
   it('registers a plugin', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
 
     await analytics.register(testPlugin)
 
@@ -286,7 +286,7 @@ describe('register', () => {
 
   it('should wait for plugins to be registered before dispatching events', async () => {
     // TODO: ensure that this test _actually_ tests criticalTasks =S
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
     analytics.identify({ userId: 'foo' })
 
     const register = new Promise((resolve) =>
@@ -318,7 +318,7 @@ describe('register', () => {
 
 describe('deregister', () => {
   it('deregisters a plugin given its name', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
     await analytics.register(testPlugin)
 
     await analytics.deregister(testPlugin.name)
@@ -328,14 +328,14 @@ describe('deregister', () => {
 
 describe('version', () => {
   it('should return the version', () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
     expect(typeof +analytics.VERSION).toBe('number')
   })
 })
 
 describe('ready', () => {
   it('should only resolve when plugin registration is done', async () => {
-    const analytics = new AnalyticsNode({ writeKey })
+    const analytics = new Analytics({ writeKey })
     expect(analytics.queue.plugins.length).toBe(0)
     const result = await analytics.ready
     expect(result).toBeUndefined()

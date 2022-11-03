@@ -16,12 +16,12 @@ import {
   CoreEmitterContract,
   pTimeout,
 } from '@segment/analytics-core'
-import { AnalyticsNodeSettings, validateSettings } from './settings'
+import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
 import { configureNodePlugin } from '../plugins/segmentio'
 
 // create a derived class since we may want to add node specific things to Context later
-export class NodeContext extends CoreContext {}
+export class Context extends CoreContext {}
 
 /**
  * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
@@ -31,42 +31,42 @@ type IdentityOptions =
   | { userId?: string; anonymousId: string }
 
 /** Events from CoreOptions */
-export interface NodeSegmentEventOptions {
-  context?: NodeContext
+export interface SegmentEventOptions {
+  context?: Context
   timestamp?: CoreOptions['timestamp']
 }
 
 /**
  * Map of emitter event names to method args.
  */
-type NodeEmitterEvents = CoreEmitterContract<NodeContext> & {
-  initialize: [AnalyticsNodeSettings]
-  call_after_close: [NodeSegmentEvent] // any event that did not get dispatched due to close
+type NodeEmitterEvents = CoreEmitterContract<Context> & {
+  initialize: [AnalyticsSettings]
+  call_after_close: [SegmentEvent] // any event that did not get dispatched due to close
   drained: []
 }
 
-class NodePriorityQueue extends PriorityQueue<NodeContext> {
+class NodePriorityQueue extends PriorityQueue<Context> {
   constructor(maxAttempts: number) {
     super(maxAttempts, [])
   }
   // do not use an internal "seen" map
-  getAttempts(ctx: NodeContext): number {
+  getAttempts(ctx: Context): number {
     return ctx.attempts ?? 0
   }
-  updateAttempts(ctx: NodeContext): number {
+  updateAttempts(ctx: Context): number {
     ctx.attempts = this.getAttempts(ctx) + 1
     return this.getAttempts(ctx)
   }
 }
 
-type NodeSegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
+type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
-export interface NodeSegmentEvent extends CoreSegmentEvent {
-  type: NodeSegmentEventType
-  options?: NodeSegmentEventOptions
+export interface SegmentEvent extends CoreSegmentEvent {
+  type: SegmentEventType
+  options?: SegmentEventOptions
 }
 
-export class AnalyticsNode
+export class Analytics
   extends Emitter<NodeEmitterEvents>
   implements CoreAnalytics
 {
@@ -78,7 +78,7 @@ export class AnalyticsNode
 
   ready: Promise<void>
 
-  constructor(settings: AnalyticsNodeSettings) {
+  constructor(settings: AnalyticsSettings) {
     super()
     validateSettings(settings)
     this._eventFactory = new EventFactory()
@@ -128,7 +128,7 @@ export class AnalyticsNode
 
   private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
     if (this._isClosed) {
-      this.emit('call_after_close', segmentEvent as NodeSegmentEvent)
+      this.emit('call_after_close', segmentEvent as SegmentEvent)
       return undefined
     }
 
@@ -161,7 +161,7 @@ export class AnalyticsNode
     userId: string
     /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
     previousId: string
-    options?: NodeSegmentEventOptions
+    options?: SegmentEventOptions
     callback?: Callback
   }): void {
     const segmentEvent = this._eventFactory.alias(userId, previousId, options)
@@ -182,7 +182,7 @@ export class AnalyticsNode
   }: IdentityOptions & {
     groupId: string
     traits?: Traits
-    options?: NodeSegmentEventOptions
+    options?: SegmentEventOptions
     callback?: Callback
   }): void {
     const segmentEvent = this._eventFactory.group(groupId, traits, {
@@ -206,7 +206,7 @@ export class AnalyticsNode
     callback,
   }: IdentityOptions & {
     traits?: Traits
-    options?: NodeSegmentEventOptions
+    options?: SegmentEventOptions
     callback?: Callback
   }): void {
     const segmentEvent = this._eventFactory.identify(userId, traits, {
@@ -239,7 +239,7 @@ export class AnalyticsNode
     properties?: EventProperties
     callback?: Callback
     timestamp?: string | Date
-    options?: NodeSegmentEventOptions
+    options?: SegmentEventOptions
   }): void {
     const segmentEvent = this._eventFactory.page(
       category ?? null,
@@ -265,7 +265,7 @@ export class AnalyticsNode
     options,
     callback,
     timestamp,
-  }: Parameters<AnalyticsNode['page']>[0]): void {
+  }: Parameters<Analytics['page']>[0]): void {
     const segmentEvent = this._eventFactory.screen(
       category ?? null,
       name ?? null,
@@ -290,7 +290,7 @@ export class AnalyticsNode
   }: IdentityOptions & {
     event: string
     properties?: EventProperties
-    options?: NodeSegmentEventOptions
+    options?: SegmentEventOptions
     callback?: Callback
   }): void {
     const segmentEvent = this._eventFactory.track(event, properties, {
@@ -308,7 +308,7 @@ export class AnalyticsNode
    */
   async register(...plugins: CorePlugin<any, any>[]): Promise<void> {
     return this.queue.criticalTasks.run(async () => {
-      const ctx = NodeContext.system()
+      const ctx = Context.system()
 
       const registrations = plugins.map((xt) =>
         this.queue.register(ctx, xt, this)
@@ -326,7 +326,7 @@ export class AnalyticsNode
    * @param pluginNames - The names of one or more plugins to deregister.
    */
   async deregister(...pluginNames: string[]): Promise<void> {
-    const ctx = NodeContext.system()
+    const ctx = Context.system()
 
     const deregistrations = pluginNames.map(async (pl) => {
       const plugin = this.queue.plugins.find((p) => p.name === pl)

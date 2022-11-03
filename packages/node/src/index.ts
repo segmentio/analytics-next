@@ -1,2 +1,2 @@
 export * from './app/analytics-node'
-export type { AnalyticsNodeSettings } from './app/settings'
+export type { AnalyticsSettings } from './app/settings'

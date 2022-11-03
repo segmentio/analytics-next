@@ -1,11 +1,11 @@
-import { AnalyticsNode, NodeContext } from '../../app/analytics-node'
+import { Analytics, Context } from '../../app/analytics-node'
 
 /** Tester helper that resolves context from emitter event */
 export const resolveCtx = (
-  analytics: AnalyticsNode,
+  analytics: Analytics,
   eventName: 'track' | 'identify' | 'page' | 'screen' | 'group' | 'alias',
   { log = false } = {}
-): Promise<NodeContext> => {
+): Promise<Context> => {
   return new Promise((resolve, reject) => {
     analytics.once(eventName, resolve)
     analytics.once('error', (err) => {

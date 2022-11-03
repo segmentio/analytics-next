@@ -1,4 +1,4 @@
-import { AnalyticsNode } from '../'
+import { Analytics } from '../'
 
 /**
  * These are general typescript definition tests;
@@ -6,7 +6,7 @@ import { AnalyticsNode } from '../'
  */
 export default {
   'analytics.VERSION should be readonly': () => {
-    const analytics = new AnalyticsNode({ writeKey: 'abc' })
+    const analytics = new Analytics({ writeKey: 'abc' })
     // should work
     analytics.VERSION
 
@@ -16,7 +16,7 @@ export default {
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':
     () => {
-      const analytics = new AnalyticsNode({ writeKey: 'abc' })
+      const analytics = new Analytics({ writeKey: 'abc' })
       const method: 'track' | 'identify' | 'page' | 'screen' | 'group' = 'track'
 
       // @ts-expect-error - no userID
@@ -28,7 +28,7 @@ export default {
     },
 
   'alias does not need a userId': () => {
-    const analytics = new AnalyticsNode({ writeKey: 'abc' })
+    const analytics = new Analytics({ writeKey: 'abc' })
 
     // @ts-expect-error - no userId
     analytics.alias({ previousId: 'old_id_either_anon_or_regular' })

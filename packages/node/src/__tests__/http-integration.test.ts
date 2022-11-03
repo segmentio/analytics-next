@@ -2,20 +2,20 @@ const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
 import { createSuccess } from './test-helpers/factories'
-import { AnalyticsNode } from '..'
+import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const myDate = new Date('2016')
 const _Date = Date
 
 describe('Analytics Node', () => {
-  let ajs: AnalyticsNode
+  let ajs: Analytics
 
   beforeEach(async () => {
     jest.resetAllMocks()
     fetcher.mockReturnValue(createSuccess())
 
-    ajs = new AnalyticsNode({
+    ajs = new Analytics({
       writeKey: 'abc123',
     })
 

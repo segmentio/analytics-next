@@ -1,6 +1,6 @@
 import { CorePlugin, ValidationError } from '@segment/analytics-core'
 
-export interface AnalyticsNodeSettings {
+export interface AnalyticsSettings {
   /**
    * Key that corresponds to your Segment.io project
    */
@@ -31,7 +31,7 @@ export interface AnalyticsNodeSettings {
   maxWaitTimeInMs?: number
 }
 
-export const validateSettings = (settings: AnalyticsNodeSettings) => {
+export const validateSettings = (settings: AnalyticsSettings) => {
   if (!settings.writeKey) {
     throw new ValidationError('writeKey', 'writeKey is missing.')
   }
