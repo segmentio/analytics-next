@@ -37,6 +37,9 @@ app.post('/cart', (req, res) => {
 });
 ```
 
+## Complete Settings / Configuration
+See [settings interface](src/app/settings.ts).
+
 ## Graceful Shutdown
 ### Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.

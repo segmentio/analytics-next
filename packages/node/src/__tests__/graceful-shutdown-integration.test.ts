@@ -22,9 +22,7 @@ describe('Ability for users to exit without losing events', () => {
     fetcher.mockReturnValue(createSuccess())
     ajs = new AnalyticsNode({
       writeKey: 'abc123',
-      batchSettings: {
-        maxEventsInBatch: 1,
-      },
+      maxEventsInBatch: 1,
     })
   })
   const _helpers = {

@@ -1,5 +1,6 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
 import fetch from 'node-fetch'
+import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 
@@ -15,7 +16,8 @@ interface PendingItem {
 }
 
 export interface PublisherProps {
-  endpoint?: string
+  host?: string
+  path?: string
   maxWaitTimeInMs: number
   maxEventsInBatch: number
   maxAttempts: number
@@ -33,10 +35,11 @@ export class Publisher {
   private _maxEventsInBatch: number
   private _maxAttempts: number
   private _auth: string
-  private _endpoint: string
+  private _url: string
 
   constructor({
-    endpoint,
+    host,
+    path,
     maxAttempts,
     maxEventsInBatch,
     maxWaitTimeInMs,
@@ -46,7 +49,10 @@ export class Publisher {
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._maxWaitTimeInMs = maxWaitTimeInMs
     this._auth = Buffer.from(`${writeKey}:`).toString('base64')
-    this._endpoint = endpoint ?? 'https://api.segment.io'
+    this._url = tryCreateFormattedUrl(
+      host ?? 'https://api.segment.io',
+      path ?? '/v1/batch'
+    )
   }
 
   private createBatch(): ContextBatch {
@@ -93,7 +99,7 @@ export class Publisher {
         Success: Check if batch is full and send if it is.
         Failure: Assume event is too big to fit in current batch - send existing batch.
           Add an event to the new batch.
-            Success: Check if batch is full and send if it is.  
+            Success: Check if batch is full and send if it is.
             Failure: Event exceeds maximum size (it will never fit), fail the event.
     */
 
@@ -135,7 +141,7 @@ export class Publisher {
 
       let failureReason: unknown
       try {
-        const response = await fetch(`${this._endpoint}/v1/batch`, {
+        const response = await fetch(this._url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

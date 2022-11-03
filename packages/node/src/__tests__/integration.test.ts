@@ -15,7 +15,7 @@ beforeEach(() => {
   fetcher.mockReturnValue(createSuccess())
 })
 
-describe('Initialization', () => {
+describe('Plugin Init', () => {
   it('loads analytics-node-next plugin', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
@@ -30,8 +30,8 @@ describe('Initialization', () => {
   })
 })
 
-describe('Error handling', () => {
-  test('writekey missing errors are surfaced as thrown errors', () => {
+describe('Settings / Configuration Init', () => {
+  it('throws if no writeKey', () => {
     expect(
       () =>
         new AnalyticsNode({
@@ -40,7 +40,32 @@ describe('Error handling', () => {
     ).toThrowError(/writeKey/i)
   })
 
-  test('property validation errors are surfaced as thrown errors', async () => {
+  it('allows host/path to override default client', async () => {
+    const analytics = new AnalyticsNode({
+      writeKey,
+      host: 'http://foo.com',
+      path: '/bar',
+    })
+    const track = resolveCtx(analytics, 'track')
+    analytics.track({ event: 'foo', userId: 'sup' })
+    await track
+    expect(fetcher.mock.calls[0][0]).toBe('http://foo.com/bar')
+  })
+
+  it('throws if host / path is bad', async () => {
+    expect(
+      () =>
+        new AnalyticsNode({
+          writeKey,
+          host: 'SHOULD_FAIL',
+          path: '/bar',
+        })
+    ).toThrowError()
+  })
+})
+
+describe('Error handling', () => {
+  it('surfaces property thrown errors', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
     })
@@ -50,9 +75,7 @@ describe('Error handling', () => {
   it('should emit on an error', async () => {
     const analytics = new AnalyticsNode({
       writeKey,
-      batchSettings: {
-        maxAttempts: 1,
-      },
+      maxAttempts: 1,
     })
     fetcher.mockReturnValue(
       createError({ statusText: 'Service Unavailable', status: 503 })

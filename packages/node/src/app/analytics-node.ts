@@ -83,20 +83,17 @@ export class AnalyticsNode
     validateSettings(settings)
     this._eventFactory = new EventFactory()
     this.queue = new EventQueue(new NodePriorityQueue(3))
-    const batchSettings = settings.batchSettings || {}
 
     this.ready = this.register(
       configureNodePlugin({
         writeKey: settings.writeKey,
-        maxAttempts: batchSettings.maxAttempts ?? 4,
-        maxEventsInBatch: batchSettings.maxEventsInBatch ?? 15,
-        maxWaitTimeInMs: batchSettings.maxWaitTimeInMs ?? 1000,
+        host: settings.host,
+        path: settings.path,
+        maxAttempts: settings.maxAttempts ?? 4,
+        maxEventsInBatch: settings.maxEventsInBatch ?? 15,
+        maxWaitTimeInMs: settings.maxWaitTimeInMs ?? 1000,
       })
-    )
-      .then(() => undefined)
-      .catch((err) => {
-        console.error(err)
-      })
+    ).then(() => undefined)
 
     this.emit('initialize', settings)
 
