@@ -205,6 +205,15 @@ export class EventFactory {
   }
 
   public normalize(event: SegmentEvent): SegmentEvent {
+    const anonymousIdOverride = event.options?.anonymousId
+    if (anonymousIdOverride) {
+      // set anonymousId globally if we encounter an override
+      //segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/#override-the-anonymous-id-using-the-options-object
+      const id = this.user.anonymousId(anonymousIdOverride)
+      // sync the user to the property on the event itself
+      event.anonymousId = id
+    }
+
     const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
       (integrationNames, name) => {
         return {

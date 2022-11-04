@@ -1,6 +1,9 @@
 import { PriorityQueue } from '../../../lib/priority-queue'
 import { MiddlewareParams } from '../../../plugins/middleware'
-import { retrieveStoredData } from '../../../test-helpers/retrieve-stored-data'
+import {
+  getAjsBrowserStorage,
+  clearAjsBrowserStorage,
+} from '../../../test-helpers/browser-storage'
 import { Context } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
@@ -224,11 +227,12 @@ describe('Analytics', () => {
   })
 
   describe('reset', () => {
+    beforeEach(() => {
+      clearAjsBrowserStorage()
+    })
+
     it('clears user and group data', async () => {
       const analytics = new Analytics({ writeKey: '' })
-
-      const cookieNames = ['ajs_user_id', 'ajs_anonymous_id', 'ajs_group_id']
-      const localStorageKeys = ['ajs_user_traits', 'ajs_group_properties']
 
       analytics.user().anonymousId('unknown-user')
       analytics.user().id('known-user')
@@ -237,7 +241,8 @@ describe('Analytics', () => {
       analytics.group().traits({ team: 'analytics' })
 
       // Ensure all cookies/localstorage is written correctly first
-      let storedData = retrieveStoredData({ cookieNames, localStorageKeys })
+
+      let storedData = getAjsBrowserStorage()
       expect(storedData).toEqual({
         ajs_user_id: 'known-user',
         ajs_anonymous_id: 'unknown-user',
@@ -252,7 +257,7 @@ describe('Analytics', () => {
 
       // Now make sure everything was cleared on reset
       analytics.reset()
-      storedData = retrieveStoredData({ cookieNames, localStorageKeys })
+      storedData = getAjsBrowserStorage()
       expect(storedData).toEqual({})
     })
   })

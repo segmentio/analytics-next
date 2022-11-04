@@ -124,7 +124,6 @@ export function normalize(
 
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
-  const anonId = json.anonymousId
 
   delete json.options
   json.writeKey = settings?.apiKey
@@ -159,7 +158,8 @@ export function normalize(
   referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
 
   json.userId = json.userId || user.id()
-  json.anonymousId = user.anonymousId(anonId)
+  json.anonymousId = json.anonymousId || user.anonymousId()
+
   json.sentAt = new Date()
 
   const failed = analytics.queue.failedInitializations || []

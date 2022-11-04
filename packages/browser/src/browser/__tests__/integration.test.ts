@@ -17,6 +17,7 @@ import {
 } from '../../test-helpers/test-writekeys'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
+import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -595,6 +596,10 @@ describe('pageview', () => {
 })
 
 describe('setAnonymousId', () => {
+  beforeEach(() => {
+    clearAjsBrowserStorage()
+  })
+
   it('calling setAnonymousId will set a new anonymousId and returns it', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
