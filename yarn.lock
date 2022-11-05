@@ -1151,7 +1151,6 @@ __metadata:
   dependencies:
     "@internal/config": "workspace:^"
     "@segment/analytics-core": "workspace:^"
-    "@segment/analytics-next": "workspace:^"
   languageName: unknown
   linkType: soft
 
