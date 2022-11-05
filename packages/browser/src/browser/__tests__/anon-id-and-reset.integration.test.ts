@@ -62,7 +62,6 @@ describe('anonymousId', () => {
 
     it('clears anonId if reset is called after initialization is complete', async () => {
       const [analytics] = await helpers.loadAnalytics()
-      expect(getAnonId()).toBeFalsy()
       const track = analytics.track('foo')
       expect(typeof getAnonId()).toBe('string')
       analytics.reset()
