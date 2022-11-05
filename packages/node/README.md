@@ -16,9 +16,9 @@ pnpm install @segment/analytics-node
 
 ### Usage (assuming some express-like web framework)
 ```ts
-import { AnalyticsNode } from '@segment/analytics-node'
+import { Analytics } from '@segment/analytics-node'
 
-const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
+const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
 
 app.post('/login', (req, res) => {
@@ -37,6 +37,9 @@ app.post('/cart', (req, res) => {
 });
 ```
 
+## Complete Settings / Configuration
+See [settings interface](src/app/settings.ts).
+
 ## Graceful Shutdown
 ### Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
@@ -48,10 +51,10 @@ await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
 ```
 ### Graceful Shutdown: Advanced Example
 ```ts
-import { AnalyticsNode } from '@segment/analytics-node'
+import { Analytics } from '@segment/analytics-node'
 import express from 'express'
 
-const analytics = new AnalyticsNode({ writeKey: '<MY_WRITE_KEY>' })
+const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
 const app = express()
 app.post('/cart', (req, res) => {

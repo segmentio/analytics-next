@@ -3,7 +3,7 @@ import { createSuccess } from './test-helpers/factories'
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { AnalyticsNode, NodeSegmentEvent } from '../app/analytics-node'
+import { Analytics, SegmentEvent } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
 
@@ -16,15 +16,13 @@ const testPlugin: CorePlugin = {
 }
 
 describe('Ability for users to exit without losing events', () => {
-  let ajs!: AnalyticsNode
+  let ajs!: Analytics
   beforeEach(async () => {
     jest.resetAllMocks()
     fetcher.mockReturnValue(createSuccess())
-    ajs = new AnalyticsNode({
+    ajs = new Analytics({
       writeKey: 'abc123',
-      batchSettings: {
-        maxEventsInBatch: 1,
-      },
+      maxEventsInBatch: 1,
     })
   })
   const _helpers = {
@@ -109,7 +107,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(trackCallCount).toBe(1)
     })
     test('any events created after close should be emitted', async () => {
-      const events: NodeSegmentEvent[] = []
+      const events: SegmentEvent[] = []
       ajs.on('call_after_close', (event) => {
         events.push(event)
       })
