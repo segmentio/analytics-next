@@ -16,7 +16,6 @@ describe(tryCreateFormattedUrl, () => {
     expect(tryCreateFormattedUrl('http://foo.com/', '/bar')).toBe(result)
     expect(tryCreateFormattedUrl('http://foo.com', 'bar')).toBe(result)
     expect(tryCreateFormattedUrl('http://foo.com', '/bar')).toBe(result)
-    expect(tryCreateFormattedUrl('http://foo.com', '/bar')).toBe(result)
   })
   it('should throw if no http', () => {
     expect(() => tryCreateFormattedUrl('foo.com', '/bar')).toThrowError()
