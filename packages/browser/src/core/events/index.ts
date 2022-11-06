@@ -205,6 +205,11 @@ export class EventFactory {
   }
 
   public normalize(event: SegmentEvent): SegmentEvent {
+    // set anonymousId globally if we encounter an override
+    //segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/#override-the-anonymous-id-using-the-options-object
+    event.options?.anonymousId &&
+      this.user.anonymousId(event.options.anonymousId)
+
     const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
       (integrationNames, name) => {
         return {
