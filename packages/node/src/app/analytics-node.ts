@@ -89,7 +89,7 @@ export class Analytics
         writeKey: settings.writeKey,
         host: settings.host,
         path: settings.path,
-        maxAttempts: settings.maxAttempts ?? 4,
+        maxRetries: settings.maxRetries ?? 3,
         maxEventsInBatch: settings.maxEventsInBatch ?? 15,
         maxWaitTimeInMs: settings.maxWaitTimeInMs ?? 1000,
       })

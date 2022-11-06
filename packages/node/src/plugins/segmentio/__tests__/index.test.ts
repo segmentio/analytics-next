@@ -68,7 +68,7 @@ describe('SegmentNodePlugin', () => {
   describe('methods', () => {
     it('alias', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -97,7 +97,7 @@ describe('SegmentNodePlugin', () => {
 
     it('group', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -135,7 +135,7 @@ describe('SegmentNodePlugin', () => {
 
     it('identify', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -167,7 +167,7 @@ describe('SegmentNodePlugin', () => {
 
     it('page', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -206,7 +206,7 @@ describe('SegmentNodePlugin', () => {
 
     it('screen', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -244,7 +244,7 @@ describe('SegmentNodePlugin', () => {
 
     it('track', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -284,7 +284,7 @@ describe('SegmentNodePlugin', () => {
       fetcher.mockReturnValue(createSuccess())
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 3,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -318,7 +318,7 @@ describe('SegmentNodePlugin', () => {
       fetcher.mockReturnValue(createSuccess())
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 3,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -348,7 +348,7 @@ describe('SegmentNodePlugin', () => {
       fetcher.mockReturnValue(createSuccess())
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 2,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -385,7 +385,7 @@ describe('SegmentNodePlugin', () => {
     it('sends if batch will exceed max size in bytes when adding event', async () => {
       fetcher.mockReturnValue(createSuccess())
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 20,
         maxWaitTimeInMs: 100,
         writeKey: '',
@@ -424,7 +424,7 @@ describe('SegmentNodePlugin', () => {
   describe('error handling', () => {
     it('excludes events that are too large', async () => {
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -460,7 +460,7 @@ describe('SegmentNodePlugin', () => {
       )
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 4,
+        maxRetries: 3,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -491,7 +491,7 @@ describe('SegmentNodePlugin', () => {
       )
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 3,
+        maxRetries: 2,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
@@ -521,7 +521,7 @@ describe('SegmentNodePlugin', () => {
       fetcher.mockRejectedValue(new Error('Connection Error'))
 
       const segmentPlugin = configureNodePlugin({
-        maxAttempts: 3,
+        maxRetries: 2,
         maxEventsInBatch: 1,
         maxWaitTimeInMs: 1000,
         writeKey: '',
