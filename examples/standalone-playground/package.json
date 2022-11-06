@@ -1,5 +1,5 @@
 {
-  "name": "standalone-playground",
+  "name": "@example/standalone-playground",
   "private": true,
   "installConfig": {
     "hoistingLimits": "workspaces"

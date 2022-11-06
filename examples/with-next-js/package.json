@@ -1,5 +1,5 @@
 {
-  "name": "with-next-js",
+  "name": "@example/with-next-js",
   "version": "0.1.0",
   "private": true,
   "scripts": {

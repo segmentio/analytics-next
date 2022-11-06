@@ -129,9 +129,9 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
-      - yarn workspaces foreach -vtR --from '{with-next-js,with-vite}' run build
+      - yarn turbo run --filter='./examples/*' build
       - echo "+++ Run tests"
-      - yarn workspaces foreach -vt --from 'with-next-js' run lint
+      - yarn turbo run --filter='./examples/*' lint
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
