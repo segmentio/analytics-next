@@ -28,7 +28,7 @@ export interface AnalyticsSettings {
   /**
    * The number of milliseconds to wait before flushing the queue automatically. Default: 1000
    */
-  maxWaitTimeInMs?: number
+  flushInterval?: number
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {
