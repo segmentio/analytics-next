@@ -73,7 +73,7 @@ export class Analytics
   private _eventFactory: EventFactory
   private _isClosed = false
   private _pendingEvents = 0
-  private readonly _closeAndFlushDefault
+  private readonly _closeAndFlushDefaultTimeout: number
 
   queue: EventQueue
 
@@ -87,7 +87,7 @@ export class Analytics
 
     const flushInterval = settings.flushInterval ?? 10000
 
-    this._closeAndFlushDefault = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
+    this._closeAndFlushDefaultTimeout = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
 
     this.ready = this.register(
       configureNodePlugin({
@@ -115,7 +115,7 @@ export class Analytics
    * and any of their subsequent promises to be resolved/rejected.
    */
   public closeAndFlush({
-    timeout = this._closeAndFlushDefault,
+    timeout = this._closeAndFlushDefaultTimeout,
   }: {
     /** Set a maximum time permitted to wait before resolving. */
     timeout?: number
