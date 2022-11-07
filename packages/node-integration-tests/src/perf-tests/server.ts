@@ -1,29 +1,26 @@
 import express from 'express'
-import nock from 'nock'
-import process from 'process'
+import { nockRequests } from './nock'
 
-nock.disableNetConnect()
-nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
-  .post('/v1/batch')
-  .reply(201)
-  .persist()
+// always run express in production mode just to be closer to our client's env -- logs less and consumes less memory.
+process.env.NODE_ENV = 'production'
 
-nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
-  .post('/v1/track')
-  .reply(201)
-  .persist()
+const { getBatchEventsTotal, getRequestTotal } = nockRequests()
 
 export const startServer = (): Promise<express.Application> => {
   return new Promise((resolve) => {
     const app = express()
-
     const server = app.listen(3000, () => {
-      console.log('Listening on http://localhost:3000')
+      console.log(`Listening on http://localhost:3000 in ${app.get('env')}`)
+      resolve(app)
     })
 
     const onExit = () => {
-      console.log('closing server...')
+      console.log('\n closing server...')
       server.close(() => {
+        console.log(`
+        batch API events total: ${getBatchEventsTotal()}.
+        batch API requests total: ${getRequestTotal()}.
+      `)
         console.log('closed gracefully!')
         process.exit()
       })
@@ -35,6 +32,5 @@ export const startServer = (): Promise<express.Application> => {
 
     process.on('SIGINT', onExit)
     process.on('SIGTERM', onExit)
-    resolve(app)
   })
 }
