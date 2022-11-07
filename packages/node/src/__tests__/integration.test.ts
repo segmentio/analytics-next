@@ -75,7 +75,7 @@ describe('Error handling', () => {
   it('should emit on an error', async () => {
     const analytics = new Analytics({
       writeKey,
-      maxAttempts: 1,
+      maxRetries: 0,
     })
     fetcher.mockReturnValue(
       createError({ statusText: 'Service Unavailable', status: 503 })

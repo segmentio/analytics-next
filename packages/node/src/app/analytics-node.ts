@@ -46,8 +46,8 @@ type NodeEmitterEvents = CoreEmitterContract<Context> & {
 }
 
 class NodePriorityQueue extends PriorityQueue<Context> {
-  constructor(maxAttempts: number) {
-    super(maxAttempts, [])
+  constructor() {
+    super(3, [])
   }
   // do not use an internal "seen" map
   getAttempts(ctx: Context): number {
@@ -82,14 +82,14 @@ export class Analytics
     super()
     validateSettings(settings)
     this._eventFactory = new EventFactory()
-    this.queue = new EventQueue(new NodePriorityQueue(3))
+    this.queue = new EventQueue(new NodePriorityQueue())
 
     this.ready = this.register(
       configureNodePlugin({
         writeKey: settings.writeKey,
         host: settings.host,
         path: settings.path,
-        maxAttempts: settings.maxAttempts ?? 4,
+        maxRetries: settings.maxRetries ?? 3,
         maxEventsInBatch: settings.maxEventsInBatch ?? 15,
         maxWaitTimeInMs: settings.maxWaitTimeInMs ?? 1000,
       })

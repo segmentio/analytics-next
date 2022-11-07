@@ -18,9 +18,9 @@ export interface AnalyticsSettings {
    */
   path?: string
   /**
-   * The number of times to try flushing a batch. Default: 4
+   * The number of times to retry flushing a batch. Default: 3
    */
-  maxAttempts?: number
+  maxRetries?: number
   /**
    * The number of messages to enqueue before flushing. Default: 15
    */

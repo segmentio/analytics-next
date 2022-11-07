@@ -20,7 +20,7 @@ export interface PublisherProps {
   path?: string
   maxWaitTimeInMs: number
   maxEventsInBatch: number
-  maxAttempts: number
+  maxRetries: number
   writeKey: string
 }
 
@@ -33,19 +33,19 @@ export class Publisher {
 
   private _maxWaitTimeInMs: number
   private _maxEventsInBatch: number
-  private _maxAttempts: number
+  private _maxRetries: number
   private _auth: string
   private _url: string
 
   constructor({
     host,
     path,
-    maxAttempts,
+    maxRetries,
     maxEventsInBatch,
     maxWaitTimeInMs,
     writeKey,
   }: PublisherProps) {
-    this._maxAttempts = Math.max(maxAttempts, 1)
+    this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._maxWaitTimeInMs = maxWaitTimeInMs
     this._auth = Buffer.from(`${writeKey}:`).toString('base64')
@@ -133,7 +133,7 @@ export class Publisher {
   private async send(batch: ContextBatch) {
     const events = batch.getEvents()
     const payload = JSON.stringify({ batch: events })
-    const maxAttempts = this._maxAttempts
+    const maxAttempts = this._maxRetries + 1
 
     let currentAttempt = 0
     while (currentAttempt < maxAttempts) {
