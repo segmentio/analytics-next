@@ -1,5 +1,5 @@
 {
-  "name": "with-vite",
+  "name": "@example/with-vite",
   "private": true,
   "scripts": {
     "concurrently": "yarn run -T concurrently",
