@@ -91,7 +91,7 @@ export class Analytics
         path: settings.path,
         maxRetries: settings.maxRetries ?? 3,
         maxEventsInBatch: settings.maxEventsInBatch ?? 15,
-        flushInterval: settings.flushInterval ?? 1000,
+        flushInterval: settings.flushInterval ?? 10000,
       })
     ).then(() => undefined)
 

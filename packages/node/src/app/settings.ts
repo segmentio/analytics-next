@@ -26,7 +26,7 @@ export interface AnalyticsSettings {
    */
   maxEventsInBatch?: number
   /**
-   * The number of milliseconds to wait before flushing the queue automatically. Default: 1000
+   * The number of milliseconds to wait before flushing the queue automatically. Default: 10000
    */
   flushInterval?: number
 }
