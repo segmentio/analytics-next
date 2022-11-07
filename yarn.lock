@@ -1140,7 +1140,7 @@ __metadata:
     react: ^18.0.0
     react-dom: ^18.0.0
     typescript: ^4.6.4
-    vite: ^2.9.12
+    vite: ^2.9.13
   languageName: unknown
   linkType: soft
 
@@ -12035,9 +12035,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^2.59.0":
-  version: 2.75.7
-  resolution: "rollup@npm:2.75.7"
+"rollup@npm:>=2.59.0 <2.78.0":
+  version: 2.77.3
+  resolution: "rollup@npm:2.77.3"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -12045,7 +12045,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: a6331d46b01062b184efdcb42ce12caf2e1575f989963944534b02f5855f6f3bc239ed0c1a18893572d7695af6d83166f3aef59dbd0365084e1531cb67824674
+  checksum: b179c68249584565ddb5664a241e8e48c293b2207718d885b08ee25797d98857a383f06b544bb89819407da5a71557f4713309a278f61c4778bb32b1d3321a1c
   languageName: node
   linkType: hard
 
@@ -13889,15 +13889,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.12":
-  version: 2.9.12
-  resolution: "vite@npm:2.9.12"
+"vite@npm:^2.9.13":
+  version: 2.9.15
+  resolution: "vite@npm:2.9.15"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
     postcss: ^8.4.13
     resolve: ^1.22.0
-    rollup: ^2.59.0
+    rollup: ">=2.59.0 <2.78.0"
   peerDependencies:
     less: "*"
     sass: "*"
@@ -13914,7 +13914,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 33cf8b6bfbbcae4b7f856d739ae519bed6b1ce23fc652ca98db1d4878bf35424885951c13e0d2536248423a0836d91ef7cae744ff40cbcbd6e7ffe495bd15ea5
+  checksum: 5edf8afc132a598f82a1339aa503514a0e86f6264babe94531b9000d801f157c9a32ae022542404678acca43ee260ade04c4763c4b7b8d381a6b50511b4a1447
   languageName: node
   linkType: hard
 
