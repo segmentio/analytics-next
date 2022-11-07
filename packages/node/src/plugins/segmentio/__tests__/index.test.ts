@@ -70,7 +70,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -99,7 +99,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -137,7 +137,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -169,7 +169,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -208,7 +208,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -246,7 +246,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -286,7 +286,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -320,7 +320,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -350,7 +350,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 2,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -368,7 +368,7 @@ describe('SegmentNodePlugin', () => {
       expect(fetcher).toHaveBeenCalledTimes(1)
       validateFetcherInputs(context, context)
 
-      // 2nd batch is not full, so need to wait for the maxWaitTimeInMs to be reached before sending.
+      // 2nd batch is not full, so need to wait for the flushInterval to be reached before sending.
       jest.advanceTimersByTime(500)
       expect(fetcher).toHaveBeenCalledTimes(1)
       jest.advanceTimersByTime(500)
@@ -387,7 +387,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 20,
-        maxWaitTimeInMs: 100,
+        flushInterval: 100,
         writeKey: '',
       })
 
@@ -426,7 +426,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -462,7 +462,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -493,7 +493,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 
@@ -523,7 +523,7 @@ describe('SegmentNodePlugin', () => {
       const segmentPlugin = configureNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
-        maxWaitTimeInMs: 1000,
+        flushInterval: 1000,
         writeKey: '',
       })
 

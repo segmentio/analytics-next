@@ -38,7 +38,18 @@ app.post('/cart', (req, res) => {
 ```
 
 ## Complete Settings / Configuration
-See [settings interface](src/app/settings.ts).
+See complete list of settings in the [AnalyticsSettings interface](src/app/settings.ts).
+```ts
+new Analytics({
+    writeKey: '<MY_WRITE_KEY>',
+    host: 'https://api.segment.io',
+    path: '/v1/batch',
+    flushInterval: 10000,
+    plugins: [plugin1, plugin2],
+    // ... and more!
+  })
+
+```
 
 ## Graceful Shutdown
 ### Avoid losing events on exit!

@@ -18,7 +18,7 @@ interface PendingItem {
 export interface PublisherProps {
   host?: string
   path?: string
-  maxWaitTimeInMs: number
+  flushInterval: number
   maxEventsInBatch: number
   maxRetries: number
   writeKey: string
@@ -31,7 +31,7 @@ export class Publisher {
   private pendingFlushTimeout?: ReturnType<typeof setTimeout>
   private batch?: ContextBatch
 
-  private _maxWaitTimeInMs: number
+  private _flushInterval: number
   private _maxEventsInBatch: number
   private _maxRetries: number
   private _auth: string
@@ -42,12 +42,12 @@ export class Publisher {
     path,
     maxRetries,
     maxEventsInBatch,
-    maxWaitTimeInMs,
+    flushInterval,
     writeKey,
   }: PublisherProps) {
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
-    this._maxWaitTimeInMs = maxWaitTimeInMs
+    this._flushInterval = flushInterval
     this._auth = Buffer.from(`${writeKey}:`).toString('base64')
     this._url = tryCreateFormattedUrl(
       host ?? 'https://api.segment.io',
@@ -67,7 +67,7 @@ export class Publisher {
       if (batch.length) {
         this.send(batch).catch(noop)
       }
-    }, this._maxWaitTimeInMs)
+    }, this._flushInterval)
     return batch
   }
 

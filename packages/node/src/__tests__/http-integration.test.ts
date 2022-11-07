@@ -16,6 +16,7 @@ describe('Analytics Node', () => {
     fetcher.mockReturnValue(createSuccess())
 
     ajs = new Analytics({
+      flushInterval: 500,
       writeKey: 'abc123',
     })
 
