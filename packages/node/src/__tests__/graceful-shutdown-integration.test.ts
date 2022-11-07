@@ -75,6 +75,16 @@ describe('Ability for users to exit without losing events', () => {
   })
 
   describe('.closeAndFlush()', () => {
+    test('default timeout should be related to flush interval', () => {
+      const flushInterval = 500
+      ajs = new Analytics({
+        writeKey: 'abc123',
+        flushInterval,
+      })
+      const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
+      expect(closeAndFlushTimeout).toBe(flushInterval * 1.25)
+    })
+
     test('should force resolve if method call execution time exceeds specified timeout', async () => {
       const TIMEOUT = 300
       await ajs.register({
@@ -106,6 +116,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(fetcher).toBeCalledTimes(1)
       expect(trackCallCount).toBe(1)
     })
+
     test('any events created after close should be emitted', async () => {
       const events: SegmentEvent[] = []
       ajs.on('call_after_close', (event) => {
