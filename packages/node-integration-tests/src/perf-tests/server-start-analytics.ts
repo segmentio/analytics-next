@@ -1,11 +1,12 @@
 import { Analytics } from '@segment/analytics-node'
 import { startServer } from './server'
+import { trackEventSmall } from './fixtures'
 
 startServer()
   .then((app) => {
-    const analytics = new Analytics({ writeKey: 'fooo' })
+    const analytics = new Analytics({ writeKey: 'foo' })
     app.get('/', (_, res) => {
-      analytics.track({ userId: 'foo', event: 'click' })
+      analytics.track(trackEventSmall)
       res.sendStatus(200)
     })
   })

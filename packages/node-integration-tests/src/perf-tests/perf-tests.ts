@@ -29,7 +29,7 @@ const execAndKill = async (moduleName: string) => {
     )
   }
 
-  await sleep(1000)
+  await sleep(3000) // wait 3 seconds to ensure port is freed up.
   return requests
 }
 
