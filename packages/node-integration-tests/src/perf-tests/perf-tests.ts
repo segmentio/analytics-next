@@ -3,6 +3,9 @@ import { runAutocannon } from './autocannon'
 import { execFile } from 'child_process'
 import { sleep } from '@internal/test-helpers'
 
+const hr = () =>
+  console.log('\n*****************************************************\n')
+
 const execAndKill = async (moduleName: string) => {
   const modulePath = path.join(__dirname, moduleName)
 
@@ -21,7 +24,7 @@ const execAndKill = async (moduleName: string) => {
   cp.kill()
 
   console.log(
-    `--> There were ${errors} connection errors (including timeouts) out of ${requests.total} total requests.`
+    `--> There were ${requests.total} total requests and ${errors} connection errors (including timeouts).`
   )
   if (errors) {
     throw new Error(
@@ -46,13 +49,14 @@ const thresholds = {
 
 const test = async () => {
   const errors = []
-  const analyticsReport = await execAndKill('server-start-analytics.ts')
   const noAnalyticsReport = await execAndKill('server-start-no-analytics.ts')
+  const analyticsReport = await execAndKill('server-start-analytics.ts')
   const oldAnalyticsReport = await execAndKill('server-start-old-analytics.ts')
   const overheadDiff = calcPercDiff(
     analyticsReport.average,
     noAnalyticsReport.average
   )
+  console.log('REPORT: \n')
   let report = `
     SDK Overhead
     with: ${analyticsReport.average} (Requests per second)
@@ -67,7 +71,7 @@ const test = async () => {
     ])
   }
 
-  console.log('-------------------------------------------------------')
+  hr()
   const newOldDiff = calcPercDiff(
     analyticsReport.average,
     oldAnalyticsReport.average
@@ -80,6 +84,7 @@ const test = async () => {
   Diff performance: ${newOldDiff} %`
 
   console.log(report)
+  hr()
 
   if (newOldDiff <= thresholds.NEW_OLD_THRESHOLD) {
     errors.push([

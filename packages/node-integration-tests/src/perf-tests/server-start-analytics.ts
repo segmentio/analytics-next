@@ -4,7 +4,11 @@ import { trackEventSmall } from './fixtures'
 
 startServer()
   .then((app) => {
-    const analytics = new Analytics({ writeKey: 'foo' })
+    const analytics = new Analytics({
+      writeKey: 'foo',
+      flushInterval: 1000,
+      maxEventsInBatch: 15,
+    })
     app.get('/', (_, res) => {
       analytics.track(trackEventSmall)
       res.sendStatus(200)

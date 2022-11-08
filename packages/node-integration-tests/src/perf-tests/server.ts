@@ -16,9 +16,15 @@ export const startServer = (): Promise<express.Application> => {
 
     const onExit = () => {
       server.close(() => {
+        const totalBatchEvents = getBatchEventsTotal()
+        const totalApiRequests = getRequestTotal()
+        const averagePerBatch = totalApiRequests
+          ? (totalBatchEvents / totalApiRequests).toFixed(1)
+          : 0
         console.log(`
-        batch API events total: ${getBatchEventsTotal()}.
-        batch API requests total: ${getRequestTotal()}.
+        batch API events total: ${totalBatchEvents}.
+        batch API requests total: ${totalApiRequests}.
+        average events per batch: ${averagePerBatch}
       `)
         console.log('Server closed.')
         process.exit()
