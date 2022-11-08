@@ -44,7 +44,7 @@ const calcPercDiff = (avg1: number, avg2: number) => {
 // e.g. -10 is "no more than 10% worse performance than X". +10 is "no less than 10% better than X".
 const thresholds = {
   SDK_OVERHEAD_THRESHOLD: -60,
-  NEW_OLD_THRESHOLD: 0,
+  NEW_OLD_THRESHOLD: -10,
 }
 
 const test = async () => {
