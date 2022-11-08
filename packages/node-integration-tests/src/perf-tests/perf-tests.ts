@@ -5,14 +5,21 @@ import { sleep } from '@internal/test-helpers'
 
 const execAndKill = async (moduleName: string) => {
   const modulePath = path.join(__dirname, moduleName)
+
   console.log(`\n *** Executing ${moduleName}... *** \n`)
-  const child = execFile('ts-node', [modulePath])
-  child.stdout?.on('data', (msg) => {
-    console.log(msg)
-  })
+
+  const cp = execFile('ts-node', [modulePath])
+
+  // output stdout and stderr from script
+  cp.stdout?.on('data', (msg) => console.log(msg))
+  cp.stderr?.on('data', (err) => console.error(err))
+
   await sleep(1000) // wait some amount of time for the server to come online before running autocannon, otherwise we will get connection errors.
+
   const { requests, errors } = await runAutocannon()
-  child.kill()
+
+  cp.kill()
+
   console.log(
     `--> There were ${errors} connection errors (including timeouts) out of ${requests.total} total requests.`
   )

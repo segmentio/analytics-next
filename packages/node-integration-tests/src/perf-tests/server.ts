@@ -15,13 +15,12 @@ export const startServer = (): Promise<express.Application> => {
     })
 
     const onExit = () => {
-      console.log('\n closing server...')
       server.close(() => {
         console.log(`
         batch API events total: ${getBatchEventsTotal()}.
         batch API requests total: ${getRequestTotal()}.
       `)
-        console.log('closed gracefully!')
+        console.log('Server closed.')
         process.exit()
       })
       setTimeout(() => {
