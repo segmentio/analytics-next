@@ -16,6 +16,10 @@ export const runAutocannon = (
         resolve(result)
       }
     )
-    autocannon.track(instance, { renderProgressBar: true })
+    autocannon.track(instance, {
+      renderProgressBar: true,
+      renderResultsTable: false,
+      renderLatencyTable: false,
+    })
   })
 }
