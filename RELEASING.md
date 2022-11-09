@@ -49,6 +49,12 @@ Information is in the [@changesets automation instructions](https://github.com/c
 ### How does the changeset bot and changeset github action work?
 [Check out the @changesets automation instructions](https://github.com/changesets/changesets/blob/main/docs/automating-changesets.md#automating-changesets)
 
+### What does `yarn release` do?
+- run prepare scripts
+- publish all packages to npm
+- pushes tags to repo
+- triggers a github release on CI (via tags)
+- triggers a CDN release
 
 ### I don't want to use automation, how do I manually create a release?
 
@@ -58,8 +64,7 @@ export GITHUB_TOKEN="???" ## changelog generator requirement (https://github.com
 yarn update-versions-and-changelogs && ## bump +  generate changelog + delete old changesets
 git add . && # add generated artifacts
 git commit -m "v1.X.X" &&
-yarn release && ### run prepare scripts + publish all packages to npm
-git push --follow-tags ### push generated tags to git (e.g @segment/analytics-next@1.X.X)
+yarn release
 ```
 
 ### Feature branches

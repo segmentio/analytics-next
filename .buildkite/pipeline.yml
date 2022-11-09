@@ -102,19 +102,16 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: [".yarn/cache/"]
 
-  # Auto deploys branches
-  - label: "[Browser] Release Branch (non-prod) :rocket:"
-    branches: "!master !v* !publish-test"
+  - label: "[Browser] Release to CDN :rocket:"
+    branches: "!v* !@segment/* !publish-test"
     agents:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
-      - echo "--- Build bundles"
-      - yarn run -T browser+deps build
-      - echo "+++ Release Branch"
-      - NODE_ENV=production yarn run -T browser exec bash ./scripts/release.sh
+      - echo "+++ Release to CDN"
+      - yarn run -T browser release:cdn
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -138,7 +135,7 @@ steps:
           paths: [".yarn/cache/"]
 
   # Deploy and NPM publish releases
-  - label: "Release / Publish Packages :rocket:"
+  - label: "[Browser] Publish Packages to NPM :rocket:"
     if: |
       // Only run when Version Packages PR is merged in
       build.message =~ /^Version Packages/ &&
@@ -155,29 +152,6 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Release packages"
       - yarn release
-    plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
-
-  # if you are in a weird state and need to force release to cdn --
-  # git commit --allow-empty -m "Force Release to CDN"
-  - label: "Release to CDN (manual) :rocket:"
-    if: |
-      // Only run when Version Packages PR is merged in
-      build.message =~ /^Force Release to CDN/ &&
-      build.branch == "master"
-    agents:
-      queue: v1
-    commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - git config --global user.name "buildkite-agent"
-      - git config --global user.email "buildkite-agent@segment.com"
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
-      - echo "+++ Release packages"
-      - yarn build
-      - yarn run -T browser release:cdn
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
