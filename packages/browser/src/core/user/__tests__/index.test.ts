@@ -871,13 +871,18 @@ describe('store', function () {
   })
 
   describe('#get', function () {
-    it('should not not get an empty record', function () {
-      expect(store.get('abc') === undefined)
+    it('should not get an empty record', function () {
+      expect(store.get('abc')).toBe(null)
     })
 
     it('should get an existing record', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
+    })
+
+    it('should return null values', function () {
+      store.set('y', { a: null })
+      expect(store.get('y')).toStrictEqual({ a: null })
     })
   })
 
@@ -900,7 +905,7 @@ describe('store', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
       store.remove('x')
-      expect(store.get('x') === undefined)
+      expect(store.get('x')).toBe(null)
     })
   })
 })

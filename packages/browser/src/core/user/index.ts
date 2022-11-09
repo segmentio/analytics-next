@@ -149,15 +149,20 @@ export class LocalStorage extends Store {
   }
 
   get<T>(key: string): T | null {
-    const val = localStorage.getItem(key)
-    if (val) {
+    try {
+      const val = localStorage.getItem(key)
+      if (val === null) {
+        return null
+      }
       try {
         return JSON.parse(val)
       } catch (e) {
-        return JSON.parse(JSON.stringify(val))
+        return val as any as T
       }
+    } catch (err) {
+      console.warn(`Unable to get ${key}, localStorage may be unavailable`)
+      return null
     }
-    return null
   }
 
   set<T>(key: string, value: T): T | null {
@@ -171,7 +176,11 @@ export class LocalStorage extends Store {
   }
 
   remove(key: string): void {
-    return localStorage.removeItem(key)
+    try {
+      return localStorage.removeItem(key)
+    } catch (err) {
+      console.warn(err)
+    }
   }
 }
 
