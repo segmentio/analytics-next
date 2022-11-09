@@ -4,6 +4,8 @@
 
 ### Minor Changes
 
+- [#655](https://github.com/segmentio/analytics-next/pull/655) [`5e3f077`](https://github.com/segmentio/analytics-next/commit/5e3f077b93083ca6a3a7ad0fcd56f5fc87f6af8e) Thanks [@silesky](https://github.com/silesky)! - Fix analytics reset clears anonymous ID bug
+
 - [#637](https://github.com/segmentio/analytics-next/pull/637) [`b335096`](https://github.com/segmentio/analytics-next/commit/b3350968a5437f5c824315aaa15602d648c1ac4e) Thanks [@silesky](https://github.com/silesky)! - Add ability to delay initialization
 
 * [#635](https://github.com/segmentio/analytics-next/pull/635) [`222d4ec`](https://github.com/segmentio/analytics-next/commit/222d4ecd4db7376839aa816b4b8923cae4f1487c) Thanks [@chrisradek](https://github.com/chrisradek)! - Adds a new load option `disableAutoISOConversions` that turns off converting ISO strings in event fields to Dates for integrations.
