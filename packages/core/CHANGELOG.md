@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.1.1
+
+### Patch Changes
+
+- [#658](https://github.com/segmentio/analytics-next/pull/658) [`409cae4`](https://github.com/segmentio/analytics-next/commit/409cae4b9ac404277aa44bab7428186129b42a35) Thanks [@silesky](https://github.com/silesky)! - Clean up dead code.
+
 ## 1.1.0
 
 ### Minor Changes

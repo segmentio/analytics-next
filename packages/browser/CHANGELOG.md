@@ -1,5 +1,20 @@
 # @segment/analytics-next
 
+## 1.46.0
+
+### Minor Changes
+
+- [#637](https://github.com/segmentio/analytics-next/pull/637) [`b335096`](https://github.com/segmentio/analytics-next/commit/b3350968a5437f5c824315aaa15602d648c1ac4e) Thanks [@silesky](https://github.com/silesky)! - Add ability to delay initialization
+
+* [#635](https://github.com/segmentio/analytics-next/pull/635) [`222d4ec`](https://github.com/segmentio/analytics-next/commit/222d4ecd4db7376839aa816b4b8923cae4f1487c) Thanks [@chrisradek](https://github.com/chrisradek)! - Adds a new load option `disableAutoISOConversions` that turns off converting ISO strings in event fields to Dates for integrations.
+
+### Patch Changes
+
+- [#641](https://github.com/segmentio/analytics-next/pull/641) [`3d31bd0`](https://github.com/segmentio/analytics-next/commit/3d31bd09ea2029a9e5413aebe55698bbf4fbf7c9) Thanks [@silesky](https://github.com/silesky)! - Update tsub dependency
+
+- Updated dependencies [[`409cae4`](https://github.com/segmentio/analytics-next/commit/409cae4b9ac404277aa44bab7428186129b42a35)]:
+  - @segment/analytics-core@1.1.1
+
 ## 1.45.0
 
 ### Minor Changes
