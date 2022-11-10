@@ -17,8 +17,13 @@ import {
   applyDestinationMiddleware,
   DestinationMiddlewareFunction,
 } from '../middleware'
-import { loadIntegration, resolveVersion, unloadIntegration } from './loader'
-import { LegacyIntegration } from './types'
+import {
+  buildIntegration,
+  loadIntegration,
+  resolveVersion,
+  unloadIntegration,
+} from './loader'
+import { LegacyIntegration, LegacyIntegrationSource } from './types'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -67,6 +72,7 @@ export class LegacyDestination implements Plugin {
   private onInitialize: Promise<unknown> | undefined
   private disableAutoISOConversion: boolean
 
+  integrationSource?: LegacyIntegrationSource
   integration: LegacyIntegration | undefined
 
   buffer: PriorityQueue<Context>
@@ -76,12 +82,14 @@ export class LegacyDestination implements Plugin {
     name: string,
     version: string,
     settings: JSONObject = {},
-    options: InitOptions
+    options: InitOptions,
+    integrationSource?: LegacyIntegrationSource
   ) {
     this.name = name
     this.version = version
     this.settings = { ...settings }
     this.disableAutoISOConversion = options.disableAutoISOConversion || false
+    this.integrationSource = integrationSource
 
     // AJS-Renderer sets an extraneous `type` setting that clobbers
     // existing type defaults. We need to remove it if it's present
@@ -110,13 +118,19 @@ export class LegacyDestination implements Plugin {
       return
     }
 
-    this.integration = await loadIntegration(
-      ctx,
-      analyticsInstance,
-      this.name,
-      this.version,
+    const integrationSource =
+      this.integrationSource ??
+      (await loadIntegration(
+        ctx,
+        this.name,
+        this.version,
+        this.options.obfuscate
+      ))
+
+    this.integration = buildIntegration(
+      integrationSource,
       this.settings,
-      this.options.obfuscate
+      analyticsInstance
     )
 
     this.onReady = new Promise((resolve) => {
@@ -304,7 +318,8 @@ export function ajsDestinations(
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
   options: InitOptions = {},
-  routingMiddleware?: DestinationMiddlewareFunction
+  routingMiddleware?: DestinationMiddlewareFunction,
+  legacyIntegrationSources?: LegacyIntegrationSource[]
 ): LegacyDestination[] {
   if (isServer()) {
     return []
@@ -351,12 +366,21 @@ export function ajsDestinations(
       if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
         return
       }
+
+      const integrationSource = legacyIntegrationSources?.find(
+        (integrationSource) =>
+          ('Integration' in integrationSource
+            ? integrationSource.Integration
+            : integrationSource
+          ).prototype.name === name
+      )
       const version = resolveVersion(integrationSettings)
       const destination = new LegacyDestination(
         name,
         version,
         integrationOptions[name],
-        options
+        options,
+        integrationSource
       )
 
       const routing = routingRules.filter(

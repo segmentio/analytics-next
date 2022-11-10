@@ -24,6 +24,7 @@ import {
 } from '../core/buffer'
 import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { inspectorHost } from '../core/inspector'
+import { LegacyIntegrationSource } from '../plugins/ajs-destination/types'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -152,7 +153,8 @@ async function registerPlugins(
   analytics: Analytics,
   opts: InitOptions,
   options: InitOptions,
-  plugins: Plugin[]
+  plugins: Plugin[],
+  legacyIntegrationSources?: LegacyIntegrationSource[]
 ): Promise<Context> {
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
     ? await import(
@@ -164,18 +166,20 @@ async function registerPlugins(
       })
     : undefined
 
-  const legacyDestinations = hasLegacyDestinations(legacySettings)
-    ? await import(
-        /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
-      ).then((mod) => {
-        return mod.ajsDestinations(
-          legacySettings,
-          analytics.integrations,
-          opts,
-          tsubMiddleware
-        )
-      })
-    : []
+  const legacyDestinations =
+    hasLegacyDestinations(legacySettings) || legacyIntegrationSources
+      ? await import(
+          /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
+        ).then((mod) => {
+          return mod.ajsDestinations(
+            legacySettings,
+            analytics.integrations,
+            opts,
+            tsubMiddleware,
+            legacyIntegrationSources
+          )
+        })
+      : []
 
   if (legacySettings.legacyVideoPluginsEnabled) {
     await import(
@@ -279,12 +283,21 @@ async function loadAnalytics(
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)
 
+  const legacyIntegrationSources = plugins.filter(
+    (pluginOrIntegration) => typeof pluginOrIntegration === 'function'
+  ) as LegacyIntegrationSource[]
+
+  const simplePlugins = plugins.filter(
+    (pluginOrIntegration) => typeof pluginOrIntegration !== 'function'
+  ) as Plugin[]
+
   const ctx = await registerPlugins(
     legacySettings,
     analytics,
     opts,
     options,
-    plugins
+    simplePlugins,
+    legacyIntegrationSources
   )
 
   const search = window.location.search ?? ''
