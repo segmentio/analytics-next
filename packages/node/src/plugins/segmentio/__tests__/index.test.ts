@@ -1,7 +1,8 @@
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { CoreContext, EventFactory } from '@segment/analytics-core'
+import { CoreContext } from '@segment/analytics-core'
+import { createNodeEventFactory } from '../../../lib/create-node-event-factory'
 import {
   createError,
   createSuccess,
@@ -9,7 +10,7 @@ import {
 import { configureNodePlugin } from '../index'
 
 const bodyPropertyMatchers = {
-  messageId: expect.stringMatching(/^ajs-next-[\w\d]+$/),
+  messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
   timestamp: expect.stringMatching(
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   ),
@@ -49,7 +50,7 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 }
 
 describe('SegmentNodePlugin', () => {
-  const eventFactory = new EventFactory()
+  const eventFactory = createNodeEventFactory()
   const realSetTimeout = setTimeout
 
   beforeEach(() => {

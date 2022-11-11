@@ -1827,7 +1827,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-core@workspace:packages/core"
   dependencies:
-    "@lukeed/uuid": ^2.0.0
     dset: ^3.1.2
     tslib: ^2.4.0
   languageName: unknown
@@ -1895,6 +1894,7 @@ __metadata:
   resolution: "@segment/analytics-node@workspace:packages/node"
   dependencies:
     "@internal/config": 0.0.0
+    "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.1.1
     "@types/node": ^12.12.14
     node-fetch: ^2.6.7

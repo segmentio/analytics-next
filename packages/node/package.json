@@ -33,6 +33,7 @@
     "publish-prerelease": "sh scripts/prerelease.sh"
   },
   "dependencies": {
+    "@lukeed/uuid": "^2.0.0",
     "@segment/analytics-core": "1.1.1",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.0"
