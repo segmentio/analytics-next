@@ -11,17 +11,17 @@ import {
 import { validateEvent } from '../validation/assertions'
 
 interface EventFactorySettings {
-  getMessageId: () => string
+  createMessageId: () => string
   user?: User
 }
 
 export class EventFactory {
-  getMessageId: EventFactorySettings['getMessageId']
+  createMessageId: EventFactorySettings['createMessageId']
   user?: User
 
   constructor(settings: EventFactorySettings) {
     this.user = settings.user
-    this.getMessageId = settings.getMessageId
+    this.createMessageId = settings.createMessageId
   }
 
   track(
@@ -247,7 +247,7 @@ export class EventFactory {
 
     const evt: CoreSegmentEvent = {
       ...body,
-      messageId: this.getMessageId(),
+      messageId: this.createMessageId(),
     }
 
     validateEvent(evt)

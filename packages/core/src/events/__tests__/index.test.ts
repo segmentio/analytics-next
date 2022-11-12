@@ -15,7 +15,7 @@ describe('Event Factory', () => {
     }
     factory = new EventFactory({
       user,
-      getMessageId: () => 'foo',
+      createMessageId: () => 'foo',
     })
   })
 
@@ -79,7 +79,7 @@ describe('Event Factory', () => {
 
     it('uses userId / anonymousId from the user class (if specified)', function () {
       factory = new EventFactory({
-        getMessageId: () => 'foo',
+        createMessageId: () => 'foo',
         user: {
           id: () => 'abc',
           anonymousId: () => '123',

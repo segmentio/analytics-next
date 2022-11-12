@@ -5,6 +5,6 @@ import { v4 } from '@lukeed/uuid/secure'
  * using @lukeed/uuid/secure uses the node crypto module, which is the fastest
  * @example "node-next-1668208232027-743be593-7789-4b74-8078-cbcc8894c586"
  */
-export const getMessageId = (): string => {
+export const createMessageId = (): string => {
   return `node-next-${Date.now()}-${v4()}`
 }
