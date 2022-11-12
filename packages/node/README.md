@@ -2,6 +2,8 @@
 ## Warning: Until 1.x release, use this library at your own risk!
 While the API is very similar, the documentation for the legacy SDK (`analytics-node`) is here: https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
+## Requirements
+- NodeJS >= 14.x
 
 ## Quick Start
 ### Install library
