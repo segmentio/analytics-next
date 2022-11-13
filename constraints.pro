@@ -31,7 +31,8 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, Depende
     '@segment/analytics-next',
     '@segment/analytics-node',
     '@segment/analytics-core',
-    '@internal/config'
+    '@internal/config',
+    '@types/node'
   ]).
 
 % Enforces that a dependency doesn't appear in both `dependencies` and `devDependencies`
