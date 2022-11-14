@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.1.2
+
+### Patch Changes
+
+- [#670](https://github.com/segmentio/analytics-next/pull/670) [`98d1b12`](https://github.com/segmentio/analytics-next/commit/98d1b127082f5fc7904980a561220c64c26edff3) Thanks [@silesky](https://github.com/silesky)! - Allow consumers to inject custom messageId into EventFactory, allowing us to remove node transient dependency on md5 library. Change node messageId to format "node-next-[unix epoch time]-[uuid]".
+
 ## 1.1.1
 
 ### Patch Changes
