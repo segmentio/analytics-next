@@ -869,12 +869,18 @@ describe('store', function () {
 
     it('should get an existing record', function () {
       store.set('x', { a: 'b' })
-      expect(store.get('x')).toStrictEqual({ a: 'b' })
-    })
+      store.set('a', 'hello world')
+      store.set('b', '')
+      store.set('c', false)
+      store.set('d', null)
+      store.set('e', undefined)
 
-    it('should return null values', function () {
-      store.set('y', { a: null })
-      expect(store.get('y')).toStrictEqual({ a: null })
+      expect(store.get('x')).toStrictEqual({ a: 'b' })
+      expect(store.get('a')).toBe('hello world')
+      expect(store.get('b')).toBe('')
+      expect(store.get('c')).toBe(false)
+      expect(store.get('d')).toBe(null)
+      expect(store.get('e')).toBe('undefined')
     })
   })
 
