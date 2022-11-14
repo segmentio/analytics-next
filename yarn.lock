@@ -1896,7 +1896,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@segment/analytics-core": 1.1.1
-    "@types/node": ^12.12.14
+    "@types/node": ^14
     node-fetch: ^2.6.7
     tslib: ^2.4.0
   languageName: unknown
@@ -3571,6 +3571,13 @@ __metadata:
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
   checksum: e4f86785f4092706e0d3b0edff8dca5a13b45627e4b36700acd8dfe6ad53db71928c8dee914d4276c7fd3b6ccd829aa919811c9eb708a2c8e4c6eb3701178c37
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^14":
+  version: 14.18.33
+  resolution: "@types/node@npm:14.18.33"
+  checksum: 4e23f95186d8ae1d38c999bc6b46fe94e790da88744b0a3bfeedcbd0d9ffe2cb0ff39e85f43014f6739e5270292c1a1f6f97a1fc606fd573a0c17fda9a1d42de
   languageName: node
   linkType: hard
 
