@@ -5,7 +5,7 @@ const uuidv4Regex =
   /^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i
 
 describe(createMessageId, () => {
-  it('creates a messageId that may look like "node-next-166820896773a9-c7404832-feea-4e70-ac7f-2dc94d96acca"', () => {
+  it('returns a string in the format "node-next-[unix epoch time]-[uuid v4]"', () => {
     const msg = createMessageId().split('-')
     expect(msg.length).toBe(8)
 
