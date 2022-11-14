@@ -8,7 +8,7 @@
 </p>
 
 ## NPM Packages
-* [@segment/analytics-next](packages/browser/#readme): Analytics SDK for web browsers
+* [@segment/analytics-next](packages/browser#analytics-next): Analytics SDK for web browsers
 * [@segment/node](packages/node/#readme) (⚠️ Beta): Segment Analytics SDK for Node.js
 
 
