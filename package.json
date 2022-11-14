@@ -20,7 +20,7 @@
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all && bash scripts/update-lockfile.sh",
-    "release": "yarn build --force && changeset publish && git push origin --tags --no-verify",
+    "release": "yarn build --force && changeset publish && git push origin --follow-tags --no-verify",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @segment/analytics-core",
     "core+deps": "turbo run --filter=@segment/analytics-core...",
