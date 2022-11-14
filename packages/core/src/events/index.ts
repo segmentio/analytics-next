@@ -1,5 +1,4 @@
 export * from './interfaces'
-import { v4 as uuid } from '@lukeed/uuid'
 import { dset } from 'dset'
 import { ID, User } from '../user'
 import {
@@ -9,14 +8,20 @@ import {
   CoreSegmentEvent,
   CoreOptions,
 } from './interfaces'
-import md5 from 'spark-md5'
 import { validateEvent } from '../validation/assertions'
 
+interface EventFactorySettings {
+  createMessageId: () => string
+  user?: User
+}
+
 export class EventFactory {
+  createMessageId: EventFactorySettings['createMessageId']
   user?: User
 
-  constructor(user?: User) {
-    this.user = user
+  constructor(settings: EventFactorySettings) {
+    this.user = settings.user
+    this.createMessageId = settings.createMessageId
   }
 
   track(
@@ -240,11 +245,9 @@ export class EventFactory {
       ...overrides,
     }
 
-    const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
-
     const evt: CoreSegmentEvent = {
       ...body,
-      messageId,
+      messageId: this.createMessageId(),
     }
 
     validateEvent(evt)

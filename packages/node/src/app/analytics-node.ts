@@ -19,6 +19,7 @@ import {
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
 import { configureNodePlugin } from '../plugins/segmentio'
+import { createNodeEventFactory } from '../lib/create-node-event-factory'
 
 // create a derived class since we may want to add node specific things to Context later
 export class Context extends CoreContext {}
@@ -82,7 +83,8 @@ export class Analytics
   constructor(settings: AnalyticsSettings) {
     super()
     validateSettings(settings)
-    this._eventFactory = new EventFactory()
+
+    this._eventFactory = createNodeEventFactory()
     this.queue = new EventQueue(new NodePriorityQueue())
 
     const flushInterval = settings.flushInterval ?? 10000
