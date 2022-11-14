@@ -14,7 +14,7 @@ echo "modifying package.json..." &&
 
 echo "building and publishing..." &&
   yarn build &&
-  npm publish --tag rc &&
+  npm publish &&
   git push
 
 echo "cleaning up" &&
