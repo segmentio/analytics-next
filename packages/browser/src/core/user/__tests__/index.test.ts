@@ -852,7 +852,7 @@ describe('group', () => {
 
 describe('store', function () {
   describe('#get', function () {
-    it('should throw an error', function () {
+    it('should return null if localStorage throws an error (or does not exist)', function () {
       const getItemSpy = jest
         .spyOn(global.Storage.prototype, 'getItem')
         .mockImplementationOnce(() => {
