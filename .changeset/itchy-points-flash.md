@@ -2,4 +2,4 @@
 '@segment/analytics-next': patch
 ---
 
-Update LocalStorage expected behavior
+Do not throw errors if localStorage becomes unavailable
