@@ -11,16 +11,17 @@ function clear(): void {
   localStorage.clear()
 }
 
+let store: LocalStorage
+beforeEach(function () {
+  store = new LocalStorage()
+  clear()
+})
+
 describe('user', () => {
   const cookieKey = User.defaults.cookie.key
   const localStorageKey = User.defaults.localStorage.key
-  const store = new LocalStorage()
 
   describe('()', () => {
-    beforeEach(() => {
-      clear()
-    })
-
     it('should pick the old "_sio" anonymousId', () => {
       jar.set('_sio', 'anonymous-id----user-id')
       const user = new User()
@@ -61,7 +62,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     describe('when cookies are disabled', () => {
@@ -294,7 +294,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     describe('when cookies are disabled', () => {
@@ -302,7 +301,6 @@ describe('user', () => {
         jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
 
         user = new User()
-        clear()
       })
 
       it('should get an id from the store', () => {
@@ -332,7 +330,6 @@ describe('user', () => {
         jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
 
         user = new User()
-        clear()
       })
 
       it('should get an id from memory', () => {
@@ -444,7 +441,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should get traits', () => {
@@ -537,7 +533,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should save an id to a cookie', () => {
@@ -604,7 +599,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should reset an id and traits', () => {
@@ -647,7 +641,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should save an id', () => {
@@ -704,7 +697,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should load an empty user', () => {
@@ -751,12 +743,6 @@ describe('user', () => {
 })
 
 describe('group', () => {
-  const store = new LocalStorage()
-
-  beforeEach(() => {
-    clear()
-  })
-
   it('should not reset id and traits', () => {
     let group = new Group()
     group.id('gid')
@@ -865,19 +851,36 @@ describe('group', () => {
 })
 
 describe('store', function () {
-  const store = new LocalStorage()
-  beforeEach(function () {
-    clear()
-  })
-
   describe('#get', function () {
-    it('should not not get an empty record', function () {
-      expect(store.get('abc') === undefined)
+    it('should return null if localStorage throws an error (or does not exist)', function () {
+      const getItemSpy = jest
+        .spyOn(global.Storage.prototype, 'getItem')
+        .mockImplementationOnce(() => {
+          throw new Error('getItem fail.')
+        })
+      store.set('foo', 'some value')
+      expect(store.get('foo')).toBeNull()
+      expect(getItemSpy).toBeCalledTimes(1)
+    })
+
+    it('should not get an empty record', function () {
+      expect(store.get('abc')).toBe(null)
     })
 
     it('should get an existing record', function () {
       store.set('x', { a: 'b' })
+      store.set('a', 'hello world')
+      store.set('b', '')
+      store.set('c', false)
+      store.set('d', null)
+      store.set('e', undefined)
+
       expect(store.get('x')).toStrictEqual({ a: 'b' })
+      expect(store.get('a')).toBe('hello world')
+      expect(store.get('b')).toBe('')
+      expect(store.get('c')).toBe(false)
+      expect(store.get('d')).toBe(null)
+      expect(store.get('e')).toBe('undefined')
     })
   })
 
@@ -900,16 +903,12 @@ describe('store', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
       store.remove('x')
-      expect(store.get('x') === undefined)
+      expect(store.get('x')).toBe(null)
     })
   })
 })
 
 describe('Custom cookie params', () => {
-  beforeEach(() => {
-    clear()
-  })
-
   it('allows for overriding keys', () => {
     const customUser = new User(
       {},

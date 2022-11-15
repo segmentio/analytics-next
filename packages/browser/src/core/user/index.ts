@@ -136,6 +136,10 @@ class NullStorage extends Store {
   remove = (_key: string): void => {}
 }
 
+const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
+  console.warn(`Unable to access ${key}, localStorage may be ${state}`)
+}
+
 export class LocalStorage extends Store {
   static available(): boolean {
     const test = 'test'
@@ -149,29 +153,38 @@ export class LocalStorage extends Store {
   }
 
   get<T>(key: string): T | null {
-    const val = localStorage.getItem(key)
-    if (val) {
+    try {
+      const val = localStorage.getItem(key)
+      if (val === null) {
+        return null
+      }
       try {
         return JSON.parse(val)
       } catch (e) {
-        return JSON.parse(JSON.stringify(val))
+        return val as any as T
       }
+    } catch (err) {
+      localStorageWarning(key, 'unavailable')
+      return null
     }
-    return null
   }
 
   set<T>(key: string, value: T): T | null {
     try {
       localStorage.setItem(key, JSON.stringify(value))
     } catch {
-      console.warn(`Unable to set ${key} in localStorage, storage may be full.`)
+      localStorageWarning(key, 'full')
     }
 
     return value
   }
 
   remove(key: string): void {
-    return localStorage.removeItem(key)
+    try {
+      return localStorage.removeItem(key)
+    } catch (err) {
+      localStorageWarning(key, 'unavailable')
+    }
   }
 }
 
