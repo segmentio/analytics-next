@@ -48,7 +48,7 @@ type NodeEmitterEvents = CoreEmitterContract<Context> & {
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
-    super(3, [])
+    super(1, [])
   }
   // do not use an internal "seen" map
   getAttempts(ctx: Context): number {
