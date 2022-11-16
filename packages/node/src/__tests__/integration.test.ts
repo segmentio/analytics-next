@@ -1,5 +1,5 @@
 const fetcher = jest.fn()
-jest.mock('node-fetch', () => fetcher)
+jest.mock('../lib/fetch', () => fetcher)
 
 import { Analytics } from '../index'
 import { CorePlugin as Plugin } from '@segment/analytics-core'
