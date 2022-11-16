@@ -51,8 +51,6 @@ describe('Analytics Node', () => {
     `
     )
     const body = JSON.parse(httpRes.body)
-    const event = body.batch[0]
-    expect(event.context.library.version).toBe(version)
 
     expect(body).toMatchInlineSnapshot(
       {
@@ -61,11 +59,6 @@ describe('Analytics Node', () => {
             messageId: expect.any(String),
             _metadata: {
               nodeVersion: expect.any(String),
-            },
-            context: {
-              library: {
-                version: expect.any(String),
-              },
             },
           },
         ],
@@ -80,7 +73,7 @@ describe('Analytics Node', () => {
             "context": Object {
               "library": Object {
                 "name": "AnalyticsNode",
-                "version": Any<String>,
+                "version": "${version}",
               },
             },
             "integrations": Object {},
