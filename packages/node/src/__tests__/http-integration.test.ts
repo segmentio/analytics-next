@@ -1,5 +1,5 @@
 const fetcher = jest.fn()
-jest.mock('node-fetch', () => fetcher)
+jest.mock('../lib/fetch', () => fetcher)
 
 import { createSuccess } from './test-helpers/factories'
 import { Analytics } from '..'

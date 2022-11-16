@@ -1,7 +1,7 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
-import fetch from 'node-fetch'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
+import fetch from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
 
 function sleep(timeoutInMs: number): Promise<void> {
