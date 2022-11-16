@@ -1,9 +1,10 @@
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
 import { Publisher, PublisherProps } from './publisher'
+import { version } from '../../../package.json'
 
 function normalizeEvent(ctx: CoreContext) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
-  ctx.updateEvent('context.library.version', '1.0.0')
+  ctx.updateEvent('context.library.version', version)
   ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
 }
 
