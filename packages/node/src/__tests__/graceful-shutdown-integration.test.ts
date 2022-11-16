@@ -1,7 +1,7 @@
 import { createSuccess } from './test-helpers/factories'
 
 const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => fetcher)
+jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
 import { Analytics, SegmentEvent } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
