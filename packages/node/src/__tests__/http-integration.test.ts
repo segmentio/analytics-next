@@ -2,6 +2,7 @@ const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
 import { createSuccess } from './test-helpers/factories'
+import { version } from '../../package.json'
 import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
@@ -50,6 +51,9 @@ describe('Analytics Node', () => {
     `
     )
     const body = JSON.parse(httpRes.body)
+    const event = body.batch[0]
+    expect(event.context.library.version).toBe(version)
+
     expect(body).toMatchInlineSnapshot(
       {
         batch: [
@@ -58,7 +62,6 @@ describe('Analytics Node', () => {
             _metadata: {
               nodeVersion: expect.any(String),
             },
-
             context: {
               library: {
                 version: expect.any(String),
