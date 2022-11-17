@@ -1,6 +1,3 @@
-import { default as nodeFetch } from 'node-fetch'
+import { fetch as _fetch } from 'undici'
 
-// made this a default export so it mocks the same as node-fetch in tests.
-const fetch = globalThis.fetch || nodeFetch
-
-export default fetch
+export const fetch = globalThis.fetch || _fetch

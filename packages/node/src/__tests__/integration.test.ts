@@ -1,5 +1,5 @@
 const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => fetcher)
+jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
 import { CorePlugin as Plugin } from '@segment/analytics-core'
 import { resolveCtx } from './test-helpers/resolve-ctx'

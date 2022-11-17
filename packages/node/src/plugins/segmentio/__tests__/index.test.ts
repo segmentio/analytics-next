@@ -1,5 +1,5 @@
 const fetcher = jest.fn()
-jest.mock('../../../lib/fetch', () => fetcher)
+jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 
 import { CoreContext } from '@segment/analytics-core'
 import { createNodeEventFactory } from '../../../lib/create-node-event-factory'
