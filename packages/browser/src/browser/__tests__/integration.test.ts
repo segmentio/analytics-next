@@ -671,18 +671,9 @@ describe('addDestinationMiddleware', () => {
   })
 
   it('supports registering destination middlewares', async () => {
-    const testPlugin: Plugin = {
-      name: 'test',
-      type: 'destination',
-      version: '0.1.0',
-      load: () => Promise.resolve(),
-      isLoaded: () => true,
-    }
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
-
-    const fullstory = new ActionDestination('fullstory', testPlugin)
 
     const amplitude = new LegacyDestination(
       'amplitude',
@@ -694,22 +685,13 @@ describe('addDestinationMiddleware', () => {
     )
 
     await analytics.register(amplitude)
-    await analytics.register(fullstory)
     await amplitude.ready()
-    await fullstory.ready()
 
     analytics
       .addDestinationMiddleware('amplitude', ({ next, payload }) => {
         payload.obj.properties!.hello = 'from the other side'
         next(payload)
       })
-      .catch((err) => {
-        throw err
-      })
-    analytics
-      .addDestinationMiddleware('fullstory', ({ next, payload }) =>
-        next(payload)
-      )
       .catch((err) => {
         throw err
       })
@@ -724,12 +706,39 @@ describe('addDestinationMiddleware', () => {
 
     const calledWith = integrationMock.mock.calls[0][0].properties()
 
-    const amplitudeResults = {
+    // only impacted this destination
+    expect(calledWith).toEqual({
       ...ctx.event.properties,
       hello: 'from the other side',
+    })
+  })
+
+  it('supports registering action destination middlewares', async () => {
+    const testPlugin: Plugin = {
+      name: 'test',
+      type: 'destination',
+      version: '0.1.0',
+      load: () => Promise.resolve(),
+      isLoaded: () => true,
     }
-    // only impacted this destination
-    expect(calledWith).toEqual(amplitudeResults)
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const fullstory = new ActionDestination('fullstory', testPlugin)
+
+    await analytics.register(fullstory)
+    await fullstory.ready()
+
+    analytics
+      .addDestinationMiddleware('fullstory', ({ next, payload }) =>
+        next(payload)
+      )
+      .catch((err) => {
+        throw err
+      })
+
     expect(analytics.queue.plugins).toContain(fullstory)
   })
 })
