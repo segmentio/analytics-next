@@ -5,27 +5,16 @@ import { createSuccess } from './test-helpers/factories'
 import { version } from '../../package.json'
 import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
-
-const myDate = new Date('2016')
-const _Date = Date
+import { createTestAnalytics } from './test-helpers/create-test-analytics'
+import { isValidDate } from './test-helpers/is-valid-date'
 
 describe('Analytics Node', () => {
   let ajs: Analytics
 
   beforeEach(async () => {
-    jest.resetAllMocks()
     fetcher.mockReturnValue(createSuccess())
 
-    ajs = new Analytics({
-      flushInterval: 500,
-      writeKey: 'abc123',
-    })
-
-    // @ts-ignore
-    global.Date = jest.fn(() => myDate)
-    global.Date.UTC = _Date.UTC
-    global.Date.parse = _Date.parse
-    global.Date.now = _Date.now
+    ajs = createTestAnalytics()
   })
 
   test(`Fires an "identify" request with the expected data`, async () => {
@@ -57,9 +46,16 @@ describe('Analytics Node', () => {
         batch: [
           {
             messageId: expect.any(String),
+            context: {
+              library: {
+                version: expect.any(String),
+              },
+            },
+
             _metadata: {
               nodeVersion: expect.any(String),
             },
+            timestamp: expect.any(String),
           },
         ],
       },
@@ -73,12 +69,12 @@ describe('Analytics Node', () => {
             "context": Object {
               "library": Object {
                 "name": "AnalyticsNode",
-                "version": "${version}",
+                "version": Any<String>,
               },
             },
             "integrations": Object {},
             "messageId": Any<String>,
-            "timestamp": "2016-01-01T00:00:00.000Z",
+            "timestamp": Any<String>,
             "traits": Object {
               "foo": "bar",
             },
@@ -89,6 +85,10 @@ describe('Analytics Node', () => {
       }
     `
     )
+
+    const event = body.batch[0]
+    expect(event.context.library.version).toBe(version)
+    expect(isValidDate(event.timestamp)).toBeTruthy()
   })
 
   test('Track: Fires http requests to the correct endoint', async () => {

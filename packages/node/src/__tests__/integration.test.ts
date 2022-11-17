@@ -1,35 +1,17 @@
 const fetcher = jest.fn()
 jest.mock('../lib/fetch', () => fetcher)
 
-import { Analytics } from '../index'
 import { CorePlugin as Plugin } from '@segment/analytics-core'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { testPlugin } from './test-helpers/test-plugin'
 import { createSuccess, createError } from './test-helpers/factories'
-import { AnalyticsSettings } from '../app/settings'
+import { createTestAnalytics } from './test-helpers/create-test-analytics'
 
 const writeKey = 'foo'
 jest.setTimeout(10000)
 
-const createTestAnalytics = (settings: Partial<AnalyticsSettings> = {}) => {
-  return new Analytics({ writeKey, flushInterval: 100, ...settings })
-}
-
 beforeEach(() => {
   fetcher.mockReturnValue(createSuccess())
-})
-
-describe('Plugin Init', () => {
-  it('loads analytics-node-next plugin', async () => {
-    const analytics = createTestAnalytics()
-    await analytics.ready
-
-    const ajsNodeXt = analytics.queue.plugins.find(
-      (xt) => xt.name === 'Segment.io'
-    )
-    expect(ajsNodeXt).toBeDefined()
-    expect(ajsNodeXt?.isLoaded()).toBeTruthy()
-  })
 })
 
 describe('Settings / Configuration Init', () => {

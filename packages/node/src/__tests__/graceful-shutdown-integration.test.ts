@@ -18,7 +18,6 @@ const testPlugin: CorePlugin = {
 describe('Ability for users to exit without losing events', () => {
   let ajs!: Analytics
   beforeEach(async () => {
-    jest.resetAllMocks()
     fetcher.mockReturnValue(createSuccess())
     ajs = new Analytics({
       writeKey: 'abc123',
