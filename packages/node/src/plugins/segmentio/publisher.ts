@@ -29,7 +29,7 @@ export interface PublisherProps {
  */
 export class Publisher {
   private pendingFlushTimeout?: ReturnType<typeof setTimeout>
-  public batch?: ContextBatch
+  private batch?: ContextBatch
 
   private _flushInterval: number
   private _maxEventsInBatch: number
