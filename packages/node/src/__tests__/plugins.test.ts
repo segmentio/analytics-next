@@ -14,7 +14,7 @@ describe('Plugins', () => {
       const analytics = createTestAnalytics()
       await analytics.ready
 
-      const ajsNodeXt = analytics.queue.plugins.find(
+      const ajsNodeXt = analytics['_queue'].plugins.find(
         (xt) => xt.name === 'Segment.io'
       )
       expect(ajsNodeXt).toBeDefined()
