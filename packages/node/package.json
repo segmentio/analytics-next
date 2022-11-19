@@ -35,8 +35,8 @@
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics-core": "1.1.2",
-    "tslib": "^2.4.0",
-    "undici": "^5.12.0"
+    "node-fetch": "^2.6.7",
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@internal/config": "0.0.0",
