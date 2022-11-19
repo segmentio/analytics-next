@@ -6,7 +6,6 @@ import {
 import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
-import { asPromise } from '../../../lib/as-promise'
 import { LegacyDestination } from '../../ajs-destination'
 
 describe(sourceMiddlewarePlugin, () => {
@@ -91,7 +90,10 @@ describe(sourceMiddlewarePlugin, () => {
       expect(returnedCtx).toBe(toReturn)
 
       const toCancel = new Context({ type: 'track' })
-      await asPromise(hangsXT.track!(toCancel)).catch((err) => {
+      try {
+        await hangsXT.track!(toCancel)
+        throw new Error('should not reach here.')
+      } catch (err) {
         expect(err).toMatchInlineSnapshot(`
           ContextCancelation {
             "reason": "Middleware \`next\` function skipped",
@@ -99,7 +101,7 @@ describe(sourceMiddlewarePlugin, () => {
             "type": "middleware_cancellation",
           }
         `)
-      })
+      }
     })
   })
 

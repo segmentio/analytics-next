@@ -7,7 +7,6 @@ import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { Plugin } from '../../core/plugin'
 import { attempt } from '../../core/queue/delivery'
-import { asPromise } from '../../lib/as-promise'
 import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
@@ -241,9 +240,7 @@ export class LegacyDestination implements Plugin {
 
     try {
       if (this.integration) {
-        await asPromise(
-          this.integration.invoke.call(this.integration, eventType, event)
-        )
+        await this.integration.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
       ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
