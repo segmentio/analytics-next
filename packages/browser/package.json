@@ -71,7 +71,6 @@
     "@types/jsdom": "^16.2.14",
     "@types/mime": "^2.0.3",
     "@types/node": "^12.12.14",
-    "@types/node-fetch": "^2.5.7",
     "@types/serve-handler": "^6.1.0",
     "@types/spark-md5": "^3.0.2",
     "aws-sdk": "^2.814.0",
