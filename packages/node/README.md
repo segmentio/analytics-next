@@ -110,3 +110,5 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 analytics.on('error', (err) => console.error(err))
 
 // subscribe to a specific event
+analytics.on('track', (ctx) => console.log(ctx))
+```
