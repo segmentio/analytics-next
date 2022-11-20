@@ -1,9 +1,9 @@
-
-## Warning: Until 1.x release, use this library at your own risk!
+# @segment/analytics-node
+> ### Warning: Until 1.x release, use this library at your own risk!
 While the API is very similar, the documentation for the legacy SDK (`analytics-node`) is here: https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 ## Requirements
-- NodeJS >= 14.x
+- Node.js >= 14
 
 ## Quick Start
 ### Install library
@@ -106,12 +106,7 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 
 ## Event Emitter
 ```ts
-// listen globally to events
-analytics.on('identify', (ctx) => console.log(ctx.event))
-
-// listen for errors (if needed)
+// subscribe to delivery errors
 analytics.on('error', (err) => console.error(err))
 
-```
-
-
+// subscribe to a specific event
