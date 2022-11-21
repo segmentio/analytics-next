@@ -156,6 +156,14 @@ describe('Event Factory', () => {
       expect(track.context).toEqual({ opt1: true })
     })
 
+    test('sets context correctly if property arg is undefined', () => {
+      const track = factory.track('Order Completed', undefined, {
+        context: { page: { path: '/custom' } },
+      })
+
+      expect(track.context).toEqual({ page: { path: '/custom' } })
+    })
+
     test('sets integrations', () => {
       const track = factory.track(
         'Order Completed',
