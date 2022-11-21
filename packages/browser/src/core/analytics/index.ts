@@ -405,9 +405,7 @@ export class Analytics
     ...middlewares: DestinationMiddlewareFunction[]
   ): Promise<Analytics> {
     const legacyDestinations = this.queue.plugins.filter(
-      (xt) =>
-        // xt instanceof LegacyDestination &&
-        xt.name.toLowerCase() === integrationName.toLowerCase()
+      (xt) => xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
 
     legacyDestinations.forEach((destination) => {

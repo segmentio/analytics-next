@@ -18,6 +18,7 @@ import {
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
+import { ActionDestination } from '@/plugins/remote-loader'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -710,6 +711,35 @@ describe('addDestinationMiddleware', () => {
       ...ctx.event.properties,
       hello: 'from the other side',
     })
+  })
+
+  it('supports registering action destination middlewares', async () => {
+    const testPlugin: Plugin = {
+      name: 'test',
+      type: 'destination',
+      version: '0.1.0',
+      load: () => Promise.resolve(),
+      isLoaded: () => true,
+    }
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const fullstory = new ActionDestination('fullstory', testPlugin)
+
+    await analytics.register(fullstory)
+    await fullstory.ready()
+
+    analytics
+      .addDestinationMiddleware('fullstory', ({ next, payload }) =>
+        next(payload)
+      )
+      .catch((err) => {
+        throw err
+      })
+
+    expect(analytics.queue.plugins).toContain(fullstory)
   })
 })
 
