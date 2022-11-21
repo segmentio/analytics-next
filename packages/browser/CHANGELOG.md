@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.46.3
+
+### Patch Changes
+
+- [#688](https://github.com/segmentio/analytics-next/pull/688) [`c21734e`](https://github.com/segmentio/analytics-next/commit/c21734eae8fa3ceaaad3d11dd9684a37ce26a19e) Thanks [@arielsilvestri](https://github.com/arielsilvestri)! - Fixes issue where options object would not be properly assigned if properties arg was explicitly undefined
+
 ## 1.46.2
 
 ### Patch Changes
