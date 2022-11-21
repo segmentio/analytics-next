@@ -38,7 +38,7 @@ export function resolveArguments(
     : {}
 
   let opts: Options = {}
-  if (isPlainObject(properties) && !isFunction(options)) {
+  if (!isFunction(options)) {
     opts = options ?? {}
   }
 
