@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.46.2
+
+### Patch Changes
+
+- [#666](https://github.com/segmentio/analytics-next/pull/666) [`5269a3e`](https://github.com/segmentio/analytics-next/commit/5269a3ea74d7bff7bf143e06a5f857af40f14032) Thanks [@ryder-wendt](https://github.com/ryder-wendt)! - Do not throw errors if localStorage becomes unavailable
+
 ## 1.46.1
 
 ### Patch Changes
