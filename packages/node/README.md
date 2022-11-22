@@ -22,12 +22,12 @@ import { Analytics } from '@segment/analytics-node'
 
 const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
-
 app.post('/login', (req, res) => {
    analytics.identify({
       userId: req.body.userId,
       previousId: req.body.previousId
   })
+  res.sendStatus(200)
 })
 
 app.post('/cart', (req, res) => {
@@ -36,24 +36,37 @@ app.post('/cart', (req, res) => {
     event: 'Add to cart',
     properties: { productId: '123456' }
   })
+   res.sendStatus(200)
 });
 ```
 
 ## Complete Settings / Configuration
 See complete list of settings in the [AnalyticsSettings interface](src/app/settings.ts).
 ```ts
-new Analytics({
+const analytics = new Analytics({
     writeKey: '<MY_WRITE_KEY>',
+    plugins: [plugin1, plugin2],
     host: 'https://api.segment.io',
     path: '/v1/batch',
+    maxRetries: 3,
+    maxEventsInBatch: 15,
     flushInterval: 10000,
-    plugins: [plugin1, plugin2],
     // ... and more!
   })
 
 ```
 
-## Graceful Shutdown
+## Error Handling
+Subscribe and log all event delivery errors.
+```ts
+const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
+
+analytics.on('error', (err) => console.error(err))
+```
+
+
+## Graceful Shutdown (Long or short running processes)
+
 ### Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
   * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
@@ -70,25 +83,28 @@ import express from 'express'
 const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
 const app = express()
+
 app.post('/cart', (req, res) => {
   analytics.track({
     userId: req.body.userId,
     event: 'Add to cart',
     properties: { productId: '123456' }
   })
-});
+  res.sendStatus(200)
+})
 
 const server = app.listen(3000)
 
-
 const onExit = async () => {
-  console.log("Gracefully closing server...");
   await analytics.closeAndFlush() // flush all existing events
-  server.close(() => process.exit());
-};
+  server.close(() => {
+    console.log("Gracefully closing server...")
+    process.exit()
+  })
+}
 
-process.on("SIGINT", onExit);
-process.on("SIGTERM", onExit);
+['SIGINT', 'SIGTERM'].forEach((code) => process.on(code, onExit))
+
 ```
 
 #### Collecting unflushed events
@@ -104,11 +120,36 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 ```
 
 
-## Event Emitter
+## Event Emitter Interface
 ```ts
-// subscribe to delivery errors
-analytics.on('error', (err) => console.error(err))
+// subscribe to identify calls
+analytics.on('identify', (err) => console.error(err))
 
 // subscribe to a specific event
 analytics.on('track', (ctx) => console.log(ctx))
+```
+
+
+## Multiple Clients
+Different parts of your application may require different types of batching, or even sending to multiple Segment sources. In that case, you can initialize multiple instances of Analytics with different settings:
+
+```ts
+import { Analytics } from '@segment/analytics-node'
+
+const marketingAnalytics = new Analytics('MARKETING_WRITE_KEY');
+const appAnalytics = new Analytics('APP_WRITE_KEY');
+```
+
+## Troubleshooting
+1. Double check that you’ve followed all the steps in the Quick Start.
+
+2. Make sure that you’re calling a Segment API method once the library is successfully installed: identify, track, etc.
+
+3. Log events and errors using the event emitter:
+```ts
+['initialize', 'call_after_close',
+ 'screen', 'identify', 'group',
+ 'track', 'ready', 'alias',
+ 'page', 'error', 'register',
+ 'deregister'].forEach((event) => analytics.on(event, console.log)
 ```
