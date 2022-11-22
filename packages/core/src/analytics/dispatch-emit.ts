@@ -1,8 +1,16 @@
+import { CoreContext } from '../context'
 import { dispatch } from './dispatch'
 
+type DispatchAndEmitFn = (
+  ...args: Parameters<typeof dispatch>
+) => Promise<CoreContext | undefined>
+
 /* Dispatch function, but swallow promise rejections and use event emitter instead */
-export const dispatchAndEmit = async (
-  ...[event, queue, emitter, options]: Parameters<typeof dispatch>
+export const dispatchAndEmit: DispatchAndEmitFn = async (
+  event,
+  queue,
+  emitter,
+  options
 ) => {
   try {
     const ctx = await dispatch(event, queue, emitter, options)
