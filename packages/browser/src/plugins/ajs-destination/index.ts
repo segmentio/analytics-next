@@ -1,7 +1,7 @@
 import { Integrations, JSONObject } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { LegacySettings } from '../../browser'
+import { LegacyIntegrationConfiguration, LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
@@ -20,10 +20,16 @@ import {
 import {
   buildIntegration,
   loadIntegration,
+  resolveIntegrationNameFromSource,
   resolveVersion,
   unloadIntegration,
 } from './loader'
 import { LegacyIntegration, LegacyIntegrationSource } from './types'
+import { isPlainObject } from '@segment/analytics-core'
+import {
+  isDisabledIntegration as shouldSkipIntegration,
+  isInstallableIntegration,
+} from './utils'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -331,56 +337,49 @@ export function ajsDestinations(
   }
 
   const routingRules = settings.middlewareSettings?.routingRules ?? []
-
+  const remoteIntegrationsConfig = settings.integrations
+  const localIntegrationsConfig = options.integrations
   // merged remote CDN settings with user provided options
   const integrationOptions = mergedOptions(settings, options ?? {}) as Record<
     string,
     JSONObject
   >
 
-  return Object.entries(settings.integrations)
-    .map(([name, integrationSettings]) => {
-      if (name.startsWith('Segment')) {
-        return
-      }
+  const adhocIntegrationSources = legacyIntegrationSources?.reduce(
+    (acc, integrationSource) => ({
+      ...acc,
+      [resolveIntegrationNameFromSource(integrationSource)]: integrationSource,
+    }),
+    {} as Record<string, LegacyIntegrationSource>
+  )
 
-      const allDisableAndNotDefined =
-        globalIntegrations.All === false &&
-        globalIntegrations[name] === undefined
-
-      if (globalIntegrations[name] === false || allDisableAndNotDefined) {
-        return
-      }
-
-      const { type, bundlingStatus, versionSettings } = integrationSettings
-      // We use `!== 'unbundled'` (versus `=== 'bundled'`) to be inclusive of
-      // destinations without a defined value for `bundlingStatus`
-      const deviceMode =
-        bundlingStatus !== 'unbundled' &&
-        (type === 'browser' ||
-          versionSettings?.componentTypes?.includes('browser'))
-
-      // checking for iterable is a quick fix we need in place to prevent
-      // errors showing Iterable as a failed destiantion. Ideally, we should
-      // fix the Iterable metadata instead, but that's a longer process.
-      if ((!deviceMode && name !== 'Segment.io') || name === 'Iterable') {
-        return
-      }
-
-      const integrationSource = legacyIntegrationSources?.find(
-        (integrationSource) =>
-          ('Integration' in integrationSource
-            ? integrationSource.Integration
-            : integrationSource
-          ).prototype.name === name
+  const installableIntegrations = new Set([
+    // Remotely configured installable integrations
+    ...Object.entries(remoteIntegrationsConfig)
+      .filter(([name, integrationSettings]) =>
+        isInstallableIntegration(name, integrationSettings)
       )
+      .map(([name]) => name),
+
+    // Directly provided integration sources are only installable if settings for them are available
+    ...Object.keys(adhocIntegrationSources || {}).filter(
+      (name) =>
+        isPlainObject(remoteIntegrationsConfig[name]) ||
+        isPlainObject(localIntegrationsConfig?.[name])
+    ),
+  ])
+
+  return Array.from(installableIntegrations)
+    .filter((name) => !shouldSkipIntegration(name, globalIntegrations))
+    .map((name) => {
+      const integrationSettings = remoteIntegrationsConfig[name]
       const version = resolveVersion(integrationSettings)
       const destination = new LegacyDestination(
         name,
         version,
         integrationOptions[name],
         options,
-        integrationSource
+        adhocIntegrationSources?.[name]
       )
 
       const routing = routingRules.filter(
@@ -392,5 +391,4 @@ export function ajsDestinations(
 
       return destination
     })
-    .filter((xt) => xt !== undefined) as LegacyDestination[]
 }

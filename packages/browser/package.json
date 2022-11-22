@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@internal/config": "0.0.0",
+    "@segment/analytics.js-integration-amplitude": "^3.3.3",
     "@segment/inspector-webext": "^2.0.3",
     "@size-limit/preset-big-lib": "^7.0.8",
     "@types/flat": "^5.0.1",

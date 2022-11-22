@@ -60,7 +60,8 @@ function createDefaultQueue(retryQueue = false, disablePersistance = false) {
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  plugins?: (Plugin | LegacyIntegrationSource)[]
+  plugins?: Plugin[]
+  classicIntegrations?: LegacyIntegrationSource[]
 }
 
 export interface InitOptions {

@@ -18,6 +18,16 @@ function obfuscatePathName(pathName: string, obfuscate = false): string | void {
   return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
 }
 
+export function resolveIntegrationNameFromSource(
+  integrationSource: LegacyIntegrationSource
+) {
+  return (
+    'Integration' in integrationSource
+      ? integrationSource.Integration
+      : integrationSource
+  ).prototype.name
+}
+
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
   try {
     const [metric] =
@@ -113,8 +123,8 @@ export function resolveVersion(
   settings: LegacyIntegrationConfiguration
 ): string {
   return (
-    settings.versionSettings?.override ??
-    settings.versionSettings?.version ??
+    settings?.versionSettings?.override ??
+    settings?.versionSettings?.version ??
     'latest'
   )
 }

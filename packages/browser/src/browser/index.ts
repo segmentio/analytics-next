@@ -154,7 +154,7 @@ async function registerPlugins(
   opts: InitOptions,
   options: InitOptions,
   plugins: Plugin[],
-  legacyIntegrationSources?: LegacyIntegrationSource[]
+  legacyIntegrationSources: LegacyIntegrationSource[]
 ): Promise<Context> {
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
     ? await import(
@@ -167,7 +167,7 @@ async function registerPlugins(
     : undefined
 
   const legacyDestinations =
-    hasLegacyDestinations(legacySettings) || legacyIntegrationSources
+    hasLegacyDestinations(legacySettings) || legacyIntegrationSources.length > 0
       ? await import(
           /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
         ).then((mod) => {
@@ -278,26 +278,19 @@ async function loadAnalytics(
   inspectorHost.attach?.(analytics as any)
 
   const plugins = settings.plugins ?? []
+  const classicIntegrations = settings.classicIntegrations ?? []
   Context.initMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)
-
-  const legacyIntegrationSources = plugins.filter(
-    (pluginOrIntegration) => typeof pluginOrIntegration === 'function'
-  ) as LegacyIntegrationSource[]
-
-  const simplePlugins = plugins.filter(
-    (pluginOrIntegration) => typeof pluginOrIntegration !== 'function'
-  ) as Plugin[]
 
   const ctx = await registerPlugins(
     legacySettings,
     analytics,
     opts,
     options,
-    simplePlugins,
-    legacyIntegrationSources
+    plugins,
+    classicIntegrations
   )
 
   const search = window.location.search ?? ''
