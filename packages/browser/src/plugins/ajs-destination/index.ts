@@ -1,7 +1,7 @@
 import { Integrations, JSONObject } from '@/core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { LegacyIntegrationConfiguration, LegacySettings } from '../../browser'
+import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
