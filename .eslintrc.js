@@ -3,10 +3,12 @@ module.exports = {
   root: true,
   ignorePatterns: ['node_modules', 'dist'],
   parserOptions: {
-    ecmaVersion: 2019,
+    ecmaVersion: 2020,
   },
   env: {
+    es6: true,
     node: true,
+    browser: true,
   },
   extends: [
     // Turn on on eslint recommended rules https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
@@ -16,7 +18,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['*.js'],
+      files: ['*.{js,mjs}'],
       extends: [
         // Handle prettier rules through eslint https://github.com/prettier/eslint-plugin-prettier/blob/master/eslint-plugin-prettier.js#L65
         'plugin:prettier/recommended',
