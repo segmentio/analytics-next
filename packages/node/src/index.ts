@@ -1,4 +1,4 @@
-export * from './app/analytics-node'
+export { Analytics, Context, Plugin } from './app/analytics-node'
 export type { AnalyticsSettings } from './app/settings'
 
 // export Analytics as both a named export and a default export (for backwards-compat. reasons)
