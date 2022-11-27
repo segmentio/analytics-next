@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.1.3
+
+### Patch Changes
+
+- [#699](https://github.com/segmentio/analytics-next/pull/699) [`0b9f4d7`](https://github.com/segmentio/analytics-next/commit/0b9f4d7e82662f7d5fda3590e93b10b3fd2e9833) Thanks [@silesky](https://github.com/silesky)! - Fix missing core dependency (@lukeed/uuid)
+
 ## 1.1.2
 
 ### Patch Changes
