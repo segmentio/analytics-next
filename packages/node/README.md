@@ -283,8 +283,7 @@ const analytics = new Analytics({ host: mockApiHost, path: mockPath })
 - See segment's [documentation for plugin architecture](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugin-architecture).
 
 ```ts
-import type { Plugin } from '@segment/analytics-node' // optional type
-
+import type { Plugin } from '@segment/analytics-node'
 export const lowercase: Plugin = {
   name: 'Lowercase events',
   type: 'enrichment',
