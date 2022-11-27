@@ -1,16 +1,32 @@
-# Segment Analytics JS
+<div style="display:flex;margin-bottom:5px">
+  <span style="margin: 0 5px 5px">
+    <a href="https://buildkite.com/segment/analytics-next">
+    <img src="https://badge.buildkite.com/87e30d62ada044b6fe404b17cd16aa6e3b52d89f40c9f44675.svg?branch=master">
+  </a>
+
+  </span>
+  <span style="margin:0 5px 5px">
+    <a href="http://www.typescriptlang.org/">
+    <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg">
+  </span>
+</div>
+
 <p align="center">
   <a href="https://segment.com">
     <img src="https://brand.segment.com/site-assets/7b19c1a2/images/brand-guidelines/content/twilio/twilio-segment-logo-2x.png" width="300">
   </a>
   <br />
-  <caption>Welcome to the monorepo for Segment's Javascript SDKs!</caption>
+  <caption>Welcome to the monorepo for Segment's latest Javascript / Typescript SDKs</caption>
 </p>
 
-## NPM Packages
-* [@segment/analytics-next](packages/browser#readme): Analytics SDK for web browsers
-* [@segment/analytics-node](packages/node#readme) (⚠️ Beta): Segment Analytics SDK for Node.js
+# analytics.js (analytics-next)
 
+## Packages
+
+- [@segment/analytics-next](packages/browser#readme): Analytics.js SDK for **web browsers**
+- [@segment/analytics-node](packages/node#readme) (⚠️ Beta): Analytics.js SDK for **Node.js**
 
 ## Contributing
-Check out our contribution guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+- Contribution guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Development instructions: [DEVELOPMENT.md](DEVELOPMENT.md)
