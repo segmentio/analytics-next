@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "0.0.1-beta.3",
+  "version": "0.0.1-beta.4",
   "private": true,
   "main": "./dist/cjs/src/index.js",
   "module": "./dist/esm/src/index.js",
