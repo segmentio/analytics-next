@@ -1,5 +1,12 @@
 # @segment/analytics-next
 
+## 1.46.4
+
+### Patch Changes
+
+- Updated dependencies [[`0b9f4d7`](https://github.com/segmentio/analytics-next/commit/0b9f4d7e82662f7d5fda3590e93b10b3fd2e9833)]:
+  - @segment/analytics-core@1.1.3
+
 ## 1.46.3
 
 ### Patch Changes
