@@ -1,25 +1,23 @@
 import {
   EventProperties,
   Traits,
-  Emitter,
   CoreAnalytics,
   CoreContext,
   CorePlugin,
   EventFactory,
   EventQueue,
-  dispatchAndEmit,
   CoreOptions,
-  Callback,
   CoreSegmentEvent,
   bindAll,
   PriorityQueue,
-  CoreEmitterContract,
   pTimeout,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
 import { configureNodePlugin } from '../plugins/segmentio'
 import { createNodeEventFactory } from '../lib/create-node-event-factory'
+import { Callback, dispatchAndEmit } from './dispatch-emit'
+import { NodeEmitter } from './emitter'
 
 // create a derived class since we may want to add node specific things to Context later
 export class Context extends CoreContext {}
@@ -35,15 +33,6 @@ type IdentityOptions =
 export interface SegmentEventOptions {
   context?: Context
   timestamp?: CoreOptions['timestamp']
-}
-
-/**
- * Map of emitter event names to method args.
- */
-type NodeEmitterEvents = CoreEmitterContract<Context> & {
-  initialize: [AnalyticsSettings]
-  call_after_close: [SegmentEvent] // any event that did not get dispatched due to close
-  drained: []
 }
 
 class NodePriorityQueue extends PriorityQueue<Context> {
@@ -67,10 +56,7 @@ export interface SegmentEvent extends CoreSegmentEvent {
   options?: SegmentEventOptions
 }
 
-export class Analytics
-  extends Emitter<NodeEmitterEvents>
-  implements CoreAnalytics
-{
+export class Analytics extends NodeEmitter implements CoreAnalytics {
   private _eventFactory: EventFactory
   private _isClosed = false
   private _pendingEvents = 0
@@ -141,9 +127,7 @@ export class Analytics
 
     this._pendingEvents++
 
-    dispatchAndEmit(segmentEvent, this.queue, this, {
-      callback: callback,
-    })
+    dispatchAndEmit(segmentEvent, this.queue, this, callback)
       .catch((ctx) => ctx)
       .finally(() => {
         this._pendingEvents--
@@ -158,19 +142,20 @@ export class Analytics
    * Combines two unassociated user identities.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
-  alias({
-    userId,
-    previousId,
-    options,
-    callback,
-  }: {
-    /* The new user id you want to associate with the user. */
-    userId: string
-    /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
-    previousId: string
-    options?: SegmentEventOptions
+  alias(
+    {
+      userId,
+      previousId,
+      options,
+    }: {
+      /* The new user id you want to associate with the user. */
+      userId: string
+      /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
+      previousId: string
+      options?: SegmentEventOptions
+    },
     callback?: Callback
-  }): void {
+  ): void {
     const segmentEvent = this._eventFactory.alias(userId, previousId, options)
     this._dispatch(segmentEvent, callback)
   }
@@ -179,19 +164,20 @@ export class Analytics
    * Associates an identified user with a collective.
    *  @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#group
    */
-  group({
-    groupId,
-    userId,
-    anonymousId,
-    traits = {},
-    options = {},
-    callback,
-  }: IdentityOptions & {
-    groupId: string
-    traits?: Traits
-    options?: SegmentEventOptions
+  group(
+    {
+      groupId,
+      userId,
+      anonymousId,
+      traits = {},
+      options = {},
+    }: IdentityOptions & {
+      groupId: string
+      traits?: Traits
+      options?: SegmentEventOptions
+    },
     callback?: Callback
-  }): void {
+  ): void {
     const segmentEvent = this._eventFactory.group(groupId, traits, {
       ...options,
       anonymousId,
@@ -205,17 +191,18 @@ export class Analytics
    * Includes a unique userId and (maybe anonymousId) and any optional traits you know about them.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
-  identify({
-    userId,
-    anonymousId,
-    traits = {},
-    options,
-    callback,
-  }: IdentityOptions & {
-    traits?: Traits
-    options?: SegmentEventOptions
+  identify(
+    {
+      userId,
+      anonymousId,
+      traits = {},
+      options,
+    }: IdentityOptions & {
+      traits?: Traits
+      options?: SegmentEventOptions
+    },
     callback?: Callback
-  }): void {
+  ): void {
     const segmentEvent = this._eventFactory.identify(userId, traits, {
       ...options,
       anonymousId,
@@ -228,26 +215,27 @@ export class Analytics
    * The page method lets you record page views on your website, along with optional extra information about the page being viewed.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#page
    */
-  page({
-    userId,
-    anonymousId,
-    category,
-    name,
-    properties,
-    options,
-    timestamp,
-    callback,
-  }: IdentityOptions & {
-    /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
-    category?: string
-    /* The name of the page.*/
-    name?: string
-    /* A dictionary of properties of the page. */
-    properties?: EventProperties
+  page(
+    {
+      userId,
+      anonymousId,
+      category,
+      name,
+      properties,
+      options,
+      timestamp,
+    }: IdentityOptions & {
+      /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
+      category?: string
+      /* The name of the page.*/
+      name?: string
+      /* A dictionary of properties of the page. */
+      properties?: EventProperties
+      timestamp?: string | Date
+      options?: SegmentEventOptions
+    },
     callback?: Callback
-    timestamp?: string | Date
-    options?: SegmentEventOptions
-  }): void {
+  ): void {
     const segmentEvent = this._eventFactory.page(
       category ?? null,
       name ?? null,
@@ -263,16 +251,18 @@ export class Analytics
    *
    * TODO: This is not documented on the segment docs ATM (for node).
    */
-  screen({
-    userId,
-    anonymousId,
-    category,
-    name,
-    properties,
-    options,
-    callback,
-    timestamp,
-  }: Parameters<Analytics['page']>[0]): void {
+  screen(
+    {
+      userId,
+      anonymousId,
+      category,
+      name,
+      properties,
+      options,
+      timestamp,
+    }: Parameters<Analytics['page']>[0],
+    callback?: Callback
+  ): void {
     const segmentEvent = this._eventFactory.screen(
       category ?? null,
       name ?? null,
@@ -287,19 +277,20 @@ export class Analytics
    * Records actions your users perform.
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#track
    */
-  track({
-    userId,
-    anonymousId,
-    event,
-    properties,
-    options,
-    callback,
-  }: IdentityOptions & {
-    event: string
-    properties?: EventProperties
-    options?: SegmentEventOptions
+  track(
+    {
+      userId,
+      anonymousId,
+      event,
+      properties,
+      options,
+    }: IdentityOptions & {
+      event: string
+      properties?: EventProperties
+      options?: SegmentEventOptions
+    },
     callback?: Callback
-  }): void {
+  ): void {
     const segmentEvent = this._eventFactory.track(event, properties, {
       ...options,
       userId,
