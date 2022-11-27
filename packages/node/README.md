@@ -58,7 +58,6 @@ See complete list of settings in the [AnalyticsSettings interface](src/app/setti
 ```ts
 const analytics = new Analytics({
     writeKey: '<MY_WRITE_KEY>',
-    plugins: [plugin1, plugin2],
     host: 'https://api.segment.io',
     path: '/v1/batch',
     maxRetries: 3,
