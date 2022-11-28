@@ -59,7 +59,6 @@ See complete list of settings in the [AnalyticsSettings interface](src/app/setti
 ```ts
 const analytics = new Analytics({
     writeKey: '<MY_WRITE_KEY>',
-    plugins: [plugin1, plugin2],
     host: 'https://api.segment.io',
     path: '/v1/batch',
     maxRetries: 3,
@@ -255,4 +254,26 @@ Other Differences:
 (err, batch) => void
 // new
 (err, ctx) => void
+```
+
+
+## Plugin Architecture
+- See segment's [documentation for plugin architecture](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugin-architecture).
+
+```ts
+import type { Plugin } from '@segment/analytics-node'
+export const lowercase: Plugin = {
+  name: 'Lowercase events',
+  type: 'enrichment',
+  version: '1.0.0',
+  isLoaded: () => true,
+  load: () => Promise.resolve(),
+  track: (ctx) => {
+    ctx.updateEvent('event', ctx.event.event.toLowerCase())
+    return ctx
+  }
+}
+
+analytics.register(lowercase)
+
 ```

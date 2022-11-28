@@ -22,6 +22,8 @@ import { NodeEmitter } from './emitter'
 // create a derived class since we may want to add node specific things to Context later
 export class Context extends CoreContext {}
 
+export interface Plugin extends CorePlugin {}
+
 /**
  * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
  **/

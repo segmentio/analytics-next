@@ -1,4 +1,4 @@
-import { CorePlugin, ValidationError } from '@segment/analytics-core'
+import { ValidationError } from '@segment/analytics-core'
 
 export interface AnalyticsSettings {
   /**
@@ -6,9 +6,6 @@ export interface AnalyticsSettings {
    */
   writeKey: string
   /**
-   * An optional array of additional plugins that are capable of augmenting analytics-node functionality and enriching data.
-   */
-  plugins?: CorePlugin[]
   /**
    * The base URL of the API. Default: "https://api.segment.io"
    */
