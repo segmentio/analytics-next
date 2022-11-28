@@ -1,4 +1,5 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
+import { abortSignalAfterTimeout } from '../../lib/abort-signal'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'
@@ -36,6 +37,8 @@ export class Publisher {
   private _maxRetries: number
   private _auth: string
   private _url: string
+  /** The time it takes to timeout while waiting for a HTTP response. */
+  private _httpRequestReadTimeout = 60000
 
   constructor({
     host,
@@ -142,6 +145,7 @@ export class Publisher {
       let failureReason: unknown
       try {
         const response = await fetch(this._url, {
+          signal: abortSignalAfterTimeout(this._httpRequestReadTimeout),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
