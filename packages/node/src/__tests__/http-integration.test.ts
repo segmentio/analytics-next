@@ -1,139 +1,318 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
-import { createSuccess } from './test-helpers/factories'
 import { version } from '../../package.json'
 import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { isValidDate } from './test-helpers/is-valid-date'
+import { pick, omit } from 'lodash'
+import nock from 'nock'
+import { CoreContext } from '@segment/analytics-core'
 
-describe('Analytics Node', () => {
+const snapshotMatchers = {
+  get batchEvent() {
+    return {
+      messageId: expect.any(String),
+      context: {
+        library: {
+          version: expect.any(String),
+        },
+      },
+
+      _metadata: {
+        nodeVersion: expect.any(String),
+      },
+      timestamp: expect.any(String),
+    }
+  },
+  get defaultReqBody() {
+    return { batch: [snapshotMatchers.batchEvent] }
+  },
+  get defaultReqBodyWithoutTimestamp() {
+    return { batch: [omit(snapshotMatchers.batchEvent, 'timestamp')] }
+  },
+}
+
+beforeEach(() => {
+  nock.cleanAll()
+})
+
+describe('Method Smoke Tests', () => {
+  let scope: nock.Scope
   let ajs: Analytics
-
   beforeEach(async () => {
-    fetcher.mockReturnValue(createSuccess())
-
     ajs = createTestAnalytics()
   })
 
-  test(`Fires an "identify" request with the expected data`, async () => {
-    ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
-    await resolveCtx(ajs, 'identify')
-    const calls = fetcher.mock.calls
-    expect(calls.length).toBe(1)
-    const call1 = calls[0]
-    const [url, httpRes] = call1
-    expect(httpRes.method).toBe('POST')
-    expect(url).toBe('https://api.segment.io/v1/batch')
-    expect(httpRes.headers).toMatchInlineSnapshot(
-      {
-        Authorization: expect.stringContaining('Basic'),
-        'User-Agent': expect.stringContaining('analytics-node-next'),
-      },
-      `
-      Object {
-        "Authorization": StringContaining "Basic",
-        "Content-Type": "application/json",
-        "User-Agent": StringContaining "analytics-node-next",
-      }
-    `
-    )
-    const body = JSON.parse(httpRes.body)
+  describe('Headers', () => {
+    test(`A request should have the expected headers`, async () => {
+      let headers = null
+      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+        .post('/v1/batch')
+        .reply(201, function () {
+          headers = this.req.headers
+        })
+      ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
+      await resolveCtx(ajs, 'identify')
 
-    expect(body).toMatchInlineSnapshot(
-      {
-        batch: [
-          {
-            messageId: expect.any(String),
-            context: {
-              library: {
-                version: expect.any(String),
+      expect(pick(headers, 'authorization', 'user-agent', 'content-type'))
+        .toMatchInlineSnapshot(`
+              Object {
+                "authorization": Array [
+                  "Basic Zm9vOg==",
+                ],
+                "content-type": Array [
+                  "application/json",
+                ],
+                "user-agent": Array [
+                  "analytics-node-next/latest",
+                ],
+              }
+          `)
+      expect(scope.isDone())
+    })
+  })
+
+  describe('Request Bodies', () => {
+    let calls: any[]
+    beforeEach(async () => {
+      calls = []
+      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+        .post('/v1/batch', function (_body: any) {
+          calls.push(_body)
+          return true
+        })
+        .reply(201)
+    })
+    test(`Identify`, async () => {
+      ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
+      await resolveCtx(ajs, 'identify')
+
+      expect(scope.isDone()).toBeTruthy()
+      expect(calls.length).toBe(1)
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBody,
+        `
+              Object {
+                "batch": Array [
+                  Object {
+                    "_metadata": Object {
+                      "nodeVersion": Any<String>,
+                    },
+                    "context": Object {
+                      "library": Object {
+                        "name": "AnalyticsNode",
+                        "version": Any<String>,
+                      },
+                    },
+                    "integrations": Object {},
+                    "messageId": Any<String>,
+                    "timestamp": Any<String>,
+                    "traits": Object {
+                      "foo": "bar",
+                    },
+                    "type": "identify",
+                    "userId": "my_user_id",
+                  },
+                ],
+              }
+          `
+      )
+
+      const event = calls[0].batch[0]
+      expect(event.context.library.version).toBe(version)
+      expect(isValidDate(event.timestamp)).toBeTruthy()
+    })
+
+    test('Track', async () => {
+      ajs.track({ event: 'foo', userId: 'foo', properties: { hello: 'world' } })
+      await resolveCtx(ajs, 'track')
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBody,
+        `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "nodeVersion": Any<String>,
               },
-            },
-
-            _metadata: {
-              nodeVersion: expect.any(String),
-            },
-            timestamp: expect.any(String),
-          },
-        ],
-      },
-      `
-      Object {
-        "batch": Array [
-          Object {
-            "_metadata": Object {
-              "nodeVersion": Any<String>,
-            },
-            "context": Object {
-              "library": Object {
-                "name": "AnalyticsNode",
-                "version": Any<String>,
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
               },
+              "event": "foo",
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "properties": Object {
+                "hello": "world",
+              },
+              "timestamp": Any<String>,
+              "type": "track",
+              "userId": "foo",
             },
-            "integrations": Object {},
-            "messageId": Any<String>,
-            "timestamp": Any<String>,
-            "traits": Object {
-              "foo": "bar",
+          ],
+        }
+      `
+      )
+    })
+
+    test('Page', async () => {
+      ajs.page({ name: 'page', anonymousId: 'foo' })
+      await resolveCtx(ajs, 'page')
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBodyWithoutTimestamp,
+        `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "nodeVersion": Any<String>,
+              },
+              "anonymousId": "foo",
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
+              },
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "name": "page",
+              "properties": Object {},
+              "type": "page",
             },
-            "type": "identify",
-            "userId": "my_user_id",
-          },
-        ],
-      }
-    `
-    )
+          ],
+        }
+      `
+      )
+    })
 
-    const event = body.batch[0]
-    expect(event.context.library.version).toBe(version)
-    expect(isValidDate(event.timestamp)).toBeTruthy()
+    test('Group', async () => {
+      ajs.group({
+        groupId: 'myGroupId',
+        anonymousId: 'foo',
+        traits: { some_traits: 123 },
+      })
+      await resolveCtx(ajs, 'group')
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBody,
+        `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "nodeVersion": Any<String>,
+              },
+              "anonymousId": "foo",
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
+              },
+              "groupId": "myGroupId",
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "timestamp": Any<String>,
+              "traits": Object {
+                "some_traits": 123,
+              },
+              "type": "group",
+            },
+          ],
+        }
+      `
+      )
+    })
+
+    test('Alias', async () => {
+      ajs.alias({ userId: 'alias', previousId: 'previous' })
+      await resolveCtx(ajs, 'alias')
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBody,
+        `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "nodeVersion": Any<String>,
+              },
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
+              },
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "previousId": "previous",
+              "timestamp": Any<String>,
+              "type": "alias",
+              "userId": "alias",
+            },
+          ],
+        }
+      `
+      )
+    })
+
+    test('Screen', async () => {
+      ajs.screen({
+        name: 'screen',
+        anonymousId: 'foo',
+        properties: { title: 'wip' },
+      })
+      await resolveCtx(ajs, 'screen')
+      expect(calls[0]).toMatchInlineSnapshot(
+        snapshotMatchers.defaultReqBodyWithoutTimestamp,
+        `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "nodeVersion": Any<String>,
+              },
+              "anonymousId": "foo",
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
+              },
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "name": "screen",
+              "properties": Object {
+                "title": "wip",
+              },
+              "type": "screen",
+            },
+          ],
+        }
+      `
+      )
+    })
   })
+})
 
-  test('Track: Fires http requests to the correct endoint', async () => {
-    ajs.track({ event: 'foo', userId: 'foo' })
-    ajs.track({ event: 'bar', userId: 'foo', properties: { foo: 'bar' } })
-    await resolveCtx(ajs, 'track')
-    expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/batch',
-      expect.anything()
-    )
+describe('Client: requestTimeout', () => {
+  beforeEach(async () => {
+    nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      .post('/v1/batch')
+      .reply(201)
   })
-
-  test('Page: Fires http requests to the correct endoint', async () => {
-    ajs.page({ name: 'page', anonymousId: 'foo' })
-    await resolveCtx(ajs, 'page')
-    expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/batch',
-      expect.anything()
-    )
-  })
-
-  test('Group: Fires http requests to the correct endoint', async () => {
-    ajs.group({ groupId: 'group', anonymousId: 'foo' })
-    await resolveCtx(ajs, 'group')
-    expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/batch',
-      expect.anything()
-    )
-  })
-
-  test('Alias: Fires http requests to the correct endoint', async () => {
-    ajs.alias({ userId: 'alias', previousId: 'previous' })
-    await resolveCtx(ajs, 'alias')
-    expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/batch',
-      expect.anything()
-    )
-  })
-
-  test('Screen', async () => {
-    ajs.screen({ name: 'screen', anonymousId: 'foo' })
-    await resolveCtx(ajs, 'screen')
-    expect(fetcher).toHaveBeenCalledWith(
-      'https://api.segment.io/v1/batch',
-      expect.anything()
-    )
+  it('should timeout immediately if request timeout is set to 0', async () => {
+    jest.useRealTimers()
+    const ajs = createTestAnalytics({
+      maxEventsInBatch: 1,
+      httpRequestTimeout: 0,
+    })
+    ajs.track({ event: 'foo', userId: 'foo', properties: { hello: 'world' } })
+    try {
+      await resolveCtx(ajs, 'track')
+      throw Error('fail test')
+    } catch (err: any) {
+      expect(err.ctx).toBeInstanceOf(CoreContext)
+    }
   })
 })

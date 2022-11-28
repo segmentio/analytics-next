@@ -1,4 +1,5 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
+import { abortSignalAfterTimeout } from '../../lib/abort'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'
@@ -22,6 +23,7 @@ export interface PublisherProps {
   maxEventsInBatch: number
   maxRetries: number
   writeKey: string
+  httpRequestTimeout?: number
 }
 
 /**
@@ -37,6 +39,7 @@ export class Publisher {
   private _auth: string
   private _url: string
   private _closeAndFlushPendingItemsCount?: number
+  private _httpRequestTimeout: number
 
   constructor({
     host,
@@ -45,6 +48,7 @@ export class Publisher {
     maxEventsInBatch,
     flushInterval,
     writeKey,
+    httpRequestTimeout,
   }: PublisherProps) {
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
@@ -54,6 +58,7 @@ export class Publisher {
       host ?? 'https://api.segment.io',
       path ?? '/v1/batch'
     )
+    this._httpRequestTimeout = httpRequestTimeout ?? 10000
   }
 
   private createBatch(): ContextBatch {
@@ -177,6 +182,7 @@ export class Publisher {
       let failureReason: unknown
       try {
         const response = await fetch(this._url, {
+          signal: abortSignalAfterTimeout(this._httpRequestTimeout),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
