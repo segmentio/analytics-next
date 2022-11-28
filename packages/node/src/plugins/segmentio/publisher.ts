@@ -29,13 +29,14 @@ export interface PublisherProps {
  */
 export class Publisher {
   private pendingFlushTimeout?: ReturnType<typeof setTimeout>
-  private batch?: ContextBatch
+  private _batch?: ContextBatch
 
   private _flushInterval: number
   private _maxEventsInBatch: number
   private _maxRetries: number
   private _auth: string
   private _url: string
+  private _closeAndFlushPendingItemsCount?: number
 
   constructor({
     host,
@@ -58,10 +59,10 @@ export class Publisher {
   private createBatch(): ContextBatch {
     this.pendingFlushTimeout && clearTimeout(this.pendingFlushTimeout)
     const batch = new ContextBatch(this._maxEventsInBatch)
-    this.batch = batch
+    this._batch = batch
     this.pendingFlushTimeout = setTimeout(() => {
-      if (batch === this.batch) {
-        this.batch = undefined
+      if (batch === this._batch) {
+        this._batch = undefined
       }
       this.pendingFlushTimeout = undefined
       if (batch.length) {
@@ -73,7 +74,27 @@ export class Publisher {
 
   private clearBatch() {
     this.pendingFlushTimeout && clearTimeout(this.pendingFlushTimeout)
-    this.batch = undefined
+    this._batch = undefined
+  }
+
+  flushAfterClose(pendingItemsCount: number) {
+    if (!pendingItemsCount) {
+      // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
+      return
+    }
+
+    this._closeAndFlushPendingItemsCount = pendingItemsCount
+
+    // if batch is empty, there's nothing to flush, and when things come in, enqueue will handle them.
+    if (!this._batch) return
+
+    // the number of globally pending items will always be larger or the same as batch size.
+    // Any mismatch is because some globally pending items are in plugins.
+    const isExpectingNoMoreItems = this._batch.length === pendingItemsCount
+    if (isExpectingNoMoreItems) {
+      this.send(this._batch).catch(noop)
+      this.clearBatch()
+    }
   }
 
   /**
@@ -82,7 +103,7 @@ export class Publisher {
    * @returns a promise that resolves with the context after the event has been delivered.
    */
   enqueue(ctx: CoreContext): Promise<CoreContext> {
-    const batch = this.batch ?? this.createBatch()
+    const batch = this._batch ?? this.createBatch()
 
     const { promise: ctxPromise, resolve } = extractPromiseParts<CoreContext>()
 
@@ -96,7 +117,7 @@ export class Publisher {
       and is always sent before a new batch is created.
 
       Add an event to the existing batch.
-        Success: Check if batch is full and send if it is.
+        Success: Check if batch is full or no more items are expected to come in (i.e. closing). If so, send batch.
         Failure: Assume event is too big to fit in current batch - send existing batch.
           Add an event to the new batch.
             Success: Check if batch is full and send if it is.
@@ -104,7 +125,11 @@ export class Publisher {
     */
 
     if (batch.tryAdd(pendingItem)) {
-      if (batch.length === this._maxEventsInBatch) {
+      const isFull = batch.length === this._maxEventsInBatch
+      const isExpectingNoMoreItems =
+        batch.length === this._closeAndFlushPendingItemsCount
+
+      if (isFull || isExpectingNoMoreItems) {
         this.send(batch).catch(noop)
         this.clearBatch()
       }

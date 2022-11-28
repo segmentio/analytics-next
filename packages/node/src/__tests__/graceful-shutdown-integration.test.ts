@@ -1,4 +1,5 @@
 import { createSuccess } from './test-helpers/factories'
+import { performance as perf } from 'perf_hooks'
 
 const fetcher = jest.fn()
 jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
@@ -25,6 +26,13 @@ describe('Ability for users to exit without losing events', () => {
     })
   })
   const _helpers = {
+    getFetchCalls: (mockedFetchFn = fetcher) =>
+      mockedFetchFn.mock.calls.map(([url, request]) => ({
+        url,
+        method: request.method,
+        headers: request.headers,
+        body: JSON.parse(request.body),
+      })),
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
       analytics.track({ userId: 'foo', event: 'Thing Updated' }, cb)
     },
@@ -95,9 +103,9 @@ describe('Ability for users to exit without losing events', () => {
         },
       })
       _helpers.makeTrackCall(ajs)
-      const startTime = Date.now()
+      const startTime = perf.now()
       await ajs.closeAndFlush({ timeout: TIMEOUT })
-      const elapsedTime = Math.round(Date.now() - startTime)
+      const elapsedTime = Math.round(perf.now() - startTime)
       expect(elapsedTime).toBeLessThanOrEqual(TIMEOUT + 10)
       expect(elapsedTime).toBeGreaterThan(TIMEOUT - 10)
     })
@@ -113,7 +121,7 @@ describe('Ability for users to exit without losing events', () => {
       _helpers.makeTrackCall() // should not trigger
       _helpers.makeTrackCall() // should not trigger
       await closed
-      expect(fetcher).toBeCalledTimes(1)
+      expect(_helpers.getFetchCalls().length).toBe(1)
       expect(trackCallCount).toBe(1)
     })
 
@@ -152,7 +160,7 @@ describe('Ability for users to exit without losing events', () => {
 
       await ajs.closeAndFlush()
 
-      expect(fetcher.mock.calls.length).toBe(2)
+      expect(_helpers.getFetchCalls().length).toBe(2)
 
       expect(trackCalls).toBe(2)
 
@@ -160,9 +168,10 @@ describe('Ability for users to exit without losing events', () => {
     })
 
     test('if no pending events, resolves immediately', async () => {
-      const startTime = Date.now()
+      const startTime = perf.now()
       await ajs.closeAndFlush()
-      const elapsedTime = startTime - Date.now()
+      const elapsedTime = perf.now() - startTime
+      expect(elapsedTime > 0).toBeTruthy()
       expect(elapsedTime).toBeLessThan(20)
     })
 
@@ -173,6 +182,59 @@ describe('Ability for users to exit without losing events', () => {
       })
       await ajs.closeAndFlush()
       expect(called).toBeFalsy()
+    })
+
+    test('should flush immediately if close is called and there are events in the segment.io plugin, but no more are expected', async () => {
+      const analytics = new Analytics({
+        writeKey: 'foo',
+        flushInterval: 10000,
+        maxEventsInBatch: 15,
+      })
+      _helpers.makeTrackCall(analytics)
+      _helpers.makeTrackCall(analytics)
+      await sleep(100)
+
+      // ensure all track events have reached the segment plugin
+      expect(analytics['_publisher']['_batch']!.length).toBe(2)
+
+      const startTime = perf.now()
+      await analytics.closeAndFlush()
+      const elapsedTime = perf.now() - startTime
+      expect(elapsedTime).toBeLessThan(100)
+      const calls = _helpers.getFetchCalls()
+      expect(calls.length).toBe(1)
+      expect(calls[0].body.batch.length).toBe(2)
+    })
+
+    test('should wait to flush if close is called and an event has not made it to the segment.io plugin yet', async () => {
+      const TRACK_DELAY = 100
+      const _testPlugin: CorePlugin = {
+        ...testPlugin,
+        track: async (ctx) => {
+          await sleep(TRACK_DELAY)
+          return ctx
+        },
+      }
+      const analytics = new Analytics({
+        writeKey: 'foo',
+        flushInterval: 10000,
+        maxEventsInBatch: 15,
+      })
+      await analytics.register(_testPlugin)
+      _helpers.makeTrackCall(analytics)
+      _helpers.makeTrackCall(analytics)
+
+      // ensure that track events have not reached the segment plugin before closeAndFlush is called.
+      expect(analytics['_publisher']['_batch']).toBeFalsy()
+
+      const startTime = perf.now()
+      await analytics.closeAndFlush()
+      const elapsedTime = perf.now() - startTime
+      expect(elapsedTime).toBeGreaterThan(TRACK_DELAY)
+      expect(elapsedTime).toBeLessThan(TRACK_DELAY * 2)
+      const calls = _helpers.getFetchCalls()
+      expect(calls.length).toBe(1)
+      expect(calls[0].body.batch.length).toBe(2)
     })
   })
 })

@@ -7,7 +7,11 @@ import {
   createError,
   createSuccess,
 } from '../../../__tests__/test-helpers/factories'
-import { configureNodePlugin } from '../index'
+import { createConfiguredNodePlugin } from '../index'
+import { PublisherProps } from '../publisher'
+
+const createTestNodePlugin = (props: PublisherProps) =>
+  createConfiguredNodePlugin(props).plugin
 
 const bodyPropertyMatchers = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
@@ -68,7 +72,7 @@ describe('SegmentNodePlugin', () => {
 
   describe('methods', () => {
     it('alias', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -97,7 +101,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('group', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -135,7 +139,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('identify', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -167,7 +171,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('page', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -206,7 +210,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('screen', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -244,7 +248,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('track', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -284,7 +288,7 @@ describe('SegmentNodePlugin', () => {
     it('supports multiple events in a batch', async () => {
       fetcher.mockReturnValue(createSuccess())
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
         flushInterval: 1000,
@@ -318,7 +322,7 @@ describe('SegmentNodePlugin', () => {
     it('supports waiting a max amount of time before sending', async () => {
       fetcher.mockReturnValue(createSuccess())
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
         flushInterval: 1000,
@@ -348,7 +352,7 @@ describe('SegmentNodePlugin', () => {
     it('sends as soon as batch fills up or max time is reached', async () => {
       fetcher.mockReturnValue(createSuccess())
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 2,
         flushInterval: 1000,
@@ -385,7 +389,7 @@ describe('SegmentNodePlugin', () => {
 
     it('sends if batch will exceed max size in bytes when adding event', async () => {
       fetcher.mockReturnValue(createSuccess())
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 20,
         flushInterval: 100,
@@ -424,7 +428,7 @@ describe('SegmentNodePlugin', () => {
 
   describe('error handling', () => {
     it('excludes events that are too large', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -460,7 +464,7 @@ describe('SegmentNodePlugin', () => {
         createError({ status: 400, statusText: 'Bad Request' })
       )
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -491,7 +495,7 @@ describe('SegmentNodePlugin', () => {
         createError({ status: 500, statusText: 'Internal Server Error' })
       )
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -521,7 +525,7 @@ describe('SegmentNodePlugin', () => {
 
       fetcher.mockRejectedValue(new Error('Connection Error'))
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
         flushInterval: 1000,
