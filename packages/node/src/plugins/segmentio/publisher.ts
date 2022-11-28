@@ -37,8 +37,7 @@ export class Publisher {
   private _maxRetries: number
   private _auth: string
   private _url: string
-  /** The time it takes to timeout while waiting for a HTTP response. */
-  private _httpRequestReadTimeout = 60000
+  private _httpRequestTimeout = 60000
 
   constructor({
     host,
@@ -145,7 +144,7 @@ export class Publisher {
       let failureReason: unknown
       try {
         const response = await fetch(this._url, {
-          signal: abortSignalAfterTimeout(this._httpRequestReadTimeout),
+          signal: abortSignalAfterTimeout(this._httpRequestTimeout),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
