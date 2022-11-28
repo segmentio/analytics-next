@@ -36,7 +36,7 @@ app.post('/cart', (req, res) => {
     event: 'Add to cart',
     properties: { productId: '123456' }
   })
-   res.sendStatus(200)
+   res.sendStatus(201)
 });
 ```
 ## Regional configuration
@@ -48,8 +48,9 @@ Dublin — events.eu1.segmentapis.com
 An example of setting the host to the EU endpoint using the Node library would be:
 
 ```ts
-const analytics = new Analytics('YOUR_WRITE_KEY', {
-    host: "https://events.eu1.segmentapis.com"
+const analytics = new Analytics({
+  ...
+  host: "https://events.eu1.segmentapis.com"
 });
 ```
 
@@ -66,7 +67,6 @@ const analytics = new Analytics({
     flushInterval: 10000,
     // ... and more!
   })
-
 ```
 
 ## Batching
@@ -84,16 +84,22 @@ There is a maximum of 500KB per batch request and 32KB per call.
 
 If you don’t want to batch messages, you can turn batching off by setting the `maxEventsInBatch` setting to 1, like so:
 ```ts
-const analytics = new Analytics({ '<MY_WRITE_KEY>', { maxEventsInBatch: 1 });
+const analytics = new Analytics({
+  ...
+  maxEventsInBatch: 1
+});
 ```
 Batching means that your message might not get sent right away. But every method call takes an optional callback, which you can use to know when a particular message is flushed from the queue, like so:
 
 ```ts
 analytics.track({
-  userId: '019mr8mf4r',
-  event: 'Ultimate Played'
-  callback: (ctx) => console.log(ctx)
-})
+    userId: '019mr8mf4r',
+    event: 'Ultimate Played',
+  },
+  (err, ctx) => {
+    ...
+  }
+)
 ```
 ## Error Handling
 Subscribe and log all event delivery errors.
@@ -143,7 +149,6 @@ const onExit = async () => {
 }
 
 ['SIGINT', 'SIGTERM'].forEach((code) => process.on(code, onExit))
-
 ```
 
 #### Collecting unflushed events
@@ -175,8 +180,8 @@ Different parts of your application may require different types of batching, or 
 ```ts
 import { Analytics } from '@segment/analytics-node'
 
-const marketingAnalytics = new Analytics('MARKETING_WRITE_KEY');
-const appAnalytics = new Analytics('APP_WRITE_KEY');
+const marketingAnalytics = new Analytics({ writeKey: 'MARKETING_WRITE_KEY' });
+const appAnalytics = new Analytics({ writeKey: 'APP_WRITE_KEY' });
 ```
 
 ## Troubleshooting
@@ -184,13 +189,27 @@ const appAnalytics = new Analytics('APP_WRITE_KEY');
 
 2. Make sure that you’re calling a Segment API method once the library is successfully installed: identify, track, etc.
 
-3. Log events and errors the event emitter:
+3. Log events.
 ```js
 ['initialize', 'call_after_close',
  'screen', 'identify', 'group',
  'track', 'ready', 'alias',
  'page', 'error', 'register',
  'deregister'].forEach((event) => analytics.on(event, console.log)
+```
+
+
+## Development: Disabling Analytics for Tests
+- If you want to intercept / disable analytics for integration tests, you can use something like [nock](https://github.com/nock/nock)
+
+```ts
+// Note: nock will _not_ work if polyfill fetch with something like undici, as nock uses the http module. Undici has its own interception method.
+import nock from 'nock'
+
+nock('https://api.segment.io')
+  .post('/v1/batch')
+  .reply(201)
+  .persist()
 ```
 
 
@@ -206,15 +225,13 @@ import Analytics from 'analytics-node'
 import { Analytics } from '@segment/analytics-next'
 ```
 
-- Instantiation requires an object
+- Instantiation now requires an _object_ as the first argument.
 ```ts
 // old
+var analytics = new Analytics('YOUR_WRITE_KEY'); // not supported
 
-var analytics = new Analytics('YOUR_WRITE_KEY');
-
-// new
-const analytics = new Analytics({ writeKey: 'YOUR_WRITE_KEY' });
-
+// new!
+const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 ```
 - Graceful shutdown (See Graceful Shutdown section)
 ```ts
@@ -232,49 +249,10 @@ Other Differences:
 - The `enable` configuration option has been removed-- see "Disabling Analytics" section
 - the `errorHandler` configuration option has been remove  -- see "Error Handling" section
 - `flushAt` configuration option -> `maxEventsInBatch`.
-- `callback` option is moved to configuration
+- `callback` call signature is different
 ```ts
 // old
-analytics.track({
-  userId: '019mr8mf4r',
-  event: 'Ultimate Played'
-}), function(err, batch){
-  if (err) {
-    console.error(err)
-  }
-});
-
+(err, batch) => void
 // new
-analytics.track({
-  userId: '019mr8mf4r',
-  event: 'Ultimate Played',
-  callback: (ctx) => {
-     if (ctx.failedDelivery()) {
-        console.error(ctx)
-     }
-  }
-})
-
-```
-
-
-## Development / Disabling Analytics
-- If you want to disable analytics for unit tests, you can use something like [nock](https://github.com/nock/nock) or [jest mocks](https://jestjs.io/docs/manual-mocks).
-
-You should prefer mocking. However, if you need to intercept the request, you can do:
-
-```ts
-  // Note: nock will _not_ work if polyfill fetch with something like undici, as nock uses the http module. Undici has its own interception method.
-  import nock from 'nock'
-
-  const mockApiHost = 'https://foo.bar'
-  const mockPath = '/foo'
-
-  nock(mockApiHost) // using regex matching in nock changes the perf profile quite a bit
-    .post(mockPath, (body) => true)
-    .reply(201)
-    .persist()
-
-const analytics = new Analytics({ host: mockApiHost, path: mockPath })
-
+(err, ctx) => void
 ```

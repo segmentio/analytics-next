@@ -1,29 +1,23 @@
 import { CoreContext } from '../context'
 
-export type EmittedUnknownError<Ctx extends CoreContext> = {
-  code: 'unknown'
-  message: string
-  ctx?: Ctx
-  err?: any
-}
-
-export type EmittedDeliveryFailureError<Ctx extends CoreContext> = {
-  code: 'delivery_failure'
-  message: string
-  ctx: Ctx
-  data?: any
-}
-
 /**
- * Discriminated of all errors with a discriminant key of "code"
+ * This is the base contract for all emitted errors. This interface may be extended.
  */
-export type CoreEmittedError<Ctx extends CoreContext> =
-  | EmittedUnknownError<Ctx>
-  | EmittedDeliveryFailureError<Ctx>
+export interface CoreEmittedError<Ctx extends CoreContext> {
+  /**
+   * e.g. 'delivery_failure'
+   */
+  code: string
+  /**
+   * Why the error occurred. This can be an actual error object or a just a message.
+   */
+  reason?: unknown
+  ctx?: Ctx
+}
 
 export type CoreEmitterContract<
   Ctx extends CoreContext,
-  AdditionalErrors = CoreEmittedError<Ctx>
+  Err extends CoreEmittedError<Ctx> = CoreEmittedError<Ctx>
 > = {
   alias: [ctx: Ctx]
   track: [ctx: Ctx]
@@ -33,5 +27,5 @@ export type CoreEmitterContract<
   group: [ctx: Ctx]
   register: [pluginNames: string[]]
   deregister: [pluginNames: string[]]
-  error: [CoreEmittedError<Ctx> | AdditionalErrors]
+  error: [error: Err]
 }

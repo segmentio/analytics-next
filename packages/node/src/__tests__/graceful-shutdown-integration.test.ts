@@ -26,7 +26,7 @@ describe('Ability for users to exit without losing events', () => {
   })
   const _helpers = {
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
-      analytics.track({ userId: 'foo', event: 'Thing Updated', callback: cb })
+      analytics.track({ userId: 'foo', event: 'Thing Updated' }, cb)
     },
   }
 
@@ -52,22 +52,23 @@ describe('Ability for users to exit without losing events', () => {
 
     test('all callbacks should be called ', async () => {
       const cb = jest.fn()
-      ajs.track({ userId: 'foo', event: 'bar', callback: cb })
+      ajs.track({ userId: 'foo', event: 'bar' }, cb)
       expect(cb).not.toHaveBeenCalled()
       await ajs.closeAndFlush()
       expect(cb).toBeCalled()
     })
 
     test('all async callbacks should be called', async () => {
-      const trackCall = new Promise<CoreContext>((resolve) =>
-        ajs.track({
-          userId: 'abc',
-          event: 'def',
-          callback: (ctx) => {
-            return sleep(100).then(() => resolve(ctx))
+      const trackCall = new Promise<CoreContext>((resolve) => {
+        ajs.track(
+          {
+            userId: 'abc',
+            event: 'def',
           },
-        })
-      )
+          (_, ctx) => sleep(200).then(() => resolve(ctx!))
+        )
+      })
+
       const res = await Promise.race([ajs.closeAndFlush(), trackCall])
       expect(res instanceof CoreContext).toBe(true)
     })

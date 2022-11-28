@@ -62,7 +62,7 @@ describe('Error handling', () => {
       await promise
       throw new Error('fail')
     } catch (err: any) {
-      expect(err.message).toMatch(/fail/)
+      expect(err.reason).toEqual(new Error('[503] Service Unavailable'))
       expect(err.code).toMatch(/delivery_failure/)
     }
   })
