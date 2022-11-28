@@ -4,6 +4,9 @@ import { run } from '../lib/runner'
 import { server } from '../lib/server'
 import { TEST_WRITEKEY } from '../../src/test-helpers/test-writekeys'
 
+
+jest.setTimeout(30000)
+
 describe('Backwards compatibility', () => {
   test('provides all same properties', async () => {
     const code = `(() => {
