@@ -6,11 +6,11 @@ import {
   CorePlugin,
   EventFactory,
   EventQueue,
-  CoreOptions,
   CoreSegmentEvent,
   bindAll,
   PriorityQueue,
   pTimeout,
+  Integrations,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
@@ -23,6 +23,7 @@ import { NodeEmitter } from './emitter'
 export class Context extends CoreContext {}
 
 export interface Plugin extends CorePlugin {}
+type Timestamp = string | Date
 
 /**
  * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
@@ -31,11 +32,11 @@ type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
 
-/** Events from CoreOptions */
-export interface SegmentEventOptions {
-  context?: Context
-  timestamp?: CoreOptions['timestamp']
-}
+/**
+ * A dictionary of extra context to attach to the call.
+ * Note: context differs from traits because it is not attributes of the user itself.
+ */
+type AdditionalContext = Record<string, any>
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
@@ -55,7 +56,6 @@ type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
 export interface SegmentEvent extends CoreSegmentEvent {
   type: SegmentEventType
-  options?: SegmentEventOptions
 }
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
@@ -148,17 +148,25 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     {
       userId,
       previousId,
-      options,
+      context,
+      timestamp,
+      integrations,
     }: {
       /* The new user id you want to associate with the user. */
       userId: string
       /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
       previousId: string
-      options?: SegmentEventOptions
+      context?: AdditionalContext
+      timestamp?: Timestamp
+      integrations?: Integrations
     },
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.alias(userId, previousId, options)
+    const segmentEvent = this._eventFactory.alias(userId, previousId, {
+      context,
+      integrations,
+      timestamp,
+    })
     this._dispatch(segmentEvent, callback)
   }
 
@@ -168,22 +176,28 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    */
   group(
     {
+      timestamp,
       groupId,
       userId,
       anonymousId,
       traits = {},
-      options = {},
+      context,
+      integrations,
     }: IdentityOptions & {
       groupId: string
       traits?: Traits
-      options?: SegmentEventOptions
+      context?: AdditionalContext
+      timestamp?: Timestamp
+      integrations?: Integrations
     },
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.group(groupId, traits, {
-      ...options,
+      context,
       anonymousId,
       userId,
+      timestamp,
+      integrations,
     })
 
     this._dispatch(segmentEvent, callback)
@@ -198,17 +212,20 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       userId,
       anonymousId,
       traits = {},
-      options,
+      context,
+      integrations,
     }: IdentityOptions & {
       traits?: Traits
-      options?: SegmentEventOptions
+      context?: AdditionalContext
+      integrations?: Integrations
     },
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.identify(userId, traits, {
-      ...options,
+      context,
       anonymousId,
       userId,
+      integrations,
     })
     this._dispatch(segmentEvent, callback)
   }
@@ -224,8 +241,9 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category,
       name,
       properties,
-      options,
+      context,
       timestamp,
+      integrations,
     }: IdentityOptions & {
       /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
       category?: string
@@ -233,8 +251,9 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       name?: string
       /* A dictionary of properties of the page. */
       properties?: EventProperties
-      timestamp?: string | Date
-      options?: SegmentEventOptions
+      timestamp?: Timestamp
+      context?: AdditionalContext
+      integrations?: Integrations
     },
     callback?: Callback
   ): void {
@@ -242,7 +261,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category ?? null,
       name ?? null,
       properties,
-      { ...options, anonymousId, userId, timestamp }
+      { context, anonymousId, userId, timestamp, integrations }
     )
     this._dispatch(segmentEvent, callback)
   }
@@ -260,8 +279,9 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category,
       name,
       properties,
-      options,
+      context,
       timestamp,
+      integrations,
     }: Parameters<Analytics['page']>[0],
     callback?: Callback
   ): void {
@@ -269,7 +289,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category ?? null,
       name ?? null,
       properties,
-      { ...options, anonymousId, userId, timestamp }
+      { context, anonymousId, userId, timestamp, integrations }
     )
 
     this._dispatch(segmentEvent, callback)
@@ -285,18 +305,24 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       anonymousId,
       event,
       properties,
-      options,
+      context,
+      timestamp,
+      integrations,
     }: IdentityOptions & {
       event: string
       properties?: EventProperties
-      options?: SegmentEventOptions
+      context?: AdditionalContext
+      timestamp?: Timestamp
+      integrations?: Integrations
     },
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.track(event, properties, {
-      ...options,
+      context,
       userId,
       anonymousId,
+      timestamp,
+      integrations,
     })
 
     this._dispatch(segmentEvent, callback)

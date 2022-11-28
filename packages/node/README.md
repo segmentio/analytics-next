@@ -277,3 +277,29 @@ export const lowercase: Plugin = {
 analytics.register(lowercase)
 
 ```
+
+## Selecting Destinations
+The alias, group, identify, page and track calls can all be passed an object of integrations that lets you turn certain destinations on or off. By default all destinations are enabled.
+
+Here’s an example with the integrations object shown:
+```ts
+analytics.track({
+  event: 'Membership Upgraded',
+  userId: '97234974',
+  integrations: {
+    'All': false,
+    'Vero': true,
+    'Google Analytics': false
+  }
+})
+```
+
+In this case, we’re specifying that we want this track to only go to Vero. All: false says that no destination should be enabled unless otherwise specified. Vero: true turns on Vero, etc.
+
+Destination flags are case sensitive and match the [destination’s name in the docs](https://segment.com/docs/connections/destinations) (i.e. “AdLearn Open Platform”, “awe.sm”, “MailChimp”, etc.). In some cases, there may be several names for a destination; if that happens you’ll see a “Adding (destination name) to the Integrations Object” section in the destination’s doc page with a list of valid names.
+
+Note:
+
+- Available at the business level, filtering track calls can be done right from the Segment UI on your source schema page. We recommend using the UI if possible since it’s a much simpler way of managing your filters and can be updated with no code changes on your side.
+
+- If you are on a grandfathered plan, events sent server-side that are filtered through the Segment dashboard will still count towards your API usage.
