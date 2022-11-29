@@ -29,16 +29,16 @@ export interface LegacyIntegration extends Emitter {
   options?: object
 }
 
-export interface LegacyIntegrationBuilder {
+export interface ClassicIntegrationBuilder {
   new (options: object): LegacyIntegration
   prototype: LegacyIntegration
 }
 
-export interface LegacyIntegrationGenerator {
+export interface ClassicIntegrationGenerator {
   (analytics: { user: () => User; addIntegration: () => void }): void
-  Integration: LegacyIntegrationBuilder
+  Integration: ClassicIntegrationBuilder
 }
 
-export type LegacyIntegrationSource =
-  | LegacyIntegrationGenerator
-  | LegacyIntegrationBuilder
+export type ClassicIntegrationSource =
+  | ClassicIntegrationGenerator
+  | ClassicIntegrationBuilder

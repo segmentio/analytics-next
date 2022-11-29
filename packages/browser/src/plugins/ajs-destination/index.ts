@@ -24,7 +24,7 @@ import {
   resolveVersion,
   unloadIntegration,
 } from './loader'
-import { LegacyIntegration, LegacyIntegrationSource } from './types'
+import { LegacyIntegration, ClassicIntegrationSource } from './types'
 import { isPlainObject } from '@segment/analytics-core'
 import {
   isDisabledIntegration as shouldSkipIntegration,
@@ -78,7 +78,7 @@ export class LegacyDestination implements Plugin {
   private onInitialize: Promise<unknown> | undefined
   private disableAutoISOConversion: boolean
 
-  integrationSource?: LegacyIntegrationSource
+  integrationSource?: ClassicIntegrationSource
   integration: LegacyIntegration | undefined
 
   buffer: PriorityQueue<Context>
@@ -89,7 +89,7 @@ export class LegacyDestination implements Plugin {
     version: string,
     settings: JSONObject = {},
     options: InitOptions,
-    integrationSource?: LegacyIntegrationSource
+    integrationSource?: ClassicIntegrationSource
   ) {
     this.name = name
     this.version = version
@@ -325,7 +325,7 @@ export function ajsDestinations(
   globalIntegrations: Integrations = {},
   options: InitOptions = {},
   routingMiddleware?: DestinationMiddlewareFunction,
-  legacyIntegrationSources?: LegacyIntegrationSource[]
+  legacyIntegrationSources?: ClassicIntegrationSource[]
 ): LegacyDestination[] {
   if (isServer()) {
     return []
@@ -350,16 +350,14 @@ export function ajsDestinations(
       ...acc,
       [resolveIntegrationNameFromSource(integrationSource)]: integrationSource,
     }),
-    {} as Record<string, LegacyIntegrationSource>
+    {} as Record<string, ClassicIntegrationSource>
   )
 
   const installableIntegrations = new Set([
     // Remotely configured installable integrations
-    ...Object.entries(remoteIntegrationsConfig)
-      .filter(([name, integrationSettings]) =>
-        isInstallableIntegration(name, integrationSettings)
-      )
-      .map(([name]) => name),
+    ...Object.keys(remoteIntegrationsConfig).filter((name) =>
+      isInstallableIntegration(name, remoteIntegrationsConfig[name])
+    ),
 
     // Directly provided integration sources are only installable if settings for them are available
     ...Object.keys(adhocIntegrationSources || {}).filter(

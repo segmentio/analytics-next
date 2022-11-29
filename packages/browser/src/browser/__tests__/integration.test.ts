@@ -19,7 +19,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { ActionDestination } from '@/plugins/remote-loader'
-import { LegacyIntegrationBuilder } from '../../plugins/ajs-destination/types'
+import { ClassicIntegrationBuilder } from '../../plugins/ajs-destination/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -1049,7 +1049,9 @@ describe('.Integrations', () => {
     const [analytics] = await AnalyticsBrowser.load(
       {
         writeKey,
-        classicIntegrations: [amplitude as unknown as LegacyIntegrationBuilder],
+        classicIntegrations: [
+          amplitude as unknown as ClassicIntegrationBuilder,
+        ],
       },
       {
         integrations: {
@@ -1077,7 +1079,7 @@ describe('.Integrations', () => {
 
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
-      classicIntegrations: [amplitude as unknown as LegacyIntegrationBuilder],
+      classicIntegrations: [amplitude as unknown as ClassicIntegrationBuilder],
     })
 
     await analytics.ready()

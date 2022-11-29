@@ -30,7 +30,7 @@ import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import type { LegacyDestination } from '../../plugins/ajs-destination'
 import type {
   LegacyIntegration,
-  LegacyIntegrationSource,
+  ClassicIntegrationSource,
 } from '../../plugins/ajs-destination/types'
 import type {
   DestinationMiddlewareFunction,
@@ -61,7 +61,7 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: Plugin[]
-  classicIntegrations?: LegacyIntegrationSource[]
+  classicIntegrations?: ClassicIntegrationSource[]
 }
 
 export interface InitOptions {

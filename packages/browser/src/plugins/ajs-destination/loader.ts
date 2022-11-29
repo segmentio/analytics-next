@@ -6,8 +6,8 @@ import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
 import {
   LegacyIntegration,
-  LegacyIntegrationBuilder,
-  LegacyIntegrationSource,
+  ClassicIntegrationBuilder,
+  ClassicIntegrationSource,
 } from './types'
 
 function normalizeName(name: string): string {
@@ -19,7 +19,7 @@ function obfuscatePathName(pathName: string, obfuscate = false): string | void {
 }
 
 export function resolveIntegrationNameFromSource(
-  integrationSource: LegacyIntegrationSource
+  integrationSource: ClassicIntegrationSource
 ) {
   return (
     'Integration' in integrationSource
@@ -44,11 +44,11 @@ function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
 }
 
 export function buildIntegration(
-  integrationSource: LegacyIntegrationSource,
+  integrationSource: ClassicIntegrationSource,
   integrationSettings: { [key: string]: any },
   analyticsInstance: Analytics
 ): LegacyIntegration {
-  let integrationCtr: LegacyIntegrationBuilder
+  let integrationCtr: ClassicIntegrationBuilder
   // GA and Appcues use a different interface to instantiating integrations
   if ('Integration' in integrationSource) {
     const analyticsStub = {
@@ -73,7 +73,7 @@ export async function loadIntegration(
   name: string,
   version: string,
   obfuscate?: boolean
-): Promise<LegacyIntegrationSource> {
+): Promise<ClassicIntegrationSource> {
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
   const path = getNextIntegrationsURL()
@@ -100,7 +100,7 @@ export async function loadIntegration(
   return window[
     // @ts-ignore
     `${pathName}Integration`
-  ] as LegacyIntegrationSource
+  ] as ClassicIntegrationSource
 }
 
 export async function unloadIntegration(
@@ -120,7 +120,7 @@ export async function unloadIntegration(
 }
 
 export function resolveVersion(
-  settings: LegacyIntegrationConfiguration
+  settings?: LegacyIntegrationConfiguration
 ): string {
   return (
     settings?.versionSettings?.override ??
