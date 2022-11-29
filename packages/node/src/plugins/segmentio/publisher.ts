@@ -1,5 +1,5 @@
 import { backoff, CoreContext } from '@segment/analytics-core'
-import { abortSignalAfterTimeout } from '../../lib/abort-signal'
+import { abortSignalAfterTimeout } from '../../lib/abort'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'

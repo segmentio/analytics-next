@@ -1,14 +1,17 @@
-import { abortSignalAfterTimeout } from '../abort-signal'
+import { abortSignalAfterTimeout } from '../abort'
 import nock from 'nock'
 import { fetch } from '../fetch'
 import { sleep } from '@segment/analytics-core'
 
 describe(abortSignalAfterTimeout, () => {
   const HOST = 'https://foo.com'
+  beforeEach(() => {
+    nock.cleanAll()
+  })
   it('should not abort operation if timeout has not expired', async () => {
     jest.useRealTimers()
+    nock(HOST).get('/').reply(201)
     try {
-      nock(HOST).get('/').reply(201)
       const signal = abortSignalAfterTimeout(1000)
       await fetch(HOST, { signal })
     } catch (err: any) {
@@ -36,8 +39,8 @@ describe(abortSignalAfterTimeout, () => {
   })
   it('should abort operation immediately if timeout is 0', async () => {
     jest.useRealTimers()
+    nock(HOST).get('/').reply(201)
     try {
-      nock(HOST).get('/').reply(201)
       await fetch(HOST, { signal: abortSignalAfterTimeout(0) })
       throw Error('fail test.')
     } catch (err: any) {

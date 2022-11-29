@@ -27,7 +27,7 @@ export interface AnalyticsSettings {
    */
   flushInterval?: number
   /**
-   * The maximum number of milliseconds to wait before a request timeout. Default: 10000
+   * The maximum number of milliseconds to wait for an http request. Default: 10000
    */
   httpRequestTimeout?: number
 }

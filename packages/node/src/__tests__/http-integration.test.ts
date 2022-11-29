@@ -5,6 +5,7 @@ import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { isValidDate } from './test-helpers/is-valid-date'
 import { pick, omit } from 'lodash'
 import nock from 'nock'
+import { CoreContext } from '@segment/analytics-core'
 
 const snapshotMatchers = {
   get batchEvent() {
@@ -30,12 +31,14 @@ const snapshotMatchers = {
   },
 }
 
-describe('Method Smoke Tests', () => {
-  let ajs: Analytics
-  let scope: nock.Scope
+beforeEach(() => {
+  nock.cleanAll()
+})
 
+describe('Method Smoke Tests', () => {
+  let scope: nock.Scope
+  let ajs: Analytics
   beforeEach(async () => {
-    nock.cleanAll()
     ajs = createTestAnalytics()
   })
 
@@ -289,5 +292,27 @@ describe('Method Smoke Tests', () => {
       `
       )
     })
+  })
+})
+
+describe('Client: requestTimeout', () => {
+  beforeEach(async () => {
+    nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      .post('/v1/batch')
+      .reply(201)
+  })
+  it('should timeout immediately if request timeout is set to 0', async () => {
+    jest.useRealTimers()
+    const ajs = createTestAnalytics({
+      maxEventsInBatch: 1,
+      httpRequestTimeout: 0,
+    })
+    ajs.track({ event: 'foo', userId: 'foo', properties: { hello: 'world' } })
+    try {
+      await resolveCtx(ajs, 'track')
+      throw Error('fail test')
+    } catch (err: any) {
+      expect(err.ctx).toBeInstanceOf(CoreContext)
+    }
   })
 })
