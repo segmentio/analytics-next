@@ -336,6 +336,7 @@ export class Analytics
   reset(): void {
     this._user.reset()
     this._group.reset()
+    this.emit('reset')
   }
 
   timeout(timeout: number): void {
