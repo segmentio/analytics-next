@@ -87,6 +87,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         maxRetries: settings.maxRetries ?? 3,
         maxEventsInBatch: settings.maxEventsInBatch ?? 15,
         flushInterval,
+        httpRequestTimeout: settings.httpRequestTimeout,
       })
     ).then(() => undefined)
 

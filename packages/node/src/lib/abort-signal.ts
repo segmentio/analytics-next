@@ -41,7 +41,7 @@ const abortSignal =
 /**
  * This polyfill is neccessary to support node 14.
  */
-const controller =
+const abortController =
   global.AbortController ||
   class AbortController {
     signal = new abortSignal()
@@ -65,14 +65,14 @@ const controller =
  * @param timeoutMs - Set a request timeout, after which the request is cancelled.
  */
 export const abortSignalAfterTimeout = (timeoutMs: number) => {
-  const ctl = new controller()
+  const ac = new abortController()
 
   const timeoutId = setTimeout(() => {
-    ctl.abort()
+    ac.abort()
   }, timeoutMs)
 
   // Allow Node.js processes to exit early if only the timeout is running
   timeoutId?.unref?.()
 
-  return ctl.signal
+  return ac.signal
 }

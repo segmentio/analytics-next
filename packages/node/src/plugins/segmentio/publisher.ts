@@ -23,6 +23,7 @@ export interface PublisherProps {
   maxEventsInBatch: number
   maxRetries: number
   writeKey: string
+  httpRequestTimeout?: number
 }
 
 /**
@@ -37,7 +38,7 @@ export class Publisher {
   private _maxRetries: number
   private _auth: string
   private _url: string
-  private _httpRequestTimeout = 60000
+  private _httpRequestTimeout: number
 
   constructor({
     host,
@@ -46,6 +47,7 @@ export class Publisher {
     maxEventsInBatch,
     flushInterval,
     writeKey,
+    httpRequestTimeout,
   }: PublisherProps) {
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
@@ -55,6 +57,7 @@ export class Publisher {
       host ?? 'https://api.segment.io',
       path ?? '/v1/batch'
     )
+    this._httpRequestTimeout = httpRequestTimeout ?? 10000
   }
 
   private createBatch(): ContextBatch {

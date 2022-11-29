@@ -26,6 +26,10 @@ export interface AnalyticsSettings {
    * The number of milliseconds to wait before flushing the queue automatically. Default: 10000
    */
   flushInterval?: number
+  /**
+   * The maximum number of milliseconds to wait before a request timeout. Default: 10000
+   */
+  httpRequestTimeout?: number
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {
