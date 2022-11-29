@@ -74,6 +74,15 @@ fetchWriteKey().then(writeKey => analytics.load({ writeKey }))
 
 analytics.identify("hello world")
 ```
+## Error Handling
+### Handling initialization errors
+Initialization errors get logged by default, but if you also want to catch these errors, you can do the following:
+```ts
+export const analytics = new AnalyticsBrowser()
+
+analytics.catch((err) => console.error('My Error', err))
+analytics.load({ writeKey: '<YOUR_WRITE_KEY>' })
+```
 
 ## Usage in Common Frameworks
 ### using `React` (Simple)
