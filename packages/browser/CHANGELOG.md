@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.47.0
+
+### Minor Changes
+
+- [#704](https://github.com/segmentio/analytics-next/pull/704) [`6e42f6e`](https://github.com/segmentio/analytics-next/commit/6e42f6ebdcf05e6c23fc4cacf5634cf6109b785c) Thanks [@pooyaj](https://github.com/pooyaj)! - Emit a `reset` event when analytics.reset() is called
+
+* [#669](https://github.com/segmentio/analytics-next/pull/669) [`b6ae65b`](https://github.com/segmentio/analytics-next/commit/b6ae65b56e2a3ec0e13de79f8d3acf25b7c223d2) Thanks [@zikaari](https://github.com/zikaari)! - Allow use of integrations directly from NPM
+
+### Patch Changes
+
+- Updated dependencies [[`ecb4b8d`](https://github.com/segmentio/analytics-next/commit/ecb4b8db0194e06a3ee3c8cae57d4f327d15dc02)]:
+  - @segment/analytics-core@1.1.4
+
 ## 1.46.4
 
 ### Patch Changes
