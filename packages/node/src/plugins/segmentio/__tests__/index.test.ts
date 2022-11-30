@@ -1,6 +1,6 @@
 const fetcher = jest.fn()
 jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
-
+import { range } from 'lodash'
 import { CoreContext } from '@segment/analytics-core'
 import { createNodeEventFactory } from '../../../lib/create-node-event-factory'
 import {
@@ -55,6 +55,7 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 
 describe('SegmentNodePlugin', () => {
   const eventFactory = createNodeEventFactory()
+
   const realSetTimeout = setTimeout
 
   beforeEach(() => {
@@ -423,6 +424,92 @@ describe('SegmentNodePlugin', () => {
         expect(updatedContexts[i]).toBe(contexts[i])
         expect(updatedContexts[i].failedDelivery()).toBeFalsy()
       }
+    })
+
+    describe('flushAfterClose', () => {
+      const _createTrackCtx = () =>
+        new CoreContext(
+          eventFactory.track(
+            'test event',
+            { foo: 'bar' },
+            { userId: 'foo-user-id' }
+          )
+        )
+
+      it('sends immediately once all pending events reach the segment plugin, regardless of settings like batch size', async () => {
+        const _createTrackCtx = () =>
+          new CoreContext(
+            eventFactory.track(
+              'test event',
+              { foo: 'bar' },
+              { userId: 'foo-user-id' }
+            )
+          )
+
+        fetcher.mockReturnValue(createSuccess())
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 20,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(3)
+
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toBeCalledTimes(1)
+      })
+
+      it('continues to flush on each event if batch size is 1', async () => {
+        fetcher.mockReturnValue(createSuccess())
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 1,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(3)
+
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toBeCalledTimes(3)
+      })
+
+      it('sends immediately once there are no pending items, even if pending events exceeds batch size', async () => {
+        const _createTrackCtx = () =>
+          new CoreContext(
+            eventFactory.track(
+              'test event',
+              { foo: 'bar' },
+              { userId: 'foo-user-id' }
+            )
+          )
+
+        fetcher.mockReturnValue(createSuccess())
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 3,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(5)
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(1)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(2)
+      })
     })
   })
 
