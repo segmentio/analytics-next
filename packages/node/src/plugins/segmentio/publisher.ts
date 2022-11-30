@@ -123,35 +123,42 @@ export class Publisher {
             Success: Check if batch is full and send if it is.
             Failure: Event exceeds maximum size (it will never fit), fail the event.
     */
-
-    if (batch.tryAdd(pendingItem)) {
-      const isFull = batch.length === this._maxEventsInBatch
+    const addStatus = batch.tryAdd(pendingItem)
+    if (addStatus.success) {
       const isExpectingNoMoreItems =
         batch.length === this._closeAndFlushPendingItemsCount
-
+      const isFull = batch.length === this._maxEventsInBatch
       if (isFull || isExpectingNoMoreItems) {
         this.send(batch).catch(noop)
         this.clearBatch()
       }
       return ctxPromise
-    } else if (batch.length) {
+    }
+
+    // If the new item causes the maximimum event size to be exceeded, send the current batch and create a new one.
+    if (batch.length) {
       this.send(batch).catch(noop)
       this.clearBatch()
     }
 
     const fallbackBatch = this.createBatch()
 
-    if (!fallbackBatch.tryAdd(pendingItem)) {
-      ctx.setFailedDelivery({
-        reason: new Error(`Event exceeds maximum event size of 32 kb`),
-      })
-      return Promise.resolve(ctx)
-    } else {
-      if (fallbackBatch.length === this._maxEventsInBatch) {
+    const fbAddStatus = fallbackBatch.tryAdd(pendingItem)
+
+    if (fbAddStatus.success) {
+      const isExpectingNoMoreItems =
+        fallbackBatch.length === this._closeAndFlushPendingItemsCount
+      if (isExpectingNoMoreItems) {
         this.send(fallbackBatch).catch(noop)
         this.clearBatch()
       }
       return ctxPromise
+    } else {
+      // this should only occur if max event size is exceeded
+      ctx.setFailedDelivery({
+        reason: new Error(fbAddStatus.message),
+      })
+      return Promise.resolve(ctx)
     }
   }
 

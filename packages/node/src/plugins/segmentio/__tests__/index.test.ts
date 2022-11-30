@@ -453,7 +453,7 @@ describe('SegmentNodePlugin', () => {
       expect(updatedContext.failedDelivery()).toBeTruthy()
       expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
         Object {
-          "reason": [Error: Event exceeds maximum event size of 32 kb],
+          "reason": [Error: Event exceeds maximum event size of 32 KB],
         }
       `)
       expect(fetcher).not.toHaveBeenCalled()
