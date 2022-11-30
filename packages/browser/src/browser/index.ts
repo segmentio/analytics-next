@@ -24,6 +24,7 @@ import {
 } from '../core/buffer'
 import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { inspectorHost } from '../core/inspector'
+import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -152,7 +153,8 @@ async function registerPlugins(
   analytics: Analytics,
   opts: InitOptions,
   options: InitOptions,
-  plugins: Plugin[]
+  plugins: Plugin[],
+  legacyIntegrationSources: ClassicIntegrationSource[]
 ): Promise<Context> {
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
     ? await import(
@@ -164,18 +166,20 @@ async function registerPlugins(
       })
     : undefined
 
-  const legacyDestinations = hasLegacyDestinations(legacySettings)
-    ? await import(
-        /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
-      ).then((mod) => {
-        return mod.ajsDestinations(
-          legacySettings,
-          analytics.integrations,
-          opts,
-          tsubMiddleware
-        )
-      })
-    : []
+  const legacyDestinations =
+    hasLegacyDestinations(legacySettings) || legacyIntegrationSources.length > 0
+      ? await import(
+          /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
+        ).then((mod) => {
+          return mod.ajsDestinations(
+            legacySettings,
+            analytics.integrations,
+            opts,
+            tsubMiddleware,
+            legacyIntegrationSources
+          )
+        })
+      : []
 
   if (legacySettings.legacyVideoPluginsEnabled) {
     await import(
@@ -274,6 +278,7 @@ async function loadAnalytics(
   inspectorHost.attach?.(analytics as any)
 
   const plugins = settings.plugins ?? []
+  const classicIntegrations = settings.classicIntegrations ?? []
   Context.initMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
@@ -284,7 +289,8 @@ async function loadAnalytics(
     analytics,
     opts,
     options,
-    plugins
+    plugins,
+    classicIntegrations
   )
 
   const search = window.location.search ?? ''

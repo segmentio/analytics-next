@@ -28,7 +28,10 @@ import { CookieOptions, Group, ID, User, UserOptions } from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import type { LegacyDestination } from '../../plugins/ajs-destination'
-import type { LegacyIntegration } from '../../plugins/ajs-destination/types'
+import type {
+  LegacyIntegration,
+  ClassicIntegrationSource,
+} from '../../plugins/ajs-destination/types'
 import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
@@ -58,6 +61,7 @@ export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
   plugins?: Plugin[]
+  classicIntegrations?: ClassicIntegrationSource[]
 }
 
 export interface InitOptions {

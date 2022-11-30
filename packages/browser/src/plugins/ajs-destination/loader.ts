@@ -4,7 +4,11 @@ import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
 import { loadScript, unloadScript } from '../../lib/load-script'
-import { LegacyIntegration } from './types'
+import {
+  LegacyIntegration,
+  ClassicIntegrationBuilder,
+  ClassicIntegrationSource,
+} from './types'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')
@@ -12,6 +16,16 @@ function normalizeName(name: string): string {
 
 function obfuscatePathName(pathName: string, obfuscate = false): string | void {
   return obfuscate ? btoa(pathName).replace(/=/g, '') : undefined
+}
+
+export function resolveIntegrationNameFromSource(
+  integrationSource: ClassicIntegrationSource
+) {
+  return (
+    'Integration' in integrationSource
+      ? integrationSource.Integration
+      : integrationSource
+  ).prototype.name
 }
 
 function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
@@ -29,14 +43,37 @@ function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
   }
 }
 
+export function buildIntegration(
+  integrationSource: ClassicIntegrationSource,
+  integrationSettings: { [key: string]: any },
+  analyticsInstance: Analytics
+): LegacyIntegration {
+  let integrationCtr: ClassicIntegrationBuilder
+  // GA and Appcues use a different interface to instantiating integrations
+  if ('Integration' in integrationSource) {
+    const analyticsStub = {
+      user: (): User => analyticsInstance.user(),
+      addIntegration: (): void => {},
+    }
+
+    integrationSource(analyticsStub)
+    integrationCtr = integrationSource.Integration
+  } else {
+    integrationCtr = integrationSource
+  }
+
+  const integration = new integrationCtr(integrationSettings)
+  integration.analytics = analyticsInstance
+
+  return integration
+}
+
 export async function loadIntegration(
   ctx: Context,
-  analyticsInstance: Analytics,
   name: string,
   version: string,
-  settings?: { [key: string]: any },
   obfuscate?: boolean
-): Promise<LegacyIntegration> {
+): Promise<ClassicIntegrationSource> {
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
   const path = getNextIntegrationsURL()
@@ -60,25 +97,10 @@ export async function loadIntegration(
   // @ts-ignore
   window[`${pathName}Loader`]()
 
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let integrationBuilder = window[`${pathName}Integration`] as any
-
-  // GA and Appcues use a different interface to instantiating integrations
-  if (integrationBuilder.Integration) {
-    const analyticsStub = {
-      user: (): User => analyticsInstance.user(),
-      addIntegration: (): void => {},
-    }
-
-    integrationBuilder(analyticsStub)
-    integrationBuilder = integrationBuilder.Integration
-  }
-
-  const integration = new integrationBuilder(settings) as LegacyIntegration
-  integration.analytics = analyticsInstance
-
-  return integration
+  return window[
+    // @ts-ignore
+    `${pathName}Integration`
+  ] as ClassicIntegrationSource
 }
 
 export async function unloadIntegration(
@@ -98,11 +120,11 @@ export async function unloadIntegration(
 }
 
 export function resolveVersion(
-  settings: LegacyIntegrationConfiguration
+  settings?: LegacyIntegrationConfiguration
 ): string {
   return (
-    settings.versionSettings?.override ??
-    settings.versionSettings?.version ??
+    settings?.versionSettings?.override ??
+    settings?.versionSettings?.version ??
     'latest'
   )
 }

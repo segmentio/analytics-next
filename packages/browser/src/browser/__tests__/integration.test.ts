@@ -19,6 +19,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { ActionDestination } from '@/plugins/remote-loader'
+import { ClassicIntegrationBuilder } from '../../plugins/ajs-destination/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
@@ -975,6 +976,11 @@ describe('.Integrations', () => {
     windowSpy.mockImplementation(
       () => jsd.window as unknown as Window & typeof globalThis
     )
+
+    const documentSpy = jest.spyOn(global, 'document', 'get')
+    documentSpy.mockImplementation(
+      () => jsd.window.document as unknown as Document
+    )
   })
 
   it('lists all legacy destinations', async () => {
@@ -1031,6 +1037,58 @@ describe('.Integrations', () => {
         "Google-Analytics": [Function],
       }
     `)
+  })
+
+  it('uses directly provided classic integrations without fetching them from cdn', async () => {
+    const amplitude = // @ts-ignore
+      (await import('@segment/analytics.js-integration-amplitude')).default
+
+    const intializeSpy = jest.spyOn(amplitude.prototype, 'initialize')
+    const trackSpy = jest.spyOn(amplitude.prototype, 'track')
+
+    const [analytics] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+        classicIntegrations: [
+          amplitude as unknown as ClassicIntegrationBuilder,
+        ],
+      },
+      {
+        integrations: {
+          Amplitude: {
+            apiKey: 'abc',
+          },
+        },
+      }
+    )
+
+    await analytics.ready()
+    expect(intializeSpy).toHaveBeenCalledTimes(1)
+
+    await analytics.track('test event')
+
+    expect(trackSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('ignores directly provided classic integrations if settings for them are unavailable', async () => {
+    const amplitude = // @ts-ignore
+      (await import('@segment/analytics.js-integration-amplitude')).default
+
+    const intializeSpy = jest.spyOn(amplitude.prototype, 'initialize')
+    const trackSpy = jest.spyOn(amplitude.prototype, 'track')
+
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      classicIntegrations: [amplitude as unknown as ClassicIntegrationBuilder],
+    })
+
+    await analytics.ready()
+
+    expect(intializeSpy).not.toHaveBeenCalled()
+
+    await analytics.track('test event')
+
+    expect(trackSpy).not.toHaveBeenCalled()
   })
 })
 
