@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.1.4
+
+### Patch Changes
+
+- [#692](https://github.com/segmentio/analytics-next/pull/692) [`ecb4b8d`](https://github.com/segmentio/analytics-next/commit/ecb4b8db0194e06a3ee3c8cae57d4f327d15dc02) Thanks [@silesky](https://github.com/silesky)! - Move code out of core and into analytics-node. Tweak emitter error contract.
+
 ## 1.1.3
 
 ### Patch Changes
