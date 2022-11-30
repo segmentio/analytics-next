@@ -260,5 +260,15 @@ describe('Analytics', () => {
       storedData = getAjsBrowserStorage()
       expect(storedData).toEqual({})
     })
+
+    it('emits a reset event', async () => {
+      const analytics = new Analytics({ writeKey: '' })
+      const fn = jest.fn()
+      analytics.on('reset', fn)
+      analytics.user().id('known-user')
+
+      analytics.reset()
+      expect(fn).toHaveBeenCalledTimes(1)
+    })
   })
 })
