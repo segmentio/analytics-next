@@ -56,19 +56,9 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 describe('SegmentNodePlugin', () => {
   const eventFactory = createNodeEventFactory()
 
-  const realSetTimeout = setTimeout
-
   beforeEach(() => {
-    jest.resetAllMocks()
-    jest.restoreAllMocks()
+    fetcher.mockReturnValue(createSuccess())
     jest.useFakeTimers()
-  })
-
-  afterEach(() => {
-    if (setTimeout !== realSetTimeout) {
-      jest.runAllTimers()
-      jest.useRealTimers()
-    }
   })
 
   describe('methods', () => {
@@ -287,8 +277,6 @@ describe('SegmentNodePlugin', () => {
 
   describe('batching', () => {
     it('supports multiple events in a batch', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
       const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
@@ -321,8 +309,6 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('supports waiting a max amount of time before sending', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
       const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
@@ -351,8 +337,6 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('sends as soon as batch fills up or max time is reached', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
       const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 2,
@@ -389,7 +373,6 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('sends if batch will exceed max size in bytes when adding event', async () => {
-      fetcher.mockReturnValue(createSuccess())
       const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 20,
@@ -446,7 +429,6 @@ describe('SegmentNodePlugin', () => {
             )
           )
 
-        fetcher.mockReturnValue(createSuccess())
         const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
           {
             maxRetries: 3,
@@ -466,7 +448,6 @@ describe('SegmentNodePlugin', () => {
       })
 
       it('continues to flush on each event if batch size is 1', async () => {
-        fetcher.mockReturnValue(createSuccess())
         const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
           {
             maxRetries: 3,
@@ -494,7 +475,6 @@ describe('SegmentNodePlugin', () => {
             )
           )
 
-        fetcher.mockReturnValue(createSuccess())
         const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
           {
             maxRetries: 3,
