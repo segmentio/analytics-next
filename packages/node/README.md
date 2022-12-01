@@ -19,7 +19,10 @@ pnpm install @segment/analytics-node
 ### Usage (assuming some express-like web framework)
 ```ts
 import { Analytics } from '@segment/analytics-node'
+// or, if you use require:
+const { Analytics } = require('@segment/analytics-node')
 
+// instantiation
 const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
 app.post('/login', (req, res) => {
@@ -165,10 +168,10 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 
 ## Event Emitter Interface
 ```ts
-// subscribe to identify calls
+// subscribe to specific events
+
 analytics.on('identify', (err) => console.error(err))
 
-// subscribe to a specific event
 analytics.on('track', (ctx) => console.log(ctx))
 ```
 
@@ -303,3 +306,34 @@ Note:
 - Available at the business level, filtering track calls can be done right from the Segment UI on your source schema page. We recommend using the UI if possible since it’s a much simpler way of managing your filters and can be updated with no code changes on your side.
 
 - If you are on a grandfathered plan, events sent server-side that are filtered through the Segment dashboard will still count towards your API usage.
+
+## Usage in AWS Lambda
+- [AWS lambda execution environment](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html) is challenging for typically non-response-blocking async activites like tracking or logging, since the runtime terminates / freezes after a response is emitted.
+
+Here is an example of using analytics.js within a handler:
+```ts
+const { Analytics } = require("@segment/analytics-node");
+
+// since analytics has the potential to be stateful if there are any plugins added,
+// to be on the safe side, we should instantiate a new instance of analytics on every request (the cost of instantiation is low).
+const analytics = () => new Analytics({
+      maxEventsInBatch: 1,
+      writeKey: '<MY_WRITE_KEY>',
+    })
+    .on("error", console.error);
+
+module.exports.handler = async (event) => {
+  ...
+  // we need to await before returning, otherwise the lambda will exit before sending the request.
+  await new Promise((resolve) => {
+    analytics().track({
+      event: 'Hello world',
+      anonymousId: 'foo',
+    }, () => resolve())
+
+  return {
+    statusCode: 200,
+  };
+  ....
+};
+```
