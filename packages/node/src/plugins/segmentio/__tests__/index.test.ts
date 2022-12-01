@@ -466,15 +466,6 @@ describe('SegmentNodePlugin', () => {
       })
 
       it('sends immediately once there are no pending items, even if pending events exceeds batch size', async () => {
-        const _createTrackCtx = () =>
-          new CoreContext(
-            eventFactory.track(
-              'test event',
-              { foo: 'bar' },
-              { userId: 'foo-user-id' }
-            )
-          )
-
         const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
           {
             maxRetries: 3,
@@ -489,6 +480,46 @@ describe('SegmentNodePlugin', () => {
         expect(fetcher).toHaveBeenCalledTimes(1)
         range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
         expect(fetcher).toHaveBeenCalledTimes(2)
+      })
+
+      it('works if there are previous items in the batch', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 7,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        publisher.flushAfterClose(5)
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(1)
+      })
+
+      it('works if there are previous items in the batch AND pending items > batch size', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 7,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        publisher.flushAfterClose(10)
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        range(4).forEach(() => segmentPlugin.track(_createTrackCtx())) // batch is full, send.
+        expect(fetcher).toHaveBeenCalledTimes(1)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toBeCalledTimes(1)
+        void segmentPlugin.track(_createTrackCtx()) // pending items limit has been reached, send.
+        expect(fetcher).toBeCalledTimes(2)
       })
     })
   })
