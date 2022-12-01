@@ -163,13 +163,14 @@ export class Publisher {
   }
 
   private async send(batch: ContextBatch) {
-    const events = batch.getEvents()
-    const payload = JSON.stringify({ batch: events })
-    const maxAttempts = this._maxRetries + 1
-    let currentAttempt = 0
     if (this._closeAndFlushPendingItemsCount) {
       this._closeAndFlushPendingItemsCount -= batch.length
     }
+    const events = batch.getEvents()
+    const payload = JSON.stringify({ batch: events })
+    const maxAttempts = this._maxRetries + 1
+
+    let currentAttempt = 0
     while (currentAttempt < maxAttempts) {
       currentAttempt++
 
