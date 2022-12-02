@@ -26,11 +26,7 @@ type SegmentNodePlugin = CorePlugin &
 
 export type ConfigureNodePluginProps = PublisherProps
 
-export function configureNodePlugin(
-  props: ConfigureNodePluginProps
-): SegmentNodePlugin {
-  const publisher = new Publisher(props)
-
+export function createNodePlugin(publisher: Publisher): SegmentNodePlugin {
   function action(ctx: CoreContext): Promise<CoreContext> {
     normalizeEvent(ctx)
     return publisher.enqueue(ctx)
@@ -48,5 +44,13 @@ export function configureNodePlugin(
     page: action,
     screen: action,
     track: action,
+  }
+}
+
+export const createConfiguredNodePlugin = (props: ConfigureNodePluginProps) => {
+  const publisher = new Publisher(props)
+  return {
+    publisher: publisher,
+    plugin: createNodePlugin(publisher),
   }
 }

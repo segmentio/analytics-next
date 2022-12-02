@@ -14,7 +14,7 @@ import {
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
-import { configureNodePlugin } from '../plugins/segmentio'
+import { createConfiguredNodePlugin } from '../plugins/segmentio'
 import { createNodeEventFactory } from '../lib/create-node-event-factory'
 import { Callback, dispatchAndEmit } from './dispatch-emit'
 import { NodeEmitter } from './emitter'
@@ -59,12 +59,15 @@ export interface SegmentEvent extends CoreSegmentEvent {
 }
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
-  private _eventFactory: EventFactory
+  private readonly _eventFactory: EventFactory
   private _isClosed = false
   private _pendingEvents = 0
   private readonly _closeAndFlushDefaultTimeout: number
+  private readonly _publisher: ReturnType<
+    typeof createConfiguredNodePlugin
+  >['publisher']
 
-  queue: EventQueue
+  private readonly _queue: EventQueue
 
   ready: Promise<void>
 
@@ -73,22 +76,22 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     validateSettings(settings)
 
     this._eventFactory = createNodeEventFactory()
-    this.queue = new EventQueue(new NodePriorityQueue())
+    this._queue = new EventQueue(new NodePriorityQueue())
 
     const flushInterval = settings.flushInterval ?? 10000
 
     this._closeAndFlushDefaultTimeout = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
 
-    this.ready = this.register(
-      configureNodePlugin({
-        writeKey: settings.writeKey,
-        host: settings.host,
-        path: settings.path,
-        maxRetries: settings.maxRetries ?? 3,
-        maxEventsInBatch: settings.maxEventsInBatch ?? 15,
-        flushInterval,
-      })
-    ).then(() => undefined)
+    const { plugin, publisher } = createConfiguredNodePlugin({
+      writeKey: settings.writeKey,
+      host: settings.host,
+      path: settings.path,
+      maxRetries: settings.maxRetries ?? 3,
+      maxEventsInBatch: settings.maxEventsInBatch ?? 15,
+      flushInterval,
+    })
+    this._publisher = publisher
+    this.ready = this.register(plugin).then(() => undefined)
 
     this.emit('initialize', settings)
 
@@ -110,6 +113,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     /** Set a maximum time permitted to wait before resolving. */
     timeout?: number
   } = {}): Promise<void> {
+    this._publisher.flushAfterClose(this._pendingEvents)
     this._isClosed = true
     const promise = new Promise<void>((resolve) => {
       if (!this._pendingEvents) {
@@ -129,7 +133,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
     this._pendingEvents++
 
-    dispatchAndEmit(segmentEvent, this.queue, this, callback)
+    dispatchAndEmit(segmentEvent, this._queue, this, callback)
       .catch((ctx) => ctx)
       .finally(() => {
         this._pendingEvents--
@@ -333,11 +337,11 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * @param plugins
    */
   async register(...plugins: CorePlugin<any, any>[]): Promise<void> {
-    return this.queue.criticalTasks.run(async () => {
+    return this._queue.criticalTasks.run(async () => {
       const ctx = Context.system()
 
       const registrations = plugins.map((xt) =>
-        this.queue.register(ctx, xt, this)
+        this._queue.register(ctx, xt, this)
       )
       await Promise.all(registrations)
       this.emit(
@@ -355,9 +359,9 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     const ctx = Context.system()
 
     const deregistrations = pluginNames.map(async (pl) => {
-      const plugin = this.queue.plugins.find((p) => p.name === pl)
+      const plugin = this._queue.plugins.find((p) => p.name === pl)
       if (plugin) {
-        return this.queue.deregister(ctx, plugin, this)
+        return this._queue.deregister(ctx, plugin, this)
       } else {
         ctx.log('warn', `plugin ${pl} not found`)
       }

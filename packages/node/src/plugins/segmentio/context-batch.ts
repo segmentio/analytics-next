@@ -1,8 +1,8 @@
 import { v4 as uuid } from '@lukeed/uuid'
 import { CoreContext, CoreSegmentEvent } from '@segment/analytics-core'
 
-const MAX_EVENT_SIZE_IN_BYTES = 32 * 1024 // 32 KB
-const MAX_BATCH_SIZE_IN_BYTES = 480 * 1024 // 480 KB (500 KB is the limit, leaving some padding)
+const MAX_EVENT_SIZE_IN_KB = 32
+const MAX_BATCH_SIZE_IN_KB = 480 //  (500 KB is the limit, leaving some padding)
 
 interface PendingItem {
   resolver: (ctx: CoreContext) => void
@@ -18,20 +18,33 @@ export class ContextBatch {
   constructor(maxEventCount: number) {
     this.maxEventCount = Math.max(1, maxEventCount)
   }
-  public tryAdd(item: PendingItem) {
-    if (this.length === this.maxEventCount) return false
+  public tryAdd(
+    item: PendingItem
+  ): { success: true } | { success: false; message: string } {
+    if (this.length === this.maxEventCount)
+      return {
+        success: false,
+        message: `Event limit of ${this.maxEventCount} has been exceeded.`,
+      }
 
     const eventSize = this.calculateSize(item.context)
-    if (eventSize > MAX_EVENT_SIZE_IN_BYTES) {
-      // Event exceeds Segment's limits
-      return false
+    if (eventSize > MAX_EVENT_SIZE_IN_KB * 1024) {
+      return {
+        success: false,
+        message: `Event exceeds maximum event size of ${MAX_EVENT_SIZE_IN_KB} KB`,
+      }
     }
-    if (this.sizeInBytes + eventSize <= MAX_BATCH_SIZE_IN_BYTES) {
-      this.items.push(item)
-      this.sizeInBytes += eventSize
-      return true
+
+    if (this.sizeInBytes + eventSize > MAX_BATCH_SIZE_IN_KB * 1024) {
+      return {
+        success: false,
+        message: `Event has caused batch size to exceed ${MAX_BATCH_SIZE_IN_KB} KB`,
+      }
     }
-    return false
+
+    this.items.push(item)
+    this.sizeInBytes += eventSize
+    return { success: true }
   }
 
   get length(): number {

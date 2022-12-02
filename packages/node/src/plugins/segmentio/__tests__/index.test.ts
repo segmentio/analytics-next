@@ -1,13 +1,17 @@
 const fetcher = jest.fn()
 jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
-
+import { range } from 'lodash'
 import { CoreContext } from '@segment/analytics-core'
 import { createNodeEventFactory } from '../../../lib/create-node-event-factory'
 import {
   createError,
   createSuccess,
 } from '../../../__tests__/test-helpers/factories'
-import { configureNodePlugin } from '../index'
+import { createConfiguredNodePlugin } from '../index'
+import { PublisherProps } from '../publisher'
+
+const createTestNodePlugin = (props: PublisherProps) =>
+  createConfiguredNodePlugin(props).plugin
 
 const bodyPropertyMatchers = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
@@ -51,24 +55,15 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 
 describe('SegmentNodePlugin', () => {
   const eventFactory = createNodeEventFactory()
-  const realSetTimeout = setTimeout
 
   beforeEach(() => {
-    jest.resetAllMocks()
-    jest.restoreAllMocks()
+    fetcher.mockReturnValue(createSuccess())
     jest.useFakeTimers()
-  })
-
-  afterEach(() => {
-    if (setTimeout !== realSetTimeout) {
-      jest.runAllTimers()
-      jest.useRealTimers()
-    }
   })
 
   describe('methods', () => {
     it('alias', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -97,7 +92,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('group', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -135,7 +130,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('identify', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -167,7 +162,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('page', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -206,7 +201,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('screen', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -244,7 +239,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('track', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -282,9 +277,7 @@ describe('SegmentNodePlugin', () => {
 
   describe('batching', () => {
     it('supports multiple events in a batch', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
         flushInterval: 1000,
@@ -316,9 +309,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('supports waiting a max amount of time before sending', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 3,
         flushInterval: 1000,
@@ -346,9 +337,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('sends as soon as batch fills up or max time is reached', async () => {
-      fetcher.mockReturnValue(createSuccess())
-
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 2,
         flushInterval: 1000,
@@ -384,8 +373,7 @@ describe('SegmentNodePlugin', () => {
     })
 
     it('sends if batch will exceed max size in bytes when adding event', async () => {
-      fetcher.mockReturnValue(createSuccess())
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 20,
         flushInterval: 100,
@@ -420,11 +408,125 @@ describe('SegmentNodePlugin', () => {
         expect(updatedContexts[i].failedDelivery()).toBeFalsy()
       }
     })
+
+    describe('flushAfterClose', () => {
+      const _createTrackCtx = () =>
+        new CoreContext(
+          eventFactory.track(
+            'test event',
+            { foo: 'bar' },
+            { userId: 'foo-user-id' }
+          )
+        )
+
+      it('sends immediately once all pending events reach the segment plugin, regardless of settings like batch size', async () => {
+        const _createTrackCtx = () =>
+          new CoreContext(
+            eventFactory.track(
+              'test event',
+              { foo: 'bar' },
+              { userId: 'foo-user-id' }
+            )
+          )
+
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 20,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(3)
+
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toBeCalledTimes(1)
+      })
+
+      it('continues to flush on each event if batch size is 1', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 1,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(3)
+
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        void segmentPlugin.track(_createTrackCtx())
+        expect(fetcher).toBeCalledTimes(3)
+      })
+
+      it('sends immediately once there are no pending items, even if pending events exceeds batch size', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 3,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        publisher.flushAfterClose(5)
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(1)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(2)
+      })
+
+      it('works if there are previous items in the batch', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 7,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        publisher.flushAfterClose(5)
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toHaveBeenCalledTimes(1)
+      })
+
+      it('works if there are previous items in the batch AND pending items > batch size', async () => {
+        const { plugin: segmentPlugin, publisher } = createConfiguredNodePlugin(
+          {
+            maxRetries: 3,
+            maxEventsInBatch: 7,
+            flushInterval: 1000,
+            writeKey: '',
+          }
+        )
+
+        range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        publisher.flushAfterClose(10)
+        expect(fetcher).toHaveBeenCalledTimes(0)
+        range(4).forEach(() => segmentPlugin.track(_createTrackCtx())) // batch is full, send.
+        expect(fetcher).toHaveBeenCalledTimes(1)
+        range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
+        expect(fetcher).toBeCalledTimes(1)
+        void segmentPlugin.track(_createTrackCtx()) // pending items limit has been reached, send.
+        expect(fetcher).toBeCalledTimes(2)
+      })
+    })
   })
 
   describe('error handling', () => {
     it('excludes events that are too large', async () => {
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -449,7 +551,7 @@ describe('SegmentNodePlugin', () => {
       expect(updatedContext.failedDelivery()).toBeTruthy()
       expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
         Object {
-          "reason": [Error: Event exceeds maximum event size of 32 kb],
+          "reason": [Error: Event exceeds maximum event size of 32 KB],
         }
       `)
       expect(fetcher).not.toHaveBeenCalled()
@@ -460,7 +562,7 @@ describe('SegmentNodePlugin', () => {
         createError({ status: 400, statusText: 'Bad Request' })
       )
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 3,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -491,7 +593,7 @@ describe('SegmentNodePlugin', () => {
         createError({ status: 500, statusText: 'Internal Server Error' })
       )
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
         flushInterval: 1000,
@@ -521,7 +623,7 @@ describe('SegmentNodePlugin', () => {
 
       fetcher.mockRejectedValue(new Error('Connection Error'))
 
-      const segmentPlugin = configureNodePlugin({
+      const segmentPlugin = createTestNodePlugin({
         maxRetries: 2,
         maxEventsInBatch: 1,
         flushInterval: 1000,
