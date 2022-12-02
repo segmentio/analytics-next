@@ -142,6 +142,7 @@ function isPluginDisabled(
   const creationNameEnabled = userIntegrations[remotePlugin.creationName]
   const currentNameEnabled = userIntegrations[remotePlugin.name]
 
+  // Check that the plugin isn't explicitly enabled when All: false
   if (
     userIntegrations.All === false &&
     !creationNameEnabled &&
@@ -149,9 +150,12 @@ function isPluginDisabled(
   ) {
     return true
   }
+
+  // Check that the plugin isn't explicitly disabled
   if (creationNameEnabled === false || currentNameEnabled === false) {
     return true
   }
+
   return false
 }
 
