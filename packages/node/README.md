@@ -224,7 +224,7 @@ nock('https://api.segment.io')
 import Analytics from 'analytics-node'
 
 // new
-import { Analytics } from '@segment/analytics-next'
+import { Analytics } from '@segment/analytics-node'
 ```
 
 - Instantiation now requires an _object_ as the first argument.
