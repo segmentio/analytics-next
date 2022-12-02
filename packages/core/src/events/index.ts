@@ -4,12 +4,14 @@ import { ID, User } from '../user'
 import {
   Integrations,
   EventProperties,
-  Traits,
+  CoreAnalyticsTraits,
   CoreSegmentEvent,
   CoreOptions,
+  CoreExtraContext,
 } from './interfaces'
 import { pickBy } from '../utils/pick'
 import { validateEvent } from '../validation/assertions'
+import type { RemoveIndexSignature } from '../utils/ts-helpers'
 
 interface EventFactorySettings {
   createMessageId: () => string
@@ -101,7 +103,7 @@ export class EventFactory {
 
   identify(
     userId: ID,
-    traits?: Traits,
+    traits?: CoreAnalyticsTraits,
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
@@ -117,7 +119,7 @@ export class EventFactory {
 
   group(
     groupId: ID,
-    traits?: Traits,
+    traits?: CoreAnalyticsTraits,
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
@@ -186,30 +188,42 @@ export class EventFactory {
    * Builds the context part of an event based on "foreign" keys that
    * are provided in the `Options` parameter for an Event
    */
-  private context(event: CoreSegmentEvent): [object, object] {
-    const options = event.options ?? {}
+  private context(
+    options: CoreOptions
+  ): [CoreExtraContext, Partial<CoreSegmentEvent>] {
+    type CoreOptionKeys = keyof RemoveIndexSignature<CoreOptions>
+    /**
+     * If the event options are known keys from this list, we move them to the top level of the event.
+     * Any other options are moved to context.
+     */
+    const eventOverrideKeys: CoreOptionKeys[] = [
+      'userId',
+      'anonymousId',
+      'timestamp',
+    ]
+
     delete options['integrations']
+    const providedOptionsKeys = Object.keys(options) as Exclude<
+      CoreOptionKeys,
+      'integrations'
+    >[]
 
-    const providedOptionsKeys = Object.keys(options)
-
-    const context = event.options?.context ?? {}
-    const overrides = {}
+    const context = options.context ?? {}
+    const eventOverrides = {}
 
     providedOptionsKeys.forEach((key) => {
       if (key === 'context') {
         return
       }
 
-      if (
-        ['integrations', 'anonymousId', 'timestamp', 'userId'].includes(key)
-      ) {
-        dset(overrides, key, options[key])
+      if (eventOverrideKeys.includes(key)) {
+        dset(eventOverrides, key, options[key])
       } else {
         dset(context, key, options[key])
       }
     })
 
-    return [context, overrides]
+    return [context, eventOverrides]
   }
 
   public normalize(event: CoreSegmentEvent): CoreSegmentEvent {
@@ -240,14 +254,17 @@ export class EventFactory {
       ...event.options?.integrations,
     }
 
-    const [context, overrides] = this.context(event)
+    const [context, overrides] = event.options
+      ? this.context(event.options)
+      : []
+
     const { options, ...rest } = event
 
     const body = {
       timestamp: new Date(),
       ...rest,
-      context,
       integrations: allIntegrations,
+      context,
       ...overrides,
     }
 
