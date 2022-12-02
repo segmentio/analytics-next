@@ -1,5 +1,4 @@
 import { Context } from '../context'
-import { asPromise } from '../../lib/as-promise'
 import { Callback } from '../events/interfaces'
 
 export function pTimeout(
@@ -34,7 +33,7 @@ export function invokeCallback(
 ): Promise<Context> {
   const cb = () => {
     try {
-      return asPromise(callback(ctx))
+      return Promise.resolve(callback(ctx))
     } catch (err) {
       return Promise.reject(err)
     }

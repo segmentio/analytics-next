@@ -2,7 +2,6 @@ import type { Integrations } from '../../core/events/interfaces'
 import { LegacySettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin } from '../../core/plugin'
-import { asPromise } from '../../lib/as-promise'
 import { loadScript } from '../../lib/load-script'
 import { getCDN } from '../../lib/parse-cdn'
 import {
@@ -187,12 +186,10 @@ export async function remoteLoader(
         if (typeof window[libraryName] === 'function') {
           // @ts-expect-error
           const pluginFactory = window[libraryName] as PluginFactory
-          const plugin = await asPromise(
-            pluginFactory({
-              ...remotePlugin.settings,
-              ...mergedIntegrations[remotePlugin.name],
-            })
-          )
+          const plugin = await pluginFactory({
+            ...remotePlugin.settings,
+            ...mergedIntegrations[remotePlugin.name],
+          })
           const plugins = Array.isArray(plugin) ? plugin : [plugin]
 
           validate(plugins)

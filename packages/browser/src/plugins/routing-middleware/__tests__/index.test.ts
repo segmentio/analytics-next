@@ -25,7 +25,7 @@ describe('tsub middleware', () => {
       payload = transformed?.obj
     })
 
-    middleware({
+    void middleware({
       integration: 'Google Tag Manager',
       next,
       payload: toFacade({
@@ -44,7 +44,7 @@ describe('tsub middleware', () => {
       payload = transformed?.obj
     })
 
-    middleware({
+    void middleware({
       integration: 'Google Analytics',
       next,
       payload: toFacade({

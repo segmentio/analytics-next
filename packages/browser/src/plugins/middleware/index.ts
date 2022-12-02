@@ -1,7 +1,6 @@
 import { Context, ContextCancelation } from '../../core/context'
 import { SegmentEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
-import { asPromise } from '../../lib/as-promise'
 import { SegmentFacade, toFacade } from '../../lib/to-facade'
 
 export interface MiddlewareParams {
@@ -17,10 +16,13 @@ export interface DestinationMiddlewareParams {
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
-export type MiddlewareFunction = (middleware: MiddlewareParams) => void
+export type MiddlewareFunction = (
+  middleware: MiddlewareParams
+) => void | Promise<void>
+
 export type DestinationMiddlewareFunction = (
   middleware: DestinationMiddlewareParams
-) => void
+) => void | Promise<void>
 
 export async function applyDestinationMiddleware(
   destination: string,
@@ -39,26 +41,24 @@ export async function applyDestinationMiddleware(
     let nextCalled = false
     let returnedEvent: SegmentEvent | null = null
 
-    await asPromise(
-      fn({
-        payload: toFacade(event, {
-          clone: true,
-          traverse: false,
-        }),
-        integration: destination,
-        next(evt) {
-          nextCalled = true
+    await fn({
+      payload: toFacade(event, {
+        clone: true,
+        traverse: false,
+      }),
+      integration: destination,
+      next(evt) {
+        nextCalled = true
 
-          if (evt === null) {
-            returnedEvent = null
-          }
+        if (evt === null) {
+          returnedEvent = null
+        }
 
-          if (evt) {
-            returnedEvent = evt.obj
-          }
-        },
-      })
-    )
+        if (evt) {
+          returnedEvent = evt.obj
+        }
+      },
+    })
 
     if (!nextCalled && returnedEvent !== null) {
       returnedEvent = returnedEvent as SegmentEvent
@@ -89,21 +89,19 @@ export function sourceMiddlewarePlugin(
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false
 
-    await asPromise(
-      fn({
-        payload: toFacade(ctx.event, {
-          clone: true,
-          traverse: false,
-        }),
-        integrations: integrations ?? {},
-        next(evt) {
-          nextCalled = true
-          if (evt) {
-            ctx.event = evt.obj
-          }
-        },
-      })
-    )
+    await fn({
+      payload: toFacade(ctx.event, {
+        clone: true,
+        traverse: false,
+      }),
+      integrations: integrations ?? {},
+      next(evt) {
+        nextCalled = true
+        if (evt) {
+          ctx.event = evt.obj
+        }
+      },
+    })
 
     if (!nextCalled) {
       throw new ContextCancelation({
