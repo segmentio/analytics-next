@@ -1,5 +1,5 @@
 import path from 'path'
-import { runAutocannon } from './autocannon'
+import { runAutocannon } from '../server/autocannon'
 import { execFile } from 'child_process'
 import { sleep } from '@internal/test-helpers'
 
