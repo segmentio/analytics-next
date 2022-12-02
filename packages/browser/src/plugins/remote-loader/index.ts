@@ -135,6 +135,26 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
   return true
 }
 
+function isPluginDisabled(
+  userIntegrations: Integrations,
+  remotePlugin: RemotePlugin
+) {
+  const creationNameEnabled = userIntegrations[remotePlugin.creationName]
+  const currentNameEnabled = userIntegrations[remotePlugin.name]
+
+  if (
+    userIntegrations.All === false &&
+    !creationNameEnabled &&
+    !currentNameEnabled
+  ) {
+    return true
+  }
+  if (creationNameEnabled === false || currentNameEnabled === false) {
+    return true
+  }
+  return false
+}
+
 export async function remoteLoader(
   settings: LegacySettings,
   userIntegrations: Integrations,
@@ -149,12 +169,7 @@ export async function remoteLoader(
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
-      if (
-        (userIntegrations.All === false &&
-          !userIntegrations[remotePlugin.name]) ||
-        userIntegrations[remotePlugin.name] === false
-      )
-        return
+      if (isPluginDisabled(userIntegrations, remotePlugin)) return
       try {
         if (obfuscate) {
           const urlSplit = remotePlugin.url.split('/')
