@@ -533,6 +533,167 @@ describe('Remote Loader', () => {
     )
   })
 
+  // Action destinations should be toggled using the `integration` name which matches the `creationName`
+  // Most action destinations have the same value for creationName and name, but a few (Amplitude) do not.
+  // Continue to support toggling with plugin.name for backwards compatibility.
+  it('loads destinations when `All: false` but is enabled (pluginName)', async () => {
+    const cdnSettings = {
+      integrations: {
+        oldValidName: {
+          versionSettings: {
+            componentTypes: [],
+          },
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {
+            subscriptions: [],
+            versionSettings: {
+              componentTypes: [],
+            },
+          },
+        },
+      ],
+    }
+
+    await AnalyticsBrowser.load(
+      { writeKey: '', cdnSettings },
+      {
+        integrations: {
+          All: false,
+          valid: true,
+        },
+      }
+    )
+
+    expect(pluginFactory).toHaveBeenCalledTimes(1)
+    expect(pluginFactory).toHaveBeenCalledWith(
+      expect.objectContaining(cdnSettings.remotePlugins[0].settings)
+    )
+  })
+
+  it('loads destinations when `All: false` but is enabled (creationName)', async () => {
+    const cdnSettings = {
+      integrations: {
+        oldValidName: {
+          versionSettings: {
+            componentTypes: [],
+          },
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {
+            subscriptions: [],
+            versionSettings: {
+              componentTypes: [],
+            },
+          },
+        },
+      ],
+    }
+
+    await AnalyticsBrowser.load(
+      { writeKey: '', cdnSettings },
+      {
+        integrations: {
+          All: false,
+          oldValidName: true,
+        },
+      }
+    )
+
+    expect(pluginFactory).toHaveBeenCalledTimes(1)
+    expect(pluginFactory).toHaveBeenCalledWith(
+      expect.objectContaining(cdnSettings.remotePlugins[0].settings)
+    )
+  })
+
+  it('does not load destinations when disabled via pluginName', async () => {
+    const cdnSettings = {
+      integrations: {
+        oldValidName: {
+          versionSettings: {
+            componentTypes: [],
+          },
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {
+            subscriptions: [],
+            versionSettings: {
+              componentTypes: [],
+            },
+          },
+        },
+      ],
+    }
+
+    await AnalyticsBrowser.load(
+      { writeKey: '', cdnSettings },
+      {
+        integrations: {
+          All: true,
+          valid: false,
+        },
+      }
+    )
+
+    expect(pluginFactory).toHaveBeenCalledTimes(0)
+  })
+
+  it('does not load destinations when disabled via creationName', async () => {
+    const cdnSettings = {
+      integrations: {
+        oldValidName: {
+          versionSettings: {
+            componentTypes: [],
+          },
+        },
+      },
+      remotePlugins: [
+        {
+          name: 'valid',
+          creationName: 'oldValidName',
+          url: 'cdn/path/to/file.js',
+          libraryName: 'testPlugin',
+          settings: {
+            subscriptions: [],
+            versionSettings: {
+              componentTypes: [],
+            },
+          },
+        },
+      ],
+    }
+
+    await AnalyticsBrowser.load(
+      { writeKey: '', cdnSettings },
+      {
+        integrations: {
+          All: true,
+          oldValidName: false,
+        },
+      }
+    )
+
+    expect(pluginFactory).toHaveBeenCalledTimes(0)
+  })
+
   it('applies remote routing rules based on creation name', async () => {
     const validPlugin = {
       name: 'valid',
