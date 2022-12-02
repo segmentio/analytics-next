@@ -325,11 +325,9 @@ const analytics = () => new Analytics({
 module.exports.handler = async (event) => {
   ...
   // we need to await before returning, otherwise the lambda will exit before sending the request.
-  await new Promise((resolve) => {
-    analytics().track({
-      event: 'Hello world',
-      anonymousId: 'foo',
-    }, () => resolve())
+  await new Promise((resolve) =>
+    analytics.track({ event: 'My Event', anonymousId: 'foo' }, resolve)
+   )
 
   return {
     statusCode: 200,
