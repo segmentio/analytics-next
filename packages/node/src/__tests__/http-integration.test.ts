@@ -86,7 +86,7 @@ describe('Method Smoke Tests', () => {
         userId: 'foo',
         properties: { hello: 'world' },
         integrations: {
-          foo: 123,
+          foo: true,
         },
         timestamp: new Date(),
       }
