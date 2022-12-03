@@ -1,6 +1,7 @@
 import { EventFactory } from '..'
 import { User } from '../../user'
 import { CoreSegmentEvent } from '../..'
+import { isDate } from 'lodash'
 
 describe('Event Factory', () => {
   let factory: EventFactory
@@ -378,5 +379,16 @@ describe('Event Factory', () => {
         context: {},
       })
     })
+  })
+
+  it('should ignore undefined options', () => {
+    const event = factory.track(
+      'Order Completed',
+      { ...shoes },
+      { timestamp: undefined, traits: { foo: 123 } }
+    )
+
+    expect(typeof event.timestamp).toBe('object')
+    expect(isDate(event.timestamp)).toBeTruthy()
   })
 })

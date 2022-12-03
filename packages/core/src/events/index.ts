@@ -8,6 +8,7 @@ import {
   CoreSegmentEvent,
   CoreOptions,
 } from './interfaces'
+import { pickBy } from '../utils/pick'
 import { validateEvent } from '../validation/assertions'
 
 interface EventFactorySettings {
@@ -221,6 +222,11 @@ export class EventFactory {
       },
       {} as Record<string, boolean>
     )
+
+    // filter out any undefined options
+    event.options = pickBy(event.options || {}, (_, value) => {
+      return value !== undefined
+    })
 
     // This is pretty trippy, but here's what's going on:
     // - a) We don't pass initial integration options as part of the event, only if they're true or false

@@ -3,7 +3,7 @@ import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { isValidDate } from './test-helpers/is-valid-date'
-import { pick, omit } from 'lodash'
+import { pick } from 'lodash'
 import nock from 'nock'
 import { CoreContext } from '@segment/analytics-core'
 
@@ -25,9 +25,6 @@ const snapshotMatchers = {
   },
   get defaultReqBody() {
     return { batch: [snapshotMatchers.batchEvent] }
-  },
-  get defaultReqBodyWithoutTimestamp() {
-    return { batch: [omit(snapshotMatchers.batchEvent, 'timestamp')] }
   },
 }
 
@@ -82,6 +79,26 @@ describe('Method Smoke Tests', () => {
         })
         .reply(201)
     })
+
+    test('Generic Properties', async () => {
+      const event = {
+        event: 'foo',
+        userId: 'foo',
+        properties: { hello: 'world' },
+        integrations: {
+          foo: 123,
+        },
+        timestamp: new Date(),
+      }
+
+      ajs.track(event)
+      await resolveCtx(ajs, 'track')
+      const call = calls[0].batch[0]
+      expect(call.timestamp).toStrictEqual(event.timestamp.toISOString())
+      expect(call.userId).toStrictEqual(event.userId)
+      expect(call.integrations).toEqual(event.integrations)
+    })
+
     test(`Identify`, async () => {
       ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
       await resolveCtx(ajs, 'identify')
@@ -160,7 +177,7 @@ describe('Method Smoke Tests', () => {
       ajs.page({ name: 'page', anonymousId: 'foo' })
       await resolveCtx(ajs, 'page')
       expect(calls[0]).toMatchInlineSnapshot(
-        snapshotMatchers.defaultReqBodyWithoutTimestamp,
+        snapshotMatchers.defaultReqBody,
         `
         Object {
           "batch": Array [
@@ -179,6 +196,7 @@ describe('Method Smoke Tests', () => {
               "messageId": Any<String>,
               "name": "page",
               "properties": Object {},
+              "timestamp": Any<String>,
               "type": "page",
             },
           ],
@@ -264,7 +282,7 @@ describe('Method Smoke Tests', () => {
       })
       await resolveCtx(ajs, 'screen')
       expect(calls[0]).toMatchInlineSnapshot(
-        snapshotMatchers.defaultReqBodyWithoutTimestamp,
+        snapshotMatchers.defaultReqBody,
         `
         Object {
           "batch": Array [
@@ -285,6 +303,7 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "title": "wip",
               },
+              "timestamp": Any<String>,
               "type": "screen",
             },
           ],
