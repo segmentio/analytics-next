@@ -1990,6 +1990,7 @@ __metadata:
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.1.4
     "@types/node": ^14
+    nock: ^13.2.9
     node-fetch: ^2.6.7
     tslib: ^2.4.0
   languageName: unknown

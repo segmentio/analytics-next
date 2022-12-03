@@ -88,6 +88,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       path: settings.path,
       maxRetries: settings.maxRetries ?? 3,
       maxEventsInBatch: settings.maxEventsInBatch ?? 15,
+      httpRequestTimeout: settings.httpRequestTimeout,
       flushInterval,
     })
     this._publisher = publisher
