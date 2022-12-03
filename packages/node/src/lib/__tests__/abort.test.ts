@@ -12,7 +12,7 @@ describe(abortSignalAfterTimeout, () => {
     jest.useRealTimers()
     nock(HOST).get('/').reply(201)
     try {
-      const signal = abortSignalAfterTimeout(1000)
+      const [signal] = abortSignalAfterTimeout(1000)
       await fetch(HOST, { signal })
     } catch (err: any) {
       throw Error('fail')
@@ -28,7 +28,7 @@ describe(abortSignalAfterTimeout, () => {
         return true
       })
     try {
-      const signal = abortSignalAfterTimeout(2000)
+      const [signal] = abortSignalAfterTimeout(2000)
       jest.advanceTimersByTime(6000)
       await fetch(HOST, { signal })
       throw Error('fail test.')
@@ -40,8 +40,9 @@ describe(abortSignalAfterTimeout, () => {
   it('should abort operation immediately if timeout is 0', async () => {
     jest.useRealTimers()
     nock(HOST).get('/').reply(201)
+    const [signal] = abortSignalAfterTimeout(0)
     try {
-      await fetch(HOST, { signal: abortSignalAfterTimeout(0) })
+      await fetch(HOST, { signal })
       throw Error('fail test.')
     } catch (err: any) {
       expect(err.name).toMatch('AbortError')

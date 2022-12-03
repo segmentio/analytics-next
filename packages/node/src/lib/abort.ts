@@ -66,5 +66,5 @@ export const abortSignalAfterTimeout = (timeoutMs: number) => {
   // Allow Node.js processes to exit early if only the timeout is running
   timeoutId?.unref?.()
 
-  return ac.signal
+  return [ac.signal, timeoutId] as const
 }

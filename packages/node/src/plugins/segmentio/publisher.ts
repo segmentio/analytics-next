@@ -180,9 +180,12 @@ export class Publisher {
       currentAttempt++
 
       let failureReason: unknown
+      const [signal, timeoutId] = abortSignalAfterTimeout(
+        this._httpRequestTimeout
+      )
       try {
         const response = await fetch(this._url, {
-          signal: abortSignalAfterTimeout(this._httpRequestTimeout),
+          signal: signal,
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -191,6 +194,7 @@ export class Publisher {
           },
           body: payload,
         })
+        clearTimeout(timeoutId)
 
         if (response.ok) {
           // Successfully sent events, so exit!
