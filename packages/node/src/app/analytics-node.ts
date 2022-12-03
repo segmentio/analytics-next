@@ -1,6 +1,5 @@
 import {
   EventProperties,
-  Traits,
   CoreAnalytics,
   CoreContext,
   CorePlugin,
@@ -11,6 +10,8 @@ import {
   PriorityQueue,
   pTimeout,
   Integrations,
+  CoreExtraContext,
+  CoreAnalyticsTraits,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
@@ -36,7 +37,17 @@ type IdentityOptions =
  * A dictionary of extra context to attach to the call.
  * Note: context differs from traits because it is not attributes of the user itself.
  */
-type AdditionalContext = Record<string, any>
+export interface ExtraContext extends CoreExtraContext {}
+
+/**
+ * Traits are pieces of information you know about a user that are included in an identify call. These could be demographics like age or gender, account-specific like plan, or even things like whether a user has seen a particular A/B test variation. Up to you!
+ * Segment has reserved some traits that have semantic meanings for users, and we handle them in special ways. For example, Segment always expects email to be a string of the user’s email address.
+ *
+ * We’ll send this on to destinations like Mailchimp that require an email address for their tracking.
+ *
+ * You should only use reserved traits for their intended meaning.
+ */
+export interface Traits extends CoreAnalyticsTraits {}
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
@@ -161,7 +172,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       userId: string
       /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
       previousId: string
-      context?: AdditionalContext
+      context?: ExtraContext
       timestamp?: Timestamp
       integrations?: Integrations
     },
@@ -191,7 +202,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: IdentityOptions & {
       groupId: string
       traits?: Traits
-      context?: AdditionalContext
+      context?: ExtraContext
       timestamp?: Timestamp
       integrations?: Integrations
     },
@@ -221,7 +232,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       integrations,
     }: IdentityOptions & {
       traits?: Traits
-      context?: AdditionalContext
+      context?: ExtraContext
       integrations?: Integrations
     },
     callback?: Callback
@@ -257,7 +268,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       /* A dictionary of properties of the page. */
       properties?: EventProperties
       timestamp?: Timestamp
-      context?: AdditionalContext
+      context?: ExtraContext
       integrations?: Integrations
     },
     callback?: Callback
@@ -316,7 +327,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: IdentityOptions & {
       event: string
       properties?: EventProperties
-      context?: AdditionalContext
+      context?: ExtraContext
       timestamp?: Timestamp
       integrations?: Integrations
     },
