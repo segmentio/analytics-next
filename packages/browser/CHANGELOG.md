@@ -1,5 +1,14 @@
 # @segment/analytics-next
 
+## 1.47.1
+
+### Patch Changes
+
+- [#710](https://github.com/segmentio/analytics-next/pull/710) [`ef5cd39`](https://github.com/segmentio/analytics-next/commit/ef5cd39ce3a83321f7bf7792c2e68d40ce2be1c6) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes an issue impacting a small number of destinations where explicitly enabling or disabling an integration on load would not work as expected.
+
+- Updated dependencies [[`90b915a`](https://github.com/segmentio/analytics-next/commit/90b915ac3447d76673e98661c54bf5a0ced2a555), [`108c77e`](https://github.com/segmentio/analytics-next/commit/108c77e81a4e9d2a64eb56e78f707ae6c2ea6ed2)]:
+  - @segment/analytics-core@1.1.5
+
 ## 1.47.0
 
 ### Minor Changes

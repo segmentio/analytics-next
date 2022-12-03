@@ -1,5 +1,13 @@
 # @segment/analytics-core
 
+## 1.1.5
+
+### Patch Changes
+
+- [#702](https://github.com/segmentio/analytics-next/pull/702) [`90b915a`](https://github.com/segmentio/analytics-next/commit/90b915ac3447d76673e98661c54bf5a0ced2a555) Thanks [@silesky](https://github.com/silesky)! - EventFactory should filter out option keys with undefined values
+
+* [#709](https://github.com/segmentio/analytics-next/pull/709) [`108c77e`](https://github.com/segmentio/analytics-next/commit/108c77e81a4e9d2a64eb56e78f707ae6c2ea6ed2) Thanks [@silesky](https://github.com/silesky)! - Improve types for context and traits and fix SegmentEvent context type (node only ATM). Refactor context eventFactory to clarify.
+
 ## 1.1.4
 
 ### Patch Changes
