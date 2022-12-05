@@ -5,7 +5,6 @@ import {
   EventQueue,
   CoreSegmentEvent,
   bindAll,
-  PriorityQueue,
   pTimeout,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
@@ -22,23 +21,10 @@ import {
   TrackParams,
   Plugin,
 } from './types'
+import { NodeEventQueue } from './queue'
 
 // create a derived class since we may want to add node specific things to Context later
 export class Context extends CoreContext {}
-
-class NodePriorityQueue extends PriorityQueue<Context> {
-  constructor() {
-    super(1, [])
-  }
-  // do not use an internal "seen" map
-  getAttempts(ctx: Context): number {
-    return ctx.attempts ?? 0
-  }
-  updateAttempts(ctx: Context): number {
-    ctx.attempts = this.getAttempts(ctx) + 1
-    return this.getAttempts(ctx)
-  }
-}
 
 type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
 
@@ -64,7 +50,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     validateSettings(settings)
 
     this._eventFactory = new NodeEventFactory()
-    this._queue = new EventQueue(new NodePriorityQueue())
+    this._queue = new NodeEventQueue()
 
     const flushInterval = settings.flushInterval ?? 10000
 
