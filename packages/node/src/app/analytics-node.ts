@@ -1,11 +1,11 @@
 import {
   CoreAnalytics,
-  CoreContext,
   EventFactory,
   EventQueue,
   CoreSegmentEvent,
   bindAll,
   pTimeout,
+  CoreContext,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
@@ -20,17 +20,13 @@ import {
   PageParams,
   TrackParams,
   Plugin,
+  SegmentEvent,
 } from './types'
-import { NodeEventQueue } from './queue'
+import { NodeEventQueue } from './event-queue'
 
 // create a derived class since we may want to add node specific things to Context later
+// While this is not a type, it is a definition
 export class Context extends CoreContext {}
-
-type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
-
-export interface SegmentEvent extends CoreSegmentEvent {
-  type: SegmentEventType
-}
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _eventFactory: EventFactory

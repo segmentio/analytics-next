@@ -2,10 +2,17 @@ import {
   CoreAnalyticsTraits,
   CoreExtraContext,
   CorePlugin,
+  CoreSegmentEvent,
   EventProperties,
   Integrations,
   Timestamp,
 } from '@segment/analytics-core'
+
+type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
+
+export interface SegmentEvent extends CoreSegmentEvent {
+  type: SegmentEventType
+}
 
 export interface Plugin extends CorePlugin {}
 
