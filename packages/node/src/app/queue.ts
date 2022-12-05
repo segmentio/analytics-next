@@ -1,5 +1,5 @@
 import { EventQueue, PriorityQueue } from '@segment/analytics-core'
-import { Context } from './context'
+import type { Context } from './analytics-node'
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
