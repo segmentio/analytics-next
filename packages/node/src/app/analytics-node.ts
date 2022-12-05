@@ -1,17 +1,12 @@
 import {
-  EventProperties,
   CoreAnalytics,
   CoreContext,
-  CorePlugin,
   EventFactory,
   EventQueue,
   CoreSegmentEvent,
   bindAll,
   PriorityQueue,
   pTimeout,
-  Integrations,
-  CoreExtraContext,
-  CoreAnalyticsTraits,
 } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
@@ -19,35 +14,17 @@ import { createConfiguredNodePlugin } from '../plugins/segmentio'
 import { createNodeEventFactory } from '../lib/create-node-event-factory'
 import { Callback, dispatchAndEmit } from './dispatch-emit'
 import { NodeEmitter } from './emitter'
+import {
+  AliasParams,
+  GroupParams,
+  IdentifyParams,
+  PageParams,
+  TrackParams,
+  Plugin,
+} from './types'
 
 // create a derived class since we may want to add node specific things to Context later
 export class Context extends CoreContext {}
-
-export interface Plugin extends CorePlugin {}
-type Timestamp = string | Date
-
-/**
- * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
- **/
-type IdentityOptions =
-  | { userId: string; anonymousId?: string }
-  | { userId?: string; anonymousId: string }
-
-/**
- * A dictionary of extra context to attach to the call.
- * Note: context differs from traits because it is not attributes of the user itself.
- */
-export interface ExtraContext extends CoreExtraContext {}
-
-/**
- * Traits are pieces of information you know about a user that are included in an identify call. These could be demographics like age or gender, account-specific like plan, or even things like whether a user has seen a particular A/B test variation. Up to you!
- * Segment has reserved some traits that have semantic meanings for users, and we handle them in special ways. For example, Segment always expects email to be a string of the user’s email address.
- *
- * We’ll send this on to destinations like Mailchimp that require an email address for their tracking.
- *
- * You should only use reserved traits for their intended meaning.
- */
-export interface Traits extends CoreAnalyticsTraits {}
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
@@ -161,21 +138,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
   alias(
-    {
-      userId,
-      previousId,
-      context,
-      timestamp,
-      integrations,
-    }: {
-      /* The new user id you want to associate with the user. */
-      userId: string
-      /* The previous id that the user was recognized by (this can be either a userId or an anonymousId). */
-      previousId: string
-      context?: ExtraContext
-      timestamp?: Timestamp
-      integrations?: Integrations
-    },
+    { userId, previousId, context, timestamp, integrations }: AliasParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.alias(userId, previousId, {
@@ -199,13 +162,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       traits = {},
       context,
       integrations,
-    }: IdentityOptions & {
-      groupId: string
-      traits?: Traits
-      context?: ExtraContext
-      timestamp?: Timestamp
-      integrations?: Integrations
-    },
+    }: GroupParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.group(groupId, traits, {
@@ -224,17 +181,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
   identify(
-    {
-      userId,
-      anonymousId,
-      traits = {},
-      context,
-      integrations,
-    }: IdentityOptions & {
-      traits?: Traits
-      context?: ExtraContext
-      integrations?: Integrations
-    },
+    { userId, anonymousId, traits = {}, context, integrations }: IdentifyParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.identify(userId, traits, {
@@ -260,17 +207,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
-    }: IdentityOptions & {
-      /*  The category of the page. Useful for cases like ecommerce where many pages might live under a single category. */
-      category?: string
-      /* The name of the page.*/
-      name?: string
-      /* A dictionary of properties of the page. */
-      properties?: EventProperties
-      timestamp?: Timestamp
-      context?: ExtraContext
-      integrations?: Integrations
-    },
+    }: PageParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.page(
@@ -298,7 +235,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
-    }: Parameters<Analytics['page']>[0],
+    }: PageParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.screen(
@@ -324,13 +261,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
-    }: IdentityOptions & {
-      event: string
-      properties?: EventProperties
-      context?: ExtraContext
-      timestamp?: Timestamp
-      integrations?: Integrations
-    },
+    }: TrackParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.track(event, properties, {
@@ -348,7 +279,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * Registers one or more plugins to augment Analytics functionality.
    * @param plugins
    */
-  async register(...plugins: CorePlugin<any, any>[]): Promise<void> {
+  async register(...plugins: Plugin[]): Promise<void> {
     return this._queue.criticalTasks.run(async () => {
       const ctx = Context.system()
 
