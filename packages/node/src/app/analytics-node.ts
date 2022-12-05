@@ -11,7 +11,7 @@ import {
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
 import { createConfiguredNodePlugin } from '../plugins/segmentio'
-import { createNodeEventFactory } from '../lib/create-node-event-factory'
+import { NodeEventFactory } from './event-factory'
 import { Callback, dispatchAndEmit } from './dispatch-emit'
 import { NodeEmitter } from './emitter'
 import {
@@ -63,7 +63,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     super()
     validateSettings(settings)
 
-    this._eventFactory = createNodeEventFactory()
+    this._eventFactory = new NodeEventFactory()
     this._queue = new EventQueue(new NodePriorityQueue())
 
     const flushInterval = settings.flushInterval ?? 10000

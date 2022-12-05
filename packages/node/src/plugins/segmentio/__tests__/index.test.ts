@@ -2,7 +2,7 @@ const fetcher = jest.fn()
 jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 import { range } from 'lodash'
 import { CoreContext } from '@segment/analytics-core'
-import { createNodeEventFactory } from '../../../lib/create-node-event-factory'
+import { NodeEventFactory } from '../../../app/event-factory'
 import {
   createError,
   createSuccess,
@@ -54,7 +54,7 @@ function validateFetcherInputs(...contexts: CoreContext[]) {
 }
 
 describe('SegmentNodePlugin', () => {
-  const eventFactory = createNodeEventFactory()
+  const eventFactory = new NodeEventFactory()
 
   beforeEach(() => {
     fetcher.mockReturnValue(createSuccess())
