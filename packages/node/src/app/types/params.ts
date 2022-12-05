@@ -1,20 +1,10 @@
-import {
+import type {
   CoreAnalyticsTraits,
   CoreExtraContext,
-  CorePlugin,
-  CoreSegmentEvent,
   EventProperties,
   Integrations,
   Timestamp,
 } from '@segment/analytics-core'
-
-type SegmentEventType = 'track' | 'page' | 'identify' | 'alias' | 'screen'
-
-export interface SegmentEvent extends CoreSegmentEvent {
-  type: SegmentEventType
-}
-
-export interface Plugin extends CorePlugin {}
 
 /**
  * Traits are pieces of information you know about a user that are included in an identify call. These could be demographics like age or gender, account-specific like plan, or even things like whether a user has seen a particular A/B test variation. Up to you!
@@ -27,17 +17,17 @@ export interface Plugin extends CorePlugin {}
 export interface Traits extends CoreAnalyticsTraits {}
 
 /**
+ * A dictionary of extra context to attach to the call.
+ * Note: context differs from traits because it is not attributes of the user itself.
+ */
+export interface ExtraContext extends CoreExtraContext {}
+
+/**
  * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
  **/
 type IdentityOptions =
   | { userId: string; anonymousId?: string }
   | { userId?: string; anonymousId: string }
-
-/**
- * A dictionary of extra context to attach to the call.
- * Note: context differs from traits because it is not attributes of the user itself.
- */
-export interface ExtraContext extends CoreExtraContext {}
 
 export type AliasParams = {
   /* The new user id you want to associate with the user. */
@@ -48,6 +38,7 @@ export type AliasParams = {
   timestamp?: Timestamp
   integrations?: Integrations
 }
+
 export type GroupParams = IdentityOptions & {
   groupId: string
   traits?: Traits
