@@ -1195,7 +1195,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:internal/config":
+"@internal/config@0.0.0, @internal/config@workspace:^, @internal/config@workspace:packages/config":
   version: 0.0.0-use.local
   resolution: "@internal/config@workspace:packages/config"
   languageName: unknown
