@@ -1,8 +1,17 @@
 import * as tsub from '@segment/tsub'
-import { Rule } from '@segment/tsub/dist/store'
+import { Matcher, Rule } from '@segment/tsub/dist/store'
 import { DestinationMiddlewareFunction } from '../middleware'
 
-export type RoutingRule = Rule
+// TODO: update tsub definition
+type RoutingRuleMatcher = Matcher & {
+  config?: {
+    expr: string
+  }
+}
+
+export type RoutingRule = Rule & {
+  matchers: RoutingRuleMatcher[]
+}
 
 export const tsubMiddleware =
   (rules: RoutingRule[]): DestinationMiddlewareFunction =>

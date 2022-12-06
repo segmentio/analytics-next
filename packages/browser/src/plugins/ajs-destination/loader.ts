@@ -64,7 +64,6 @@ export function buildIntegration(
 
   const integration = new integrationCtr(integrationSettings)
   integration.analytics = analyticsInstance
-
   return integration
 }
 

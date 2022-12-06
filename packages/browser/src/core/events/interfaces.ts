@@ -173,6 +173,7 @@ export interface SegmentEvent {
  */
 export interface Plan {
   track?: TrackPlan
+  identify?: TrackPlan
 }
 
 export interface TrackPlan {
