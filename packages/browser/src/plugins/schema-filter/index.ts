@@ -13,9 +13,11 @@ function disabledActionDestinations(
     return {}
   }
 
-  const disabledIntegrations = Object.keys(plan.integrations).filter(
-    (i) => plan.integrations[i] === false
-  )
+  const disabledIntegrations = plan.integrations
+    ? Object.keys(plan.integrations).filter(
+        (i) => plan.integrations![i] === false
+      )
+    : []
 
   // This accounts for cases like Fullstory, where the settings.integrations
   // contains a "Fullstory" object but settings.remotePlugins contains "Fullstory (Actions)"

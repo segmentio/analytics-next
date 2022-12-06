@@ -174,6 +174,7 @@ export interface SegmentEvent {
 export interface Plan {
   track?: TrackPlan
   identify?: TrackPlan
+  group?: TrackPlan
 }
 
 export interface TrackPlan {
@@ -190,7 +191,7 @@ export interface PlanEvent {
   /**
    * Which integrations the plan event applies to
    */
-  integrations: {
+  integrations?: {
     [key: string]: boolean
   }
 }
