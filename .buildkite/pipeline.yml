@@ -1,8 +1,8 @@
 env:
-  SEGMENT_CONTEXTS: "snyk,npm,aws-credentials,ecr,npm-publish"
-  SEGMENT_BUILDKITE_IMAGE: "analytics-next-ci-agent"
+  SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
+  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
-  - label: "[Monorepo] QA"
+  - label: '[Monorepo] QA'
     key: monorepo
     agents:
       queue: v1
@@ -14,7 +14,7 @@ steps:
       - yarn constraints
       - yarn run test:scripts
 
-  - label: "[Browser] Lint + Test"
+  - label: '[Browser] Lint + Test'
     key: build
     agents:
       queue: v1
@@ -26,10 +26,10 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
           save: true
 
-  - label: "[Browser] QA / E2E :perfection:"
+  - label: '[Browser] QA / E2E :perfection:'
     key: qa
     agents:
       queue: v1
@@ -41,14 +41,32 @@ steps:
       - yarn run -T browser exec make test-qa
     retry:
       automatic:
-        - exit_status: "*"
+        - exit_status: '*'
           limit: 2
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: "[Node] Lint + Test"
+  - label: '[Browser] Integration Tests :perfection:'
+    key: browser-integ
+    agents:
+      queue: v1
+    commands:
+      - echo "--- Install dependencies"
+      - yarn install --immutable
+      - echo "+++ Run Browser integration tests :pray:"
+      - yarn turbo run --filter=browser-integration-tests test
+    retry:
+      automatic:
+        - exit_status: '*'
+          limit: 2
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['.yarn/cache/']
+
+  - label: '[Node] Lint + Test'
     key: analytics-node-test
     agents:
       queue: v1
@@ -66,9 +84,9 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: "[Core] Lint + Test"
+  - label: '[Core] Lint + Test'
     agents:
       queue: v1
     commands:
@@ -83,9 +101,9 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: ":thisisfine: [Browser] Destinations QA / E2E"
+  - label: ':thisisfine: [Browser] Destinations QA / E2E'
     key: destinations
     agents:
       queue: v1
@@ -96,14 +114,14 @@ steps:
       - echo "+++ Run Destinations QA Tests :pray:"
       - yarn run -T browser exec make test-qa-destinations
     soft_fail:
-      - exit_status: "*"
+      - exit_status: '*'
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: "[Browser] Release to CDN :rocket:"
-    branches: "!v* !@segment/* !publish-test"
+  - label: '[Browser] Release to CDN :rocket:'
+    branches: '!v* !@segment/* !publish-test'
     agents:
       queue: v1
     commands:
@@ -115,9 +133,9 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: "[Examples] Lint + Test :hammer:"
+  - label: '[Examples] Lint + Test :hammer:'
     key: examples
     agents:
       queue: v1
@@ -132,10 +150,10 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
   # Deploy and NPM publish releases
-  - label: "[Browser] Publish Packages to NPM :rocket:"
+  - label: '[Browser] Publish Packages to NPM :rocket:'
     if: |
       // Only run when Version Packages PR is merged in
       build.message =~ /^Version Packages/ &&
@@ -155,9 +173,9 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: [".yarn/cache/"]
+          paths: ['.yarn/cache/']
 
-  - label: "Snyk :lock:"
+  - label: 'Snyk :lock:'
     agents:
       queue: v1
-    command: "bk-snyk"
+    command: 'bk-snyk'
