@@ -37,7 +37,6 @@ const defaults = {
 
 export type StoreType = 'cookie' | 'localStorage' | 'memory'
 
-type StringKeys<T> = Exclude<keyof T, number | symbol>
 type StorageObject = Record<string, unknown>
 
 class Store {
@@ -234,7 +233,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
     - read values in AJS 1.0 format ( for customers after 1.0 --> 2.0 migration ) and then re-write them in AJS 2.0 format
   */
-  public getAndSync<K extends StringKeys<Data>>(
+  public getAndSync<K extends keyof Data>(
     key: K,
     storeTypes?: StoreType[]
   ): Data[K] | null {
@@ -248,7 +247,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     ) as Data[K] | null
   }
 
-  public get<K extends StringKeys<Data>>(
+  public get<K extends keyof Data>(
     key: K,
     storeTypes?: StoreType[]
   ): Data[K] | null {
@@ -263,7 +262,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     return null
   }
 
-  public set<K extends StringKeys<Data>>(
+  public set<K extends keyof Data>(
     key: K,
     value: Data[K] | null,
     storeTypes?: StoreType[]
@@ -274,10 +273,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     return value
   }
 
-  public clear<K extends StringKeys<Data>>(
-    key: K,
-    storeTypes?: StoreType[]
-  ): void {
+  public clear<K extends keyof Data>(key: K, storeTypes?: StoreType[]): void {
     for (const store of this.getStores(storeTypes)) {
       store.remove(key)
     }

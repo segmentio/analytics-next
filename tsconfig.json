@@ -4,7 +4,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "keyofStringsOnly": true
   },
   "ts-node": {
     "transpileOnly": true,
