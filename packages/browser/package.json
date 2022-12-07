@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@internal/config": "0.0.0",
+    "@segment/analytics.js-integration": "^3.3.3",
     "@segment/analytics.js-integration-amplitude": "^3.3.3",
     "@segment/inspector-webext": "^2.0.3",
     "@size-limit/preset-big-lib": "^7.0.8",
@@ -78,7 +79,7 @@
     "circular-dependency-plugin": "^5.2.2",
     "compression-webpack-plugin": "^8.0.1",
     "execa": "^4.1.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "flat": "^5.0.2",
     "fs-extra": "^9.0.1",
     "jest-dev-server": "^6.0.3",

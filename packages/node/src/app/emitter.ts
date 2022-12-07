@@ -1,6 +1,7 @@
 import { CoreEmitterContract, Emitter } from '@segment/analytics-core'
-import type { SegmentEvent, Context } from './analytics-node'
+import { Context } from './analytics-node'
 import type { AnalyticsSettings } from './settings'
+import { SegmentEvent } from './types'
 
 /**
  * Map of emitter event names to method args.

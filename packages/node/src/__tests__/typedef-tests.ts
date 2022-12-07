@@ -1,4 +1,4 @@
-import { Analytics } from '../'
+import { Analytics, Context, Plugin, Traits } from '../'
 
 /**
  * These are general typescript definition tests;
@@ -43,5 +43,16 @@ export default {
       anonymousId: 'old_id_either_anon_or_regular',
       previousId: 'foo',
     })
+  },
+
+  'context should be exported': () => {
+    console.log(Context)
+  },
+  'plugin should be exported': () => {
+    interface MyPlugin extends Plugin {}
+    console.log({} as MyPlugin)
+  },
+  'traits should be exported': () => {
+    console.log({} as Traits)
   },
 }

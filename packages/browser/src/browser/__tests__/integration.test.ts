@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
+import { cdnSettingsKitchenSink } from '../../test-helpers/fixtures/cdn-settings'
+import { createMockFetchImplementation } from '../../test-helpers/fixtures/create-fetch-method'
 import { Context } from '@/core/context'
 import { Plugin } from '@/core/plugin'
 import { JSDOM } from 'jsdom'
@@ -11,27 +13,19 @@ import { AnalyticsBrowser, loadLegacySettings } from '..'
 import { isOffline } from '../../core/connection'
 import * as SegmentPlugin from '../../plugins/segmentio'
 import jar from 'js-cookie'
-import {
-  AMPLITUDE_WRITEKEY,
-  TEST_WRITEKEY,
-} from '../../test-helpers/test-writekeys'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { ActionDestination } from '@/plugins/remote-loader'
-import { ClassicIntegrationBuilder } from '../../plugins/ajs-destination/types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let fetchCalls: Array<any>[] = []
-// Mock unfetch so we can record any http requests made
+
 jest.mock('unfetch', () => {
-  const originalModule = jest.requireActual('unfetch')
   return {
     __esModule: true,
-    ...originalModule,
-    default: (...args: unknown[]) => {
-      fetchCalls.push(args)
-      return originalModule.apply(originalModule, args)
+    default: (url: RequestInfo, body?: RequestInit) => {
+      fetchCalls.push([url, body])
+      return createMockFetchImplementation(cdnSettingsKitchenSink)(url, body)
     },
   }
 })
@@ -87,7 +81,8 @@ const enrichBilling: Plugin = {
   },
 }
 
-const writeKey = TEST_WRITEKEY
+const writeKey = 'foo'
+const amplitudeWriteKey = 'bar'
 
 beforeEach(() => {
   setGlobalCDNUrl(undefined as any)
@@ -95,9 +90,9 @@ beforeEach(() => {
 
 describe('Initialization', () => {
   beforeEach(async () => {
+    fetchCalls = []
     jest.resetAllMocks()
     jest.resetModules()
-    fetchCalls = []
   })
 
   it('loads plugins', async () => {
@@ -204,6 +199,7 @@ describe('Initialization', () => {
           },
         ],
       })
+
       expect(fetchCalls[0][0]).toContain(overriddenCDNUrl)
       expect.assertions(3)
     })
@@ -680,7 +676,7 @@ describe('addDestinationMiddleware', () => {
       'amplitude',
       'latest',
       {
-        apiKey: AMPLITUDE_WRITEKEY,
+        apiKey: amplitudeWriteKey,
       },
       {}
     )
@@ -823,7 +819,7 @@ describe('deregister', () => {
       'amplitude',
       'latest',
       {
-        apiKey: AMPLITUDE_WRITEKEY,
+        apiKey: amplitudeWriteKey,
       },
       {}
     )
@@ -868,7 +864,7 @@ describe('retries', () => {
 
   it('does not retry errored events if retryQueue setting is set to false', async () => {
     const [ajs] = await AnalyticsBrowser.load(
-      { writeKey: TEST_WRITEKEY },
+      { writeKey: writeKey },
       { retryQueue: false }
     )
 
@@ -951,147 +947,6 @@ describe('Segment.io overrides', () => {
   })
 })
 
-describe('.Integrations', () => {
-  beforeEach(async () => {
-    jest.restoreAllMocks()
-    jest.resetAllMocks()
-
-    const html = `
-    <!DOCTYPE html>
-      <head>
-        <script>'hi'</script>
-      </head>
-      <body>
-      </body>
-    </html>
-    `.trim()
-
-    const jsd = new JSDOM(html, {
-      runScripts: 'dangerously',
-      resources: 'usable',
-      url: 'https://localhost',
-    })
-
-    const windowSpy = jest.spyOn(global, 'window', 'get')
-    windowSpy.mockImplementation(
-      () => jsd.window as unknown as Window & typeof globalThis
-    )
-
-    const documentSpy = jest.spyOn(global, 'document', 'get')
-    documentSpy.mockImplementation(
-      () => jsd.window.document as unknown as Document
-    )
-  })
-
-  it('lists all legacy destinations', async () => {
-    const amplitude = new LegacyDestination(
-      'Amplitude',
-      'latest',
-      {
-        apiKey: AMPLITUDE_WRITEKEY,
-      },
-      {}
-    )
-
-    const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
-
-    const [analytics] = await AnalyticsBrowser.load({
-      writeKey,
-      plugins: [amplitude, ga],
-    })
-
-    await analytics.ready()
-
-    expect(analytics.Integrations).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": [Function],
-        "Google-Analytics": [Function],
-      }
-    `)
-  })
-
-  it('catches destinations with dots in their names', async () => {
-    const amplitude = new LegacyDestination(
-      'Amplitude',
-      'latest',
-      {
-        apiKey: AMPLITUDE_WRITEKEY,
-      },
-      {}
-    )
-
-    const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
-    const customerIO = new LegacyDestination('Customer.io', 'latest', {}, {})
-
-    const [analytics] = await AnalyticsBrowser.load({
-      writeKey,
-      plugins: [amplitude, ga, customerIO],
-    })
-
-    await analytics.ready()
-
-    expect(analytics.Integrations).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": [Function],
-        "Customer.io": [Function],
-        "Google-Analytics": [Function],
-      }
-    `)
-  })
-
-  it('uses directly provided classic integrations without fetching them from cdn', async () => {
-    const amplitude = // @ts-ignore
-      (await import('@segment/analytics.js-integration-amplitude')).default
-
-    const intializeSpy = jest.spyOn(amplitude.prototype, 'initialize')
-    const trackSpy = jest.spyOn(amplitude.prototype, 'track')
-
-    const [analytics] = await AnalyticsBrowser.load(
-      {
-        writeKey,
-        classicIntegrations: [
-          amplitude as unknown as ClassicIntegrationBuilder,
-        ],
-      },
-      {
-        integrations: {
-          Amplitude: {
-            apiKey: 'abc',
-          },
-        },
-      }
-    )
-
-    await analytics.ready()
-    expect(intializeSpy).toHaveBeenCalledTimes(1)
-
-    await analytics.track('test event')
-
-    expect(trackSpy).toHaveBeenCalledTimes(1)
-  })
-
-  it('ignores directly provided classic integrations if settings for them are unavailable', async () => {
-    const amplitude = // @ts-ignore
-      (await import('@segment/analytics.js-integration-amplitude')).default
-
-    const intializeSpy = jest.spyOn(amplitude.prototype, 'initialize')
-    const trackSpy = jest.spyOn(amplitude.prototype, 'track')
-
-    const [analytics] = await AnalyticsBrowser.load({
-      writeKey,
-      classicIntegrations: [amplitude as unknown as ClassicIntegrationBuilder],
-    })
-
-    await analytics.ready()
-
-    expect(intializeSpy).not.toHaveBeenCalled()
-
-    await analytics.track('test event')
-
-    expect(trackSpy).not.toHaveBeenCalled()
-  })
-})
-
 describe('Options', () => {
   beforeEach(async () => {
     jest.restoreAllMocks()
@@ -1129,7 +984,7 @@ describe('Options', () => {
         'amplitude',
         'latest',
         {
-          apiKey: AMPLITUDE_WRITEKEY,
+          apiKey: amplitudeWriteKey,
         },
         {}
       )
@@ -1165,7 +1020,7 @@ describe('Options', () => {
         'amplitude',
         'latest',
         {
-          apiKey: AMPLITUDE_WRITEKEY,
+          apiKey: amplitudeWriteKey,
         },
         initOptions
       )
@@ -1201,7 +1056,7 @@ describe('Options', () => {
         'amplitude',
         'latest',
         {
-          apiKey: AMPLITUDE_WRITEKEY,
+          apiKey: amplitudeWriteKey,
         },
         initOptions
       )

@@ -4,9 +4,10 @@ import { performance as perf } from 'perf_hooks'
 const fetcher = jest.fn()
 jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
-import { Analytics, SegmentEvent } from '../app/analytics-node'
+import { Analytics } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
+import { SegmentEvent } from '../app/types'
 
 const testPlugin: CorePlugin = {
   type: 'after',

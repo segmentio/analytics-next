@@ -227,7 +227,7 @@ export class LegacyDestination implements Plugin {
         })
       }
 
-      if (planEvent?.enabled && planEvent?.integrations[this.name] === false) {
+      if (planEvent?.enabled && planEvent?.integrations![this.name] === false) {
         ctx.cancel(
           new ContextCancelation({
             retry: false,
