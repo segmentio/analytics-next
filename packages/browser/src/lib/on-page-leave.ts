@@ -10,13 +10,13 @@
 export const onPageLeave = (cb: (...args: unknown[]) => void) => {
   let unloaded = false // prevents double firing if both are supported
 
-  // using document instead of window because of bug affecting browsers before safari 14 (detail in footnotes https://caniuse.com/?search=visibilitychange)
-  document.addEventListener('pagehide', () => {
+  window.addEventListener('pagehide', () => {
     if (unloaded) return
     unloaded = true
     cb()
   })
 
+  // using document instead of window because of bug affecting browsers before safari 14 (detail in footnotes https://caniuse.com/?search=visibilitychange)
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState == 'hidden') {
       if (unloaded) return

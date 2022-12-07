@@ -2,7 +2,8 @@ import { onPageLeave } from '../on-page-leave'
 
 const helpers = {
   dispatchEvent(event: 'pagehide' | 'visibilitychange') {
-    document.dispatchEvent(new Event(event))
+    const target = event === 'pagehide' ? window : document
+    target.dispatchEvent(new Event(event))
   },
   setVisibilityState(state: DocumentVisibilityState) {
     Object.defineProperty(document, 'visibilityState', {
