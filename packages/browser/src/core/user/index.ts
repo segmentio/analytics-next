@@ -62,12 +62,7 @@ class Store {
 const ONE_YEAR = 365
 
 export class Cookie extends Store {
-  static _available: boolean | undefined
   static available(): boolean {
-    if (Cookie._available !== undefined) {
-      return Cookie._available
-    }
-
     let cookieEnabled = window.navigator.cookieEnabled
 
     if (!cookieEnabled) {
@@ -75,8 +70,6 @@ export class Cookie extends Store {
       cookieEnabled = document.cookie.includes('ajs:cookies')
       jar.remove('ajs:cookies')
     }
-
-    Cookie._available = cookieEnabled
 
     return cookieEnabled
   }
@@ -153,21 +146,13 @@ const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
 }
 
 export class LocalStorage extends Store {
-  static _available: boolean | undefined
-
   static available(): boolean {
-    if (LocalStorage._available !== undefined) {
-      return LocalStorage._available
-    }
-
     const test = 'test'
     try {
       localStorage.setItem(test, test)
       localStorage.removeItem(test)
-      LocalStorage._available = true
       return true
     } catch (e) {
-      LocalStorage._available = false
       return false
     }
   }
@@ -221,16 +206,26 @@ export interface CookieOptions {
 }
 
 export class UniversalStorage<Data extends StorageObject = StorageObject> {
-  private stores: Store[]
+  private enabledStores: StoreType[]
+  private storageOptions: StorageOptions
 
-  constructor(stores?: Store[]) {
-    this.stores = stores || []
+  constructor(stores: StoreType[], storageOptions: StorageOptions) {
+    this.storageOptions = storageOptions
+    this.enabledStores = stores
   }
 
   private getStores(storeTypes: StoreType[] | undefined): Store[] {
-    return storeTypes
-      ? this.stores.filter((s) => storeTypes.indexOf(s.type) !== -1)
-      : this.stores
+    const stores: Store[] = []
+    this.enabledStores
+      .filter((i) => !storeTypes || storeTypes?.includes(i))
+      .forEach((storeType) => {
+        const storage = this.storageOptions[storeType]
+        if (storage !== undefined) {
+          stores.push(storage)
+        }
+      })
+
+    return stores
   }
 
   /*
@@ -283,26 +278,21 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
       store.remove(key)
     }
   }
+}
 
-  static getUniversalStorage<T extends Record<string, unknown>>(
-    defaultTargets: StoreType[] = ['cookie', 'localStorage', 'memory'],
-    cookieOptions?: CookieOptions
-  ): UniversalStorage<T> {
-    const stores = []
+type StorageOptions = {
+  cookie: Cookie | undefined
+  localStorage: LocalStorage | undefined
+  memory: Store
+}
 
-    if (defaultTargets.includes('cookie') && Cookie.available()) {
-      stores.push(new Cookie(cookieOptions))
-    }
-
-    if (defaultTargets.includes('localStorage') && LocalStorage.available()) {
-      stores.push(new LocalStorage())
-    }
-
-    if (defaultTargets.includes('memory')) {
-      stores.push(new Store())
-    }
-
-    return new UniversalStorage<T>(stores)
+export function getAvailableStorageOptions(
+  cookieOptions?: CookieOptions
+): StorageOptions {
+  return {
+    cookie: Cookie.available() ? new Cookie(cookieOptions) : undefined,
+    localStorage: LocalStorage.available() ? new LocalStorage() : undefined,
+    memory: new Store(),
   }
 }
 
@@ -346,8 +336,10 @@ export class User {
     let defaultStorageTargets: StoreType[] = isDisabled
       ? []
       : shouldPersist
-      ? ['cookie', 'localStorage', 'memory']
+      ? ['localStorage', 'cookie', 'memory']
       : ['memory']
+
+    const storageOptions = getAvailableStorageOptions(cookieOptions)
 
     if (options.localStorageFallbackDisabled) {
       defaultStorageTargets = defaultStorageTargets.filter(
@@ -355,23 +347,23 @@ export class User {
       )
     }
 
-    this.identityStore = UniversalStorage.getUniversalStorage(
+    this.identityStore = new UniversalStorage(
       defaultStorageTargets,
-      cookieOptions
+      storageOptions
     )
 
     // using only cookies for legacy user store
-    this.legacyUserStore = UniversalStorage.getUniversalStorage(
+    this.legacyUserStore = new UniversalStorage(
       defaultStorageTargets.filter(
         (t) => t !== 'localStorage' && t !== 'memory'
       ),
-      cookieOptions
+      storageOptions
     )
 
     // using only localStorage / memory for traits store
-    this.traitsStore = UniversalStorage.getUniversalStorage(
+    this.traitsStore = new UniversalStorage(
       defaultStorageTargets.filter((t) => t !== 'cookie'),
-      cookieOptions
+      storageOptions
     )
 
     const legacyUser = this.legacyUserStore.get(defaults.cookie.oldKey)

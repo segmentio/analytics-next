@@ -26,6 +26,7 @@ import { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
 import {
   CookieOptions,
+  getAvailableStorageOptions,
   Group,
   ID,
   UniversalStorage,
@@ -133,9 +134,11 @@ export class Analytics
     this.queue =
       queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
 
-    this._universalStorage = UniversalStorage.getUniversalStorage(
-      disablePersistance ? ['memory'] : ['cookie', 'localStorage', 'memory'],
-      cookieOptions
+    this._universalStorage = new UniversalStorage(
+      disablePersistance !== false
+        ? ['localStorage', 'cookie', 'memory']
+        : ['memory'],
+      getAvailableStorageOptions(cookieOptions)
     )
 
     this._user =
