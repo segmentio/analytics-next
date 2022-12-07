@@ -58,7 +58,7 @@ test.describe('Standalone tests', () => {
         page.evaluate(() => window.analytics.load('fake-key')),
       ])
 
-      expect(request.method()).toBe('GET')
+      expect(request.method()).toBe('POST')
     })
   })
 })
