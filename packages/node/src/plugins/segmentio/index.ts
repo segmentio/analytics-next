@@ -1,11 +1,16 @@
 import { CoreContext, CorePlugin } from '@segment/analytics-core'
 import { Publisher, PublisherProps } from './publisher'
 import { version } from '../../../package.json'
+import { detectRuntime } from '../../lib/env'
 
 function normalizeEvent(ctx: CoreContext) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
   ctx.updateEvent('context.library.version', version)
-  ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
+  const runtime = detectRuntime()
+  if (runtime.type === 'node') {
+    ctx.updateEvent('_metadata.nodeVersion', runtime.version)
+  }
+  ctx.updateEvent('_metadata.runtime', runtime.type)
 }
 
 type DefinedPluginFields =
