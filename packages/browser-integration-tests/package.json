@@ -6,18 +6,20 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "test": "yarn jest --forceExit",
+    "test": "playwright test",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
-    "concurrently": "yarn run -T concurrently",
-    "jest": "yarn run -T jest"
+    "server": "http-server --port 3000",
+    "browser": "playwright test --debug"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
     "@internal/config": "workspace:^",
+    "@playwright/test": "^1.28.1",
     "@segment/analytics-next": "workspace:^",
+    "http-server": "14.1.1",
     "nock": "^13.2.9"
   }
 }

@@ -1,57 +1,10 @@
-import { createReadStream } from 'fs'
 import { join as joinPath } from 'path'
-import { Analytics, InitOptions } from '@segment/analytics-next'
-import { JSDOM, VirtualConsole } from 'jsdom'
-import nock, { Scope } from 'nock'
-import { snippet } from './fixtures/snippet'
-import { CORS } from './fixtures/cors-headers'
+import { test, expect } from '@playwright/test'
 import { SettingsBuilder } from './fixtures/settings'
 
-describe('Standalone', () => {
-  let dom: JSDOM
-  let loadAnalytics: (options?: InitOptions) => Promise<Analytics>
-
-  beforeEach(() => {
-    jest.restoreAllMocks()
-    jest.resetAllMocks()
-
-    const html = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <script>
-    ${snippet()}
-    </script>
-  </head>
-  <body>
-  </body>
-</html>
-    `.trim()
-
-    const virtualConsole = new VirtualConsole()
-    dom = new JSDOM(html, {
-      runScripts: 'dangerously',
-      resources: 'usable',
-      url: 'https://segment.com',
-      virtualConsole,
-    })
-
-    loadAnalytics = async (options?: InitOptions): Promise<Analytics> => {
-      const analyticsSnippet = dom.window.analytics
-      const analyticsPromise = new Promise<Analytics>((resolve) =>
-        analyticsSnippet.on('initialize', function (this: Analytics) {
-          resolve(this)
-        })
-      )
-      analyticsSnippet.load('writeKey', options)
-      const analytics = await analyticsPromise
-      return analytics
-    }
-  })
-
-  let scope: Scope
-
-  beforeEach(() => {
+test.describe('Standalone tests', () => {
+  test.beforeEach(async ({ context }) => {
+    // Setup routing to monorepo
     const ajsBasePath = joinPath(
       __dirname,
       '..',
@@ -61,146 +14,183 @@ describe('Standalone', () => {
       'dist',
       'umd'
     )
+    await context.route(
+      'https://cdn.segment.com/analytics.js/v1/*/analytics.min.js',
+      (route, request) => {
+        if (request.method().toLowerCase() !== 'get') {
+          return route.continue()
+        }
 
-    // Intercepts any requests for A.JS bundles and serves them from
-    // the monorepo.
-    scope = nock('https://cdn.segment.com', { allowUnmocked: true })
-      .persist()
-      .get((uri) => {
-        return uri === '/analytics.js/v1/writeKey/analytics.min.js'
-      })
-      .replyWithFile(200, joinPath(ajsBasePath, 'standalone.js'), {
-        ...CORS,
-        'Content-Type': 'text/javascript',
-      })
-      .get((uri) => {
-        return uri.startsWith('/analytics-next/bundles/')
-      })
-      .optionally()
-      .reply(function (uri, _, callback) {
-        const fileName = uri.split('/').pop()!
-        const file = createReadStream(joinPath(ajsBasePath, fileName))
-        callback(null, [
-          200,
-          file,
-          {
-            ...CORS,
+        return route.fulfill({
+          path: joinPath(ajsBasePath, 'standalone.js'),
+          status: 200,
+          headers: {
             'Content-Type': 'text/javascript',
           },
-        ])
-      })
+        })
+      }
+    )
+
+    await context.route(
+      'https://cdn.segment.com/analytics-next/bundles/*',
+      (route, request) => {
+        if (request.method().toLowerCase() !== 'get') {
+          return route.continue()
+        }
+
+        const filename = request.url().split('/').pop()!
+        return route.fulfill({
+          path: joinPath(ajsBasePath, filename),
+          status: 200,
+          headers: {
+            'Content-Type': 'text/javascript',
+          },
+        })
+      }
+    )
   })
 
-  afterEach(() => {
-    nock.cleanAll()
-  })
+  test.describe('Actions Amplitude', () => {
+    test.beforeEach(async ({ context }) => {
+      await context.route(
+        'https://cdn.segment.com/v1/projects/*/settings',
+        (route, request) => {
+          if (request.method().toLowerCase() !== 'get') {
+            return route.continue()
+          }
 
-  describe('Actions Amplitude', () => {
-    const settings = new SettingsBuilder()
-      .addActionDestinationSettings({
-        name: 'Amplitude (Actions)',
-        creationName: 'Actions Amplitude',
-        libraryName: 'amplitude-pluginsDestination',
-        url: 'https://cdn.segment.com/next-integrations/actions/amplitude-plugins/6765cb3cf169443c119b.js',
-        settings: {
-          versionSettings: { componentTypes: [] },
-          subscriptions: [
-            {
-              id: 'nEx215jtwHt4kJmFXSmHMd',
-              name: 'Browser Session Tracking',
-              enabled: true,
-              partnerAction: 'sessionId',
-              subscribe:
-                'type = "track" or type = "identify" or type = "group" or type = "page" or type = "alias"',
-              mapping: {},
+          return route.fulfill({
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
             },
-          ],
-        },
-      })
-      .build()
-
-    beforeEach(() => {
-      // intercept `/settings`
-      scope
-        .get((uri) => {
-          return uri.endsWith('/settings')
-        })
-        .reply(200, settings, {
-          ...CORS,
-          'Content-Type': 'application/json',
-        })
+            body: JSON.stringify(
+              new SettingsBuilder()
+                .addActionDestinationSettings({
+                  name: 'Amplitude (Actions)',
+                  creationName: 'Actions Amplitude',
+                  libraryName: 'amplitude-pluginsDestination',
+                  url: 'https://cdn.segment.com/next-integrations/actions/amplitude-plugins/6765cb3cf169443c119b.js',
+                  settings: {
+                    versionSettings: { componentTypes: [] },
+                    subscriptions: [
+                      {
+                        id: 'nEx215jtwHt4kJmFXSmHMd',
+                        name: 'Browser Session Tracking',
+                        enabled: true,
+                        partnerAction: 'sessionId',
+                        subscribe:
+                          'type = "track" or type = "identify" or type = "group" or type = "page" or type = "alias"',
+                        mapping: {},
+                      },
+                    ],
+                  },
+                })
+                .build()
+            ),
+          })
+        }
+      )
     })
 
-    it('applies session_id to events', async () => {
-      const analytics = await loadAnalytics()
+    test('applies session_id to events', async ({ page }) => {
+      // Load analytics.js
+      await page.goto('/standalone.html')
+      await page.evaluate(() => window.analytics.load('fake-key'))
 
-      const ctx = await analytics.track('test')
-      expect(ctx.event.integrations!['Actions Amplitude']).toEqual({
+      const [request] = await Promise.all([
+        page.waitForRequest('https://api.segment.io/v1/t'),
+        page.evaluate(() => window.analytics.track('test event')),
+      ])
+
+      const payload = request.postDataJSON()
+      expect(payload.integrations['Actions Amplitude']).toEqual({
         session_id: expect.any(Number),
       })
     })
   })
 
-  describe('Braze Cloud Mode (Actions)', () => {
-    const settings = new SettingsBuilder()
-      .addActionDestinationSettings({
-        name: 'Braze Cloud Mode (Actions)',
-        creationName: 'Braze Cloud Mode (Actions)',
-        libraryName: 'braze-cloud-pluginsDestination',
-        url: 'https://cdn.segment.com/next-integrations/actions/braze-cloud-plugins/2d52367988cd53a99b14.js',
-        settings: {
-          versionSettings: { componentTypes: ['server'] },
-          type: 'server',
-          subscriptions: [
-            {
-              id: 'czT77wm3rgLijkwstNxLYz',
-              name: 'Debounce Middleware',
-              enabled: true,
-              partnerAction: 'debouncePlugin',
-              subscribe: 'type = "identify" or type = "group"',
-              mapping: {},
-            },
-          ],
-        },
-      })
-      .build()
+  test.describe('Braze Cloud Mode (Actions)', () => {
+    test.beforeEach(async ({ context }) => {
+      await context.route(
+        'https://cdn.segment.com/v1/projects/*/settings',
+        (route, request) => {
+          if (request.method().toLowerCase() !== 'get') {
+            return route.continue()
+          }
 
-    beforeEach(() => {
-      // intercept `/settings`
-      scope
-        .get((uri) => {
-          return uri.endsWith('/settings')
-        })
-        .reply(200, settings, {
-          ...CORS,
-          'Content-Type': 'application/json',
-        })
+          return route.fulfill({
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(
+              new SettingsBuilder()
+                .addActionDestinationSettings({
+                  name: 'Braze Cloud Mode (Actions)',
+                  creationName: 'Braze Cloud Mode (Actions)',
+                  libraryName: 'braze-cloud-pluginsDestination',
+                  url: 'https://cdn.segment.com/next-integrations/actions/braze-cloud-plugins/2d52367988cd53a99b14.js',
+                  settings: {
+                    versionSettings: { componentTypes: ['server'] },
+                    type: 'server',
+                    subscriptions: [
+                      {
+                        id: 'czT77wm3rgLijkwstNxLYz',
+                        name: 'Debounce Middleware',
+                        enabled: true,
+                        partnerAction: 'debouncePlugin',
+                        subscribe: 'type = "identify" or type = "group"',
+                        mapping: {},
+                      },
+                    ],
+                  },
+                })
+                .build()
+            ),
+          })
+        }
+      )
     })
 
-    it('debounces events', async () => {
-      const analytics = await loadAnalytics()
+    test('debounces events', async ({ page }) => {
+      // Load analytics.js
+      await page.goto('/standalone.html')
+      await page.evaluate(() => window.analytics.load('fake-key'))
 
       // Allows Braze the first time user is identified.
-      const ctx1 = await analytics.identify('testUser')
-      expect(ctx1.event.integrations!).toEqual({
+      const [request1] = await Promise.all([
+        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.evaluate(() => window.analytics.identify('testUser')),
+      ])
+
+      expect(request1.postDataJSON().integrations).toEqual({
         Appboy: true,
         'Braze Cloud Mode (Actions)': true,
         'Braze Web Mode (Actions)': true,
       })
 
       // Disallows Braze if the user is unchanged.
-      const ctx2 = await analytics.identify('testUser')
-      expect(ctx2.event.integrations).toEqual({
+      const [request2] = await Promise.all([
+        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.evaluate(() => window.analytics.identify('testUser')),
+      ])
+      expect(request2.postDataJSON().integrations).toEqual({
         Appboy: false,
         'Braze Cloud Mode (Actions)': false,
         'Braze Web Mode (Actions)': false,
       })
 
-      // Allows Braze if the user has changed (traits)
-      const ctx3 = await analytics.identify('testUser', {
-        email: 'foo@foo.foo',
-      })
-      expect(ctx3.event.integrations).toEqual({
+      // Allows Braze if the user has changed (traits).
+      const [request3] = await Promise.all([
+        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.evaluate(() =>
+          window.analytics.identify('testUser', {
+            email: 'foo@foo.foo',
+          })
+        ),
+      ])
+      expect(request3.postDataJSON().integrations).toEqual({
         Appboy: true,
         'Braze Cloud Mode (Actions)': true,
         'Braze Web Mode (Actions)': true,
