@@ -54,8 +54,9 @@ class Store {
   remove(key: string): void {
     delete this.cache[key]
   }
-
-  getType = (): StoreType => 'memory'
+  get type(): StoreType {
+    return 'memory'
+  }
 }
 
 const ONE_YEAR = 365
@@ -142,7 +143,9 @@ export class Cookie extends Store {
     return jar.remove(key, this.opts())
   }
 
-  getType = (): StoreType => 'cookie'
+  get type(): StoreType {
+    return 'cookie'
+  }
 }
 
 const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
@@ -204,7 +207,9 @@ export class LocalStorage extends Store {
     }
   }
 
-  getType = (): StoreType => 'localStorage'
+  get type(): StoreType {
+    return 'localStorage'
+  }
 }
 
 export interface CookieOptions {
@@ -224,7 +229,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
 
   private getStores(storeTypes: StoreType[] | undefined): Store[] {
     return storeTypes
-      ? this.stores.filter((s) => storeTypes.indexOf(s.getType()) !== -1)
+      ? this.stores.filter((s) => storeTypes.indexOf(s.type) !== -1)
       : this.stores
   }
 
