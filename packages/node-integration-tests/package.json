@@ -19,7 +19,7 @@
     "@types/express": "^4",
     "analytics-node": "^6.2.0",
     "autocannon": "^7.10.0",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "nock": "^13.2.9"
   },
   "packageManager": "yarn@3.2.1"
