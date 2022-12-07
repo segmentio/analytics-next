@@ -1932,6 +1932,7 @@ __metadata:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.1.5
+    "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
     "@segment/facade": ^3.4.9
@@ -1990,7 +1991,6 @@ __metadata:
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.1.5
     "@types/node": ^14
-    nock: ^13.2.9
     node-fetch: ^2.6.7
     tslib: ^2.4.0
   languageName: unknown
@@ -2023,7 +2023,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics.js-integration@npm:^3.3.0":
+"@segment/analytics.js-integration@npm:^3.3.0, @segment/analytics.js-integration@npm:^3.3.3":
   version: 3.3.3
   resolution: "@segment/analytics.js-integration@npm:3.3.3"
   dependencies:
@@ -4621,6 +4621,7 @@ __metadata:
     jest: ^28.1.0
     lint-staged: ^13.0.0
     lodash: ^4.17.21
+    nock: ^13.2.9
     node-gyp: ^9.0.0
     prettier: ^2.6.2
     ts-jest: ^28.0.4

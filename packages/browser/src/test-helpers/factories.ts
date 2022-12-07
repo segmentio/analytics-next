@@ -1,9 +1,10 @@
-export const createSuccess = (body: any) => {
+export const createSuccess = (body: any, overrides: Partial<Response> = {}) => {
   return Promise.resolve({
     json: () => Promise.resolve(body),
     ok: true,
     status: 200,
     statusText: 'OK',
+    ...overrides,
   }) as Promise<Response>
 }
 
