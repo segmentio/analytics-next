@@ -55,9 +55,9 @@ steps:
     commands:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install
+      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
-      - PLAYWRIGHT_BROWSERS_PATH=0 yarn turbo run --filter=browser-integration-tests test
+      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test
     retry:
       automatic:
         - exit_status: '*'
