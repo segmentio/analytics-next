@@ -134,9 +134,7 @@ export class Analytics
       queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
 
     this._universalStorage = UniversalStorage.getUniversalStorage(
-      disablePersistance !== false
-        ? ['cookie', 'localStorage', 'memory']
-        : ['memory'],
+      disablePersistance ? ['memory'] : ['cookie', 'localStorage', 'memory'],
       cookieOptions
     )
 
