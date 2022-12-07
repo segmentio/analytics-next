@@ -55,6 +55,7 @@ steps:
     commands:
       - echo "--- Install dependencies"
       - yarn install --immutable
+      - npx playwright install --with-deps
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter=browser-integration-tests test
     retry:
