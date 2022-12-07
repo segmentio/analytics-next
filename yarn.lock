@@ -1991,7 +1991,7 @@ __metadata:
     mime: ^2.4.6
     node-fetch: ^2.6.7
     node-gyp: ^9.0.0
-    playwright: ^1.23.1
+    playwright: ^1.28.1
     serve-handler: ^6.1.3
     size-limit: ^7.0.8
     spark-md5: ^3.0.1
@@ -11529,15 +11529,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.23.1":
-  version: 1.23.1
-  resolution: "playwright-core@npm:1.23.1"
-  bin:
-    playwright: cli.js
-  checksum: 1e6a3a7a9aaee1864b22195c7fef52b6980fcafc6d667749737455360a44a182a7035f12bfd76f298f957d1b99550420a8748f6a473ceeacf2cb2db42beb9be0
-  languageName: node
-  linkType: hard
-
 "playwright-core@npm:1.28.1":
   version: 1.28.1
   resolution: "playwright-core@npm:1.28.1"
@@ -11547,14 +11538,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright@npm:^1.23.1":
-  version: 1.23.1
-  resolution: "playwright@npm:1.23.1"
+"playwright@npm:^1.28.1":
+  version: 1.28.1
+  resolution: "playwright@npm:1.28.1"
   dependencies:
-    playwright-core: 1.23.1
+    playwright-core: 1.28.1
   bin:
     playwright: cli.js
-  checksum: d42276dadf4b35d5220a248388480a65fbcbf907b490931a0f89f4834cc64e6576042744714887ae60881a6d950540688d6868918bb5041361117cfe5b2d92bd
+  checksum: 97c6fff2835878da856bf1f587ec4cdcbcc9aa61c0efcf592633f6df37eabbb9e59d7a2ef994ec9283338e43ef80e278d6d52fed5f7c29abd0408fac0f69b3ca
   languageName: node
   linkType: hard
 

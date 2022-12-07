@@ -54,10 +54,10 @@ steps:
       queue: v1
     commands:
       - echo "--- Install dependencies"
-      - yarn install --immutable
-      - npx playwright install --with-deps
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
-      - yarn turbo run --filter=browser-integration-tests test
+      - PLAYWRIGHT_BROWSERS_PATH=0 yarn turbo run --filter=browser-integration-tests test
     retry:
       automatic:
         - exit_status: '*'
