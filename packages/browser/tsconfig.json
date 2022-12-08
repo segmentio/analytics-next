@@ -4,9 +4,7 @@
     "module": "esnext",
     "target": "ES5",
     "moduleResolution": "node",
-    "importHelpers": true,
     "resolveJsonModule": true,
-    "sourceMap": true,
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "baseUrl": "./src",
     "paths": {
