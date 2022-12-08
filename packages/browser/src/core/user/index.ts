@@ -35,6 +35,10 @@ const defaults = {
   },
 }
 
+export type StoreType = 'cookie' | 'localStorage' | 'memory'
+
+type StorageObject = Record<string, unknown>
+
 class Store {
   private cache: Record<string, unknown> = {}
 
@@ -49,6 +53,9 @@ class Store {
 
   remove(key: string): void {
     delete this.cache[key]
+  }
+  get type(): StoreType {
+    return 'memory'
   }
 }
 
@@ -128,12 +135,10 @@ export class Cookie extends Store {
   remove(key: string): void {
     return jar.remove(key, this.opts())
   }
-}
 
-class NullStorage extends Store {
-  get = (_key: string): null => null
-  set = (_key: string, _val: unknown): null => null
-  remove = (_key: string): void => {}
+  get type(): StoreType {
+    return 'cookie'
+  }
 }
 
 const localStorageWarning = (key: string, state: 'full' | 'unavailable') => {
@@ -186,6 +191,10 @@ export class LocalStorage extends Store {
       localStorageWarning(key, 'unavailable')
     }
   }
+
+  get type(): StoreType {
+    return 'localStorage'
+  }
 }
 
 export interface CookieOptions {
@@ -196,17 +205,120 @@ export interface CookieOptions {
   sameSite?: string
 }
 
+export class UniversalStorage<Data extends StorageObject = StorageObject> {
+  private enabledStores: StoreType[]
+  private storageOptions: StorageOptions
+
+  constructor(stores: StoreType[], storageOptions: StorageOptions) {
+    this.storageOptions = storageOptions
+    this.enabledStores = stores
+  }
+
+  private getStores(storeTypes: StoreType[] | undefined): Store[] {
+    const stores: Store[] = []
+    this.enabledStores
+      .filter((i) => !storeTypes || storeTypes?.includes(i))
+      .forEach((storeType) => {
+        const storage = this.storageOptions[storeType]
+        if (storage !== undefined) {
+          stores.push(storage)
+        }
+      })
+
+    return stores
+  }
+
+  /*
+    This is to support few scenarios where:  
+    - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
+    - read values in AJS 1.0 format ( for customers after 1.0 --> 2.0 migration ) and then re-write them in AJS 2.0 format
+  */
+  public getAndSync<K extends keyof Data>(
+    key: K,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
+    const val = this.get(key, storeTypes)
+
+    return this.set(
+      key,
+      //@ts-ignore TODO: legacy behavior, getAndSync can change the type of a value from number to string (AJS 1.0 stores numerical values as a number)
+      typeof val === 'number' ? val.toString() : val,
+      storeTypes
+    ) as Data[K] | null
+  }
+
+  public get<K extends keyof Data>(
+    key: K,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
+    let val = null
+
+    for (const store of this.getStores(storeTypes)) {
+      val = store.get<Data[K]>(key)
+      if (val) {
+        return val
+      }
+    }
+    return null
+  }
+
+  public set<K extends keyof Data>(
+    key: K,
+    value: Data[K] | null,
+    storeTypes?: StoreType[]
+  ): Data[K] | null {
+    for (const store of this.getStores(storeTypes)) {
+      store.set(key, value)
+    }
+    return value
+  }
+
+  public clear<K extends keyof Data>(key: K, storeTypes?: StoreType[]): void {
+    for (const store of this.getStores(storeTypes)) {
+      store.remove(key)
+    }
+  }
+}
+
+type StorageOptions = {
+  cookie: Cookie | undefined
+  localStorage: LocalStorage | undefined
+  memory: Store
+}
+
+export function getAvailableStorageOptions(
+  cookieOptions?: CookieOptions
+): StorageOptions {
+  return {
+    cookie: Cookie.available() ? new Cookie(cookieOptions) : undefined,
+    localStorage: LocalStorage.available() ? new LocalStorage() : undefined,
+    memory: new Store(),
+  }
+}
+
 export class User {
   static defaults = defaults
-
-  private cookies: Store
-  private localStorage: Store
-  private mem: Store
 
   private idKey: string
   private traitsKey: string
   private anonKey: string
   private cookieOptions?: CookieOptions
+
+  private legacyUserStore: UniversalStorage<{
+    [k: string]:
+      | {
+          id?: string
+          traits?: Traits
+        }
+      | string
+  }>
+  private traitsStore: UniversalStorage<{
+    [k: string]: Traits
+  }>
+
+  private identityStore: UniversalStorage<{
+    [k: string]: string
+  }>
 
   options: UserOptions = {}
 
@@ -221,55 +333,45 @@ export class User {
     const isDisabled = options.disable === true
     const shouldPersist = options.persist !== false
 
-    this.localStorage =
-      isDisabled ||
-      options.localStorageFallbackDisabled ||
-      !shouldPersist ||
-      !LocalStorage.available()
-        ? new NullStorage()
-        : new LocalStorage()
+    let defaultStorageTargets: StoreType[] = isDisabled
+      ? []
+      : shouldPersist
+      ? ['localStorage', 'cookie', 'memory']
+      : ['memory']
 
-    this.cookies =
-      !isDisabled && shouldPersist && Cookie.available()
-        ? new Cookie(cookieOptions)
-        : new NullStorage()
+    const storageOptions = getAvailableStorageOptions(cookieOptions)
 
-    this.mem = isDisabled ? new NullStorage() : new Store()
+    if (options.localStorageFallbackDisabled) {
+      defaultStorageTargets = defaultStorageTargets.filter(
+        (t) => t !== 'localStorage'
+      )
+    }
 
-    const legacyUser = this.cookies.get<{ id?: string; traits?: Traits }>(
-      defaults.cookie.oldKey
+    this.identityStore = new UniversalStorage(
+      defaultStorageTargets,
+      storageOptions
     )
-    if (legacyUser) {
+
+    // using only cookies for legacy user store
+    this.legacyUserStore = new UniversalStorage(
+      defaultStorageTargets.filter(
+        (t) => t !== 'localStorage' && t !== 'memory'
+      ),
+      storageOptions
+    )
+
+    // using only localStorage / memory for traits store
+    this.traitsStore = new UniversalStorage(
+      defaultStorageTargets.filter((t) => t !== 'cookie'),
+      storageOptions
+    )
+
+    const legacyUser = this.legacyUserStore.get(defaults.cookie.oldKey)
+    if (legacyUser && typeof legacyUser === 'object') {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
     }
     autoBind(this)
-  }
-
-  private chainGet<T>(key: string): T | null {
-    const val =
-      this.localStorage.get(key) ??
-      this.cookies.get(key) ??
-      this.mem.get(key) ??
-      null
-
-    return this.trySet(
-      key,
-      typeof val === 'number' ? val.toString() : val
-    ) as T | null
-  }
-
-  private trySet<T>(key: string, value: T): T | null {
-    this.localStorage.set(key, value)
-    this.cookies.set(key, value)
-    this.mem.set(key, value)
-    return value
-  }
-
-  private chainClear(key: string): void {
-    this.localStorage.remove(key)
-    this.cookies.remove(key)
-    this.mem.remove(key)
   }
 
   id = (id?: ID): ID => {
@@ -277,10 +379,10 @@ export class User {
       return null
     }
 
-    const prevId = this.chainGet(this.idKey)
+    const prevId = this.identityStore.getAndSync(this.idKey)
 
     if (id !== undefined) {
-      this.trySet(this.idKey, id)
+      this.identityStore.set(this.idKey, id)
 
       const changingIdentity = id !== prevId && prevId !== null && id !== null
       if (changingIdentity) {
@@ -288,15 +390,15 @@ export class User {
       }
     }
 
-    return (
-      this.chainGet(this.idKey) ??
-      this.cookies.get(defaults.cookie.oldKey) ??
-      null
-    )
+    const retId = this.identityStore.getAndSync(this.idKey)
+    if (retId) return retId
+
+    const retLeg = this.legacyUserStore.get(defaults.cookie.oldKey)
+    return retLeg ? (typeof retLeg === 'object' ? retLeg.id : retLeg) : null
   }
 
   private legacySIO(): [string, string] | null {
-    const val = this.cookies.get('_sio') as string
+    const val = this.legacyUserStore.get('_sio') as string
     if (!val) {
       return null
     }
@@ -310,7 +412,8 @@ export class User {
     }
 
     if (id === undefined) {
-      const val = this.chainGet<ID>(this.anonKey) ?? this.legacySIO()?.[0]
+      const val =
+        this.identityStore.getAndSync(this.anonKey) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
@@ -318,12 +421,12 @@ export class User {
     }
 
     if (id === null) {
-      this.trySet(this.anonKey, null)
-      return this.chainGet(this.anonKey)
+      this.identityStore.set(this.anonKey, null)
+      return this.identityStore.getAndSync(this.anonKey)
     }
 
-    this.trySet(this.anonKey, id ?? uuid())
-    return this.chainGet(this.anonKey)
+    this.identityStore.set(this.anonKey, id ?? uuid())
+    return this.identityStore.getAndSync(this.anonKey)
   }
 
   traits = (traits?: Traits | null): Traits | undefined => {
@@ -336,15 +439,10 @@ export class User {
     }
 
     if (traits) {
-      this.mem.set(this.traitsKey, traits ?? {})
-      this.localStorage.set(this.traitsKey, traits ?? {})
+      this.traitsStore.set(this.traitsKey, traits ?? {})
     }
 
-    return (
-      this.localStorage.get(this.traitsKey) ??
-      this.mem.get(this.traitsKey) ??
-      {}
-    )
+    return this.traitsStore.get(this.traitsKey) ?? {}
   }
 
   identify(id?: ID, traits?: Traits): void {
@@ -377,9 +475,9 @@ export class User {
 
   reset(): void {
     this.logout()
-    this.chainClear(this.idKey)
-    this.chainClear(this.anonKey)
-    this.chainClear(this.traitsKey)
+    this.identityStore.clear(this.idKey)
+    this.identityStore.clear(this.anonKey)
+    this.traitsStore.clear(this.traitsKey)
   }
 
   load(): User {

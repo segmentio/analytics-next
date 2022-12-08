@@ -24,7 +24,15 @@ import {
 } from '../events'
 import { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
-import { CookieOptions, Group, ID, User, UserOptions } from '../user'
+import {
+  CookieOptions,
+  getAvailableStorageOptions,
+  Group,
+  ID,
+  UniversalStorage,
+  User,
+  UserOptions,
+} from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import type { LegacyDestination } from '../../plugins/ajs-destination'
@@ -102,6 +110,9 @@ export class Analytics
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
+  private _universalStorage: UniversalStorage<{
+    [k: string]: unknown
+  }>
 
   initialized = false
   integrations: Integrations
@@ -122,6 +133,14 @@ export class Analytics
     this.settings.timeout = this.settings.timeout ?? 300
     this.queue =
       queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
+
+    this._universalStorage = new UniversalStorage(
+      disablePersistance !== false
+        ? ['localStorage', 'cookie', 'memory']
+        : ['memory'],
+      getAvailableStorageOptions(cookieOptions)
+    )
+
     this._user =
       user ??
       new User(
@@ -304,7 +323,7 @@ export class Analytics
     const ctx = Context.system()
 
     const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this)
+      this.queue.register(ctx, xt, this, this._universalStorage)
     )
     await Promise.all(registrations)
 
