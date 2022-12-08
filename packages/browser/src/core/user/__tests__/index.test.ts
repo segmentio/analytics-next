@@ -1053,6 +1053,30 @@ describe('universal storage', function () {
       expect(us.get('ajs_test_key')).toEqual('💰')
     })
 
+    it('does not write to cookies when cookies are not available', function () {
+      jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+      const us = new UniversalStorage(
+        ['localStorage', 'cookie', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
+    it('does not write to LS when LS is not available', function () {
+      jest.spyOn(LocalStorage, 'available').mockReturnValueOnce(false)
+      const us = new UniversalStorage(
+        ['localStorage', 'cookie', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
     it('can override the default targets', function () {
       const us = new UniversalStorage(
         defaultTargets,
