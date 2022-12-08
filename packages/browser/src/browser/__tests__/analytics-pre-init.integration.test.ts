@@ -27,6 +27,9 @@ describe('Pre-initialization', () => {
   const trackSpy = jest.spyOn(Analytics.prototype, 'track')
   const identifySpy = jest.spyOn(Analytics.prototype, 'identify')
   const onSpy = jest.spyOn(Analytics.prototype, 'on')
+  const getOnSpyCalls = (event: string) =>
+    onSpy.mock.calls.filter(([arg1]) => arg1 === event)
+
   const readySpy = jest.spyOn(Analytics.prototype, 'ready')
   const browserLoadSpy = jest.spyOn(AnalyticsBrowser, 'load')
   const consoleErrorSpy = jest.spyOn(console, 'error')
@@ -236,11 +239,9 @@ describe('Pre-initialization', () => {
       expect(trackSpy).toBeCalledWith('bar')
       expect(trackSpy).toBeCalledTimes(2)
 
-      expect(identifySpy).toBeCalledWith()
       expect(identifySpy).toBeCalledTimes(1)
 
-      expect(onSpy).toBeCalledTimes(1)
-
+      expect(getOnSpyCalls('track').length).toBe(1)
       expect(onTrackCb).toBeCalledTimes(2) // gets called once for each track event
       expect(onTrackCb).toBeCalledWith('foo', {}, undefined)
       expect(onTrackCb).toBeCalledWith('bar', {}, undefined)
@@ -269,9 +270,10 @@ describe('Pre-initialization', () => {
       expect(identifySpy).toBeCalledWith()
       expect(identifySpy).toBeCalledTimes(1)
       expect(consoleErrorSpy).toBeCalledTimes(1)
+
       expect(consoleErrorSpy).toBeCalledWith('identity rejection')
 
-      expect(onSpy).toBeCalledTimes(1)
+      expect(getOnSpyCalls('track').length).toBe(1)
 
       expect(onTrackCb).toBeCalledTimes(2) // gets called once for each track event
       expect(onTrackCb).toBeCalledWith('foo', {}, undefined)
@@ -288,7 +290,7 @@ describe('Pre-initialization', () => {
 
       await ajsBrowser
       expect(onSpy).toBeCalledWith(...args)
-      expect(onSpy).toHaveBeenCalledTimes(1)
+      expect(getOnSpyCalls('track').length).toBe(1)
     })
 
     test('If, before initialization .on("track") is called and then .track is called, the callback method should be called after analytics loads', async () => {
@@ -302,10 +304,10 @@ describe('Pre-initialization', () => {
       await Promise.all([analytics, trackCtxPromise])
 
       expect(onSpy).toBeCalledWith('track', onFnCb)
-      expect(onSpy).toHaveBeenCalledTimes(1)
+      expect(getOnSpyCalls('track').length).toBe(1)
 
       expect(onFnCb).toHaveBeenCalledWith('foo', { name: 123 }, undefined)
-      expect(onFnCb).toHaveBeenCalledTimes(1)
+      expect(onFnCb).toBeCalledTimes(1)
     })
 
     test('If, before initialization, .ready is called, the callback method should be called after analytics loads', async () => {

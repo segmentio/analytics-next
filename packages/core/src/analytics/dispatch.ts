@@ -33,8 +33,7 @@ export async function dispatch(
   options?: DispatchOptions
 ): Promise<CoreContext> {
   const ctx = new CoreContext(event)
-  emitter.emit('dispatch_pending', ctx) // This is just for inspector host
-  // TODO: inspectorHost.triggered?.(ctx as any)
+  emitter.emit('dispatch_start', ctx)
 
   if (isOffline() && !options?.retryQueue) {
     return ctx

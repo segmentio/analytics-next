@@ -9,7 +9,6 @@ import { Integrations, JSONObject } from '../events'
 import { Plugin } from '../plugin'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
-import { inspectorHost } from '../inspector'
 import { UniversalStorage } from '../user'
 
 type PluginsByType = {
@@ -287,7 +286,7 @@ export class EventQueue extends Emitter {
       }
     }
 
-    inspectorHost.enriched?.(ctx as any)
+    this.emit('message_enriched', ctx)
 
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end
@@ -306,8 +305,7 @@ export class EventQueue extends Emitter {
 
     ctx.stats.increment('message_delivered')
 
-    // FIXME: Resolve browsers destinations that the event was sent to
-    inspectorHost.delivered?.(ctx as any, ['segment.io'])
+    this.emit('message_delivered', ctx)
 
     const afterCalls = after.map((after) => attempt(ctx, after))
     await Promise.all(afterCalls)

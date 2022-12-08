@@ -7,6 +7,7 @@ import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
+import { EventQueue } from '@segment/analytics-core'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -26,9 +27,7 @@ jest.mock('@/core/analytics', () => ({
     register,
     emit: jest.fn(),
     on,
-    queue: {
-      queue: new PersistedPriorityQueue(1, 'event-queue'),
-    },
+    queue: new EventQueue(new PersistedPriorityQueue(1, 'event-queue') as any),
     options,
   }),
 }))
@@ -237,8 +236,11 @@ describe('standalone bundle', () => {
 
     await sleep(0)
 
-    expect(on).toHaveBeenCalledTimes(1)
-    expect(on).toHaveBeenCalledWith('initialize', expect.any(Function))
+    const initializeCalls = on.mock.calls.filter(
+      ([arg1]) => arg1 === 'initialize'
+    )
+
+    expect(initializeCalls.length).toBe(1)
 
     expect(operations).toEqual([
       // should run before any plugin is registered

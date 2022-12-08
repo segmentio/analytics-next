@@ -47,7 +47,6 @@ import type {
 import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
-import { inspectorHost } from '../inspector'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 
 const deprecationWarning =
@@ -372,7 +371,7 @@ export class Analytics
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
 
-    inspectorHost.triggered?.(ctx as any)
+    this.emit('dispatch_start', ctx)
 
     if (isOffline() && !this.options.retryQueue) {
       return ctx
