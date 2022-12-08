@@ -1,33 +1,45 @@
 {
   "version": "0.2.0",
   "configurations": [
-    // Launches Jest tests in debug mode
-    // Simply drop a breakpoint and wait for the debugger to pick it up
     {
       "type": "node",
       "request": "launch",
-      "name": "(packages/browser) Jest Current File",
+      "name": "Jest Current File",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
       "args": [
         "--testTimeout=100000",
-        "-c",
-        "${workspaceFolder}/packages/browser/jest.config.js",
         "--runTestsByPath",
         "${relativeFile}"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": [
-        // skip annoying `async_hooks` file for promises
         "<node_internals>/**"
       ]
     },
     {
       "type": "node",
-      "name": "(packages/browser) Jest All",
+      "name": "Jest All",
       "request": "launch",
       "args": [
-        "--runInBand",
+        "--testTimeout=100000",
+        "-c",
+        "${workspaceFolder}/jest.config.js"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
+      "name": "Jest All: Browser",
+      "request": "launch",
+      "args": [
+        "--testTimeout=100000",
         "-c",
         "${workspaceFolder}/packages/browser/jest.config.js"
       ],
@@ -36,12 +48,11 @@
       "internalConsoleOptions": "neverOpen",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
       "skipFiles": [
-        // skip annoying `async_hooks` file for promises
         "<node_internals>/**"
       ]
     },
     {
-      "name": "ts-node current file",
+      "name": "ts-node Current File",
       "type": "node",
       "request": "launch",
       "args": ["${relativeFile}"],
