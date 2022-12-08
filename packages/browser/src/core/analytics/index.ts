@@ -167,7 +167,7 @@ export class Analytics
     return this._user
   }
 
-  storage(): UniversalStorage {
+  get storage(): UniversalStorage {
     return this._universalStorage
   }
 
