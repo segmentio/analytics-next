@@ -91,7 +91,7 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "node-gyp": "^9.0.0",
-    "playwright": "^1.23.1",
+    "playwright": "^1.28.1",
     "serve-handler": "^6.1.3",
     "size-limit": "^7.0.8",
     "terser-webpack-plugin": "^5.1.4",
