@@ -1,12 +1,10 @@
 import { Analytics } from '../analytics'
 import { Context } from '../context'
-import { UniversalStorage } from '../user'
 
 interface PluginConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options?: any
   priority?: 'critical' | 'non-critical' // whether AJS should expect this plugin to be loaded before starting event delivery
-  storage?: UniversalStorage
 }
 
 // enrichment - modifies the event. Enrichment can happen in parallel, by reducing all changes in the final event. Failures in this stage could halt event delivery.

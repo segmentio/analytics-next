@@ -4,7 +4,6 @@ import { PriorityQueue } from '../../../lib/priority-queue'
 import { Context } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../event-queue'
-import { UniversalStorage } from '../../user'
 
 const fruitBasket = new Context({
   type: 'track',
@@ -25,7 +24,6 @@ const testPlugin: Plugin = {
 }
 
 const ajs = {} as Analytics
-const storage = {} as UniversalStorage
 
 describe('Registration', () => {
   test('can register plugins', async () => {
@@ -41,9 +39,9 @@ describe('Registration', () => {
     }
 
     const ctx = Context.system()
-    await eq.register(ctx, plugin, ajs, storage)
+    await eq.register(ctx, plugin, ajs)
 
-    expect(load).toHaveBeenCalledWith(ctx, ajs, { storage })
+    expect(load).toHaveBeenCalledWith(ctx, ajs)
   })
 
   test('fails if plugin cant be loaded', async () => {
@@ -59,7 +57,7 @@ describe('Registration', () => {
 
     const ctx = Context.system()
     await expect(
-      eq.register(ctx, plugin, ajs, storage)
+      eq.register(ctx, plugin, ajs)
     ).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
   })
 
@@ -75,7 +73,7 @@ describe('Registration', () => {
     }
 
     const ctx = Context.system()
-    await eq.register(ctx, plugin, ajs, storage)
+    await eq.register(ctx, plugin, ajs)
 
     expect(ctx.logs()[0].level).toEqual('warn')
     expect(ctx.logs()[0].message).toEqual('Failed to load destination')
@@ -95,8 +93,7 @@ describe('Plugin flushing', () => {
         ...testPlugin,
         type: 'before',
       },
-      ajs,
-      storage
+      ajs
     )
 
     const flushed = await eq.dispatch(fruitBasket)
@@ -112,8 +109,7 @@ describe('Plugin flushing', () => {
           throw new Error('aaay')
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     const failedFlush: Context = await eq
@@ -141,8 +137,7 @@ describe('Plugin flushing', () => {
           throw new Error('aaay')
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     const flushed = await eq.dispatch(
@@ -173,8 +168,8 @@ describe('Plugin flushing', () => {
       type: 'destination',
     }
 
-    await eq.register(Context.system(), amplitude, ajs, storage)
-    await eq.register(Context.system(), fullstory, ajs, storage)
+    await eq.register(Context.system(), amplitude, ajs)
+    await eq.register(Context.system(), fullstory, ajs)
 
     const flushed = await eq.dispatch(
       new Context({
@@ -239,8 +234,8 @@ describe('Plugin flushing', () => {
       type: 'after',
     }
 
-    await eq.register(Context.system(), afterFailed, ajs, storage)
-    await eq.register(Context.system(), after, ajs, storage)
+    await eq.register(Context.system(), afterFailed, ajs)
+    await eq.register(Context.system(), after, ajs)
 
     const flushed = await eq.dispatch(
       new Context({
@@ -300,8 +295,7 @@ describe('Plugin flushing', () => {
           return ctx
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     await eq.register(
@@ -315,8 +309,7 @@ describe('Plugin flushing', () => {
           return ctx
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     await eq.register(
@@ -330,8 +323,7 @@ describe('Plugin flushing', () => {
           return ctx
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     const flushed = await eq.dispatch(
@@ -400,7 +392,7 @@ describe('Plugin flushing', () => {
     // shuffle plugins so we can verify order
     const plugins = shuffle([before, enrichment, enrichmentTwo, destination])
     for (const xt of plugins) {
-      await eq.register(Context.system(), xt, ajs, storage)
+      await eq.register(Context.system(), xt, ajs)
     }
 
     await eq.dispatch(

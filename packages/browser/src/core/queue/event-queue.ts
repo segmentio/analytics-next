@@ -9,7 +9,6 @@ import { Integrations, JSONObject } from '../events'
 import { Plugin } from '../plugin'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
-import { UniversalStorage } from '../user'
 
 type PluginsByType = {
   before: Plugin[]
@@ -43,10 +42,9 @@ export class EventQueue extends Emitter {
   async register(
     ctx: Context,
     plugin: Plugin,
-    instance: Analytics,
-    storage: UniversalStorage
+    instance: Analytics
   ): Promise<void> {
-    await Promise.resolve(plugin.load(ctx, instance, { storage }))
+    await Promise.resolve(plugin.load(ctx, instance))
       .then(() => {
         this.plugins.push(plugin)
       })

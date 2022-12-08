@@ -167,6 +167,10 @@ export class Analytics
     return this._user
   }
 
+  storage(): UniversalStorage {
+    return this._universalStorage
+  }
+
   async track(...args: EventParams): Promise<DispatchedEvent> {
     const [name, data, opts, cb] = resolveArguments(...args)
 
@@ -322,7 +326,7 @@ export class Analytics
     const ctx = Context.system()
 
     const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this, this._universalStorage)
+      this.queue.register(ctx, xt, this)
     )
     await Promise.all(registrations)
 
