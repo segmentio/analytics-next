@@ -23,7 +23,6 @@
       "request": "launch",
       "args": [
         "--testTimeout=100000",
-        "--runInBand",
         "-c",
         "${workspaceFolder}/jest.config.js"
       ],
@@ -41,7 +40,6 @@
       "request": "launch",
       "args": [
         "--testTimeout=100000",
-        "--runInBand",
         "-c",
         "${workspaceFolder}/packages/browser/jest.config.js"
       ],
