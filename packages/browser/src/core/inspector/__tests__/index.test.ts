@@ -1,4 +1,5 @@
-import { Analytics } from '../../analytics'
+import { attachInspector } from '..'
+import { Analytics } from '../../..'
 
 let analytics: Analytics
 
@@ -13,6 +14,7 @@ describe('Inspector interface', () => {
     analytics = new Analytics({
       writeKey: 'abc',
     })
+    attachInspector(analytics)
   })
 
   it('notifies the connected inspector client about each event API call and delivery', async () => {

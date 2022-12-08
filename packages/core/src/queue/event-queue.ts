@@ -284,7 +284,7 @@ export class EventQueue extends Emitter<EventQueueEmitterContract> {
       }
     }
 
-    this.emit('message_enriched', ctx) // TODO: inspectorHost.enriched?.(ctx as any)
+    this.emit('message_enriched', ctx)
 
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end
@@ -301,9 +301,9 @@ export class EventQueue extends Emitter<EventQueueEmitterContract> {
       }, 0)
     })
 
-    this.emit('message_delivered', ctx)
     ctx.stats?.increment('message_delivered')
-    // should emit to: TODO: inspectorHost.delivered?.(ctx as any, ['segment.io']) -- can we move all this inspector stuff to a plugin that listens to these events?
+
+    this.emit('message_delivered', ctx)
 
     const afterCalls = after.map((after) => attempt(ctx, after))
     await Promise.all(afterCalls)
