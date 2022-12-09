@@ -103,12 +103,10 @@ export function segmentio(
         normalize(analytics, json, settings, integrations)
       )
       .then(() => ctx)
-      .catch((err) => {
-        if (err.type === 'error' || err.message === 'Failed to fetch') {
-          buffer.pushWithBackoff(ctx)
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
-        }
+      .catch(() => {
+        buffer.pushWithBackoff(ctx)
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
         return ctx
       })
       .finally(() => {
