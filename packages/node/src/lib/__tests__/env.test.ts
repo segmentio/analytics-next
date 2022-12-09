@@ -15,9 +15,7 @@ describe(detectRuntime, () => {
     globalThis.WorkerGlobalScope = {}
     // @ts-ignore
     globalThis.importScripts = () => {}
-    expect(detectRuntime()).toEqual<RuntimeEnv>({
-      type: 'web-worker',
-    })
+    expect(detectRuntime()).toEqual<RuntimeEnv>('web-worker')
   })
   it('should return browser if correct env', () => {
     // @ts-ignore
@@ -25,17 +23,12 @@ describe(detectRuntime, () => {
     delete process.env
     // @ts-ignore
     globalThis.window = {}
-    expect(detectRuntime()).toEqual<RuntimeEnv>({
-      type: 'browser',
-    })
+    expect(detectRuntime()).toEqual<RuntimeEnv>('browser')
   })
   it('should return node if correct env', () => {
     // @ts-ignore
     // eslint-disable-next-line
-    process = { versions: { node: '123' }, env: {} }
-    expect(detectRuntime()).toEqual<RuntimeEnv>({
-      type: 'node',
-      version: '123',
-    })
+    process = { env: {} }
+    expect(detectRuntime()).toEqual<RuntimeEnv>('node')
   })
 })

@@ -7,10 +7,10 @@ function normalizeEvent(ctx: CoreContext) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
   ctx.updateEvent('context.library.version', version)
   const runtime = detectRuntime()
-  if (runtime.type === 'node') {
-    ctx.updateEvent('_metadata.nodeVersion', runtime.version)
+  if (runtime === 'node') {
+    ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
   }
-  ctx.updateEvent('_metadata.runtime', runtime.type)
+  ctx.updateEvent('_metadata.runtime', runtime)
 }
 
 type DefinedPluginFields =

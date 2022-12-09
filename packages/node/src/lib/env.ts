@@ -1,15 +1,12 @@
-export interface RuntimeEnv {
-  type: 'node' | 'browser' | 'web-worker' | 'unknown'
-  version?: string
-}
+export type RuntimeEnv = 'node' | 'browser' | 'web-worker' | 'unknown'
 
 export const detectRuntime = (): RuntimeEnv => {
   if (typeof process?.env === 'object') {
-    return { type: 'node', version: process.versions?.node || 'unknown' }
+    return 'node'
   }
 
   if (typeof window === 'object') {
-    return { type: 'browser' }
+    return 'browser'
   }
 
   if (
@@ -18,8 +15,8 @@ export const detectRuntime = (): RuntimeEnv => {
     // @ts-ignore
     typeof importScripts === 'function'
   ) {
-    return { type: 'web-worker' }
+    return 'web-worker'
   }
 
-  return { type: 'unknown' }
+  return 'unknown'
 }
