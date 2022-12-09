@@ -30,9 +30,6 @@ test.describe('Standalone tests', () => {
     }) => {
       // Load analytics.js
       await page.goto('/standalone.html')
-      await page.evaluate(() =>
-        window.addEventListener('pagehide', () => console.log('hidden'))
-      )
       await page.evaluate(() => window.analytics.load('fake-key'))
 
       // fail the 1st request
