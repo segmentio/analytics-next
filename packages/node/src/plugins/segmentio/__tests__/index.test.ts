@@ -18,9 +18,7 @@ const bodyPropertyMatchers = {
   timestamp: expect.stringMatching(
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   ),
-  _metadata: {
-    nodeVersion: expect.any(String),
-  },
+  _metadata: expect.any(Object),
   context: {
     library: {
       name: 'AnalyticsNode',

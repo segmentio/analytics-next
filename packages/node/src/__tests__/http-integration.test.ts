@@ -16,10 +16,7 @@ const snapshotMatchers = {
           version: expect.any(String),
         },
       },
-
-      _metadata: {
-        nodeVersion: expect.any(String),
-      },
+      _metadata: expect.any(Object),
       timestamp: expect.any(String),
     }
   },
@@ -37,6 +34,32 @@ describe('Method Smoke Tests', () => {
   let ajs: Analytics
   beforeEach(async () => {
     ajs = createTestAnalytics()
+  })
+
+  describe('Metadata', () => {
+    const calls: any[] = []
+    beforeEach(async () => {
+      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+        .post('/v1/batch', function (_body: any) {
+          calls.push(_body)
+          return true
+        })
+        .reply(201)
+    })
+
+    it('should show appropriate metadata', async () => {
+      ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
+      await resolveCtx(ajs, 'identify')
+      expect(calls[0].batch[0]._metadata).toMatchInlineSnapshot(
+        { nodeVersion: expect.any(String), runtime: 'node' },
+        `
+        Object {
+          "nodeVersion": Any<String>,
+          "runtime": "node",
+        }
+      `
+      )
+    })
   })
 
   describe('Headers', () => {
@@ -108,30 +131,28 @@ describe('Method Smoke Tests', () => {
       expect(calls[0]).toMatchInlineSnapshot(
         snapshotMatchers.defaultReqBody,
         `
-              Object {
-                "batch": Array [
-                  Object {
-                    "_metadata": Object {
-                      "nodeVersion": Any<String>,
-                    },
-                    "context": Object {
-                      "library": Object {
-                        "name": "AnalyticsNode",
-                        "version": Any<String>,
-                      },
-                    },
-                    "integrations": Object {},
-                    "messageId": Any<String>,
-                    "timestamp": Any<String>,
-                    "traits": Object {
-                      "foo": "bar",
-                    },
-                    "type": "identify",
-                    "userId": "my_user_id",
-                  },
-                ],
-              }
-          `
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Any<Object>,
+              "context": Object {
+                "library": Object {
+                  "name": "AnalyticsNode",
+                  "version": Any<String>,
+                },
+              },
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "timestamp": Any<String>,
+              "traits": Object {
+                "foo": "bar",
+              },
+              "type": "identify",
+              "userId": "my_user_id",
+            },
+          ],
+        }
+      `
       )
 
       const event = calls[0].batch[0]
@@ -148,9 +169,7 @@ describe('Method Smoke Tests', () => {
         Object {
           "batch": Array [
             Object {
-              "_metadata": Object {
-                "nodeVersion": Any<String>,
-              },
+              "_metadata": Any<Object>,
               "context": Object {
                 "library": Object {
                   "name": "AnalyticsNode",
@@ -182,9 +201,7 @@ describe('Method Smoke Tests', () => {
         Object {
           "batch": Array [
             Object {
-              "_metadata": Object {
-                "nodeVersion": Any<String>,
-              },
+              "_metadata": Any<Object>,
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
@@ -218,9 +235,7 @@ describe('Method Smoke Tests', () => {
         Object {
           "batch": Array [
             Object {
-              "_metadata": Object {
-                "nodeVersion": Any<String>,
-              },
+              "_metadata": Any<Object>,
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
@@ -252,9 +267,7 @@ describe('Method Smoke Tests', () => {
         Object {
           "batch": Array [
             Object {
-              "_metadata": Object {
-                "nodeVersion": Any<String>,
-              },
+              "_metadata": Any<Object>,
               "context": Object {
                 "library": Object {
                   "name": "AnalyticsNode",
@@ -287,9 +300,7 @@ describe('Method Smoke Tests', () => {
         Object {
           "batch": Array [
             Object {
-              "_metadata": Object {
-                "nodeVersion": Any<String>,
-              },
+              "_metadata": Any<Object>,
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
