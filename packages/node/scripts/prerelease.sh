@@ -9,9 +9,9 @@ tmp=$(mktemp)
 jq ".version = \"$latest_version\"" package.json > "$tmp" && mv "$tmp" package.json
 
 echo "bumping version..." &&
-  npm version prerelease &&
+  version=$(npm version prerelease) &&
   git add package.json &&
-  git commit -m "bump node version"
+  git commit -m "Bump node version: $version."
 
 echo "modifying package.json..." &&
   # delete private field from package.json
