@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.1.6
+
+### Patch Changes
+
+- [#718](https://github.com/segmentio/analytics-next/pull/718) [`80e0d0a`](https://github.com/segmentio/analytics-next/commit/80e0d0a7d074422654cbebe0c3edb90e1d42ad62) Thanks [@silesky](https://github.com/silesky)! - Change emitter message to dispatch_start
+
 ## 1.1.5
 
 ### Patch Changes

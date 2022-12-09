@@ -1,5 +1,24 @@
 # @segment/analytics-next
 
+## 1.48.0
+
+### Minor Changes
+
+- [#638](https://github.com/segmentio/analytics-next/pull/638) [`e16017d`](https://github.com/segmentio/analytics-next/commit/e16017d4a99a891efebfd87a9f55c03815557a4e) Thanks [@pooyaj](https://github.com/pooyaj)! - Creating universal storage layer and passing it to plugins
+
+### Patch Changes
+
+- [#714](https://github.com/segmentio/analytics-next/pull/714) [`9fc8f43`](https://github.com/segmentio/analytics-next/commit/9fc8f43a77ef3bdcce3e7ef7287c47bd595bca7b) Thanks [@chrisradek](https://github.com/chrisradek)! - Improves Segment.io retries to include exponential backoff and work across page loads.
+
+* [#718](https://github.com/segmentio/analytics-next/pull/718) [`80e0d0a`](https://github.com/segmentio/analytics-next/commit/80e0d0a7d074422654cbebe0c3edb90e1d42ad62) Thanks [@silesky](https://github.com/silesky)! - Refactor inspector to use emitter
+
+- [#713](https://github.com/segmentio/analytics-next/pull/713) [`0d70637`](https://github.com/segmentio/analytics-next/commit/0d7063725cce56e1484bc63a405cecfed847098f) Thanks [@silesky](https://github.com/silesky)! - add logic if plan.integrations is falsy
+
+* [#721](https://github.com/segmentio/analytics-next/pull/721) [`779e66b`](https://github.com/segmentio/analytics-next/commit/779e66b1d5b64af3a632adc0da7642bbdd943d8b) Thanks [@pooyaj](https://github.com/pooyaj)! - Expose universal storage directly on analytics object
+
+* Updated dependencies [[`80e0d0a`](https://github.com/segmentio/analytics-next/commit/80e0d0a7d074422654cbebe0c3edb90e1d42ad62)]:
+  - @segment/analytics-core@1.1.6
+
 ## 1.47.1
 
 ### Patch Changes
