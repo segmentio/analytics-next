@@ -15,11 +15,8 @@ import * as SegmentPlugin from '../../plugins/segmentio'
 import jar from 'js-cookie'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
-import { UniversalStorage } from '../../core/user'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { ActionDestination } from '@/plugins/remote-loader'
-
-const storage = {} as UniversalStorage
 
 let fetchCalls: Array<any>[] = []
 
@@ -882,8 +879,7 @@ describe('retries', () => {
           throw new Error('aaay')
         },
       },
-      ajs,
-      storage
+      ajs
     )
 
     // Dispatching an event will push it into the priority queue.
@@ -911,8 +907,7 @@ describe('retries', () => {
         ready: () => Promise.resolve(true),
         track: (ctx) => ctx,
       },
-      ajs,
-      storage
+      ajs
     )
 
     // @ts-ignore ignore reassining function

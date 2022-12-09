@@ -134,9 +134,7 @@ export class Analytics
       queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
 
     this._universalStorage = new UniversalStorage(
-      disablePersistance !== false
-        ? ['localStorage', 'cookie', 'memory']
-        : ['memory'],
+      disablePersistance ? ['memory'] : ['localStorage', 'cookie', 'memory'],
       getAvailableStorageOptions(cookieOptions)
     )
 
@@ -165,6 +163,10 @@ export class Analytics
 
   user = (): User => {
     return this._user
+  }
+
+  get storage(): UniversalStorage {
+    return this._universalStorage
   }
 
   async track(...args: EventParams): Promise<DispatchedEvent> {
@@ -322,7 +324,7 @@ export class Analytics
     const ctx = Context.system()
 
     const registrations = plugins.map((xt) =>
-      this.queue.register(ctx, xt, this, this._universalStorage)
+      this.queue.register(ctx, xt, this)
     )
     await Promise.all(registrations)
 
