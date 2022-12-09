@@ -109,7 +109,7 @@ export class PersistedPriorityQueue extends PriorityQueue<Context> {
       }
     })
 
-    document.addEventListener('pagehide', () => {
+    window.addEventListener('pagehide', () => {
       // we deliberately want to use the less powerful 'pagehide' API to only persist on events where the analytics instance gets destroyed, and not on tab away.
       if (this.todo > 0) {
         const items = [...this.queue, ...this.future]

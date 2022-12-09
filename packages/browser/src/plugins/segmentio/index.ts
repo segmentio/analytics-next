@@ -50,12 +50,21 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
+  // Attach `pagehide` before buffer is created so that inflight events are added
+  // to the buffer before the buffer persists events in its own `pagehide` handler.
+  window.addEventListener('pagehide', () => {
+    buffer.push(...Array.from(inflightEvents))
+    inflightEvents.clear()
+  })
+
   const buffer = analytics.options.disableClientPersistence
     ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
     : new PersistedPriorityQueue(
         analytics.queue.queue.maxAttempts,
         `dest-Segment.io`
       )
+
+  const inflightEvents = new Set<Context>()
   const flushing = false
 
   const apiHost = settings?.apiHost ?? 'api.segment.io/v1'
@@ -75,6 +84,8 @@ export function segmentio(
       return ctx
     }
 
+    inflightEvents.add(ctx)
+
     const path = ctx.event.type.charAt(0)
     let json = toFacade(ctx.event).json()
 
@@ -92,13 +103,14 @@ export function segmentio(
         normalize(analytics, json, settings, integrations)
       )
       .then(() => ctx)
-      .catch((err) => {
-        if (err.type === 'error' || err.message === 'Failed to fetch') {
-          buffer.push(ctx)
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
-        }
+      .catch(() => {
+        buffer.pushWithBackoff(ctx)
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
         return ctx
+      })
+      .finally(() => {
+        inflightEvents.delete(ctx)
       })
   }
 
@@ -113,6 +125,12 @@ export function segmentio(
     page: send,
     alias: send,
     group: send,
+  }
+
+  // Buffer may already have items if they were previously stored in localStorage.
+  // Start flushing them immediately.
+  if (buffer.todo) {
+    scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
   }
 
   return segmentio

@@ -20,6 +20,7 @@
     "@playwright/test": "^1.28.1",
     "@segment/analytics-next": "workspace:^",
     "http-server": "14.1.1",
-    "nock": "^13.2.9"
+    "nock": "^13.2.9",
+    "tslib": "^2.4.1"
   }
 }
