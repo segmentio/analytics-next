@@ -124,32 +124,16 @@ await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
 ```
 ### Graceful Shutdown: Advanced Example
 ```ts
-import { Analytics } from '@segment/analytics-node'
-import express from 'express'
-
-const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
-
 const app = express()
-
-app.post('/cart', (req, res) => {
-  analytics.track({
-    userId: req.body.userId,
-    event: 'Add to cart',
-    properties: { productId: '123456' }
-  })
-  res.sendStatus(200)
-})
-
 const server = app.listen(3000)
 
 const onExit = async () => {
-  await analytics.closeAndFlush() // flush all existing events
+  await analytics.closeAndFlush()
   server.close(() => {
     console.log("Gracefully closing server...")
     process.exit()
   })
 }
-
 ['SIGINT', 'SIGTERM'].forEach((code) => process.on(code, onExit))
 ```
 
@@ -168,9 +152,9 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 
 ## Event Emitter Interface
 ```ts
-// subscribe to specific events
+analytics.on('error', (err) => console.error(err))
 
-analytics.on('identify', (err) => console.error(err))
+analytics.on('identify', (ctx) => console.log(err))
 
 analytics.on('track', (ctx) => console.log(ctx))
 ```
@@ -180,8 +164,6 @@ analytics.on('track', (ctx) => console.log(ctx))
 Different parts of your application may require different types of batching, or even sending to multiple Segment sources. In that case, you can initialize multiple instances of Analytics with different settings:
 
 ```ts
-import { Analytics } from '@segment/analytics-node'
-
 const marketingAnalytics = new Analytics({ writeKey: 'MARKETING_WRITE_KEY' });
 const appAnalytics = new Analytics({ writeKey: 'APP_WRITE_KEY' });
 ```
