@@ -1,6 +1,5 @@
 # @segment/analytics-node
 > ### Warning: Until 1.x release, use this library at your own risk!
-While the API is very similar, the documentation for the legacy SDK (`analytics-node`) is here: https://segment.com/docs/connections/sources/catalog/libraries/server/node/
 
 ## Requirements
 - Node.js >= 14
@@ -16,7 +15,8 @@ yarn add @segment/analytics-node
 pnpm install @segment/analytics-node
 ```
 
-### Usage (assuming some express-like web framework)
+### Usage 
+Assuming some express-like web framework.
 ```ts
 import { Analytics } from '@segment/analytics-node'
 // or, if you use require:
@@ -57,7 +57,7 @@ const analytics = new Analytics({
 });
 ```
 
-## Complete Settings / Configuration
+## Configuration Settings
 See complete list of settings in the [AnalyticsSettings interface](src/app/settings.ts).
 ```ts
 const analytics = new Analytics({
@@ -112,9 +112,8 @@ analytics.on('error', (err) => console.error(err))
 ```
 
 
-## Graceful Shutdown (Long or short running processes)
-
-### Avoid losing events on exit!
+## Graceful Shutdown
+Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
   * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
 ```ts
@@ -122,7 +121,7 @@ await analytics.closeAndFlush()
 // or
 await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
 ```
-### Graceful Shutdown: Advanced Example
+#### Advanced Example
 ```ts
 const app = express()
 const server = app.listen(3000)
@@ -146,9 +145,7 @@ analytics.on('call_after_close', (event) => unflushedEvents.push(events))
 await analytics.closeAndFlush()
 
 console.log(unflushedEvents) // all events that came in after closeAndFlush was called
-
 ```
-
 
 ## Event Emitter Interface
 ```ts
@@ -158,7 +155,6 @@ analytics.on('identify', (ctx) => console.log(err))
 
 analytics.on('track', (ctx) => console.log(ctx))
 ```
-
 
 ## Multiple Clients
 Different parts of your application may require different types of batching, or even sending to multiple Segment sources. In that case, you can initialize multiple instances of Analytics with different settings:
@@ -181,7 +177,6 @@ const appAnalytics = new Analytics({ writeKey: 'APP_WRITE_KEY' });
  'page', 'error', 'register',
  'deregister'].forEach((event) => analytics.on(event, console.log)
 ```
-
 
 ## Development: Disabling Analytics for Tests
 - If you want to intercept / disable analytics for integration tests, you can use something like [nock](https://github.com/nock/nock)
