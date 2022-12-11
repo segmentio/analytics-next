@@ -112,7 +112,7 @@ analytics.on('error', (err) => console.error(err))
 ```
 
 
-## Graceful Shutdown
+## Graceful Exit
 Avoid losing events on exit!
  * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
   * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
