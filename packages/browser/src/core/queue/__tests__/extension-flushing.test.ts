@@ -25,6 +25,8 @@ const testPlugin: Plugin = {
 
 const ajs = {} as Analytics
 
+jest.spyOn(console, 'warn').mockImplementation(() => {}) // silence console spam.
+
 describe('Registration', () => {
   test('can register plugins', async () => {
     const eq = new EventQueue()

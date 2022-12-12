@@ -121,7 +121,7 @@ describe('queryString', () => {
 
     describe('setting anonymous id when making track and identify calls', () => {
       it('updates the anonymous ids before track calls are made', async () => {
-        const dispatchSpy = jest.spyOn(analytics as any, 'dispatch')
+        const dispatchSpy = jest.spyOn(analytics as any, '_dispatch')
         await queryString(analytics, '?ajs_event=event&ajs_aid=ariel')
         expect(dispatchSpy).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -133,7 +133,7 @@ describe('queryString', () => {
         dispatchSpy.mockRestore()
       })
       it('updates the anonymous ids before identify calls are made', async () => {
-        const dispatchSpy = jest.spyOn(analytics as any, 'dispatch')
+        const dispatchSpy = jest.spyOn(analytics as any, '_dispatch')
         await queryString(analytics, '?ajs_uid=1234&ajs_aid=ariel')
         expect(dispatchSpy).toHaveBeenCalledWith(
           expect.objectContaining({

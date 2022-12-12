@@ -279,7 +279,7 @@ async function loadAnalytics(
 
   const plugins = settings.plugins ?? []
   const classicIntegrations = settings.classicIntegrations ?? []
-  Context.initMetrics(legacySettings.metrics)
+  Context.initRemoteMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)

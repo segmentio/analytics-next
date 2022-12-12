@@ -1,8 +1,5 @@
-import { Analytics } from '@/core/analytics'
-import { Context } from '@/core/context'
-import { AnalyticsBrowser } from '@/browser'
-import { assertNotAny, assertIs } from '@/test-helpers/type-assertions'
-import { Group, User } from '../../../core/user'
+import { AnalyticsBrowser, Analytics, Context, User, Group } from '../../..'
+import { assertNotAny, assertIs } from '../../../test-helpers/type-assertions'
 
 /**
  * These are general typescript definition tests;
@@ -77,7 +74,7 @@ export default {
   'Identify should work with spread objects ': () => {
     const user = {
       name: 'john',
-      id: 12345,
+      id: 'abc123',
     }
     const { id, ...traits } = user
     void AnalyticsBrowser.load({ writeKey: 'foo' }).identify('foo', traits)
@@ -85,7 +82,7 @@ export default {
   'Track should work with spread objects': () => {
     const user = {
       name: 'john',
-      id: 12345,
+      id: 'abc123',
     }
     const { id, ...traits } = user
     void AnalyticsBrowser.load({ writeKey: 'foo' }).track('foo', traits)
@@ -93,7 +90,7 @@ export default {
   'Identify should work with generic objects ': () => {
     const user = {
       name: 'john',
-      id: 12345,
+      id: 'abc123',
     }
     void AnalyticsBrowser.load({ writeKey: 'foo' }).identify('foo', user)
   },
@@ -121,5 +118,13 @@ export default {
     const analytics = new AnalyticsBrowser().load({ writeKey: 'foo' })
     assertNotAny(analytics)
     assertIs<AnalyticsBrowser>(analytics)
+  },
+  'Should error if there is a type conflict in Traits': () => {
+    const analytics = new AnalyticsBrowser().load({ writeKey: 'foo' })
+    assertNotAny(analytics)
+    assertIs<AnalyticsBrowser>(analytics)
+
+    // @ts-expect-error - id should be a string
+    void analytics.identify('foo', { id: 123 })
   },
 }

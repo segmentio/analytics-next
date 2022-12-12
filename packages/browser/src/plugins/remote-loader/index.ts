@@ -1,7 +1,7 @@
 import type { Integrations } from '../../core/events/interfaces'
 import { LegacySettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
-import { Plugin } from '../../core/plugin'
+import { DestinationPlugin, Plugin } from '../../core/plugin'
 import { loadScript } from '../../lib/load-script'
 import { getCDN } from '../../lib/parse-cdn'
 import {
@@ -24,7 +24,7 @@ export interface RemotePlugin {
   settings: JSONObject
 }
 
-export class ActionDestination implements Plugin {
+export class ActionDestination implements DestinationPlugin {
   name: string // destination name
   version = '1.0.0'
   type: Plugin['type']

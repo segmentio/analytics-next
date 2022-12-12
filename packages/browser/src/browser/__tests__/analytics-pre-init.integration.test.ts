@@ -23,6 +23,8 @@ const writeKey = 'foo'
 
 const errMsg = 'errMsg'
 
+jest.spyOn(console, 'error').mockImplementation(() => {}) // silence console spam
+
 describe('Pre-initialization', () => {
   const trackSpy = jest.spyOn(Analytics.prototype, 'track')
   const identifySpy = jest.spyOn(Analytics.prototype, 'identify')

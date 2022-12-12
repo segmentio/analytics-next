@@ -24,7 +24,7 @@
     "build": "yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:esm": "yarn tsc -p tsconfig.build.json",
-    "watch": "yarn build:esm --watch --incremental",
+    "watch": "yarn build:esm --watch",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",

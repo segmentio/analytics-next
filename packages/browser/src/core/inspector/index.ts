@@ -20,12 +20,14 @@ const inspectorHost: Partial<InspectBroker> = ((env as any)[
 export const attachInspector = (analytics: Analytics) => {
   inspectorHost.attach?.(analytics as any)
 
-  analytics.on('dispatch_start', (ctx) => inspectorHost.triggered?.(ctx))
+  analytics.on('dispatch_start', (ctx) => inspectorHost.triggered?.(ctx as any))
 
-  analytics.queue.on('message_enriched', (ctx) => inspectorHost.enriched?.(ctx))
+  analytics.queue.on('message_enriched', (ctx) =>
+    inspectorHost.enriched?.(ctx as any)
+  )
 
   analytics.queue.on('message_delivered', (ctx) =>
     // FIXME: Resolve browsers destinations that the event was sent to
-    inspectorHost.delivered?.(ctx, ['segment.io'])
+    inspectorHost.delivered?.(ctx as any, ['segment.io'])
   )
 }

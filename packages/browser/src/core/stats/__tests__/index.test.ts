@@ -1,4 +1,4 @@
-import Stats from '..'
+import { Stats } from '..'
 import { RemoteMetrics } from '../remote-metrics'
 
 describe(Stats, () => {

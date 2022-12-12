@@ -1,7 +1,7 @@
 const fetcher = jest.fn()
 jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
-import { CorePlugin as Plugin } from '@segment/analytics-core'
+import { Plugin } from '../app/types'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { testPlugin } from './test-helpers/test-plugin'
 import { createSuccess, createError } from './test-helpers/factories'

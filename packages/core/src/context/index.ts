@@ -3,13 +3,13 @@ import { CoreSegmentEvent } from '../events/interfaces'
 import { v4 as uuid } from '@lukeed/uuid'
 import { dset } from 'dset'
 import { CoreLogger, LogLevel, LogMessage } from '../logger'
-import Stats, { Metric } from '../stats'
+import { Stats, CoreMetric, NullStats } from '../stats'
 
 export interface SerializedContext {
   id: string
   event: CoreSegmentEvent
   logs: LogMessage[]
-  metrics?: Metric[]
+  metrics?: CoreMetric[]
 }
 
 export interface ContextFailedDelivery {
@@ -34,10 +34,12 @@ export class ContextCancelation {
   }
 }
 
-export class CoreContext<Event extends CoreSegmentEvent = CoreSegmentEvent> {
+export abstract class CoreContext<
+  Event extends CoreSegmentEvent = CoreSegmentEvent
+> {
   event: Event
   logger: CoreLogger
-  stats?: Stats
+  stats: Stats
   attempts = 0
 
   private _failedDelivery?: ContextFailedDelivery
@@ -46,8 +48,8 @@ export class CoreContext<Event extends CoreSegmentEvent = CoreSegmentEvent> {
   constructor(
     event: Event,
     id = uuid(),
-    stats?: Stats,
-    logger: CoreLogger = new CoreLogger()
+    stats: Stats = new NullStats(),
+    logger = new CoreLogger()
   ) {
     this.event = event
     this._id = id
@@ -55,15 +57,15 @@ export class CoreContext<Event extends CoreSegmentEvent = CoreSegmentEvent> {
     this.stats = stats
   }
 
-  static system(): CoreContext {
-    return new CoreContext({ type: 'track', event: 'system' })
+  static system(): void {
+    // This should be overridden by the subclass to return an instance of the subclass.
   }
 
   isSame(other: CoreContext): boolean {
     return other.id === this.id
   }
 
-  cancel = (error?: Error | ContextCancelation): never => {
+  cancel(error?: Error | ContextCancelation): never {
     if (error) {
       throw error
     }
@@ -107,7 +109,7 @@ export class CoreContext<Event extends CoreSegmentEvent = CoreSegmentEvent> {
 
   flush(): void {
     this.logger.flush()
-    this.stats?.flush()
+    this.stats.flush()
   }
 
   toJSON(): SerializedContext {
@@ -115,7 +117,7 @@ export class CoreContext<Event extends CoreSegmentEvent = CoreSegmentEvent> {
       id: this._id,
       event: this.event,
       logs: this.logger.logs,
-      metrics: this.stats?.metrics,
+      metrics: this.stats.metrics,
     }
   }
 }

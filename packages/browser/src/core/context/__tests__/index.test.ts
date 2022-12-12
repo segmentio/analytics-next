@@ -3,6 +3,10 @@ import { Context } from '..'
 import { SegmentEvent } from '../../events'
 
 describe(Context, () => {
+  // hide console spam when running tests
+  jest.spyOn(console, 'log').mockImplementation(() => {})
+  jest.spyOn(console, 'table').mockImplementation(() => {})
+
   describe('.system', () => {
     it('creates a system event', () => {
       const ctx = Context.system()

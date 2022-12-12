@@ -1,5 +1,6 @@
-import { backoff, CoreContext } from '@segment/analytics-core'
+import { backoff } from '@segment/analytics-core'
 import { abortSignalAfterTimeout } from '../../lib/abort'
+import type { Context } from '../../app/context'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'
@@ -12,8 +13,8 @@ function sleep(timeoutInMs: number): Promise<void> {
 function noop() {}
 
 interface PendingItem {
-  resolver: (ctx: CoreContext) => void
-  context: CoreContext
+  resolver: (ctx: Context) => void
+  context: Context
 }
 
 export interface PublisherProps {
@@ -107,10 +108,10 @@ export class Publisher {
    * @param ctx - Context containing a Segment event.
    * @returns a promise that resolves with the context after the event has been delivered.
    */
-  enqueue(ctx: CoreContext): Promise<CoreContext> {
+  enqueue(ctx: Context): Promise<Context> {
     const batch = this._batch ?? this.createBatch()
 
-    const { promise: ctxPromise, resolve } = extractPromiseParts<CoreContext>()
+    const { promise: ctxPromise, resolve } = extractPromiseParts<Context>()
 
     const pendingItem: PendingItem = {
       context: ctx,

@@ -1,5 +1,5 @@
-import { CoreAnalytics } from '../analytics'
-import { CoreContext } from '../context'
+import type { CoreAnalytics } from '../analytics'
+import type { CoreContext } from '../context'
 
 interface CorePluginConfig {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,10 +19,11 @@ export type PluginType =
 // utility - do not affect lifecycle. Should be run and executed once. Their `track/identify` calls don't really do anything. example
 
 export interface CorePlugin<
-  Analytics extends CoreAnalytics = CoreAnalytics,
-  Ctx extends CoreContext = CoreContext
+  Ctx extends CoreContext = CoreContext,
+  Analytics extends CoreAnalytics = any
 > {
   name: string
+  alternativeNames?: string[]
   version: string
   type: PluginType
   isLoaded: () => boolean

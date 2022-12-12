@@ -5,8 +5,8 @@ import { isOffline } from '../../../core/connection'
 import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import { scheduleFlush } from '../schedule-flush'
-import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
-import { PriorityQueue } from '../../../lib/priority-queue'
+import * as PPQ from '../../../lib/priority-queue/persisted'
+import * as PQ from '../../../lib/priority-queue'
 import { Context } from '../../../core/context'
 
 jest.mock('../schedule-flush')
@@ -17,11 +17,11 @@ describe('Segment.io retries', () => {
   let options: SegmentioSettings
   let analytics: Analytics
   let segment: Plugin
-  let queue: (PersistedPriorityQueue | PriorityQueue<Context>) & {
+  let queue: (PPQ.PersistedPriorityQueue | PQ.PriorityQueue<Context>) & {
     __type?: QueueType
   }
-  ;[false, true].forEach((disableClientPersistence) => {
-    describe(`disableClientPersistence: ${disableClientPersistence}`, () => {
+  ;[false, true].forEach((persistenceIsDisabled) => {
+    describe(`disableClientPersistence: ${persistenceIsDisabled}`, () => {
       beforeEach(async () => {
         jest.resetAllMocks()
         jest.restoreAllMocks()
@@ -32,20 +32,26 @@ describe('Segment.io retries', () => {
         options = { apiKey: 'foo' }
         analytics = new Analytics(
           { writeKey: options.apiKey },
-          { retryQueue: true, disableClientPersistence }
+          {
+            retryQueue: true,
+            disableClientPersistence: persistenceIsDisabled,
+          }
         )
 
-        queue = disableClientPersistence
-          ? new PriorityQueue(3, [])
-          : new PersistedPriorityQueue(3, `test-Segment.io`)
-
-        queue['__type'] = disableClientPersistence ? 'priority' : 'persisted'
-        if (disableClientPersistence) {
-          // @ts-expect-error reassign import
-          PriorityQueue = jest.fn().mockImplementation(() => queue)
+        if (persistenceIsDisabled) {
+          queue = new PQ.PriorityQueue(3, [])
+          queue['__type'] = 'priority'
+          Object.defineProperty(PQ, 'PriorityQueue', {
+            writable: true,
+            value: jest.fn().mockImplementation(() => queue),
+          })
         } else {
-          // @ts-expect-error reassign import
-          PersistedPriorityQueue = jest.fn().mockImplementation(() => queue)
+          queue = new PPQ.PersistedPriorityQueue(3, `test-Segment.io`)
+          queue['__type'] = 'persisted'
+          Object.defineProperty(PPQ, 'PersistedPriorityQueue', {
+            writable: true,
+            value: jest.fn().mockImplementation(() => queue),
+          })
         }
 
         segment = segmentio(analytics, options, {})
@@ -65,7 +71,7 @@ describe('Segment.io retries', () => {
         expect(ctx.attempts).toBe(1)
         expect(isOffline).toHaveBeenCalledTimes(2)
         expect(queue.__type).toBe<QueueType>(
-          disableClientPersistence ? 'priority' : 'persisted'
+          persistenceIsDisabled ? 'priority' : 'persisted'
         )
       })
     })

@@ -3,11 +3,12 @@ import { noop } from 'lodash'
 import { CoreAnalytics } from '../../analytics'
 import { pWhile } from '../../utils/p-while'
 import * as timer from '../../priority-queue/backoff'
-import { CoreContext, ContextCancelation } from '../../context'
+import { ContextCancelation } from '../../context'
 import { CorePlugin } from '../../plugins'
 import { pTimeout } from '../../callback'
-import { EventQueue as EQ } from '../event-queue'
+import { CoreEventQueue as EQ } from '../event-queue'
 import { PriorityQueue } from '../../priority-queue'
+import { TestCtx } from '../../../test-helpers/test-ctx'
 
 class EventQueue extends EQ {
   constructor() {
@@ -15,7 +16,7 @@ class EventQueue extends EQ {
   }
 }
 
-async function flushAll(eq: EventQueue): Promise<CoreContext[]> {
+async function flushAll(eq: EventQueue): Promise<TestCtx[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
   await pWhile(
     () => eq.queue.length > 0,
@@ -42,10 +43,10 @@ const testPlugin: CorePlugin = {
 
 const ajs = {} as CoreAnalytics
 
-let fruitBasket: CoreContext, basketView: CoreContext, shopper: CoreContext
+let fruitBasket: TestCtx, basketView: TestCtx, shopper: TestCtx
 
 beforeEach(() => {
-  fruitBasket = new CoreContext({
+  fruitBasket = new TestCtx({
     type: 'track',
     event: 'Fruit Basket',
     properties: {
@@ -55,11 +56,11 @@ beforeEach(() => {
     },
   })
 
-  basketView = new CoreContext({
+  basketView = new TestCtx({
     type: 'page',
   })
 
-  shopper = new CoreContext({
+  shopper = new TestCtx({
     type: 'identify',
     traits: {
       name: 'Netto Farah',
@@ -96,7 +97,7 @@ test('does not enqueue multiple flushes at once', async () => {
 
   const eq = new EventQueue()
 
-  const anothaOne = new CoreContext({
+  const anothaOne = new TestCtx({
     type: 'page',
   })
 
@@ -140,7 +141,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -209,7 +210,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -249,7 +250,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: async (ctx) => {
@@ -286,7 +287,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: async (ctx) => {
@@ -311,7 +312,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -352,7 +353,7 @@ describe('Flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -391,7 +392,7 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Amplitude',
       type: 'destination' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
@@ -400,7 +401,7 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Mixpanel',
       type: 'destination' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
@@ -409,7 +410,7 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Segment.io',
       type: 'after' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
@@ -429,11 +430,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -462,11 +463,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -496,11 +497,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -530,11 +531,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -563,11 +564,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -598,10 +599,10 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -622,12 +623,10 @@ describe('deregister', () => {
     const toBeRemoved = { ...testPlugin, name: 'remove-me' }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) =>
-      eq.register(CoreContext.system(), p, ajs)
-    )
+    const promises = plugins.map((p) => eq.register(TestCtx.system(), p, ajs))
     await Promise.all(promises)
 
-    await eq.deregister(CoreContext.system(), toBeRemoved, ajs)
+    await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(eq.plugins.length).toBe(1)
     expect(eq.plugins[0]).toBe(testPlugin)
   })
@@ -637,12 +636,10 @@ describe('deregister', () => {
     const toBeRemoved = { ...testPlugin, name: 'remove-me', unload: jest.fn() }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) =>
-      eq.register(CoreContext.system(), p, ajs)
-    )
+    const promises = plugins.map((p) => eq.register(TestCtx.system(), p, ajs))
     await Promise.all(promises)
 
-    await eq.deregister(CoreContext.system(), toBeRemoved, ajs)
+    await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(toBeRemoved.unload).toHaveBeenCalled()
     expect(eq.plugins.length).toBe(1)
     expect(eq.plugins[0]).toBe(testPlugin)
@@ -663,7 +660,7 @@ describe('dispatchSingle', () => {
     // Skip because we don't support metrics atm
     const eq = new EventQueue()
     const ctx = await eq.dispatchSingle(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -675,7 +672,7 @@ describe('dispatchSingle', () => {
       ]
     `)
 
-    expect(ctx.stats?.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
+    expect(ctx.stats.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       Array [
         "message_dispatched",
         "message_delivered",
@@ -691,7 +688,7 @@ describe('dispatchSingle', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {

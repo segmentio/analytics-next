@@ -1,7 +1,9 @@
 import { CoreContext } from '../context'
 import { ID } from '../user'
 
-export type Callback = (ctx: CoreContext) => Promise<unknown> | unknown
+export type Callback<Ctx extends CoreContext = CoreContext> = (
+  ctx: Ctx
+) => Promise<unknown> | unknown
 
 export type SegmentEventType =
   | 'track'
@@ -162,6 +164,7 @@ export interface CoreExtraContext {
     url?: string
     link?: string
 
+    id?: string // undocumented
     btid?: string // undocumented?
     urid?: string // undocumented?
   }
@@ -218,8 +221,13 @@ export interface SegmentEventMetadata {
 
 export type Timestamp = Date | string
 
+/**
+ * A Plan allows users to specify events and which destinations they would like them to be sent to
+ */
 export interface Plan {
   track?: TrackPlan
+  identify?: TrackPlan
+  group?: TrackPlan
 }
 
 export interface TrackPlan {
@@ -228,7 +236,7 @@ export interface TrackPlan {
   __default?: PlanEvent
 }
 
-interface PlanEvent {
+export interface PlanEvent {
   /**
    * Whether or not this plan event is enabled
    */
@@ -236,7 +244,7 @@ interface PlanEvent {
   /**
    * Which integrations the plan event applies to
    */
-  integrations: {
+  integrations?: {
     [key: string]: boolean
   }
 }

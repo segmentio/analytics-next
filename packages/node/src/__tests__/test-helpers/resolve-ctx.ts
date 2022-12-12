@@ -1,4 +1,5 @@
-import { Analytics, Context } from '../../app/analytics-node'
+import type { Analytics } from '../../app/analytics-node'
+import type { Context } from '../../app/context'
 
 /** Tester helper that resolves context from emitter event */
 export const resolveCtx = (

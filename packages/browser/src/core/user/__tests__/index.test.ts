@@ -25,6 +25,8 @@ beforeEach(function () {
   clear()
 })
 
+jest.spyOn(console, 'warn').mockImplementation(() => {}) // silence console spam.
+
 describe('user', () => {
   const cookieKey = User.defaults.cookie.key
   const localStorageKey = User.defaults.localStorage.key

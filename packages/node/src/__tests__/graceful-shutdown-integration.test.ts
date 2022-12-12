@@ -6,10 +6,10 @@ jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
 import { Analytics } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
-import { CoreContext, CorePlugin } from '@segment/analytics-core'
-import { SegmentEvent } from '../app/types'
+import { Plugin, SegmentEvent } from '../app/types'
+import { Context } from '../app/context'
 
-const testPlugin: CorePlugin = {
+const testPlugin: Plugin = {
   type: 'after',
   load: () => Promise.resolve(),
   name: 'foo',
@@ -68,7 +68,7 @@ describe('Ability for users to exit without losing events', () => {
     })
 
     test('all async callbacks should be called', async () => {
-      const trackCall = new Promise<CoreContext>((resolve) => {
+      const trackCall = new Promise<Context>((resolve) => {
         ajs.track(
           {
             userId: 'abc',
@@ -79,7 +79,7 @@ describe('Ability for users to exit without losing events', () => {
       })
 
       const res = await Promise.race([ajs.closeAndFlush(), trackCall])
-      expect(res instanceof CoreContext).toBe(true)
+      expect(res instanceof Context).toBe(true)
     })
   })
 
@@ -209,7 +209,7 @@ describe('Ability for users to exit without losing events', () => {
 
     test('should wait to flush if close is called and an event has not made it to the segment.io plugin yet', async () => {
       const TRACK_DELAY = 100
-      const _testPlugin: CorePlugin = {
+      const _testPlugin: Plugin = {
         ...testPlugin,
         track: async (ctx) => {
           await sleep(TRACK_DELAY)

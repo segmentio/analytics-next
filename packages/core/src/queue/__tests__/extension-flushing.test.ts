@@ -1,16 +1,17 @@
 import { shuffle } from 'lodash'
 import { CoreAnalytics } from '../../analytics'
 import { PriorityQueue } from '../../priority-queue'
-import { CoreContext } from '../../context'
 import { CorePlugin as Plugin } from '../../plugins'
-import { EventQueue as EQ } from '../event-queue'
+import { CoreEventQueue as EQ } from '../event-queue'
+import { TestCtx } from '../../../test-helpers/test-ctx'
 
 class EventQueue extends EQ {
   constructor() {
     super(new PriorityQueue(4, []))
   }
 }
-const fruitBasket = new CoreContext({
+
+const fruitBasket = new TestCtx({
   type: 'track',
   event: 'Fruit Basket',
   properties: {
@@ -46,7 +47,7 @@ describe('Registration', () => {
       isLoaded: () => true,
     }
 
-    const ctx = CoreContext.system()
+    const ctx = TestCtx.system()
     await eq.register(ctx, plugin, ajs)
 
     expect(load).toHaveBeenCalledWith(ctx, ajs)
@@ -63,7 +64,7 @@ describe('Registration', () => {
       isLoaded: () => false,
     }
 
-    const ctx = CoreContext.system()
+    const ctx = TestCtx.system()
     await expect(
       eq.register(ctx, plugin, ajs)
     ).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
@@ -80,7 +81,7 @@ describe('Registration', () => {
       isLoaded: () => false,
     }
 
-    const ctx = CoreContext.system()
+    const ctx = TestCtx.system()
     await eq.register(ctx, plugin, ajs)
 
     expect(ctx.logs()[0].level).toEqual('warn')
@@ -96,7 +97,7 @@ describe('Plugin flushing', () => {
     eq.queue = queue
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         type: 'before',
@@ -108,7 +109,7 @@ describe('Plugin flushing', () => {
     expect(flushed.logs().map((l) => l.message)).toContain('Delivered')
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         name: 'Faulty before',
@@ -120,9 +121,9 @@ describe('Plugin flushing', () => {
       ajs
     )
 
-    const failedFlush: CoreContext = await eq
+    const failedFlush: TestCtx = await eq
       .dispatch(
-        new CoreContext({
+        new TestCtx({
           type: 'track',
         })
       )
@@ -137,7 +138,7 @@ describe('Plugin flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         name: 'Faulty enrichment',
@@ -150,7 +151,7 @@ describe('Plugin flushing', () => {
     )
 
     const flushed = await eq.dispatch(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -177,11 +178,11 @@ describe('Plugin flushing', () => {
       type: 'destination',
     }
 
-    await eq.register(CoreContext.system(), amplitude, ajs)
-    await eq.register(CoreContext.system(), fullstory, ajs)
+    await eq.register(TestCtx.system(), amplitude, ajs)
+    await eq.register(TestCtx.system(), fullstory, ajs)
 
     const flushed = await eq.dispatch(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -243,11 +244,11 @@ describe('Plugin flushing', () => {
       type: 'after',
     }
 
-    await eq.register(CoreContext.system(), afterFailed, ajs)
-    await eq.register(CoreContext.system(), after, ajs)
+    await eq.register(TestCtx.system(), afterFailed, ajs)
+    await eq.register(TestCtx.system(), after, ajs)
 
     const flushed = await eq.dispatch(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -294,7 +295,7 @@ describe('Plugin flushing', () => {
     const eq = new EventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         name: 'Kiwi',
@@ -308,7 +309,7 @@ describe('Plugin flushing', () => {
     )
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         name: 'Watermelon',
@@ -322,7 +323,7 @@ describe('Plugin flushing', () => {
     )
     let trackCalled = false
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         name: 'Before',
@@ -336,7 +337,7 @@ describe('Plugin flushing', () => {
     )
 
     const flushed = await eq.dispatch(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -401,11 +402,11 @@ describe('Plugin flushing', () => {
     // shuffle plugins so we can verify order
     const plugins = shuffle([before, enrichment, enrichmentTwo, destination])
     for (const xt of plugins) {
-      await eq.register(CoreContext.system(), xt, ajs)
+      await eq.register(TestCtx.system(), xt, ajs)
     }
 
     await eq.dispatch(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )

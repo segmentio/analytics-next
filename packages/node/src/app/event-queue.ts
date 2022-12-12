@@ -1,5 +1,6 @@
-import { EventQueue, PriorityQueue } from '@segment/analytics-core'
-import type { Context } from './analytics-node'
+import { CoreEventQueue, PriorityQueue } from '@segment/analytics-core'
+import type { Plugin } from '../app/types'
+import type { Context } from './context'
 
 class NodePriorityQueue extends PriorityQueue<Context> {
   constructor() {
@@ -15,7 +16,7 @@ class NodePriorityQueue extends PriorityQueue<Context> {
   }
 }
 
-export class NodeEventQueue extends EventQueue {
+export class NodeEventQueue extends CoreEventQueue<Context, Plugin> {
   constructor() {
     super(new NodePriorityQueue())
   }

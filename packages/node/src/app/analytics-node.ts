@@ -1,12 +1,4 @@
-import {
-  CoreAnalytics,
-  EventFactory,
-  EventQueue,
-  CoreSegmentEvent,
-  bindAll,
-  pTimeout,
-  CoreContext,
-} from '@segment/analytics-core'
+import { CoreAnalytics, bindAll, pTimeout } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../../package.json'
 import { createConfiguredNodePlugin } from '../plugins/segmentio'
@@ -22,14 +14,11 @@ import {
   Plugin,
   SegmentEvent,
 } from './types'
+import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
 
-// create a derived class since we may want to add node specific things to Context later
-// While this is not a type, it is a definition
-export class Context extends CoreContext {}
-
 export class Analytics extends NodeEmitter implements CoreAnalytics {
-  private readonly _eventFactory: EventFactory
+  private readonly _eventFactory: NodeEventFactory
   private _isClosed = false
   private _pendingEvents = 0
   private readonly _closeAndFlushDefaultTimeout: number
@@ -37,7 +26,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     typeof createConfiguredNodePlugin
   >['publisher']
 
-  private readonly _queue: EventQueue
+  private readonly _queue: NodeEventQueue
 
   ready: Promise<void>
 
@@ -96,7 +85,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
   }
 
-  private _dispatch(segmentEvent: CoreSegmentEvent, callback?: Callback) {
+  private _dispatch(segmentEvent: SegmentEvent, callback?: Callback) {
     if (this._isClosed) {
       this.emit('call_after_close', segmentEvent as SegmentEvent)
       return undefined
@@ -261,7 +250,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * Registers one or more plugins to augment Analytics functionality.
    * @param plugins
    */
-  async register(...plugins: Plugin[]): Promise<void> {
+  register(...plugins: Plugin[]): Promise<void> {
     return this._queue.criticalTasks.run(async () => {
       const ctx = Context.system()
 
@@ -283,7 +272,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
   async deregister(...pluginNames: string[]): Promise<void> {
     const ctx = Context.system()
 
-    const deregistrations = pluginNames.map(async (pl) => {
+    const deregistrations = pluginNames.map((pl) => {
       const plugin = this._queue.plugins.find((p) => p.name === pl)
       if (plugin) {
         return this._queue.deregister(ctx, plugin, this)

@@ -3,7 +3,7 @@ jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
 import { createError, createSuccess } from './test-helpers/factories'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
-import { Context } from '../app/analytics-node'
+import { Context } from '../app/context'
 
 describe('Callback behavior', () => {
   beforeEach(() => {

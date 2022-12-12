@@ -1,14 +1,19 @@
-import { RemoteMetrics } from './remote-metrics'
+type MetricType = CoreMetricType
 
-type MetricType = 'gauge' | 'counter'
 type CompactMetricType = 'g' | 'c'
 
-export interface Metric {
+export type CoreMetricType = 'gauge' | 'counter'
+
+export interface CoreMetric {
   metric: string
   value: number
-  type: MetricType
+  type: CoreMetricType
   tags: string[]
   timestamp: number // unit milliseconds
+}
+
+export interface CoreRemoteMetrics {
+  increment(metric: string, tags: string[]): void
 }
 
 export interface CompactMetric {
@@ -27,12 +32,12 @@ const compactMetricType = (type: MetricType): CompactMetricType => {
   return enums[type]
 }
 
-export default class Stats {
-  metrics: Metric[] = []
+export class Stats {
+  metrics: CoreMetric[] = []
 
-  private remoteMetrics?: RemoteMetrics
+  private remoteMetrics?: CoreRemoteMetrics
 
-  constructor(remoteMetrics?: RemoteMetrics) {
+  constructor(remoteMetrics?: CoreRemoteMetrics) {
     this.remoteMetrics = remoteMetrics
   }
 
@@ -85,5 +90,15 @@ export default class Stats {
         e: m.timestamp,
       }
     })
+  }
+}
+
+export class NullStats implements Stats {
+  metrics = []
+  gauge(..._args: Parameters<Stats['gauge']>) {}
+  increment(..._args: Parameters<Stats['increment']>) {}
+  flush(..._args: Parameters<Stats['flush']>) {}
+  serialize(..._args: Parameters<Stats['serialize']>) {
+    return []
   }
 }

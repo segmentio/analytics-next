@@ -26,81 +26,59 @@ jest.mock('../../callback', () => ({
   invokeCallback: invokeCallback,
 }))
 
-import { EventQueue } from '../../queue/event-queue'
+import { CoreEventQueue } from '../../queue/event-queue'
 import { Emitter } from '../../emitter'
 import { dispatch, getDelay } from '../dispatch'
 import { PriorityQueue } from '../../priority-queue'
 import { CoreContext } from '../../context'
+import { TestCtx } from '../../../test-helpers/test-ctx'
 
 let emitter!: Emitter
-let queue!: EventQueue
-const dispatchSingleSpy = jest.spyOn(EventQueue.prototype, 'dispatchSingle')
-const dispatchSpy = jest.spyOn(EventQueue.prototype, 'dispatch')
+let queue!: CoreEventQueue<CoreContext>
+const dispatchSingleSpy = jest.spyOn(CoreEventQueue.prototype, 'dispatchSingle')
+const dispatchSpy = jest.spyOn(CoreEventQueue.prototype, 'dispatch')
 const screenCtxMatcher = expect.objectContaining<Partial<CoreContext>>({
   event: { type: 'screen' },
 })
+
+const screenCtx = new TestCtx({ type: 'screen' })
 describe('Dispatch', () => {
   beforeEach(() => {
     jest.resetAllMocks()
     dispatchSingleSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
     invokeCallback.mockImplementationOnce((ctx) => Promise.resolve(ctx))
     dispatchSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
-    queue = new EventQueue(new PriorityQueue(4, []))
+    queue = new CoreEventQueue<CoreContext>(new PriorityQueue(4, []))
     queue.isEmpty = jest.fn().mockReturnValue(false)
     emitter = new Emitter()
   })
 
-  it('should not dispatch if client is currently offline and retries are *disabled* for the main event queue', async () => {
-    isOnline.mockReturnValue(false)
-    isOffline.mockReturnValue(true)
-
-    const ctx = await dispatch({ type: 'screen' }, queue, emitter, {
-      retryQueue: false,
-    })
-    expect(ctx).toEqual(screenCtxMatcher)
-    const called = Boolean(
-      dispatchSingleSpy.mock.calls.length || dispatchSpy.mock.calls.length
-    )
-    expect(called).toBeFalsy()
-  })
-
-  it('should be allowed to dispatch if client is currently offline and retries are *enabled* for the main event queue', async () => {
-    isOnline.mockReturnValue(false)
-    isOffline.mockReturnValue(true)
-
-    await dispatch({ type: 'screen' }, queue, emitter, {
-      retryQueue: true,
-    })
-    const called = Boolean(
-      dispatchSingleSpy.mock.calls.length || dispatchSpy.mock.calls.length
-    )
-    expect(called).toBeTruthy()
-  })
-
   it('should call dispatchSingle correctly if queue is empty', async () => {
     queue.isEmpty = jest.fn().mockReturnValue(true)
-    await dispatch({ type: 'screen' }, queue, emitter)
+    await dispatch(screenCtx, queue, emitter)
     expect(dispatchSingleSpy).toBeCalledWith(screenCtxMatcher)
     expect(dispatchSpy).not.toBeCalled()
   })
 
   it('should call dispatch correctly if queue has items', async () => {
-    await dispatch({ type: 'screen' }, queue, emitter)
+    await dispatch(screenCtx, queue, emitter)
     expect(dispatchSpy).toBeCalledWith(screenCtxMatcher)
     expect(dispatchSingleSpy).not.toBeCalled()
   })
 
   it('should only call invokeCallback if callback is passed', async () => {
-    await dispatch({ type: 'screen' }, queue, emitter)
+    await dispatch(screenCtx, queue, emitter)
     expect(invokeCallback).not.toBeCalled()
 
     const cb = jest.fn()
-    await dispatch({ type: 'screen' }, queue, emitter, { callback: cb })
+    await dispatch(screenCtx, queue, emitter, {
+      callback: cb,
+    })
     expect(invokeCallback).toBeCalledTimes(1)
   })
   it('should call invokeCallback with correct args', async () => {
     const cb = jest.fn()
-    await dispatch({ type: 'screen' }, queue, emitter, {
+    await dispatch(screenCtx, queue, emitter, {
       callback: cb,
     })
     expect(dispatchSpy).toBeCalledWith(screenCtxMatcher)

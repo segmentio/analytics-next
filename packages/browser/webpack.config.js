@@ -25,7 +25,9 @@ if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())
 }
 
+/** @type { import('webpack').Configuration } */
 const config = {
+  stats: process.env.WATCH === 'true' ? 'errors-warnings' : 'normal',
   node: {
     global: false, // do not polyfill global object, we can use getGlobal function if needed.
   },

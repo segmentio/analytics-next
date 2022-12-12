@@ -1,6 +1,6 @@
-import { CorePlugin } from '@segment/analytics-core'
+import { Plugin } from '../../app/types'
 
-export const testPlugin: CorePlugin = {
+export const testPlugin: Plugin = {
   isLoaded: jest.fn().mockReturnValue(true),
   load: jest.fn().mockResolvedValue(undefined),
   unload: jest.fn().mockResolvedValue(undefined),
