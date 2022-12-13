@@ -11,6 +11,7 @@ import type { Context } from '../context'
 import type { SegmentEvent } from '../events'
 import type { Group, User } from '../user'
 import type { LegacyIntegration } from '../../plugins/ajs-destination/types'
+import { CoreAnalytics } from '@segment/analytics-core'
 
 // we can define a contract because:
 // - it gives us a neat place to put all our typedocs (they end up being inherited by the class that implements them).
@@ -74,7 +75,7 @@ export interface AnalyticsClassic extends AnalyticsClassicStubs {
 /**
  * Interface implemented by concrete Analytics class (commonly accessible if you use "await" on AnalyticsBrowser.load())
  */
-export type AnalyticsCore = {
+export interface AnalyticsCore extends CoreAnalytics {
   track(...args: EventParams): Promise<DispatchedEvent>
   page(...args: PageParams): Promise<DispatchedEvent>
   identify(...args: UserParams): Promise<DispatchedEvent>
