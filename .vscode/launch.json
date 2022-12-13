@@ -4,11 +4,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest Current File", /* this can be run on test or source code */
+      "name": "Jest Current File",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
       "args": [
         "--testTimeout=100000",
-        "--runTestsByPath",
         "--findRelatedTests",
         "${relativeFile}"
       ],
