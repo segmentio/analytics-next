@@ -44,10 +44,10 @@ export abstract class CoreEventQueue<
     })
   }
 
-  async register<Ajs extends CoreAnalytics>(
+  async register(
     ctx: Ctx,
     plugin: Plugin,
-    instance: Ajs
+    instance: CoreAnalytics
   ): Promise<void> {
     await Promise.resolve(plugin.load(ctx, instance))
       .then(() => {
@@ -70,10 +70,10 @@ export abstract class CoreEventQueue<
       })
   }
 
-  async deregister<Ajs extends CoreAnalytics>(
+  async deregister(
     ctx: Ctx,
     plugin: CorePlugin<Ctx>,
-    instance: Ajs
+    instance: CoreAnalytics
   ): Promise<void> {
     try {
       if (plugin.unload) {
