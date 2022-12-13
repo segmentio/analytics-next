@@ -6,17 +6,9 @@ import * as timer from '../../priority-queue/backoff'
 import { ContextCancelation } from '../../context'
 import { CorePlugin } from '../../plugins'
 import { pTimeout } from '../../callback'
-import { CoreEventQueue as EQ } from '../event-queue'
-import { PriorityQueue } from '../../priority-queue'
-import { TestCtx } from '../../../test-helpers/test-ctx'
+import { TestCtx, TestEventQueue } from '../../../test-helpers'
 
-class EventQueue extends EQ {
-  constructor() {
-    super(new PriorityQueue(4, []))
-  }
-}
-
-async function flushAll(eq: EventQueue): Promise<TestCtx[]> {
+async function flushAll(eq: TestEventQueue): Promise<TestCtx[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
   await pWhile(
     () => eq.queue.length > 0,
@@ -69,7 +61,7 @@ beforeEach(() => {
 })
 
 test('can send events', async () => {
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
   const evt = await eq.dispatch(fruitBasket)
   expect(evt).toBe(fruitBasket)
 })
@@ -77,7 +69,7 @@ test('can send events', async () => {
 test('delivers events out of band', async () => {
   jest.useFakeTimers()
 
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   eq.dispatch(fruitBasket)
@@ -95,7 +87,7 @@ test('delivers events out of band', async () => {
 test('does not enqueue multiple flushes at once', async () => {
   jest.useFakeTimers()
 
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
 
   const anothaOne = new TestCtx({
     type: 'page',
@@ -123,7 +115,7 @@ describe('Flushing', () => {
   })
 
   test('works until the queue is empty', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     eq.dispatch(fruitBasket)
     eq.dispatch(basketView)
@@ -138,7 +130,7 @@ describe('Flushing', () => {
   })
 
   test('re-queues failed events', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -173,7 +165,7 @@ describe('Flushing', () => {
   test('waits for critical tasks to finish before performing event deliveries', async () => {
     jest.useRealTimers()
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     let finishCriticalTask: () => void = noop
     const startTask = () =>
@@ -207,7 +199,7 @@ describe('Flushing', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -247,7 +239,7 @@ describe('Flushing', () => {
   })
 
   test('does not retry non retriable cancelations', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -284,7 +276,7 @@ describe('Flushing', () => {
   })
 
   test('does not retry non retriable cancelations (dispatchSingle)', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -309,7 +301,7 @@ describe('Flushing', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -350,7 +342,7 @@ describe('Flushing', () => {
 
   test('client: can block on delivery', async () => {
     jest.useRealTimers()
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),
@@ -416,7 +408,7 @@ describe('Flushing', () => {
     }
 
     test('does not delivery to destinations on denyList', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -450,7 +442,7 @@ describe('Flushing', () => {
     })
 
     test('does not deliver to any destination except Segment.io if All: false ', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -482,7 +474,7 @@ describe('Flushing', () => {
     })
 
     test('does not deliver when All: false and destination is also explicitly false', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -516,7 +508,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to destinations if All: false but the destination is allowed', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -550,7 +542,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to Segment.io if All: false but Segment.io is not specified', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -583,7 +575,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to destinations that exist as an object', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(segmentio, 'track')
@@ -619,7 +611,7 @@ describe('Flushing', () => {
 
 describe('deregister', () => {
   it('remove plugin from plugins list', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const toBeRemoved = { ...testPlugin, name: 'remove-me' }
     const plugins = [testPlugin, toBeRemoved]
 
@@ -632,7 +624,7 @@ describe('deregister', () => {
   })
 
   it('invokes plugin.unload', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const toBeRemoved = { ...testPlugin, name: 'remove-me', unload: jest.fn() }
     const plugins = [testPlugin, toBeRemoved]
 
@@ -648,7 +640,7 @@ describe('deregister', () => {
 
 describe('dispatchSingle', () => {
   it('dispatches events without placing them on the queue', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const promise = eq.dispatchSingle(fruitBasket)
 
     expect(eq.queue.length).toBe(0)
@@ -658,7 +650,7 @@ describe('dispatchSingle', () => {
 
   it.skip('records delivery metrics', async () => {
     // Skip because we don't support metrics atm
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const ctx = await eq.dispatchSingle(
       new TestCtx({
         type: 'track',
@@ -685,7 +677,7 @@ describe('dispatchSingle', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
       TestCtx.system(),

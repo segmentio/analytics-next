@@ -29,9 +29,8 @@ jest.mock('../../callback', () => ({
 import { CoreEventQueue } from '../../queue/event-queue'
 import { Emitter } from '../../emitter'
 import { dispatch, getDelay } from '../dispatch'
-import { PriorityQueue } from '../../priority-queue'
 import { CoreContext } from '../../context'
-import { TestCtx } from '../../../test-helpers/test-ctx'
+import { TestCtx, TestEventQueue } from '../../../test-helpers'
 
 let emitter!: Emitter
 let queue!: CoreEventQueue<CoreContext>
@@ -48,7 +47,7 @@ describe('Dispatch', () => {
     dispatchSingleSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
     invokeCallback.mockImplementationOnce((ctx) => Promise.resolve(ctx))
     dispatchSpy.mockImplementationOnce((ctx) => Promise.resolve(ctx))
-    queue = new CoreEventQueue<CoreContext>(new PriorityQueue(4, []))
+    queue = new TestEventQueue()
     queue.isEmpty = jest.fn().mockReturnValue(false)
     emitter = new Emitter()
   })

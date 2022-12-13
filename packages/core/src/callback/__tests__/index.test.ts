@@ -1,5 +1,5 @@
 import { invokeCallback } from '..'
-import { TestCtx } from '../../../test-helpers/test-ctx'
+import { TestCtx } from '../../../test-helpers'
 
 describe(invokeCallback, () => {
   afterEach(() => {

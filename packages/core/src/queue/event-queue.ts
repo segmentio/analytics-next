@@ -18,7 +18,7 @@ export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   flush: [ctx: Ctx, delivered: boolean]
 }
 
-export class CoreEventQueue<
+export abstract class CoreEventQueue<
   Ctx extends CoreContext = CoreContext,
   Plugin extends CorePlugin<Ctx> = CorePlugin<Ctx>
 > extends Emitter<EventQueueEmitterContract<Ctx>> {

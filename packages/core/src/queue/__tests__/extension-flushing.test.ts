@@ -2,10 +2,10 @@ import { shuffle } from 'lodash'
 import { CoreAnalytics } from '../../analytics'
 import { PriorityQueue } from '../../priority-queue'
 import { CorePlugin as Plugin } from '../../plugins'
-import { CoreEventQueue as EQ } from '../event-queue'
-import { TestCtx } from '../../../test-helpers/test-ctx'
+import { CoreEventQueue } from '../event-queue'
+import { TestCtx } from '../../../test-helpers'
 
-class EventQueue extends EQ {
+class EventQueue extends CoreEventQueue {
   constructor() {
     super(new PriorityQueue(4, []))
   }
