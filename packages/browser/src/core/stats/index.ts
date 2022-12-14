@@ -5,7 +5,7 @@ export class Stats extends CoreStats {
   constructor(private _remoteMetrics?: RemoteMetrics) {
     super()
   }
-  increment(metric: string, by?: number, tags?: string[]): void {
+  override increment(metric: string, by?: number, tags?: string[]): void {
     super.increment(metric, by, tags)
     this._remoteMetrics?.increment(metric, tags ?? [])
   }
