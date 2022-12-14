@@ -1,5 +1,4 @@
 import { CoreStats } from '..'
-import { RemoteMetrics } from '../remote-metrics'
 
 class Stats extends CoreStats {}
 
