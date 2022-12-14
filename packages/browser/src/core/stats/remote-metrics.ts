@@ -1,4 +1,4 @@
-import { CoreMetric, CoreRemoteMetrics } from '@segment/analytics-core'
+import { CoreMetric } from '@segment/analytics-core'
 import fetch from 'unfetch'
 import { version } from '../../generated/version'
 import { getVersionType } from '../../plugins/segmentio/normalize'
@@ -19,7 +19,7 @@ function logError(err: unknown): void {
   console.error('Error sending segment performance metrics', err)
 }
 
-export class RemoteMetrics implements CoreRemoteMetrics {
+export class RemoteMetrics {
   private host: string
   private flushTimer: number
   private maxQueueSize: number

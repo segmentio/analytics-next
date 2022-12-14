@@ -9,7 +9,7 @@ import { SegmentEvent } from '../events/interfaces'
 import { Stats } from '../stats'
 import { MetricsOptions, RemoteMetrics } from '../stats/remote-metrics'
 
-let _remoteMetrics: RemoteMetrics | undefined
+let _remoteMetrics: RemoteMetrics
 
 export class Context extends CoreContext<SegmentEvent> {
   static override system() {
