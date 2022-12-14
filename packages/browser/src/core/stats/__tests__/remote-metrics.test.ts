@@ -94,7 +94,6 @@ describe('remote metrics', () => {
       {
         series: [
           {
-            timestamp: expect.anything(),
             tags: {
               library_version: expect.any(String),
             },
@@ -111,7 +110,6 @@ describe('remote metrics', () => {
               "library_version": Any<String>,
               "phone": "1",
             },
-            "timestamp": Anything,
             "type": "counter",
             "value": 1,
           },

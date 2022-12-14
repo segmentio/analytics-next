@@ -10,7 +10,8 @@ export interface MetricsOptions {
   maxQueueSize?: number
 }
 
-type RemoteMetric = Omit<CoreMetric, 'tags'> & {
+type RemoteMetric = Omit<CoreMetric, 'tags' | 'timestamp'> & {
+  type: 'counter'
   tags: Record<string, string>
 }
 
@@ -92,7 +93,6 @@ export class RemoteMetrics implements CoreRemoteMetrics {
       metric,
       value: 1,
       tags: formatted,
-      timestamp: Date.now(),
     })
 
     if (metric.includes('error')) {
