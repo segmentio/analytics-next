@@ -26,7 +26,7 @@ const compactMetricType = (type: CoreMetricType): CompactMetricType => {
   return enums[type]
 }
 
-export class CoreStats {
+export abstract class CoreStats {
   metrics: CoreMetric[] = []
   increment(metric: string, by = 1, tags?: string[]): void {
     this.metrics.push({
