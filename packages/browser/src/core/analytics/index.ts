@@ -411,9 +411,7 @@ export class Analytics
     ) as LegacyDestination[]
 
     legacyDestinations.forEach((destination) => {
-      if ('addMiddleware' in destination) {
-        destination.addMiddleware(...middlewares)
-      }
+      destination.addMiddleware(...middlewares)
     })
     return Promise.resolve(this)
   }

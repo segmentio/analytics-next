@@ -3,7 +3,7 @@ import { createMessageId } from '../lib/get-message-id'
 import { SegmentEvent } from './types'
 
 // use declaration merging to downcast CoreSegmentEvent without adding any runtime code.
-// if/when we decide to add an actual implementation (change context is some node specific way), we can remove this
+// if/when we decide to add an actual implementation to NodeEventFactory that actually changes the event shape, we can remove this.
 export interface NodeEventFactory {
   alias(...args: Parameters<EventFactory['alias']>): SegmentEvent
   group(...args: Parameters<EventFactory['group']>): SegmentEvent
