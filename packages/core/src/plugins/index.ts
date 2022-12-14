@@ -2,7 +2,6 @@ import type { CoreAnalytics } from '../analytics'
 import type { CoreContext } from '../context'
 
 interface CorePluginConfig {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   options: any
   priority: 'critical' | 'non-critical' // whether AJS should expect this plugin to be loaded before starting event delivery
 }
