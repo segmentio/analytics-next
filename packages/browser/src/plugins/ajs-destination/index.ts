@@ -5,8 +5,8 @@ import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
-import { Plugin } from '../../core/plugin'
-import { attempt } from '../../core/queue/delivery'
+import { DestinationPlugin, Plugin } from '../../core/plugin'
+import { attempt } from '@segment/analytics-core'
 import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
@@ -63,7 +63,7 @@ async function flushQueue(
   return queue
 }
 
-export class LegacyDestination implements Plugin {
+export class LegacyDestination implements DestinationPlugin {
   name: string
   version: string
   settings: JSONObject

@@ -3,19 +3,12 @@ import { noop } from 'lodash'
 import { CoreAnalytics } from '../../analytics'
 import { pWhile } from '../../utils/p-while'
 import * as timer from '../../priority-queue/backoff'
-import { CoreContext, ContextCancelation } from '../../context'
+import { ContextCancelation } from '../../context'
 import { CorePlugin } from '../../plugins'
 import { pTimeout } from '../../callback'
-import { EventQueue as EQ } from '../event-queue'
-import { PriorityQueue } from '../../priority-queue'
+import { TestCtx, TestEventQueue } from '../../../test-helpers'
 
-class EventQueue extends EQ {
-  constructor() {
-    super(new PriorityQueue(4, []))
-  }
-}
-
-async function flushAll(eq: EventQueue): Promise<CoreContext[]> {
+async function flushAll(eq: TestEventQueue): Promise<TestCtx[]> {
   const flushSpy = jest.spyOn(eq, 'flush')
   await pWhile(
     () => eq.queue.length > 0,
@@ -42,10 +35,10 @@ const testPlugin: CorePlugin = {
 
 const ajs = {} as CoreAnalytics
 
-let fruitBasket: CoreContext, basketView: CoreContext, shopper: CoreContext
+let fruitBasket: TestCtx, basketView: TestCtx, shopper: TestCtx
 
 beforeEach(() => {
-  fruitBasket = new CoreContext({
+  fruitBasket = new TestCtx({
     type: 'track',
     event: 'Fruit Basket',
     properties: {
@@ -55,11 +48,11 @@ beforeEach(() => {
     },
   })
 
-  basketView = new CoreContext({
+  basketView = new TestCtx({
     type: 'page',
   })
 
-  shopper = new CoreContext({
+  shopper = new TestCtx({
     type: 'identify',
     traits: {
       name: 'Netto Farah',
@@ -68,7 +61,7 @@ beforeEach(() => {
 })
 
 test('can send events', async () => {
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
   const evt = await eq.dispatch(fruitBasket)
   expect(evt).toBe(fruitBasket)
 })
@@ -76,7 +69,7 @@ test('can send events', async () => {
 test('delivers events out of band', async () => {
   jest.useFakeTimers()
 
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   eq.dispatch(fruitBasket)
@@ -94,9 +87,9 @@ test('delivers events out of band', async () => {
 test('does not enqueue multiple flushes at once', async () => {
   jest.useFakeTimers()
 
-  const eq = new EventQueue()
+  const eq = new TestEventQueue()
 
-  const anothaOne = new CoreContext({
+  const anothaOne = new TestCtx({
     type: 'page',
   })
 
@@ -122,7 +115,7 @@ describe('Flushing', () => {
   })
 
   test('works until the queue is empty', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     eq.dispatch(fruitBasket)
     eq.dispatch(basketView)
@@ -137,10 +130,10 @@ describe('Flushing', () => {
   })
 
   test('re-queues failed events', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -172,7 +165,7 @@ describe('Flushing', () => {
   test('waits for critical tasks to finish before performing event deliveries', async () => {
     jest.useRealTimers()
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     let finishCriticalTask: () => void = noop
     const startTask = () =>
@@ -206,10 +199,10 @@ describe('Flushing', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -246,10 +239,10 @@ describe('Flushing', () => {
   })
 
   test('does not retry non retriable cancelations', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: async (ctx) => {
@@ -283,10 +276,10 @@ describe('Flushing', () => {
   })
 
   test('does not retry non retriable cancelations (dispatchSingle)', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: async (ctx) => {
@@ -308,10 +301,10 @@ describe('Flushing', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -349,10 +342,10 @@ describe('Flushing', () => {
 
   test('client: can block on delivery', async () => {
     jest.useRealTimers()
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {
@@ -391,7 +384,7 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Amplitude',
       type: 'destination' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
@@ -400,7 +393,7 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Mixpanel',
       type: 'destination' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
@@ -409,13 +402,13 @@ describe('Flushing', () => {
       ...testPlugin,
       name: 'Segment.io',
       type: 'after' as const,
-      track: (ctx: CoreContext): Promise<CoreContext> | CoreContext => {
+      track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
       },
     }
 
     test('does not delivery to destinations on denyList', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -429,11 +422,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -449,7 +442,7 @@ describe('Flushing', () => {
     })
 
     test('does not deliver to any destination except Segment.io if All: false ', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -462,11 +455,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -481,7 +474,7 @@ describe('Flushing', () => {
     })
 
     test('does not deliver when All: false and destination is also explicitly false', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -496,11 +489,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -515,7 +508,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to destinations if All: false but the destination is allowed', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -530,11 +523,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -549,7 +542,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to Segment.io if All: false but Segment.io is not specified', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
@@ -563,11 +556,11 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), mixPanel, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), mixPanel, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -582,7 +575,7 @@ describe('Flushing', () => {
     })
 
     test('delivers to destinations that exist as an object', async () => {
-      const eq = new EventQueue()
+      const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(segmentio, 'track')
@@ -598,10 +591,10 @@ describe('Flushing', () => {
         },
       }
 
-      const ctx = new CoreContext(evt)
+      const ctx = new TestCtx(evt)
 
-      await eq.register(CoreContext.system(), amplitude, ajs)
-      await eq.register(CoreContext.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), amplitude, ajs)
+      await eq.register(TestCtx.system(), segmentio, ajs)
 
       eq.dispatch(ctx)
 
@@ -618,31 +611,27 @@ describe('Flushing', () => {
 
 describe('deregister', () => {
   it('remove plugin from plugins list', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const toBeRemoved = { ...testPlugin, name: 'remove-me' }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) =>
-      eq.register(CoreContext.system(), p, ajs)
-    )
+    const promises = plugins.map((p) => eq.register(TestCtx.system(), p, ajs))
     await Promise.all(promises)
 
-    await eq.deregister(CoreContext.system(), toBeRemoved, ajs)
+    await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(eq.plugins.length).toBe(1)
     expect(eq.plugins[0]).toBe(testPlugin)
   })
 
   it('invokes plugin.unload', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const toBeRemoved = { ...testPlugin, name: 'remove-me', unload: jest.fn() }
     const plugins = [testPlugin, toBeRemoved]
 
-    const promises = plugins.map((p) =>
-      eq.register(CoreContext.system(), p, ajs)
-    )
+    const promises = plugins.map((p) => eq.register(TestCtx.system(), p, ajs))
     await Promise.all(promises)
 
-    await eq.deregister(CoreContext.system(), toBeRemoved, ajs)
+    await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(toBeRemoved.unload).toHaveBeenCalled()
     expect(eq.plugins.length).toBe(1)
     expect(eq.plugins[0]).toBe(testPlugin)
@@ -651,7 +640,7 @@ describe('deregister', () => {
 
 describe('dispatchSingle', () => {
   it('dispatches events without placing them on the queue', async () => {
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const promise = eq.dispatchSingle(fruitBasket)
 
     expect(eq.queue.length).toBe(0)
@@ -661,9 +650,9 @@ describe('dispatchSingle', () => {
 
   it.skip('records delivery metrics', async () => {
     // Skip because we don't support metrics atm
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
     const ctx = await eq.dispatchSingle(
-      new CoreContext({
+      new TestCtx({
         type: 'track',
       })
     )
@@ -675,7 +664,7 @@ describe('dispatchSingle', () => {
       ]
     `)
 
-    expect(ctx.stats?.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
+    expect(ctx.stats.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       Array [
         "message_dispatched",
         "message_delivered",
@@ -688,10 +677,10 @@ describe('dispatchSingle', () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)
 
-    const eq = new EventQueue()
+    const eq = new TestEventQueue()
 
     await eq.register(
-      CoreContext.system(),
+      TestCtx.system(),
       {
         ...testPlugin,
         track: (ctx) => {

@@ -1,9 +1,10 @@
-import { CoreContext, CorePlugin } from '@segment/analytics-core'
 import { Publisher, PublisherProps } from './publisher'
 import { version } from '../../../package.json'
 import { detectRuntime } from '../../lib/env'
+import { Plugin } from '../../app/types'
+import { Context } from '../../app/context'
 
-function normalizeEvent(ctx: CoreContext) {
+function normalizeEvent(ctx: Context) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
   ctx.updateEvent('context.library.version', version)
   const runtime = detectRuntime()
@@ -26,13 +27,12 @@ type DefinedPluginFields =
   | 'screen'
   | 'track'
 
-type SegmentNodePlugin = CorePlugin &
-  Required<Pick<CorePlugin, DefinedPluginFields>>
+type SegmentNodePlugin = Plugin & Required<Pick<Plugin, DefinedPluginFields>>
 
 export type ConfigureNodePluginProps = PublisherProps
 
 export function createNodePlugin(publisher: Publisher): SegmentNodePlugin {
-  function action(ctx: CoreContext): Promise<CoreContext> {
+  function action(ctx: Context): Promise<Context> {
     normalizeEvent(ctx)
     return publisher.enqueue(ctx)
   }

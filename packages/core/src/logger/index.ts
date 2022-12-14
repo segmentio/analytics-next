@@ -6,17 +6,16 @@ export type LogMessage = {
   extras?: Record<string, any>
 }
 
-// interface is just for clarity
-export interface Logger {
+export interface GenericLogger {
   log(level: LogLevel, message: string, extras?: object): void
   flush(): void
   logs: LogMessage[]
 }
 
-export class CoreLogger implements Logger {
+export class CoreLogger implements GenericLogger {
   private _logs: LogMessage[] = []
 
-  log = (level: LogLevel, message: string, extras?: object): void => {
+  log(level: LogLevel, message: string, extras?: object) {
     const time = new Date()
     this._logs.push({
       level,

@@ -1,12 +1,11 @@
-import { RemoteMetrics } from './remote-metrics'
-
-type MetricType = 'gauge' | 'counter'
 type CompactMetricType = 'g' | 'c'
 
-export interface Metric {
+export type CoreMetricType = 'gauge' | 'counter'
+
+export interface CoreMetric {
   metric: string
   value: number
-  type: MetricType
+  type: CoreMetricType
   tags: string[]
   timestamp: number // unit milliseconds
 }
@@ -19,23 +18,16 @@ export interface CompactMetric {
   e: number // timestamp in unit milliseconds
 }
 
-const compactMetricType = (type: MetricType): CompactMetricType => {
-  const enums: Record<MetricType, CompactMetricType> = {
+const compactMetricType = (type: CoreMetricType): CompactMetricType => {
+  const enums: Record<CoreMetricType, CompactMetricType> = {
     gauge: 'g',
     counter: 'c',
   }
   return enums[type]
 }
 
-export default class Stats {
-  metrics: Metric[] = []
-
-  private remoteMetrics?: RemoteMetrics
-
-  constructor(remoteMetrics?: RemoteMetrics) {
-    this.remoteMetrics = remoteMetrics
-  }
-
+export abstract class CoreStats {
+  metrics: CoreMetric[] = []
   increment(metric: string, by = 1, tags?: string[]): void {
     this.metrics.push({
       metric,
@@ -44,8 +36,6 @@ export default class Stats {
       type: 'counter',
       timestamp: Date.now(),
     })
-
-    void this.remoteMetrics?.increment(metric, tags ?? [])
   }
 
   gauge(metric: string, value: number, tags?: string[]): void {
@@ -85,5 +75,14 @@ export default class Stats {
         e: m.timestamp,
       }
     })
+  }
+}
+
+export class NullStats extends CoreStats {
+  override gauge(..._args: Parameters<CoreStats['gauge']>) {}
+  override increment(..._args: Parameters<CoreStats['increment']>) {}
+  override flush(..._args: Parameters<CoreStats['flush']>) {}
+  override serialize(..._args: Parameters<CoreStats['serialize']>) {
+    return []
   }
 }

@@ -7,7 +7,7 @@ import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
-import { EventQueue } from '@segment/analytics-core'
+import { EventQueue } from '../../core/queue/event-queue'
 
 const track = jest.fn()
 const identify = jest.fn()

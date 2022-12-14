@@ -1,15 +1,13 @@
 import { CoreContext } from '../context'
-import { CoreSegmentEvent, Callback } from '../events/interfaces'
-import { EventQueue } from '../queue/event-queue'
-import { isOffline } from '../connection'
+import { Callback } from '../events/interfaces'
+import { CoreEventQueue } from '../queue/event-queue'
 import { invokeCallback } from '../callback'
 import { Emitter } from '../emitter'
 
-export type DispatchOptions = {
+export type DispatchOptions<Ctx extends CoreContext = CoreContext> = {
   timeout?: number
   debug?: boolean
-  callback?: Callback
-  retryQueue?: boolean
+  callback?: Callback<Ctx>
 }
 
 /* The amount of time in ms to wait before invoking the callback. */
@@ -26,21 +24,19 @@ export const getDelay = (startTimeInEpochMS: number, timeoutInMS?: number) => {
  * @param emitter - This is typically an instance of "Analytics" -- used for metrics / progress information.
  * @param options
  */
-export async function dispatch(
-  event: CoreSegmentEvent,
-  queue: EventQueue,
+export async function dispatch<
+  Ctx extends CoreContext,
+  EQ extends CoreEventQueue<Ctx>
+>(
+  ctx: Ctx,
+  queue: EQ,
   emitter: Emitter,
-  options?: DispatchOptions
-): Promise<CoreContext> {
-  const ctx = new CoreContext(event)
+  options?: DispatchOptions<Ctx>
+): Promise<Ctx> {
   emitter.emit('dispatch_start', ctx)
 
-  if (isOffline() && !options?.retryQueue) {
-    return ctx
-  }
-
   const startTime = Date.now()
-  let dispatched: CoreContext
+  let dispatched: Ctx
   if (queue.isEmpty()) {
     dispatched = await queue.dispatchSingle(ctx)
   } else {

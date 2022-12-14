@@ -1,7 +1,6 @@
 const fetcher = jest.fn()
 jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 import { range } from 'lodash'
-import { CoreContext } from '@segment/analytics-core'
 import { NodeEventFactory } from '../../../app/event-factory'
 import {
   createError,
@@ -9,6 +8,7 @@ import {
 } from '../../../__tests__/test-helpers/factories'
 import { createConfiguredNodePlugin } from '../index'
 import { PublisherProps } from '../publisher'
+import { Context } from '../../../app/context'
 
 const createTestNodePlugin = (props: PublisherProps) =>
   createConfiguredNodePlugin(props).plugin
@@ -28,7 +28,7 @@ const bodyPropertyMatchers = {
   integrations: {},
 }
 
-function validateFetcherInputs(...contexts: CoreContext[]) {
+function validateFetcherInputs(...contexts: Context[]) {
   const [url, request] = fetcher.mock.lastCall
   const body = JSON.parse(request.body)
 
@@ -69,7 +69,7 @@ describe('SegmentNodePlugin', () => {
       })
 
       const event = eventFactory.alias('to', 'from')
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.alias(context)
@@ -104,7 +104,7 @@ describe('SegmentNodePlugin', () => {
         },
         { userId: 'foo-user-id' }
       )
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.group(context)
@@ -138,7 +138,7 @@ describe('SegmentNodePlugin', () => {
       const event = eventFactory.identify('foo-user-id', {
         name: 'Chris Radek',
       })
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.identify(context)
@@ -173,7 +173,7 @@ describe('SegmentNodePlugin', () => {
         { url: 'http://localhost' },
         { userId: 'foo-user-id' }
       )
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.page(context)
@@ -212,7 +212,7 @@ describe('SegmentNodePlugin', () => {
         { variation: 'local' },
         { userId: 'foo-user-id' }
       )
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.screen(context)
@@ -249,7 +249,7 @@ describe('SegmentNodePlugin', () => {
         { foo: 'bar' },
         { userId: 'foo-user-id' }
       )
-      const context = new CoreContext(event)
+      const context = new Context(event)
 
       fetcher.mockReturnValueOnce(createSuccess())
       await segmentPlugin.screen(context)
@@ -293,7 +293,7 @@ describe('SegmentNodePlugin', () => {
         eventFactory.identify('foo-user-id', {
           name: 'Chris Radek',
         }),
-      ].map((event) => new CoreContext(event))
+      ].map((event) => new Context(event))
 
       for (const context of contexts) {
         // We want batching to happen, so don't await.
@@ -314,7 +314,7 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(eventFactory.alias('to', 'from'))
+      const context = new Context(eventFactory.alias('to', 'from'))
 
       const pendingContext = segmentPlugin.alias(context)
 
@@ -342,12 +342,12 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(eventFactory.alias('to', 'from'))
+      const context = new Context(eventFactory.alias('to', 'from'))
 
-      const contexts: CoreContext[] = []
+      const contexts: Context[] = []
       // Fill up 1 batch and partially fill another
       for (let i = 0; i < 3; i++) {
-        contexts.push(new CoreContext(eventFactory.alias('to', 'from')))
+        contexts.push(new Context(eventFactory.alias('to', 'from')))
       }
 
       const pendingContexts = contexts.map((ctx) => segmentPlugin.alias(ctx))
@@ -378,11 +378,11 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const contexts: CoreContext[] = []
+      const contexts: Context[] = []
       // Max batch size is ~480KB, so adding 16 events with 30KB buffers will hit the limit.
       for (let i = 0; i < 16; i++) {
         contexts.push(
-          new CoreContext(
+          new Context(
             eventFactory.track(
               'Test Event',
               {
@@ -409,7 +409,7 @@ describe('SegmentNodePlugin', () => {
 
     describe('flushAfterClose', () => {
       const _createTrackCtx = () =>
-        new CoreContext(
+        new Context(
           eventFactory.track(
             'test event',
             { foo: 'bar' },
@@ -419,7 +419,7 @@ describe('SegmentNodePlugin', () => {
 
       it('sends immediately once all pending events reach the segment plugin, regardless of settings like batch size', async () => {
         const _createTrackCtx = () =>
-          new CoreContext(
+          new Context(
             eventFactory.track(
               'test event',
               { foo: 'bar' },
@@ -531,7 +531,7 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(
+      const context = new Context(
         eventFactory.track(
           'Test Event',
           {
@@ -567,7 +567,7 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(eventFactory.alias('to', 'from'))
+      const context = new Context(eventFactory.alias('to', 'from'))
 
       const updatedContext = await segmentPlugin.alias(context)
 
@@ -598,7 +598,7 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(eventFactory.alias('to', 'from'))
+      const context = new Context(eventFactory.alias('to', 'from'))
 
       const pendingContext = segmentPlugin.alias(context)
       const updatedContext = await pendingContext
@@ -628,7 +628,7 @@ describe('SegmentNodePlugin', () => {
         writeKey: '',
       })
 
-      const context = new CoreContext(eventFactory.alias('my', 'from'))
+      const context = new Context(eventFactory.alias('my', 'from'))
 
       const pendingContext = segmentPlugin.alias(context)
       const updatedContext = await pendingContext

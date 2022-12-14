@@ -1,12 +1,13 @@
 import { v4 as uuid } from '@lukeed/uuid'
-import { CoreContext, CoreSegmentEvent } from '@segment/analytics-core'
+import type { Context } from '../../app/context'
+import { SegmentEvent } from '../../app/types'
 
 const MAX_EVENT_SIZE_IN_KB = 32
 const MAX_BATCH_SIZE_IN_KB = 480 //  (500 KB is the limit, leaving some padding)
 
 interface PendingItem {
-  resolver: (ctx: CoreContext) => void
-  context: CoreContext
+  resolver: (ctx: Context) => void
+  context: Context
 }
 
 export class ContextBatch {
@@ -51,16 +52,16 @@ export class ContextBatch {
     return this.items.length
   }
 
-  private calculateSize(ctx: CoreContext): number {
+  private calculateSize(ctx: Context): number {
     return encodeURI(JSON.stringify(ctx.event)).split(/%..|i/).length
   }
 
-  getEvents(): CoreSegmentEvent[] {
+  getEvents(): SegmentEvent[] {
     const events = this.items.map(({ context }) => context.event)
     return events
   }
 
-  getContexts(): CoreContext[] {
+  getContexts(): Context[] {
     return this.items.map((item) => item.context)
   }
 

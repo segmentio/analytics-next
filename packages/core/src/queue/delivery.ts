@@ -1,19 +1,18 @@
 import { CoreContext, ContextCancelation } from '../context'
 import { CorePlugin } from '../plugins'
-async function tryOperation(
-  op: () => CoreContext | Promise<CoreContext>
-): Promise<CoreContext> {
+
+async function tryAsync<T>(fn: () => T | Promise<T>): Promise<T> {
   try {
-    return await op()
+    return await fn()
   } catch (err) {
     return Promise.reject(err)
   }
 }
 
-export function attempt(
-  ctx: CoreContext,
-  plugin: CorePlugin
-): Promise<CoreContext | ContextCancelation | Error | undefined> {
+export function attempt<Ctx extends CoreContext = CoreContext>(
+  ctx: Ctx,
+  plugin: CorePlugin<Ctx>
+): Promise<Ctx | ContextCancelation | Error> {
   ctx.log('debug', 'plugin', { plugin: plugin.name })
   const start = new Date().getTime()
 
@@ -22,14 +21,14 @@ export function attempt(
     return Promise.resolve(ctx)
   }
 
-  const newCtx = tryOperation(() => hook.apply(plugin, [ctx]))
+  const newCtx = tryAsync(() => hook.apply(plugin, [ctx]))
     .then((ctx) => {
       const done = new Date().getTime() - start
-      ctx.stats?.gauge('plugin_time', done, [`plugin:${plugin.name}`])
+      ctx.stats.gauge('plugin_time', done, [`plugin:${plugin.name}`])
 
       return ctx
     })
-    .catch((err) => {
+    .catch((err: Error | ContextCancelation) => {
       if (
         err instanceof ContextCancelation &&
         err.type === 'middleware_cancellation'
@@ -50,25 +49,25 @@ export function attempt(
         plugin: plugin.name,
         error: err,
       })
-      ctx.stats?.increment('plugin_error', 1, [`plugin:${plugin.name}`])
+      ctx.stats.increment('plugin_error', 1, [`plugin:${plugin.name}`])
 
-      return err as Error
+      return err
     })
 
   return newCtx
 }
 
-export function ensure(
-  ctx: CoreContext,
-  plugin: CorePlugin
-): Promise<CoreContext | undefined> {
+export function ensure<Ctx extends CoreContext = CoreContext>(
+  ctx: Ctx,
+  plugin: CorePlugin<Ctx>
+): Promise<Ctx | undefined> {
   return attempt(ctx, plugin).then((newContext) => {
     if (newContext instanceof CoreContext) {
       return newContext
     }
 
     ctx.log('debug', 'Context canceled')
-    ctx.stats?.increment('context_canceled')
+    ctx.stats.increment('context_canceled')
     ctx.cancel(newContext)
   })
 }

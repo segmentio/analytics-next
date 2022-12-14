@@ -1,5 +1,5 @@
 import { invokeCallback } from '..'
-import { CoreContext } from '../../context'
+import { TestCtx } from '../../../test-helpers'
 
 describe(invokeCallback, () => {
   afterEach(() => {
@@ -7,7 +7,7 @@ describe(invokeCallback, () => {
   })
 
   it('invokes a callback asynchronously', async () => {
-    const ctx = new CoreContext({
+    const ctx = new TestCtx({
       type: 'track',
     })
 
@@ -22,7 +22,7 @@ describe(invokeCallback, () => {
   // A.JS classic waited for the timeout/delay before invoking callback,
   // so keep same behavior in A.JS next.
   it('calls the callback after a delay', async () => {
-    const ctx = new CoreContext({
+    const ctx = new TestCtx({
       type: 'track',
     })
 
@@ -39,11 +39,11 @@ describe(invokeCallback, () => {
   })
 
   it('ignores the callback if it takes too long to resolve', async () => {
-    const ctx = new CoreContext({
+    const ctx = new TestCtx({
       type: 'track',
     })
 
-    const slow = (_ctx: CoreContext): Promise<void> => {
+    const slow = (_ctx: TestCtx): Promise<void> => {
       return new Promise((resolve) => {
         setTimeout(resolve, 1100)
       })
@@ -63,11 +63,11 @@ describe(invokeCallback, () => {
   })
 
   it('does not crash if the callback crashes', async () => {
-    const ctx = new CoreContext({
+    const ctx = new TestCtx({
       type: 'track',
     })
 
-    const boo = (_ctx: CoreContext): Promise<void> => {
+    const boo = (_ctx: TestCtx): Promise<void> => {
       throw new Error('👻 boo!')
     }
 

@@ -13,20 +13,17 @@ describe('remote metrics', () => {
     })
     remote.increment('analytics_js.banana', ['phone:1'])
 
-    expect(remote.queue).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "metric": "analytics_js.banana",
-          "tags": Object {
-            "library": "analytics.js",
-            "library_version": "npm:next-${version}",
-            "phone": "1",
-          },
-          "type": "Counter",
-          "value": 1,
-        },
-      ]
-    `)
+    expect(remote.queue.length).toBe(1)
+    const metric = remote.queue[0]
+    expect(metric.tags).toEqual({
+      library: 'analytics.js',
+      library_version: `npm:next-${version}`,
+      phone: '1',
+    })
+
+    expect(metric.metric).toBe('analytics_js.banana')
+    expect(metric.type).toBe('counter')
+    expect(metric.value).toBe(1)
   })
 
   test('does not store when not sampling', () => {
@@ -77,18 +74,49 @@ describe('remote metrics', () => {
     await remote.flush()
 
     expect(spy).toHaveBeenCalled()
-    expect(spy.mock.calls[0]).toMatchInlineSnapshot(`
-      Array [
-        "https://api.segment.io/v1/m",
-        Object {
-          "body": "{\\"series\\":[{\\"type\\":\\"Counter\\",\\"metric\\":\\"analytics_js.banana\\",\\"value\\":1,\\"tags\\":{\\"phone\\":\\"1\\",\\"library\\":\\"analytics.js\\",\\"library_version\\":\\"npm:next-${version}\\"}}]}",
-          "headers": Object {
-            "Content-Type": "text/plain",
-          },
-          "method": "POST",
+    const [url, request] = spy.mock.calls[0]
+
+    expect(url).toBe('https://api.segment.io/v1/m')
+    expect(request).toMatchInlineSnapshot(
+      { body: expect.anything() },
+      `
+      Object {
+        "body": Anything,
+        "headers": Object {
+          "Content-Type": "text/plain",
         },
-      ]
-    `)
+        "method": "POST",
+      }
+    `
+    )
+    const body = JSON.parse(request?.body as any)
+    expect(body).toMatchInlineSnapshot(
+      {
+        series: [
+          {
+            tags: {
+              library_version: expect.any(String),
+            },
+          },
+        ],
+      },
+      `
+      Object {
+        "series": Array [
+          Object {
+            "metric": "analytics_js.banana",
+            "tags": Object {
+              "library": "analytics.js",
+              "library_version": Any<String>,
+              "phone": "1",
+            },
+            "type": "counter",
+            "value": 1,
+          },
+        ],
+      }
+    `
+    )
   })
 
   test('clears queue after sending', async () => {

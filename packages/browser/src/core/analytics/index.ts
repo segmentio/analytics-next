@@ -10,10 +10,9 @@ import {
   UserParams,
 } from '../arguments-resolver'
 import type { FormArgs, LinkArgs } from '../auto-track'
-import { invokeCallback } from '../callback'
 import { isOffline } from '../connection'
 import { Context } from '../context'
-import { Emitter } from '@segment/analytics-core'
+import { dispatch, Emitter } from '@segment/analytics-core'
 import {
   Callback,
   EventFactory,
@@ -22,7 +21,7 @@ import {
   EventProperties,
   SegmentEvent,
 } from '../events'
-import { Plugin } from '../plugin'
+import type { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
 import {
   CookieOptions,
@@ -179,7 +178,7 @@ export class Analytics
       this.integrations
     )
 
-    return this.dispatch(segmentEvent, cb).then((ctx) => {
+    return this._dispatch(segmentEvent, cb).then((ctx) => {
       this.emit('track', name, ctx.event.properties, ctx.event.options)
       return ctx
     })
@@ -197,7 +196,7 @@ export class Analytics
       this.integrations
     )
 
-    return this.dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit('page', category, page, ctx.event.properties, ctx.event.options)
       return ctx
     })
@@ -216,7 +215,7 @@ export class Analytics
       this.integrations
     )
 
-    return this.dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit(
         'identify',
         ctx.event.userId,
@@ -249,7 +248,7 @@ export class Analytics
       this.integrations
     )
 
-    return this.dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit('group', ctx.event.groupId, ctx.event.traits, ctx.event.options)
       return ctx
     })
@@ -263,7 +262,7 @@ export class Analytics
       options,
       this.integrations
     )
-    return this.dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit('alias', to, from, ctx.event.options)
       return ctx
     })
@@ -280,7 +279,7 @@ export class Analytics
       options,
       this.integrations
     )
-    return this.dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit(
         'screen',
         category,
@@ -334,7 +333,7 @@ export class Analytics
   async deregister(...plugins: string[]): Promise<Context> {
     const ctx = Context.system()
 
-    const deregistrations = plugins.map(async (pl) => {
+    const deregistrations = plugins.map((pl) => {
       const plugin = this.queue.plugins.find((p) => p.name === pl)
       if (plugin) {
         return this.queue.deregister(ctx, plugin, this)
@@ -367,41 +366,19 @@ export class Analytics
     this.settings.timeout = timeout
   }
 
-  private async dispatch(
+  private async _dispatch(
     event: SegmentEvent,
     callback?: Callback
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
-
-    this.emit('dispatch_start', ctx)
-
     if (isOffline() && !this.options.retryQueue) {
       return ctx
     }
-
-    const startTime = Date.now()
-    let dispatched: Context
-    if (this.queue.isEmpty()) {
-      dispatched = await this.queue.dispatchSingle(ctx)
-    } else {
-      dispatched = await this.queue.dispatch(ctx)
-    }
-    const elapsedTime = Date.now() - startTime
-    const timeoutInMs = this.settings.timeout
-
-    if (callback) {
-      dispatched = await invokeCallback(
-        dispatched,
-        callback,
-        Math.max((timeoutInMs ?? 300) - elapsedTime, 0),
-        timeoutInMs
-      )
-    }
-    if (this._debug) {
-      dispatched.flush()
-    }
-
-    return dispatched
+    return dispatch(ctx, this.queue, this, {
+      callback,
+      debug: this._debug,
+      timeout: this.settings.timeout,
+    })
   }
 
   async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {

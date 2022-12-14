@@ -5,12 +5,10 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && npx http-server .'"
+    "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && npx http-server .'",
+    "concurrently": "yarn run -T concurrently"
   },
   "dependencies": {
     "@segment/analytics-next": "workspace:^"
-  },
-  "devDependencies": {
-    "concurrently": "^7.2.1"
   }
 }

@@ -1,4 +1,5 @@
 import { Context, ContextCancelation, Plugin } from '../../../index'
+import type { DestinationPlugin } from '../../plugin'
 
 export interface BasePluginOptions {
   shouldThrow?: boolean
@@ -64,26 +65,30 @@ class BasePlugin implements Partial<Plugin> {
   }
 }
 
-export class BeforePlugin extends BasePlugin implements Plugin {
+export class TestBeforePlugin extends BasePlugin implements Plugin {
   public name = 'Test Before Error'
   public type = 'before' as const
 }
 
-export class EnrichmentPlugin extends BasePlugin implements Plugin {
+export class TestEnrichmentPlugin extends BasePlugin implements Plugin {
   public name = 'Test Enrichment Error'
   public type = 'enrichment' as const
 }
 
-export class DestinationPlugin extends BasePlugin implements Plugin {
+export class TestDestinationPlugin
+  extends BasePlugin
+  implements DestinationPlugin
+{
   public name = 'Test Destination Error'
   public type = 'destination' as const
+  addMiddleware() {}
 
   public ready() {
     return Promise.resolve(true)
   }
 }
 
-export class AfterPlugin extends BasePlugin implements Plugin {
+export class TestAfterPlugin extends BasePlugin implements Plugin {
   public name = 'Test After Error'
   public type = 'after' as const
 }

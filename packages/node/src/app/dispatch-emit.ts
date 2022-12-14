@@ -1,27 +1,26 @@
 import { dispatch } from '@segment/analytics-core'
-import type {
-  CoreContext,
-  CoreSegmentEvent,
-  EventQueue,
-} from '@segment/analytics-core'
 import type { NodeEmitter } from './emitter'
+import { Context } from './context'
+import { NodeEventQueue } from './event-queue'
+import { SegmentEvent } from './types'
 
-export type Callback = (err?: unknown, ctx?: CoreContext) => void
+export type Callback = (err?: unknown, ctx?: Context) => void
 
-const normalizeDispatchCb = (cb: Callback) => (ctx: CoreContext) => {
+const normalizeDispatchCb = (cb: Callback) => (ctx: Context) => {
   const failedDelivery = ctx.failedDelivery()
   return failedDelivery ? cb(failedDelivery.reason, ctx) : cb(undefined, ctx)
 }
 
 /* Dispatch function, but swallow promise rejections and use event emitter instead */
 export const dispatchAndEmit = async (
-  event: CoreSegmentEvent,
-  queue: EventQueue,
+  event: SegmentEvent,
+  queue: NodeEventQueue,
   emitter: NodeEmitter,
   callback?: Callback
 ): Promise<void> => {
   try {
-    const ctx = await dispatch(event, queue, emitter, {
+    const context = new Context(event)
+    const ctx = await dispatch(context, queue, emitter, {
       ...(callback ? { callback: normalizeDispatchCb(callback) } : {}),
     })
     const failedDelivery = ctx.failedDelivery()

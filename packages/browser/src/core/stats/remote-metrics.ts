@@ -1,3 +1,4 @@
+import { CoreMetric } from '@segment/analytics-core'
 import fetch from 'unfetch'
 import { version } from '../../generated/version'
 import { getVersionType } from '../../plugins/segmentio/normalize'
@@ -9,7 +10,10 @@ export interface MetricsOptions {
   maxQueueSize?: number
 }
 
-type Metric = { type: 'Counter'; metric: string; value: number; tags: object }
+type RemoteMetric = Omit<CoreMetric, 'tags' | 'timestamp'> & {
+  type: 'counter'
+  tags: Record<string, string>
+}
 
 function logError(err: unknown): void {
   console.error('Error sending segment performance metrics', err)
@@ -21,7 +25,7 @@ export class RemoteMetrics {
   private maxQueueSize: number
 
   sampleRate: number
-  queue: Metric[]
+  queue: RemoteMetric[]
 
   constructor(options?: MetricsOptions) {
     this.host = options?.host ?? 'api.segment.io/v1'
@@ -85,7 +89,7 @@ export class RemoteMetrics {
     }
 
     this.queue.push({
-      type: 'Counter',
+      type: 'counter',
       metric,
       value: 1,
       tags: formatted,

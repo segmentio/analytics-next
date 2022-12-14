@@ -9,10 +9,10 @@ import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
 import { Analytics } from '../index'
 import {
-  AfterPlugin,
-  BeforePlugin,
-  DestinationPlugin,
-  EnrichmentPlugin,
+  TestAfterPlugin,
+  TestBeforePlugin,
+  TestDestinationPlugin,
+  TestEnrichmentPlugin,
 } from './test-plugins'
 
 describe('Analytics', () => {
@@ -34,7 +34,7 @@ describe('Analytics', () => {
         const shouldThrow = true
 
         it(`"before" plugin errors should not throw (single dispatched event)`, async () => {
-          const plugin = new BeforePlugin({ shouldThrow })
+          const plugin = new TestBeforePlugin({ shouldThrow })
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
@@ -45,7 +45,7 @@ describe('Analytics', () => {
         })
 
         it(`"before" plugin errors should not throw (multiple dispatched events)`, async () => {
-          const plugin = new BeforePlugin({ shouldThrow })
+          const plugin = new TestBeforePlugin({ shouldThrow })
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
@@ -63,7 +63,7 @@ describe('Analytics', () => {
         })
 
         it(`"before" plugin errors should not impact callbacks`, async () => {
-          const plugin = new BeforePlugin({ shouldThrow })
+          const plugin = new TestBeforePlugin({ shouldThrow })
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
@@ -102,9 +102,9 @@ describe('Analytics', () => {
         }
 
         const testPlugins = [
-          new EnrichmentPlugin({ shouldThrow }),
-          new DestinationPlugin({ shouldThrow }),
-          new AfterPlugin({ shouldThrow }),
+          new TestEnrichmentPlugin({ shouldThrow }),
+          new TestDestinationPlugin({ shouldThrow }),
+          new TestAfterPlugin({ shouldThrow }),
         ]
         testPlugins.forEach((plugin) => {
           it(`"${plugin.type}" plugin errors should not throw (single dispatched event)`, async () => {
@@ -152,7 +152,7 @@ describe('Analytics', () => {
         })
 
         it('"before" plugin supports cancelation (single dispatched event)', async () => {
-          const plugin = new BeforePlugin({ shouldCancel: true })
+          const plugin = new TestBeforePlugin({ shouldCancel: true })
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)
@@ -164,7 +164,7 @@ describe('Analytics', () => {
         })
 
         it('"before" plugin supports cancelation (multiple dispatched events)', async () => {
-          const plugin = new BeforePlugin({ shouldCancel: true })
+          const plugin = new TestBeforePlugin({ shouldCancel: true })
           const trackSpy = jest.spyOn(plugin, 'track')
 
           await analytics.register(plugin)

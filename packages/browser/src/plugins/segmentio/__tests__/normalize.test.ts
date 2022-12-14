@@ -160,7 +160,7 @@ describe('before loading', () => {
     it('should add .userAgent', () => {
       normalize(analytics, object, options, {})
       const removeVersionNum = (agent: string) => agent.replace(/jsdom\/.*/, '')
-      const userAgent1 = removeVersionNum(object.context?.userAgent)
+      const userAgent1 = removeVersionNum(object.context?.userAgent as string)
       const userAgent2 = removeVersionNum(navigator.userAgent)
       assert(userAgent1 === userAgent2)
     })
@@ -296,7 +296,7 @@ describe('before loading', () => {
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
-      expect(object.context.referrer.id).toEqual('medium')
+      expect(object.context.referrer.id).toBe('medium')
       assert(object.context.referrer.type === 'millennial-media')
       expect(cookie.get('s:context.referrer')).toEqual(
         JSON.stringify({

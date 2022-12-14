@@ -25,11 +25,11 @@ export function sleep(timeoutInMs: number): Promise<void> {
  * @param callback - the function to invoke
  * @param delay - aka "timeout". The amount of time in ms to wait before invoking the callback.
  */
-export function invokeCallback(
-  ctx: CoreContext,
-  callback: Callback,
+export function invokeCallback<Ctx extends CoreContext>(
+  ctx: Ctx,
+  callback: Callback<Ctx>,
   delay: number
-): Promise<CoreContext> {
+): Promise<Ctx> {
   const cb = () => {
     try {
       return Promise.resolve(callback(ctx))
@@ -44,7 +44,7 @@ export function invokeCallback(
       .then(() => pTimeout(cb(), 1000))
       .catch((err) => {
         ctx?.log('warn', 'Callback Error', { error: err })
-        ctx?.stats?.increment('callback_error')
+        ctx?.stats.increment('callback_error')
       })
       .then(() => ctx)
   )
