@@ -78,12 +78,11 @@ export class CoreStats {
   }
 }
 
-export class NullStats implements CoreStats {
-  metrics = []
-  gauge(..._args: Parameters<CoreStats['gauge']>) {}
-  increment(..._args: Parameters<CoreStats['increment']>) {}
-  flush(..._args: Parameters<CoreStats['flush']>) {}
-  serialize(..._args: Parameters<CoreStats['serialize']>) {
+export class NullStats extends CoreStats {
+  override gauge(..._args: Parameters<CoreStats['gauge']>) {}
+  override increment(..._args: Parameters<CoreStats['increment']>) {}
+  override flush(..._args: Parameters<CoreStats['flush']>) {}
+  override serialize(..._args: Parameters<CoreStats['serialize']>) {
     return []
   }
 }
