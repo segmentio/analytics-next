@@ -1,4 +1,3 @@
-import { CoreMetric } from '@segment/analytics-core'
 import fetch from 'unfetch'
 import { version } from '../../generated/version'
 import { getVersionType } from '../../plugins/segmentio/normalize'
@@ -10,9 +9,14 @@ export interface MetricsOptions {
   maxQueueSize?: number
 }
 
-type RemoteMetric = Omit<CoreMetric, 'tags' | 'timestamp'> & {
-  type: 'counter'
+/**
+ * Type expected by the segment metrics API endpoint
+ */
+type RemoteMetric = {
+  type: 'Counter'
   tags: Record<string, string>
+  metric: string
+  value: number
 }
 
 function logError(err: unknown): void {
@@ -89,7 +93,7 @@ export class RemoteMetrics {
     }
 
     this.queue.push({
-      type: 'counter',
+      type: 'Counter',
       metric,
       value: 1,
       tags: formatted,

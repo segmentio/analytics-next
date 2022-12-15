@@ -22,7 +22,7 @@ describe('remote metrics', () => {
     })
 
     expect(metric.metric).toBe('analytics_js.banana')
-    expect(metric.type).toBe('counter')
+    expect(metric.type).toBe('Counter')
     expect(metric.value).toBe(1)
   })
 
@@ -110,7 +110,7 @@ describe('remote metrics', () => {
               "library_version": Any<String>,
               "phone": "1",
             },
-            "type": "counter",
+            "type": "Counter",
             "value": 1,
           },
         ],
