@@ -16,7 +16,7 @@ type RemoteMetric = {
   type: 'Counter'
   tags: Record<string, string>
   metric: string
-  value: number
+  value: 1
 }
 
 function logError(err: unknown): void {
