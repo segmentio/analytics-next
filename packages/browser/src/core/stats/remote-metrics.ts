@@ -14,9 +14,37 @@ export interface MetricsOptions {
  */
 type RemoteMetric = {
   type: 'Counter'
-  tags: Record<string, string>
   metric: string
-  value: number
+  value: 1
+  tags: {
+    library: string
+    library_version: string
+    [key: string]: string
+  }
+}
+
+const createRemoteMetric = (
+  metric: string,
+  tags: string[],
+  versionType: 'web' | 'npm'
+): RemoteMetric => {
+  const formattedTags = tags.reduce((acc, t) => {
+    const [k, v] = t.split(':')
+    acc[k] = v
+    return acc
+  }, {} as Record<string, string>)
+
+  return {
+    type: 'Counter',
+    metric,
+    value: 1,
+    tags: {
+      ...formattedTags,
+      library: 'analytics.js',
+      library_version:
+        versionType === 'web' ? `next-${version}` : `npm:next-${version}`,
+    },
+  }
 }
 
 function logError(err: unknown): void {
@@ -77,27 +105,8 @@ export class RemoteMetrics {
       return
     }
 
-    const formatted = tags.reduce((acc, t) => {
-      const [k, v] = t.split(':')
-      acc[k] = v
-      return acc
-    }, {} as Record<string, string>)
-
-    formatted['library'] = 'analytics.js'
-
-    const type = getVersionType()
-    if (type === 'web') {
-      formatted['library_version'] = `next-${version}`
-    } else {
-      formatted['library_version'] = `npm:next-${version}`
-    }
-
-    this.queue.push({
-      type: 'Counter',
-      metric,
-      value: 1,
-      tags: formatted,
-    })
+    const remoteMetric = createRemoteMetric(metric, tags, getVersionType())
+    this.queue.push(remoteMetric)
 
     if (metric.includes('error')) {
       this.flush().catch(logError)
