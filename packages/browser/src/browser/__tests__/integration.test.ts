@@ -16,15 +16,17 @@ import jar from 'js-cookie'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
+import { parseFetchCall } from '../../test-helpers/fetch-parse'
 import { ActionDestination } from '@/plugins/remote-loader'
 
-let fetchCalls: Array<any>[] = []
+let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
 jest.mock('unfetch', () => {
   return {
     __esModule: true,
     default: (url: RequestInfo, body?: RequestInit) => {
-      fetchCalls.push([url, body])
+      const call = parseFetchCall([url, body])
+      fetchCalls.push(call)
       return createMockFetchImplementation(cdnSettingsKitchenSink)(url, body)
     },
   }
@@ -200,7 +202,7 @@ describe('Initialization', () => {
         ],
       })
 
-      expect(fetchCalls[0][0]).toContain(overriddenCDNUrl)
+      expect(fetchCalls[0].url).toContain(overriddenCDNUrl)
       expect.assertions(3)
     })
   })
@@ -265,7 +267,7 @@ describe('Initialization', () => {
     })
 
     expect(fetchCalls.length).toBeGreaterThan(0)
-    expect(fetchCalls[0][0]).toMatch(/\/settings$/)
+    expect(fetchCalls[0].url).toMatch(/\/settings$/)
   })
 
   it('does not fetch source settings if cdnSettings is set', async () => {
@@ -897,15 +899,19 @@ describe('retries', () => {
     expect(ajs.queue.queue.getAttempts(fruitBasketEvent)).toEqual(2)
   })
 
-  it('does not queue up events when offline if retryQueue setting is set to false', async () => {
-    const [ajs] = await AnalyticsBrowser.load({ writeKey })
+  it('does not queue events / dispatch when offline if retryQueue setting is set to false', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      { writeKey },
+      { retryQueue: false }
+    )
 
+    const trackSpy = jest.fn().mockImplementation((ctx) => ctx)
     await ajs.queue.register(
       Context.system(),
       {
         ...testPlugin,
         ready: () => Promise.resolve(true),
-        track: (ctx) => ctx,
+        track: trackSpy,
       },
       ajs
     )
@@ -913,10 +919,36 @@ describe('retries', () => {
     // @ts-ignore ignore reassining function
     isOffline = jest.fn().mockReturnValue(true)
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ajs.track('event')
+    await ajs.track('event')
 
-    expect(ajs.queue.queue.length).toBe(0)
+    expect(trackSpy).toBeCalledTimes(0)
+  })
+
+  it('enqueues events / dispatches if the client is currently offline and retries are *enabled* for the main event queue', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      { writeKey },
+      { retryQueue: true }
+    )
+
+    const trackSpy = jest.fn().mockImplementation((ctx) => ctx)
+    await ajs.queue.register(
+      Context.system(),
+      {
+        ...testPlugin,
+        ready: () => Promise.resolve(true),
+        track: trackSpy,
+      },
+      ajs
+    )
+
+    // @ts-ignore ignore reassining function
+    isOffline = jest.fn().mockReturnValue(true)
+
+    expect(trackSpy).toBeCalledTimes(0)
+
+    await ajs.track('event')
+
+    expect(trackSpy).toBeCalledTimes(1)
   })
 })
 
