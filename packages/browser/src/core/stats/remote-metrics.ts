@@ -14,13 +14,13 @@ export interface MetricsOptions {
  */
 type RemoteMetric = {
   type: 'Counter'
+  metric: string
+  value: 1
   tags: {
     library: string
     library_version: string
-    [tag: string]: string
+    [key: string]: string
   }
-  metric: string
-  value: 1
 }
 
 const createRemoteMetric = (
@@ -34,18 +34,16 @@ const createRemoteMetric = (
     return acc
   }, {} as Record<string, string>)
 
-  const remoteMetricTags: RemoteMetric['tags'] = {
-    ...formattedTags,
-    library: 'analytics.js',
-    library_version:
-      versionType === 'web' ? `next-${version}` : `npm:next-${version}`,
-  }
-
   return {
     type: 'Counter',
     metric,
     value: 1,
-    tags: remoteMetricTags,
+    tags: {
+      ...formattedTags,
+      library: 'analytics.js',
+      library_version:
+        versionType === 'web' ? `next-${version}` : `npm:next-${version}`,
+    },
   }
 }
 
