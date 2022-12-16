@@ -236,7 +236,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
 
   /**
    * get value for the key from the stores. it will pick the first value found in the stores, and then sync the value to all the stores
-   * if the found value is a number, it will be converted to a string. this is to support legacy behavior where AJS 1.0
+   * if the found value is a number, it will be converted to a string. this is to support legacy behavior that existed in AJS 1.0
    * @param key key for the value to be retrieved
    * @param storeTypes optional array of store types to be used for performing get and sync
    * @returns value for the key or null if not found
