@@ -233,6 +233,14 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
     - read values in AJS 1.0 format ( for customers after 1.0 --> 2.0 migration ) and then re-write them in AJS 2.0 format
   */
+
+  /**
+   * get value for the key from the stores. it will pick the first value found in the stores, and then sync the value to all the stores
+   * if the found value is a number, it will be converted to a string. this is to support legacy behavior that existed in AJS 1.0
+   * @param key key for the value to be retrieved
+   * @param storeTypes optional array of store types to be used for performing get and sync
+   * @returns value for the key or null if not found
+   */
   public getAndSync<K extends keyof Data>(
     key: K,
     storeTypes?: StoreType[]
@@ -247,6 +255,12 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     ) as Data[K] | null
   }
 
+  /**
+   * get value for the key from the stores. it will return the first value found in the stores
+   * @param key key for the value to be retrieved
+   * @param storeTypes optional array of store types to be used for retrieving the value
+   * @returns value for the key or null if not found
+   */
   public get<K extends keyof Data>(
     key: K,
     storeTypes?: StoreType[]
@@ -262,6 +276,13 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     return null
   }
 
+  /**
+   * it will set the value for the key in all the stores
+   * @param key key for the value to be stored
+   * @param value value to be stored
+   * @param storeTypes optional array of store types to be used for storing the value
+   * @returns value that was stored
+   */
   public set<K extends keyof Data>(
     key: K,
     value: Data[K] | null,
@@ -273,6 +294,11 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     return value
   }
 
+  /**
+   * remove the value for the key from all the stores
+   * @param key key for the value to be removed
+   * @param storeTypes optional array of store types to be used for removing the value
+   */
   public clear<K extends keyof Data>(key: K, storeTypes?: StoreType[]): void {
     for (const store of this.getStores(storeTypes)) {
       store.remove(key)
