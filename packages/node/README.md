@@ -151,7 +151,7 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 ```ts
 analytics.on('error', (err) => console.error(err))
 
-analytics.on('identify', (ctx) => console.log(err))
+analytics.on('identify', (ctx) => console.log(ctx))
 
 analytics.on('track', (ctx) => console.log(ctx))
 ```
