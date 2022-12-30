@@ -6,10 +6,6 @@ import { getGlobal } from './get-global'
  */
 export const fetch: typeof unfetch = (...args) => {
   const global = getGlobal()
-  let fetch = unfetch
-
-  if (global && global.fetch) {
-    fetch = global.fetch
-  }
-  return fetch(...args)
+  const fn = (global && global.fetch) || unfetch
+  return fn(...args)
 }
