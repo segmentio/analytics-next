@@ -1,12 +1,15 @@
 import { CoreStats } from '@segment/analytics-core'
-import type { RemoteMetrics } from './remote-metrics'
+import { MetricsOptions, RemoteMetrics } from './remote-metrics'
+
+let remoteMetrics: RemoteMetrics | undefined
 
 export class Stats extends CoreStats {
-  constructor(private _remoteMetrics?: RemoteMetrics) {
-    super()
+  static initRemoteMetrics(options?: MetricsOptions) {
+    remoteMetrics = new RemoteMetrics(options)
   }
+
   override increment(metric: string, by?: number, tags?: string[]): void {
     super.increment(metric, by, tags)
-    this._remoteMetrics?.increment(metric, tags ?? [])
+    remoteMetrics?.increment(metric, tags ?? [])
   }
 }
