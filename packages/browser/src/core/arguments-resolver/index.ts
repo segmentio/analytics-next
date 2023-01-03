@@ -12,6 +12,8 @@ import {
   EventProperties,
   SegmentEvent,
   Traits,
+  GroupTraits,
+  UserTraits,
 } from '../events'
 import { ID, User } from '../user'
 
@@ -105,8 +107,10 @@ export function resolvePageArguments(
 /**
  * Helper for group, identify methods
  */
-export const resolveUserArguments = (user: User): ResolveUser => {
-  return (...args): ReturnType<ResolveUser> => {
+export const resolveUserArguments = <T extends Traits, U extends User>(
+  user: U
+): ResolveUser<T> => {
+  return (...args): ReturnType<ResolveUser<T>> => {
     let id: string | ID | null = null
     id = args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
 
@@ -117,7 +121,7 @@ export const resolveUserArguments = (user: User): ResolveUser => {
       return isPlainObject(obj) || obj === null
     }) as Array<Traits | null>
 
-    const traits = (objects[0] ?? {}) as Traits
+    const traits = (objects[0] ?? {}) as T
     const opts = (objects[1] ?? {}) as Options
 
     const resolvedCallback = args.find(isFunction) as Callback | undefined
@@ -146,14 +150,15 @@ export function resolveAliasArguments(
   return [aliasTo, aliasFrom, opts, resolvedCallback]
 }
 
-type ResolveUser = (
+type ResolveUser<T extends Traits> = (
   id?: ID | object,
-  traits?: Traits | Callback | null,
+  traits?: T | Callback | null,
   options?: Options | Callback,
   callback?: Callback
-) => [ID, Traits, Options, Callback | undefined]
+) => [ID, T, Options, Callback | undefined]
 
-export type UserParams = Parameters<ResolveUser>
+export type IdentifyParams = Parameters<ResolveUser<UserTraits>>
+export type GroupParams = Parameters<ResolveUser<GroupTraits>>
 export type EventParams = Parameters<typeof resolveArguments>
 export type PageParams = Parameters<typeof resolvePageArguments>
 export type AliasParams = Parameters<typeof resolveAliasArguments>

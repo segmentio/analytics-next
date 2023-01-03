@@ -2,12 +2,13 @@ import {
   AliasParams,
   DispatchedEvent,
   EventParams,
+  GroupParams,
   PageParams,
   resolveAliasArguments,
   resolveArguments,
   resolvePageArguments,
   resolveUserArguments,
-  UserParams,
+  IdentifyParams,
 } from '../arguments-resolver'
 import type { FormArgs, LinkArgs } from '../auto-track'
 import { isOffline } from '../connection'
@@ -202,7 +203,7 @@ export class Analytics
     })
   }
 
-  async identify(...args: UserParams): Promise<DispatchedEvent> {
+  async identify(...args: IdentifyParams): Promise<DispatchedEvent> {
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(
       ...args
     )
@@ -227,8 +228,8 @@ export class Analytics
   }
 
   group(): Group
-  group(...args: UserParams): Promise<DispatchedEvent>
-  group(...args: UserParams): Promise<DispatchedEvent> | Group {
+  group(...args: GroupParams): Promise<DispatchedEvent>
+  group(...args: GroupParams): Promise<DispatchedEvent> | Group {
     if (args.length === 0) {
       return this._group
     }

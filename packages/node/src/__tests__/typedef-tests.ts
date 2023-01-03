@@ -1,4 +1,5 @@
-import { Analytics, Context, Plugin, Traits } from '../'
+import { Analytics, Context, Plugin, GroupTraits } from '../'
+import { Traits, UserTraits } from '../app/types'
 
 /**
  * These are general typescript definition tests;
@@ -53,6 +54,8 @@ export default {
     console.log({} as MyPlugin)
   },
   'traits should be exported': () => {
+    console.log({} as GroupTraits)
+    console.log({} as UserTraits)
     console.log({} as Traits)
   },
 }
