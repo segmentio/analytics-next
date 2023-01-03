@@ -4,8 +4,9 @@ import type {
   EventParams,
   DispatchedEvent,
   PageParams,
-  UserParams,
+  IdentifyParams,
   AliasParams,
+  GroupParams,
 } from '../arguments-resolver'
 import type { Context } from '../context'
 import type { SegmentEvent } from '../events'
@@ -78,9 +79,9 @@ export interface AnalyticsClassic extends AnalyticsClassicStubs {
 export interface AnalyticsCore extends CoreAnalytics {
   track(...args: EventParams): Promise<DispatchedEvent>
   page(...args: PageParams): Promise<DispatchedEvent>
-  identify(...args: UserParams): Promise<DispatchedEvent>
+  identify(...args: IdentifyParams): Promise<DispatchedEvent>
   group(): Group
-  group(...args: UserParams): Promise<DispatchedEvent>
+  group(...args: GroupParams): Promise<DispatchedEvent>
   alias(...args: AliasParams): Promise<DispatchedEvent>
   screen(...args: PageParams): Promise<DispatchedEvent>
   register(...plugins: Plugin[]): Promise<Context>
@@ -94,6 +95,6 @@ export interface AnalyticsCore extends CoreAnalytics {
  */
 export type AnalyticsBrowserCore = Omit<AnalyticsCore, 'group' | 'user'> & {
   group(): Promise<Group>
-  group(...args: UserParams): Promise<DispatchedEvent>
+  group(...args: GroupParams): Promise<DispatchedEvent>
   user(): Promise<User>
 }

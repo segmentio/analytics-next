@@ -1,20 +1,13 @@
 import type {
-  CoreAnalyticsTraits,
+  GroupTraits,
+  UserTraits,
   CoreExtraContext,
   EventProperties,
   Integrations,
   Timestamp,
 } from '@segment/analytics-core'
 
-/**
- * Traits are pieces of information you know about a user that are included in an identify call. These could be demographics like age or gender, account-specific like plan, or even things like whether a user has seen a particular A/B test variation. Up to you!
- * Segment has reserved some traits that have semantic meanings for users, and we handle them in special ways. For example, Segment always expects email to be a string of the user’s email address.
- *
- * We’ll send this on to destinations like Mailchimp that require an email address for their tracking.
- *
- * You should only use reserved traits for their intended meaning.
- */
-export interface Traits extends CoreAnalyticsTraits {}
+export type { GroupTraits, UserTraits }
 
 /**
  * A dictionary of extra context to attach to the call.
@@ -41,14 +34,14 @@ export type AliasParams = {
 
 export type GroupParams = {
   groupId: string
-  traits?: Traits
+  traits?: GroupTraits
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
 } & IdentityOptions
 
 export type IdentifyParams = {
-  traits?: Traits
+  traits?: UserTraits
   context?: ExtraContext
   integrations?: Integrations
 } & IdentityOptions

@@ -1,5 +1,6 @@
 import { CoreContext } from '../context'
 import { ID } from '../user'
+import { DeepNullable } from '../utils/ts-helpers'
 
 export type Callback<Ctx extends CoreContext = CoreContext> = (
   ctx: Ctx
@@ -25,16 +26,14 @@ export type Integrations = {
   [integration: string]: boolean | JSONObject | undefined
 }
 
-// renamed
 export interface CoreOptions {
   integrations?: Integrations
   timestamp?: Timestamp
   context?: CoreExtraContext
   anonymousId?: string
   userId?: string
-  traits?: CoreAnalyticsTraits
+  traits?: Traits
   // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
-  // we may want to remove this...
   [key: string]: any
 }
 
@@ -142,7 +141,7 @@ export interface CoreExtraContext {
    * but also associate information from a previous identify call.
    * You should fill this object the same way you would fill traits in an identify call.
    */
-  traits?: CoreAnalyticsTraits
+  traits?: Traits
 
   /**
    * Dictionary of information about the campaign that resulted in the API call, containing name, source, medium, term, content, and any other custom UTM parameter.
@@ -187,7 +186,7 @@ export interface CoreSegmentEvent {
 
   properties?: EventProperties
 
-  traits?: CoreAnalyticsTraits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
+  traits?: Traits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
 
   integrations?: Integrations
   context?: CoreExtraContext
@@ -249,20 +248,87 @@ export interface PlanEvent {
   }
 }
 
+type DbId = string | number // TODO: the docs says that this can only be a string?
+type PhoneNumber = string | number // TODO: the docs say this can only be a string?
+
+/**
+ * Traits are pieces of information you know about a group.
+ * This interface represents reserved traits that Segment has standardized.
+ * @link https://segment.com/docs/connections/spec/group/#traits
+ */
+type BaseGroupTraits = DeepNullable<{
+  /**
+   * Street address of a group.
+   */
+  address?: BaseUserTraits['address']
+
+  /**
+   * URL to an avatar image for the group.
+   */
+  avatar?: BaseUserTraits['avatar']
+
+  /**
+   * Date the group's account was first created. Segment recommends ISO-8601 date strings.
+   */
+  createdAt?: BaseUserTraits['createdAt']
+
+  /**
+   * Description of a group
+   */
+  description?: BaseUserTraits['description']
+  /**
+   * Email address of group.
+   */
+  email?: BaseUserTraits['email']
+  /**
+   * Number of employees of a group, typically used for companies.
+   */
+  employees?: string | number // TODO: the docs says that this must be a string?
+
+  /**
+   * Unique ID in your database for a group.
+   */
+  id?: BaseUserTraits['id']
+
+  /**
+   * Industry a group is part of.
+   */
+  industry?: BaseUserTraits['industry']
+
+  /**
+   * Name of a group.
+   */
+  name?: BaseUserTraits['name']
+
+  /**
+   * Phone number of a group
+   */
+  phone?: BaseUserTraits['phone']
+
+  /**
+   * Website of a group.
+   */
+  website?: BaseUserTraits['website']
+
+  /**
+   * 	Plan that a group is in.
+   */
+  plan?: BaseUserTraits['plan']
+}>
+
 /**
  * Traits are pieces of information you know about a user.
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/identify/#traits
- * @link https://segment.com/docs/connections/spec/group/#traits
  */
-export interface CoreAnalyticsTraits {
+type BaseUserTraits = DeepNullable<{
   /**
-   * Unique ID in your database for a user/group.
+   * Unique ID in your database for a user
    */
-  id?: string
+  id?: DbId
 
   /**
-   * Industry a user works in, or a group is part of.
+   * Industry a user works in
    */
   industry?: string
 
@@ -277,14 +343,14 @@ export interface CoreAnalyticsTraits {
   lastName?: string
 
   /**
-   * Full name of a user/group. If you only pass a first and last name Segment automatically fills in the full name for you.
+   * Full name of a user. If you only pass a first and last name Segment automatically fills in the full name for you.
    */
   name?: string
 
   /**
-   * Phone number of a user/group.
+   * Phone number of a user
    */
-  phone?: string
+  phone?: PhoneNumber
 
   /**
    * Title of a user, usually related to their position at a specific company.
@@ -293,17 +359,17 @@ export interface CoreAnalyticsTraits {
   title?: string
 
   /**
-   * User’s username. This should be unique to each user, like the usernames of Twitter or GitHub.
+   * User's username. This should be unique to each user, like the usernames of Twitter or GitHub.
    */
   username?: string
 
   /**
-   * Website of a user/group.
+   * Website of a user.
    */
   website?: string
 
   /**
-   * Street address of a user/group.
+   * Street address of a user.
    */
   address?: {
     city?: string
@@ -312,14 +378,13 @@ export interface CoreAnalyticsTraits {
     state?: string
     street?: string
   }
-
   /**
    * Age of a user.
    */
   age?: number
 
   /**
-   * URL to an avatar image for the user/group.
+   * URL to an avatar image for the user.
    */
   avatar?: string
 
@@ -333,36 +398,31 @@ export interface CoreAnalyticsTraits {
    */
   company?: {
     name?: string
-    id?: string | number
-    industry?: CoreAnalyticsTraits['industry']
-    employee_count?: CoreAnalyticsTraits['employees']
-    plan?: CoreAnalyticsTraits['plan']
+    id?: DbId
+    industry?: BaseUserTraits['industry']
+    employee_count?: number
+    plan?: BaseUserTraits['plan']
   }
 
   /**
-   * Number of employees of a group, typically used for companies.
-   */
-  employees?: number
-
-  /**
-    Plan that a user/group is in.
+    Plan that a user is in.
 
    * @example enterprise
    */
   plan?: string
 
   /**
-   * 	Date the user/group's account was first created. Segment recommends using ISO-8601 date strings.
+   * 	Date the user's account was first created. Segment recommends using ISO-8601 date strings.
    */
   createdAt?: Timestamp
 
   /**
-   * Description of user/group, such as bio.
+   * Description of user, such as bio.
    */
   description?: string
 
   /**
-   * Email address of a user/group.
+   * Email address of a user.
    */
   email?: string
 
@@ -370,6 +430,27 @@ export interface CoreAnalyticsTraits {
    * @example female
    */
   gender?: string
+}>
 
+/**
+ * Traits are pieces of information you know about a group.
+ * This interface represents reserved traits that Segment has standardized.
+ * @link https://segment.com/docs/connections/spec/group/#traits
+ */
+export type GroupTraits = BaseGroupTraits & {
   [customTrait: string]: any
 }
+
+/**
+ * Traits are pieces of information you know about a user.
+ * This interface represents reserved traits that Segment has standardized.
+ * @link https://segment.com/docs/connections/spec/identify/#traits
+ */
+export type UserTraits = BaseUserTraits & {
+  [customTrait: string]: any
+}
+
+/**
+ * Traits are pieces of information you know about a user or group.
+ */
+export type Traits = UserTraits | GroupTraits

@@ -119,12 +119,33 @@ export default {
     assertNotAny(analytics)
     assertIs<AnalyticsBrowser>(analytics)
   },
-  'Should error if there is a type conflict in Traits': () => {
-    const analytics = new AnalyticsBrowser().load({ writeKey: 'foo' })
-    assertNotAny(analytics)
-    assertIs<AnalyticsBrowser>(analytics)
 
-    // @ts-expect-error - id should be a string
-    void analytics.identify('foo', { id: 123 })
+  'Should accept traits': () => {
+    const analytics = {} as AnalyticsBrowser
+
+    class Foo {
+      name = 'hello'
+      toJSON() {
+        return this.name
+      }
+    }
+    void analytics.identify('foo', new Foo())
+    void analytics.identify('foo', { address: null })
+    // @ts-expect-error - Type 'string' has no properties in common with type
+    void analytics.identify('foo', { address: 'hello' })
+    // @ts-expect-error - Type 'never[]' is not assignable to type
+    void analytics.identify('foo', { id: [] })
+  },
+
+  'Should accept optional ExtraContext': () => {
+    const analytics = {} as AnalyticsBrowser
+    void analytics.track('foo', undefined, { context: {} })
+    void analytics.track('foo', undefined, { context: { active: true } })
+    void analytics.track('foo', undefined, {
+      context: {
+        // @ts-expect-error Type 'string' is not assignable to type 'boolean | null | undefined'.ts(2322)
+        active: 'hello',
+      },
+    })
   },
 }

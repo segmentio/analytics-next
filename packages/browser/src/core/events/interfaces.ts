@@ -1,5 +1,4 @@
 import {
-  CoreAnalyticsTraits,
   CoreOptions,
   CoreSegmentEvent,
   Callback,
@@ -11,12 +10,14 @@ import {
   JSONValue,
   JSONPrimitive,
   JSONObject,
+  GroupTraits,
+  UserTraits,
+  Traits,
 } from '@segment/analytics-core'
 
 export interface Options extends CoreOptions {}
 
-// This is not ideal, but it works with all the edge cases
-export interface Traits extends CoreAnalyticsTraits {}
+export type { GroupTraits, UserTraits, Traits }
 
 export type EventProperties = Record<string, any>
 
