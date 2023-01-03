@@ -7,8 +7,8 @@ import {
   CoreSegmentEvent,
   CoreOptions,
   CoreExtraContext,
-  CoreUserTraits,
-  CoreGroupTraits,
+  UserTraits,
+  GroupTraits,
 } from './interfaces'
 import { pickBy } from '../utils/pick'
 import { validateEvent } from '../validation/assertions'
@@ -104,7 +104,7 @@ export class EventFactory {
 
   identify(
     userId: ID,
-    traits?: CoreUserTraits,
+    traits?: UserTraits,
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
@@ -120,7 +120,7 @@ export class EventFactory {
 
   group(
     groupId: ID,
-    traits?: CoreGroupTraits,
+    traits?: GroupTraits,
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {

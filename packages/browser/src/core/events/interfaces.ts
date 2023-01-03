@@ -1,5 +1,4 @@
 import {
-  CoreTraits,
   CoreOptions,
   CoreSegmentEvent,
   Callback,
@@ -11,27 +10,14 @@ import {
   JSONValue,
   JSONPrimitive,
   JSONObject,
-  CoreGroupTraits,
-  CoreUserTraits,
+  GroupTraits,
+  UserTraits,
+  Traits,
 } from '@segment/analytics-core'
 
 export interface Options extends CoreOptions {}
 
-export interface Traits extends CoreTraits {}
-
-/**
- * Traits are pieces of information you know about a group.
- * This interface represents reserved traits that Segment has standardized.
- * @link https://segment.com/docs/connections/spec/group/#traits
- */
-export interface GroupTraits extends CoreGroupTraits {}
-
-/**
- * Traits are pieces of information you know about a user.
- * This interface represents reserved traits that Segment has standardized.
- * @link https://segment.com/docs/connections/spec/identify/#traits
- */
-export interface UserTraits extends CoreUserTraits {}
+export type { GroupTraits, UserTraits, Traits }
 
 export type EventProperties = Record<string, any>
 

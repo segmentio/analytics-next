@@ -1,4 +1,4 @@
-import { CoreTraits, CoreExtraContext } from '@segment/analytics-core'
+import { Traits, CoreExtraContext } from '@segment/analytics-core'
 
 class TestClass {
   name = 'hello'
@@ -8,8 +8,8 @@ class TestClass {
 }
 
 export default {
-  'CoreTraits test': () => {
-    let traits: CoreTraits = {}
+  'Traits test': () => {
+    let traits: Traits = {}
 
     // should accept a class
     traits = new TestClass()

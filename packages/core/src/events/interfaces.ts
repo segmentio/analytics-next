@@ -32,9 +32,8 @@ export interface CoreOptions {
   context?: CoreExtraContext
   anonymousId?: string
   userId?: string
-  traits?: CoreUserTraits
+  traits?: Traits
   // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
-  // we may want to remove this...
   [key: string]: any
 }
 
@@ -142,7 +141,7 @@ export interface CoreExtraContext {
    * but also associate information from a previous identify call.
    * You should fill this object the same way you would fill traits in an identify call.
    */
-  traits?: CoreUserTraits
+  traits?: Traits
 
   /**
    * Dictionary of information about the campaign that resulted in the API call, containing name, source, medium, term, content, and any other custom UTM parameter.
@@ -187,7 +186,7 @@ export interface CoreSegmentEvent {
 
   properties?: EventProperties
 
-  traits?: CoreTraits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
+  traits?: Traits // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
 
   integrations?: Integrations
   context?: CoreExtraContext
@@ -257,30 +256,30 @@ type PhoneNumber = string | number // TODO: the docs say this can only be a stri
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/group/#traits
  */
-type BaseCoreGroupTraits = DeepNullable<{
+type BaseGroupTraits = DeepNullable<{
   /**
    * Street address of a group.
    */
-  address?: BaseCoreUserTraits['address']
+  address?: BaseUserTraits['address']
 
   /**
    * URL to an avatar image for the group.
    */
-  avatar?: BaseCoreUserTraits['avatar']
+  avatar?: BaseUserTraits['avatar']
 
   /**
    * Date the group's account was first created. Segment recommends ISO-8601 date strings.
    */
-  createdAt?: BaseCoreUserTraits['createdAt']
+  createdAt?: BaseUserTraits['createdAt']
 
   /**
    * Description of a group
    */
-  description?: BaseCoreUserTraits['description']
+  description?: BaseUserTraits['description']
   /**
    * Email address of group.
    */
-  email?: BaseCoreUserTraits['email']
+  email?: BaseUserTraits['email']
   /**
    * Number of employees of a group, typically used for companies.
    */
@@ -289,32 +288,32 @@ type BaseCoreGroupTraits = DeepNullable<{
   /**
    * Unique ID in your database for a group.
    */
-  id?: BaseCoreUserTraits['id']
+  id?: BaseUserTraits['id']
 
   /**
    * Industry a group is part of.
    */
-  industry?: BaseCoreUserTraits['industry']
+  industry?: BaseUserTraits['industry']
 
   /**
    * Name of a group.
    */
-  name?: BaseCoreUserTraits['name']
+  name?: BaseUserTraits['name']
 
   /**
    * Phone number of a group
    */
-  phone?: BaseCoreUserTraits['phone']
+  phone?: BaseUserTraits['phone']
 
   /**
    * Website of a group.
    */
-  website?: BaseCoreUserTraits['website']
+  website?: BaseUserTraits['website']
 
   /**
    * 	Plan that a group is in.
    */
-  plan?: BaseCoreUserTraits['plan']
+  plan?: BaseUserTraits['plan']
 }>
 
 /**
@@ -322,7 +321,7 @@ type BaseCoreGroupTraits = DeepNullable<{
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/identify/#traits
  */
-type BaseCoreUserTraits = DeepNullable<{
+type BaseUserTraits = DeepNullable<{
   /**
    * Unique ID in your database for a user
    */
@@ -400,9 +399,9 @@ type BaseCoreUserTraits = DeepNullable<{
   company?: {
     name?: string
     id?: DbId
-    industry?: BaseCoreUserTraits['industry']
+    industry?: BaseUserTraits['industry']
     employee_count?: number
-    plan?: BaseCoreUserTraits['plan']
+    plan?: BaseUserTraits['plan']
   }
 
   /**
@@ -438,7 +437,7 @@ type BaseCoreUserTraits = DeepNullable<{
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/group/#traits
  */
-export type CoreGroupTraits = BaseCoreGroupTraits & {
+export type GroupTraits = BaseGroupTraits & {
   [customTrait: string]: any
 }
 
@@ -447,8 +446,11 @@ export type CoreGroupTraits = BaseCoreGroupTraits & {
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/identify/#traits
  */
-export type CoreUserTraits = BaseCoreUserTraits & {
+export type UserTraits = BaseUserTraits & {
   [customTrait: string]: any
 }
 
-export type CoreTraits = CoreUserTraits & CoreGroupTraits
+/**
+ * Traits are pieces of information you know about a user or group.
+ */
+export type Traits = UserTraits | GroupTraits
