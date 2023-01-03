@@ -25,6 +25,7 @@ import {
 import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
+import { Stats } from '../core/stats'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -279,7 +280,7 @@ async function loadAnalytics(
 
   const plugins = settings.plugins ?? []
   const classicIntegrations = settings.classicIntegrations ?? []
-  Context.initRemoteMetrics(legacySettings.metrics)
+  Stats.initRemoteMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)
