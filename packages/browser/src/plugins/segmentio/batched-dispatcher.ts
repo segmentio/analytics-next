@@ -1,11 +1,6 @@
-import unfetch from 'unfetch'
 import { SegmentEvent } from '../../core/events'
+import { fetch } from '../../lib/fetch'
 import { onPageLeave } from '../../lib/on-page-leave'
-
-let fetch = unfetch
-if (typeof window !== 'undefined') {
-  fetch = window.fetch || unfetch
-}
 
 type BatchingConfig = {
   size?: number

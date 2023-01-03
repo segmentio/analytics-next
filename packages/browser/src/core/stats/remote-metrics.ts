@@ -1,4 +1,4 @@
-import fetch from 'unfetch'
+import { fetch } from '../../lib/fetch'
 import { version } from '../../generated/version'
 import { getVersionType } from '../../plugins/segmentio/normalize'
 

@@ -1,7 +1,7 @@
 import { getProcessEnv } from '../lib/get-process-env'
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
-import fetch from 'unfetch'
+import { fetch } from '../lib/fetch'
 import { Analytics, AnalyticsSettings, InitOptions } from '../core/analytics'
 import { Context } from '../core/context'
 import { Plan } from '../core/events'

@@ -1,9 +1,4 @@
-import unfetch from 'unfetch'
-
-let fetch = unfetch
-if (typeof window !== 'undefined') {
-  fetch = window.fetch || unfetch
-}
+import { fetch } from '../../lib/fetch'
 
 export type Dispatcher = (url: string, body: object) => Promise<unknown>
 
