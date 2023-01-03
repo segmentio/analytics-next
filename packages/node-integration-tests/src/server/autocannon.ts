@@ -1,12 +1,13 @@
 import autocannon from 'autocannon'
 
 export const runAutocannon = (
-  url = 'http://localhost:3000'
+  options: Partial<autocannon.Options> = {}
 ): Promise<autocannon.Result> => {
   return new Promise((resolve, reject) => {
     const instance = autocannon(
       {
-        url,
+        url: options.url || 'http://localhost:3000',
+        ...options,
       },
       (err, result) => {
         if (err) {

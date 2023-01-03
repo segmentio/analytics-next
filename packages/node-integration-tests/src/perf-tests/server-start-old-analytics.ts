@@ -1,6 +1,6 @@
 import Analytics from 'analytics-node'
-import { startServer } from './server'
-import { trackEventSmall } from './fixtures'
+import { startServer } from '../server/server'
+import { trackEventSmall } from '../server/fixtures'
 
 startServer()
   .then((app) => {

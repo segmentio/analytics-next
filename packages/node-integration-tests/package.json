@@ -7,15 +7,17 @@
     "eslint": "yarn run -T eslint",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "perf": "yarn ts-node src/perf-tests/perf-tests.ts",
+    "durability": "yarn ts-node src/durability-tests/durability-tests.ts",
     "concurrently": "yarn run -T concurrently",
     "ts-node": "yarn run -T ts-node",
-    "test": "yarn perf"
+    "test": "yarn perf && yarn durability"
   },
   "devDependencies": {
     "@internal/test-helpers": "workspace:^",
     "@segment/analytics-node": "workspace:^",
     "@types/analytics-node": "^3.1.9",
     "@types/autocannon": "^7",
+    "@types/node": "^14",
     "analytics-node": "^6.2.0",
     "autocannon": "^7.10.0",
     "nock": "^13.2.9"
