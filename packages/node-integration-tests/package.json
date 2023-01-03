@@ -7,9 +7,10 @@
     "eslint": "yarn run -T eslint",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "perf": "yarn ts-node src/perf-tests/perf-tests.ts",
+    "durability": "yarn ts-node src/durability-tests/durability-tests.ts",
     "concurrently": "yarn run -T concurrently",
     "ts-node": "yarn run -T ts-node",
-    "test": "yarn perf"
+    "test": "yarn perf && yarn durability"
   },
   "devDependencies": {
     "@internal/test-helpers": "workspace:^",

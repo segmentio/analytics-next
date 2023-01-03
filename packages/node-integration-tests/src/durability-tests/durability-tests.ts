@@ -3,6 +3,12 @@ import { runAutocannon } from '../server/autocannon'
 import { execFile } from 'child_process'
 import { sleep } from '@internal/test-helpers'
 
+/**
+ * Durability tests ensure that no events get "lost".
+ */
+
+const TOTAL_REQUESTS = 1000
+
 const execAndKill = async (moduleName: string) => {
   const modulePath = path.join(__dirname, moduleName)
 
@@ -16,7 +22,7 @@ const execAndKill = async (moduleName: string) => {
 
   await sleep(1000) // wait some amount of time for the server to come online before running autocannon, otherwise we will get connection errors.
 
-  const { requests, errors } = await runAutocannon({ amount: 1000 })
+  const { requests, errors } = await runAutocannon({ amount: TOTAL_REQUESTS })
 
   cp.kill()
 
@@ -34,7 +40,13 @@ const execAndKill = async (moduleName: string) => {
 }
 
 const test = async () => {
-  return execAndKill('server-start-analytics.ts')
+  const reqs = await execAndKill('server-start-analytics.ts')
+  if (reqs.total !== TOTAL_REQUESTS) {
+    throw new Error(
+      `Events lost: total requests ${reqs.total}. expected requests: ${TOTAL_REQUESTS}`
+    )
+  }
+  console.log('All event durability tests passed.')
 }
 
 test().catch((msg) => {
