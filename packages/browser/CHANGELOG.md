@@ -1,5 +1,25 @@
 # @segment/analytics-next
 
+## 1.49.0
+
+### Minor Changes
+
+- [#738](https://github.com/segmentio/analytics-next/pull/738) [`fed489c`](https://github.com/segmentio/analytics-next/commit/fed489cbf2e5b4c0f8423453e24831ec5dcdd7ce) Thanks [@silesky](https://github.com/silesky)! - Make trait fields nullable. Type traits for group() differently than identify() call.
+
+* [#722](https://github.com/segmentio/analytics-next/pull/722) [`61688e2`](https://github.com/segmentio/analytics-next/commit/61688e251ad2f60dae4cfd65cf59401c29ec66bd) Thanks [@silesky](https://github.com/silesky)! - Improve core interfaces. Refactor analytics-next to use shared EventQueue, dispatch, and other methods.
+  Augment Browser interface with traits and context options type.
+
+### Patch Changes
+
+- [#730](https://github.com/segmentio/analytics-next/pull/730) [`a392bf9`](https://github.com/segmentio/analytics-next/commit/a392bf9ef60cf4a6e6edef0b7c038e993b18b1bd) Thanks [@pooyaj](https://github.com/pooyaj)! - Adding jsdocs for universal storage
+
+* [#743](https://github.com/segmentio/analytics-next/pull/743) [`88c91c8`](https://github.com/segmentio/analytics-next/commit/88c91c8cd56730253b8ac055437823721e450a42) Thanks [@silesky](https://github.com/silesky)! - Remove remote metrics from context and move to stats
+
+- [#742](https://github.com/segmentio/analytics-next/pull/742) [`e29a21a`](https://github.com/segmentio/analytics-next/commit/e29a21adafb44a8810c7534ecde96f03eab0b246) Thanks [@silesky](https://github.com/silesky)! - Fix webdriver.io interception bug. Refactor to use native fetch where unfetch is unavailable.
+
+- Updated dependencies [[`fed489c`](https://github.com/segmentio/analytics-next/commit/fed489cbf2e5b4c0f8423453e24831ec5dcdd7ce), [`61688e2`](https://github.com/segmentio/analytics-next/commit/61688e251ad2f60dae4cfd65cf59401c29ec66bd)]:
+  - @segment/analytics-core@1.2.0
+
 ## 1.48.0
 
 ### Minor Changes
