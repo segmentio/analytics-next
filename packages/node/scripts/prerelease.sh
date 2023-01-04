@@ -10,7 +10,6 @@ jq ".version = \"$latest_version\"" package.json >"$tmp" && mv "$tmp" package.js
 echo "bumping version..." &&
   version=$(npm version prerelease) &&
   git add package.json &&
-  yarn version &&
   git commit -m "Bump node version: $version."
 
 echo "modifying package.json..." &&
