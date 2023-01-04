@@ -1,6 +1,6 @@
 import { CoreAnalytics, bindAll, pTimeout } from '@segment/analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
-import { version } from '../../package.json'
+import { version } from '../generated/version'
 import { createConfiguredNodePlugin } from '../plugins/segmentio'
 import { NodeEventFactory } from './event-factory'
 import { Callback, dispatchAndEmit } from './dispatch-emit'

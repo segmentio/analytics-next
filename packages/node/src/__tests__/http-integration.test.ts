@@ -1,4 +1,4 @@
-import { version } from '../../package.json'
+import { version } from '../generated/version'
 import { Analytics } from '..'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'

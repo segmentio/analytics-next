@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.json",
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "resolveJsonModule": true,
     "module": "esnext",
     "target": "es2020", // node 14
     "moduleResolution": "node",
