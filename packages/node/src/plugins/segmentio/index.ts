@@ -1,5 +1,5 @@
 import { Publisher, PublisherProps } from './publisher'
-import { version } from '../../../package.json'
+import { version } from '../../generated/version'
 import { detectRuntime } from '../../lib/env'
 import { Plugin } from '../../app/types'
 import { Context } from '../../app/context'
