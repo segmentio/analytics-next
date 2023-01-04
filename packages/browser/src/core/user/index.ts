@@ -46,9 +46,8 @@ class Store {
     return this.cache[key] as T | null
   }
 
-  set<T>(key: string, value: T | null): T | null {
+  set<T>(key: string, value: T | null): void {
     this.cache[key] = value
-    return value
   }
 
   remove(key: string): void {
@@ -121,7 +120,7 @@ export class Cookie extends Store {
     }
   }
 
-  set<T>(key: string, value: T): T | null {
+  set<T>(key: string, value: T): void {
     if (typeof value === 'string') {
       jar.set(key, value, this.opts())
     } else if (value === null) {
@@ -129,7 +128,6 @@ export class Cookie extends Store {
     } else {
       jar.set(key, JSON.stringify(value), this.opts())
     }
-    return value
   }
 
   remove(key: string): void {
@@ -174,14 +172,12 @@ export class LocalStorage extends Store {
     }
   }
 
-  set<T>(key: string, value: T): T | null {
+  set<T>(key: string, value: T): void {
     try {
       localStorage.setItem(key, JSON.stringify(value))
     } catch {
       localStorageWarning(key, 'full')
     }
-
-    return value
   }
 
   remove(key: string): void {
@@ -229,8 +225,8 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
   }
 
   /*
-    This is to support few scenarios where:  
-    - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them 
+    This is to support few scenarios where:
+    - value exist in one of the stores ( as a result of other stores being cleared from browser ) and we want to resync them
     - read values in AJS 1.0 format ( for customers after 1.0 --> 2.0 migration ) and then re-write them in AJS 2.0 format
   */
 
@@ -247,12 +243,14 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
   ): Data[K] | null {
     const val = this.get(key, storeTypes)
 
-    return this.set(
-      key,
-      //@ts-ignore TODO: legacy behavior, getAndSync can change the type of a value from number to string (AJS 1.0 stores numerical values as a number)
-      typeof val === 'number' ? val.toString() : val,
-      storeTypes
-    ) as Data[K] | null
+    // legacy behavior, getAndSync can change the type of a value from number to string (AJS 1.0 stores numerical values as a number)
+    const coercedValue = (typeof val === 'number' ? val.toString() : val) as
+      | Data[K]
+      | null
+
+    this.set(key, coercedValue, storeTypes)
+
+    return coercedValue
   }
 
   /**
@@ -287,11 +285,10 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     key: K,
     value: Data[K] | null,
     storeTypes?: StoreType[]
-  ): Data[K] | null {
+  ): void {
     for (const store of this.getStores(storeTypes)) {
       store.set(key, value)
     }
-    return value
   }
 
   /**
