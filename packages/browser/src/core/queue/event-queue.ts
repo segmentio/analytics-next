@@ -224,25 +224,27 @@ export class EventQueue extends Emitter {
     return true
   }
 
-  private availableExtensions(denyList: Integrations): PluginsByType {
+  private availableExtensions(
+    denyList: Integrations,
+    disabledActionDestinations: Set<string>
+  ): PluginsByType {
     const available = this.plugins.filter((p) => {
       // Only filter out destination plugins or the Segment.io plugin
       if (p.type !== 'destination' && p.name !== 'Segment.io') {
         return true
       }
-
       let alternativeNameMatch: boolean | JSONObject | undefined = undefined
       p.alternativeNames?.forEach((name) => {
         if (denyList[name] !== undefined) {
           alternativeNameMatch = denyList[name]
         }
       })
-
       // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
       return (
         denyList[p.name] ??
         alternativeNameMatch ??
-        (p.name === 'Segment.io' ? true : denyList.All) !== false
+        !disabledActionDestinations.has(p.name) ??
+        p.name === 'Segment.io'
       )
     })
 
@@ -267,7 +269,8 @@ export class EventQueue extends Emitter {
     }
 
     const { before, enrichment } = this.availableExtensions(
-      ctx.event.integrations ?? {}
+      ctx.event.integrations ?? {},
+      ctx.disabledIntegrations
     )
 
     for (const beforeWare of before) {
@@ -289,7 +292,8 @@ export class EventQueue extends Emitter {
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end
     const { destinations, after } = this.availableExtensions(
-      ctx.event.integrations ?? {}
+      ctx.event.integrations ?? {},
+      ctx.disabledIntegrations
     )
 
     await new Promise((resolve, reject) => {

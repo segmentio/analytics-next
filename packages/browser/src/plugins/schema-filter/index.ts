@@ -51,19 +51,17 @@ export function schemaFilter(
   function filter(ctx: Context): Context {
     const plan = track
     const ev = ctx.event.event
-
     if (plan && ev) {
       const planEvent = plan[ev]
       if (!isPlanEventEnabled(plan, planEvent)) {
+        ctx.addDisabledIntegrations(Object.keys(settings.integrations))
         ctx.updateEvent('integrations', {
-          ...ctx.event.integrations,
-          All: false,
           'Segment.io': true,
         })
         return ctx
       } else {
         const disabledActions = disabledActionDestinations(planEvent, settings)
-
+        ctx.addDisabledIntegrations(Object.keys(disabledActions))
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           ...planEvent?.integrations,
@@ -71,7 +69,6 @@ export function schemaFilter(
         })
       }
     }
-
     return ctx
   }
 

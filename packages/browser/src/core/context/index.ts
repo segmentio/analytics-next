@@ -49,6 +49,7 @@ export class Context implements AbstractContext {
   public stats: Stats
   private _id: string
   private _failedDelivery?: ContextFailedDelivery
+  private _disabledIntegrations: Set<string> = new Set()
 
   constructor(event: SegmentEvent, id?: string) {
     this._attempts = 0
@@ -91,6 +92,16 @@ export class Context implements AbstractContext {
 
   public set event(evt: SegmentEvent) {
     this._event = evt
+  }
+
+  public get disabledIntegrations(): Set<string> {
+    return this._disabledIntegrations
+  }
+
+  addDisabledIntegrations(integrations: string[]) {
+    integrations.forEach((integration) =>
+      this._disabledIntegrations.add(integration)
+    )
   }
 
   public get attempts(): number {

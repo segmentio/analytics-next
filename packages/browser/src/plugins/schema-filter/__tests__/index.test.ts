@@ -53,6 +53,7 @@ const settings: LegacySettings = {
 }
 
 const trackEvent: Plugin = {
+  alternativeNames: ['Braze Web Mode (Actions)'],
   name: 'Braze Web Mode (Actions) trackEvent',
   type: 'destination',
   version: '1.0',
@@ -74,21 +75,25 @@ const trackEvent: Plugin = {
 
 const trackPurchase: Plugin = {
   ...trackEvent,
+  alternativeNames: ['Braze Web Mode (Actions)'],
   name: 'Braze Web Mode (Actions) trackPurchase',
 }
 
 const updateUserProfile: Plugin = {
   ...trackEvent,
+  alternativeNames: ['Braze Web Mode (Actions)'],
   name: 'Braze Web Mode (Actions) updateUserProfile',
 }
 
 const amplitude: Plugin = {
   ...trackEvent,
+  alternativeNames: [],
   name: 'amplitude',
 }
 
 const fullstory: Plugin = {
   ...trackEvent,
+  alternativeNames: ['Fullstory'],
   name: 'Fullstory (Actions) trackEvent',
 }
 
@@ -275,7 +280,6 @@ describe('schema filter', () => {
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
-
       expect(amplitude.track).not.toHaveBeenCalled()
     })
 
