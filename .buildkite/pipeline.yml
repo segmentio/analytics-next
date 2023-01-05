@@ -13,6 +13,11 @@ steps:
       - echo "+++ Run tests"
       - yarn constraints
       - yarn run test:scripts
+      - yarn run test:check-dts
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['.yarn/cache/']
 
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
