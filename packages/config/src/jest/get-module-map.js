@@ -27,7 +27,6 @@ const getJestModuleMap = ({ skipPackageMap = doNotMapPackages } = {}) => {
   )
 
   return {
-    '@/(.+)': '<rootDir>/src/$1',
     ...(skipPackageMap ? {} : moduleNameMapper),
   }
 }

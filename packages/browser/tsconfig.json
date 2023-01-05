@@ -7,9 +7,6 @@
     "resolveJsonModule": true,
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./*"]
-    },
     "keyofStringsOnly": true
   },
   "exclude": ["node_modules", "dist"]

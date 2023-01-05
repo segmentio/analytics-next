@@ -17,7 +17,7 @@ const register = jest.fn()
 const addSourceMiddleware = jest.fn()
 const on = jest.fn()
 
-jest.mock('@/core/analytics', () => ({
+jest.mock('../../core/analytics', () => ({
   Analytics: (_: unknown, options?: InitOptions): unknown => ({
     track,
     identify,

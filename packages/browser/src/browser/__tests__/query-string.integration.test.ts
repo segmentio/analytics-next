@@ -100,7 +100,7 @@ describe('queryString', () => {
   })
 
   it('applies query string logic if window.location.hash is present in different formats', async () => {
-    jest.mock('@/core/analytics')
+    jest.mock('../../core/analytics')
     const mockQueryString = jest
       .fn()
       .mockImplementation(() => Promise.resolve())
