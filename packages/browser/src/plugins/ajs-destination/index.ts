@@ -1,4 +1,4 @@
-import { Integrations, JSONObject } from '@/core/events'
+import { Integrations, JSONObject } from '../../core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacySettings } from '../../browser'

@@ -7,7 +7,7 @@ import {
 } from '..'
 import { Analytics } from '../../analytics'
 import { Context } from '../../context'
-import { sleep } from '@/lib/sleep'
+import { sleep } from '../../../lib/sleep'
 import { User } from '../../user'
 
 describe('PreInitMethodCallBuffer', () => {

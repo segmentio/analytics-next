@@ -1,5 +1,5 @@
-import type { Context } from '@/core/context'
-import type { Plugin } from '@/core/plugin'
+import type { Context } from '../../core/context'
+import type { Plugin } from '../../core/plugin'
 
 interface PageDefault {
   [key: string]: unknown

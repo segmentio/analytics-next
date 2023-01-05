@@ -1,4 +1,4 @@
-import { Analytics } from '@/core/analytics'
+import { Analytics } from '../../../core/analytics'
 import { pageEnrichment, pageDefaults } from '..'
 
 let ajs: Analytics

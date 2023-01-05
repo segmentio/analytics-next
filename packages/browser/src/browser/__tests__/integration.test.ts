@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { cdnSettingsKitchenSink } from '../../test-helpers/fixtures/cdn-settings'
 import { createMockFetchImplementation } from '../../test-helpers/fixtures/create-fetch-method'
-import { Context } from '@/core/context'
-import { Plugin } from '@/core/plugin'
+import { Context } from '../../core/context'
+import { Plugin } from '../../core/plugin'
 import { JSDOM } from 'jsdom'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
@@ -17,7 +17,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { parseFetchCall } from '../../test-helpers/fetch-parse'
-import { ActionDestination } from '@/plugins/remote-loader'
+import { ActionDestination } from '../../plugins/remote-loader'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -208,7 +208,7 @@ describe('Initialization', () => {
   })
 
   it('calls page if initialpageview is set', async () => {
-    jest.mock('@/core/analytics')
+    jest.mock('../../core/analytics')
     const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
     Analytics.prototype.page = mockPage
 
@@ -218,7 +218,7 @@ describe('Initialization', () => {
   })
 
   it('does not call page if initialpageview is not set', async () => {
-    jest.mock('@/core/analytics')
+    jest.mock('../../core/analytics')
     const mockPage = jest.fn()
     Analytics.prototype.page = mockPage
     await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
