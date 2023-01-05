@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.49.1
+
+### Patch Changes
+
+- [#749](https://github.com/segmentio/analytics-next/pull/749) [`86b9857`](https://github.com/segmentio/analytics-next/commit/86b98572a24bfc7c8b6feea8a6feef1bdbe9202a) Thanks [@silesky](https://github.com/silesky)! - Fix internal lib error by removing path alias.
+
 ## 1.49.0
 
 ### Minor Changes
