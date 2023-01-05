@@ -15,7 +15,7 @@ steps:
       - yarn run test:scripts
 
   - label: '[Browser] Lint + Test'
-    key: build
+    key: browser-lint-test
     agents:
       queue: v1
     commands:
@@ -161,7 +161,6 @@ steps:
       build.message =~ /^Version Packages/ &&
       build.branch == "master" &&
       build.message !~ /\[skip\]/i
-    depends_on: [build]
     agents:
       queue: v1
     commands:
