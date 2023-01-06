@@ -5,6 +5,7 @@ import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
+import { NodeEmitter } from '../../app/emitter'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -41,16 +42,20 @@ export class Publisher {
   private _url: string
   private _closeAndFlushPendingItemsCount?: number
   private _httpRequestTimeout: number
-
-  constructor({
-    host,
-    path,
-    maxRetries,
-    maxEventsInBatch,
-    flushInterval,
-    writeKey,
-    httpRequestTimeout,
-  }: PublisherProps) {
+  private _emitter: NodeEmitter
+  constructor(
+    {
+      host,
+      path,
+      maxRetries,
+      maxEventsInBatch,
+      flushInterval,
+      writeKey,
+      httpRequestTimeout,
+    }: PublisherProps,
+    emitter: NodeEmitter
+  ) {
+    this._emitter = emitter
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._flushInterval = flushInterval
@@ -185,7 +190,7 @@ export class Publisher {
         this._httpRequestTimeout
       )
       try {
-        const response = await fetch(this._url, {
+        const requestInit = {
           signal: signal,
           method: 'POST',
           headers: {
@@ -194,7 +199,17 @@ export class Publisher {
             'User-Agent': 'analytics-node-next/latest',
           },
           body: payload,
+        }
+
+        this._emitter.emit('http_request', {
+          url: this._url,
+          body: requestInit.body,
+          headers: requestInit.headers,
+          method: requestInit.method,
         })
+
+        const response = await fetch(this._url, requestInit)
+
         clearTimeout(timeoutId)
 
         if (response.ok) {

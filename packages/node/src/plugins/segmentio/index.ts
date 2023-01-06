@@ -3,6 +3,7 @@ import { version } from '../../generated/version'
 import { detectRuntime } from '../../lib/env'
 import { Plugin } from '../../app/types'
 import { Context } from '../../app/context'
+import { NodeEmitter } from '../../app/emitter'
 
 function normalizeEvent(ctx: Context) {
   ctx.updateEvent('context.library.name', 'AnalyticsNode')
@@ -52,8 +53,11 @@ export function createNodePlugin(publisher: Publisher): SegmentNodePlugin {
   }
 }
 
-export const createConfiguredNodePlugin = (props: ConfigureNodePluginProps) => {
-  const publisher = new Publisher(props)
+export const createConfiguredNodePlugin = (
+  props: ConfigureNodePluginProps,
+  emitter: NodeEmitter
+) => {
+  const publisher = new Publisher(props, emitter)
   return {
     publisher: publisher,
     plugin: createNodePlugin(publisher),

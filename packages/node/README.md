@@ -15,7 +15,7 @@ yarn add @segment/analytics-node
 pnpm install @segment/analytics-node
 ```
 
-### Usage 
+### Usage
 Assuming some express-like web framework.
 ```ts
 import { Analytics } from '@segment/analytics-node'
@@ -148,13 +148,32 @@ console.log(unflushedEvents) // all events that came in after closeAndFlush was 
 ```
 
 ## Event Emitter Interface
+You can see the complete list of emitted events in [emitter.ts](src/app/emitter.ts)
 ```ts
 analytics.on('error', (err) => console.error(err))
 
 analytics.on('identify', (ctx) => console.log(ctx))
 
 analytics.on('track', (ctx) => console.log(ctx))
+
 ```
+#### You can use the emitter to log all HTTP Requests
+```ts
+analytics.on('http_request', (event) => console.log(event))
+
+// when triggered, emits an event of the shape:
+{
+    url: 'https://api.segment.io/v1/batch',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...
+    },
+    body: '...',
+}
+
+```
+
 
 ## Multiple Clients
 Different parts of your application may require different types of batching, or even sending to multiple Segment sources. In that case, you can initialize multiple instances of Analytics with different settings:
