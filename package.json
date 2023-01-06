@@ -12,6 +12,7 @@
   "scripts": {
     "test": "jest",
     "test:scripts": "jest --config scripts/jest.config.js",
+    "test:check-dts": "yarn build && yarn ts-node meta-tests/check-dts.ts",
     "test:node-int": "turbo run --filter=node-integration-tests test",
     "lint": "yarn constraints && turbo run lint --continue",
     "build": "turbo run build --filter='./packages/*'",
