@@ -1,4 +1,7 @@
-import { EventEmitter } from 'events'
+/**
+ * use non-native event emitter for the benefit of non-node runtimes like CF workers.
+ */
+import { Emitter } from '@segment/analytics-core'
 
 /**
  * adapted from: https://www.npmjs.com/package/node-abort-controller
@@ -6,7 +9,7 @@ import { EventEmitter } from 'events'
 class AbortSignal {
   onabort: globalThis.AbortSignal['onabort'] = null
   aborted = false
-  eventEmitter = new EventEmitter()
+  eventEmitter = new Emitter()
 
   toString() {
     return '[object AbortSignal]'
@@ -14,10 +17,10 @@ class AbortSignal {
   get [Symbol.toStringTag]() {
     return 'AbortSignal'
   }
-  removeEventListener(...args: Parameters<EventEmitter['removeListener']>) {
-    this.eventEmitter.removeListener(...args)
+  removeEventListener(...args: Parameters<Emitter['off']>) {
+    this.eventEmitter.off(...args)
   }
-  addEventListener(...args: Parameters<EventEmitter['addListener']>) {
+  addEventListener(...args: Parameters<Emitter['on']>) {
     this.eventEmitter.on(...args)
   }
   dispatchEvent(type: string) {
