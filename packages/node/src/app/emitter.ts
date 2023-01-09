@@ -10,7 +10,12 @@ export type NodeEmitterEvents = CoreEmitterContract<Context> & {
   initialize: [AnalyticsSettings]
   call_after_close: [SegmentEvent] // any event that did not get dispatched due to close
   http_request: [
-    { url: string; body: string; method: string; headers: Record<string, any> }
+    {
+      url: string
+      method: string
+      headers: Record<string, string>
+      body: string
+    }
   ]
   drained: []
 }

@@ -203,9 +203,9 @@ export class Publisher {
 
         this._emitter.emit('http_request', {
           url: this._url,
-          body: requestInit.body,
-          headers: requestInit.headers,
           method: requestInit.method,
+          headers: requestInit.headers,
+          body: requestInit.body,
         })
 
         const response = await fetch(this._url, requestInit)
