@@ -41,15 +41,18 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
     this._closeAndFlushDefaultTimeout = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
 
-    const { plugin, publisher } = createConfiguredNodePlugin({
-      writeKey: settings.writeKey,
-      host: settings.host,
-      path: settings.path,
-      maxRetries: settings.maxRetries ?? 3,
-      maxEventsInBatch: settings.maxEventsInBatch ?? 15,
-      httpRequestTimeout: settings.httpRequestTimeout,
-      flushInterval,
-    })
+    const { plugin, publisher } = createConfiguredNodePlugin(
+      {
+        writeKey: settings.writeKey,
+        host: settings.host,
+        path: settings.path,
+        maxRetries: settings.maxRetries ?? 3,
+        maxEventsInBatch: settings.maxEventsInBatch ?? 15,
+        httpRequestTimeout: settings.httpRequestTimeout,
+        flushInterval,
+      },
+      this as NodeEmitter
+    )
     this._publisher = publisher
     this.ready = this.register(plugin).then(() => undefined)
 
