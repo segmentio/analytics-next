@@ -114,7 +114,6 @@ Every method you call does not result in an HTTP request, but is queued in memor
 
 By default, our library will flush:
 
-- The very first time it gets a message.
 - Every 15 messages (controlled by `settings.maxEventsInBatch`).
 - If 10 seconds has passed since the last flush (controlled by `settings.flushInterval`)
 
