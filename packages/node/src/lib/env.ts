@@ -1,7 +1,7 @@
 export type RuntimeEnv = 'node' | 'browser' | 'web-worker' | 'unknown'
 
 export const detectRuntime = (): RuntimeEnv => {
-  if (typeof process?.env === 'object') {
+  if (typeof process === 'object' && process && process.env) {
     return 'node'
   }
 
