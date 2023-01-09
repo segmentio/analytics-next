@@ -1,5 +1,5 @@
 # @segment/analytics-node
-> ### Warning: Until 1.x release, use this library at your own risk!
+> ### Warning: This library is in [public beta](https://segment.com/legal/first-access-beta-preview) ⚠️
 
 ## Requirements
 - Node.js >= 14
@@ -15,7 +15,7 @@ yarn add @segment/analytics-node
 pnpm install @segment/analytics-node
 ```
 
-### Usage 
+### Usage
 Assuming some express-like web framework.
 ```ts
 import { Analytics } from '@segment/analytics-node'
@@ -42,19 +42,41 @@ app.post('/cart', (req, res) => {
    res.sendStatus(201)
 });
 ```
-## Regional configuration
 
-For Business plans with access to Regional Segment, you can use the host configuration parameter to send data to the desired region:
 
-Oregon (Default) — api.segment.io/v1
-Dublin — events.eu1.segmentapis.com
-An example of setting the host to the EU endpoint using the Node library would be:
-
+## Graceful Exit
+Avoid losing events on exit!
+ * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
+  * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
 ```ts
-const analytics = new Analytics({
-  ...
-  host: "https://events.eu1.segmentapis.com"
-});
+await analytics.closeAndFlush()
+// or
+await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
+```
+#### Advanced Example
+```ts
+const app = express()
+const server = app.listen(3000)
+
+const onExit = async () => {
+  await analytics.closeAndFlush()
+  server.close(() => {
+    console.log("Gracefully closing server...")
+    process.exit()
+  })
+}
+['SIGINT', 'SIGTERM'].forEach((code) => process.on(code, onExit))
+```
+
+#### Collecting unflushed events
+If you absolutely need to preserve all possible events in the event of a forced timeout, even ones that came in after  `analytics.closeAndFlush()` was called, you can collect those events.
+```ts
+const unflushedEvents = []
+
+analytics.on('call_after_close', (event) => unflushedEvents.push(events))
+await analytics.closeAndFlush()
+
+console.log(unflushedEvents) // all events that came in after closeAndFlush was called
 ```
 
 ## Configuration Settings
@@ -69,6 +91,20 @@ const analytics = new Analytics({
     flushInterval: 10000,
     // ... and more!
   })
+```
+## Regional configuration
+
+For Business plans with access to Regional Segment, you can use the host configuration parameter to send data to the desired region:
+
+Oregon (Default) — api.segment.io/v1
+Dublin — events.eu1.segmentapis.com
+An example of setting the host to the EU endpoint using the Node library would be:
+
+```ts
+const analytics = new Analytics({
+  ...
+  host: "https://events.eu1.segmentapis.com"
+});
 ```
 
 ## Batching
@@ -112,40 +148,6 @@ analytics.on('error', (err) => console.error(err))
 ```
 
 
-## Graceful Exit
-Avoid losing events on exit!
- * Call `.closeAndFlush()` to stop collecting new events and flush all existing events.
-  * If a callback on an event call is included, this also waits for all callbacks to be called, and any of their subsequent promises to be resolved.
-```ts
-await analytics.closeAndFlush()
-// or
-await analytics.closeAndFlush({ timeout: 5000 }) // force resolve after 5000ms
-```
-#### Advanced Example
-```ts
-const app = express()
-const server = app.listen(3000)
-
-const onExit = async () => {
-  await analytics.closeAndFlush()
-  server.close(() => {
-    console.log("Gracefully closing server...")
-    process.exit()
-  })
-}
-['SIGINT', 'SIGTERM'].forEach((code) => process.on(code, onExit))
-```
-
-#### Collecting unflushed events
-If you absolutely need to preserve all possible events in the event of a forced timeout, even ones that came in after  `analytics.closeAndFlush()` was called, you can collect those events.
-```ts
-const unflushedEvents = []
-
-analytics.on('call_after_close', (event) => unflushedEvents.push(events))
-await analytics.closeAndFlush()
-
-console.log(unflushedEvents) // all events that came in after closeAndFlush was called
-```
 
 ## Event Emitter Interface
 ```ts
@@ -235,7 +237,24 @@ Other Differences:
 // new
 (err, ctx) => void
 ```
+- Undocumented behavior around `track` properties have been removed.
+```ts
+  // old, undocumented behavior
+ analytics.track({
+  ...
+  event: 'Ultimate Played',
+  myProp: 'abc'
+})
 
+// new
+ analytics.track({
+  ...
+  event: 'Ultimate Played',
+  properties:  {
+    myProp: 'abc'
+  }
+})
+```
 
 ## Plugin Architecture
 - See segment's [documentation for plugin architecture](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugin-architecture).
