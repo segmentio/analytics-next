@@ -6,6 +6,7 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { fetch } from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
+import { b64encode } from '../../lib/base-64-encode'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -59,7 +60,7 @@ export class Publisher {
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._flushInterval = flushInterval
-    this._auth = Buffer.from(`${writeKey}:`).toString('base64')
+    this._auth = b64encode(`${writeKey}:`)
     this._url = tryCreateFormattedUrl(
       host ?? 'https://api.segment.io',
       path ?? '/v1/batch'
