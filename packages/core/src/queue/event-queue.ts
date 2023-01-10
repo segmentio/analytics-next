@@ -12,8 +12,9 @@ import { isOffline } from '../connection'
 
 export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   message_delivered: [ctx: Ctx]
-  message_enriched: [ctx: Ctx]
+  message_enriched: [ctx: Ctx, plugin: CorePlugin<Ctx>]
   delivery_success: [ctx: Ctx]
+  delivery_retry: [ctx: Ctx]
   delivery_failure: [ctx: Ctx, err: Ctx | Error | ContextCancelation]
   flush: [ctx: Ctx, delivered: boolean]
 }
@@ -265,6 +266,10 @@ export abstract class CoreEventQueue<
       throw new Error('Not ready')
     }
 
+    if (ctx.attempts > 1) {
+      this.emit('delivery_retry', ctx)
+    }
+
     const { before, enrichment } = this.availableExtensions(
       ctx.event.integrations ?? {}
     )
@@ -274,6 +279,8 @@ export abstract class CoreEventQueue<
       if (temp instanceof CoreContext) {
         ctx = temp
       }
+
+      this.emit('message_enriched', ctx, beforeWare)
     }
 
     for (const enrichmentWare of enrichment) {
@@ -281,9 +288,9 @@ export abstract class CoreEventQueue<
       if (temp instanceof CoreContext) {
         ctx = temp
       }
-    }
 
-    this.emit('message_enriched', ctx)
+      this.emit('message_enriched', ctx, enrichmentWare)
+    }
 
     // Enrichment and before plugins can re-arrange the deny list dynamically
     // so we need to pluck them at the end

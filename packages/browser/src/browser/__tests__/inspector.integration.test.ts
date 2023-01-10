@@ -55,7 +55,67 @@ describe('Inspector', () => {
 
     await deliveryPromise
 
-    expect(enrichedFn).toHaveBeenCalledTimes(1)
+    expect(enrichedFn).toHaveBeenCalledTimes(2)
     expect(deliveredFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('emits message enrichment events with enricher information', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const enrichedFn = jest.fn()
+
+    analytics.queue.on('message_enriched', enrichedFn)
+
+    await analytics.register({
+      name: 'Test plugin',
+      version: '1.0.0',
+      type: 'before',
+      isLoaded: () => true,
+      load: () => Promise.resolve(),
+      track: (ctx) => ctx,
+    })
+
+    const ctx = await analytics.track('Test event').catch(() => {})
+
+    expect(enrichedFn).toHaveBeenLastCalledWith(
+      ctx,
+      expect.objectContaining({
+        name: 'Test plugin',
+        type: 'before',
+      })
+    )
+  })
+
+  it('emits expected events if before plugin throws error ', async () => {
+    const [analytics] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      { retryQueue: false }
+    )
+
+    const failedFn = jest.fn()
+    const deliveredFn = jest.fn()
+
+    analytics.queue.on('delivery_failure', failedFn)
+    analytics.queue.on('message_delivered', deliveredFn)
+
+    await analytics.register({
+      name: 'Faulty Plugin',
+      version: '1.0.0',
+      type: 'before',
+      isLoaded: () => true,
+      load: () => Promise.resolve(),
+      track: () => {
+        throw new Error()
+      },
+    })
+
+    await analytics.track('Faulty event')
+
+    expect(failedFn).toHaveBeenCalledTimes(1)
+    expect(deliveredFn).not.toHaveBeenCalled()
   })
 })
