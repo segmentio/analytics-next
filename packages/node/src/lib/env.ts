@@ -1,4 +1,9 @@
-export type RuntimeEnv = 'node' | 'browser' | 'web-worker' | 'unknown'
+export type RuntimeEnv =
+  | 'node'
+  | 'browser'
+  | 'web-worker'
+  | 'cloudflare-worker'
+  | 'unknown'
 
 export const detectRuntime = (): RuntimeEnv => {
   if (typeof process === 'object' && process && process.env) {
@@ -9,9 +14,14 @@ export const detectRuntime = (): RuntimeEnv => {
     return 'browser'
   }
 
+  // @ts-ignore
+  if (typeof WebSocketPair !== 'undefined') {
+    return 'cloudflare-worker'
+  }
+
   if (
     // @ts-ignore
-    typeof WorkerGlobalScope !== 'undefined' && // this may sometimes be available in a CF worker, so check for importScripts
+    typeof WorkerGlobalScope !== 'undefined' &&
     // @ts-ignore
     typeof importScripts === 'function'
   ) {
