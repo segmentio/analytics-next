@@ -31,4 +31,13 @@ describe(detectRuntime, () => {
     process = { env: {} }
     expect(detectRuntime()).toEqual<RuntimeEnv>('node')
   })
+
+  it('should return cloudflare worker if correct env', () => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    delete process.env
+    // @ts-ignore
+    globalThis.WebSocketPair = {}
+    expect(detectRuntime()).toEqual<RuntimeEnv>('cloudflare-worker')
+  })
 })

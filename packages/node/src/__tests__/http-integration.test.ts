@@ -51,11 +51,11 @@ describe('Method Smoke Tests', () => {
       ajs.identify({ userId: 'my_user_id', traits: { foo: 'bar' } })
       await resolveCtx(ajs, 'identify')
       expect(calls[0].batch[0]._metadata).toMatchInlineSnapshot(
-        { nodeVersion: expect.any(String), runtime: 'node' },
+        { nodeVersion: expect.any(String), jsRuntime: 'node' },
         `
         Object {
+          "jsRuntime": "node",
           "nodeVersion": Any<String>,
-          "runtime": "node",
         }
       `
       )

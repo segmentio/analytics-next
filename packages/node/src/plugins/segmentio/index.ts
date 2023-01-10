@@ -12,7 +12,7 @@ function normalizeEvent(ctx: Context) {
   if (runtime === 'node') {
     ctx.updateEvent('_metadata.nodeVersion', process.versions.node)
   }
-  ctx.updateEvent('_metadata.runtime', runtime)
+  ctx.updateEvent('_metadata.jsRuntime', runtime)
 }
 
 type DefinedPluginFields =
