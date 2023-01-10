@@ -61,7 +61,7 @@ class AbortController {
  * @param timeoutMs - Set a request timeout, after which the request is cancelled.
  */
 export const abortSignalAfterTimeout = (timeoutMs: number) => {
-  if (detectRuntime() === 'web-worker') {
+  if (detectRuntime() === 'cloudflare-worker') {
     return [] // TODO: this is broken in cloudflare workers, otherwise results in "A hanging Promise was canceled..." error.
   }
   const ac = new (global.AbortController || AbortController)()
