@@ -2,6 +2,7 @@
  * use non-native event emitter for the benefit of non-node runtimes like CF workers.
  */
 import { Emitter } from '@segment/analytics-core'
+import { detectRuntime } from './env'
 
 /**
  * adapted from: https://www.npmjs.com/package/node-abort-controller
@@ -60,6 +61,9 @@ class AbortController {
  * @param timeoutMs - Set a request timeout, after which the request is cancelled.
  */
 export const abortSignalAfterTimeout = (timeoutMs: number) => {
+  if (detectRuntime() === 'web-worker') {
+    return [] // TODO: this is broken in cloudflare workers, otherwise results in "A hanging Promise was canceled..." error.
+  }
   const ac = new (global.AbortController || AbortController)()
 
   const timeoutId = setTimeout(() => {
