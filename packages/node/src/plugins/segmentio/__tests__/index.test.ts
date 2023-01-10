@@ -24,7 +24,7 @@ const bodyPropertyMatchers = {
   _metadata: expect.any(Object),
   context: {
     library: {
-      name: 'AnalyticsNode',
+      name: '@segment/analytics-node',
       version: expect.any(String),
     },
   },
