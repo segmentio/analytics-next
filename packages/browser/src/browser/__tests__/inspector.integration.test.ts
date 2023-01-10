@@ -10,35 +10,52 @@ jest
 const writeKey = 'foo'
 
 describe('Inspector', () => {
-  const triggeredSpy = jest.fn()
-  const attachedSpy = jest.fn()
-  const deliveredSpy = jest.fn()
   beforeEach(() => {
-    Object.assign((window.__SEGMENT_INSPECTOR__ ??= {}), {
-      triggered: triggeredSpy,
-      attach: attachedSpy,
-      delivered: deliveredSpy,
+    Object.assign(((window as any)['__SEGMENT_INSPECTOR__'] ??= {}), {
+      attach: jest.fn(),
     })
-  })
-  it('attaches to inspector', async () => {
-    await AnalyticsBrowser.load({
-      writeKey,
-    })
-    expect(attachedSpy).toBeCalledTimes(1)
   })
 
-  it('calls triggered and delivered when an event is sent', async () => {
+  it('attaches to inspector', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
-    expect(attachedSpy).toBeCalledTimes(1)
-    expect(triggeredSpy).toBeCalledTimes(0)
-    expect(deliveredSpy).toBeCalledTimes(0)
 
-    await analytics.track('foo', {})
+    expect(
+      ((window as any)['__SEGMENT_INSPECTOR__'] as any).attach
+    ).toHaveBeenCalledWith(analytics)
+  })
 
-    expect(triggeredSpy.mock.lastCall[0].event.type).toBe('track')
-    expect(triggeredSpy).toBeCalledTimes(1)
-    expect(deliveredSpy).toBeCalledTimes(1)
+  it('emits essential message lifecycle events', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const triggeredFn = jest.fn()
+    const enrichedFn = jest.fn()
+    const deliveredFn = jest.fn()
+
+    analytics.on('dispatch_start', triggeredFn)
+    analytics.queue.on('message_enriched', enrichedFn)
+    analytics.queue.on('message_delivered', deliveredFn)
+
+    const deliveryPromise = analytics.track('Test event').catch(() => {})
+
+    expect(triggeredFn).toHaveBeenCalledTimes(1)
+
+    expect(triggeredFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: expect.any(String),
+        event: expect.objectContaining({
+          event: 'Test event',
+          type: 'track',
+        }),
+      })
+    )
+
+    await deliveryPromise
+
+    expect(enrichedFn).toHaveBeenCalledTimes(1)
+    expect(deliveredFn).toHaveBeenCalledTimes(1)
   })
 })
