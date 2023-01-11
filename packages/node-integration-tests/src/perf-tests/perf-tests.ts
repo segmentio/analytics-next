@@ -17,7 +17,7 @@ const execAndKill = async (moduleName: string) => {
   cp.stdout?.on('data', (msg) => console.log(msg))
   cp.stderr?.on('data', (err) => console.error(err))
 
-  await sleep(1000) // wait some amount of time for the server to come online before running autocannon, otherwise we will get connection errors.
+  await sleep(3000) // wait some amount of time for the server to come online before running autocannon, otherwise we will get connection errors.
 
   const { requests, errors } = await runAutocannon()
 

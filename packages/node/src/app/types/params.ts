@@ -34,6 +34,11 @@ export type AliasParams = {
 
 export type GroupParams = {
   groupId: string
+  /**
+   * Traits are pieces of information you know about a group.
+   * This interface represents reserved traits that Segment has standardized.
+   * @link https://segment.com/docs/connections/spec/group/#traits
+   */
   traits?: GroupTraits
   context?: ExtraContext
   timestamp?: Timestamp
@@ -41,6 +46,11 @@ export type GroupParams = {
 } & IdentityOptions
 
 export type IdentifyParams = {
+  /**
+   * Traits are pieces of information you know about a group.
+   * This interface represents reserved traits that Segment has standardized.
+   * @link https://segment.com/docs/connections/spec/group/#traits
+   */
   traits?: UserTraits
   context?: ExtraContext
   integrations?: Integrations
