@@ -1,5 +1,16 @@
 # @segment/analytics-next
 
+## 1.49.2
+
+### Patch Changes
+
+- [#764](https://github.com/segmentio/analytics-next/pull/764) [`43897d6`](https://github.com/segmentio/analytics-next/commit/43897d6ffc5f6c7be6a9dec569997348b8c93e51) Thanks [@zikaari](https://github.com/zikaari)! - Add comprehensive message lifecycle events
+
+* [#758](https://github.com/segmentio/analytics-next/pull/758) [`ef47e9e`](https://github.com/segmentio/analytics-next/commit/ef47e9e469390062b44790b6f92bb976708fab71) Thanks [@zikaari](https://github.com/zikaari)! - Remove direct wirings for Segment Inspector
+
+* Updated dependencies [[`43897d6`](https://github.com/segmentio/analytics-next/commit/43897d6ffc5f6c7be6a9dec569997348b8c93e51)]:
+  - @segment/analytics-core@1.2.1
+
 ## 1.49.1
 
 ### Patch Changes

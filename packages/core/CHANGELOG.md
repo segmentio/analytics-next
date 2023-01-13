@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.2.1
+
+### Patch Changes
+
+- [#764](https://github.com/segmentio/analytics-next/pull/764) [`43897d6`](https://github.com/segmentio/analytics-next/commit/43897d6ffc5f6c7be6a9dec569997348b8c93e51) Thanks [@zikaari](https://github.com/zikaari)! - Add comprehensive message lifecycle events
+
 ## 1.2.0
 
 ### Minor Changes
