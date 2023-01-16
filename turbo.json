@@ -3,7 +3,12 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", ":!__tests__/**"],
+      "inputs": [
+        "**/tsconfig*.json",
+        "**/*.ts",
+        "**/*.tsx",
+        ":!**/__tests__/**"
+      ],
       "outputs": ["dist/**", ".next/**"]
     },
     "test": {
