@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.json",
-  "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "resolveJsonModule": true,
     "module": "esnext",

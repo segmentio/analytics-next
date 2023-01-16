@@ -3,7 +3,10 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/*.test.*"],
   "compilerOptions": {
+    "rootDir": "src",
+    "composite": true,
     "outDir": "./dist/esm",
     "declarationDir": "./dist/types"
-  }
+  },
+  "references": []
 }

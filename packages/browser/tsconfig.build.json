@@ -3,7 +3,14 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/test-helpers/**", "**/tester/**"],
   "compilerOptions": {
+    "rootDir": "src",
+    "composite": true,
     "outDir": "./dist/pkg",
     "declarationDir": "./dist/types"
-  }
+  },
+  "references": [
+    {
+      "path": "../core/tsconfig.build.json"
+    }
+  ]
 }

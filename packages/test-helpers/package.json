@@ -13,7 +13,7 @@
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
-    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:esm": "yarn tsc -b tsconfig.build.json",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently"

@@ -16,7 +16,7 @@
     "test:node-int": "turbo run --filter=node-integration-tests test",
     "lint": "yarn constraints && turbo run lint --continue",
     "build": "turbo run build --filter='./packages/*'",
-    "watch": "turbo run watch --filter='./packages/*'",
+    "watch": "yarn clean:tsbuildinfo && yarn tsc -b tsconfig.packages.json -w",
     "dev": "yarn workspace @example/with-next-js run dev",
     "postinstall": "husky install",
     "changeset": "changeset",
@@ -29,13 +29,16 @@
     "browser+deps": "turbo run --filter=@segment/analytics-next",
     "node": "yarn workspace @segment/analytics-node",
     "node+deps": "turbo run --filter=@segment/analytics-node",
-    "clean": "bash scripts/clean.sh"
+    "clean": "bash scripts/clean.sh",
+    "clean:tsbuildinfo": "bash scripts/clean-tsbuildinfo.sh",
+    "workspaces-to-typescript-project-references": "workspaces-to-typescript-project-references --tsconfigPath tsconfig.build.json && git checkout examples"
   },
   "packageManager": "yarn@3.2.1",
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.5",
     "@changesets/cli": "^2.23.2",
     "@internal/config": "workspace:^",
+    "@monorepo-utils/workspaces-to-typescript-project-references": "^2.9.0",
     "@npmcli/promise-spawn": "^3.0.0",
     "@types/express": "4",
     "@types/jest": "^28.1.1",

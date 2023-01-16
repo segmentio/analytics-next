@@ -3,7 +3,14 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**"],
   "compilerOptions": {
+    "rootDir": "src",
+    "composite": true,
     "outDir": "./dist/esm",
     "declarationDir": "./dist/types"
-  }
+  },
+  "references": [
+    {
+      "path": "../core/tsconfig.build.json"
+    }
+  ]
 }

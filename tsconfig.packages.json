@@ -1,0 +1,28 @@
+{
+  /**
+    For ease of development only -- watch every package in a single tsc instance;
+
+    Neccessary because using turborepo would spawn an instance of `tsc --watch` for every single package, which uses way too many resources.
+
+    USAGE: watch all the packages at once with `tsc --build tsconfig.packages.json --watch`
+
+  **/
+  "compilerOptions": {
+    "preserveWatchOutput": true,
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "packages/browser/tsconfig.build.json"
+    },
+    {
+      "path": "packages/core/tsconfig.build.json"
+    },
+    {
+      "path": "packages/node/tsconfig.build.json"
+    },
+    {
+      "path": "packages/test-helpers/tsconfig.build.json"
+    }
+  ]
+}
