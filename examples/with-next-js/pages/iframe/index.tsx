@@ -1,6 +1,7 @@
 import React from 'react'
+import { AnalyticsProvider } from '../../context/analytics'
 
-export default function Iframe(): React.ReactElement {
+function Iframe(): React.ReactElement {
   return (
     <iframe
       src="http://localhost:3000/iframe/childPage"
@@ -11,3 +12,9 @@ export default function Iframe(): React.ReactElement {
     ></iframe>
   )
 }
+
+export default () => (
+  <AnalyticsProvider>
+    <Iframe />
+  </AnalyticsProvider>
+)

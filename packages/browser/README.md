@@ -192,11 +192,19 @@ export default defineComponent({
 </script>
 ```
 
+## Support for Web Workers (Experimental)
+ While this package does not support web workers out of the box, there are options:
+
+1. Run analytics.js in a web worker via [partytown.io](https://partytown.builder.io/). See [our partytown example](../../examples/with-next-js/pages/partytown). **Supports both cloud and device mode destinations, but not all device mode destinations may work.**
+
+2. Try [@segment/analytics-node](../packages/node) with `maxEventsInBatch: 1`, which should work in any runtime where `fetch` is available. **Warning: cloud destinations only!**
 
 
-### For snippet users only: How to add typescript support
 
-1. Install npm package `@segment/analytics-next`
+
+## How to add typescript support (snippet users only)
+
+1. Install npm package `@segment/analytics-next` as a dev dependency.
 
 2. Create `./typings/analytics.d.ts`
 ```ts
@@ -227,7 +235,7 @@ declare global {
 ```
 
 
-# 🐒 Development
+## 🐒 Development
 
 First, clone the repo and then startup our local dev environment:
 
@@ -288,7 +296,7 @@ export const lowercase: Plugin = {
 
 For further examples check out our [existing plugins](/packages/browser/src/plugins).
 
-# 🧪 QA
+## 🧪 QA
 Feature work and bug fixes should include tests. Run all [Jest](https://jestjs.io) tests:
 ```
 $ yarn test
