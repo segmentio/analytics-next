@@ -7,7 +7,7 @@ import JSONTree from 'react-json-tree'
 import faker from 'faker'
 import { shuffle } from 'lodash'
 import Table from 'rc-table'
-import { useAnalytics } from '../context/analytics'
+import { AnalyticsProvider, useAnalytics } from '../context/analytics'
 import { Analytics, Context, AnalyticsBrowser } from '@segment/analytics-next'
 
 const jsontheme = {
@@ -31,7 +31,7 @@ const jsontheme = {
   base0F: '#a3685a',
 }
 
-export default function Home(): React.ReactElement {
+function Home(): React.ReactElement {
   const [analytics, setAnalytics] = useState<Analytics | undefined>(undefined)
 
   const writeKeyRef = useRef<HTMLInputElement>()
@@ -306,3 +306,9 @@ export default function Home(): React.ReactElement {
     </div>
   )
 }
+
+export default () => (
+  <AnalyticsProvider>
+    <Home />
+  </AnalyticsProvider>
+)

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { useAnalytics } from '../../context/analytics'
+import { AnalyticsProvider, useAnalytics } from '../../context/analytics'
 
 const OtherPage: React.FC = () => {
   const { analytics } = useAnalytics()
@@ -26,4 +26,8 @@ const OtherPage: React.FC = () => {
   )
 }
 
-export default OtherPage
+export default () => (
+  <AnalyticsProvider>
+    <OtherPage />
+  </AnalyticsProvider>
+)

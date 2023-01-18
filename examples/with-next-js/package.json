@@ -5,11 +5,13 @@
   "scripts": {
     "concurrently": "yarn run -T concurrently",
     "dev": "yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
-    "build": "next build",
+    "build": "yarn copy-partytown && next build",
+    "copy-partytown": "partytown copylib public/~partytown",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@builder.io/partytown": "^0.7.4",
     "@segment/analytics-next": "workspace:^",
     "faker": "^5.1.0",
     "lodash": "^4.17.21",

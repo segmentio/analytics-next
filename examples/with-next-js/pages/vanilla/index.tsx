@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { useAnalytics } from '../../context/analytics'
+import { AnalyticsProvider, useAnalytics } from '../../context/analytics'
 
 const Vanilla: React.FC = () => {
   const { analytics } = useAnalytics()
@@ -27,4 +27,8 @@ const Vanilla: React.FC = () => {
   )
 }
 
-export default Vanilla
+export default () => (
+  <AnalyticsProvider>
+    <Vanilla />
+  </AnalyticsProvider>
+)
