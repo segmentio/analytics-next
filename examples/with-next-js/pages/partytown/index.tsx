@@ -36,16 +36,19 @@ const WebWorker: React.FC = () => {
         <h1>Web Worker Example with partytown.io</h1>
         <a href="https://partytown.builder.io/nextjs">Partytown.io docs</a>
         <input
+          type="button"
           style={{
             display: 'block',
             margin: '1rem 0',
           }}
           value="Track!"
-          onClick={(e) => {
-            void window.analytics.track('vanilla click')
-            e.preventDefault()
+          onClick={() => {
+            void window.analytics.track(
+              'Party Town Click',
+              { myProp: 'hello' },
+              { traits: { age: 8 } }
+            )
           }}
-          type="submit"
         />
       </main>
     </>
