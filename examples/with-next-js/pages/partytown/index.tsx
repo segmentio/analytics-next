@@ -16,6 +16,7 @@ const WebWorker: React.FC = () => {
             'analytics.identify',
             'analytics.group',
             'analytics.reset',
+            'analytics.user',
             'analytics.alias',
           ]}
         />
