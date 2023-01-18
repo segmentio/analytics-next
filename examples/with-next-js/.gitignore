@@ -34,3 +34,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# @builder.io/partytown
+public/~partytown

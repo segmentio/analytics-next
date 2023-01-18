@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "concurrently": "yarn run -T concurrently",
-    "dev": "yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
-    "build": "yarn copy-partytown && next build",
-    "copy-partytown": "partytown copylib public/~partytown",
+    "dev": "yarn partytown && yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
+    "build": "yarn partytown && next build",
+    "partytown": "partytown copylib public/~partytown",
     "start": "next start",
     "lint": "next lint"
   },
