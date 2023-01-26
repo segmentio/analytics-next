@@ -93,6 +93,15 @@ export interface InitOptions {
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean
+  /**
+   * Disables or sets constraints on processing of query string parameters
+   */
+  useQueryString?:
+    | boolean
+    | {
+        aid?: RegExp
+        uid?: RegExp
+      }
 }
 
 /* analytics-classic stubs */
@@ -421,7 +430,11 @@ export class Analytics
     return this._user.anonymousId(id)
   }
 
-  async queryString(query: string): Promise<Context[]> {
+  async queryString(query: string): Promise<Context[] | void> {
+    if (this.options.useQueryString === false) {
+      return
+    }
+
     const { queryString } = await import(
       /* webpackChunkName: "queryString" */ '../query-string'
     )

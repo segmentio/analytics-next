@@ -2,6 +2,7 @@ import { pickPrefix } from './pickPrefix'
 import { gracefulDecodeURIComponent } from './gracefulDecodeURIComponent'
 import { Analytics } from '../analytics'
 import { Context } from '../context'
+import { isPlainObject } from '@segment/analytics-core'
 
 export interface QueryStringParams {
   [key: string]: string | null
@@ -23,22 +24,32 @@ export function queryString(
   const calls = []
 
   const { ajs_uid, ajs_event, ajs_aid } = params
+  const { aid: aidPattern = /.+/, uid: uidPattern = /.+/ } = isPlainObject(
+    analytics.options.useQueryString
+  )
+    ? analytics.options.useQueryString
+    : {}
 
   if (ajs_aid) {
     const anonId = Array.isArray(params.ajs_aid)
       ? params.ajs_aid[0]
       : params.ajs_aid
 
-    analytics.setAnonymousId(anonId)
+    if (aidPattern.test(anonId)) {
+      analytics.setAnonymousId(anonId)
+    }
   }
 
   if (ajs_uid) {
     const uid = Array.isArray(params.ajs_uid)
       ? params.ajs_uid[0]
       : params.ajs_uid
-    const traits = pickPrefix('ajs_trait_', params)
 
-    calls.push(analytics.identify(uid, traits))
+    if (uidPattern.test(uid)) {
+      const traits = pickPrefix('ajs_trait_', params)
+
+      calls.push(analytics.identify(uid, traits))
+    }
   }
 
   if (ajs_event) {
