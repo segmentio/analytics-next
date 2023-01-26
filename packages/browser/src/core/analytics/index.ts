@@ -430,9 +430,9 @@ export class Analytics
     return this._user.anonymousId(id)
   }
 
-  async queryString(query: string): Promise<Context[] | void> {
+  async queryString(query: string): Promise<Context[]> {
     if (this.options.useQueryString === false) {
-      return
+      return []
     }
 
     const { queryString } = await import(
