@@ -2,6 +2,14 @@ env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
+  - block: ':hourglass: Waiting for Segment Engineer...'
+    # https://forum.buildkite.community/t/run-pipeline-from-protected-branch/2013
+    prompt: |
+      Does this external contribution look safe to run?
+      If so, please unblock it!
+      If not, please cancel this pipeline run altogether.
+    if: build.pull_request.repository.fork
+
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
