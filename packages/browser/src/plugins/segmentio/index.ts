@@ -27,6 +27,7 @@ export type SegmentioSettings = {
   deliveryStrategy?: {
     strategy?: 'standard' | 'batching'
     config?: {
+      keepalive?: boolean
       size?: number
       timeout?: number
     }
@@ -71,10 +72,11 @@ export function segmentio(
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
+  const config = settings?.deliveryStrategy?.config
   const client =
     settings?.deliveryStrategy?.strategy === 'batching'
-      ? batch(apiHost, settings?.deliveryStrategy?.config)
-      : standard()
+      ? batch(apiHost, config)
+      : standard(config)
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {

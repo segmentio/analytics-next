@@ -65,6 +65,40 @@ describe('Segment.io', () => {
     })
   })
 
+  describe('configuring a keep alive', () => {
+    it('should accept keepalive configuration', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              keepalive: true,
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.keepalive).toBe(true)
+    })
+
+    it('should default to no keepalive', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      const segment = segmentio(analytics, {
+        apiKey: '',
+      })
+      await analytics.register(segment)
+      await analytics.track('foo')
+
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.keepalive).toBeUndefined()
+    })
+  })
+
   describe('#page', () => {
     it('should enqueue section, name and properties', async () => {
       await analytics.page('section', 'name', { property: true }, { opt: true })
