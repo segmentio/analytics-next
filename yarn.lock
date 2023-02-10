@@ -1733,7 +1733,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.2.1
+    "@segment/analytics-core": 1.2.2
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
@@ -1789,7 +1789,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.2.1
+    "@segment/analytics-core": 1.2.2
     "@types/node": ^14
     node-fetch: ^2.6.7
     tslib: ^2.4.1
