@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.50.0
+
+### Minor Changes
+
+- [#774](https://github.com/segmentio/analytics-next/pull/774) [`69154c3`](https://github.com/segmentio/analytics-next/commit/69154c31f0739c3d1e31c3fd4d0f075fac721289) Thanks [@zikaari](https://github.com/zikaari)! - Add useQueryString option to InitOptions
+
+* [#787](https://github.com/segmentio/analytics-next/pull/787) [`171cd15`](https://github.com/segmentio/analytics-next/commit/171cd15b4c32f4c0780c1e3d8d6d646bb17c6c36) Thanks [@silesky](https://github.com/silesky)! - Add keep-alive header to fetch for standard transport.
+
+### Patch Changes
+
+- Updated dependencies [[`69154c3`](https://github.com/segmentio/analytics-next/commit/69154c31f0739c3d1e31c3fd4d0f075fac721289)]:
+  - @segment/analytics-core@1.2.2
+
 ## 1.49.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.2.2
+
+### Patch Changes
+
+- [#774](https://github.com/segmentio/analytics-next/pull/774) [`69154c3`](https://github.com/segmentio/analytics-next/commit/69154c31f0739c3d1e31c3fd4d0f075fac721289) Thanks [@zikaari](https://github.com/zikaari)! - Add useQueryString option to InitOptions
+
 ## 1.2.1
 
 ### Patch Changes
