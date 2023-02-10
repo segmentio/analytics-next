@@ -12,6 +12,21 @@ import standard, { FetchConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 
+type DeliveryStrategy =
+  | {
+      strategy?: 'standard'
+      config?: {
+        keepalive?: boolean
+      }
+    }
+  | {
+      strategy?: 'batching'
+      config?: {
+        size?: number
+        timeout?: number
+      }
+    }
+
 export type SegmentioSettings = {
   apiKey: string
   apiHost?: string
@@ -26,21 +41,6 @@ export type SegmentioSettings = {
 
   deliveryStrategy?: DeliveryStrategy
 }
-
-export type DeliveryStrategy =
-  | {
-      strategy?: 'batching'
-      config?: {
-        size?: number
-        timeout?: number
-      }
-    }
-  | {
-      strategy?: 'standard'
-      config?: {
-        keepalive?: boolean
-      }
-    }
 
 type JSON = ReturnType<Facade['json']>
 
