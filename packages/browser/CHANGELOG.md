@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.51.0
+
+### Minor Changes
+
+- [#788](https://github.com/segmentio/analytics-next/pull/788) [`6fbae8d`](https://github.com/segmentio/analytics-next/commit/6fbae8d547eff41d9d901bdbd0fdb8ff4dcf1002) Thanks [@silesky](https://github.com/silesky)! - Make keep-alive configurable and default to false
+
 ## 1.50.0
 
 ### Minor Changes
