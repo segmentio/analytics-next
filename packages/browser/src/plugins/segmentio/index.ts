@@ -8,7 +8,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
 import batch from './batched-dispatcher'
-import standard from './fetch-dispatcher'
+import standard, { FetchConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 
@@ -24,15 +24,23 @@ export type SegmentioSettings = {
 
   maybeBundledConfigIds?: Record<string, string[]>
 
-  deliveryStrategy?: {
-    strategy?: 'standard' | 'batching'
-    config?: {
-      keepalive?: boolean
-      size?: number
-      timeout?: number
-    }
-  }
+  deliveryStrategy?: DeliveryStrategy
 }
+
+export type DeliveryStrategy =
+  | {
+      strategy?: 'batching'
+      config?: {
+        size?: number
+        timeout?: number
+      }
+    }
+  | {
+      strategy?: 'standard'
+      config?: {
+        keepalive?: boolean
+      }
+    }
 
 type JSON = ReturnType<Facade['json']>
 
@@ -72,11 +80,11 @@ export function segmentio(
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
-  const config = settings?.deliveryStrategy?.config
+  const deliveryStrategy = settings?.deliveryStrategy
   const client =
-    settings?.deliveryStrategy?.strategy === 'batching'
-      ? batch(apiHost, config)
-      : standard(config)
+    deliveryStrategy?.strategy === 'batching'
+      ? batch(apiHost, deliveryStrategy.config)
+      : standard(deliveryStrategy?.config as FetchConfig)
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {
