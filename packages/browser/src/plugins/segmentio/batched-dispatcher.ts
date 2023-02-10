@@ -2,7 +2,7 @@ import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageLeave } from '../../lib/on-page-leave'
 
-type BatchingConfig = {
+export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
 }
@@ -43,7 +43,10 @@ function chunks(batch: object[]): Array<object[]> {
   return result
 }
 
-export default function batch(apiHost: string, config?: BatchingConfig) {
+export default function batch(
+  apiHost: string,
+  config?: BatchingDispatchConfig
+) {
   let buffer: object[] = []
   let pageUnloaded = false
 
