@@ -2,10 +2,11 @@ import { fetch } from '../../lib/fetch'
 
 export type Dispatcher = (url: string, body: object) => Promise<unknown>
 
-export interface FetchConfig {
+export type StandardDispatcherConfig = {
   keepalive?: boolean
 }
-export default function (config?: FetchConfig): {
+
+export default function (config?: StandardDispatcherConfig): {
   dispatch: Dispatcher
 } {
   function dispatch(url: string, body: object): Promise<unknown> {
