@@ -87,7 +87,7 @@ analytics
 
 ## Configuring a Custom Proxy
 
-You can proxy settings calls destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
+You can proxy settings and destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
 ```ts
 const analytics = AnalyticsBrowser.load({
   writeKey,
