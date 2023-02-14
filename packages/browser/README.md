@@ -84,6 +84,49 @@ analytics
   .catch((err) => ...);
 ```
 
+
+## Configuring a Custom Proxy
+
+You can proxy settings calls destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
+```ts
+const analytics = AnalyticsBrowser.load({
+  writeKey,
+  // Calls to http://cdn.segment.com/v1/projects/<writekey>/settings ->
+  // https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
+
+  // Calls to https://cdn.segment.com/next-integrations/actions/amplitude-plugins/6765cb3cf169443c119b.js ->
+  // https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/amplitude-plugins/6765cb3cf169443c119b.js
+  cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
+ })
+```
+
+You can or / in addition, proxy event calls that typically go to `https://api.segment.io` by configuring the `integrations["Segment.io"].apiHost option`.
+
+```ts
+const analytics = AnalyticsBrowser.load(
+    {
+      writeKey,
+      // GET http://cdn.segment.com/v1/projects/<writekey>/settings ->
+      // GET https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
+      cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
+    },
+    {
+      integrations: {
+        'Segment.io': {
+          // POST https://api.segment.io/v1/t ->
+          // POST https://MY-CUSTOM-API-PROXY.com/v1/t
+          apiHost: 'MY-CUSTOM-API-PROXY.com'
+        },
+​
+      },
+    }
+  )
+```
+
+
+
+
+
 ## Usage in Common Frameworks
 ### React
 ```tsx
