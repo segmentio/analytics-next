@@ -85,12 +85,11 @@ analytics
 ```
 
 ## Usage in Common Frameworks
-### using `React` (Simple)
-
+### React
 ```tsx
 import { AnalyticsBrowser } from '@segment/analytics-next'
 
-// we can export this instance to share with rest of our codebase.
+// We can export this instance to share with rest of our codebase.
 export const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
 const App = () => (
@@ -100,64 +99,14 @@ const App = () => (
 )
 ```
 
-### using `React` (Advanced w/ React Context)
-
-```tsx
-import { AnalyticsBrowser } from '@segment/analytics-next'
-
-const AnalyticsContext = React.createContext<AnalyticsBrowser>(undefined!);
-
-type Props = {
-  writeKey: string;
-  children: React.ReactNode;
-};
-export const AnalyticsProvider = ({ children, writeKey }: Props) => {
-  const analytics = React.useMemo(
-    () => AnalyticsBrowser.load({ writeKey }),
-    [writeKey]
-  );
-  return (
-    <AnalyticsContext.Provider value={analytics}>
-      {children}
-    </AnalyticsContext.Provider>
-  );
-};
-
-// Create an analytics hook that we can use with other components.
-export const useAnalytics = () => {
-  const result = React.useContext(AnalyticsContext);
-  if (!result) {
-    throw new Error("Context used outside of its Provider!");
-  }
-  return result;
-};
-
-// use the context we just created...
-const TrackButton = () => {
-  const analytics = useAnalytics()
-  return (
-    <button onClick={() => analytics.track('hello world')}>
-      Track!
-    </button>
-  )
-}
-
-const App = () => {
-  return (
-    <AnalyticsProvider writeKey='<YOUR_WRITE_KEY>'>
-      <TrackButton />
-    </AnalyticsProvider>
-  )
-```
-
 More React Examples:
-
+> Warning ⚠️ Some of these examples may be overly-complex for your use case, we recommend the simple approach outlined above.
 - Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
 - Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
-### using `Vue 3`
+### `Vue`
 
-1. create composable file `segment.ts` with factory ref analytics:
+1. Export analytics instance.
 
 ```ts
 import { AnalyticsBrowser } from '@segment/analytics-next'
@@ -167,9 +116,9 @@ export const analytics = AnalyticsBrowser.load({
 })
 ```
 
-2. in component
+2. in `.vue` component
 
-```vue
+```tsx
 <template>
   <button @click="track()">Track</button>
 </template>
@@ -275,7 +224,7 @@ Here is an example of a simple plugin that would convert all track events event 
 
 ```ts
 export const lowercase: Plugin = {
-  name: 'Lowercase events',
+  name: 'Lowercase Event Name',
   type: 'before',
   version: '1.0.0',
 
@@ -285,12 +234,7 @@ export const lowercase: Plugin = {
   track: (ctx) => {
     ctx.event.event = ctx.event.event.toLowerCase()
     return ctx
-  },
-  identify: (ctx) => ctx,
-  page: (ctx) => ctx,
-  alias: (ctx) => ctx,
-  group: (ctx) => ctx,
-  screen: (ctx) => ctx,
+  }
 }
 ```
 
