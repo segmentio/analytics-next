@@ -85,7 +85,7 @@ analytics
 ```
 
 
-## Configuring a Custom Proxy
+## Configuring a Custom CDN / API Proxy
 
 You can proxy settings and destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
 ```ts
