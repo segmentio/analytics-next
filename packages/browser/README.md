@@ -112,9 +112,8 @@ const analytics = AnalyticsBrowser.load(
           // POST https://api.segment.io/v1/t ->
           //  https://MY-CUSTOM-API-PROXY.com/v1/t
           apiHost: 'MY-CUSTOM-API-PROXY.com' // 🔥
-        },
-​
-      },
+        }
+      }
     }
   )
 ```
