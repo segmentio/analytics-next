@@ -106,8 +106,6 @@ You can proxy event calls that typically go to `https://api.segment.io` by confi
 const analytics = AnalyticsBrowser.load(
     {
       writeKey,
-      // GET http://cdn.segment.com/v1/projects/<writekey>/settings ->
-      // GET https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
       cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
     },
     {
