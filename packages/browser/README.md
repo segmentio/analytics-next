@@ -84,7 +84,6 @@ analytics
   .catch((err) => ...);
 ```
 
-
 ## Custom CDN / API Proxy
 
 You can proxy settings and destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
@@ -119,10 +118,6 @@ const analytics = AnalyticsBrowser.load(
     }
   )
 ```
-
-
-
-
 
 ## Usage in Common Frameworks
 ### React
