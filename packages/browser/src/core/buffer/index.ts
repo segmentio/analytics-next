@@ -266,23 +266,11 @@ export class AnalyticsBuffered
 
   /**
    *  These are for methods that where determining when the method gets "flushed" is not important.
-   *  These methods will resolve when analytics is fully initialized, and return type (other than Analytics)will not be available.
+   *  These methods will resolve when analytics is fully initialized, and return type (other than Analytics) will not be available.
    */
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
     return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
-      if (this.instance) {
-        void (this.instance[methodName] as Function)(...args)
-        return this
-      } else {
-        this._preInitBuffer.push({
-          method: methodName,
-          args,
-          resolve: () => {},
-          reject: console.error,
-          called: false,
-        } as PreInitMethodCall)
-      }
-
+      void this._createMethod(methodName)(...args)
       return this
     }
   }
