@@ -100,7 +100,7 @@ const analytics = AnalyticsBrowser.load({
  })
 ```
 
-You can or / in addition, proxy event calls that typically go to `https://api.segment.io` by configuring the `integrations["Segment.io"].apiHost option`.
+You can proxy event calls that typically go to `https://api.segment.io` by setting the `integrations["Segment.io"].apiHost option`.
 
 ```ts
 const analytics = AnalyticsBrowser.load(
