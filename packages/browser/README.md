@@ -84,6 +84,40 @@ analytics
   .catch((err) => ...);
 ```
 
+## Custom CDN / API Proxy
+
+You can proxy settings and destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
+```ts
+const analytics = AnalyticsBrowser.load({
+  writeKey,
+  // GET http://cdn.segment.com/v1/projects/<writekey>/settings ->
+  // https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
+
+  // GET https://cdn.segment.com/next-integrations/actions/...js ->
+  // https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/...js
+  cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com' // 🔥
+ })
+```
+
+You can proxy event calls that typically go to `https://api.segment.io` by configuring `integrations['Segment.io'].apiHost`.
+```ts
+const analytics = AnalyticsBrowser.load(
+    {
+      writeKey,
+      cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
+    },
+    {
+      integrations: {
+        'Segment.io': {
+          // POST https://api.segment.io/v1/t ->
+          //  https://MY-CUSTOM-API-PROXY.com/v1/t
+          apiHost: 'MY-CUSTOM-API-PROXY.com' // 🔥
+        }
+      }
+    }
+  )
+```
+
 ## Usage in Common Frameworks
 ### React
 ```tsx
