@@ -86,7 +86,7 @@ analytics
 
 ## Custom CDN / API Proxy
 
-Configure `cdnURL` to override `http://cdn.segment.com`.
+Configure `cdnURL` to override `https://cdn.segment.com`.
 ```ts
 const analytics = AnalyticsBrowser.load({
   writeKey,
@@ -107,7 +107,8 @@ const analytics = AnalyticsBrowser.load(
       integrations: {
         'Segment.io': {
           // https://api.segment.io/v1/t -> https://MY-CUSTOM-API-PROXY.com/t
-          apiHost: 'MY-CUSTOM-API-PROXY.com' // 🔥
+          apiHost: 'MY-CUSTOM-API-PROXY.com', // 🔥
+          protocol: 'https'
         }
       }
     }
