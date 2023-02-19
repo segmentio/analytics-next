@@ -90,11 +90,8 @@ You can proxy settings and destination requests that typically go to `http://cdn
 ```ts
 const analytics = AnalyticsBrowser.load({
   writeKey,
-  // GET http://cdn.segment.com/v1/projects/<writekey>/settings ->
-  // https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
-
-  // GET https://cdn.segment.com/next-integrations/actions/...js ->
-  // https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/...js
+  // GET http://cdn.segment.com/v1/projects/<writekey>/settings -> https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
+  // GET https://cdn.segment.com/next-integrations/actions/...js -> https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/...js
   cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com' // 🔥
  })
 ```
@@ -109,8 +106,7 @@ const analytics = AnalyticsBrowser.load(
     {
       integrations: {
         'Segment.io': {
-          // POST https://api.segment.io/v1/t ->
-          //  https://MY-CUSTOM-API-PROXY.com/v1/t
+          // https://api.segment.io/v1/t -> https://MY-CUSTOM-API-PROXY.com/t
           apiHost: 'MY-CUSTOM-API-PROXY.com' // 🔥
         }
       }
