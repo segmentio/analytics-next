@@ -86,7 +86,7 @@ analytics
 
 ## Custom CDN / API Proxy
 
-You can proxy settings and destination requests that typically go to `http://cdn.segment.com` through a custom proxy.
+Configure `cdnURL` to override `http://cdn.segment.com`.
 ```ts
 const analytics = AnalyticsBrowser.load({
   writeKey,
@@ -96,7 +96,7 @@ const analytics = AnalyticsBrowser.load({
  })
 ```
 
-You can proxy event calls that typically go to `https://api.segment.io/v1` by configuring `integrations['Segment.io'].apiHost`.
+Configure `integrations['Segment.io'].apiHost` to override `https://api.segment.io/v1`.
 ```ts
 const analytics = AnalyticsBrowser.load(
     {
