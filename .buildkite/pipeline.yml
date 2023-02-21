@@ -157,6 +157,7 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Release to CDN"
       - yarn run -T browser release:cdn
+      - yarn run -T browser release:cdn-stage
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
