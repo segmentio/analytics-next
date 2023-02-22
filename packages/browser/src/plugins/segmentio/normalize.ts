@@ -126,7 +126,7 @@ export function normalize(
 ): object {
   const user = analytics.user()
   const query = json.properties?.url
-    ? json.properties.url.substring(json.properties.url.sindexOf('?'))
+    ? json.properties.url.substring(json.properties.url.indexOf('?'))
     : window.location.search
 
   json.context = json.context ?? json.options ?? {}
