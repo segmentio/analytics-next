@@ -200,7 +200,9 @@ describe('before loading', () => {
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
-      await analytics.track('event')
+      object.properties = {
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+      }
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=newpage',
       })
