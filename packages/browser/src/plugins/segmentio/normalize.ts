@@ -125,7 +125,9 @@ export function normalize(
   integrations?: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
-  const query = window.location.search
+  const query = json.properties?.url
+    ? json.properties.url.substring(json.properties.url.sindexOf('?'))
+    : window.location.search
 
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context

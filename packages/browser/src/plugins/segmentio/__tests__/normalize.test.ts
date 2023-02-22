@@ -196,6 +196,27 @@ describe('before loading', () => {
       assert(object.context.campaign.name === 'name')
     })
 
+    it('should add .campaign when page is changed before event is normalized', async () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+      })
+      await analytics.track('event')
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=newpage',
+      })
+
+      normalize(analytics, object, options, {})
+
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign)
+      assert(object.context.campaign.source === 'source')
+      assert(object.context.campaign.medium === 'medium')
+      assert(object.context.campaign.term === 'term')
+      assert(object.context.campaign.content === 'content')
+      assert(object.context.campaign.name === 'name')
+    })
+
     it('should decode query params', () => {
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=%5BFoo%5D',
