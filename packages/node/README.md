@@ -1,6 +1,8 @@
 # @segment/analytics-node
 > ### Warning: This library is in [public beta](https://segment.com/legal/first-access-beta-preview) ⚠️
 
+https://www.npmjs.com/package/@segment/analytics-node
+
 ## Requirements
 - Node.js >= 14
 
