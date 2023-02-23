@@ -155,13 +155,21 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
   identify(
-    { userId, anonymousId, traits = {}, context, integrations }: IdentifyParams,
+    {
+      userId,
+      anonymousId,
+      traits = {},
+      context,
+      timestamp,
+      integrations,
+    }: IdentifyParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.identify(userId, traits, {
       context,
       anonymousId,
       userId,
+      timestamp,
       integrations,
     })
     this._dispatch(segmentEvent, callback)

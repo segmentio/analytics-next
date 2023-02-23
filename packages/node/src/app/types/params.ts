@@ -53,6 +53,7 @@ export type IdentifyParams = {
    */
   traits?: UserTraits
   context?: ExtraContext
+  timestamp?: Timestamp
   integrations?: Integrations
 } & IdentityOptions
 
