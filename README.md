@@ -1,232 +1,285 @@
-This is June's JS SDK, based on Analytics-Next by Segment.
+# Analytics Next
 
-# Getting Started
+Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScript SDK - enabling you to send your data to any tool without having to learn, test, or use a new API every time.
 
-- `make dev` should start a development server after a `yarn install`.
-- The writeKey is a valid June API key. You can make one in interim by going into the database (`api_keys` table) and inserting a new row.
+### Table of Contents
 
-# Components
+- [🏎️ Quickstart](#-quickstart)
+  - [💡 Using with Segment](#-using-with-segment)
+  - [💻 Using as an NPM package](#-using-as-an-npm-package)
+- [🔌 Plugins](#-plugins)
+- [🐒 Development](#-development)
+- [🧪 Testing](#-testing)
+  - [✅ Unit Testing](#-unit-testing)
 
-- Tester (`example`): NextJS app used to generate and emit mock events to a test or production event ingress.
-- Analytics.js (`src`): Analytics library source for both brower, NodeJS
+---
 
-# Understanding Analytics-Next
+# 🏎️ Quickstart
 
-To start understanding this codebase, you need to look at a couple crucial folders within `src`:
+The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you can [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
 
-- `plugins`: analytics-next is implemented in a modular fashion, so there’s many plugins that perform separate functions.
-  - To be honest, the most important plugins are `segmentio` and `analytics-node`.
-  - The `segmentio` plugin practically handles event sending for browser clients.
-  - The `analytics-node` plugin handles event sending for Node clients.
-  - These plugins are both enabled in the entrypoint for the library, although e.g. configuration settings to both don’t necessarily get passed down to them raw.
+## 💡 Using with Segment
 
-# Testing Locally
+1. Create a javascript source at [Segment](https://app.segment.com) - new sources will automatically be using Analytics 2.0! Segment will automatically generate a snippet that you can add to your website. For more information visit our [documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/)).
 
-## The Easy Way (Tester App)
+2. Start tracking!
 
-The tester app provides a convenient way to test out small changes to the Analytics-Next codebase, reloading your changes on the fly.
+## 💻 Using as an NPM package
 
-To use the tester app, configure `sdk/example/config.js` and change whether to use the local or remote API.
+1. Install the package
 
-The SDK tester app is ran automatically by Docker Compose. You should be able to visit at `localhost:3002`.
+```sh
+# npm
+npm install @segment/analytics-next
 
-The local remote for Analytics-Node is different, as the tester is proxied via Docker. See the configuration file for more information.
+# yarn
+yarn add @segment/analytics-next
 
-## Standalone Build
+# pnpm
+pnpm add @segment/analytics-next
+```
 
-To change API endpoints for the standalone build, a full rebuild must be issued with the endpoint changes. There’s currently no mechanism to change apiHost on the fly (although, considering it uses the same code as the NPM build, this shouldn’t be tested separately anyways).
+2. Import the package into your project and you're good to go (with working types)!
 
-## Browser (React, NPM)
+```ts
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
-To test the browser build, pass the `apiHost` parameter when instantiating. An example:
+const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
-```jsx
-// Import June SDK:
-import { AnalyticsBrowser } from '@june-so/analytics-next'
+analytics.identify('hello world')
 
-// Near the entrypoint of your app, instantiate AnalyticsBrowser:
-let [analytics] = await AnalyticsBrowser.load({
-  writeKey: 'MY-API-KEY',
-  apiHost: 'http://localhost:3001',
+document.body?.addEventListener('click', () => {
+  analytics.track('document body clicked!')
 })
 ```
 
-## Node (NPM)
+## Lazy / Delayed Loading
+You can load a buffered version of analytics that requires `.load` to be explicitly called before initiating any network activity. This can be useful if you want to wait for a user to consent before fetching any tracking destinations or sending buffered events to segment.
 
-To test the Node build, pass the `apiHost` and `httpScheme` parameter when instantiating. An example:
+- ⚠️ ️`.load` should only be called _once_.
 
-```jsx
-// Import June SDK:
-import { AnalyticsNode } from '@june-so/analytics-next'
+```ts
+export const analytics = new AnalyticsBrowser()
 
-// Instantiate AnalyticsNode:
-const [nodeAnalytics] = await AnalyticsNode.load({
-  writeKey: 'MY-KEY',
-  httpScheme: 'http',
-  apiHost: 'localhost:3001/sdk',
-})
+analytics.identify("hello world")
+
+if (userConsentsToBeingTracked) {
+    analytics.load({ writeKey: '<YOUR_WRITE_KEY>' }) // destinations loaded, enqueued events are flushed
+}
+```
+This strategy also comes in handy if you have some settings that are fetched asynchronously.
+```ts
+const analytics = new AnalyticsBrowser()
+fetchWriteKey().then(writeKey => analytics.load({ writeKey }))
+
+analytics.identify("hello world")
+```
+## Error Handling
+### Handling initialization errors
+Initialization errors get logged by default, but if you also want to catch these errors, you can do the following:
+```ts
+export const analytics = new AnalyticsBrowser();
+analytics
+  .load({ writeKey: "MY_WRITE_KEY" })
+  .catch((err) => ...);
 ```
 
-# Building & Publishing
+## Custom CDN / API Proxy
 
-- The build process emits a couple of files, useful for production:
-  - The build file used in the browser script is `dist/umd/standalone.js`. With some additional code (slightly cloned) from the official Segment documentation, we can easily activate this in the client using a snippet:
-    ```jsx
-    <script>
-        window.analytics = {};
-        function juneify(writeKey) {
-            window.analytics._writeKey = writeKey;
-            var script = document.createElement("script");
-            script.type = "application/javascript";
-            script.onload = function () {
-                window.analytics.page();
-            }
-            script.src = "https://unpkg.com/@june-so/analytics-next/dist/umd/standalone.js";
-            var first = document.getElementsByTagName('script')[0];
-            first.parentNode.insertBefore(script, first);
+Configure `cdnURL` to override `https://cdn.segment.com`.
+```ts
+const analytics = AnalyticsBrowser.load({
+  writeKey,
+  // GET http://cdn.segment.com/v1/projects/<writekey>/settings -> https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
+  // GET https://cdn.segment.com/next-integrations/actions/...js -> https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/...js
+  cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com' // 🔥
+ })
+```
+
+Configure `integrations['Segment.io'].apiHost` to override `https://api.segment.io/v1`.
+```ts
+const analytics = AnalyticsBrowser.load(
+    {
+      writeKey,
+      cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
+    },
+    {
+      integrations: {
+        'Segment.io': {
+          // https://api.segment.io/v1/t -> https://MY-CUSTOM-API-PROXY.com/t
+          apiHost: 'MY-CUSTOM-API-PROXY.com', // 🔥
+          protocol: 'https'
         }
-        juneify("API_KEY");
-    </script>
-    ```
-  - Then there’s the NPM package, alongside any custom scripts.
-    - `scripts/sdk_release` should publish the package to NPM.
-    - You’ll need publish credentials (see https://github.com/juneHQ/june/issues/2837)
-
-# Annotated Source
-
-The core event emission code is distributed between two plugins: `segmentio` and `analytics-node`. Here are some documented changes that make `analytics-next` send events to June:
-
-## segmentio/fetch-dispatcher.ts
-
-```jsx
-function dispatch(url: string, body: object): Promise<unknown> {
-  return fetch(url, {
-    headers: { 'Content-Type': 'application/json' }, // <----
-    method: 'post',
-    body: JSON.stringify(body),
-  })
-}
-```
-
-An important change from vanilla is the changing of content-type: the original Analytics-Next sends events in plaintext by default. Instead, vanilla code will silently error out.
-
-## segmentio/batched-dispatcher.ts
-
-```jsx
-export default function batch(apiHost: string, config?: BatchingConfig) {
-...
-}
-```
-
-Some changes to note in the batched dispatcher include `application/json` content types, alongside a crucial bit: changing the `apiHost` from a hardcoded Segment API link to June’s endpoint (around L65 and some repetitions in the file).
-
-We’ve never seen this dispatcher used, but keep it updated for compatibility purposes. The next file is the most important for browser usage.
-
-## segmentio/index.ts
-
-This plugin defines all visible behavior of the browser integration. This is where the critical bits lie: there are custom type definitions for June’s SDK settings (most notably the addition of an apiHost parameter not present in vanilla).
-
-```jsx
-export function segmentio(
-  analytics: Analytics,
-  settings?: SegmentioSettings,
-  integrations?: LegacySettings['integrations']
-): Plugin {
-  const buffer = new PersistedPriorityQueue(
-    analytics.queue.queue.maxAttempts,
-    `dest-Segment.io`
+      }
+    }
   )
-  const flushing = false
+```
 
-  const apiHost = settings?.apiHost ?? 'api.june.so/sdk'
-  const remote = apiHost.includes('localhost')
-    ? `http://${apiHost}`
-    : `https://${apiHost}`
+## Usage in Common Frameworks
+### React
+```tsx
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
-  const client =
-    settings?.deliveryStrategy?.strategy === 'batching'
-      ? batch(apiHost, settings?.deliveryStrategy?.config)
-      : standard()
+// We can export this instance to share with rest of our codebase.
+export const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
-  async function send(ctx: Context): Promise<Context> {
-    if (isOffline()) {
-      buffer.push(ctx)
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
-      return ctx
+const App = () => (
+  <div>
+    <button onClick={() => analytics.track('hello world')}>Track</button>
+  </div>
+)
+```
+
+More React Examples:
+> Warning ⚠️ Some of these examples may be overly-complex for your use case, we recommend the simple approach outlined above.
+- Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
+- Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
+
+### `Vue`
+
+1. Export analytics instance.
+
+```ts
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+export const analytics = AnalyticsBrowser.load({
+  writeKey: '<YOUR_WRITE_KEY>',
+})
+```
+
+2. in `.vue` component
+
+```tsx
+<template>
+  <button @click="track()">Track</button>
+</template>
+
+<script>
+import { defineComponent } from 'vue'
+import { analytics } from './services/segment'
+
+export default defineComponent({
+  setup() {
+    function track() {
+      analytics.track('Hello world')
     }
 
-    const path = ctx.event.type //.charAt(0)
-    let json = toFacade(ctx.event).json()
-
-    if (ctx.event.type === 'track') {
-      delete json.traits
+    return {
+      track,
     }
+  },
+})
+</script>
+```
 
-    if (ctx.event.type === 'alias') {
-      json = onAlias(analytics, json)
-    }
+## Support for Web Workers (Experimental)
+ While this package does not support web workers out of the box, there are options:
 
-    return client
-      .dispatch(
-        `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations)
-      )
-      .then(() => ctx)
-      .catch((err) => {
-        if (err.type === 'error' || err.message === 'Failed to fetch') {
-          buffer.push(ctx)
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
-        }
-        return ctx
-      })
+1. Run analytics.js in a web worker via [partytown.io](https://partytown.builder.io/). See [our partytown example](../../examples/with-next-js/pages/partytown). **Supports both cloud and device mode destinations, but not all device mode destinations may work.**
+
+2. Try [@segment/analytics-node](../node) with `maxEventsInBatch: 1`, which should work in any runtime where `fetch` is available. **Warning: cloud destinations only!**
+
+
+
+
+## How to add typescript support (snippet users only)
+
+1. Install npm package `@segment/analytics-next` as a dev dependency.
+
+2. Create `./typings/analytics.d.ts`
+```ts
+// ./typings/analytics.d.ts
+import type { AnalyticsSnippet } from "@segment/analytics-next";
+
+declare global {
+  interface Window {
+    analytics: AnalyticsSnippet;
   }
+}
 
-  const segmentio: Plugin = {
-    name: 'Segment.io',
-    type: 'after',
-    version: '0.1.0',
-    isLoaded: (): boolean => true,
-    load: (): Promise<void> => Promise.resolve(),
-    track: send,
-    identify: send,
-    page: send,
-    alias: send,
-    group: send,
+```
+3. Configure typescript to read from the custom `./typings` folder
+```jsonc
+// tsconfig.json
+{
+  ...
+  "compilerOptions": {
+    ....
+    "typeRoots": [
+      "./node_modules/@types",
+      "./typings"
+    ]
   }
-
-  return segmentio
+  ....
 }
 ```
 
-Aside from configuration changes, the most important line that enables sending to our SDK endpoints is the following:
 
-```jsx
-const apiHost = settings?.apiHost ?? 'api.june.so/sdk'
-const remote = apiHost.includes('localhost')
-  ? `http://${apiHost}`
-  : `https://${apiHost}`
+## 🐒 Development
+
+First, clone the repo and then startup our local dev environment:
+
+```sh
+$ git clone git@github.com:segmentio/analytics-next.git
+$ cd analytics-next
+$ nvm use  # installs correct version of node defined in .nvmrc.
+$ yarn && yarn build
+$ yarn test
+$ yarn dev  # optional: runs analytics-next playground.
 ```
 
-When passing in settings and initializing the SDK, you can pass an apiHost to test locally. This also works with the tester app.
+> If you get "Cannot find module '@segment/analytics-next' or its corresponding type declarations.ts(2307)" (in VSCode), you may have to "cmd+shift+p -> "TypeScript: Restart TS server"
 
-## analytics-node/index.ts
+Then, make your changes and test them out in the test app!
 
-Most changes to this SDK are almost identical to the browser changes (content-type, etc).
+<img src="https://user-images.githubusercontent.com/2866515/135407053-7561d522-b969-484d-8d3a-6f1c4d9c025b.gif" alt="Example of the development app" width="500px">
 
-The Node SDK has some modifications in the type signature for configuration parameters: most notably (and usefully), you can pass in an apiHost and httpScheme. This allows for local testing.
+# 🔌 Plugins
 
-## standalone.ts & standalone-analytics.ts
+When developing against Analytics Next you will likely be writing plugins, which can augment functionality and enrich data. Plugins are isolated chunks which you can build, test, version, and deploy independently of the rest of the codebase. Plugins are bounded by Analytics Next which handles things such as observability, retries, and error management.
 
-These files contain the code that gets run for the Standalone build (that is, the script tag we provide for easy installs).
+Plugins can be of two different priorities:
 
-The most important thing to make sure when loading the browser script is to initialize [`window.analytics`](http://window.analytics) to an empty object and then set `window.analytics._writeKey` with the API key.
+1. **Critical**: Analytics Next should expect this plugin to be loaded before starting event delivery
+2. **Non-critical**: Analytics Next can start event delivery before this plugin has finished loading
 
-## analytics.ts
+and can be of five different types:
 
-This file contains the API surface for the analytics package, which is standard (the only thing that changes is the underlying dispatcher).
+1. **Before**: Plugins that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
+2. **After**: Plugins that need to run after all other plugins have run. An example of this is the segment.io integration, which will wait for destinations to succeed or fail so that it can send its observability metrics.
+3. **Destination**: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
+4. **Enrichment**: Modifies an event, failure here could halt the event pipeline.
+5. **Utility**: Plugins that change Analytics Next functionality and don't fall into the other categories.
 
-## analytics-node.ts & browser.ts
+Here is an example of a simple plugin that would convert all track events event names to lowercase before the event gets sent through the rest of the pipeline:
 
-This file contains the modules imported when the NPM package is installed. There’s some modified type signatures, in particular to make sure passing an `httpScheme` and `apiHost` is allowed.
+```ts
+export const lowercase: Plugin = {
+  name: 'Lowercase Event Name',
+  type: 'before',
+  version: '1.0.0',
+
+  isLoaded: () => true,
+  load: () => Promise.resolve(),
+
+  track: (ctx) => {
+    ctx.event.event = ctx.event.event.toLowerCase()
+    return ctx
+  }
+}
+```
+
+For further examples check out our [existing plugins](/packages/browser/src/plugins).
+
+## 🧪 QA
+Feature work and bug fixes should include tests. Run all [Jest](https://jestjs.io) tests:
+```
+$ yarn test
+```
+Lint all with [ESLint](https://github.com/typescript-eslint/typescript-eslint/):
+```
+$ yarn lint
+```
+
+
+

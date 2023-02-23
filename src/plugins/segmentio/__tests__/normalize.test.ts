@@ -2,7 +2,7 @@ import assert from 'assert'
 import cookie from 'js-cookie'
 import { SegmentioSettings } from '..'
 import { normalize } from '../normalize'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 import { version } from '../../../generated/version'
@@ -29,7 +29,7 @@ describe('before loading', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsdom.window as unknown) as Window & typeof globalThis
+      () => jsdom.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -77,6 +77,13 @@ describe('before loading', () => {
       analytics.user().id('user-id')
       normalize(analytics, object, options, {})
       assert(object.userId === 'user-id')
+    })
+
+    it('should not replace the .timestamp', () => {
+      const timestamp = new Date()
+      object.timestamp = timestamp
+      normalize(analytics, object, options, {})
+      assert(object.timestamp === timestamp)
     })
 
     it('should not replace the .userId', () => {
@@ -152,7 +159,10 @@ describe('before loading', () => {
 
     it('should add .userAgent', () => {
       normalize(analytics, object, options, {})
-      assert(object.context?.userAgent === navigator.userAgent)
+      const removeVersionNum = (agent: string) => agent.replace(/jsdom\/.*/, '')
+      const userAgent1 = removeVersionNum(object.context?.userAgent as string)
+      const userAgent2 = removeVersionNum(navigator.userAgent)
+      assert(userAgent1 === userAgent2)
     })
 
     it('should add .locale', () => {
@@ -171,8 +181,7 @@ describe('before loading', () => {
 
     it('should add .campaign', () => {
       jsdom.reconfigure({
-        url:
-          'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
 
       normalize(analytics, object, options, {})
@@ -252,8 +261,7 @@ describe('before loading', () => {
 
     it('should allow override of .campaign', () => {
       jsdom.reconfigure({
-        url:
-          'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
+        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
       })
 
       const obj = {
@@ -279,7 +287,7 @@ describe('before loading', () => {
       assert(obj.context.campaign.name === 'overrideName')
     })
 
-    it('should add .referrer.id and .referrer.type', () => {
+    it('should add .referrer.id and .referrer.type (cookies)', () => {
       jsdom.reconfigure({
         url: 'http://localhost?utm_source=source&urid=medium',
       })
@@ -288,8 +296,34 @@ describe('before loading', () => {
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
+      expect(object.context.referrer.id).toBe('medium')
+      assert(object.context.referrer.type === 'millennial-media')
+      expect(cookie.get('s:context.referrer')).toEqual(
+        JSON.stringify({
+          id: 'medium',
+          type: 'millennial-media',
+        })
+      )
+    })
+
+    it('should add .referrer.id and .referrer.type (cookieless)', () => {
+      jsdom.reconfigure({
+        url: 'http://localhost?utm_source=source&urid=medium',
+      })
+      const setCookieSpy = jest.spyOn(cookie, 'set')
+      analytics = new Analytics(
+        { writeKey: options.apiKey },
+        { disableClientPersistence: true }
+      )
+
+      normalize(analytics, object, options, {})
+      assert(object)
+      assert(object.context)
+      assert(object.context.referrer)
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
+      expect(cookie.get('s:context.referrer')).toBeUndefined()
+      expect(setCookieSpy).not.toHaveBeenCalled()
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {

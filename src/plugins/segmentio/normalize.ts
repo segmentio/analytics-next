@@ -1,27 +1,31 @@
-import { CookieAttributes, get as getCookie, set as setCookie } from 'js-cookie'
-import { Analytics } from '../../analytics'
+import jar from 'js-cookie'
+import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
+import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { tld } from '../../core/user/tld'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
+import { getAvailableStorageOptions, UniversalStorage } from '../../core/user'
 
-let domain: string | undefined = undefined
-try {
-  domain = tld(new URL(window.location.href))
-} catch (_) {
-  domain = undefined
-}
+let cookieOptions: jar.CookieAttributes | undefined
+function getCookieOptions(): jar.CookieAttributes {
+  if (cookieOptions) {
+    return cookieOptions
+  }
 
-const cookieOptions: CookieAttributes = {
-  expires: 31536000000, // 1 year
-  secure: false,
-  path: '/',
-}
+  const domain = tld(window.location.href)
+  cookieOptions = {
+    expires: 31536000000, // 1 year
+    secure: false,
+    path: '/',
+  }
+  if (domain) {
+    cookieOptions.domain = domain
+  }
 
-if (domain) {
-  cookieOptions.domain = domain
+  return cookieOptions
 }
 
 // Default value will be updated to 'web' in `bundle-umd.ts` for web build.
@@ -35,14 +39,10 @@ export function getVersionType(): typeof _version {
   return _version
 }
 
-export function sCookie(key: string, value: string): string | undefined {
-  return setCookie(key, value, cookieOptions)
-}
-
 type Ad = { id: string; type: string }
 
 export function ampId(): string | undefined {
-  const ampId = getCookie('_ga')
+  const ampId = jar.get('_ga')
   if (ampId && ampId.startsWith('amp')) {
     return ampId
   }
@@ -61,7 +61,7 @@ export function utm(query: string): Record<string, string> {
       if (utmParam === 'campaign') {
         utmParam = 'name'
       }
-      acc[utmParam] = decodeURIComponent(v.replace(/\+/g, ' '))
+      acc[utmParam] = gracefulDecodeURIComponent(v)
     }
     return acc
   }, {} as Record<string, string>)
@@ -90,12 +90,22 @@ function ads(query: string): Ad | undefined {
   }
 }
 
-function referrerId(query: string, ctx: SegmentEvent['context']): void {
-  let stored = getCookie('s:context.referrer')
-  let ad = ads(query)
+function referrerId(
+  query: string,
+  ctx: SegmentEvent['context'],
+  disablePersistance: boolean
+): void {
+  const storage = new UniversalStorage<{
+    's:context.referrer': Ad
+  }>(
+    disablePersistance ? [] : ['cookie'],
+    getAvailableStorageOptions(getCookieOptions())
+  )
 
-  stored = stored ? JSON.parse(stored) : undefined
-  ad = ad ?? (stored as Ad | undefined)
+  const stored = storage.get('s:context.referrer')
+  let ad: Ad | undefined | null = ads(query)
+
+  ad = ad ?? stored
 
   if (!ad) {
     return
@@ -105,7 +115,7 @@ function referrerId(query: string, ctx: SegmentEvent['context']): void {
     ctx.referrer = { ...ctx.referrer, ...ad }
   }
 
-  setCookie('s:context.referrer', JSON.stringify(ad), cookieOptions)
+  storage.set('s:context.referrer', ad)
 }
 
 export function normalize(
@@ -119,7 +129,6 @@ export function normalize(
 
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
-  const anonId = json.anonymousId
 
   delete json.options
   json.writeKey = settings?.apiKey
@@ -151,12 +160,12 @@ export function normalize(
     ctx.campaign = utm(query)
   }
 
-  referrerId(query, ctx)
+  referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
 
   json.userId = json.userId || user.id()
-  json.anonymousId = user.anonymousId(anonId)
+  json.anonymousId = json.anonymousId || user.anonymousId()
+
   json.sentAt = new Date()
-  json.timestamp = new Date()
 
   const failed = analytics.queue.failedInitializations || []
   if (failed.length > 0) {

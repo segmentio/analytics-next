@@ -1,25 +1,18 @@
 {
   "compilerOptions": {
-    "importHelpers": true,
-    "module": "esnext",
-    "target": "ES5",
-    "declaration": true,
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
     "strict": true,
-    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "incremental": true,
-    "outDir": "dist/pkg",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "lib": ["es2020", "DOM"],
+    "module": "esnext",
+    "target": "ES5",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "lib": ["es2020", "DOM", "DOM.Iterable"],
     "baseUrl": "./src",
-    "paths": {
-      "@/*": ["./*"]
-    },
-    "skipLibCheck": true
+    "keyofStringsOnly": true
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist", "src"]
 }

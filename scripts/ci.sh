@@ -1,19 +1,15 @@
 #!/bin/sh
 set -e
 
-echo '--- Install development dependencies'
-yarn install
-
 echo '--- Build bundles'
-make build-prod
+make build
 
 echo '--- Check Size'
-yarn size-limit
+yarn run -T browser size-limit
 
 echo '--- Lint files'
 make lint
 
 echo '--- Run tests'
-yarn add --dev playwright
 make test-unit
 make test-integration

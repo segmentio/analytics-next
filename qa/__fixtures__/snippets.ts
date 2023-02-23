@@ -1,4 +1,4 @@
-export function next(writekey: string) {
+export function next(writekey: string, obfuscate: boolean) {
   return `
     <html>
     <head></head>
@@ -13,6 +13,9 @@ export function next(writekey: string) {
           else {
             analytics.invoked = !0
             analytics.methods = [
+              'screen',
+              'register',
+              'deregister',
               'trackSubmit',
               'trackClick',
               'trackLink',
@@ -57,7 +60,7 @@ export function next(writekey: string) {
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = '${writekey}'
-            analytics.load('${writekey}')
+            analytics.load('${writekey}', { obfuscate: ${obfuscate} })
           }
       })()
     </script>
@@ -84,6 +87,9 @@ export function classic(writekey: string) {
       else {
         analytics.invoked = !0
         analytics.methods = [
+          'screen',
+          'register',
+          'deregister',
           'trackSubmit',
           'trackClick',
           'trackLink',
@@ -122,7 +128,7 @@ export function classic(writekey: string) {
           t.type = 'text/javascript'
           t.async = !0
           t.src =
-            'https://cdn.segment.com/analytics.js/v1/' +
+            'https://api.june.so/analytics.js/v1/' +
             key +
             '/analytics.classic.js'
           var n = document.getElementsByTagName('script')[0]

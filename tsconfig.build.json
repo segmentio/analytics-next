@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "exclude": ["**/__tests__/**", "**/test-helpers/**", "**/tester/**", "**/lib/**"],
+  "compilerOptions": {
+    "outDir": "./dist/pkg",
+  }
+}

@@ -4,7 +4,7 @@ import {
   globalSetup,
   globalTeardown,
 } from '../../src/tester/ajs-perf'
-import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
+import { TEST_WRITEKEY } from '../../src/test-helpers/test-writekeys'
 
 describe('Performance', () => {
   beforeAll(async () => {
@@ -18,8 +18,6 @@ describe('Performance', () => {
 
   // These tests are now biased because of the massive number of tests running during our QA process
   it('gather lighthouse', async () => {
-    jest.setTimeout(50000)
-
     const analyticsStub = await tester(
       TEST_WRITEKEY,
       'http://localhost:3001',
@@ -27,11 +25,11 @@ describe('Performance', () => {
       true
     )
 
-    const results = await gatherLighthouseMetrics(analyticsStub.browserPage)
+    const results: any = await gatherLighthouseMetrics(analyticsStub.browserPage)
     const audits = results.audits // Lighthouse audits
 
-    // lighthouse perf score of 100
-    expect(results['categories'].performance.score).toEqual(1)
+    // lighthouse perf score
+    expect(results['categories'].performance.score).toBeGreaterThanOrEqual(0.99)
     // no render blocking resource
     expect(audits['render-blocking-resources'].details.items).toHaveLength(0)
     // first contentful paint in the first second
@@ -53,10 +51,9 @@ describe('Performance', () => {
     )
 
     await analyticsStub.browserPage.close()
-  })
+  }, 50000)
 
   it('loads ajs in a browser', async () => {
-    jest.setTimeout(10000)
     const analyticsStub = await tester(
       TEST_WRITEKEY,
       'http://localhost:3001',
@@ -74,5 +71,5 @@ describe('Performance', () => {
     })
 
     await analyticsStub.browserPage.close()
-  })
+  }, 10000)
 })

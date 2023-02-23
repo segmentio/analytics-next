@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import jsdom from 'jsdom'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { ajsDestinations, LegacyDestination } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { LegacySettings } from '../../../browser'
 import { Context } from '../../../core/context'
 import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
-import { AMPLITUDE_WRITEKEY } from '../../../__tests__/test-writekeys'
+import { AMPLITUDE_WRITEKEY } from '../../../test-helpers/test-writekeys'
+import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
+import * as Factory from '../../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -58,7 +59,6 @@ const cdnResponse: LegacySettings = {
           },
         ],
         scope: 'destinations',
-        // eslint-disable-next-line @typescript-eslint/camelcase
         target_type: 'workspace::project::destination',
         transformers: [[{ type: 'drop' }]],
         destinationName: 'Amplitude',
@@ -67,9 +67,7 @@ const cdnResponse: LegacySettings = {
   },
 }
 
-const fetchSettings = Promise.resolve({
-  json: () => Promise.resolve(cdnResponse),
-})
+const fetchSettings = Factory.createSuccess(cdnResponse)
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -79,12 +77,14 @@ describe('loading ajsDestinations', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
 
-    // @ts-ignore: ignore Response required fields
-    mocked(unfetch).mockImplementation((): Promise<Response> => fetchSettings)
+    jest
+      .mocked(unfetch)
+      // @ts-ignore: ignore Response required fields
+      .mockImplementation((): Promise<Response> => fetchSettings)
   })
 
-  it('loads version overrides', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('loads version overrides', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
 
     const withVersionSettings = destinations.find(
       (d) => d.name === 'WithVersionSettings'
@@ -102,15 +102,15 @@ describe('loading ajsDestinations', () => {
   })
 
   // This test should temporary. It must be deleted once we fix the Iterable metadata
-  it('ignores Iterable', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('ignores Iterable', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     const iterable = destinations.find((d) => d.name === 'Iterable')
     expect(iterable).toBeUndefined()
   })
 
   describe('versionSettings.components', () => {
-    it('ignores [componentType:browser] when bundlingStatus is unbundled', async () => {
-      const destinations = await ajsDestinations(
+    it('ignores [componentType:browser] when bundlingStatus is unbundled', () => {
+      const destinations = ajsDestinations(
         {
           integrations: {
             'Some server destination': {
@@ -139,8 +139,8 @@ describe('loading ajsDestinations', () => {
       expect(destinations.length).toBe(1)
     })
 
-    it('loads [componentType:browser] when bundlingStatus is not defined', async () => {
-      const destinations = await ajsDestinations(
+    it('loads [componentType:browser] when bundlingStatus is not defined', () => {
+      const destinations = ajsDestinations(
         {
           integrations: {
             'Some server destination': {
@@ -169,14 +169,14 @@ describe('loading ajsDestinations', () => {
     })
   })
 
-  it('loads type:browser legacy ajs destinations from cdn', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('loads type:browser legacy ajs destinations from cdn', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     // ignores segment.io
     expect(destinations.length).toBe(5)
   })
 
-  it('ignores type:browser when bundlingStatus is unbundled', async () => {
-    const destinations = await ajsDestinations(
+  it('ignores type:browser when bundlingStatus is unbundled', () => {
+    const destinations = ajsDestinations(
       {
         integrations: {
           'Some server destination': {
@@ -199,8 +199,8 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(1)
   })
 
-  it('loads type:browser when bundlingStatus is not defined', async () => {
-    const destinations = await ajsDestinations(
+  it('loads type:browser when bundlingStatus is not defined', () => {
+    const destinations = ajsDestinations(
       {
         integrations: {
           'Some server destination': {
@@ -222,13 +222,13 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(2)
   })
 
-  it('ignores destinations of type:server', async () => {
-    const destinations = await ajsDestinations(cdnResponse, {}, {})
+  it('ignores destinations of type:server', () => {
+    const destinations = ajsDestinations(cdnResponse, {}, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
-  it('does not load integrations when All:false', async () => {
-    const destinations = await ajsDestinations(
+  it('does not load integrations when All:false', () => {
+    const destinations = ajsDestinations(
       cdnResponse,
       {
         All: false,
@@ -238,8 +238,8 @@ describe('loading ajsDestinations', () => {
     expect(destinations.length).toBe(0)
   })
 
-  it('loads integrations when All:false, <integration>: true', async () => {
-    const destinations = await ajsDestinations(
+  it('loads integrations when All:false, <integration>: true', () => {
+    const destinations = ajsDestinations(
       cdnResponse,
       {
         All: false,
@@ -252,8 +252,11 @@ describe('loading ajsDestinations', () => {
     expect(destinations[0].name).toEqual('Amplitude')
   })
 
-  it('adds a tsub middleware for matching rules', async () => {
-    const destinations = await ajsDestinations(cdnResponse)
+  it('adds a tsub middleware for matching rules', () => {
+    const middleware = tsubMiddleware(
+      cdnResponse.middlewareSettings!.routingRules
+    )
+    const destinations = ajsDestinations(cdnResponse, {}, {}, middleware)
     const amplitude = destinations.find((d) => d.name === 'Amplitude')
     expect(amplitude?.middleware.length).toBe(1)
   })
@@ -286,8 +289,43 @@ describe('settings', () => {
   })
 })
 
+describe('options', () => {
+  it('#disableClientPersistence affects underlying queue', () => {
+    const defaultDestWithPersistance = new LegacyDestination(
+      'LocalStorageUser',
+      'latest',
+      {},
+      {}
+    )
+    const destWithPersistance = new LegacyDestination(
+      'LocalStorageUserToo',
+      'latest',
+      {},
+      { disableClientPersistence: false }
+    )
+    const destWithoutPersistance = new LegacyDestination(
+      'MemoryUser',
+      'latest',
+      {},
+      { disableClientPersistence: true }
+    )
+
+    expect(
+      defaultDestWithPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeTruthy()
+    expect(
+      destWithPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeTruthy()
+    expect(
+      destWithoutPersistance.buffer instanceof PersistedPriorityQueue
+    ).toBeFalsy()
+  })
+})
+
 describe('remote loading', () => {
-  const loadAmplitude = async (): Promise<LegacyDestination> => {
+  const loadAmplitude = async (
+    obfuscate = false
+  ): Promise<LegacyDestination> => {
     const ajs = new Analytics({
       writeKey: 'abc',
     })
@@ -298,7 +336,7 @@ describe('remote loading', () => {
       {
         apiKey: AMPLITUDE_WRITEKEY,
       },
-      {}
+      { obfuscate }
     )
 
     await dest.load(Context.system(), ajs)
@@ -306,7 +344,7 @@ describe('remote loading', () => {
     return dest
   }
 
-  beforeEach(async () => {
+  beforeEach(() => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
 
@@ -328,7 +366,7 @@ describe('remote loading', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -342,6 +380,24 @@ describe('remote loading', () => {
     expect(sources).toMatchObject(
       expect.arrayContaining([
         'https://cdn.segment.com/next-integrations/integrations/amplitude/latest/amplitude.dynamic.js.gz',
+        expect.stringContaining(
+          'https://cdn.segment.com/next-integrations/integrations/vendor/commons'
+        ),
+        'https://cdn.amplitude.com/libs/amplitude-5.2.2-min.gz.js',
+      ])
+    )
+  })
+
+  it('loads obfuscated integrations from the Segment CDN', async () => {
+    await loadAmplitude(true)
+
+    const sources = Array.from(window.document.querySelectorAll('script'))
+      .map((s) => s.src)
+      .filter(Boolean)
+
+    expect(sources).toMatchObject(
+      expect.arrayContaining([
+        'https://cdn.segment.com/next-integrations/integrations/YW1wbGl0dWRl/latest/YW1wbGl0dWRl.dynamic.js.gz',
         expect.stringContaining(
           'https://cdn.segment.com/next-integrations/integrations/vendor/commons'
         ),
@@ -370,6 +426,32 @@ describe('remote loading', () => {
 
   it('forwards page calls to integration', async () => {
     const dest = await loadAmplitude()
+    jest.spyOn(dest.integration!, 'page')
+
+    await dest.page(new Context({ type: 'page' }))
+    expect(dest.integration?.page).toHaveBeenCalled()
+  })
+
+  it('forwards identify calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
+    jest.spyOn(dest.integration!, 'identify')
+
+    const evt = new Context({ type: 'identify' })
+    await dest.identify(evt)
+
+    expect(dest.integration?.identify).toHaveBeenCalled()
+  })
+
+  it('forwards track calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
+    jest.spyOn(dest.integration!, 'track')
+
+    await dest.track(new Context({ type: 'track' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('forwards page calls to obfuscated integration', async () => {
+    const dest = await loadAmplitude(true)
     jest.spyOn(dest.integration!, 'page')
 
     await dest.page(new Context({ type: 'page' }))
@@ -412,7 +494,7 @@ describe('plan', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -474,12 +556,59 @@ describe('plan', () => {
     `)
   })
 
+  it('drops event when unplanned event is disabled', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        __default: {
+          enabled: false,
+          integrations: {},
+        },
+      },
+    })
+
+    jest.spyOn(dest.integration!, 'track')
+
+    const ctx = new Context({ type: 'page', event: 'Track Event' })
+    await expect(() => dest.track(ctx)).rejects.toMatchInlineSnapshot(`
+      ContextCancelation {
+        "reason": "Event Track Event disabled for integration amplitude in tracking plan",
+        "retry": false,
+        "type": "Dropped by plan",
+      }
+    `)
+
+    expect(dest.integration?.track).not.toHaveBeenCalled()
+    expect(ctx.event.integrations).toMatchInlineSnapshot(`
+      Object {
+        "All": false,
+        "Segment.io": true,
+      }
+    `)
+  })
+
   it('does not drop events with different names', async () => {
     const dest = await loadAmplitude({
       track: {
         'Fake Track Event': {
           enabled: true,
           integrations: { amplitude: false },
+        },
+      },
+    })
+
+    jest.spyOn(dest.integration!, 'track')
+
+    await dest.track(new Context({ type: 'page', event: 'Track Event' }))
+    expect(dest.integration?.track).toHaveBeenCalled()
+  })
+
+  it('does not drop events with same name when unplanned events are disallowed', async () => {
+    const dest = await loadAmplitude({
+      track: {
+        __default: { enabled: false, integrations: {} },
+        'Track Event': {
+          enabled: true,
+          integrations: {},
         },
       },
     })
@@ -624,7 +753,7 @@ describe('option overrides', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
@@ -648,7 +777,7 @@ describe('option overrides', () => {
       },
     }
 
-    const destinations = await ajsDestinations(cdnSettings, {}, initOptions)
+    const destinations = ajsDestinations(cdnSettings, {}, initOptions)
     const amplitude = destinations[0]
 
     await amplitude.load(Context.system(), {} as Analytics)

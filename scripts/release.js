@@ -8,24 +8,41 @@ const path = require('path')
 const mime = require('mime')
 const logUpdate = require('log-update')
 
+const PROD_BRANCH_NAME = 'master'
+
 const bucket =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_BUCKET
     : process.env.STAGE_BUCKET
+if (!bucket) throw new Error('Missing one of PROD_BUCKET or STAGE_BUCKET')
+
+const shadowBucket =
+  process.env.NODE_ENV == 'production'
+    ? process.env.PROD_SHADOW
+    : process.env.STAGE_SHADOW
 
 const cloudfrontCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_CDN_OAI
     : process.env.STAGE_CDN_OAI
+if (!cloudfrontCanonicalUserId)
+  throw new Error('Missing one of PROD_CDN_OAI or STAGE_CDN_OAI')
 
 const customDomainCanonicalUserId =
   process.env.NODE_ENV == 'production'
     ? process.env.PROD_CUSTOM_DOMAIN_OAI
     : process.env.STAGE_CUSTOM_DOMAIN_OAI
+if (!customDomainCanonicalUserId)
+  throw new Error(
+    'Missing one of PROD_CUSTOM_DOMAIN_OAI or STAGE_CUSTOM_DOMAIN_OAI'
+  )
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+if (!accessKeyId) throw new Error('Missing AWS_ACCESS_KEY_ID')
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+if (!secretAccessKey) throw new Error('Missing AWS_SECRET_ACCESS_KEY')
 const sessionToken = process.env.AWS_SESSION_TOKEN
+if (!sessionToken) throw new Error('Missing AWS_SESSION_TOKEN')
 
 const getBranch = async () =>
   (await ex('git', ['branch', '--show-current'])).stdout
@@ -68,7 +85,12 @@ async function upload(meta) {
         mime.getType(filePath.replace('.gz', '')) || 'application/javascript',
     }
 
-    if (meta.branch !== 'master') {
+    const shadowOptions = {
+      ...options,
+      Bucket: shadowBucket,
+    }
+
+    if (meta.branch !== PROD_BRANCH_NAME) {
       options.CacheControl = 'public,max-age=31536000,immutable'
     }
 
@@ -77,6 +99,7 @@ async function upload(meta) {
     }
 
     const output = await s3.putObject(options).promise()
+    await s3.putObject(shadowOptions).promise() // upload build to shadow pipeline bucket as well
 
     // put latest version with only 5 minutes caching
     await s3
@@ -114,12 +137,6 @@ async function release() {
 
   const sha = await getSha()
   let branch = process.env.BUILDKITE_BRANCH || (await getBranch())
-
-  // this means we're deploying production
-  // from a release branch
-  if (process.env.RELEASE) {
-    branch = 'master'
-  }
 
   const meta = {
     sha,

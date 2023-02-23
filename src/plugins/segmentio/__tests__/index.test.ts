@@ -1,8 +1,7 @@
 import assert from 'assert'
-import { mocked } from 'ts-jest/utils'
 import unfetch from 'unfetch'
 import { segmentio, SegmentioSettings } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import cookie from 'js-cookie'
@@ -29,8 +28,7 @@ describe('Segment.io', () => {
 
     window.localStorage.clear()
 
-    // @ts-ignore
-    spyMock = mocked(unfetch).mockResolvedValue({
+    spyMock = jest.mocked(unfetch).mockResolvedValue({
       ok: true,
     } as Response)
   })
@@ -46,12 +44,67 @@ describe('Segment.io', () => {
     window.localStorage.clear()
   })
 
+  describe('using a custom protocol', () => {
+    it('should be able to send http requests', async () => {
+      const options: {
+        apiKey: string
+        protocol: 'http' | 'https'
+      } = {
+        apiKey: 'foo',
+        protocol: 'http',
+      }
+      const analytics = new Analytics({ writeKey: options.apiKey })
+      const segment = segmentio(analytics, options, {})
+      await analytics.register(segment, pageEnrichment)
+
+      // @ts-ignore test a valid ajsc page call
+      await analytics.page(null, { foo: 'bar' })
+
+      const [url] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"http://api.segment.io/v1/p"`)
+    })
+  })
+
+  describe('configuring a keep alive', () => {
+    it('should accept keepalive configuration', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              keepalive: true,
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.keepalive).toBe(true)
+    })
+
+    it('should default to no keepalive', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      const segment = segmentio(analytics, {
+        apiKey: '',
+      })
+      await analytics.register(segment)
+      await analytics.track('foo')
+
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.keepalive).toBeUndefined()
+    })
+  })
+
   describe('#page', () => {
     it('should enqueue section, name and properties', async () => {
       await analytics.page('section', 'name', { property: true }, { opt: true })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/page"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/p"`)
 
       const body = JSON.parse(params.body)
 
@@ -67,7 +120,7 @@ describe('Segment.io', () => {
       await analytics.page(null, { foo: 'bar' })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/page"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/p"`)
 
       const body = JSON.parse(params.body)
 
@@ -80,7 +133,7 @@ describe('Segment.io', () => {
       await analytics.identify('id', { trait: true }, { opt: true })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/identify"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/i"`)
 
       const body = JSON.parse(params.body)
       assert(body.userId === 'id')
@@ -93,7 +146,7 @@ describe('Segment.io', () => {
       await analytics.identify(null, { trait: true }, { opt: true })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/identify"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/i"`)
 
       const body = JSON.parse(params.body)
       assert(body.userId === null)
@@ -108,7 +161,7 @@ describe('Segment.io', () => {
     it('should enqueue an event and properties', async () => {
       await analytics.track('event', { prop: true }, { opt: true })
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/track"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/t"`)
 
       const body = JSON.parse(params.body)
 
@@ -125,7 +178,7 @@ describe('Segment.io', () => {
       await analytics.group('id', { trait: true }, { opt: true })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/group"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/g"`)
 
       const body = JSON.parse(params.body)
 
@@ -139,7 +192,7 @@ describe('Segment.io', () => {
       await analytics.group(null, { trait: true }, { opt: true })
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/group"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/g"`)
 
       const body = JSON.parse(params.body)
 
@@ -155,7 +208,7 @@ describe('Segment.io', () => {
     it('should enqueue .userId and .previousId', async () => {
       await analytics.alias('to', 'from')
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/alias"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/a"`)
 
       const body = JSON.parse(params.body)
       assert(body.previousId === 'from')
@@ -168,7 +221,7 @@ describe('Segment.io', () => {
       await analytics.alias('to')
 
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/alias"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/a"`)
 
       const body = JSON.parse(params.body)
       assert(body.previousId === 'anon-id')
@@ -179,7 +232,7 @@ describe('Segment.io', () => {
     it('should fallback to user.anonymousId if .previousId and user.id are falsey', async () => {
       await analytics.alias('to')
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/alias"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/a"`)
 
       const body = JSON.parse(params.body)
       assert(body.previousId)
@@ -190,7 +243,7 @@ describe('Segment.io', () => {
     it('should rename `.from` and `.to` to `.previousId` and `.userId`', async () => {
       await analytics.alias('user-id', 'previous-id')
       const [url, params] = spyMock.mock.calls[0]
-      expect(url).toMatchInlineSnapshot(`"https://api.june.so/sdk/alias"`)
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/a"`)
 
       const body = JSON.parse(params.body)
       assert(body.previousId === 'previous-id')

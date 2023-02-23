@@ -49,16 +49,19 @@ describe('Batching', () => {
   beforeEach(() => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
+    jest.useFakeTimers()
   })
 
   afterEach(() => {
-    window.close()
+    // clear any pending sendBatch calls
+    jest.runAllTimers()
+    jest.useRealTimers()
   })
 
   it('does not send requests right away', async () => {
     const { dispatch } = batch(`https://api.segment.io`)
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       hello: 'world',
     })
 
@@ -70,17 +73,17 @@ describe('Batching', () => {
       size: 3,
     })
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       event: 'first',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       event: 'second',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       event: 'third',
     })
 
@@ -91,8 +94,9 @@ describe('Batching', () => {
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}]}",
           "headers": Object {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
+          "keepalive": false,
           "method": "post",
         },
       ]
@@ -106,7 +110,7 @@ describe('Batching', () => {
 
     // fatEvent is about ~1kb in size
     for (let i = 0; i < 250; i++) {
-      await dispatch(`https://api.june.so/sdk/t`, {
+      await dispatch(`https://api.segment.io/v1/t`, {
         event: 'fat event',
         properties: fatEvent,
       })
@@ -114,7 +118,7 @@ describe('Batching', () => {
     expect(fetch).not.toHaveBeenCalled()
 
     for (let i = 0; i < 250; i++) {
-      await dispatch(`https://api.june.so/sdk/t`, {
+      await dispatch(`https://api.segment.io/v1/t`, {
         event: 'fat event',
         properties: fatEvent,
       })
@@ -125,19 +129,17 @@ describe('Batching', () => {
   })
 
   it('sends requests when the timeout expires', async () => {
-    jest.useFakeTimers()
-
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 100,
       timeout: 10000, // 10 seconds
     })
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       event: 'first',
     })
     expect(fetch).not.toHaveBeenCalled()
 
-    await dispatch(`https://api.june.so/sdk/i`, {
+    await dispatch(`https://api.segment.io/v1/i`, {
       event: 'second',
     })
 
@@ -150,8 +152,9 @@ describe('Batching', () => {
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}]}",
           "headers": Object {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
+          "keepalive": false,
           "method": "post",
         },
       ]
@@ -159,20 +162,18 @@ describe('Batching', () => {
   })
 
   it('clears the buffer between flushes', async () => {
-    jest.useFakeTimers()
-
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 100,
       timeout: 10000, // 10 seconds
     })
 
-    await dispatch(`https://api.june.so/sdk/t`, {
+    await dispatch(`https://api.segment.io/v1/t`, {
       event: 'first',
     })
 
     jest.advanceTimersByTime(11000) // 11 seconds
 
-    await dispatch(`https://api.june.so/sdk/i`, {
+    await dispatch(`https://api.segment.io/v1/i`, {
       event: 'second',
     })
 
@@ -186,8 +187,9 @@ describe('Batching', () => {
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}]}",
           "headers": Object {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
+          "keepalive": false,
           "method": "post",
         },
       ]
@@ -199,8 +201,9 @@ describe('Batching', () => {
         Object {
           "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}]}",
           "headers": Object {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain",
           },
+          "keepalive": false,
           "method": "post",
         },
       ]
@@ -208,43 +211,31 @@ describe('Batching', () => {
   })
 
   describe('on unload', () => {
-    let unloadHandler: Function | undefined = undefined
-
-    beforeEach(() => {
-      jest
-        .spyOn(window, 'addEventListener')
-        .mockImplementation((evt, handler) => {
-          if (evt === 'beforeunload') {
-            unloadHandler = handler as Function
-          }
-        })
-    })
-
     it('flushes the batch', async () => {
       const { dispatch } = batch(`https://api.segment.io`)
 
-      await dispatch(`https://api.june.so/sdk/t`, {
+      dispatch(`https://api.segment.io/v1/t`, {
         hello: 'world',
-      })
+      }).catch(console.error)
 
-      await dispatch(`https://api.june.so/sdk/t`, {
+      dispatch(`https://api.segment.io/v1/t`, {
         bye: 'world',
-      })
+      }).catch(console.error)
 
       expect(fetch).not.toHaveBeenCalled()
 
-      unloadHandler?.()
+      window.dispatchEvent(new Event('pagehide'))
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
       // any dispatch attempts after the page has unloaded are flushed immediately
       // this can happen if analytics.track is called right before page is navigated away
-      dispatch(`https://api.june.so/sdk/t`, {
+      dispatch(`https://api.segment.io/v1/t`, {
         afterlife: 'world',
       }).catch(console.error)
 
       // no queues, no waiting, instatneous
-      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch).toHaveBeenCalledTimes(2)
     })
 
     it('flushes in batches of no more than 64kb', async () => {
@@ -254,7 +245,7 @@ describe('Batching', () => {
 
       // fatEvent is about ~1kb in size
       for (let i = 0; i < 80; i++) {
-        await dispatch(`https://api.june.so/sdk/t`, {
+        await dispatch(`https://api.segment.io/v1/t`, {
           event: 'fat event',
           properties: fatEvent,
         })
@@ -262,7 +253,8 @@ describe('Batching', () => {
 
       expect(fetch).not.toHaveBeenCalled()
 
-      unloadHandler?.()
+      window.dispatchEvent(new Event('pagehide'))
+
       expect(fetch).toHaveBeenCalledTimes(2)
     })
   })

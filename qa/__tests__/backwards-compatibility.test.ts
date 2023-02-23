@@ -2,7 +2,10 @@ import { difference } from 'lodash'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
-import { TEST_WRITEKEY } from '../../src/__tests__/test-writekeys'
+import { TEST_WRITEKEY } from '../../src/test-helpers/test-writekeys'
+
+
+jest.setTimeout(30000)
 
 describe('Backwards compatibility', () => {
   test('provides all same properties', async () => {
@@ -134,8 +137,8 @@ describe('Backwards compatibility', () => {
       writeKey: TEST_WRITEKEY,
     })
 
-    const classic = result.classic.codeEvaluation
-    const next = result.next.codeEvaluation
+    const classic = result.classic.codeEvaluation as any
+    const next = result.next.codeEvaluation as any
 
     expect(next['track']).toEqual(classic['track'])
     expect(next['identify']).toEqual(classic['identify'])

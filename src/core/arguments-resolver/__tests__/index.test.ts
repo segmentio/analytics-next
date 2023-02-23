@@ -2,9 +2,9 @@ import {
   resolveArguments,
   resolvePageArguments,
   resolveUserArguments,
-  Callback,
   resolveAliasArguments,
 } from '../'
+import { Callback } from '../../events'
 import { User } from '../../user'
 
 const bananaPhone = {
@@ -100,6 +100,18 @@ describe(resolveArguments, () => {
       expect(props).toEqual({})
       expect(options).toEqual({})
       expect(cb).toEqual(fn)
+    })
+
+    test('options set if properties undefined', () => {
+      const [event, props, options] = resolveArguments(
+        'Test Event',
+        undefined,
+        { context: { page: { path: '/custom' } } }
+      )
+
+      expect(event).toEqual('Test Event')
+      expect(props).toEqual({})
+      expect(options).toEqual({ context: { page: { path: '/custom' } } })
     })
   })
 

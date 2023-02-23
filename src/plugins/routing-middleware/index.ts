@@ -1,28 +1,37 @@
 import * as tsub from '@segment/tsub'
-import { Rule } from '@segment/tsub/dist/store'
+import { Matcher, Rule } from '@segment/tsub/dist/store'
 import { DestinationMiddlewareFunction } from '../middleware'
 
-export type RoutingRule = Rule
+// TODO: update tsub definition
+type RoutingRuleMatcher = Matcher & {
+  config?: {
+    expr: string
+  }
+}
 
-export const tsubMiddleware = (
-  rules: RoutingRule[]
-): DestinationMiddlewareFunction => ({ payload, integration, next }): void => {
-  const store = new tsub.Store(rules)
-  const rulesToApply = store.getRulesByDestinationName(integration)
+export type RoutingRule = Rule & {
+  matchers: RoutingRuleMatcher[]
+}
 
-  rulesToApply.forEach((rule) => {
-    const { matchers, transformers } = rule
+export const tsubMiddleware =
+  (rules: RoutingRule[]): DestinationMiddlewareFunction =>
+  ({ payload, integration, next }): void => {
+    const store = new tsub.Store(rules)
+    const rulesToApply = store.getRulesByDestinationName(integration)
 
-    for (let i = 0; i < matchers.length; i++) {
-      if (tsub.matches(payload.obj, matchers[i])) {
-        payload.obj = tsub.transform(payload.obj, transformers[i])
+    rulesToApply.forEach((rule) => {
+      const { matchers, transformers } = rule
 
-        if (payload.obj === null) {
-          return next(null)
+      for (let i = 0; i < matchers.length; i++) {
+        if (tsub.matches(payload.obj, matchers[i])) {
+          payload.obj = tsub.transform(payload.obj, transformers[i])
+
+          if (payload.obj === null) {
+            return next(null)
+          }
         }
       }
-    }
-  })
+    })
 
-  next(payload)
-}
+    next(payload)
+  }

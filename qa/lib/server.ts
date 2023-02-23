@@ -4,12 +4,14 @@ import querystring from 'querystring'
 import handler from 'serve-handler'
 import { classic, next } from '../__fixtures__/snippets'
 
-export async function startLocalServer(): Promise<string> {
+export async function startLocalServer(
+  obfuscateBundles: boolean
+): Promise<string> {
   const srv = http.createServer((req, res) => {
     const query = querystring.parse(req.url!)
 
     if (req.url!.includes('next')) {
-      res.end(next(query.wk as string))
+      res.end(next(query.wk as string, obfuscateBundles))
       return
     }
 
@@ -42,11 +44,11 @@ export async function startLocalServer(): Promise<string> {
 }
 
 let url: string
-export const server = async () => {
+export const server = async (obfuscateBundles = false) => {
   if (url) {
     return url
   }
 
-  url = await startLocalServer().catch(() => url)
+  url = await startLocalServer(obfuscateBundles).catch(() => url)
   return url
 }
