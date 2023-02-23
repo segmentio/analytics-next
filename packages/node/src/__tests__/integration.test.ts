@@ -9,6 +9,7 @@ import { createTestAnalytics } from './test-helpers/create-test-analytics'
 
 const writeKey = 'foo'
 jest.setTimeout(10000)
+const timestamp = new Date()
 
 beforeEach(() => {
   fetcher.mockReturnValue(createSuccess())
@@ -74,11 +75,13 @@ describe('alias', () => {
     analytics.alias({
       userId: 'chris radek',
       previousId: 'chris',
+      timestamp: timestamp,
     })
     const ctx = await resolveCtx(analytics, 'alias')
 
     expect(ctx.event.userId).toEqual('chris radek')
     expect(ctx.event.previousId).toEqual('chris')
+    expect(ctx.event.timestamp).toEqual(timestamp)
   })
 })
 
@@ -90,12 +93,14 @@ describe('group', () => {
       traits: { coolKids: true },
       userId: 'foo',
       anonymousId: 'bar',
+      timestamp: timestamp,
     })
     const ctx = await resolveCtx(analytics, 'group')
     expect(ctx.event.groupId).toEqual('coolKids')
     expect(ctx.event.traits).toEqual({ coolKids: true })
     expect(ctx.event.userId).toEqual('foo')
     expect(ctx.event.anonymousId).toBe('bar')
+    expect(ctx.event.timestamp).toEqual(timestamp)
   })
 
   it('invocations are isolated', async () => {
@@ -129,6 +134,7 @@ describe('identify', () => {
   it('generates identify events', async () => {
     const analytics = createTestAnalytics()
     analytics.identify({
+      timestamp: timestamp,
       userId: 'user-id',
       traits: {
         name: 'Chris Radek',
@@ -139,6 +145,7 @@ describe('identify', () => {
     expect(ctx1.event.userId).toEqual('user-id')
     expect(ctx1.event.anonymousId).toBeUndefined()
     expect(ctx1.event.traits).toEqual({ name: 'Chris Radek' })
+    expect(ctx1.event.timestamp).toEqual(timestamp)
 
     analytics.identify({ userId: 'user-id', anonymousId: 'unknown' })
     const ctx2 = await resolveCtx(analytics, 'identify')
@@ -146,6 +153,7 @@ describe('identify', () => {
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.anonymousId).toEqual('unknown')
     expect(ctx2.event.traits).toEqual({})
+    expect(ctx2.event.timestamp).toEqual(expect.any(Date))
   })
 })
 
@@ -154,14 +162,19 @@ describe('page', () => {
     const analytics = createTestAnalytics()
     const category = 'Docs'
     const name = 'How to write a test'
-
-    analytics.page({ category, name, anonymousId: 'unknown' })
+    analytics.page({
+      category,
+      name,
+      anonymousId: 'unknown',
+      timestamp: timestamp,
+    })
     const ctx1 = await resolveCtx(analytics, 'page')
     expect(ctx1.event.type).toEqual('page')
     expect(ctx1.event.name).toEqual(name)
     expect(ctx1.event.anonymousId).toEqual('unknown')
     expect(ctx1.event.userId).toBeUndefined()
     expect(ctx1.event.properties).toEqual({ category })
+    expect(ctx1.event.timestamp).toEqual(timestamp)
 
     analytics.page({ name, properties: { title: 'wip' }, userId: 'user-id' })
 
@@ -172,6 +185,7 @@ describe('page', () => {
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.properties).toEqual({ title: 'wip' })
+    expect(ctx2.event.timestamp).toEqual(expect.any(Date))
 
     analytics.page({ properties: { title: 'invisible' }, userId: 'user-id' })
     const ctx3 = await resolveCtx(analytics, 'page')
@@ -193,6 +207,7 @@ describe('screen', () => {
       name,
       properties: { title: 'wip' },
       userId: 'user-id',
+      timestamp: timestamp,
     })
 
     const ctx1 = await resolveCtx(analytics, 'screen')
@@ -202,6 +217,7 @@ describe('screen', () => {
     expect(ctx1.event.anonymousId).toBeUndefined()
     expect(ctx1.event.userId).toEqual('user-id')
     expect(ctx1.event.properties).toEqual({ title: 'wip' })
+    expect(ctx1.event.timestamp).toEqual(timestamp)
 
     analytics.screen({
       properties: { title: 'invisible' },
@@ -215,6 +231,7 @@ describe('screen', () => {
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.properties).toEqual({ title: 'invisible' })
+    expect(ctx2.event.timestamp).toEqual(expect.any(Date))
   })
 })
 
@@ -227,6 +244,7 @@ describe('track', () => {
       event: eventName,
       anonymousId: 'unknown',
       userId: 'known',
+      timestamp: timestamp,
     })
 
     const ctx1 = await resolveCtx(analytics, 'track')
@@ -236,6 +254,7 @@ describe('track', () => {
     expect(ctx1.event.properties).toEqual({})
     expect(ctx1.event.anonymousId).toEqual('unknown')
     expect(ctx1.event.userId).toEqual('known')
+    expect(ctx1.event.timestamp).toEqual(timestamp)
 
     analytics.track({
       event: eventName,
@@ -249,6 +268,7 @@ describe('track', () => {
     expect(ctx2.event.properties).toEqual({ foo: 'bar' })
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('known')
+    expect(ctx2.event.timestamp).toEqual(expect.any(Date))
   })
 })
 
