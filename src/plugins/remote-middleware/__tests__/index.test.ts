@@ -24,13 +24,24 @@ describe('Remote Middleware', () => {
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     windowSpy.mockImplementation(
-      () => (jsd.window as unknown) as Window & typeof globalThis
+      () => jsd.window as unknown as Window & typeof globalThis
     )
   })
 
   it('ignores empty dictionaries', async () => {
     const md = await remoteMiddlewares(Context.system(), {
       integrations: {},
+    })
+
+    expect(md).toEqual([])
+  })
+
+  it('doesnt load entries if their value is false', async () => {
+    const md = await remoteMiddlewares(Context.system(), {
+      integrations: {},
+      enabledMiddleware: {
+        '@segment/analytics.js-middleware-braze-deduplicate': false,
+      },
     })
 
     expect(md).toEqual([])

@@ -1,8 +1,12 @@
-import { MiddlewareFunction, sourceMiddlewarePlugin } from '..'
-import { Analytics } from '../../../analytics'
+import {
+  DestinationMiddlewareFunction,
+  MiddlewareFunction,
+  sourceMiddlewarePlugin,
+} from '..'
+import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
-import { asPromise } from '../../../lib/as-promise'
+import { LegacyDestination } from '../../ajs-destination'
 
 describe(sourceMiddlewarePlugin, () => {
   const simpleMiddleware: MiddlewareFunction = ({ payload, next }) => {
@@ -71,7 +75,7 @@ describe(sourceMiddlewarePlugin, () => {
       expect(type).toEqual(type)
     })
 
-    it('cancels the event if `next` is not called', async (done) => {
+    it('cancels the event if `next` is not called', async () => {
       const hangs: MiddlewareFunction = () => {}
       const hangsXT = sourceMiddlewarePlugin(hangs, {})
 
@@ -86,7 +90,10 @@ describe(sourceMiddlewarePlugin, () => {
       expect(returnedCtx).toBe(toReturn)
 
       const toCancel = new Context({ type: 'track' })
-      await asPromise(hangsXT.track!(toCancel)).catch((err) => {
+      try {
+        await hangsXT.track!(toCancel)
+        throw new Error('should not reach here.')
+      } catch (err) {
         expect(err).toMatchInlineSnapshot(`
           ContextCancelation {
             "reason": "Middleware \`next\` function skipped",
@@ -94,8 +101,38 @@ describe(sourceMiddlewarePlugin, () => {
             "type": "middleware_cancellation",
           }
         `)
-        done()
+      }
+    })
+  })
+
+  describe('Destination Middleware', () => {
+    it('doesnt modify original context', async () => {
+      const changeProperties: DestinationMiddlewareFunction = ({
+        payload,
+        next,
+      }) => {
+        if (!payload.obj.properties) {
+          payload.obj.properties = {}
+        }
+        payload.obj.properties.hello = 'from the other side'
+        next(payload)
+      }
+
+      const dest = new LegacyDestination('Google Analytics', 'latest', {}, {})
+
+      const ctx = new Context({
+        type: 'track',
+        event: 'Foo',
+        properties: {
+          hello: 'from this side',
+        },
       })
+
+      dest.addMiddleware(changeProperties)
+
+      await dest.track(ctx)
+
+      expect(ctx.event.properties!.hello).toEqual('from this side')
     })
   })
 

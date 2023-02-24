@@ -1,4 +1,4 @@
-import { Options } from '@/core/events/interfaces'
+import { JSONObject, Options } from '../core/events/interfaces'
 import { LegacySettings } from '../browser'
 
 /**
@@ -13,7 +13,7 @@ import { LegacySettings } from '../browser'
 export function mergedOptions(
   settings: LegacySettings,
   options: Options
-): Record<string, object> {
+): Record<string, JSONObject> {
   const optionOverrides = Object.entries(options.integrations ?? {}).reduce(
     (overrides, [integration, options]) => {
       if (typeof options === 'object') {
@@ -28,7 +28,7 @@ export function mergedOptions(
         [integration]: {},
       }
     },
-    {} as Record<string, object>
+    {} as Record<string, JSONObject>
   )
 
   return Object.entries(settings.integrations).reduce(
@@ -41,6 +41,6 @@ export function mergedOptions(
         },
       }
     },
-    {} as Record<string, object>
+    {} as Record<string, JSONObject>
   )
 }

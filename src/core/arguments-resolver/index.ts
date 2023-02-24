@@ -5,17 +5,27 @@ import {
   isNumber,
 } from '../../plugins/validation'
 import { Context } from '../context'
-import { Options, SegmentEvent } from '../events'
+import {
+  Callback,
+  JSONObject,
+  Options,
+  EventProperties,
+  SegmentEvent,
+  Traits,
+  GroupTraits,
+  UserTraits,
+} from '../events'
 import { ID, User } from '../user'
 
-export type Callback = (ctx: Context | undefined) => Promise<unknown> | unknown
-
+/**
+ * Helper for the track method
+ */
 export function resolveArguments(
   eventName: string | SegmentEvent,
-  properties?: object | Callback,
+  properties?: EventProperties | Callback,
   options?: Options | Callback,
   callback?: Callback
-): [string, object, Options, Callback | undefined] {
+): [string, EventProperties | Callback, Options, Callback | undefined] {
   const args = [eventName, properties, options, callback]
 
   const name = isPlainObject(eventName) ? eventName.event : eventName
@@ -29,8 +39,8 @@ export function resolveArguments(
     ? properties
     : {}
 
-  let opts = {}
-  if (isPlainObject(properties) && !isFunction(options)) {
+  let opts: Options = {}
+  if (!isFunction(options)) {
     opts = options ?? {}
   }
 
@@ -42,13 +52,22 @@ export function resolveArguments(
   return [name, data, opts, cb]
 }
 
+/**
+ * Helper for page, screen methods
+ */
 export function resolvePageArguments(
   category?: string | object,
   name?: string | object | Callback,
-  properties?: object | Options | Callback | null,
+  properties?: EventProperties | Options | Callback | null,
   options?: Options | Callback,
   callback?: Callback
-): [string | null, string | null, object, Options, Callback | undefined] {
+): [
+  string | null,
+  string | null,
+  EventProperties,
+  Options,
+  Callback | undefined
+] {
   let resolvedCategory: string | undefined | null = null
   let resolvedName: string | undefined | null = null
   const args = [category, name, properties, options, callback]
@@ -71,10 +90,10 @@ export function resolvePageArguments(
       return isPlainObject(obj)
     }
     return isPlainObject(obj) || obj === null
-  }) as Array<object | null>
+  }) as Array<JSONObject | null>
 
-  const resolvedProperties = objects[0] ?? {}
-  const resolvedOptions = objects[1] ?? {}
+  const resolvedProperties = (objects[0] ?? {}) as EventProperties
+  const resolvedOptions = (objects[1] ?? {}) as Options
 
   return [
     resolvedCategory,
@@ -85,8 +104,13 @@ export function resolvePageArguments(
   ]
 }
 
-export const resolveUserArguments = (user: User): ResolveUser => {
-  return (...args): ReturnType<ResolveUser> => {
+/**
+ * Helper for group, identify methods
+ */
+export const resolveUserArguments = <T extends Traits, U extends User>(
+  user: U
+): ResolveUser<T> => {
+  return (...args): ReturnType<ResolveUser<T>> => {
     let id: string | ID | null = null
     id = args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
 
@@ -95,17 +119,20 @@ export const resolveUserArguments = (user: User): ResolveUser => {
         return isPlainObject(obj)
       }
       return isPlainObject(obj) || obj === null
-    }) as Array<object | null>
+    }) as Array<Traits | null>
 
-    const data = objects[0] ?? {}
-    const opts = objects[1] ?? {}
+    const traits = (objects[0] ?? {}) as T
+    const opts = (objects[1] ?? {}) as Options
 
     const resolvedCallback = args.find(isFunction) as Callback | undefined
 
-    return [id, data, opts, resolvedCallback]
+    return [id, traits, opts, resolvedCallback]
   }
 }
 
+/**
+ * Helper for alias method
+ */
 export function resolveAliasArguments(
   to: string | number,
   from?: string | number | Options,
@@ -123,14 +150,15 @@ export function resolveAliasArguments(
   return [aliasTo, aliasFrom, opts, resolvedCallback]
 }
 
-type ResolveUser = (
+type ResolveUser<T extends Traits> = (
   id?: ID | object,
-  traits?: object | Callback | null,
+  traits?: T | Callback | null,
   options?: Options | Callback,
   callback?: Callback
-) => [ID, object, Options, Callback | undefined]
+) => [ID, T, Options, Callback | undefined]
 
-export type UserParams = Parameters<ResolveUser>
+export type IdentifyParams = Parameters<ResolveUser<UserTraits>>
+export type GroupParams = Parameters<ResolveUser<GroupTraits>>
 export type EventParams = Parameters<typeof resolveArguments>
 export type PageParams = Parameters<typeof resolvePageArguments>
 export type AliasParams = Parameters<typeof resolveAliasArguments>
