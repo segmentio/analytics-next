@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.51.1
+
+### Patch Changes
+
+- [#800](https://github.com/segmentio/analytics-next/pull/800) [`fe98d5e`](https://github.com/segmentio/analytics-next/commit/fe98d5ee2229f456830e677df361d2d5cd16e545) Thanks [@silesky](https://github.com/silesky)! - Fix staging-only bug where integrations URL would not respect CDN URL overrides
+
 ## 1.51.0
 
 ### Minor Changes
