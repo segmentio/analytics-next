@@ -1,25 +1,9 @@
-module.exports = {
-  preset: 'ts-jest',
-  modulePathIgnorePatterns: [
-    '<rootDir>/dist/',
-    '<rootDir>/e2e-tests',
-    '<rootDir>/qa',
-    '<rootDir>/src/__tests__/test-writekeys',
-    '<rootDir>/src/__tests__/stats-writekey',
-  ],
-  clearMocks: true,
-  testEnvironmentOptions: {
-    resources: 'usable',
-  },
-  moduleNameMapper: {
-    '@/(.+)': '<rootdir>/../../src/$1',
-  },
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
-  },
-  reporters: ['default'],
+const { createJestTSConfig } = require('@internal/config')
+
+module.exports = createJestTSConfig({
+  modulePathIgnorePatterns: ['<rootDir>/e2e-tests', '<rootDir>/qa'],
+  setupFilesAfterEnv: ['./jest.setup.js'],
+  testEnvironment: 'jsdom',
   coverageThreshold: {
     global: {
       branches: 80.91,
@@ -28,4 +12,4 @@ module.exports = {
       statements: 87.25,
     },
   },
-}
+})

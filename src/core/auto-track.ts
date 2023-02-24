@@ -1,15 +1,6 @@
-import { Analytics } from '../analytics'
-import { SegmentEvent } from '../core/events'
+import { Analytics } from './analytics'
+import { EventProperties, Options } from './events'
 import { pTimeout } from './callback'
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jQuery: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Zepto: any
-  }
-}
 
 // Check if a user is opening the link in a new tab
 function userNewTab(event: Event): boolean {
@@ -46,7 +37,8 @@ export function link(
   this: Analytics,
   links: Element | Array<Element> | JQueryShim | null,
   event: string | Function,
-  properties?: SegmentEvent['properties'] | Function
+  properties?: EventProperties | Function,
+  options?: Options
 ): Analytics {
   let elements: Array<Element> = []
   // always arrays, handles jquery
@@ -75,7 +67,7 @@ export function link(
           el.getElementsByTagName('a')[0]?.getAttribute('href')
 
         const trackEvent = pTimeout(
-          this.track(ev, props),
+          this.track(ev, props, options ?? {}),
           this.settings.timeout ?? 500
         )
 
@@ -109,7 +101,8 @@ export function form(
   this: Analytics,
   forms: HTMLFormElement | Array<HTMLFormElement> | null,
   event: string | Function,
-  properties?: SegmentEvent['properties'] | Function
+  properties?: EventProperties | Function,
+  options?: Options
 ): Analytics {
   // always arrays, handles jquery
   if (!forms) return this
@@ -129,7 +122,7 @@ export function form(
       const props = properties instanceof Function ? properties(el) : properties
 
       const trackEvent = pTimeout(
-        this.track(ev, props),
+        this.track(ev, props, options ?? {}),
         this.settings.timeout ?? 500
       )
 
@@ -143,7 +136,8 @@ export function form(
 
     // Support the events happening through jQuery or Zepto instead of through
     // the normal DOM API, because `el.submit` doesn't bubble up events...
-    const $ = window.jQuery || window.Zepto
+
+    const $ = (window as any).jQuery || (window as any).Zepto
     if ($) {
       $(el).submit(handler)
     } else {

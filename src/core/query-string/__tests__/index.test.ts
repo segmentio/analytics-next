@@ -1,5 +1,5 @@
 import { queryString } from '..'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../analytics'
 
 let analytics: Analytics
 
@@ -16,6 +16,13 @@ describe('queryString', () => {
         const spy = jest.spyOn(analytics, 'identify')
         await queryString(analytics, '?ajs_uid=1234')
         expect(spy).toHaveBeenCalledWith('1234', {})
+        spy.mockRestore()
+      })
+
+      it('accepts encoded emails as `ajs_uid` params', async () => {
+        const spy = jest.spyOn(analytics, 'identify')
+        await queryString(analytics, '?ajs_uid=user%40example.org')
+        expect(spy).toHaveBeenCalledWith('user@example.org', {})
         spy.mockRestore()
       })
 
@@ -109,6 +116,33 @@ describe('queryString', () => {
         await queryString(analytics, '?ajs_aid=imbatman&ajs_aid=bruce')
         expect(spy).toHaveBeenCalledWith('bruce')
         spy.mockRestore()
+      })
+    })
+
+    describe('setting anonymous id when making track and identify calls', () => {
+      it('updates the anonymous ids before track calls are made', async () => {
+        const dispatchSpy = jest.spyOn(analytics as any, '_dispatch')
+        await queryString(analytics, '?ajs_event=event&ajs_aid=ariel')
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            anonymousId: 'ariel',
+            event: 'event',
+          }),
+          undefined
+        )
+        dispatchSpy.mockRestore()
+      })
+      it('updates the anonymous ids before identify calls are made', async () => {
+        const dispatchSpy = jest.spyOn(analytics as any, '_dispatch')
+        await queryString(analytics, '?ajs_uid=1234&ajs_aid=ariel')
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            anonymousId: 'ariel',
+            userId: '1234',
+          }),
+          undefined
+        )
+        dispatchSpy.mockRestore()
       })
     })
   })

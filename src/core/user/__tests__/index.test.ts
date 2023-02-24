@@ -1,4 +1,12 @@
-import { User, LocalStorage, Cookie, Group } from '..'
+import {
+  User,
+  LocalStorage,
+  Cookie,
+  Group,
+  UniversalStorage,
+  StoreType,
+  getAvailableStorageOptions,
+} from '..'
 import jar from 'js-cookie'
 import assert from 'assert'
 
@@ -11,16 +19,19 @@ function clear(): void {
   localStorage.clear()
 }
 
+let store: LocalStorage
+beforeEach(function () {
+  store = new LocalStorage()
+  clear()
+})
+
+jest.spyOn(console, 'warn').mockImplementation(() => {}) // silence console spam.
+
 describe('user', () => {
   const cookieKey = User.defaults.cookie.key
   const localStorageKey = User.defaults.localStorage.key
-  const store = new LocalStorage()
 
   describe('()', () => {
-    beforeEach(() => {
-      clear()
-    })
-
     it('should pick the old "_sio" anonymousId', () => {
       jar.set('_sio', 'anonymous-id----user-id')
       const user = new User()
@@ -33,9 +44,21 @@ describe('user', () => {
       assert(new User().anonymousId() === 'new-anonymous-id')
     })
 
-    it('should create anonymous id if missing', () => {
+    it('should create anonymous id if missing (persist: default (true))', () => {
       const user = new User()
       assert(user.anonymousId()?.length === 36)
+      expect(jar.get('ajs_anonymous_id')?.length).toBe(36)
+      expect(localStorage.getItem('ajs_anonymous_id')?.length).toBe(38)
+    })
+
+    it('should create anonymous id if missing (persist: false)', () => {
+      const setCookieSpy = jest.spyOn(jar, 'set')
+
+      const user = new User({ persist: false })
+      assert(user.anonymousId()?.length === 36)
+      expect(jar.get('ajs_anonymous_id')).toBeUndefined()
+      expect(localStorage.getItem('ajs_anonymous_id')).toBeNull()
+      expect(setCookieSpy.mock.calls.length).toBe(0)
     })
 
     it('should not overwrite anonymous id', () => {
@@ -49,7 +72,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     describe('when cookies are disabled', () => {
@@ -169,6 +191,67 @@ describe('user', () => {
       })
     })
 
+    describe('when persist is disabled', () => {
+      let setCookieSpy: jest.SpyInstance
+      beforeEach(() => {
+        setCookieSpy = jest.spyOn(jar, 'set')
+        user = new User({ persist: false })
+        clear()
+      })
+
+      it('should get an id from memory', () => {
+        user.id('id')
+        assert(user.id() === 'id')
+
+        expect(jar.get(cookieKey)).toBeFalsy()
+        expect(store.get(cookieKey)).toBeFalsy()
+      })
+
+      it('should be null by default', () => {
+        assert(user.id() === null)
+      })
+
+      it('should not reset anonymousId if the user didnt have previous id', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id('foo')
+        user.id('foo')
+
+        assert(user.anonymousId() === prev)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
+      })
+
+      it('should reset anonymousId if the user id changed', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id('baz')
+        assert(user.anonymousId() !== prev)
+        assert(user.anonymousId()?.length === 36)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
+      })
+
+      it('should not reset anonymousId if the user id changed to null', () => {
+        const prev = user.anonymousId()
+        user.id('foo')
+        user.id(null)
+        assert(user.anonymousId() === prev)
+        assert(user.anonymousId()?.length === 36)
+        expect(setCookieSpy.mock.calls.length).toBe(0)
+      })
+    })
+
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be null', () => {
+        expect(user.id()).toBeNull()
+        expect(user.id('foo')).toBeNull()
+        expect(user.id()).toBeNull()
+      })
+    })
+
     describe('when cookies are enabled', () => {
       it('should get an id from the cookie', () => {
         jar.set(cookieKey, 'id')
@@ -221,7 +304,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     describe('when cookies are disabled', () => {
@@ -229,7 +311,6 @@ describe('user', () => {
         jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
 
         user = new User()
-        clear()
       })
 
       it('should get an id from the store', () => {
@@ -259,7 +340,6 @@ describe('user', () => {
         jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
 
         user = new User()
-        clear()
       })
 
       it('should get an id from memory', () => {
@@ -352,6 +432,18 @@ describe('user', () => {
         assert.equal(store.get('ajs_anonymous_id'), null)
       })
     })
+
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be null', () => {
+        expect(user.anonymousId()).toBeNull()
+        expect(user.anonymousId('foo')).toBeNull()
+        expect(user.anonymousId()).toBeNull()
+      })
+    })
   })
 
   describe('#traits', () => {
@@ -359,7 +451,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should get traits', () => {
@@ -399,6 +490,18 @@ describe('user', () => {
       user = new User()
       expect(user.traits()).toEqual({ trait: true })
     })
+
+    describe('when disabled', () => {
+      beforeEach(() => {
+        user = new User({ disable: true })
+      })
+
+      it('should always be undefined', () => {
+        expect(user.traits()).toBeUndefined()
+        expect(user.traits({})).toBeUndefined()
+        expect(user.traits()).toBeUndefined()
+      })
+    })
   })
 
   describe('#options', () => {
@@ -416,6 +519,22 @@ describe('user', () => {
       expect(cookie['options'].domain).toBe('foo')
       expect(cookie['options'].secure).toBe(true)
       expect(cookie['options'].path).toBe('/test')
+      expect(cookie['options'].secure).toBe(true)
+    })
+
+    it('should pass options when creating cookie', () => {
+      const jarSpy = jest.spyOn(jar, 'set')
+      const cookie = new Cookie({ domain: 'foo', secure: true, path: '/test' })
+
+      cookie.set('foo', 'bar')
+
+      expect(jarSpy).toHaveBeenCalledWith('foo', 'bar', {
+        domain: 'foo',
+        expires: 365,
+        path: '/test',
+        sameSite: 'Lax',
+        secure: true,
+      })
     })
   })
 
@@ -424,7 +543,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should save an id to a cookie', () => {
@@ -491,7 +609,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should reset an id and traits', () => {
@@ -510,7 +627,7 @@ describe('user', () => {
       user.save()
       user.logout()
 
-      expect(jar.getJSON(cookieKey)).toBeFalsy()
+      expect(jar.get(cookieKey)).toBeFalsy()
     })
 
     it('should clear id in local storage', () => {
@@ -534,7 +651,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should save an id', () => {
@@ -555,7 +671,7 @@ describe('user', () => {
       expect(user.id()).toEqual('id')
       expect(user.traits()).toEqual({ trait: true })
 
-      expect(jar.getJSON(cookieKey)).toEqual('id')
+      expect(jar.get(cookieKey)).toEqual('id')
       expect(store.get(localStorageKey)).toEqual({ trait: true })
     })
 
@@ -591,7 +707,6 @@ describe('user', () => {
 
     beforeEach(() => {
       user = new User()
-      clear()
     })
 
     it('should load an empty user', () => {
@@ -614,10 +729,13 @@ describe('user', () => {
     })
 
     it('should load from an old cookie', () => {
-      jar.set(User.defaults.cookie.oldKey, {
-        id: 'old',
-        traits: { trait: true },
-      })
+      jar.set(
+        User.defaults.cookie.oldKey,
+        JSON.stringify({
+          id: 'old',
+          traits: { trait: true },
+        })
+      )
 
       user.load()
       expect(user.id()).toEqual('old')
@@ -626,22 +744,28 @@ describe('user', () => {
 
     it('load should preserve the original User cookie options', () => {
       user = new User(undefined, {
-        domain: 'foo',
-      }).load()
-      // @ts-ignore - we are testing the private properties here
-      expect(user.cookies['options'].domain).toEqual('foo')
+        domain: 'foo.com',
+      })
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      user.load().anonymousId('anon-id')
+
+      expect(setCookieSpy).toHaveBeenLastCalledWith(
+        'ajs_anonymous_id',
+        'anon-id',
+        {
+          domain: 'foo.com',
+          expires: 365,
+          path: '/',
+          sameSite: 'Lax',
+          secure: undefined,
+        }
+      )
     })
   })
 })
 
 describe('group', () => {
-  const store = new LocalStorage()
-
-  beforeEach(() => {
-    clear()
-  })
-
-  it('should net reset id and traits', () => {
+  it('should not reset id and traits', () => {
     let group = new Group()
     group.id('gid')
     group.traits({ trait: true })
@@ -660,6 +784,18 @@ describe('group', () => {
     assert.equal(jar.get('ajs_group_id'), null)
     assert.equal(group.id(), 'gid')
     assert.equal(store.get('ajs_group_id'), 'gid')
+  })
+
+  it('id() should not persist when persist disabled', () => {
+    const setCookieSpy = jest.spyOn(jar, 'set')
+
+    const group = new Group({ persist: false })
+    group.id('gid')
+
+    expect(group.id()).toBe('gid')
+    expect(jar.get('ajs_group_id')).toBeFalsy()
+    expect(store.get('ajs_group_id')).toBeFalsy()
+    expect(setCookieSpy.mock.calls.length).toBe(0)
   })
 
   it('behaves the same as user', () => {
@@ -701,6 +837,25 @@ describe('group', () => {
     })
   })
 
+  describe('when disabled', () => {
+    let group: Group
+    beforeEach(() => {
+      group = new Group({ disable: true })
+    })
+
+    it('id should always be null', () => {
+      expect(group.id()).toBeNull()
+      expect(group.id('foo')).toBeNull()
+      expect(group.id()).toBeNull()
+    })
+
+    it('traits should always be undefined', () => {
+      expect(group.traits()).toBeUndefined()
+      expect(group.traits({})).toBeUndefined()
+      expect(group.traits()).toBeUndefined()
+    })
+  })
+
   describe('#options', () => {
     it('should set options with defaults', function () {
       const group = new Group()
@@ -718,19 +873,36 @@ describe('group', () => {
 })
 
 describe('store', function () {
-  const store = new LocalStorage()
-  beforeEach(function () {
-    clear()
-  })
-
   describe('#get', function () {
-    it('should not not get an empty record', function () {
-      expect(store.get('abc') === undefined)
+    it('should return null if localStorage throws an error (or does not exist)', function () {
+      const getItemSpy = jest
+        .spyOn(global.Storage.prototype, 'getItem')
+        .mockImplementationOnce(() => {
+          throw new Error('getItem fail.')
+        })
+      store.set('foo', 'some value')
+      expect(store.get('foo')).toBeNull()
+      expect(getItemSpy).toBeCalledTimes(1)
+    })
+
+    it('should not get an empty record', function () {
+      expect(store.get('abc')).toBe(null)
     })
 
     it('should get an existing record', function () {
       store.set('x', { a: 'b' })
+      store.set('a', 'hello world')
+      store.set('b', '')
+      store.set('c', false)
+      store.set('d', null)
+      store.set('e', undefined)
+
       expect(store.get('x')).toStrictEqual({ a: 'b' })
+      expect(store.get('a')).toBe('hello world')
+      expect(store.get('b')).toBe('')
+      expect(store.get('c')).toBe(false)
+      expect(store.get('d')).toBe(null)
+      expect(store.get('e')).toBe('undefined')
     })
   })
 
@@ -753,16 +925,12 @@ describe('store', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
       store.remove('x')
-      expect(store.get('x') === undefined)
+      expect(store.get('x')).toBe(null)
     })
   })
 })
 
 describe('Custom cookie params', () => {
-  beforeEach(() => {
-    clear()
-  })
-
   it('allows for overriding keys', () => {
     const customUser = new User(
       {},
@@ -777,5 +945,159 @@ describe('Custom cookie params', () => {
     expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id"`)
     expect(customUser.id()).toBe('some_id')
     expect(customUser.traits()).toEqual({ trait: true })
+  })
+})
+
+describe('universal storage', function () {
+  const defaultTargets = ['cookie', 'localStorage', 'memory'] as StoreType[]
+  const getFromLS = (key: string) => JSON.parse(localStorage.getItem(key) ?? '')
+  beforeEach(function () {
+    clear()
+  })
+
+  describe('#get', function () {
+    it('picks data from cookies first', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage(
+        defaultTargets,
+        getAvailableStorageOptions()
+      )
+      expect(us.get('ajs_test_key')).toEqual('🍪')
+    })
+
+    it('picks data from localStorage if there is no cookie target', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage(
+        ['localStorage', 'memory'],
+        getAvailableStorageOptions()
+      )
+      expect(us.get('ajs_test_key')).toEqual('💾')
+    })
+
+    it('get data from memory', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage(['memory'], getAvailableStorageOptions())
+      expect(us.get('ajs_test_key')).toBeNull()
+    })
+
+    it('order of default targets matters!', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage(
+        ['cookie', 'localStorage', 'memory'],
+        getAvailableStorageOptions()
+      )
+      expect(us.get('ajs_test_key')).toEqual('🍪')
+    })
+
+    it('returns null if there are no storage targets', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage([], getAvailableStorageOptions())
+      expect(us.get('ajs_test_key')).toBeNull()
+    })
+
+    it('can override the default targets', function () {
+      jar.set('ajs_test_key', '🍪')
+      localStorage.setItem('ajs_test_key', '💾')
+      const us = new UniversalStorage(
+        defaultTargets,
+        getAvailableStorageOptions()
+      )
+      expect(us.get('ajs_test_key', ['localStorage'])).toEqual('💾')
+      expect(us.get('ajs_test_key', ['localStorage', 'memory'])).toEqual('💾')
+      expect(us.get('ajs_test_key', ['cookie', 'memory'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['cookie', 'localStorage'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['cookie'])).toEqual('🍪')
+      expect(us.get('ajs_test_key', ['memory'])).toEqual(null)
+    })
+  })
+
+  describe('#set', function () {
+    it('set the data in all storage types', function () {
+      const us = new UniversalStorage<{ ajs_test_key: string }>(
+        defaultTargets,
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+    })
+
+    it('skip saving data to localStorage', function () {
+      const us = new UniversalStorage(
+        ['cookie', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+    })
+
+    it('skip saving data to cookie', function () {
+      const us = new UniversalStorage(
+        ['localStorage', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+    })
+
+    it('can save and retrieve from memory when there is no other storage', function () {
+      const us = new UniversalStorage(['memory'], getAvailableStorageOptions())
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
+    it('does not write to cookies when cookies are not available', function () {
+      jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+      const us = new UniversalStorage(
+        ['localStorage', 'cookie', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
+    it('does not write to LS when LS is not available', function () {
+      jest.spyOn(LocalStorage, 'available').mockReturnValueOnce(false)
+      const us = new UniversalStorage(
+        ['localStorage', 'cookie', 'memory'],
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰')
+      expect(jar.get('ajs_test_key')).toEqual('💰')
+      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
+
+    it('can override the default targets', function () {
+      const us = new UniversalStorage(
+        defaultTargets,
+        getAvailableStorageOptions()
+      )
+      us.set('ajs_test_key', '💰', ['localStorage'])
+      expect(jar.get('ajs_test_key')).toEqual(undefined)
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+      expect(us.get('ajs_test_key')).toEqual('💰')
+
+      us.set('ajs_test_key_2', '🦴', ['cookie'])
+      expect(jar.get('ajs_test_key_2')).toEqual('🦴')
+      expect(localStorage.getItem('ajs_test_key_2')).toEqual(null)
+      expect(us.get('ajs_test_key_2')).toEqual('🦴')
+
+      us.set('ajs_test_key_3', '👻', [])
+      expect(jar.get('ajs_test_key_3')).toEqual(undefined)
+      expect(localStorage.getItem('ajs_test_key_3')).toEqual(null)
+      expect(us.get('ajs_test_key_3')).toEqual(null)
+    })
   })
 })

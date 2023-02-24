@@ -154,10 +154,9 @@ export default function Home(): React.ReactElement {
     }
 
     const ctx = await analytics.page('Pricing', {
-      title: 'Segment Pricing',
-      url: 'https://segment.com/pricing',
+      title: 'June Pricing',
+      url: 'https://june.so/pricing',
       path: '/pricing',
-      referrer: 'https://segment.com/warehouses'
     });
 
     setCtx(ctx)

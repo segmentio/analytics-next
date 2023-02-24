@@ -1,19 +1,31 @@
 import { Facade } from '@segment/facade'
-import { Analytics } from '../../analytics'
+import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
-import batch from './batched-dispatcher'
-import standard from './fetch-dispatcher'
+import batch, { BatchingDispatchConfig } from './batched-dispatcher'
+import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 
-export interface SegmentioSettings {
+type DeliveryStrategy =
+  | {
+      strategy?: 'standard'
+      config?: StandardDispatcherConfig
+    }
+  | {
+      strategy?: 'batching'
+      config?: BatchingDispatchConfig
+    }
+
+export type SegmentioSettings = {
   apiKey: string
   apiHost?: string
+  protocol?: 'http' | 'https'
 
   addBundledMetadata?: boolean
   unbundledIntegrations?: string[]
@@ -22,13 +34,7 @@ export interface SegmentioSettings {
 
   maybeBundledConfigIds?: Record<string, string[]>
 
-  deliveryStrategy?: {
-    strategy?: 'standard' | 'batching'
-    config?: {
-      size?: number
-      timeout?: number
-    }
-  }
+  deliveryStrategy?: DeliveryStrategy
 }
 
 type JSON = ReturnType<Facade['json']>
@@ -48,21 +54,32 @@ export function segmentio(
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Plugin {
-  const buffer = new PersistedPriorityQueue(
-    analytics.queue.queue.maxAttempts,
-    `dest-Segment.io`
-  )
+  // Attach `pagehide` before buffer is created so that inflight events are added
+  // to the buffer before the buffer persists events in its own `pagehide` handler.
+  window.addEventListener('pagehide', () => {
+    buffer.push(...Array.from(inflightEvents))
+    inflightEvents.clear()
+  })
+
+  const buffer = analytics.options.disableClientPersistence
+    ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
+    : new PersistedPriorityQueue(
+        analytics.queue.queue.maxAttempts,
+        `dest-june.so`
+      )
+
+  const inflightEvents = new Set<Context>()
   const flushing = false
 
   const apiHost = settings?.apiHost ?? 'api.june.so/sdk'
-  const remote = apiHost.includes('localhost')
-    ? `http://${apiHost}`
-    : `https://${apiHost}`
+  const protocol = settings?.protocol ?? 'https'
+  const remote = `${protocol}://${apiHost}`
 
+  const deliveryStrategy = settings?.deliveryStrategy
   const client =
-    settings?.deliveryStrategy?.strategy === 'batching'
-      ? batch(apiHost, settings?.deliveryStrategy?.config)
-      : standard()
+    deliveryStrategy?.strategy === 'batching'
+      ? batch(apiHost, deliveryStrategy.config)
+      : standard(deliveryStrategy?.config as StandardDispatcherConfig)
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {
@@ -72,7 +89,9 @@ export function segmentio(
       return ctx
     }
 
-    const path = ctx.event.type //.charAt(0)
+    inflightEvents.add(ctx)
+
+    const path = ctx.event.type
     let json = toFacade(ctx.event).json()
 
     if (ctx.event.type === 'track') {
@@ -86,21 +105,23 @@ export function segmentio(
     return client
       .dispatch(
         `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations)
+        // @ts-ignore
+        {...normalize(analytics, json, settings, integrations), writeKey: analytics.settings.writeKey }
       )
       .then(() => ctx)
-      .catch((err) => {
-        if (err.type === 'error' || err.message === 'Failed to fetch') {
-          buffer.push(ctx)
-          // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
-        }
+      .catch(() => {
+        buffer.pushWithBackoff(ctx)
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
         return ctx
+      })
+      .finally(() => {
+        inflightEvents.delete(ctx)
       })
   }
 
   const segmentio: Plugin = {
-    name: 'Segment.io',
+    name: 'june.so',
     type: 'after',
     version: '0.1.0',
     isLoaded: (): boolean => true,
@@ -110,6 +131,12 @@ export function segmentio(
     page: send,
     alias: send,
     group: send,
+  }
+
+  // Buffer may already have items if they were previously stored in localStorage.
+  // Start flushing them immediately.
+  if (buffer.todo) {
+    scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
   }
 
   return segmentio

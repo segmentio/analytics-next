@@ -1,10 +1,9 @@
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
-import { attempt } from '../../core/queue/delivery'
+import { attempt } from '@segment/analytics-core'
 import { pWhile } from '../../lib/p-while'
 import { PriorityQueue } from '../../lib/priority-queue'
-import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 
 async function flushQueue(
   xt: Plugin,
@@ -37,7 +36,7 @@ async function flushQueue(
 
 export function scheduleFlush(
   flushing: boolean,
-  buffer: PersistedPriorityQueue,
+  buffer: PriorityQueue<Context>,
   xt: Plugin,
   scheduleFlush: Function
 ): void {

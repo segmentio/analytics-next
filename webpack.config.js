@@ -2,12 +2,13 @@ const path = require('path')
 const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
-  .BundleAnalyzerPlugin
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const ASSET_PATH = isProd
-  ? 'https://cdn.segment.com/analytics-next/bundles/'
+  ? 'https://cdn.june.so/analytics-next/bundles/'
   : '/dist/umd/'
 
 const plugins = [
@@ -15,25 +16,33 @@ const plugins = [
   new webpack.EnvironmentPlugin({
     ASSET_PATH,
   }),
+  new CircularDependencyPlugin({
+    failOnError: true,
+  }),
 ]
 
 if (process.env.ANALYZE) {
   plugins.push(new BundleAnalyzerPlugin())
 }
 
+/** @type { import('webpack').Configuration } */
 const config = {
+  stats: process.env.WATCH === 'true' ? 'errors-warnings' : 'normal',
+  node: {
+    global: false, // do not polyfill global object, we can use getGlobal function if needed.
+  },
   mode: process.env.NODE_ENV || 'development',
   devtool: 'source-map',
   entry: {
     index: {
-      import: path.resolve(__dirname, 'src/browser-umd.ts'),
+      import: path.resolve(__dirname, 'src/browser/browser-umd.ts'),
       library: {
         name: 'AnalyticsNext',
         type: 'umd',
       },
     },
     standalone: {
-      import: path.resolve(__dirname, 'src/standalone.ts'),
+      import: path.resolve(__dirname, 'src/browser/standalone.ts'),
       library: {
         name: 'AnalyticsNext',
         type: 'window',
@@ -55,6 +64,7 @@ const config = {
           {
             loader: 'ts-loader',
             options: {
+              configFile: 'tsconfig.build.json',
               transpileOnly: true,
             },
           },

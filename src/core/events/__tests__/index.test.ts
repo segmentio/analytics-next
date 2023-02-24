@@ -101,6 +101,11 @@ describe('Event Factory', () => {
       expect(track.messageId).toContain('ajs-next')
     })
 
+    test('adds a timestamp', () => {
+      const track = factory.track('Order Completed', shoes)
+      expect(track.timestamp).toBeInstanceOf(Date)
+    })
+
     test('adds a random message id even when random is mocked', () => {
       jest.useFakeTimers()
       jest.spyOn(uuid, 'v4').mockImplementation(() => 'abc-123')
@@ -149,6 +154,14 @@ describe('Event Factory', () => {
         opt1: true,
       })
       expect(track.context).toEqual({ opt1: true })
+    })
+
+    test('sets context correctly if property arg is undefined', () => {
+      const track = factory.track('Order Completed', undefined, {
+        context: { page: { path: '/custom' } },
+      })
+
+      expect(track.context).toEqual({ page: { path: '/custom' } })
     })
 
     test('sets integrations', () => {
@@ -317,6 +330,48 @@ describe('Event Factory', () => {
         innerProp: '👻',
       })
     })
+
+    describe.skip('anonymousId', () => {
+      // TODO: the code should be fixed so that these tests can pass -- this eventFactory does not seem to handle these edge cases well.
+      // When an event is dispatched, there are four places anonymousId can live: event.anonymousId, event.options.anonymousId, event.context.anonymousId, and the user object / localStorage.
+      // It would be good to have a source of truth
+      test('accepts an anonymousId', () => {
+        const track = factory.track('Order Completed', shoes, {
+          anonymousId: 'foo',
+        })
+        expect(track.anonymousId).toBe('foo')
+        expect(track.context?.anonymousId).toBe('foo')
+      })
+
+      test('custom passed anonymousId should set global user instance', () => {
+        const id = Math.random().toString()
+        factory.track('Order Completed', shoes, {
+          anonymousId: id,
+        })
+        expect(user.anonymousId()).toBe(id)
+      })
+
+      test('if two different anonymousIds are passed, should use one on the event', () => {
+        const track = factory.track('Order Completed', shoes, {
+          anonymousId: 'bar',
+          context: {
+            anonymousId: 'foo',
+          },
+        })
+        expect(track.context?.anonymousId).toBe('bar')
+        expect(track.anonymousId).toBe('bar')
+      })
+
+      test('should set an anonymousId passed from the context on the event', () => {
+        const track = factory.track('Order Completed', shoes, {
+          context: {
+            anonymousId: 'foo',
+          },
+        })
+        expect(track.context?.anonymousId).toBe('foo')
+        expect(track.anonymousId).toBe('foo')
+      })
+    })
   })
 
   describe('normalize', function () {
@@ -331,6 +386,9 @@ describe('Event Factory', () => {
 
         expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
         delete normalized.messageId
+
+        expect(normalized.timestamp).toBeInstanceOf(Date)
+        delete normalized.timestamp
 
         expect(normalized).toStrictEqual({
           integrations: { Segment: true },

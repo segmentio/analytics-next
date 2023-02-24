@@ -3,15 +3,18 @@ import { reportMetrics } from '../lib/benchmark'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { server } from '../lib/server'
-
 jest.setTimeout(100000)
 
+if (!process.env.QA_SAMPLES) {
+  throw new Error('no process.env.QA_SAMPLES')
+}
 const samples = JSON.parse(process.env.QA_SAMPLES)
 
 let destinations = Object.keys(samples)
 if (process.env.DESTINATION) {
   destinations = [process.env.DESTINATION]
 }
+
 
 jest.retryTimes(10)
 describe('Destination Tests', () => {
@@ -44,11 +47,13 @@ describe('Destination Tests', () => {
     const writeKey = samples[key][0]
 
     const [url, chrome] = await Promise.all([server(), browser()])
+
     const results = await run({
       browser: chrome,
       script: code,
       serverURL: url,
       writeKey,
+      key,
     })
 
     const classicReqs = results.classic.networkRequests

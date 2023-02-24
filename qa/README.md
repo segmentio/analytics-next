@@ -2,12 +2,10 @@
 
 Analytics-Next contains a comprehensive QA test suite that verifies that E2E functionality is compatible with analytics.js classic.
 
-1. Compile Analytics-Next
+1. Compile Analytics-Next (browser)
 
 ```sh
-$ make build # any time you make changes to Analytics-Next
-## or
-$ yarn umd --watch ## (in a separate tab) if you'd like
+$ yarn build
 ```
 
 2. Grab list of test sources

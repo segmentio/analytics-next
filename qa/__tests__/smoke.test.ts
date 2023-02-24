@@ -1,6 +1,6 @@
 import flat from 'flat'
 import { difference, intersection, uniq, without } from 'lodash'
-import { JSONValue } from '../../src/core/events'
+import { JSONObject } from '../../src/core/events'
 import { browser } from '../lib/browser'
 import { run } from '../lib/runner'
 import { objectSchema } from '../lib/schema'
@@ -9,6 +9,9 @@ import { server } from '../lib/server'
 jest.setTimeout(100000)
 type RemovePromise<T> = T extends Promise<infer U> ? U : T
 
+if (!process.env.QA_SOURCES) {
+  throw new Error('no process.env.QA_SOURCES')
+}
 const samples = process.env.QA_SOURCES.split(',')
 
 function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
@@ -59,11 +62,21 @@ function compareSchema(results: RemovePromise<ReturnType<typeof run>>) {
       'properties.url',
 
       'messageId',
-      'anonymousId'
+      'anonymousId',
+
+      // We do an integrations specific check below since 'next'
+      // may have action-destinations that 'classic' does not
+      'integrations'
     )
 
-    const flatNext = flat(req.data) as Record<string, JSONValue>
-    const flatClassic = flat(classic.data) as Record<string, JSONValue>
+    expect((req.data as JSONObject).integrations).toEqual(
+      expect.objectContaining(
+        (classic.data as JSONObject).integrations
+      )
+    )
+
+    const flatNext = flat(req.data) as JSONObject
+    const flatClassic = flat(classic.data) as JSONObject
 
     intersectionKeys.forEach((key) => {
       const comparison = {
@@ -95,7 +108,7 @@ describe('Smoke Tests', () => {
     await window.analytics.page()
   })()`
 
-  test.concurrent.each(samples)(`smoke test`, async (writekey) => {
+  test.concurrent.each(samples)(`smoke test (writekey: %p)`, async (writekey) => {
     const [url, chrome] = await Promise.all([server(), browser()])
 
     const results = await run({
@@ -137,5 +150,21 @@ describe('Smoke Tests', () => {
     expect(classicCookies['ajs_user_id']).toContain('Test')
 
     compareSchema(results)
+  })
+
+  test.concurrent.each(samples)(`obfuscated smoke test (writekey: %p)`, async (writekey) => {
+    const [url, chrome] = await Promise.all([server(true), browser()])
+    const obfuscatedresults = await run({
+      browser: chrome,
+      script: code,
+      serverURL: url,
+      writeKey: writekey,
+    })
+
+    obfuscatedresults.next.bundleRequestFailures.forEach((result) => {
+      expect(result).toBe(null)
+    })
+
+    compareSchema(obfuscatedresults)
   })
 })

@@ -1,5 +1,5 @@
 import { Plugin } from '../../../core/plugin'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
 import { LegacySettings } from '../../../browser'
@@ -15,9 +15,9 @@ const settings: LegacySettings = {
   remotePlugins: [
     {
       name: 'Braze Web Mode (Actions)',
+      creationName: 'Braze Web Mode (Actions)',
       libraryName: 'brazeDestination',
-      url:
-        'https://cdn.segment.com/next-integrations/actions/braze/9850d2cc8308a89db62a.js',
+      url: 'https://cdn.segment.com/next-integrations/actions/braze/9850d2cc8308a89db62a.js',
       settings: {
         subscriptions: [
           {
@@ -35,9 +35,9 @@ const settings: LegacySettings = {
     {
       // note that Fullstory name contains 'Actions'
       name: 'Fullstory (Actions)',
+      creationName: 'Fullstory (Actions)',
       libraryName: 'fullstoryDestination',
-      url:
-        'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
+      url: 'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
       settings: {
         subscriptions: [
           {
@@ -193,6 +193,62 @@ describe('schema filter', () => {
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
+    })
+
+    it('does not drop events with same name when unplanned events are disallowed', async () => {
+      await ajs.register(
+        segment,
+        trackEvent,
+        trackPurchase,
+        updateUserProfile,
+        amplitude,
+        schemaFilter(
+          {
+            __default: { enabled: false, integrations: {} },
+            'Track Event': {
+              enabled: true,
+              integrations: {},
+            },
+          },
+          settings
+        )
+      )
+
+      await ajs.track('Track Event')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).toHaveBeenCalled()
+      expect(trackEvent.track).toHaveBeenCalled()
+      expect(trackPurchase.track).toHaveBeenCalled()
+      expect(updateUserProfile.track).toHaveBeenCalled()
+    })
+
+    it('drop events with different names when unplanned events are disallowed', async () => {
+      await ajs.register(
+        segment,
+        trackEvent,
+        trackPurchase,
+        updateUserProfile,
+        amplitude,
+        schemaFilter(
+          {
+            __default: { enabled: false, integrations: {} },
+            'Fake Track Event': {
+              enabled: true,
+              integrations: {},
+            },
+          },
+          settings
+        )
+      )
+
+      await ajs.track('Track Event')
+
+      expect(segment.track).toHaveBeenCalled()
+      expect(amplitude.track).not.toHaveBeenCalled()
+      expect(trackEvent.track).not.toHaveBeenCalled()
+      expect(trackPurchase.track).not.toHaveBeenCalled()
+      expect(updateUserProfile.track).not.toHaveBeenCalled()
     })
 
     it('drops enabled event for matching destination', async () => {

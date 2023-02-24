@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../../analytics'
+import { Analytics } from '../../../core/analytics'
 import { loadLegacyVideoPlugins } from '../index'
 
 beforeEach(async () => {
@@ -25,7 +25,7 @@ beforeEach(async () => {
 
   const windowSpy = jest.spyOn(global, 'window', 'get')
   windowSpy.mockImplementation(() => {
-    return (jsd.window as unknown) as Window & typeof globalThis
+    return jsd.window as unknown as Window & typeof globalThis
   })
 })
 

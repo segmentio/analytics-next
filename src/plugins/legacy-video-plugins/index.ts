@@ -1,4 +1,4 @@
-import { Analytics } from '../../analytics'
+import { Analytics } from '../../core/analytics'
 
 export async function loadLegacyVideoPlugins(
   analytics: Analytics
