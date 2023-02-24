@@ -89,7 +89,9 @@ describe('Remote Loader', () => {
     expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
   })
 
-  it('should replace the cdn for staging', async () => {
+  it('should work if the cdn is staging', async () => {
+    const stagingURL = 'https://cdn.segment.build/actions/foo.js'
+
     window.analytics = {}
     window.analytics._cdn = 'foo.com'
     await remoteLoader(
@@ -99,7 +101,7 @@ describe('Remote Loader', () => {
           {
             name: 'remote plugin',
             creationName: 'remote plugin',
-            url: 'https://cdn.segment.build/actions/foo.js',
+            url: stagingURL,
             libraryName: 'testPlugin',
             settings: {},
           },
