@@ -1,5 +1,5 @@
 import * as loader from '../../../lib/load-script'
-import { ActionDestination, remoteLoader, RemotePlugin } from '..'
+import { ActionDestination, remoteLoader } from '..'
 import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
@@ -69,40 +69,47 @@ describe('Remote Loader', () => {
   it('should attempt to load a script from a custom CDN', async () => {
     window.analytics = {}
     window.analytics._cdn = 'foo.com'
-    const remotePlugin: RemotePlugin = {
-      name: 'remote plugin',
-      creationName: 'remote plugin',
-      url: 'https://cdn.segment.com/actions/file.js',
-      libraryName: 'testPlugin',
-      settings: {},
-    }
-    await remoteLoader(
-      {
-        integrations: {},
-        remotePlugins: [
-          { ...remotePlugin, url: 'https://cdn.segment.com/actions/file.js' },
-        ],
-      },
-      {},
-      {}
-    )
-
-    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
-
     await remoteLoader(
       {
         integrations: {},
         remotePlugins: [
           {
-            ...remotePlugin,
-            url: 'https://cdn.segment.build/actions/file.js',
+            name: 'remote plugin',
+            creationName: 'remote plugin',
+            url: 'https://cdn.segment.com/actions/file.js',
+            libraryName: 'testPlugin',
+            settings: {},
           },
         ],
       },
       {},
       {}
     )
+
     expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
+  })
+
+  it('should replace the cdn for staging', async () => {
+    window.analytics = {}
+    window.analytics._cdn = 'foo.com'
+    await remoteLoader(
+      {
+        integrations: {},
+        remotePlugins: [
+          {
+            name: 'remote plugin',
+            creationName: 'remote plugin',
+            url: 'https://cdn.segment.build/actions/foo.js',
+            libraryName: 'testPlugin',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      {}
+    )
+
+    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/foo.js')
   })
 
   it('should attempt calling the library', async () => {
