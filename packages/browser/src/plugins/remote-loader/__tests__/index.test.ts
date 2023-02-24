@@ -89,6 +89,31 @@ describe('Remote Loader', () => {
     expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
   })
 
+  it('should work if the cdn is staging', async () => {
+    const stagingURL = 'https://cdn.segment.build/actions/foo.js'
+
+    window.analytics = {}
+    window.analytics._cdn = 'foo.com'
+    await remoteLoader(
+      {
+        integrations: {},
+        remotePlugins: [
+          {
+            name: 'remote plugin',
+            creationName: 'remote plugin',
+            url: stagingURL,
+            libraryName: 'testPlugin',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      {}
+    )
+
+    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/foo.js')
+  })
+
   it('should attempt calling the library', async () => {
     await remoteLoader(
       {

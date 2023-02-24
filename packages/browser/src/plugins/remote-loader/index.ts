@@ -175,6 +175,7 @@ export async function remoteLoader(
     async (remotePlugin) => {
       if (isPluginDisabled(userIntegrations, remotePlugin)) return
       try {
+        const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
         if (obfuscate) {
           const urlSplit = remotePlugin.url.split('/')
           const name = urlSplit[urlSplit.length - 2]
@@ -183,20 +184,14 @@ export async function remoteLoader(
             btoa(name).replace(/=/g, '')
           )
           try {
-            await loadScript(
-              obfuscatedURL.replace('https://cdn.segment.com', cdn)
-            )
+            await loadScript(obfuscatedURL.replace(defaultCdn, cdn))
           } catch (error) {
             // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
             // We should use the unobfuscated version as a fallback.
-            await loadScript(
-              remotePlugin.url.replace('https://cdn.segment.com', cdn)
-            )
+            await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
           }
         } else {
-          await loadScript(
-            remotePlugin.url.replace('https://cdn.segment.com', cdn)
-          )
+          await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
         }
 
         const libraryName = remotePlugin.libraryName
