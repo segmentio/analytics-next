@@ -1,40 +1,8 @@
+import { ddos } from '../common/ddos'
 import path from 'path'
-import { runAutocannon } from '../server/autocannon'
-import { execFile } from 'child_process'
-import { sleep } from '@internal/test-helpers'
 
 const hr = () =>
   console.log('\n*****************************************************\n')
-
-const execAndKill = async (moduleName: string) => {
-  const modulePath = path.join(__dirname, moduleName)
-
-  console.log(`\n *** Executing ${moduleName}... *** \n`)
-
-  const cp = execFile('ts-node', [modulePath])
-
-  // output stdout and stderr from script
-  cp.stdout?.on('data', (msg) => console.log(msg))
-  cp.stderr?.on('data', (err) => console.error(err))
-
-  await sleep(3000) // wait some amount of time for the server to come online before running autocannon, otherwise we will get connection errors.
-
-  const { requests, errors } = await runAutocannon()
-
-  cp.kill()
-
-  console.log(
-    `--> There were ${requests.total} total requests and ${errors} connection errors (including timeouts).`
-  )
-  if (errors) {
-    throw new Error(
-      `There were connection errors when testing ${moduleName} -- has the server had enough time to initialize?`
-    )
-  }
-
-  await sleep(3000) // wait 3 seconds to ensure port is freed up.
-  return requests
-}
 
 const calcPercDiff = (avg1: number, avg2: number) => {
   return parseFloat(((avg1 / avg2 - 1) * 100).toFixed(2))
@@ -47,20 +15,22 @@ const thresholds = {
   NEW_OLD_THRESHOLD: -10,
 }
 
+const ddosWithPath = (basePath: string) => ddos(path.join(__dirname, basePath))
+
 const test = async () => {
   const errors = []
-  const noAnalyticsReport = await execAndKill('server-start-no-analytics.ts')
-  const analyticsReport = await execAndKill('server-start-analytics.ts')
-  const oldAnalyticsReport = await execAndKill('server-start-old-analytics.ts')
+  const noAnalyticsReport = await ddosWithPath('server-start-no-analytics.ts')
+  const analyticsReport = await ddosWithPath('server-start-analytics.ts')
+  const oldAnalyticsReport = await ddosWithPath('server-start-old-analytics.ts')
   const overheadDiff = calcPercDiff(
-    analyticsReport.average,
-    noAnalyticsReport.average
+    analyticsReport.autocannon.average,
+    noAnalyticsReport.autocannon.average
   )
   console.log('REPORT: \n')
   let report = `
     SDK Overhead
-    with: ${analyticsReport.average} (Requests per second)
-    without: ${noAnalyticsReport.average} (Requests per second)
+    with: ${analyticsReport.autocannon.average} (Requests per second)
+    without: ${noAnalyticsReport.autocannon.average} (Requests per second)
     Diff performance: ${overheadDiff} %`
 
   console.log(report)
@@ -73,14 +43,14 @@ const test = async () => {
 
   hr()
   const newOldDiff = calcPercDiff(
-    analyticsReport.average,
-    oldAnalyticsReport.average
+    analyticsReport.autocannon.average,
+    oldAnalyticsReport.autocannon.average
   )
 
   report = `
   New vs. Old SDK
-  new: ${analyticsReport.average} (Requests per second)
-  old: ${oldAnalyticsReport.average} (Requests per second)
+  new: ${analyticsReport.autocannon.average} (Requests per second)
+  old: ${oldAnalyticsReport.autocannon.average} (Requests per second)
   Diff performance: ${newOldDiff} %`
 
   console.log(report)

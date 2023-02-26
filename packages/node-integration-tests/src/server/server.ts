@@ -1,6 +1,7 @@
 import express from 'express'
 import { Server } from 'http'
 import { nockRequests } from './nock'
+import { ServerReport } from './types'
 
 // always run express in production mode just to be closer to our client's env -- logs less and consumes less memory.
 process.env.NODE_ENV = 'production'
@@ -19,6 +20,14 @@ const onServerClose = (
     const averagePerBatch = totalApiRequests
       ? (totalBatchEvents / totalApiRequests).toFixed(1)
       : 0
+
+    process.send!(
+      JSON.stringify({
+        totalBatchEvents,
+        totalApiRequests,
+        averagePerBatch,
+      } as ServerReport)
+    )
     console.log(`
       batch API events total: ${totalBatchEvents}.
       batch API requests total: ${totalApiRequests}.
