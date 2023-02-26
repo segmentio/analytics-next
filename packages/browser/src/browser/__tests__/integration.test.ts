@@ -519,11 +519,7 @@ describe('Dispatch', () => {
     expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       Array [
         "message_dispatched",
-        "plugin_time",
-        "plugin_time",
-        "plugin_time",
         "message_delivered",
-        "plugin_time",
         "delivered",
       ]
     `)

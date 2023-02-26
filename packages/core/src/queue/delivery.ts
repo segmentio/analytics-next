@@ -1,60 +1,49 @@
 import { CoreContext, ContextCancelation } from '../context'
 import { CorePlugin } from '../plugins'
+import { isThenable } from '../utils/is-thenable'
 
-async function tryAsync<T>(fn: () => T | Promise<T>): Promise<T> {
-  try {
-    return await fn()
-  } catch (err) {
-    return Promise.reject(err)
-  }
-}
-
-export function attempt<Ctx extends CoreContext = CoreContext>(
+export async function attempt<Ctx extends CoreContext = CoreContext>(
   ctx: Ctx,
   plugin: CorePlugin<Ctx>
 ): Promise<Ctx | ContextCancelation | Error> {
   ctx.log('debug', 'plugin', { plugin: plugin.name })
-  const start = new Date().getTime()
 
-  const hook = plugin[ctx.event.type]
-  if (hook === undefined) {
-    return Promise.resolve(ctx)
+  const fn = plugin[ctx.event.type]
+  if (fn === undefined) {
+    return ctx
   }
 
-  const newCtx = tryAsync(() => hook.apply(plugin, [ctx]))
-    .then((ctx) => {
-      const done = new Date().getTime() - start
-      ctx.stats.gauge('plugin_time', done, [`plugin:${plugin.name}`])
+  try {
+    const newCtx = fn.call(plugin, ctx)
+    if (isThenable(newCtx)) {
+      return await newCtx
+    }
+    return newCtx
+  } catch (err: any) {
+    if (
+      err instanceof ContextCancelation &&
+      err.type === 'middleware_cancellation'
+    ) {
+      throw err
+    }
 
-      return ctx
-    })
-    .catch((err: Error | ContextCancelation) => {
-      if (
-        err instanceof ContextCancelation &&
-        err.type === 'middleware_cancellation'
-      ) {
-        throw err
-      }
-
-      if (err instanceof ContextCancelation) {
-        ctx.log('warn', err.type, {
-          plugin: plugin.name,
-          error: err,
-        })
-
-        return err
-      }
-
-      ctx.log('error', 'plugin Error', {
+    if (err instanceof ContextCancelation) {
+      ctx.log('warn', err.type, {
         plugin: plugin.name,
         error: err,
       })
-      ctx.stats.increment('plugin_error', 1, [`plugin:${plugin.name}`])
 
       return err
-    })
+    }
 
-  return newCtx
+    ctx.log('error', 'plugin Error', {
+      plugin: plugin.name,
+      error: err,
+    })
+    ctx.stats.increment('plugin_error', 1, [`plugin:${plugin.name}`])
+
+    return err
+  }
 }
 
 export function ensure<Ctx extends CoreContext = CoreContext>(
