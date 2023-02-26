@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
-    "module": "esnext",
+    "module": "NodeNext",
     "target": "es2020", // node 14
     "moduleResolution": "node",
     "lib": ["es2020"] // TODO: https://www.npmjs.com/package/@tsconfig/node14
