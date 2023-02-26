@@ -5,7 +5,7 @@ import { cdnSettingsMinimal } from './cdn-settings'
 export const createMockFetchImplementation = (
   cdnSettings: Partial<LegacySettings> = {}
 ) => {
-  return (url: RequestInfo, req?: RequestInit) => {
+  return (...[url, req]: Parameters<typeof fetch>) => {
     const reqUrl = url.toString()
     if (!req || (req.method === 'get' && reqUrl.includes('cdn.segment.com'))) {
       // GET https://cdn.segment.com/v1/projects/{writeKey}
