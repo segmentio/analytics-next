@@ -1,7 +1,9 @@
 import autocannon from 'autocannon'
 
+export type RunAutocannonOptions = Partial<autocannon.Options>
+
 export const runAutocannon = (
-  options: Partial<autocannon.Options> = {}
+  options: RunAutocannonOptions = {}
 ): Promise<autocannon.Result> => {
   return new Promise((resolve, reject) => {
     const instance = autocannon(
