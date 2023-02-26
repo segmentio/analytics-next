@@ -7,7 +7,8 @@ import { ddos } from '../common/ddos'
 
 const TOTAL_REQUESTS = 1000
 
-const ddosWithPath = (basePath: string) => ddos(path.join(__dirname, basePath))
+const ddosWithPath = (basePath: string) =>
+  ddos(path.join(__dirname, basePath), { amount: TOTAL_REQUESTS })
 
 const test = async () => {
   const { serverReport: report } = await ddosWithPath(
