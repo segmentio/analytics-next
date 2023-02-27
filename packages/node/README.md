@@ -288,7 +288,7 @@ export const lowercase: Plugin = {
   isLoaded: () => true,
   load: () => Promise.resolve(),
   track: (ctx) => {
-    ctx.updateEvent('event', ctx.event.event.toLowerCase())
+    ctx.event.event = ctx.event.event.toLowerCase()
     return ctx
   }
 }
