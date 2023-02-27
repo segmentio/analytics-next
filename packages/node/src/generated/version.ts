@@ -1,2 +1,2 @@
 // This file is generated.
-export const version = '1.0.0-beta.21'
+export const version = '1.0.0-beta.22'
