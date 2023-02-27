@@ -1,4 +1,4 @@
-import { v4 } from '@lukeed/uuid/secure'
+import { uuid } from './uuid'
 
 /**
  * get a unique messageId with a very low chance of collisions
@@ -6,5 +6,5 @@ import { v4 } from '@lukeed/uuid/secure'
  * @example "node-next-1668208232027-743be593-7789-4b74-8078-cbcc8894c586"
  */
 export const createMessageId = (): string => {
-  return `node-next-${Date.now()}-${v4()}`
+  return `node-next-${Date.now()}-${uuid()}`
 }
