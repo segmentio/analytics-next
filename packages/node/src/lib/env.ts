@@ -3,6 +3,7 @@ export type RuntimeEnv =
   | 'browser'
   | 'web-worker'
   | 'cloudflare-worker'
+  | 'vercel-edge'
   | 'unknown'
 
 export const detectRuntime = (): RuntimeEnv => {
@@ -17,6 +18,11 @@ export const detectRuntime = (): RuntimeEnv => {
   // @ts-ignore
   if (typeof WebSocketPair !== 'undefined') {
     return 'cloudflare-worker'
+  }
+
+  // @ts-ignore
+  if (typeof EdgeRuntime === 'string') {
+    return 'vercel-edge'
   }
 
   if (
