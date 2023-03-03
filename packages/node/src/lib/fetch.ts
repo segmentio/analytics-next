@@ -1,15 +1,14 @@
 export const fetch: typeof globalThis.fetch = async (...args) => {
   if (globalThis.fetch) {
     return globalThis.fetch(...args)
-  }
-  // @ts-ignore
-  // this is an old version of node
+  } // @ts-ignore
   // This guard causes is important, as it causes dead-code elimination to be enabled inside this block.
   else if (typeof EdgeRuntime !== 'string') {
     // @ts-ignore
     return (await import('node-fetch')).default(...args) as Response
   } else {
-    console.error('No runtime found.')
-    throw new Error('No fetch found!')
+    throw new Error(
+      'Invariant: an edge runtime that does not support fetch should not exist'
+    )
   }
 }
