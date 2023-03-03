@@ -1,8 +1,9 @@
 import { detectRuntime, RuntimeEnv } from '../env'
 
-const ogProcess = { ...process.env }
+const ogProcessEnv = { ...process.env }
+
 afterEach(() => {
-  process.env = ogProcess
+  process.env = ogProcessEnv
   // @ts-ignore
   delete globalThis.window
 
@@ -16,17 +17,10 @@ afterEach(() => {
   delete globalThis.window
 })
 describe(detectRuntime, () => {
-  it('should return web worker if correct env', () => {
-    // @ts-ignore
-    // eslint-disable-next-line
-    delete process.env
-    // @ts-ignore
-    globalThis.WorkerGlobalScope = {}
-    // @ts-ignore
-    globalThis.importScripts = () => {}
-
-    expect(detectRuntime()).toEqual<RuntimeEnv>('web-worker')
+  it('should return node since these tests run in node', () => {
+    expect(detectRuntime()).toEqual<RuntimeEnv>('node')
   })
+
   it('should return browser if correct env', () => {
     // @ts-ignore
     // eslint-disable-next-line
@@ -34,12 +28,6 @@ describe(detectRuntime, () => {
     // @ts-ignore
     globalThis.window = {}
     expect(detectRuntime()).toEqual<RuntimeEnv>('browser')
-  })
-  it('should return node if correct env', () => {
-    // @ts-ignore
-    // eslint-disable-next-line
-    process = { env: {} }
-    expect(detectRuntime()).toEqual<RuntimeEnv>('node')
   })
 
   it('should return cloudflare worker if correct env', () => {

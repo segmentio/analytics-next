@@ -7,7 +7,13 @@ export type RuntimeEnv =
   | 'unknown'
 
 export const detectRuntime = (): RuntimeEnv => {
-  if (typeof process === 'object' && process && process.env) {
+  if (
+    typeof process === 'object' &&
+    process &&
+    typeof process.env === 'object' &&
+    process.env &&
+    typeof process.version === 'string'
+  ) {
     return 'node'
   }
 
