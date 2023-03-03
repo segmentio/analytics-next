@@ -3,8 +3,8 @@
   "version": "1.0.0-beta.22",
   "private": true,
   "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "module": "./dist/esm/index.mjs",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist/",
     "src/",
@@ -20,13 +20,14 @@
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "version": "sh scripts/version.sh",
-    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:esm": "yarn tsup src/index.ts --format esm --outDir ./dist/esm --dts",
     "watch": "yarn build:esm --watch",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest",
+    "tsup": "yarn run -T tsup",
     "publish-prerelease": "sh scripts/prerelease.sh"
   },
   "dependencies": {
@@ -38,7 +39,8 @@
   "devDependencies": {
     "@internal/config": "0.0.0",
     "@types/node": "^16",
-    "@types/uuid": "^9"
+    "@types/uuid": "^9",
+    "buffer": "^6.0.3"
   },
   "packageManager": "yarn@3.2.1"
 }
