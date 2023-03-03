@@ -5,6 +5,15 @@ afterEach(() => {
   process.env = ogProcess
   // @ts-ignore
   delete globalThis.window
+
+  // @ts-ignore
+  delete globalThis.WebSocketPair
+
+  // @ts-ignore
+  delete globalThis.EdgeRuntime
+
+  // @ts-ignore
+  delete globalThis.window
 })
 describe(detectRuntime, () => {
   it('should return web worker if correct env', () => {
@@ -15,6 +24,7 @@ describe(detectRuntime, () => {
     globalThis.WorkerGlobalScope = {}
     // @ts-ignore
     globalThis.importScripts = () => {}
+
     expect(detectRuntime()).toEqual<RuntimeEnv>('web-worker')
   })
   it('should return browser if correct env', () => {
@@ -39,5 +49,16 @@ describe(detectRuntime, () => {
     // @ts-ignore
     globalThis.WebSocketPair = {}
     expect(detectRuntime()).toEqual<RuntimeEnv>('cloudflare-worker')
+  })
+
+  it('should return edgeruntime if correct env', () => {
+    // @ts-ignore
+    // eslint-disable-next-line
+    delete process.env
+
+    // @ts-ignore
+    globalThis.EdgeRuntime = 'vercel'
+
+    expect(detectRuntime()).toEqual<RuntimeEnv>('vercel-edge')
   })
 })
