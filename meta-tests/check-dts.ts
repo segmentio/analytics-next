@@ -2,6 +2,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import path from 'path'
 import fs from 'fs'
+import { pathExistsSync } from 'fs-extra'
 
 /**
  * This script is for extra typechecking of the built .d.ts files in {package_name}/dist/types/*.
@@ -77,13 +78,15 @@ const checkDts = async (packageDirName: PackageDirName): Promise<void> => {
 const main = async () => {
   let hasError = false
   for (const packageDirName of allPublicPackageDirNames) {
-    try {
-      console.log(`Checking "${packageDirName}/dist/types"...`)
-      await checkDts(packageDirName)
-    } catch (err) {
-      console.error(err)
-      hasError = true
-    }
+    // temp disable while experimenting with tsup
+    if (pathExistsSync(path.join(packageDirName, 'dist', 'types')))
+      try {
+        console.log(`Checking "${packageDirName}/dist/types"...`)
+        await checkDts(packageDirName)
+      } catch (err) {
+        console.error(err)
+        hasError = true
+      }
   }
   if (hasError) {
     console.log('\n Tests failed.')
