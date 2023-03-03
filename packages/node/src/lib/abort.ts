@@ -64,7 +64,7 @@ export const abortSignalAfterTimeout = (timeoutMs: number) => {
   if (detectRuntime() === 'cloudflare-worker') {
     return [] // TODO: this is broken in cloudflare workers, otherwise results in "A hanging Promise was canceled..." error.
   }
-  const ac = new (global.AbortController || AbortController)()
+  const ac = new (globalThis.AbortController || AbortController)()
 
   const timeoutId = setTimeout(() => {
     ac.abort()
