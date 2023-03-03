@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^14.15.0"
+    "node": "^16.16.0"
   },
   "scripts": {
     "test": "jest",
@@ -31,7 +31,7 @@
     "node+deps": "turbo run --filter=@segment/analytics-node",
     "clean": "bash scripts/clean.sh"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@3.4.1",
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.5",
     "@changesets/cli": "^2.23.2",
