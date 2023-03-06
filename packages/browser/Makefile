@@ -10,7 +10,6 @@ help: ## Lists all available make tasks and some short documentation about them
 
 # Installs npm dependencies
 node_modules:
-	yarn set version self
 	yarn install --immutable
 	@touch $@
 

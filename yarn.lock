@@ -1044,7 +1044,7 @@ __metadata:
     "@segment/analytics-node": "workspace:^"
     "@types/analytics-node": ^3.1.9
     "@types/autocannon": ^7
-    "@types/node": ^14
+    "@types/node": ^16
     analytics-node: ^6.2.0
     autocannon: ^7.10.0
     nock: ^13.2.9
@@ -1747,7 +1747,7 @@ __metadata:
     "@types/js-cookie": 3.0.1
     "@types/jsdom": ^16.2.14
     "@types/mime": ^2.0.3
-    "@types/node": ^12.12.14
+    "@types/node": ^16
     "@types/serve-handler": ^6.1.0
     "@types/spark-md5": ^3.0.2
     aws-sdk: ^2.814.0
@@ -1789,7 +1789,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@segment/analytics-core": 1.2.2
-    "@types/node": ^14
+    "@types/node": ^16
     "@types/uuid": ^9
     buffer: ^6.0.3
     node-fetch: ^2.6.7
@@ -3462,13 +3462,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^12.12.14":
-  version: 12.12.55
-  resolution: "@types/node@npm:12.12.55"
-  checksum: 7c4b8e9d9d1b94856f608531b7fbfad0b760e6a5d259e7406b02a62673fbcbd29a7363f165876c6b5206e214a2f45e86e6f70a7f988e4615cea2fc7c502d5976
-  languageName: node
-  linkType: hard
-
 "@types/node@npm:^12.7.1":
   version: 12.20.55
   resolution: "@types/node@npm:12.20.55"
@@ -3476,10 +3469,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14":
-  version: 14.18.33
-  resolution: "@types/node@npm:14.18.33"
-  checksum: 4e23f95186d8ae1d38c999bc6b46fe94e790da88744b0a3bfeedcbd0d9ffe2cb0ff39e85f43014f6739e5270292c1a1f6f97a1fc606fd573a0c17fda9a1d42de
+"@types/node@npm:^16":
+  version: 16.18.14
+  resolution: "@types/node@npm:16.18.14"
+  checksum: 7865c1c3e7c7d2fef6103c6dfa181755dc48365024253d6acc460e884508b5937a222aa8bd04835988ff0bdc47867e2ada78859c0a7f9c65b44884316f3b469c
   languageName: node
   linkType: hard
 
@@ -7544,7 +7537,7 @@ __metadata:
 
 "fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -11850,7 +11843,7 @@ __metadata:
 
 "resolve@patch:resolve@^1.1.7#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.0#~builtin<compat/resolve>":
   version: 1.22.0
-  resolution: "resolve@patch:resolve@npm%3A1.22.0#~builtin<compat/resolve>::version=1.22.0&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.22.0#~builtin<compat/resolve>::version=1.22.0&hash=c3c19d"
   dependencies:
     is-core-module: ^2.8.1
     path-parse: ^1.0.7
@@ -11863,7 +11856,7 @@ __metadata:
 
 "resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.9.0#~builtin<compat/resolve>":
   version: 1.20.0
-  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.20.0#~builtin<compat/resolve>::version=1.20.0&hash=c3c19d"
   dependencies:
     is-core-module: ^2.2.0
     path-parse: ^1.0.6
@@ -11873,7 +11866,7 @@ __metadata:
 
 "resolve@patch:resolve@^2.0.0-next.3#~builtin<compat/resolve>":
   version: 2.0.0-next.3
-  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.3#~builtin<compat/resolve>::version=2.0.0-next.3&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.3#~builtin<compat/resolve>::version=2.0.0-next.3&hash=c3c19d"
   dependencies:
     is-core-module: ^2.2.0
     path-parse: ^1.0.6
@@ -13551,11 +13544,11 @@ __metadata:
 
 "typescript@patch:typescript@^4.7.0#~builtin<compat/typescript>":
   version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=7ad353"
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=23ec76"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
+  checksum: ab417a2f398380c90a6cf5a5f74badd17866adf57f1165617d6a551f059c3ba0a3e4da0d147b3ac5681db9ac76a303c5876394b13b3de75fdd5b1eaa06181c9d
   languageName: node
   linkType: hard
 
