@@ -3,8 +3,12 @@
 
 https://www.npmjs.com/package/@segment/analytics-node
 
-## Requirements
+## Runtime Support
 - Node.js >= 14
+- AWS Lambda
+- Cloudflare Workers
+- Vercel Edge Functions (and other Edge Worker environments)
+- Web Workers (experimental)
 
 ## Quick Start
 ### Install library
