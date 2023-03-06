@@ -1733,7 +1733,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.2.2
+    "@segment/analytics-core": 1.2.3
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
@@ -1788,7 +1788,7 @@ __metadata:
   resolution: "@segment/analytics-node@workspace:packages/node"
   dependencies:
     "@internal/config": 0.0.0
-    "@segment/analytics-core": 1.2.2
+    "@segment/analytics-core": 1.2.3
     "@types/node": ^16
     "@types/uuid": ^9
     buffer: ^6.0.3
