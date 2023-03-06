@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "1.0.0-beta.23",
+  "version": "1.0.0",
   "private": true,
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -30,7 +30,7 @@
     "publish-prerelease": "sh scripts/prerelease.sh"
   },
   "dependencies": {
-    "@segment/analytics-core": "1.2.2",
+    "@segment/analytics-core": "1.2.3",
     "buffer": "^6.0.3",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.1",

@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.2.3
+
+### Patch Changes
+
+- [#805](https://github.com/segmentio/analytics-next/pull/805) [`afb027a`](https://github.com/segmentio/analytics-next/commit/afb027a5b6287fa520283172392b0c39a628a6ae) Thanks [@silesky](https://github.com/silesky)! - Upgrade typescript
+
 ## 1.2.2
 
 ### Patch Changes
