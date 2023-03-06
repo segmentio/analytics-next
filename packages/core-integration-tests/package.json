@@ -11,7 +11,7 @@
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@3.4.1",
   "devDependencies": {
     "@internal/config": "workspace:^",
     "@segment/analytics-core": "workspace:^"

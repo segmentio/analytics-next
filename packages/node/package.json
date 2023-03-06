@@ -41,5 +41,5 @@
     "@types/node": "^16",
     "@types/uuid": "^9"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.4.1"
 }

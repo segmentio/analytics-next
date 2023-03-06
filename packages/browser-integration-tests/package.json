@@ -15,7 +15,7 @@
     "server": "http-server --port 3000",
     "browser": "playwright test --debug"
   },
-  "packageManager": "yarn@3.2.1",
+  "packageManager": "yarn@3.4.1",
   "devDependencies": {
     "@internal/config": "workspace:^",
     "@playwright/test": "^1.28.1",
