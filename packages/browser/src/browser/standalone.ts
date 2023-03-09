@@ -31,12 +31,16 @@ import {
 
 let ajsIdentifiedCSP = false
 
-const sendMetrics = (tags: string[]) => {
-  new RemoteMetrics().increment('analytics_js.invoke.error', [
-    `wk:${embeddedWriteKey()}`,
-    ...tags,
-  ])
-}
+const sendMetrics = (() => {
+  const metrics = new RemoteMetrics()
+  return (tags: string[]) => {
+    metrics.increment('analytics_js.invoke.error', [
+      `wk:${embeddedWriteKey()}`,
+      ...tags,
+    ])
+  }
+})()
+
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
   sendMetrics([
