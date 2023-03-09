@@ -926,6 +926,7 @@ __metadata:
   resolution: "@example/standalone-playground@workspace:examples/standalone-playground"
   dependencies:
     "@segment/analytics-next": "workspace:^"
+    http-server: 14.1.1
   languageName: unknown
   linkType: soft
 
