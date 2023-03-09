@@ -31,14 +31,19 @@ import {
 
 let ajsIdentifiedCSP = false
 
+const sendMetrics = (tags: string[]) => {
+  new RemoteMetrics().increment('analytics_js.invoke.error', [
+    `wk:${embeddedWriteKey()}`,
+    ...tags,
+  ])
+}
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
-  new RemoteMetrics().increment('analytics_js.invoke.error', [
+  sendMetrics([
     'type:initialization',
     ...(err instanceof Error
       ? [`message:${err?.message}`, `name:${err?.name}`]
       : []),
-    `wk:${embeddedWriteKey()}`,
   ])
 }
 
@@ -47,11 +52,7 @@ document.addEventListener('securitypolicyviolation', (e) => {
     return
   }
   ajsIdentifiedCSP = true
-  new RemoteMetrics().increment('analytics_js.invoke.error', [
-    'type:csp',
-    `wk:${embeddedWriteKey()}`,
-  ])
-  console.log('warning')
+  sendMetrics(['type:csp'])
   loadAjsClassicFallback().catch(console.error)
 })
 
