@@ -17,7 +17,8 @@ export async function onCSPError(
   ajsIdentifiedCSP = true
 
   console.warn(
-    'Your CSP policy is missing permissions required in order to run Analytics.js 2.0'
+    'Your CSP policy is missing permissions required in order to run Analytics.js 2.0',
+    'https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/upgrade-to-ajs2/#using-a-strict-content-security-policy-on-the-page'
   )
   console.warn('Reverting to Analytics.js 1.0')
 
