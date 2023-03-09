@@ -31,7 +31,7 @@ import {
 
 let ajsIdentifiedCSP = false
 
-const sendMetrics = (() => {
+const sendErrorMetrics = (() => {
   const metrics = new RemoteMetrics()
   return (tags: string[]) => {
     metrics.increment('analytics_js.invoke.error', [
@@ -43,7 +43,7 @@ const sendMetrics = (() => {
 
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
-  sendMetrics([
+  sendErrorMetrics([
     'type:initialization',
     ...(err instanceof Error
       ? [`message:${err?.message}`, `name:${err?.name}`]
@@ -56,7 +56,7 @@ document.addEventListener('securitypolicyviolation', (e) => {
     return
   }
   ajsIdentifiedCSP = true
-  sendMetrics(['type:csp'])
+  sendErrorMetrics(['type:csp'])
   loadAjsClassicFallback().catch(console.error)
 })
 
