@@ -24,21 +24,12 @@ import '../lib/csp-detection'
 import { shouldPolyfill } from '../lib/browser-polyfill'
 import { RemoteMetrics } from '../core/stats/remote-metrics'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
-import { loadAjsClassicFallback } from '../lib/csp-detection'
+import {
+  loadAjsClassicFallback,
+  isAnalyticsCSPError,
+} from '../lib/csp-detection'
 
 let ajsIdentifiedCSP = false
-
-type CSPErrorEvent = SecurityPolicyViolationEvent & {
-  disposition?: 'enforce' | 'report'
-}
-
-export const isAJSCSPError = (e: CSPErrorEvent) => {
-  if (e.disposition === 'report' || !e.blockedURI.includes('cdn.segment')) {
-    return false
-  }
-
-  return true
-}
 
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
@@ -53,7 +44,7 @@ function onError(err?: unknown) {
 }
 
 document.addEventListener('securitypolicyviolation', (e) => {
-  if (ajsIdentifiedCSP || !isAJSCSPError(e)) {
+  if (ajsIdentifiedCSP || !isAnalyticsCSPError(e)) {
     return
   }
   ajsIdentifiedCSP = true

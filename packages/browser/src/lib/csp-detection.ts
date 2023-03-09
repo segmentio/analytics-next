@@ -1,6 +1,17 @@
 import { loadScript } from './load-script'
 import { getLegacyAJSPath } from './parse-cdn'
 
+type CSPErrorEvent = SecurityPolicyViolationEvent & {
+  disposition?: 'enforce' | 'report'
+}
+export const isAnalyticsCSPError = (e: CSPErrorEvent) => {
+  if (e.disposition === 'report' || !e.blockedURI.includes('cdn.segment')) {
+    return false
+  }
+
+  return true
+}
+
 export async function loadAjsClassicFallback(): Promise<void> {
   console.warn(
     'Your CSP policy is missing permissions required in order to run Analytics.js 2.0',
