@@ -35,8 +35,8 @@ const sendMetrics = (() => {
   const metrics = new RemoteMetrics()
   return (tags: string[]) => {
     metrics.increment('analytics_js.invoke.error', [
-      `wk:${embeddedWriteKey()}`,
       ...tags,
+      `wk:${embeddedWriteKey()}`,
     ])
   }
 })()
