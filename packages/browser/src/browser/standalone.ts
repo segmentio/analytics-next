@@ -31,17 +31,15 @@ import {
 
 let ajsIdentifiedCSP = false
 
-console.log('nice')
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
-
-  // new RemoteMetrics().increment('analytics_js.invoke.error', [
-  //   'type:initialization',
-  //   ...(err instanceof Error
-  //     ? [`message:${err?.message}`, `name:${err?.name}`]
-  //     : []),
-  //   `wk:${embeddedWriteKey()}`,
-  // ])
+  new RemoteMetrics().increment('analytics_js.invoke.error', [
+    'type:initialization',
+    ...(err instanceof Error
+      ? [`message:${err?.message}`, `name:${err?.name}`]
+      : []),
+    `wk:${embeddedWriteKey()}`,
+  ])
 }
 
 document.addEventListener('securitypolicyviolation', (e) => {
