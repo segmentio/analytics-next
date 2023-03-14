@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.51.3
+
+### Patch Changes
+
+- [`0616559`](https://github.com/segmentio/analytics-next/commit/0616559f6e07850f1519b4e3fd583f818593b6ea) Thanks [@silesky](https://github.com/silesky)! - Add better CSP errors and metrics
+
 ## 1.51.2
 
 ### Patch Changes
