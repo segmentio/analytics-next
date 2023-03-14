@@ -1,7 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
 import unfetch from 'unfetch'
 import { LegacySettings } from '..'
-import { onCSPError } from '../../lib/csp-detection'
 import { pWhile } from '../../lib/p-while'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import * as Factory from '../../test-helpers/factories'
@@ -122,15 +121,18 @@ describe('CSP Detection', () => {
   })
 
   it('does not revert to classic when CSP error is report only', async () => {
+    await import('../standalone')
     const ogScripts = Array.from(document.scripts)
 
     const warnSpy = jest.spyOn(console, 'warn')
+    const cspSpy = jest.fn()
+    document.addEventListener('securitypolicyviolation', cspSpy)
 
-    await onCSPError({
-      blockedURI: 'cdn.segment.com',
-      disposition: 'report',
-    } as unknown as SecurityPolicyViolationEvent)
-
+    const event = new window.Event('securitypolicyviolation') as any
+    event.disposition = 'report'
+    event.blockedURI = 'cdn.segment.com'
+    document.dispatchEvent(event)
+    expect(cspSpy).toBeCalled()
     expect(warnSpy).not.toHaveBeenCalled()
     expect(Array.from(document.scripts)).toEqual(ogScripts)
   })

@@ -24,22 +24,40 @@ import '../lib/csp-detection'
 import { shouldPolyfill } from '../lib/browser-polyfill'
 import { RemoteMetrics } from '../core/stats/remote-metrics'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
-import { onCSPError } from '../lib/csp-detection'
+import {
+  loadAjsClassicFallback,
+  isAnalyticsCSPError,
+} from '../lib/csp-detection'
+
+let ajsIdentifiedCSP = false
+
+const sendErrorMetrics = (() => {
+  const metrics = new RemoteMetrics()
+  return (tags: string[]) => {
+    metrics.increment('analytics_js.invoke.error', [
+      ...tags,
+      `wk:${embeddedWriteKey()}`,
+    ])
+  }
+})()
 
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
-
-  new RemoteMetrics().increment('analytics_js.invoke.error', [
+  sendErrorMetrics([
     'type:initialization',
     ...(err instanceof Error
       ? [`message:${err?.message}`, `name:${err?.name}`]
       : []),
-    `wk:${embeddedWriteKey()}`,
   ])
 }
 
 document.addEventListener('securitypolicyviolation', (e) => {
-  onCSPError(e).catch(console.error)
+  if (ajsIdentifiedCSP || !isAnalyticsCSPError(e)) {
+    return
+  }
+  ajsIdentifiedCSP = true
+  sendErrorMetrics(['type:csp'])
+  loadAjsClassicFallback().catch(console.error)
 })
 
 /**
