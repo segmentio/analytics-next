@@ -1,9 +1,9 @@
 {
-  "name": "@segment/analytics-next",
-  "version": "1.51.3",
+  "name": "@metarouter/ajs-next-repo",
+  "version": "1.51.3-mr.1",
   "repository": {
     "type": "git",
-    "url": "https://github.com/segmentio/analytics-next",
+    "url": "https://github.com/metarouter/ajs-next",
     "directory": "packages/browser"
   },
   "license": "MIT",

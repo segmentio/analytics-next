@@ -11,7 +11,7 @@ import batch, { BatchingDispatchConfig } from './batched-dispatcher'
 import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
-import { SEGMENT_API_HOST } from '../../core/constants'
+import { METAROUTER_API_HOST } from '../../core/constants'
 
 type DeliveryStrategy =
   | {
@@ -72,7 +72,7 @@ export function segmentio(
   const inflightEvents = new Set<Context>()
   const flushing = false
 
-  const apiHost = settings?.apiHost ?? SEGMENT_API_HOST
+  const apiHost = settings?.apiHost ?? METAROUTER_API_HOST
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 

@@ -45,7 +45,7 @@ export const getCDN = (): string => {
     // - the script is loaded through a proxy
     // - the script is removed after execution
     // in this case, we fall back to the default Segment CDN
-    return `https://cdn.segment.com`
+    return `https://metarouter-ajs-next-destinations-stage.s3.amazonaws.com`
   }
 }
 

@@ -243,7 +243,7 @@ export class EventFactory {
       ...overrides,
     }
 
-    const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
+    const messageId = md5.hash(JSON.stringify(body) + uuid())
 
     const evt: SegmentEvent = {
       ...body,

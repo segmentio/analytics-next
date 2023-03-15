@@ -175,7 +175,7 @@ export async function remoteLoader(
     async (remotePlugin) => {
       if (isPluginDisabled(userIntegrations, remotePlugin)) return
       try {
-        const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
+        const defaultCdn = new RegExp('https://metarouter-ajs-next-destinations-stage.s3.amazonaws.(com|build)')
         if (obfuscate) {
           const urlSplit = remotePlugin.url.split('/')
           const name = urlSplit[urlSplit.length - 2]

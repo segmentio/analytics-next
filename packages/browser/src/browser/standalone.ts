@@ -13,7 +13,7 @@ if (process.env.ASSET_PATH) {
     // @ts-ignore
     __webpack_public_path__ = cdn
       ? cdn + '/analytics-next/bundles/'
-      : 'https://cdn.segment.com/analytics-next/bundles/'
+      : 'https://metarouter-ajs-next-destinations-stage.s3.amazonaws.com/analytics-next/bundles/'
   }
 }
 
