@@ -1,3 +1,5 @@
 const { createJestTSConfig } = require('@internal/config')
 
-module.exports = createJestTSConfig()
+module.exports = createJestTSConfig({
+  setupFilesAfterEnv: ['./jest.setup.js'],
+})
