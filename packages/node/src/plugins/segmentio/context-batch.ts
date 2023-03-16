@@ -1,4 +1,4 @@
-import { v4 as uuid } from '@lukeed/uuid'
+import { uuid } from '../../lib/uuid'
 import type { Context } from '../../app/context'
 import { SegmentEvent } from '../../app/types'
 
