@@ -11,16 +11,18 @@ export default function (config?: StandardDispatcherConfig): {
   dispatch: Dispatcher
 } {
   function dispatch(url: string, body: object): Promise<unknown> {
-    let traceString = 'false'
-    if (config?.trace) {
-      traceString = config?.trace ? 'true' : 'false'
+    const headers: {
+      'Content-Type': string
+      Trace?: string | undefined
+    } = {
+      'Content-Type': 'text/plain',
+    }
+    if (config?.trace === true) {
+      headers.Trace = 'true'
     }
     return fetch(url, {
       keepalive: config?.keepalive,
-      headers: {
-        'Content-Type': 'text/plain',
-        Trace: traceString,
-      },
+      headers: headers,
       method: 'post',
       body: JSON.stringify(body),
     })
