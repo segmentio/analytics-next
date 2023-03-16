@@ -9,15 +9,12 @@ jobs:
       matrix:
         node-version: [ 14, 16, 18 ]
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-      - name: Setup Node.js 16.x
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - name: Install Dependencies
-        run: HUSKY=0 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - run: HUSKY=0 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - run: yarn run -T build
       - run: yarn run -T node lint
       - run: yarn turbo run --filter=node-integration-tests lint
