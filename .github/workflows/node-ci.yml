@@ -1,6 +1,9 @@
 name: Node CI
 on:
   push:
+env:
+  HUSKY: 0
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
   test:
     name: "Test (Node.js v${{ matrix.node-version }})"
@@ -14,13 +17,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
-      - run: HUSKY=0 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - run: yarn turbo run --filter=analytics-node build
-      - run: yarn turbo run --filter=node-integration-tests build
+      - run: yarn install --immutable
+      - run: yarn run -T node+deps build
       - run: yarn run -T node lint
-      - run: yarn turbo run --filter=node-integration-tests lint
       - run: yarn run -T node test
-      - run: yarn turbo run --filter=node-integration-tests test
 
   # - label: '[Node] Lint + Test'
   #   key: analytics-node-test
