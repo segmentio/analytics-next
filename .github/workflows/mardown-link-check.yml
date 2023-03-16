@@ -1,6 +1,8 @@
 name: Markdown Links Check
 on:
-  push:
+  schedule:
+    # Runs once every 3 days
+    - cron: "0 0 */3 * *"
 jobs:
   check-links:
     name: Check Markdown Links

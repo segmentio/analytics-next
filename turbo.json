@@ -19,6 +19,7 @@
       "outputs": ["dist/**"]
     },
     "lint": {
+      "dependsOn": ["^build"],
       "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
     }

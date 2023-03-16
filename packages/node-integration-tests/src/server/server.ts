@@ -2,6 +2,7 @@ import express from 'express'
 import { Server } from 'http'
 import { nockRequests } from './nock'
 import { ServerReport } from './types'
+import './fetch-polyfill'
 
 // always run express in production mode just to be closer to our client's env -- logs less and consumes less memory.
 process.env.NODE_ENV = 'production'
