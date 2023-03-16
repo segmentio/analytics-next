@@ -1789,13 +1789,12 @@ __metadata:
   resolution: "@segment/analytics-node@workspace:packages/node"
   dependencies:
     "@internal/config": 0.0.0
+    "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.2.3
     "@types/node": ^16
-    "@types/uuid": ^9
     buffer: ^6.0.3
     node-fetch: ^2.6.7
     tslib: ^2.4.1
-    uuid: ^9.0.0
   languageName: unknown
   linkType: soft
 
@@ -3608,13 +3607,6 @@ __metadata:
   version: 4.0.0
   resolution: "@types/tough-cookie@npm:4.0.0"
   checksum: 454fa8d4d64532992274ebf2ff5ea0061b0dd32a2282255a3e793f04a8b64a9c4c1f9e0f4ed83c514c852b7b604d69336c66c80de4a857cb41a81e9572981e7f
-  languageName: node
-  linkType: hard
-
-"@types/uuid@npm:^9":
-  version: 9.0.1
-  resolution: "@types/uuid@npm:9.0.1"
-  checksum: c472b8a77cbeded4bc529220b8611afa39bd64677f507838f8083d8aac8033b1f88cb9ddaa2f8589e0dcd2317291d0f6e1379f82d5ceebd6f74f3b4825288e00
   languageName: node
   linkType: hard
 
@@ -13708,15 +13700,6 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: 5575a8a75c13120e2f10e6ddc801b2c7ed7d8f3c8ac22c7ed0c7b2ba6383ec0abda88c905085d630e251719e0777045ae3236f04c812184b7c765f63a70e58df
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^9.0.0":
-  version: 9.0.0
-  resolution: "uuid@npm:9.0.0"
-  bin:
-    uuid: dist/bin/uuid
-  checksum: 8dd2c83c43ddc7e1c71e36b60aea40030a6505139af6bee0f382ebcd1a56f6cd3028f7f06ffb07f8cf6ced320b76aea275284b224b002b289f89fe89c389b028
   languageName: node
   linkType: hard
 
