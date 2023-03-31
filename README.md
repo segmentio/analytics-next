@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://segment.com">
-    <img src="https://brand.segment.com/site-assets/7b19c1a2/images/brand-guidelines/content/twilio/twilio-segment-logo-2x.png" width="300">
+    <img src="img/twilio-segment-logo-2x.png" width="300">
   </a>
   <br />
   <caption>Welcome to the monorepo for Segment's latest Javascript / Typescript SDKs</caption>
