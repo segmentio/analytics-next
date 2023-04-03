@@ -27,6 +27,7 @@ export interface PublisherProps {
   maxRetries: number
   writeKey: string
   httpRequestTimeout?: number
+  disable?: boolean
 }
 
 /**
@@ -44,6 +45,7 @@ export class Publisher {
   private _closeAndFlushPendingItemsCount?: number
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
+  private _disable: boolean
   constructor(
     {
       host,
@@ -53,6 +55,7 @@ export class Publisher {
       flushInterval,
       writeKey,
       httpRequestTimeout,
+      disable,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -66,6 +69,7 @@ export class Publisher {
       path ?? '/v1/batch'
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
+    this._disable = Boolean(disable)
   }
 
   private createBatch(): ContextBatch {
@@ -208,6 +212,11 @@ export class Publisher {
           headers: requestInit.headers,
           body: requestInit.body,
         })
+
+        if (this._disable) {
+          clearTimeout(timeoutId)
+          return batch.resolveEvents()
+        }
 
         const response = await fetch(this._url, requestInit)
 

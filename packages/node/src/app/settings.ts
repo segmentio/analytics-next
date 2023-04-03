@@ -30,6 +30,10 @@ export interface AnalyticsSettings {
    * The maximum number of milliseconds to wait for an http request. Default: 10000
    */
   httpRequestTimeout?: number
+  /**
+   * Disable the analytics library. All calls will be a noop. Default: false.
+   */
+  disable?: boolean
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {
