@@ -205,16 +205,13 @@ const appAnalytics = new Analytics({ writeKey: 'APP_WRITE_KEY' });
 ```
 
 ## Development: Disabling Analytics for Tests
-- If you want to intercept / disable analytics for integration tests, you can use something like [nock](https://github.com/nock/nock)
+- Set `disable: true`.
 
 ```ts
-// Note: nock will _not_ work if polyfill fetch with something like undici, as nock uses the http module. Undici has its own interception method.
-import nock from 'nock'
-
-nock('https://api.segment.io')
-  .post('/v1/batch')
-  .reply(201)
-  .persist()
+const analytics = new Analytics({
+  ...
+  disable: process.env.NODE_ENV === 'test'
+})
 ```
 
 
@@ -251,7 +248,7 @@ const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })
 
 Other Differences:
 
-- The `enable` configuration option has been removed-- see "Disabling Analytics" section
+- The configuration option for disabling analytics has changed. `enable: false` ->  `disable: true`
 - the `errorHandler` configuration option has been remove  -- see "Error Handling" section
 - `flushAt` configuration option -> `maxEventsInBatch`.
 - `callback` call signature is different
