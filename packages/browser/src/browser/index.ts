@@ -9,7 +9,6 @@ import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
 import { createDeferred } from '../lib/create-deferred'
-import { pageEnrichment } from '../plugins/page-enrichment'
 import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
@@ -209,7 +208,6 @@ async function registerPlugins(
 
   const toRegister = [
     validation,
-    pageEnrichment,
     ...plugins,
     ...legacyDestinations,
     ...remotePlugins,
@@ -311,6 +309,7 @@ async function loadAnalytics(
   }
 
   await flushFinalBuffer(analytics, preInitBuffer)
+  analytics.initBufferFlushed = true
 
   return [analytics, ctx]
 }

@@ -121,8 +121,10 @@ export class Analytics
   private _universalStorage: UniversalStorage<{
     [k: string]: unknown
   }>
+  private initialWindow = window
 
   initialized = false
+  initBufferFlushed = false
   integrations: Integrations
   options: InitOptions
   queue: EventQueue
@@ -163,7 +165,7 @@ export class Analytics
           : options?.group,
         cookieOptions
       ).load()
-    this.eventFactory = new EventFactory(this._user)
+    this.eventFactory = new EventFactory(this._user, this.initBufferFlushed)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
 

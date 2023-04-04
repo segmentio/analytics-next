@@ -1,5 +1,7 @@
-import type { Context } from '../../core/context'
-import type { Plugin } from '../../core/plugin'
+// import { CoreExtraContext } from '@segment/analytics-core'
+// import type { Context } from '../../core/context'
+import { SegmentEvent } from '../../core/events'
+// import type { Plugin } from '../../core/plugin'
 
 interface PageDefault {
   [key: string]: unknown
@@ -32,10 +34,10 @@ function canonical(): string {
  * Return the canonical path for the page.
  */
 
-function canonicalPath(): string {
+function canonicalPath(initWindow?: Window): string {
   const canon = canonical()
   if (!canon) {
-    return window.location.pathname
+    return initWindow ? initWindow.location.pathname : window.location.pathname
   }
 
   const a = document.createElement('a')
@@ -50,12 +52,12 @@ function canonicalPath(): string {
  * and strip the hash.
  */
 
-export function canonicalUrl(search = ''): string {
+export function canonicalUrl(search = '', initWindow?: Window): string {
   const canon = canonical()
   if (canon) {
     return canon.includes('?') ? canon : `${canon}${search}`
   }
-  const url = window.location.href
+  const url = initWindow ? initWindow.location.href : window.location.href
   const i = url.indexOf('#')
   return i === -1 ? url : url.slice(0, i)
 }
@@ -66,20 +68,24 @@ export function canonicalUrl(search = ''): string {
  * https://segment.com/docs/spec/page/#properties
  */
 
-export function pageDefaults(): PageDefault {
+export function pageDefaults(initWindow?: Window): PageDefault {
   return {
-    path: canonicalPath(),
-    referrer: document.referrer,
-    search: location.search,
-    title: document.title,
-    url: canonicalUrl(location.search),
+    path: canonicalPath(initWindow),
+    referrer: initWindow ? initWindow.document.referrer : document.referrer,
+    search: initWindow ? initWindow.location.search : location.search,
+    title: initWindow ? initWindow.document.title : document.title,
+    url: canonicalUrl(
+      initWindow ? initWindow.location.search : location.search
+    ),
   }
 }
 
-function enrichPageContext(ctx: Context): Context {
-  const event = ctx.event
+export function enrichPageContext(
+  event: SegmentEvent,
+  initWindow?: Window
+): SegmentEvent {
   event.context = event.context || {}
-  let pageContext = pageDefaults()
+  let pageContext = pageDefaults(initWindow)
   const pageProps = event.properties ?? {}
 
   Object.keys(pageContext).forEach((key) => {
@@ -96,34 +102,32 @@ function enrichPageContext(ctx: Context): Context {
     page: pageContext,
   })
 
-  ctx.event = event
-
-  return ctx
+  return event
 }
 
-export const pageEnrichment: Plugin = {
-  name: 'Page Enrichment',
-  version: '0.1.0',
-  isLoaded: () => true,
-  load: () => Promise.resolve(),
-  type: 'before',
+// export const pageEnrichment: Plugin = {
+//   name: 'Page Enrichment',
+//   version: '0.1.0',
+//   isLoaded: () => true,
+//   load: () => Promise.resolve(),
+//   type: 'before',
 
-  page: (ctx) => {
-    ctx.event.properties = Object.assign(
-      {},
-      pageDefaults(),
-      ctx.event.properties
-    )
+//   page: (ctx) => {
+//     ctx.event.properties = Object.assign(
+//       {},
+//       pageDefaults(),
+//       ctx.event.properties
+//     )
 
-    if (ctx.event.name) {
-      ctx.event.properties.name = ctx.event.name
-    }
+//     if (ctx.event.name) {
+//       ctx.event.properties.name = ctx.event.name
+//     }
 
-    return enrichPageContext(ctx)
-  },
+//     return enrichPageContext(ctx)
+//   },
 
-  alias: enrichPageContext,
-  track: enrichPageContext,
-  identify: enrichPageContext,
-  group: enrichPageContext,
-}
+//   alias: enrichPageContext,
+//   track: enrichPageContext,
+//   identify: enrichPageContext,
+//   group: enrichPageContext,
+// }

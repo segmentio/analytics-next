@@ -9,14 +9,17 @@ import {
   SegmentEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
+import { enrichPageContext } from '../../plugins/page-enrichment'
 
 export * from './interfaces'
 
 export class EventFactory {
   user: User
+  initBufferFlushed: boolean
 
-  constructor(user: User) {
+  constructor(user: User, initBufferFlushed: boolean) {
     this.user = user
+    this.initBufferFlushed = initBufferFlushed
   }
 
   track(
@@ -249,6 +252,8 @@ export class EventFactory {
       ...body,
       messageId,
     }
+
+    enrichPageContext(evt)
 
     return evt
   }
