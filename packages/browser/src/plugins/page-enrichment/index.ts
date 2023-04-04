@@ -84,6 +84,18 @@ export function enrichPageContext(
   event: SegmentEvent,
   initWindow?: Window
 ): SegmentEvent {
+  if (event.type == 'page') {
+    event.properties = Object.assign(
+      {},
+      pageDefaults(initWindow),
+      event.properties
+    )
+
+    if (event.name) {
+      event.properties.name = event.name
+    }
+  }
+
   event.context = event.context || {}
   let pageContext = pageDefaults(initWindow)
   const pageProps = event.properties ?? {}

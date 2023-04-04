@@ -48,7 +48,7 @@ export function ampId(): string | undefined {
   }
 }
 
-export function utm(query: string): Record<string, string> {
+export function utm(query: string): any {
   if (query.startsWith('?')) {
     query = query.substring(1)
   }
@@ -125,7 +125,7 @@ export function normalize(
   integrations?: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
-  const query = window.location.search
+  // const query = window.location.search
 
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
@@ -156,11 +156,11 @@ export function normalize(
     }
   }
 
-  if (query && !ctx.campaign) {
-    ctx.campaign = utm(query)
-  }
+  // if (query && !ctx.campaign) {
+  //   ctx.campaign = utm(query)
+  // }
 
-  referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
+  // referrerId(query, ctx, analytics.options.disableClientPersistence ?? false)
 
   json.userId = json.userId || user.id()
   json.anonymousId = json.anonymousId || user.anonymousId()

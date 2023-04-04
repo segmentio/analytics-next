@@ -10,16 +10,19 @@ import {
 } from './interfaces'
 import md5 from 'spark-md5'
 import { enrichPageContext } from '../../plugins/page-enrichment'
+import { utm } from '../../plugins/segmentio/normalize'
 
 export * from './interfaces'
 
 export class EventFactory {
   user: User
   initBufferFlushed: boolean
+  initWindow: Window
 
-  constructor(user: User, initBufferFlushed: boolean) {
+  constructor(user: User, initBufferFlushed: boolean, initWindow: Window) {
     this.user = user
     this.initBufferFlushed = initBufferFlushed
+    this.initWindow = initWindow
   }
 
   track(
@@ -254,6 +257,14 @@ export class EventFactory {
     }
 
     enrichPageContext(evt)
+
+    const query = !this.initBufferFlushed
+      ? this.initWindow.location.search
+      : window.location.search
+
+    if (query && !evt.context?.campaign) {
+      evt.context!.campaign = utm(query)
+    }
 
     return evt
   }

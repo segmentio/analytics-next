@@ -165,7 +165,11 @@ export class Analytics
           : options?.group,
         cookieOptions
       ).load()
-    this.eventFactory = new EventFactory(this._user, this.initBufferFlushed)
+    this.eventFactory = new EventFactory(
+      this._user,
+      this.initBufferFlushed,
+      this.initialWindow
+    )
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
 
