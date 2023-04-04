@@ -8,8 +8,9 @@ tmp=$(mktemp)
 jq ".version = \"$latest_version\"" package.json >"$tmp" && mv "$tmp" package.json
 
 echo "bumping version..." &&
-  npm version prerelease &&
-  version=$(jq -r .version ./package.json) &&
+  npm version prerelease
+
+version=$(jq -r .version ./package.json) &&
   git add package.json &&
   git commit -m "Bump node version: $version." --no-verify
 
