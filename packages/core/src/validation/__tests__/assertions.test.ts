@@ -126,4 +126,12 @@ describe('validateEvent', () => {
       })
     ).toThrow()
   })
+  test('should prepend field name', () => {
+    expect(() =>
+      validateEvent({
+        type: 'identify',
+        traits: undefined,
+      })
+    ).toThrowError('traits is not an object')
+  })
 })

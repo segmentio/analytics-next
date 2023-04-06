@@ -1,12 +1,6 @@
 import type { Plugin } from '../../core/plugin'
 import type { Context } from '../../core/context'
 import { validateEvent } from '@segment/analytics-core'
-export {
-  isPlainObject,
-  isString,
-  isFunction,
-  isNumber,
-} from '@segment/analytics-core'
 
 function validate(ctx: Context): Context {
   validateEvent(ctx.event)
