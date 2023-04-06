@@ -37,7 +37,7 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
   if (!hasUser(event)) {
     throw new ValidationError(
       'userId/anonymousId/previousId/groupId',
-      'Must have userId or anonymousId or previousId or groupId'
+      'must have an ID AND must be string'
     )
   }
 }

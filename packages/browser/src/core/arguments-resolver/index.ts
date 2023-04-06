@@ -1,9 +1,9 @@
 import {
-  isFunction,
   isPlainObject,
   isString,
+  isFunction,
   isNumber,
-} from '../../plugins/validation'
+} from '@segment/analytics-core'
 import { Context } from '../context'
 import {
   Callback,
