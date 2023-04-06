@@ -1,7 +1,7 @@
 import {
+  isFunction,
   isPlainObject,
   isString,
-  isFunction,
   isNumber,
 } from '@segment/analytics-core'
 import { Context } from '../context'
