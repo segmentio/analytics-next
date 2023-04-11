@@ -1,15 +1,11 @@
 import type { Plugin } from '../../core/plugin'
 import type { Context } from '../../core/context'
-import { validateUser, isString, isPlainObject } from '@segment/analytics-core'
-
-class ValidationError extends Error {
-  field: string
-
-  constructor(field: string, message: string) {
-    super(message)
-    this.field = field
-  }
-}
+import {
+  validateUser,
+  isString,
+  isPlainObject,
+  ValidationError,
+} from '@segment/analytics-core'
 
 function validate(ctx: Context): Context {
   const eventType: unknown = ctx && ctx.event && ctx.event.type
