@@ -3,7 +3,7 @@ import {
   isPlainObject,
   isString,
   isNumber,
-} from '../../plugins/validation'
+} from '@segment/analytics-core'
 import { Context } from '../context'
 import {
   Callback,

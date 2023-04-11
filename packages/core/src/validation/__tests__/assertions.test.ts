@@ -126,4 +126,28 @@ describe('validateEvent', () => {
       })
     ).toThrow()
   })
+
+  test('ID cannot be null', () => {
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: null,
+      })
+    ).toThrowError(/string/)
+  })
+
+  test('ID must be string', () => {
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 123 as any,
+      })
+    ).toThrowError(/string/)
+  })
 })

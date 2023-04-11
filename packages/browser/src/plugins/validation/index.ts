@@ -1,30 +1,6 @@
 import type { Plugin } from '../../core/plugin'
-import type { SegmentEvent } from '../../core/events'
 import type { Context } from '../../core/context'
-
-export function isString(obj: unknown): obj is string {
-  return typeof obj === 'string'
-}
-
-export function isNumber(obj: unknown): obj is number {
-  return typeof obj === 'number'
-}
-
-export function isFunction(obj: unknown): obj is Function {
-  return typeof obj === 'function'
-}
-
-export function isPlainObject(obj: unknown): obj is Record<string, any> {
-  return (
-    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
-  )
-}
-
-function hasUser(event: SegmentEvent): boolean {
-  const id =
-    event.userId ?? event.anonymousId ?? event.groupId ?? event.previousId
-  return isString(id)
-}
+import { validateUser, isString, isPlainObject } from '@segment/analytics-core'
 
 class ValidationError extends Error {
   field: string
@@ -56,10 +32,7 @@ function validate(ctx: Context): Context {
     throw new ValidationError('properties', 'properties is not an object')
   }
 
-  if (!hasUser(event)) {
-    throw new ValidationError('userId', 'Missing userId or anonymousId')
-  }
-
+  validateUser(event)
   return ctx
 }
 
