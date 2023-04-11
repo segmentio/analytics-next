@@ -2,7 +2,6 @@ import type { Plugin } from '../../core/plugin'
 import type { Context } from '../../core/context'
 import {
   assertUserIdentity,
-  isString,
   isPlainObject,
   ValidationError,
   assertEventExists,
@@ -15,7 +14,7 @@ function validate(ctx: Context): Context {
   assertEventExists(event)
   assertEventType(event)
 
-  if (event.type === 'track' && !isString(event.event)) {
+  if (event.type === 'track') {
     assertTrackEventName(event)
   }
 
