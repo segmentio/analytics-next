@@ -42,6 +42,12 @@ export function assertTrackEventProperties(event: CoreSegmentEvent): void {
   }
 }
 
+export function assertTraits(event: CoreSegmentEvent): void {
+  if (!isPlainObject(event.traits)) {
+    throw new ValidationError('.traits', 'is not an object')
+  }
+}
+
 export function validateEvent(event?: CoreSegmentEvent | null) {
   assertEventExists(event)
   assertEventType(event)
@@ -52,9 +58,8 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
   }
 
   if (['group', 'identify'].includes(event.type)) {
-    if (!isPlainObject(event.traits)) {
-      throw new ValidationError('.traits', 'is not an object')
-    }
+    assertTraits(event)
   }
+
   assertUserIdentity(event)
 }
