@@ -11,7 +11,7 @@ export function isFunction(obj: unknown): obj is Function {
 }
 
 export function exists<T>(val: unknown): val is NonNullable<T> {
-  return typeof val !== undefined && val !== null
+  return val !== undefined && val !== null
 }
 
 export function isPlainObject(
