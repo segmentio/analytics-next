@@ -23,8 +23,11 @@ export function assertUserIdentity(event: CoreSegmentEvent): void {
 export function assertEventExists(
   event?: CoreSegmentEvent | null
 ): asserts event is CoreSegmentEvent {
-  if (!event || typeof event !== 'object') {
+  if (!exists(event)) {
     throw new ValidationError('Event', nilError)
+  }
+  if (typeof event !== 'object') {
+    throw new ValidationError('Event', objError)
   }
 }
 
