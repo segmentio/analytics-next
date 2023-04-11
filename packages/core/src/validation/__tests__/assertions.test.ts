@@ -127,7 +127,7 @@ describe('validateEvent', () => {
     ).toThrow()
   })
 
-  test('ID cannot be null', () => {
+  test('an ID should exist', () => {
     expect(() =>
       validateEvent({
         ...baseEvent,
@@ -136,7 +136,7 @@ describe('validateEvent', () => {
         userId: undefined,
         anonymousId: null,
       })
-    ).toThrowError(/string/)
+    ).toThrowError(/must have/i)
   })
 
   test('ID must be string', () => {
