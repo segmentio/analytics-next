@@ -1,34 +1,30 @@
 import type { Plugin } from '../../core/plugin'
 import type { Context } from '../../core/context'
 import {
-  validateUser,
+  assertUserIdentity,
   isString,
   isPlainObject,
   ValidationError,
+  assertEventExists,
+  assertEventType,
+  assertTrackEventName,
 } from '@segment/analytics-core'
 
 function validate(ctx: Context): Context {
-  const eventType: unknown = ctx && ctx.event && ctx.event.type
   const event = ctx.event
+  assertEventExists(event)
+  assertEventType(event)
 
-  if (event === undefined) {
-    throw new ValidationError('event', 'Event is missing')
-  }
-
-  if (!isString(eventType)) {
-    throw new ValidationError('event', 'Event is not a string')
-  }
-
-  if (eventType === 'track' && !isString(event.event)) {
-    throw new ValidationError('event', 'Event is not a string')
+  if (event.type === 'track' && !isString(event.event)) {
+    assertTrackEventName(event)
   }
 
   const props = event.properties ?? event.traits
-  if (eventType !== 'alias' && !isPlainObject(props)) {
-    throw new ValidationError('properties', 'properties is not an object')
+  if (event.type !== 'alias' && !isPlainObject(props)) {
+    throw new ValidationError('.properties', 'is not an object')
   }
 
-  validateUser(event)
+  assertUserIdentity(event)
   return ctx
 }
 

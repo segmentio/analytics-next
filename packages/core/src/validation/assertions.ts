@@ -2,7 +2,7 @@ import { CoreSegmentEvent } from '../events'
 import { ValidationError } from './errors'
 import { isString, isPlainObject, exists } from './helpers'
 
-export function validateUser(event: CoreSegmentEvent): void {
+export function assertUserIdentity(event: CoreSegmentEvent): void {
   const USER_FIELD_NAME = '.userId/anonymousId/previousId/groupId'
 
   const getAnyUserId = (event: CoreSegmentEvent) =>
@@ -56,5 +56,5 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
       throw new ValidationError('.traits', 'is not an object')
     }
   }
-  validateUser(event)
+  assertUserIdentity(event)
 }
