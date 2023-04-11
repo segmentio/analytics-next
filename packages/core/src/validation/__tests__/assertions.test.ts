@@ -149,7 +149,7 @@ describe(validateEvent, () => {
           userId: undefined,
           anonymousId: null,
         })
-      ).toThrowError(/not defined/i)
+      ).toThrowError(/nil/i)
     })
   })
 })
