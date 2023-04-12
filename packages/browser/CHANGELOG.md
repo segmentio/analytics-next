@@ -1,5 +1,14 @@
 # @segment/analytics-next
 
+## 1.51.4
+
+### Patch Changes
+
+- [#835](https://github.com/segmentio/analytics-next/pull/835) [`9353e09`](https://github.com/segmentio/analytics-next/commit/9353e0999f942db33066e337e9742ac2e96716b7) Thanks [@silesky](https://github.com/silesky)! - Refactor shared validation logic. Create granular error message if user ID does not match string type.
+
+- Updated dependencies [[`9353e09`](https://github.com/segmentio/analytics-next/commit/9353e0999f942db33066e337e9742ac2e96716b7)]:
+  - @segment/analytics-core@1.2.4
+
 ## 1.51.3
 
 ### Patch Changes
