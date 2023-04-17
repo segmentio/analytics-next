@@ -126,13 +126,11 @@ export function normalize(
 ): object {
   const user = analytics.user()
 
+  // context should always exist here (see page enrichment)? ... and why would we default to json.options? todo: delete this
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
 
-  // This guard should not be neccessary -- why would context not exist here? Ditto ^ --
-  // page enrichment should add a context to an event by default.
-  // In any case, adding an empty string 'default'.
-  // We do not use the current search parameters, as they might be stale by this point.
+  // This guard against missing ctx.page should not be neccessary, since context.page is always defined
   const query: string = ctx.page?.search || ''
 
   delete json.options
