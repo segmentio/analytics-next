@@ -1,3 +1,4 @@
+import { pick } from '../../lib/pick'
 import type { Context } from '../../core/context'
 import type { Plugin } from '../../core/plugin'
 
@@ -12,20 +13,12 @@ interface PageDefault {
 
 /**
  * Get the current page's canonical URL.
- *
- * @return {string|undefined}
  */
-function canonical(): string {
-  const tags = document.getElementsByTagName('link')
-  let canon: string | null = ''
-
-  Array.prototype.slice.call(tags).forEach((tag) => {
-    if (tag.getAttribute('rel') === 'canonical') {
-      canon = tag.getAttribute('href')
-    }
-  })
-
-  return canon
+function canonical(): string | undefined {
+  const canon = document.querySelector("link[rel='canonical']")
+  if (canon) {
+    return canon.getAttribute('href') || undefined
+  }
 }
 
 /**
@@ -79,24 +72,25 @@ export function pageDefaults(): PageDefault {
 function enrichPageContext(ctx: Context): Context {
   const event = ctx.event
   event.context = event.context || {}
-  let pageContext = pageDefaults()
-  const pageProps = event.properties ?? {}
 
-  Object.keys(pageContext).forEach((key) => {
-    if (pageProps[key]) {
-      pageContext[key] = pageProps[key]
-    }
-  })
+  const defaultPageContext = pageDefaults()
 
-  if (event.context.page) {
-    pageContext = Object.assign({}, pageContext, event.context.page)
+  const pageContextFromEventProps =
+    event.properties && pick(event.properties, Object.keys(defaultPageContext))
+
+  event.context.page = {
+    ...defaultPageContext,
+    ...pageContextFromEventProps,
+    ...event.context.page,
   }
 
-  event.context = Object.assign({}, event.context, {
-    page: pageContext,
-  })
-
-  ctx.event = event
+  if (event.type === 'page') {
+    event.properties = {
+      ...defaultPageContext,
+      ...event.properties,
+      ...(event.name ? { name: event.name } : {}),
+    }
+  }
 
   return ctx
 }
@@ -107,21 +101,7 @@ export const pageEnrichment: Plugin = {
   isLoaded: () => true,
   load: () => Promise.resolve(),
   type: 'before',
-
-  page: (ctx) => {
-    ctx.event.properties = Object.assign(
-      {},
-      pageDefaults(),
-      ctx.event.properties
-    )
-
-    if (ctx.event.name) {
-      ctx.event.properties.name = ctx.event.name
-    }
-
-    return enrichPageContext(ctx)
-  },
-
+  page: enrichPageContext,
   alias: enrichPageContext,
   track: enrichPageContext,
   identify: enrichPageContext,

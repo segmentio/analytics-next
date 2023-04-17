@@ -51,28 +51,41 @@ describe('Page Enrichment', () => {
     )
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-    Object {
-      "path": "/",
-      "referrer": "",
-      "search": "",
-      "title": "",
-      "url": "not-localhost",
-    }
-  `)
+          Object {
+            "path": "/",
+            "referrer": "",
+            "search": "",
+            "title": "",
+            "url": "not-localhost",
+          }
+      `)
   })
-
   test('enriches page events using properties', async () => {
     const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-    Object {
-      "path": "/",
-      "referrer": "foo",
-      "search": "",
-      "title": "",
-      "url": "http://localhost/",
-    }
-  `)
+          Object {
+            "path": "/",
+            "referrer": "foo",
+            "search": "",
+            "title": "",
+            "url": "http://localhost/",
+          }
+      `)
+  })
+
+  test('in page events, event.name overrides event.properties.name', async () => {
+    const ctx = await ajs.page('My Event', undefined, undefined, {
+      name: 'some propery name',
+    })
+    expect(ctx.event.properties!.name).toBe('My Event')
+  })
+
+  test('in non-page events, event.name does not override event.properties.name', async () => {
+    const ctx = await ajs.track('My Event', {
+      name: 'some propery name',
+    })
+    expect(ctx.event.properties!.name).toBe('some propery name')
   })
 
   test('enriches identify events with the page context', async () => {
@@ -146,5 +159,11 @@ describe('pageDefaults', () => {
     document.body.appendChild(el)
     const defs = pageDefaults()
     expect(defs.url).toEqual('http://www.segment.local?test=true')
+  })
+
+  it('if canonical does not exist, returns fallback', () => {
+    document.body.appendChild(el)
+    const defs = pageDefaults()
+    expect(defs.url).toEqual(window.location.href)
   })
 })
