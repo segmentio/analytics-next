@@ -1,5 +1,21 @@
 # @segment/analytics-next
 
+## 1.51.5
+
+### Patch Changes
+
+- [#838](https://github.com/segmentio/analytics-next/pull/838) [`55a48a0`](https://github.com/segmentio/analytics-next/commit/55a48a0d1e3589fc6b4896e94b79c857cabf1006) Thanks [@silesky](https://github.com/silesky)! - Refactor page enrichment to only call page defaults once, and simplify logic
+
+* [#839](https://github.com/segmentio/analytics-next/pull/839) [`fdc004b`](https://github.com/segmentio/analytics-next/commit/fdc004bebaa48206c710aab703b164b41e8fa984) Thanks [@silesky](https://github.com/silesky)! - Fixes a utm-parameter parsing bug where overridden page.search properties would not be reflected in the context.campaign object
+
+  ```ts
+  analytics.page(undefined, undefined, {search: "?utm_source=123&utm_content=content" )
+  analytics.track("foo", {url: "....", search: "?utm_source=123&utm_content=content" )
+
+  // should result in a context.campaign of:
+  { source: 123, content: 'content'}
+  ```
+
 ## 1.51.4
 
 ### Patch Changes
