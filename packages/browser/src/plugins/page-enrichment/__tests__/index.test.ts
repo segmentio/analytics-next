@@ -1,7 +1,20 @@
 import { Analytics } from '../../../core/analytics'
 import { pageEnrichment, pageDefaults } from '..'
+import { pick } from '../../../lib/pick'
 
 let ajs: Analytics
+
+const helpers = {
+  get pageProps() {
+    return {
+      url: 'http://foo.com/bar?foo=hello_world',
+      path: '/bar',
+      search: '?foo=hello_world',
+      referrer: 'http://google.com',
+      title: 'Hello World',
+    }
+  },
+}
 
 describe('Page Enrichment', () => {
   beforeEach(async () => {
@@ -41,6 +54,49 @@ describe('Page Enrichment', () => {
         "url": "http://localhost/",
       }
     `)
+  })
+
+  describe('event.properties override behavior', () => {
+    test('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
+      const eventProps = { ...helpers.pageProps }
+      ;(eventProps as any)['should_not_show_up'] = 'hello'
+      const ctx = await ajs.track('My Event', eventProps)
+      const page = ctx.event.context!.page
+      expect(page).toEqual(
+        pick(eventProps, ['url', 'path', 'referrer', 'search', 'title'])
+      )
+    })
+
+    test('event page properties should not be mutated', async () => {
+      const eventProps = { ...helpers.pageProps }
+      const ctx = await ajs.track('My Event', eventProps)
+      const page = ctx.event.context!.page
+      expect(page).toEqual(eventProps)
+    })
+
+    test('page properties should have defaults', async () => {
+      const eventProps = pick(helpers.pageProps, ['path', 'referrer'])
+      const ctx = await ajs.track('My Event', eventProps)
+      const page = ctx.event.context!.page
+      expect(page).toEqual({
+        ...eventProps,
+        url: 'http://localhost/',
+        search: '',
+        title: '',
+      })
+    })
+
+    test('undefined / null / empty string properties on event get overridden as usual', async () => {
+      const eventProps = { ...helpers.pageProps }
+      eventProps.referrer = ''
+      eventProps.path = undefined as any
+      eventProps.title = null as any
+      const ctx = await ajs.track('My Event', eventProps)
+      const page = ctx.event.context!.page
+      expect(page).toEqual(
+        expect.objectContaining({ referrer: '', path: undefined, title: null })
+      )
+    })
   })
 
   test('enriches page events with the page context', async () => {
