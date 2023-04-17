@@ -51,13 +51,24 @@ describe('before loading', () => {
       window.localStorage.clear()
     }
   })
+
   describe('#normalize', () => {
     let object: SegmentEvent
+    let defaultCtx: any
+    const withSearchParams = (search?: string) => {
+      object.context = { page: { search } }
+    }
 
     beforeEach(() => {
       cookie.remove('s:context.referrer')
+      defaultCtx = {
+        page: {
+          search: '',
+        },
+      }
       object = {
         type: 'track',
+        context: defaultCtx,
       }
     })
 
@@ -94,17 +105,15 @@ describe('before loading', () => {
     })
 
     it('should always add .anonymousId even if .userId is given', () => {
-      const object: SegmentEvent = { userId: 'baz', type: 'track' }
+      object.userId = 'baz'
       normalize(analytics, object, options, {})
       assert(object.anonymousId?.length === 36)
     })
 
     it('should accept anonymousId being set in an event', async () => {
-      const object: SegmentEvent = {
-        userId: 'baz',
-        type: 'track',
-        anonymousId: '👻',
-      }
+      object.userId = 'baz'
+      object.anonymousId = '👻'
+
       normalize(analytics, object, options, {})
       expect(object.anonymousId).toEqual('👻')
     })
@@ -115,15 +124,16 @@ describe('before loading', () => {
     })
 
     it('should not rewrite context if provided', () => {
-      const ctx = {}
+      const ctx = defaultCtx
       const obj = { ...object, context: ctx }
       normalize(analytics, obj, options, {})
       expect(obj.context).toEqual(ctx)
     })
 
-    it('should copy .options to .context', () => {
+    it('should overwrite options with context if context does not exist', () => {
       const opts = {}
       const obj = { ...object, options: opts }
+      delete obj.context
       normalize(analytics, obj, options, {})
       assert(obj.context === opts)
       assert(obj.options == null)
@@ -172,6 +182,7 @@ describe('before loading', () => {
 
     it('should not replace .locale if provided', () => {
       const ctx = {
+        ...defaultCtx,
         locale: 'foobar',
       }
       const obj = { ...object, context: ctx }
@@ -180,10 +191,9 @@ describe('before loading', () => {
     })
 
     it('should add .campaign', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
-      })
-
+      withSearchParams(
+        'utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name'
+      )
       normalize(analytics, object, options, {})
 
       assert(object)
@@ -197,10 +207,7 @@ describe('before loading', () => {
     })
 
     it('should decode query params', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=%5BFoo%5D',
-      })
-
+      withSearchParams('?utm_source=%5BFoo%5D')
       normalize(analytics, object, options, {})
 
       assert(object)
@@ -210,9 +217,7 @@ describe('before loading', () => {
     })
 
     it('should guard against undefined utm params', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source',
-      })
+      withSearchParams('?utm_source')
 
       normalize(analytics, object, options, {})
 
@@ -223,10 +228,7 @@ describe('before loading', () => {
     })
 
     it('should guard against empty utm params', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=',
-      })
-
+      withSearchParams('?utm_source=')
       normalize(analytics, object, options, {})
 
       assert(object)
@@ -236,10 +238,7 @@ describe('before loading', () => {
     })
 
     it('only parses utm params suffixed with _', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm',
-      })
-
+      withSearchParams('?utm')
       normalize(analytics, object, options, {})
 
       assert(object)
@@ -248,9 +247,7 @@ describe('before loading', () => {
     })
 
     it('should guard against short utm params', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_',
-      })
+      withSearchParams('?utm_')
 
       normalize(analytics, object, options, {})
 
@@ -260,13 +257,14 @@ describe('before loading', () => {
     })
 
     it('should allow override of .campaign', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name',
-      })
+      withSearchParams(
+        '?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name'
+      )
 
       const obj = {
         ...object,
         context: {
+          ...defaultCtx,
           campaign: {
             source: 'overrideSource',
             medium: 'overrideMedium',
@@ -288,9 +286,7 @@ describe('before loading', () => {
     })
 
     it('should add .referrer.id and .referrer.type (cookies)', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=source&urid=medium',
-      })
+      withSearchParams('?utm_source=source&urid=medium')
 
       normalize(analytics, object, options, {})
       assert(object)
@@ -307,9 +303,7 @@ describe('before loading', () => {
     })
 
     it('should add .referrer.id and .referrer.type (cookieless)', () => {
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=source&urid=medium',
-      })
+      withSearchParams('utm_source=source&urid=medium')
       const setCookieSpy = jest.spyOn(cookie, 'set')
       analytics = new Analytics(
         { writeKey: options.apiKey },
@@ -329,10 +323,6 @@ describe('before loading', () => {
     it('should add .referrer.id and .referrer.type from cookie', () => {
       cookie.set('s:context.referrer', '{"id":"baz","type":"millennial-media"}')
 
-      jsdom.reconfigure({
-        url: 'http://localhost?utm_source=source',
-      })
-
       normalize(analytics, object, options, {})
 
       assert(object)
@@ -347,10 +337,6 @@ describe('before loading', () => {
         's:context.referrer',
         '{"id":"medium","type":"millennial-media"}'
       )
-
-      jsdom.reconfigure({
-        url: 'http://localhost',
-      })
 
       normalize(analytics, object, options, {})
       assert(object)

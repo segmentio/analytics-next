@@ -125,10 +125,13 @@ export function normalize(
   integrations?: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
-  const query = window.location.search
 
+  // context should always exist here (see page enrichment)? ... and why would we default to json.options? todo: delete this
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
+
+  // This guard against missing ctx.page should not be neccessary, since context.page is always defined
+  const query: string = ctx.page?.search || ''
 
   delete json.options
   json.writeKey = settings?.apiKey
