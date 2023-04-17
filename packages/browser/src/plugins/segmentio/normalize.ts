@@ -125,10 +125,15 @@ export function normalize(
   integrations?: LegacySettings['integrations']
 ): object {
   const user = analytics.user()
-  const query = window.location.search
 
   json.context = json.context ?? json.options ?? {}
   const ctx = json.context
+
+  // This guard should not be neccessary -- why would context not exist here? Ditto ^ --
+  // page enrichment should add a context to an event by default.
+  // In any case, adding an empty string 'default'.
+  // We do not use the current search parameters, as they might be stale by this point.
+  const query: string = ctx.page?.search || ''
 
   delete json.options
   json.writeKey = settings?.apiKey
