@@ -4,6 +4,8 @@ export function shouldPolyfill(): boolean {
     Edge: 13,
   }
 
+  const isOperaMiniExtremeMode = (window as any).operamini // compression proxy - allows for page() calls.
+
   // Unfortunately IE doesn't follow the same pattern as other browsers, so we
   // need to check `isIE11` differently.
   // @ts-expect-error
@@ -14,10 +16,8 @@ export function shouldPolyfill(): boolean {
 
   return (
     isIE11 ||
+    isOperaMiniExtremeMode ||
     (browserVersionCompatList[browser] !== undefined &&
       browserVersionCompatList[browser] >= parseInt(version))
   )
 }
-
-// appName = Netscape IE / Edge
-// edge 13 Edge/13... same as FF
