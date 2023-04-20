@@ -2,6 +2,7 @@ export function shouldPolyfill(): boolean {
   const browserVersionCompatList: { [browser: string]: number } = {
     Firefox: 46,
     Edge: 13,
+    Opera: 50,
   }
 
   const isOperaMiniExtremeMode = (window as any).operamini // compression proxy - allows for page() calls.

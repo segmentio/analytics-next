@@ -75,8 +75,8 @@ if (shouldPolyfill()) {
   // load polyfills in order to get AJS to work with old browsers
   const script = document.createElement('script')
   script.setAttribute(
-    'src',
-    'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js'
+    'src', // this should map to tsconfig lib.
+    'https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020'
   )
 
   if (document.readyState === 'loading') {
