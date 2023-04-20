@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.51.6
+
+### Patch Changes
+
+- [#842](https://github.com/segmentio/analytics-next/pull/842) [`2b71c10`](https://github.com/segmentio/analytics-next/commit/2b71c102519c12b056b596950f17e5c95fe5e41b) Thanks [@silesky](https://github.com/silesky)! - Fix 'Promise is undefined' issue with ie11 polyfill
+
 ## 1.51.5
 
 ### Patch Changes
