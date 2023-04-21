@@ -76,7 +76,7 @@ if (shouldPolyfill()) {
   const script = document.createElement('script')
   script.setAttribute(
     'src', // this should map to tsconfig lib. gated means "only load polyfill if feature does not exist"
-    'https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020&flags=gated'
+    'https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020&flags=always,gated'
   )
 
   if (document.readyState === 'loading') {
