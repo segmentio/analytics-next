@@ -75,8 +75,8 @@ if (shouldPolyfill()) {
   // load polyfills in order to get AJS to work with old browsers
   const script = document.createElement('script')
   script.setAttribute(
-    'src', // this should map to tsconfig lib. always,gated mean "always download all polyfills from the server, but only load them if a polyfill does not exist"
-    'https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020&flags=always,gated'
+    'src', // this should map to tsconfig lib. gated means "only load polyfill if feature does not exist"
+    'https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020&flags=gated'
   )
 
   if (document.readyState === 'loading') {
