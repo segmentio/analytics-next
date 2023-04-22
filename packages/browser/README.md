@@ -254,6 +254,8 @@ and can be of five different types:
 Here is an example of a simple plugin that would convert all track events event names to lowercase before the event gets sent through the rest of the pipeline:
 
 ```ts
+import type { Plugin } from '@segment/analytics-next'
+
 export const lowercase: Plugin = {
   name: 'Lowercase Event Name',
   type: 'before',
@@ -267,6 +269,8 @@ export const lowercase: Plugin = {
     return ctx
   }
 }
+
+analytics.register(lowercase)
 ```
 
 For further examples check out our [existing plugins](/packages/browser/src/plugins).
