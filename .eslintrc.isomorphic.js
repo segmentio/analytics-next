@@ -9,17 +9,14 @@ module.exports = {
       files: ['src/**'],
       excludedFiles: ['**/__tests__/**'],
       rules: {
-        'no-restricted-properties': [
+        'no-restricted-globals': [
           'error',
-          {
-            object: 'window',
-            property: 'document',
-          },
-          {
-            object: 'navigator',
-          },
+          'document',
+          'window',
+          'self',
+          'global',
+          'navigator',
         ],
-        'no-restricted-globals': ['error', 'document'],
         'import/no-nodejs-modules': 'error',
       },
     },
