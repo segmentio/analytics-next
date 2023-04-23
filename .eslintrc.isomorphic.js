@@ -14,6 +14,7 @@ module.exports = {
           'document',
           'window',
           'self',
+          'process',
           'global',
           'navigator',
         ],

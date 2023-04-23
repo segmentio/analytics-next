@@ -10,6 +10,7 @@ function normalizeEvent(ctx: Context) {
   ctx.updateEvent('context.library.version', version)
   const runtime = detectRuntime()
   if (runtime === 'node') {
+    // eslint-disable-next-line no-restricted-globals
     ctx.updateEvent('_metadata.nodeVersion', process.version)
   }
   ctx.updateEvent('_metadata.jsRuntime', runtime)
