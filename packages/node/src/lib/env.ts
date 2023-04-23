@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 export type RuntimeEnv =
   | 'node'
   | 'browser'
