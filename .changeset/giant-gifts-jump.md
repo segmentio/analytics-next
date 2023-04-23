@@ -2,4 +2,4 @@
 '@segment/analytics-core': patch
 ---
 
-Move isOffline logic into analytics-next
+Remove browser-specific isOffline() logic from core
