@@ -8,7 +8,6 @@ import { Integrations, JSONObject } from '../events/interfaces'
 import { CorePlugin } from '../plugins'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
-import { isOffline } from '../connection'
 
 export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   message_delivered: [ctx: Ctx]
@@ -190,7 +189,7 @@ export abstract class CoreEventQueue<
   }
 
   async flush(): Promise<Ctx[]> {
-    if (this.queue.length === 0 || isOffline()) {
+    if (this.queue.length === 0) {
       return []
     }
 
