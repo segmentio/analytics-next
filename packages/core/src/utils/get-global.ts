@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 // This an imperfect polyfill for globalThis
 export const getGlobal = () => {
   if (typeof globalThis !== 'undefined') {

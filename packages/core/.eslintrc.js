@@ -1,4 +1,4 @@
 /** @type { import('eslint').Linter.Config } */
 module.exports = {
-  extends: ['../../.eslintrc'],
+  extends: ['../../.eslintrc.isomorphic'],
 }
