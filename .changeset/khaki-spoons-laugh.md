@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-next': patch
+'@segment/analytics-next': minor
 ---
 
-Fix 'Promise is undefined' issue with ie11 polyfill
+Update polyfill cdn use polyfill.io. Auto-polyfill support for opera mini extreme mode and old versions of opera.
