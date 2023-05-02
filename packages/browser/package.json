@@ -10,12 +10,6 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/pkg/index.js",
   "types": "./dist/types/index.d.ts",
-  "browser": {
-    "./dist/cjs/node": "./dist/cjs/node/node.browser.js",
-    "./dist/cjs/node.js": "./dist/cjs/node/node.browser.js",
-    "./dist/pkg/node": "./dist/pkg/node/node.browser.js",
-    "./dist/pkg/node.js": "./dist/pkg/node/node.browser.js"
-  },
   "files": [
     "dist/",
     "src/",
@@ -54,13 +48,13 @@
     "@segment/tsub": "1.0.1",
     "dset": "^3.1.2",
     "js-cookie": "3.0.1",
-    "node-fetch": "^2.6.7",
     "spark-md5": "^3.0.1",
     "tslib": "^2.4.1",
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
     "@internal/config": "0.0.0",
+    "@segment/analytics-node": "*",
     "@segment/analytics.js-integration": "^3.3.3",
     "@segment/analytics.js-integration-amplitude": "^3.3.3",
     "@size-limit/preset-big-lib": "^7.0.8",
@@ -88,6 +82,7 @@
     "log-update": "^4.0.0",
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
+    "node-fetch": "^2.6.7",
     "node-gyp": "^9.0.0",
     "playwright": "^1.28.1",
     "serve-handler": "^6.1.3",
