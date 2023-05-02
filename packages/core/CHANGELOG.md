@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.2.5
+
+### Patch Changes
+
+- [#846](https://github.com/segmentio/analytics-next/pull/846) [`7dcafa2`](https://github.com/segmentio/analytics-next/commit/7dcafa29cbce86d8c3d3c829c3ba7c22148949fc) Thanks [@silesky](https://github.com/silesky)! - Remove browser-specific isOffline() logic from core
+
 ## 1.2.4
 
 ### Patch Changes
