@@ -7,7 +7,7 @@ https://www.npmjs.com/package/@segment/analytics-node
 - Node.js >= 14
 - AWS Lambda
 - Cloudflare Workers
-- Vercel Edge Functions (and other Edge Worker environments)
+- Vercel Edge Functions
 - Web Workers (experimental)
 
 ## Quick Start
