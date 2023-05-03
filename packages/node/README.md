@@ -6,7 +6,7 @@ https://www.npmjs.com/package/@segment/analytics-node
 - https://segment.com/docs/connections/sources/catalog/libraries/server/node/quickstart
 
 ### LEGACY NODE SDK MIGRATION GUIDE:
-- https://segment.com/docs/connections/sources/catalog/libraries/server/node/migration/
+- https://segment.com/docs/connections/sources/catalog/libraries/server/node/migration
 
 
 ## Runtime Support
