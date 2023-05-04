@@ -17,6 +17,7 @@ module.exports = {
           'process',
           'global',
           'navigator',
+          'location',
         ],
         'import/no-nodejs-modules': 'error',
       },
