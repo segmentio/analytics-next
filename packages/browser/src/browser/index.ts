@@ -304,7 +304,7 @@ async function loadAnalytics(
   )
   
   if (params.includes('ajs_')) {
-    await analytics.queryString(qp).catch(console.error)
+    await analytics.queryString(params).catch(console.error)
   }
 
   analytics.initialized = true
