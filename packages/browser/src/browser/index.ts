@@ -258,6 +258,12 @@ async function registerPlugins(
   return ctx
 }
 
+const parseSearchParams = (search = '', hash = '') => {
+  // if a URL has some query params that are embedded in the hash like: '/#/?ajs_id=123 -> ?ajs_id=123'
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+  return term
+}
+
 async function loadAnalytics(
   settings: AnalyticsBrowserSettings,
   options: InitOptions = {},
@@ -265,6 +271,9 @@ async function loadAnalytics(
 ): Promise<[Analytics, Context]> {
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+
+  // capture params early, before full initialization.
+  const params = parseSearchParams(location.search, window.location.hash)
 
   const legacySettings =
     settings.cdnSettings ??
@@ -294,13 +303,9 @@ async function loadAnalytics(
     classicIntegrations
   )
 
-  const search = window.location.search ?? ''
-  const hash = window.location.hash ?? ''
-
-  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-  if (term.includes('ajs_')) {
-    await analytics.queryString(term).catch(console.error)
+  const qp = parseSearchParams(params)
+  if (qp.includes('ajs_')) {
+    await analytics.queryString(qp).catch(console.error)
   }
 
   analytics.initialized = true
