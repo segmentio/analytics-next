@@ -1,3 +1,1 @@
-module.exports = {
-  '*.{js,ts}': ['eslint --fix'],
-}
+module.exports = require("@internal/config").lintStagedConfig
