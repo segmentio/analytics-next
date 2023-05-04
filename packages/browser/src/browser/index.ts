@@ -302,9 +302,8 @@ async function loadAnalytics(
     plugins,
     classicIntegrations
   )
-
-  const qp = parseSearchParams(params)
-  if (qp.includes('ajs_')) {
+  
+  if (params.includes('ajs_')) {
     await analytics.queryString(qp).catch(console.error)
   }
 
