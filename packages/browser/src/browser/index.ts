@@ -273,7 +273,7 @@ async function loadAnalytics(
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
   // capture params early, before full initialization.
-  const params = parseSearchParams(location.search, window.location.hash)
+  const params = parseSearchParams(window.location.search, window.location.hash)
 
   const legacySettings =
     settings.cdnSettings ??
