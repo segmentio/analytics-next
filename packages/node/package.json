@@ -1,7 +1,6 @@
 {
   "name": "@customerio/cdp-analytics-node",
-  "version": "1.0.0-beta.22",
-  "private": true,
+  "version": "0.0.2",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -27,10 +26,10 @@
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest",
-    "publish-prerelease": "sh scripts/prerelease.sh"
+    "prepublish": "yarn run -T build"
   },
   "dependencies": {
-    "@customerio/cdp-analytics-core": "1.2.2",
+    "@customerio/cdp-analytics-core": "0.0.2",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.1",
     "uuid": "^9.0.0"

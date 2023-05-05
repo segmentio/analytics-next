@@ -1,11 +1,6 @@
 {
   "name": "@customerio/cdp-analytics-core",
-  "version": "1.2.3",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/segmentio/analytics-next",
-    "directory": "packages/core"
-  },
+  "version": "0.0.2",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
