@@ -8,7 +8,7 @@ const env = getGlobal()
 // extension code ran first and has already set up the variable)
 const inspectorHost: {
   attach: (analytics: Analytics) => void
-} = ((env as any)['__SEGMENT_INSPECTOR__'] ??= {})
+} = ((env as any)['__INSPECTOR__'] ??= {})
 
 export const attachInspector = (analytics: Analytics) =>
   inspectorHost.attach?.(analytics as any)

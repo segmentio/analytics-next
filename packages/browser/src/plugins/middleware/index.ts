@@ -1,17 +1,17 @@
 import { Context, ContextCancelation } from '../../core/context'
-import { SegmentEvent } from '../../core/events'
+import { CustomerioEvent } from '../../core/events'
 import { Plugin } from '../../core/plugin'
-import { SegmentFacade, toFacade } from '../../lib/to-facade'
+import { CustomerioFacade, toFacade } from '../../lib/to-facade'
 
 export interface MiddlewareParams {
-  payload: SegmentFacade
+  payload: CustomerioFacade
 
-  integrations?: SegmentEvent['integrations']
+  integrations?: CustomerioEvent['integrations']
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
 
 export interface DestinationMiddlewareParams {
-  payload: SegmentFacade
+  payload: CustomerioFacade
   integration: string
   next: (payload: MiddlewareParams['payload'] | null) => void
 }
@@ -26,20 +26,20 @@ export type DestinationMiddlewareFunction = (
 
 export async function applyDestinationMiddleware(
   destination: string,
-  evt: SegmentEvent,
+  evt: CustomerioEvent,
   middleware: DestinationMiddlewareFunction[]
-): Promise<SegmentEvent | null> {
+): Promise<CustomerioEvent | null> {
   // Clone the event so mutations are localized to a single destination.
   let modifiedEvent = toFacade(evt, {
     clone: true,
     traverse: false,
-  }).rawEvent() as SegmentEvent
+  }).rawEvent() as CustomerioEvent
   async function applyMiddleware(
-    event: SegmentEvent,
+    event: CustomerioEvent,
     fn: DestinationMiddlewareFunction
-  ): Promise<SegmentEvent | null> {
+  ): Promise<CustomerioEvent | null> {
     let nextCalled = false
-    let returnedEvent: SegmentEvent | null = null
+    let returnedEvent: CustomerioEvent | null = null
 
     await fn({
       payload: toFacade(event, {
@@ -61,7 +61,7 @@ export async function applyDestinationMiddleware(
     })
 
     if (!nextCalled && returnedEvent !== null) {
-      returnedEvent = returnedEvent as SegmentEvent
+      returnedEvent = returnedEvent as CustomerioEvent
       returnedEvent.integrations = {
         ...event.integrations,
         [destination]: false,
@@ -84,7 +84,7 @@ export async function applyDestinationMiddleware(
 
 export function sourceMiddlewarePlugin(
   fn: MiddlewareFunction,
-  integrations: SegmentEvent['integrations']
+  integrations: CustomerioEvent['integrations']
 ): Plugin {
   async function apply(ctx: Context): Promise<Context> {
     let nextCalled = false

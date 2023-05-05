@@ -31,6 +31,5 @@ describe('topDomain', function () {
     assert.strictEqual(tld('https://google.com:443/stuff'), 'google.com')
     assert.strictEqual(tld('http://dev:3000'), undefined)
     assert.strictEqual(tld('http://app.jut.io'), 'jut.io')
-    assert.strictEqual(tld('http://app.segment.io'), 'segment.io')
   })
 })

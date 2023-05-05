@@ -11,7 +11,7 @@ const writeKey = 'foo'
 
 describe('Inspector', () => {
   beforeEach(() => {
-    Object.assign(((window as any)['__SEGMENT_INSPECTOR__'] ??= {}), {
+    Object.assign(((window as any)['__INSPECTOR__'] ??= {}), {
       attach: jest.fn(),
     })
   })
@@ -22,7 +22,7 @@ describe('Inspector', () => {
     })
 
     expect(
-      ((window as any)['__SEGMENT_INSPECTOR__'] as any).attach
+      ((window as any)['__INSPECTOR__'] as any).attach
     ).toHaveBeenCalledWith(analytics)
   })
 
@@ -39,7 +39,7 @@ describe('Inspector', () => {
     analytics.queue.on('message_enriched', enrichedFn)
     analytics.queue.on('message_delivered', deliveredFn)
 
-    const deliveryPromise = analytics.track('Test event').catch(() => {})
+    const deliveryPromise = analytics.track('Test event').catch(() => { })
 
     expect(triggeredFn).toHaveBeenCalledTimes(1)
 
@@ -77,7 +77,7 @@ describe('Inspector', () => {
       track: (ctx) => ctx,
     })
 
-    const ctx = await analytics.track('Test event').catch(() => {})
+    const ctx = await analytics.track('Test event').catch(() => { })
 
     expect(enrichedFn).toHaveBeenLastCalledWith(
       ctx,

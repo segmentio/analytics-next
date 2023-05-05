@@ -8,6 +8,7 @@ import { Integrations, JSONObject } from '../events/interfaces'
 import { CorePlugin } from '../plugins'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
+import { isOffline } from '../connection'
 
 export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   message_delivered: [ctx: Ctx]
@@ -189,7 +190,7 @@ export abstract class CoreEventQueue<
   }
 
   async flush(): Promise<Ctx[]> {
-    if (this.queue.length === 0) {
+    if (this.queue.length === 0 || isOffline()) {
       return []
     }
 
@@ -225,8 +226,8 @@ export abstract class CoreEventQueue<
 
   private availableExtensions(denyList: Integrations) {
     const available = this.plugins.filter((p) => {
-      // Only filter out destination plugins or the Segment.io plugin
-      if (p.type !== 'destination' && p.name !== 'Segment.io') {
+      // Only filter out destination plugins or the Customer.io Data Pipeline plugin
+      if (p.type !== 'destination' && p.name !== 'Customer.io Data Pipelines') {
         return true
       }
 
@@ -237,11 +238,12 @@ export abstract class CoreEventQueue<
         }
       })
 
-      // Explicit integration option takes precedence, `All: false` does not apply to Segment.io
+      // Explicit integration option takes precedence, `All: false` does not apply to Customer.io Data Pipelines
       return (
         denyList[p.name] ??
         alternativeNameMatch ??
-        (p.name === 'Segment.io' ? true : denyList.All) !== false
+        (p.name === 'Customer.io Data Pipelines' ? true : denyList.All) !==
+        false
       )
     })
 

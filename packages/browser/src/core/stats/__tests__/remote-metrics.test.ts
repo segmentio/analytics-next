@@ -76,7 +76,7 @@ describe('remote metrics', () => {
     expect(spy).toHaveBeenCalled()
     const [url, request] = spy.mock.calls[0]
 
-    expect(url).toBe('https://api.segment.io/v1/m')
+    expect(url).toBe('https://cdp.customer.io/v1/m')
     expect(request).toMatchInlineSnapshot(
       { body: expect.anything() },
       `
@@ -147,7 +147,7 @@ describe('remote metrics', () => {
     await remote.flush()
 
     expect(errorSpy).toHaveBeenCalledWith(
-      'Error sending segment performance metrics',
+      'Error sending performance metrics',
       error
     )
   })

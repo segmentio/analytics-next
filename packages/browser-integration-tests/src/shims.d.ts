@@ -1,4 +1,4 @@
-import type { AnalyticsSnippet } from '@segment/analytics-next'
+import type { AnalyticsSnippet } from '@customerio/cdp-analytics-js'
 
 declare global {
   interface Window {

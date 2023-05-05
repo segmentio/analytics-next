@@ -44,8 +44,8 @@ export const getCDN = (): string => {
     // it's possible that the CDN is not found in the page because:
     // - the script is loaded through a proxy
     // - the script is removed after execution
-    // in this case, we fall back to the default Segment CDN
-    return `https://cdn.segment.com`
+    // in this case, we fall back to the default CDN
+    return `https://cdp.customer.io`
   }
 }
 
@@ -81,5 +81,5 @@ export function getLegacyAJSPath(): string {
     return path.replace('analytics.min.js', 'analytics.classic.js')
   }
 
-  return `https://cdn.segment.com/analytics.js/v1/${writeKey}/analytics.classic.js`
+  return `https://cdp.customer.io/analytics.js/v1/${writeKey}/analytics.classic.js`
 }

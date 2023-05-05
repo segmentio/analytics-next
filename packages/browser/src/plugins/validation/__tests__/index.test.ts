@@ -1,8 +1,8 @@
 import { validation } from '..'
 import { Context } from '../../../core/context'
-import { SegmentEvent } from '../../../core/events'
+import { CustomerioEvent } from '../../../core/events'
 
-const validEvent: SegmentEvent = {
+const validEvent: CustomerioEvent = {
   type: 'track',
   anonymousId: 'abc',
   event: 'test',
@@ -12,32 +12,34 @@ const validEvent: SegmentEvent = {
 
 describe('validation', () => {
   ;['track', 'identify', 'group', 'page', 'alias'].forEach((method) => {
-    // @ts-ignore
-    const validationFn: Function = validation[method] as any
     describe(method, () => {
       it('validates that the `event` exists', async () => {
-        try {
+        const val = async () =>
           // @ts-ignore
-          await validationFn(new Context())
-        } catch (err) {
-          expect(err).toBeTruthy()
-        }
-        expect.assertions(1)
+          validation[method](
+            // @ts-ignore
+            new Context()
+          )
+
+        await expect(val()).rejects.toMatchInlineSnapshot(
+          `[Error: Event is missing]`
+        )
       })
 
       it('validates that `event.event` exists', async () => {
+        const val = async () =>
+          // @ts-ignore
+          validation[method](
+            new Context({
+              ...validEvent,
+              event: undefined,
+            })
+          )
+
         if (method === 'track') {
-          try {
-            await validationFn(
-              new Context({
-                ...validEvent,
-                event: undefined,
-              })
-            )
-          } catch (err) {
-            expect(err).toBeTruthy()
-          }
-          expect.assertions(1)
+          await expect(val()).rejects.toMatchInlineSnapshot(
+            `[Error: Event is not a string]`
+          )
         }
       })
 
@@ -45,33 +47,35 @@ describe('validation', () => {
         if (method === 'alias') {
           return
         }
-        try {
-          await validationFn(
+        const val = async () =>
+          // @ts-ignore
+          validation[method](
             new Context({
               ...validEvent,
               properties: undefined,
               traits: undefined,
             })
           )
-        } catch (err) {
-          expect(err).toBeTruthy()
-        }
-        expect.assertions(1)
+
+        await expect(val()).rejects.toMatchInlineSnapshot(
+          `[Error: properties is not an object]`
+        )
       })
 
       it('validates that it contains an user', async () => {
-        try {
-          await validationFn(
+        const val = async () =>
+          // @ts-ignore
+          validation[method](
             new Context({
               ...validEvent,
               userId: undefined,
               anonymousId: undefined,
             })
           )
-        } catch (err) {
-          expect(err).toBeTruthy()
-        }
-        expect.assertions(1)
+
+        await expect(val()).rejects.toMatchInlineSnapshot(
+          `[Error: Missing userId or anonymousId]`
+        )
       })
     })
   })

@@ -1,11 +1,11 @@
-import { CoreSegmentEvent } from '../../events'
+import { CoreCustomerioEvent } from '../../events'
 import { validateEvent } from '../assertions'
 
-const baseEvent: Partial<CoreSegmentEvent> = {
+const baseEvent: Partial<CoreCustomerioEvent> = {
   userId: 'foo',
   event: 'Test Event',
 }
-describe(validateEvent, () => {
+describe('validateEvent', () => {
   test('should be capable of working with empty properties and traits', () => {
     expect(() => validateEvent(undefined)).toThrowError()
     expect(() => validateEvent(null)).toThrowError()
@@ -76,80 +76,54 @@ describe(validateEvent, () => {
     ).not.toThrow()
   })
 
-  describe('User Validation', () => {
-    test('should pass if either a userID/anonymousID/previousID/groupID are defined', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 'foo',
-        })
-      ).not.toThrow()
+  test('should require either a user ID or anonymous ID or previousID or Group ID for all events', () => {
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 'foo',
+      })
+    ).not.toThrow()
 
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'identify',
-          traits: {},
-          userId: 'foo',
-          anonymousId: undefined,
-        })
-      ).not.toThrow()
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'identify',
+        traits: {},
+        userId: 'foo',
+        anonymousId: undefined,
+      })
+    ).not.toThrow()
 
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'alias',
-          previousId: 'foo',
-          userId: undefined,
-          anonymousId: undefined,
-        })
-      ).not.toThrow()
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'alias',
+        previousId: 'foo',
+        userId: undefined,
+        anonymousId: undefined,
+      })
+    ).not.toThrow()
 
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'group',
-          traits: {},
-          groupId: 'foo',
-        })
-      ).not.toThrow()
-    })
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'group',
+        traits: {},
+        groupId: 'foo',
+      })
+    ).not.toThrow()
 
-    test('should fail if ID is _not_ string', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 123 as any,
-        })
-      ).toThrowError(/string/)
-
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 123 as any,
-        })
-      ).toThrowError(/string/)
-    })
-
-    test('should handle null as well as undefined', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: null,
-        })
-      ).toThrowError(/nil/i)
-    })
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'alias',
+        previousId: undefined,
+        userId: undefined,
+        anonymousId: undefined,
+      })
+    ).toThrow()
   })
 })

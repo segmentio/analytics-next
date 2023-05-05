@@ -16,7 +16,7 @@ export const standaloneMock: BeforeEachFn = async ({ context }) => {
     'umd'
   )
   await context.route(
-    'https://cdn.segment.com/analytics.js/v1/*/analytics.min.js',
+    'https://cdp.customer.io/analytics.js/v1/*/analytics.min.js',
     (route, request) => {
       if (request.method().toLowerCase() !== 'get') {
         return route.continue()
@@ -33,7 +33,7 @@ export const standaloneMock: BeforeEachFn = async ({ context }) => {
   )
 
   await context.route(
-    'https://cdn.segment.com/analytics-next/bundles/*',
+    'https://cdp.customer.io/analytics-next/bundles/*',
     (route, request) => {
       if (request.method().toLowerCase() !== 'get') {
         return route.continue()

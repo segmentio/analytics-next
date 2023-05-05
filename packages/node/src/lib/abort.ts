@@ -1,7 +1,7 @@
 /**
  * use non-native event emitter for the benefit of non-node runtimes like CF workers.
  */
-import { Emitter } from '@segment/analytics-core'
+import { Emitter } from '@customerio/cdp-analytics-core'
 import { detectRuntime } from './env'
 
 /**
@@ -30,7 +30,7 @@ class AbortSignal {
     const handlerName = `on${type}`
 
     if (typeof (this as any)[handlerName] === 'function') {
-      ;(this as any)[handlerName](event)
+      ; (this as any)[handlerName](event)
     }
 
     this.eventEmitter.emit(type, event)
@@ -64,7 +64,7 @@ export const abortSignalAfterTimeout = (timeoutMs: number) => {
   if (detectRuntime() === 'cloudflare-worker') {
     return [] // TODO: this is broken in cloudflare workers, otherwise results in "A hanging Promise was canceled..." error.
   }
-  const ac = new (globalThis.AbortController || AbortController)()
+  const ac = new (global.AbortController || AbortController)()
 
   const timeoutId = setTimeout(() => {
     ac.abort()

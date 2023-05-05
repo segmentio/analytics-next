@@ -6,7 +6,7 @@ jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
 
 import { Analytics } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
-import { Plugin, SegmentEvent } from '../app/types'
+import { Plugin, CustomerioEvent } from '../app/types'
 import { Context } from '../app/context'
 
 const testPlugin: Plugin = {
@@ -127,7 +127,7 @@ describe('Ability for users to exit without losing events', () => {
     })
 
     test('any events created after close should be emitted', async () => {
-      const events: SegmentEvent[] = []
+      const events: CustomerioEvent[] = []
       ajs.on('call_after_close', (event) => {
         events.push(event)
       })
@@ -185,7 +185,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(called).toBeFalsy()
     })
 
-    test('should flush immediately if close is called and there are events in the segment.io plugin, but no more are expected', async () => {
+    test('should flush immediately if close is called and there are events in the `Customer.io Data Pipelines` plugin, but no more are expected', async () => {
       const analytics = new Analytics({
         writeKey: 'foo',
         flushInterval: 10000,
@@ -195,7 +195,7 @@ describe('Ability for users to exit without losing events', () => {
       _helpers.makeTrackCall(analytics)
       await sleep(100)
 
-      // ensure all track events have reached the segment plugin
+      // ensure all track events have reached the plugin
       expect(analytics['_publisher']['_batch']!.length).toBe(2)
 
       const startTime = perf.now()
@@ -207,7 +207,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(calls[0].body.batch.length).toBe(2)
     })
 
-    test('should wait to flush if close is called and an event has not made it to the segment.io plugin yet', async () => {
+    test('should wait to flush if close is called and an event has not made it to the `Customer.io Data Pipelines` plugin yet', async () => {
       const TRACK_DELAY = 100
       const _testPlugin: Plugin = {
         ...testPlugin,
@@ -225,7 +225,7 @@ describe('Ability for users to exit without losing events', () => {
       _helpers.makeTrackCall(analytics)
       _helpers.makeTrackCall(analytics)
 
-      // ensure that track events have not reached the segment plugin before closeAndFlush is called.
+      // ensure that track events have not reached the plugin before closeAndFlush is called.
       expect(analytics['_publisher']['_batch']).toBeFalsy()
 
       const startTime = perf.now()

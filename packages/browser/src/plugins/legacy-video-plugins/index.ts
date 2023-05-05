@@ -9,7 +9,7 @@ export async function loadLegacyVideoPlugins(
   )
 
   // This is super gross, but we need to support the `window.analytics.plugins` namespace
-  // that is linked in the segment docs in order to be backwards compatible with ajs-classic
+  // that is linked in the docs in order to be backwards compatible with ajs-classic
 
   // @ts-expect-error
   analytics._plugins = plugins

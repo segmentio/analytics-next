@@ -3,14 +3,14 @@ import {
   isPlainObject,
   isString,
   isNumber,
-} from '@segment/analytics-core'
+} from '../../plugins/validation'
 import { Context } from '../context'
 import {
   Callback,
   JSONObject,
   Options,
   EventProperties,
-  SegmentEvent,
+  CustomerioEvent,
   Traits,
   GroupTraits,
   UserTraits,
@@ -21,7 +21,7 @@ import { ID, User } from '../user'
  * Helper for the track method
  */
 export function resolveArguments(
-  eventName: string | SegmentEvent,
+  eventName: string | CustomerioEvent,
   properties?: EventProperties | Callback,
   options?: Options | Callback,
   callback?: Callback
@@ -36,8 +36,8 @@ export function resolveArguments(
   const data = isPlainObject(eventName)
     ? eventName.properties ?? {}
     : isPlainObject(properties)
-    ? properties
-    : {}
+      ? properties
+      : {}
 
   let opts: Options = {}
   if (!isFunction(options)) {
@@ -62,12 +62,12 @@ export function resolvePageArguments(
   options?: Options | Callback,
   callback?: Callback
 ): [
-  string | null,
-  string | null,
-  EventProperties,
-  Options,
-  Callback | undefined
-] {
+    string | null,
+    string | null,
+    EventProperties,
+    Options,
+    Callback | undefined
+  ] {
   let resolvedCategory: string | undefined | null = null
   let resolvedName: string | undefined | null = null
   const args = [category, name, properties, options, callback]

@@ -15,20 +15,20 @@ function disabledActionDestinations(
 
   const disabledIntegrations = plan.integrations
     ? Object.keys(plan.integrations).filter(
-        (i) => plan.integrations![i] === false
-      )
+      (i) => plan.integrations![i] === false
+    )
     : []
 
   // This accounts for cases like Fullstory, where the settings.integrations
   // contains a "Fullstory" object but settings.remotePlugins contains "Fullstory (Actions)"
   const disabledRemotePlugins: string[] = []
-  ;(settings.remotePlugins ?? []).forEach((p: RemotePlugin) => {
-    disabledIntegrations.forEach((int) => {
-      if (p.name.includes(int) || int.includes(p.name)) {
-        disabledRemotePlugins.push(p.name)
-      }
+    ; (settings.remotePlugins ?? []).forEach((p: RemotePlugin) => {
+      disabledIntegrations.forEach((int) => {
+        if (p.name.includes(int) || int.includes(p.name)) {
+          disabledRemotePlugins.push(p.name)
+        }
+      })
     })
-  })
 
   return (settings.remotePlugins ?? []).reduce((acc, p) => {
     if (p.settings['subscriptions']) {
@@ -58,7 +58,7 @@ export function schemaFilter(
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,
-          'Segment.io': true,
+          'Customer.io Data Pipelines': true,
         })
         return ctx
       } else {

@@ -8,7 +8,7 @@ const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const ASSET_PATH = isProd
-  ? 'https://cdn.segment.com/analytics-next/bundles/'
+  ? 'https://cdp.customer.io/analytics-js/'
   : '/dist/umd/'
 
 const plugins = [
@@ -32,7 +32,6 @@ const config = {
     global: false, // do not polyfill global object, we can use getGlobal function if needed.
   },
   mode: process.env.NODE_ENV || 'development',
-  devtool: 'source-map',
   entry: {
     index: {
       import: path.resolve(__dirname, 'src/browser/browser-umd.ts'),

@@ -15,7 +15,7 @@ describe('Plugins', () => {
       await analytics.ready
 
       const ajsNodeXt = analytics['_queue'].plugins.find(
-        (xt) => xt.name === 'Segment.io'
+        (xt) => xt.name === 'Customer.io Data Pipelines'
       )
       expect(ajsNodeXt).toBeDefined()
       expect(ajsNodeXt?.isLoaded()).toBeTruthy()

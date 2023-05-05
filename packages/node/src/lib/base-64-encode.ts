@@ -1,8 +1,14 @@
-// eslint-disable-next-line import/no-nodejs-modules
-import { Buffer } from 'buffer'
 /**
  * Base64 encoder that works in browser, worker, node runtimes.
  */
 export const b64encode = (str: string): string => {
-  return Buffer.from(str).toString('base64')
+  if (
+    // in node env
+    typeof Buffer !== 'undefined'
+  ) {
+    return Buffer.from(str).toString('base64')
+  } else {
+    // in worker env
+    return btoa(str)
+  }
 }

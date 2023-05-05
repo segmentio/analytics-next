@@ -63,7 +63,7 @@ export const cdnSettingsKitchenSink: LegacySettings = {
       type: 'browser',
       bundlingStatus: 'unbundled',
     },
-    'Segment.io': {
+    'Customer.io Data Pipelines': {
       apiKey: 'D8frB7upBChqDN9PMWksNvZYDaKJIYo6',
       unbundledIntegrations: ['Google Analytics'],
       addBundledMetadata: true,

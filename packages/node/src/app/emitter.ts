@@ -1,14 +1,14 @@
-import { CoreEmitterContract, Emitter } from '@segment/analytics-core'
+import { CoreEmitterContract, Emitter } from '@customerio/cdp-analytics-core'
 import { Context } from './context'
 import type { AnalyticsSettings } from './settings'
-import { SegmentEvent } from './types'
+import { CustomerioEvent } from './types'
 
 /**
  * Map of emitter event names to method args.
  */
 export type NodeEmitterEvents = CoreEmitterContract<Context> & {
   initialize: [AnalyticsSettings]
-  call_after_close: [SegmentEvent] // any event that did not get dispatched due to close
+  call_after_close: [CustomerioEvent] // any event that did not get dispatched due to close
   http_request: [
     {
       url: string
@@ -20,4 +20,4 @@ export type NodeEmitterEvents = CoreEmitterContract<Context> & {
   drained: []
 }
 
-export class NodeEmitter extends Emitter<NodeEmitterEvents> {}
+export class NodeEmitter extends Emitter<NodeEmitterEvents> { }

@@ -1,20 +1,21 @@
 import jsdom, { JSDOM } from 'jsdom'
 import unfetch from 'unfetch'
 import { LegacySettings } from '..'
+import { onCSPError } from '../../lib/csp-detection'
 import { pWhile } from '../../lib/p-while'
-import { snippet } from '../../tester/__fixtures__/segment-snippet'
+import { snippet } from '../../tester/__fixtures__/snippet'
 import * as Factory from '../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
+    'Customer.io Data Pipelines': {
+      type: 'browser',
+    },
     Zapier: {
       type: 'server',
     },
     'Amazon S3': {},
     Amplitude: {
-      type: 'browser',
-    },
-    Segmentio: {
       type: 'browser',
     },
     Iterable: {
@@ -46,7 +47,7 @@ describe('CSP Detection', () => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
 
     jest
       .mocked(unfetch)
@@ -69,14 +70,14 @@ describe('CSP Detection', () => {
     jsd = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
-      url: 'https://segment.com',
+      url: 'http://localhost:3000',
       virtualConsole,
     })
 
     windowSpy = jest.spyOn(global, 'window', 'get')
     documentSpy = jest.spyOn(global, 'document', 'get')
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
 
     windowSpy.mockImplementation(() => {
       return jsd.window as unknown as Window & typeof globalThis
@@ -88,7 +89,7 @@ describe('CSP Detection', () => {
   })
 
   it('reverts to ajs classic in case of CSP errors', async () => {
-    jest.spyOn(console, 'error').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'error').mockImplementationOnce(() => { })
 
     const handlers: Record<string, EventListener[]> = {}
     jest
@@ -102,13 +103,13 @@ describe('CSP Detection', () => {
     handlers['securitypolicyviolation'].forEach((handler) => {
       handler({
         // @ts-ignore
-        blockedURI: 'cdn.segment.com',
+        blockedURI: 'cdp.customer.io',
       })
     })
 
     await pWhile(
       () => getClassic() === undefined,
-      () => {}
+      () => { }
     )
 
     expect(getClassic()).toMatchInlineSnapshot(`
@@ -121,18 +122,15 @@ describe('CSP Detection', () => {
   })
 
   it('does not revert to classic when CSP error is report only', async () => {
-    await import('../standalone')
     const ogScripts = Array.from(document.scripts)
 
     const warnSpy = jest.spyOn(console, 'warn')
-    const cspSpy = jest.fn()
-    document.addEventListener('securitypolicyviolation', cspSpy)
 
-    const event = new window.Event('securitypolicyviolation') as any
-    event.disposition = 'report'
-    event.blockedURI = 'cdn.segment.com'
-    document.dispatchEvent(event)
-    expect(cspSpy).toBeCalled()
+    await onCSPError({
+      blockedURI: 'cdp.customer.io',
+      disposition: 'report',
+    } as unknown as SecurityPolicyViolationEvent)
+
     expect(warnSpy).not.toHaveBeenCalled()
     expect(Array.from(document.scripts)).toEqual(ogScripts)
   })

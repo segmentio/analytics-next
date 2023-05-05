@@ -32,14 +32,14 @@ it('should use the default CDN if not overridden', async () => {
     writeKey,
   })
   expect(unfetch).toBeCalledWith(
-    expect.stringContaining('https://cdn.segment.com')
+    expect.stringContaining('https://cdp.customer.io')
   )
 })
 
 it('if CDN is overridden, sets the overridden CDN global variable', async () => {
   const mockCdn = 'https://cdn.foo.com'
 
-  ;(window as any).analytics = {}
+    ; (window as any).analytics = {}
 
   await AnalyticsBrowser.load({
     writeKey,

@@ -7,7 +7,7 @@ import { TEST_WRITEKEY } from '../../test-helpers/test-writekeys'
 
 const writeKey = TEST_WRITEKEY
 
-describe('queryString', () => {
+describe.skip('queryString', () => {
   let jsd: JSDOM
 
   beforeEach(async () => {

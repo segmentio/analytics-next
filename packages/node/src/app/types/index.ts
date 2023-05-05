@@ -1,3 +1,3 @@
 export * from './params'
-export * from './segment-event'
+export * from './event'
 export * from './plugin'

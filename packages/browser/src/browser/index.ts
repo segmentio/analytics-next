@@ -12,7 +12,7 @@ import { createDeferred } from '../lib/create-deferred'
 import { pageEnrichment } from '../plugins/page-enrichment'
 import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
-import { segmentio, SegmentioSettings } from '../plugins/segmentio'
+import { customerio, CustomerioSettings } from '../plugins/customerio'
 import { validation } from '../plugins/validation'
 import {
   AnalyticsBuffered,
@@ -39,7 +39,7 @@ export interface LegacyIntegrationConfiguration {
 
   bundlingStatus?: string
 
-  // Segment.io specific
+  // Customer.io specific
   retryQueue?: boolean
 
   // any extra unknown settings
@@ -68,13 +68,13 @@ export interface LegacySettings {
 
 export interface AnalyticsBrowserSettings extends AnalyticsSettings {
   /**
-   * The settings for the Segment Source.
+   * The settings for the Customer.io Source.
    * If provided, `AnalyticsBrowser` will not fetch remote settings
    * for the source.
    */
   cdnSettings?: LegacySettings & Record<string, unknown>
   /**
-   * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
+   * If provided, will override the default CDN for this application.
    */
   cdnURL?: string
 }
@@ -103,7 +103,7 @@ export function loadLegacySettings(
 function hasLegacyDestinations(settings: LegacySettings): boolean {
   return (
     getProcessEnv().NODE_ENV !== 'test' &&
-    // just one integration means segmentio
+    // just one integration means customerio
     Object.keys(settings.integrations).length > 1
   )
 }
@@ -160,26 +160,26 @@ async function registerPlugins(
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
     ? await import(
         /* webpackChunkName: "tsub-middleware" */ '../plugins/routing-middleware'
-      ).then((mod) => {
-        return mod.tsubMiddleware(
-          legacySettings.middlewareSettings!.routingRules
-        )
-      })
+    ).then((mod) => {
+      return mod.tsubMiddleware(
+        legacySettings.middlewareSettings!.routingRules
+      )
+    })
     : undefined
 
   const legacyDestinations =
     hasLegacyDestinations(legacySettings) || legacyIntegrationSources.length > 0
       ? await import(
           /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
-        ).then((mod) => {
-          return mod.ajsDestinations(
-            legacySettings,
-            analytics.integrations,
-            opts,
-            tsubMiddleware,
-            legacyIntegrationSources
-          )
-        })
+      ).then((mod) => {
+        return mod.ajsDestinations(
+          legacySettings,
+          analytics.integrations,
+          opts,
+          tsubMiddleware,
+          legacyIntegrationSources
+        )
+      })
       : []
 
   if (legacySettings.legacyVideoPluginsEnabled) {
@@ -193,9 +193,9 @@ async function registerPlugins(
   const schemaFilter = opts.plan?.track
     ? await import(
         /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
-      ).then((mod) => {
-        return mod.schemaFilter(opts.plan?.track, legacySettings)
-      })
+    ).then((mod) => {
+      return mod.schemaFilter(opts.plan?.track, legacySettings)
+    })
     : undefined
 
   const mergedSettings = mergedOptions(legacySettings, options)
@@ -219,15 +219,17 @@ async function registerPlugins(
     toRegister.push(schemaFilter)
   }
 
-  const shouldIgnoreSegmentio =
-    (opts.integrations?.All === false && !opts.integrations['Segment.io']) ||
-    (opts.integrations && opts.integrations['Segment.io'] === false)
+  const shouldIgnore =
+    (opts.integrations?.All === false &&
+      !opts.integrations['Customer.io Data Pipelines']) ||
+    (opts.integrations &&
+      opts.integrations['Customer.io Data Pipelines'] === false)
 
-  if (!shouldIgnoreSegmentio) {
+  if (!shouldIgnore) {
     toRegister.push(
-      segmentio(
+      customerio(
         analytics,
-        mergedSettings['Segment.io'] as SegmentioSettings,
+        mergedSettings['Customer.io Data Pipelines'] as CustomerioSettings,
         legacySettings.integrations
       )
     )
@@ -271,7 +273,8 @@ async function loadAnalytics(
     (await loadLegacySettings(settings.writeKey, settings.cdnURL))
 
   const retryQueue: boolean =
-    legacySettings.integrations['Segment.io']?.retryQueue ?? true
+    legacySettings.integrations['Customer.io Data Pipelines']?.retryQueue ??
+    true
 
   const opts: InitOptions = { retryQueue, ...options }
   const analytics = new Analytics(settings, opts)
@@ -316,14 +319,12 @@ async function loadAnalytics(
 }
 
 /**
- * The public browser interface for Segment Analytics
+ * The public browser interface for Customer.io Data Pipelines
  *
  * @example
  * ```ts
  *  export const analytics = new AnalyticsBrowser()
  *  analytics.load({ writeKey: 'foo' })
- * ```
- * @link https://github.com/segmentio/analytics-next/#readme
  */
 export class AnalyticsBrowser extends AnalyticsBuffered {
   private _resolveLoadStart: (
@@ -348,7 +349,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
   /**
    * Fully initialize an analytics instance, including:
    *
-   * * Fetching settings from the segment CDN (by default).
+   * * Fetching settings from the CDN (by default).
    * * Fetching all remote destinations configured by the user (if applicable).
    * * Flushing buffered analytics events.
    * * Loading all middleware.

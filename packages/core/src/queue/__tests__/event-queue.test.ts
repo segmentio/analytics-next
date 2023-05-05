@@ -398,9 +398,9 @@ describe('Flushing', () => {
       },
     }
 
-    const segmentio = {
+    const customerio = {
       ...testPlugin,
-      name: 'Segment.io',
+      name: 'Customer.io Data Pipelines',
       type: 'after' as const,
       track: (ctx: TestCtx): Promise<TestCtx> | TestCtx => {
         return Promise.resolve(ctx)
@@ -412,13 +412,13 @@ describe('Flushing', () => {
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
         integrations: {
           Mixpanel: false,
-          'Segment.io': false,
+          'Customer.io Data Pipelines': false,
         },
       }
 
@@ -426,7 +426,7 @@ describe('Flushing', () => {
 
       await eq.register(TestCtx.system(), amplitude, ajs)
       await eq.register(TestCtx.system(), mixPanel, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -438,15 +438,15 @@ describe('Flushing', () => {
 
       expect(mixPanel.track).not.toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
-      expect(segmentio.track).not.toHaveBeenCalled()
+      expect(customerio.track).not.toHaveBeenCalled()
     })
 
-    test('does not deliver to any destination except Segment.io if All: false ', async () => {
+    test('does not deliver to any destination except `Customer.io Data Pipelines` if All: false ', async () => {
       const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
@@ -459,7 +459,7 @@ describe('Flushing', () => {
 
       await eq.register(TestCtx.system(), amplitude, ajs)
       await eq.register(TestCtx.system(), mixPanel, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -470,7 +470,7 @@ describe('Flushing', () => {
 
       expect(mixPanel.track).not.toHaveBeenCalled()
       expect(amplitude.track).not.toHaveBeenCalled()
-      expect(segmentio.track).toHaveBeenCalled()
+      expect(customerio.track).toHaveBeenCalled()
     })
 
     test('does not deliver when All: false and destination is also explicitly false', async () => {
@@ -478,14 +478,14 @@ describe('Flushing', () => {
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
         integrations: {
           All: false,
           Amplitude: false,
-          'Segment.io': false,
+          'Customer.io Data Pipelines': false,
         },
       }
 
@@ -493,7 +493,7 @@ describe('Flushing', () => {
 
       await eq.register(TestCtx.system(), amplitude, ajs)
       await eq.register(TestCtx.system(), mixPanel, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -504,7 +504,7 @@ describe('Flushing', () => {
 
       expect(mixPanel.track).not.toHaveBeenCalled()
       expect(amplitude.track).not.toHaveBeenCalled()
-      expect(segmentio.track).not.toHaveBeenCalled()
+      expect(customerio.track).not.toHaveBeenCalled()
     })
 
     test('delivers to destinations if All: false but the destination is allowed', async () => {
@@ -512,14 +512,14 @@ describe('Flushing', () => {
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
         integrations: {
           All: false,
           Amplitude: true,
-          'Segment.io': true,
+          'Customer.io Data Pipelines': true,
         },
       }
 
@@ -527,7 +527,7 @@ describe('Flushing', () => {
 
       await eq.register(TestCtx.system(), amplitude, ajs)
       await eq.register(TestCtx.system(), mixPanel, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -538,15 +538,15 @@ describe('Flushing', () => {
 
       expect(mixPanel.track).not.toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
-      expect(segmentio.track).toHaveBeenCalled()
+      expect(customerio.track).toHaveBeenCalled()
     })
 
-    test('delivers to Segment.io if All: false but Segment.io is not specified', async () => {
+    test('delivers to `Customer.io Data Pipelines` if All: false but `Customer.io Data Pipelines` is not specified', async () => {
       const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
       jest.spyOn(mixPanel, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
@@ -560,7 +560,7 @@ describe('Flushing', () => {
 
       await eq.register(TestCtx.system(), amplitude, ajs)
       await eq.register(TestCtx.system(), mixPanel, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -571,14 +571,14 @@ describe('Flushing', () => {
 
       expect(mixPanel.track).not.toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
-      expect(segmentio.track).toHaveBeenCalled()
+      expect(customerio.track).toHaveBeenCalled()
     })
 
     test('delivers to destinations that exist as an object', async () => {
       const eq = new TestEventQueue()
 
       jest.spyOn(amplitude, 'track')
-      jest.spyOn(segmentio, 'track')
+      jest.spyOn(customerio, 'track')
 
       const evt = {
         type: 'track' as const,
@@ -587,14 +587,14 @@ describe('Flushing', () => {
           Amplitude: {
             amplitudeKey: 'foo',
           },
-          'Segment.io': {},
+          'Customer.io Data Pipelines': {},
         },
       }
 
       const ctx = new TestCtx(evt)
 
       await eq.register(TestCtx.system(), amplitude, ajs)
-      await eq.register(TestCtx.system(), segmentio, ajs)
+      await eq.register(TestCtx.system(), customerio, ajs)
 
       eq.dispatch(ctx)
 
@@ -604,7 +604,7 @@ describe('Flushing', () => {
       expect(flushed).toEqual([ctx])
 
       expect(amplitude.track).toHaveBeenCalled()
-      expect(segmentio.track).toHaveBeenCalled()
+      expect(customerio.track).toHaveBeenCalled()
     })
   })
 })

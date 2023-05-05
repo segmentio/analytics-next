@@ -62,7 +62,7 @@ export async function install(): Promise<void> {
   const options = window.analytics?._loadOptions ?? {}
   if (!writeKey) {
     console.error(
-      'Failed to load Write Key. Make sure to use the latest version of the Segment snippet, which can be found in your source settings.'
+      'Failed to load Write Key. Make sure to use the latest version of the snippet, which can be found in your source settings.'
     )
     return
   }

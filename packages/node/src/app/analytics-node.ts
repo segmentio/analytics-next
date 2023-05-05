@@ -1,7 +1,11 @@
-import { CoreAnalytics, bindAll, pTimeout } from '@segment/analytics-core'
+import {
+  CoreAnalytics,
+  bindAll,
+  pTimeout,
+} from '@customerio/cdp-analytics-core'
 import { AnalyticsSettings, validateSettings } from './settings'
 import { version } from '../generated/version'
-import { createConfiguredNodePlugin } from '../plugins/segmentio'
+import { createConfiguredNodePlugin } from '../plugins/customerio'
 import { NodeEventFactory } from './event-factory'
 import { Callback, dispatchAndEmit } from './dispatch-emit'
 import { NodeEmitter } from './emitter'
@@ -12,7 +16,7 @@ import {
   PageParams,
   TrackParams,
   Plugin,
-  SegmentEvent,
+  CustomerioEvent,
 } from './types'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
@@ -49,7 +53,6 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         maxRetries: settings.maxRetries ?? 3,
         maxEventsInBatch: settings.maxEventsInBatch ?? 15,
         httpRequestTimeout: settings.httpRequestTimeout,
-        disable: settings.disable,
         flushInterval,
       },
       this as NodeEmitter
@@ -89,15 +92,15 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
   }
 
-  private _dispatch(segmentEvent: SegmentEvent, callback?: Callback) {
+  private _dispatch(CustomerioEvent: CustomerioEvent, callback?: Callback) {
     if (this._isClosed) {
-      this.emit('call_after_close', segmentEvent as SegmentEvent)
+      this.emit('call_after_close', CustomerioEvent as CustomerioEvent)
       return undefined
     }
 
     this._pendingEvents++
 
-    dispatchAndEmit(segmentEvent, this._queue, this, callback)
+    dispatchAndEmit(CustomerioEvent, this._queue, this, callback)
       .catch((ctx) => ctx)
       .finally(() => {
         this._pendingEvents--
@@ -110,23 +113,21 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
   /**
    * Combines two unassociated user identities.
-   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
   alias(
     { userId, previousId, context, timestamp, integrations }: AliasParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.alias(userId, previousId, {
+    const CustomerioEvent = this._eventFactory.alias(userId, previousId, {
       context,
       integrations,
       timestamp,
     })
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**
    * Associates an identified user with a collective.
-   *  @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#group
    */
   group(
     {
@@ -140,7 +141,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: GroupParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.group(groupId, traits, {
+    const CustomerioEvent = this._eventFactory.group(groupId, traits, {
       context,
       anonymousId,
       userId,
@@ -148,12 +149,11 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       integrations,
     })
 
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**
    * Includes a unique userId and (maybe anonymousId) and any optional traits you know about them.
-   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#identify
    */
   identify(
     {
@@ -166,19 +166,18 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: IdentifyParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.identify(userId, traits, {
+    const CustomerioEvent = this._eventFactory.identify(userId, traits, {
       context,
       anonymousId,
       userId,
       timestamp,
       integrations,
     })
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**
    * The page method lets you record page views on your website, along with optional extra information about the page being viewed.
-   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#page
    */
   page(
     {
@@ -193,20 +192,18 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: PageParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.page(
+    const CustomerioEvent = this._eventFactory.page(
       category ?? null,
       name ?? null,
       properties,
       { context, anonymousId, userId, timestamp, integrations }
     )
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**
    * Records screen views on your app, along with optional extra information
    * about the screen viewed by the user.
-   *
-   * TODO: This is not documented on the segment docs ATM (for node).
    */
   screen(
     {
@@ -221,19 +218,18 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: PageParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.screen(
+    const CustomerioEvent = this._eventFactory.screen(
       category ?? null,
       name ?? null,
       properties,
       { context, anonymousId, userId, timestamp, integrations }
     )
 
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**
    * Records actions your users perform.
-   * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#track
    */
   track(
     {
@@ -247,7 +243,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }: TrackParams,
     callback?: Callback
   ): void {
-    const segmentEvent = this._eventFactory.track(event, properties, {
+    const CustomerioEvent = this._eventFactory.track(event, properties, {
       context,
       userId,
       anonymousId,
@@ -255,7 +251,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       integrations,
     })
 
-    this._dispatch(segmentEvent, callback)
+    this._dispatch(CustomerioEvent, callback)
   }
 
   /**

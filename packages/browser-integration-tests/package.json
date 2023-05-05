@@ -15,12 +15,13 @@
     "server": "http-server --port 3000",
     "browser": "playwright test --debug"
   },
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@3.2.1",
   "devDependencies": {
+    "@customerio/cdp-analytics-js": "workspace:^",
     "@internal/config": "workspace:^",
     "@playwright/test": "^1.28.1",
-    "@segment/analytics-next": "workspace:^",
     "http-server": "14.1.1",
+    "nock": "^13.2.9",
     "tslib": "^2.4.1"
   }
 }

@@ -5,7 +5,7 @@ import type {
   EventProperties,
   Integrations,
   Timestamp,
-} from '@segment/analytics-core'
+} from '@customerio/cdp-analytics-core'
 
 export type { GroupTraits, UserTraits }
 
@@ -13,7 +13,7 @@ export type { GroupTraits, UserTraits }
  * A dictionary of extra context to attach to the call.
  * Note: context differs from traits because it is not attributes of the user itself.
  */
-export interface ExtraContext extends CoreExtraContext {}
+export interface ExtraContext extends CoreExtraContext { }
 
 /**
  * An ID associated with the user. Note: at least one of userId or anonymousId must be included.
@@ -36,8 +36,6 @@ export type GroupParams = {
   groupId: string
   /**
    * Traits are pieces of information you know about a group.
-   * This interface represents reserved traits that Segment has standardized.
-   * @link https://segment.com/docs/connections/spec/group/#traits
    */
   traits?: GroupTraits
   context?: ExtraContext
@@ -48,8 +46,6 @@ export type GroupParams = {
 export type IdentifyParams = {
   /**
    * Traits are pieces of information you know about a group.
-   * This interface represents reserved traits that Segment has standardized.
-   * @link https://segment.com/docs/connections/spec/group/#traits
    */
   traits?: UserTraits
   context?: ExtraContext

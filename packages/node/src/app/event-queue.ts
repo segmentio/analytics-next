@@ -1,4 +1,4 @@
-import { CoreEventQueue, PriorityQueue } from '@segment/analytics-core'
+import { CoreEventQueue, PriorityQueue } from '@customerio/cdp-analytics-core'
 import type { Plugin } from '../app/types'
 import type { Context } from './context'
 

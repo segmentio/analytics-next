@@ -13,14 +13,14 @@ import {
 import type { FormArgs, LinkArgs } from '../auto-track'
 import { isOffline } from '../connection'
 import { Context } from '../context'
-import { dispatch, Emitter } from '@segment/analytics-core'
+import { dispatch, Emitter } from '@customerio/cdp-analytics-core'
 import {
   Callback,
   EventFactory,
   Integrations,
   Plan,
   EventProperties,
-  SegmentEvent,
+  CustomerioEvent,
 } from '../events'
 import type { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
@@ -97,11 +97,11 @@ export interface InitOptions {
    * Disables or sets constraints on processing of query string parameters
    */
   useQueryString?:
-    | boolean
-    | {
-        aid?: RegExp
-        uid?: RegExp
-      }
+  | boolean
+  | {
+    aid?: RegExp
+    uid?: RegExp
+  }
 }
 
 /* analytics-classic stubs */
@@ -111,8 +111,7 @@ function _stub(this: never) {
 
 export class Analytics
   extends Emitter
-  implements AnalyticsCore, AnalyticsClassic
-{
+  implements AnalyticsCore, AnalyticsClassic {
   protected settings: AnalyticsSettings
   private _user: User
   private _group: Group
@@ -181,14 +180,14 @@ export class Analytics
   async track(...args: EventParams): Promise<DispatchedEvent> {
     const [name, data, opts, cb] = resolveArguments(...args)
 
-    const segmentEvent = this.eventFactory.track(
+    const CustomerioEvent = this.eventFactory.track(
       name,
       data as EventProperties,
       opts,
       this.integrations
     )
 
-    return this._dispatch(segmentEvent, cb).then((ctx) => {
+    return this._dispatch(CustomerioEvent, cb).then((ctx) => {
       this.emit('track', name, ctx.event.properties, ctx.event.options)
       return ctx
     })
@@ -198,7 +197,7 @@ export class Analytics
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.page(
+    const CustomerioEvent = this.eventFactory.page(
       category,
       page,
       properties,
@@ -206,7 +205,7 @@ export class Analytics
       this.integrations
     )
 
-    return this._dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(CustomerioEvent, callback).then((ctx) => {
       this.emit('page', category, page, ctx.event.properties, ctx.event.options)
       return ctx
     })
@@ -218,14 +217,14 @@ export class Analytics
     )
 
     this._user.identify(id, _traits)
-    const segmentEvent = this.eventFactory.identify(
+    const CustomerioEvent = this.eventFactory.identify(
       this._user.id(),
       this._user.traits(),
       options,
       this.integrations
     )
 
-    return this._dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(CustomerioEvent, callback).then((ctx) => {
       this.emit(
         'identify',
         ctx.event.userId,
@@ -251,14 +250,14 @@ export class Analytics
     const groupId = this._group.id()
     const groupTraits = this._group.traits()
 
-    const segmentEvent = this.eventFactory.group(
+    const CustomerioEvent = this.eventFactory.group(
       groupId,
       groupTraits,
       options,
       this.integrations
     )
 
-    return this._dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(CustomerioEvent, callback).then((ctx) => {
       this.emit('group', ctx.event.groupId, ctx.event.traits, ctx.event.options)
       return ctx
     })
@@ -266,13 +265,13 @@ export class Analytics
 
   async alias(...args: AliasParams): Promise<DispatchedEvent> {
     const [to, from, options, callback] = resolveAliasArguments(...args)
-    const segmentEvent = this.eventFactory.alias(
+    const CustomerioEvent = this.eventFactory.alias(
       to,
       from,
       options,
       this.integrations
     )
-    return this._dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(CustomerioEvent, callback).then((ctx) => {
       this.emit('alias', to, from, ctx.event.options)
       return ctx
     })
@@ -282,14 +281,14 @@ export class Analytics
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
-    const segmentEvent = this.eventFactory.screen(
+    const CustomerioEvent = this.eventFactory.screen(
       category,
       page,
       properties,
       options,
       this.integrations
     )
-    return this._dispatch(segmentEvent, callback).then((ctx) => {
+    return this._dispatch(CustomerioEvent, callback).then((ctx) => {
       this.emit(
         'screen',
         category,
@@ -377,7 +376,7 @@ export class Analytics
   }
 
   private async _dispatch(
-    event: SegmentEvent,
+    event: CustomerioEvent,
     callback?: Callback
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
@@ -473,7 +472,7 @@ export class Analytics
     return this
   }
 
-  normalize(msg: SegmentEvent): SegmentEvent {
+  normalize(msg: CustomerioEvent): CustomerioEvent {
     console.warn(deprecationWarning)
     return this.eventFactory.normalize(msg)
   }

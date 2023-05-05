@@ -1,4 +1,4 @@
-import { LegacySettings } from '@segment/analytics-next'
+import { LegacySettings } from '@customerio/cdp-analytics-js'
 
 type RemotePlugin = NonNullable<LegacySettings['remotePlugins']>[number]
 
@@ -7,13 +7,13 @@ export class SettingsBuilder {
   constructor(baseSettings?: Record<string, any>) {
     this.settings = baseSettings || {
       integrations: {
-        'Segment.io': {
+        'Customer.io Data Pipelines': {
           apiKey: 'writeKey',
           unbundledIntegrations: [],
           addBundledMetadata: true,
           maybeBundledConfigIds: {},
           versionSettings: { version: '4.4.7', componentTypes: ['browser'] },
-          apiHost: 'api.segment.io/v1',
+          apiHost: 'cdp.customer.io/v1',
         },
       },
       plan: {
@@ -25,7 +25,7 @@ export class SettingsBuilder {
       analyticsNextEnabled: true,
       middlewareSettings: {} as any,
       enabledMiddleware: {},
-      metrics: { sampleRate: 0.1, host: 'api.segment.io/v1' },
+      metrics: { sampleRate: 0.1, host: 'cdp.customer.io/v1' },
       legacyVideoPluginsEnabled: false,
       remotePlugins: [],
     }

@@ -1,7 +1,6 @@
 import { fetch } from '../../lib/fetch'
 import { version } from '../../generated/version'
-import { getVersionType } from '../../plugins/segmentio/normalize'
-import { SEGMENT_API_HOST } from '../constants'
+import { getVersionType } from '../../plugins/customerio/normalize'
 
 export interface MetricsOptions {
   host?: string
@@ -10,9 +9,6 @@ export interface MetricsOptions {
   maxQueueSize?: number
 }
 
-/**
- * Type expected by the segment metrics API endpoint
- */
 type RemoteMetric = {
   type: 'Counter'
   metric: string
@@ -49,7 +45,7 @@ const createRemoteMetric = (
 }
 
 function logError(err: unknown): void {
-  console.error('Error sending segment performance metrics', err)
+  console.error('Error sending performance metrics', err)
 }
 
 export class RemoteMetrics {
@@ -61,7 +57,7 @@ export class RemoteMetrics {
   queue: RemoteMetric[]
 
   constructor(options?: MetricsOptions) {
-    this.host = options?.host ?? SEGMENT_API_HOST
+    this.host = options?.host ?? 'cdp.customer.io/v1'
     this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20

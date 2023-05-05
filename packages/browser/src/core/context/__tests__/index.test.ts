@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Context } from '..'
-import { SegmentEvent } from '../../events'
+import { CustomerioEvent } from '../../events'
 
 describe(Context, () => {
   // hide console spam when running tests
-  jest.spyOn(console, 'log').mockImplementation(() => {})
-  jest.spyOn(console, 'table').mockImplementation(() => {})
+  jest.spyOn(console, 'log').mockImplementation(() => { })
+  jest.spyOn(console, 'table').mockImplementation(() => { })
 
   describe('.system', () => {
     it('creates a system event', () => {
@@ -70,14 +70,14 @@ describe(Context, () => {
   })
 
   describe('events', () => {
-    const evt: SegmentEvent = {
+    const evt: CustomerioEvent = {
       type: 'identify',
       traits: {
         banana: 'phone',
       },
     }
 
-    const anothaOne: SegmentEvent = {
+    const anothaOne: CustomerioEvent = {
       type: 'identify',
       traits: {
         name: 'DJ Khaled',
@@ -117,14 +117,14 @@ describe(Context, () => {
     })
 
     it('allows updating integrations set to true', () => {
-      const trueEvt: SegmentEvent = {
+      const trueEvt: CustomerioEvent = {
         type: 'identify',
         integrations: {
           Amplitude: true,
         },
       }
 
-      const falseEvt: SegmentEvent = {
+      const falseEvt: CustomerioEvent = {
         type: 'identify',
         integrations: {
           Amplitude: false,
@@ -153,7 +153,7 @@ describe(Context, () => {
   })
 
   it('serializes a context to JSON', () => {
-    const evt: SegmentEvent = {
+    const evt: CustomerioEvent = {
       type: 'track',
       properties: {
         serializable: true,

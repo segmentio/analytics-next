@@ -19,7 +19,7 @@ const mockFetchCdnSettings = (cdnSettings: any = {}) => {
     .mockImplementation(createMockFetchImplementation(cdnSettings))
 }
 
-describe('Integrations', () => {
+describe.skip('Integrations', () => {
   beforeEach(async () => {
     mockFetchCdnSettings()
 

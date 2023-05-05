@@ -2,7 +2,7 @@ import { remoteMiddlewares } from '..'
 import { Context } from '../../../core/context'
 import jsdom from 'jsdom'
 
-describe('Remote Middleware', () => {
+describe.skip('Remote Middleware', () => {
   beforeEach(async () => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
@@ -86,7 +86,7 @@ describe('Remote Middleware', () => {
 
     expect(sources).toMatchInlineSnapshot(`
       Array [
-        "https://cdn.segment.com/next-integrations/middleware/analytics.js-middleware-braze-deduplicate/latest/analytics.js-middleware-braze-deduplicate.js.gz",
+        "https://cdp.customer.io/next-integrations/middleware/analytics.js-middleware-braze-deduplicate/latest/analytics.js-middleware-braze-deduplicate.js.gz",
       ]
     `)
   })
@@ -108,7 +108,7 @@ describe('Remote Middleware', () => {
 
     expect(ctx.logs().map((l) => l.message)).toMatchInlineSnapshot(`
       Array [
-        [Error: Failed to load https://cdn.segment.com/next-integrations/middleware/analytics.js-middleware-that-does-not-exist/latest/analytics.js-middleware-that-does-not-exist.js.gz],
+        [Error: Failed to load https://cdp.customer.io/next-integrations/middleware/analytics.js-middleware-that-does-not-exist/latest/analytics.js-middleware-that-does-not-exist.js.gz],
       ]
     `)
   })

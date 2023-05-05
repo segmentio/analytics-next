@@ -6,7 +6,7 @@ import {
   Integrations,
   EventProperties,
   Traits,
-  SegmentEvent,
+  CustomerioEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
 
@@ -24,7 +24,7 @@ export class EventFactory {
     properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
+  ): CustomerioEvent {
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -41,8 +41,8 @@ export class EventFactory {
     properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
-    const event: Partial<SegmentEvent> = {
+  ): CustomerioEvent {
+    const event: Partial<CustomerioEvent> = {
       type: 'page' as const,
       properties: { ...properties },
       options: { ...options },
@@ -62,7 +62,7 @@ export class EventFactory {
     return this.normalize({
       ...this.baseEvent(),
       ...event,
-    } as SegmentEvent)
+    } as CustomerioEvent)
   }
 
   screen(
@@ -71,8 +71,8 @@ export class EventFactory {
     properties?: EventProperties,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
-    const event: Partial<SegmentEvent> = {
+  ): CustomerioEvent {
+    const event: Partial<CustomerioEvent> = {
       type: 'screen' as const,
       properties: { ...properties },
       options: { ...options },
@@ -90,7 +90,7 @@ export class EventFactory {
     return this.normalize({
       ...this.baseEvent(),
       ...event,
-    } as SegmentEvent)
+    } as CustomerioEvent)
   }
 
   identify(
@@ -98,7 +98,7 @@ export class EventFactory {
     traits?: Traits,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
+  ): CustomerioEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify' as const,
@@ -114,7 +114,7 @@ export class EventFactory {
     traits?: Traits,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
+  ): CustomerioEvent {
     return this.normalize({
       ...this.baseEvent(),
       type: 'group' as const,
@@ -130,8 +130,8 @@ export class EventFactory {
     from: string | null,
     options?: Options,
     globalIntegrations?: Integrations
-  ): SegmentEvent {
-    const base: Partial<SegmentEvent> = {
+  ): CustomerioEvent {
+    const base: Partial<CustomerioEvent> = {
       userId: to,
       type: 'alias' as const,
       options: { ...options },
@@ -146,17 +146,17 @@ export class EventFactory {
       return this.normalize({
         ...base,
         ...this.baseEvent(),
-      } as SegmentEvent)
+      } as CustomerioEvent)
     }
 
     return this.normalize({
       ...this.baseEvent(),
       ...base,
-    } as SegmentEvent)
+    } as CustomerioEvent)
   }
 
-  private baseEvent(): Partial<SegmentEvent> {
-    const base: Partial<SegmentEvent> = {
+  private baseEvent(): Partial<CustomerioEvent> {
+    const base: Partial<CustomerioEvent> = {
       integrations: {},
       options: {},
     }
@@ -178,7 +178,7 @@ export class EventFactory {
    * Builds the context part of an event based on "foreign" keys that
    * are provided in the `Options` parameter for an Event
    */
-  private context(event: SegmentEvent): [object, object] {
+  private context(event: CustomerioEvent): [object, object] {
     const optionsKeys = ['integrations', 'anonymousId', 'timestamp', 'userId']
 
     const options = event.options ?? {}
@@ -204,9 +204,8 @@ export class EventFactory {
     return [context, overrides]
   }
 
-  public normalize(event: SegmentEvent): SegmentEvent {
+  public normalize(event: CustomerioEvent): CustomerioEvent {
     // set anonymousId globally if we encounter an override
-    //segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/#override-the-anonymous-id-using-the-options-object
     event.options?.anonymousId &&
       this.user.anonymousId(event.options.anonymousId)
 
@@ -245,7 +244,7 @@ export class EventFactory {
 
     const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
 
-    const evt: SegmentEvent = {
+    const evt: CustomerioEvent = {
       ...body,
       messageId,
     }

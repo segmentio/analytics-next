@@ -16,7 +16,7 @@ function withTag(tag: string) {
   const jsd = new JSDOM(html, {
     runScripts: 'dangerously',
     resources: 'usable',
-    url: 'https://segment.com',
+    url: 'http://localhost:3000',
     virtualConsole,
   })
 
@@ -24,7 +24,7 @@ function withTag(tag: string) {
 
   const documentSpy = jest.spyOn(global, 'document', 'get')
 
-  jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+  jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
 
   windowSpy.mockImplementation(() => {
     return jsd.window as unknown as Window & typeof globalThis
@@ -40,20 +40,20 @@ beforeEach(async () => {
   jest.resetAllMocks()
 })
 
-it('detects the existing segment cdn', () => {
+it('detects the existing CDN', () => {
   withTag(`
-    <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+    <script src="https://cdp.customer.io/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
-  expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://cdp.customer.io"`)
 })
 
 it('should return the overridden cdn if window.analytics._cdn is mutated', () => {
   withTag(`
-  <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+  <script src="https://cdp.customer.io/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
-  ;(window.analytics as any) = {
-    _cdn: 'http://foo.cdn.com',
-  }
+    ; (window.analytics as any) = {
+      _cdn: 'http://foo.cdn.com',
+    }
   expect(getCDN()).toMatchInlineSnapshot(`"http://foo.cdn.com"`)
 })
 
@@ -61,26 +61,26 @@ it('if analytics is not loaded yet, should still return cdn', () => {
   // is this an impossible state?
   window.analytics = undefined as any
   withTag(`
-  <script src="https://cdn.segment.com/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+  <script src="https://cdp.customer.io/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
-  expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://cdp.customer.io"`)
 })
 
-it('detects custom cdns that match Segment in domain instrumentation patterns', () => {
+it('detects custom cdns that match in domain instrumentation patterns', () => {
   withTag(`
     <script src="https://my.cdn.domain/analytics.js/v1/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
   expect(getCDN()).toMatchInlineSnapshot(`"https://my.cdn.domain"`)
 })
 
-it('falls back to Segment if CDN is used as a proxy', () => {
+it('falls back if CDN is used as a proxy', () => {
   withTag(`
     <script src="https://my.cdn.proxy/custom-analytics.min.js" />
   `)
-  expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://cdp.customer.io"`)
 })
 
-it('falls back to Segment if the script is not at all present on the page', () => {
+it('falls back if the script is not at all present on the page', () => {
   withTag('')
-  expect(getCDN()).toMatchInlineSnapshot(`"https://cdn.segment.com"`)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://cdp.customer.io"`)
 })

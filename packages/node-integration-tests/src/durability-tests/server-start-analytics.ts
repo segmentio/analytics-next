@@ -1,4 +1,4 @@
-import { Analytics } from '@segment/analytics-node'
+import { Analytics } from '@customerio/cdp-analytics-node'
 import { startServer } from '../server/server'
 import { trackEventSmall } from '../server/fixtures'
 

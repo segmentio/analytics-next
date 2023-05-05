@@ -19,7 +19,7 @@ export const getDelay = (startTimeInEpochMS: number, timeoutInMS?: number) => {
 /**
  * Push an event into the dispatch queue and invoke any callbacks.
  *
- * @param event - Segment event to enqueue.
+ * @param event - Event to enqueue.
  * @param queue - Queue to dispatch against.
  * @param emitter - This is typically an instance of "Analytics" -- used for metrics / progress information.
  * @param options

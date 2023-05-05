@@ -1,5 +1,5 @@
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
-import { setVersionType } from '../plugins/segmentio/normalize'
+import { setVersionType } from '../plugins/customerio/normalize'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {

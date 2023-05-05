@@ -1,4 +1,4 @@
-import { CoreSegmentEvent } from '../events/interfaces'
+import { CoreCustomerioEvent } from '../events/interfaces'
 
 import { v4 as uuid } from '@lukeed/uuid'
 import { dset } from 'dset'
@@ -7,7 +7,7 @@ import { CoreStats, CoreMetric, NullStats } from '../stats'
 
 export interface SerializedContext {
   id: string
-  event: CoreSegmentEvent
+  event: CoreCustomerioEvent
   logs: LogMessage[]
   metrics?: CoreMetric[]
 }
@@ -35,7 +35,7 @@ export class ContextCancelation {
 }
 
 export abstract class CoreContext<
-  Event extends CoreSegmentEvent = CoreSegmentEvent
+  Event extends CoreCustomerioEvent = CoreCustomerioEvent
 > {
   event: Event
   logger: CoreLogger

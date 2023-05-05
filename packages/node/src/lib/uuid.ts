@@ -1,1 +1,1 @@
-export { v4 as uuid } from '@lukeed/uuid'
+export { v4 as uuid } from 'uuid'

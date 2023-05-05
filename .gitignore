@@ -1,36 +1,5 @@
-# yarn artifacts - https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# ignore all .vscode folders unless they're in the root directory
-.vscode
-!.vscode/extensions.json
-!.vscode/launch.json
-!.vscode/settings.json
-
+cache/
+dist/
 node_modules
-dist
-package-lock.json
-.DS_Store
-*.log
-stats.json
-.tmp
-*.tsbuildinfo
-coverage
-reports/*
-
-# ignore archives
-*.tgz
-*.gz
-
-.changelog
+.husky
 .turbo
-/test-results/
-playwright-report/
-playwright/.cache/
-tmp.tsconfig.json

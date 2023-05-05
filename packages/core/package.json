@@ -1,6 +1,6 @@
 {
-  "name": "@segment/analytics-core",
-  "version": "1.2.5",
+  "name": "@customerio/cdp-analytics-core",
+  "version": "1.2.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -30,7 +30,7 @@
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest"
   },
-  "packageManager": "yarn@3.4.1",
+  "packageManager": "yarn@3.2.1",
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "dset": "^3.1.2",

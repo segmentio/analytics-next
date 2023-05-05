@@ -1,7 +1,7 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { InitOptions } from '../../'
 import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
-import { snippet } from '../../tester/__fixtures__/segment-snippet'
+import { snippet } from '../../tester/__fixtures__/snippet'
 import { install, AnalyticsStandalone } from '../standalone-analytics'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
@@ -39,24 +39,23 @@ jest.mock('unfetch', () => {
 })
 
 describe('standalone bundle', () => {
-  const segmentDotCom = `foo`
+  const mockObj = `foo`
 
   beforeEach(async () => {
-    ;(window as any).analytics = undefined
+    ; (window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>
       <head>
         <script>
           ${snippet(
-            segmentDotCom,
-            true,
-            `
+      mockObj,
+      true,
+      `
             window.analytics.track('fruit basket', { fruits: ['🍌', '🍇'] })
-            window.analytics.identify('netto', { employer: 'segment' })
             window.analytics.setAnonymousId('anonNetto')
             window.analytics.on('initialize', () => ({ user: 'ariel' }))
           `
-          )}
+    )}
         </script>
       </head>
       <body>
@@ -68,15 +67,15 @@ describe('standalone bundle', () => {
     const jsd = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
-      url: 'https://segment.com',
+      url: 'http://localhost:3000',
       virtualConsole,
     })
 
     const windowSpy = jest.spyOn(global, 'window', 'get')
     const documentSpy = jest.spyOn(global, 'document', 'get')
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
-    jest.spyOn(console, 'error').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
+    jest.spyOn(console, 'error').mockImplementationOnce(() => { })
 
     windowSpy.mockImplementation(() => {
       return jsd.window as unknown as Window & typeof globalThis
@@ -117,7 +116,7 @@ describe('standalone bundle', () => {
 
     await install()
 
-    expect(spy).toHaveBeenCalledWith(segmentDotCom, {})
+    expect(spy).toHaveBeenCalledWith(mockObj, {})
   })
 
   it('derives the CDN from scripts on the page', async () => {
@@ -126,7 +125,7 @@ describe('standalone bundle', () => {
       // @ts-ignore ignore Response required fields
       .mockImplementation((): Promise<Response> => fetchSettings)
 
-    await loadLegacySettings(segmentDotCom)
+    await loadLegacySettings(mockObj)
 
     expect(unfetch).toHaveBeenCalledWith(
       'https://cdn.foo.com/v1/projects/foo/settings'
@@ -141,7 +140,7 @@ describe('standalone bundle', () => {
     const mockCdn = 'http://my-overridden-cdn.com'
 
     window.analytics._cdn = mockCdn
-    await loadLegacySettings(segmentDotCom)
+    await loadLegacySettings(mockObj)
 
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
@@ -158,9 +157,6 @@ describe('standalone bundle', () => {
 
     expect(track).toHaveBeenCalledWith('fruit basket', {
       fruits: ['🍌', '🍇'],
-    })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
     })
 
     expect(page).toHaveBeenCalled()
@@ -271,9 +267,6 @@ describe('standalone bundle', () => {
       fruits: ['🍌', '🍇'],
     })
     expect(track).toHaveBeenCalledWith('race conditions', { foo: 'bar' })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
 
     expect(page).toHaveBeenCalled()
   })

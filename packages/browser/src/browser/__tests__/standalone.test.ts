@@ -2,19 +2,19 @@ import jsdom, { JSDOM } from 'jsdom'
 import unfetch from 'unfetch'
 import { LegacySettings } from '..'
 import { pWhile } from '../../lib/p-while'
-import { snippet } from '../../tester/__fixtures__/segment-snippet'
+import { snippet } from '../../tester/__fixtures__/snippet'
 import * as Factory from '../../test-helpers/factories'
 
 const cdnResponse: LegacySettings = {
   integrations: {
+    'Customer.io Data Pipelines': {
+      type: 'browser',
+    },
     Zapier: {
       type: 'server',
     },
     'Amazon S3': {},
     Amplitude: {
-      type: 'browser',
-    },
-    Segmentio: {
       type: 'browser',
     },
     Iterable: {
@@ -31,7 +31,7 @@ jest.mock('unfetch', () => {
 })
 
 describe('standalone bundle', () => {
-  const segmentDotCom = `foo`
+  const mockObj = `foo`
 
   let jsd: JSDOM
   let windowSpy: jest.SpyInstance
@@ -41,7 +41,7 @@ describe('standalone bundle', () => {
     jest.restoreAllMocks()
     jest.resetAllMocks()
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
 
     jest
       .mocked(unfetch)
@@ -52,7 +52,7 @@ describe('standalone bundle', () => {
     <!DOCTYPE html>
       <head>
         <script>
-          ${snippet(segmentDotCom, true)}
+          ${snippet(mockObj, true)}
         </script>
       </head>
       <body>
@@ -64,14 +64,14 @@ describe('standalone bundle', () => {
     jsd = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
-      url: 'https://segment.com',
+      url: 'http://localhost:3000',
       virtualConsole,
     })
 
     windowSpy = jest.spyOn(global, 'window', 'get')
     documentSpy = jest.spyOn(global, 'document', 'get')
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
 
     windowSpy.mockImplementation(() => {
       return jsd.window as unknown as Window & typeof globalThis
@@ -87,7 +87,7 @@ describe('standalone bundle', () => {
 
     await pWhile(
       () => window.analytics?.initialized !== true,
-      () => {}
+      () => { }
     )
 
     expect(window.analytics).not.toBeUndefined()

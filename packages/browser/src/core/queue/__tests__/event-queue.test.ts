@@ -36,9 +36,9 @@ const ajs = {} as Analytics
  * This test file only contains event-queue tests that _are_ specific to this package.
  * You should prefer to write tests in packages/core
  */
-const segmentio = {
+const customerio = {
   ...testPlugin,
-  name: 'Segment.io',
+  name: 'Customer.io Data Pipelines',
   type: 'after' as const,
   track: (ctx: Context): Promise<Context> | Context => {
     return Promise.resolve(ctx)
@@ -53,21 +53,21 @@ describe('alternative names', () => {
     fullstory.type = 'destination'
 
     jest.spyOn(fullstory, 'track')
-    jest.spyOn(segmentio, 'track')
+    jest.spyOn(customerio, 'track')
 
     const evt = {
       type: 'track' as const,
       integrations: {
         All: false,
         'fullstory trackEvent': true,
-        'Segment.io': {},
+        'Customer.io Data Pipelines': {},
       },
     }
 
     const ctx = new Context(evt)
 
     await eq.register(Context.system(), fullstory, ajs)
-    await eq.register(Context.system(), segmentio, ajs)
+    await eq.register(Context.system(), customerio, ajs)
 
     void eq.dispatch(ctx)
 
@@ -77,6 +77,6 @@ describe('alternative names', () => {
     expect(flushed).toEqual([ctx])
 
     expect(fullstory.track).toHaveBeenCalled()
-    expect(segmentio.track).toHaveBeenCalled()
+    expect(customerio.track).toHaveBeenCalled()
   })
 })

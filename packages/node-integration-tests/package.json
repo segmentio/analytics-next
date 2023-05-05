@@ -13,13 +13,14 @@
     "test": "yarn perf && yarn durability"
   },
   "devDependencies": {
+    "@customerio/cdp-analytics-node": "workspace:^",
     "@internal/test-helpers": "workspace:^",
-    "@segment/analytics-node": "workspace:^",
     "@types/analytics-node": "^3.1.9",
     "@types/autocannon": "^7",
-    "@types/node": "^16",
+    "@types/node": "^14",
     "analytics-node": "^6.2.0",
-    "autocannon": "^7.10.0"
+    "autocannon": "^7.10.0",
+    "nock": "^13.2.9"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.2.1"
 }

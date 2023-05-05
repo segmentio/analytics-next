@@ -1,6 +1,6 @@
 import { Plugin } from '../../core/plugin'
 import { Context } from '../../core/context'
-import { SegmentEvent } from '../../core/events'
+import { CustomerioEvent } from '../../core/events'
 import fetch from 'node-fetch'
 import { version } from '../../generated/version'
 
@@ -14,10 +14,10 @@ interface AnalyticsNodeSettings {
 const btoa = (val: string): string => Buffer.from(val).toString('base64')
 
 export async function post(
-  event: SegmentEvent,
+  event: CustomerioEvent,
   writeKey: string
-): Promise<SegmentEvent> {
-  const res = await fetch(`https://api.segment.io/v1/${event.type}`, {
+): Promise<CustomerioEvent> {
+  const res = await fetch(`https://cdp.customer.io/v1/${event.type}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

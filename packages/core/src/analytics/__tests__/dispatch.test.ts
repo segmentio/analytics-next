@@ -8,6 +8,17 @@ type JestMockedFn<Fn> = Fn extends (...args: infer Args) => infer ReturnT
   ? jest.Mock<ReturnT, Args>
   : never
 
+const isOnline = jest.fn().mockReturnValue(true)
+const isOffline = jest.fn().mockReturnValue(false)
+
+jest.mock('../../connection', () => ({
+  isOnline,
+  isOffline,
+}))
+
+const fetcher: JestMockedFn<typeof import('node-fetch')['default']> = jest.fn()
+jest.mock('node-fetch', () => fetcher)
+
 const invokeCallback: JestMockedFn<
   typeof import('../../callback')['invokeCallback']
 > = jest.fn()

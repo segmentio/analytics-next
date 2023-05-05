@@ -57,7 +57,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
     })
 
-    it('uses a segment facade object', async () => {
+    it('uses a facade object', async () => {
       let type = ''
       const facadeMiddleware: MiddlewareFunction = ({ payload, next }) => {
         type = payload.type()
@@ -76,7 +76,7 @@ describe(sourceMiddlewarePlugin, () => {
     })
 
     it('cancels the event if `next` is not called', async () => {
-      const hangs: MiddlewareFunction = () => {}
+      const hangs: MiddlewareFunction = () => { }
       const hangsXT = sourceMiddlewarePlugin(hangs, {})
 
       const doesNotHang: MiddlewareFunction = ({ next, payload }) => {
@@ -174,7 +174,7 @@ describe(sourceMiddlewarePlugin, () => {
       const gaDestination: Plugin = {
         name: 'Google Analytics',
         isLoaded: () => true,
-        load: async () => {},
+        load: async () => { },
         type: 'destination',
         version: '1.0',
         page: async (ctx) => {

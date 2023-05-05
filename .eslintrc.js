@@ -5,6 +5,11 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
   },
+  env: {
+    es6: true,
+    node: true,
+    browser: true,
+  },
   extends: [
     // Turn on on eslint recommended rules https://github.com/eslint/eslint/blob/main/conf/eslint-recommended.js
     'eslint:recommended',
@@ -12,6 +17,13 @@ module.exports = {
     'prettier',
   ],
   overrides: [
+    {
+      files: ['*.{js,mjs}'],
+      extends: [
+        // Handle prettier rules through eslint https://github.com/prettier/eslint-plugin-prettier/blob/master/eslint-plugin-prettier.js#L65
+        'plugin:prettier/recommended',
+      ],
+    },
     {
       files: ['*.{ts,tsx}'],
       parser: '@typescript-eslint/parser',
@@ -53,24 +65,12 @@ module.exports = {
       },
       overrides: [
         {
-          files: ['**/__tests__/**', '**/scripts/**'],
+          files: ['*.test.*'],
           rules: {
             'require-await': 'off',
             '@typescript-eslint/require-await': 'off',
           },
         },
-      ],
-    },
-    {
-      files: ['*.{js,mjs}'],
-      env: {
-        // Config files and possible scripts. Allow anything, we don't really care.
-        browser: true,
-        node: true,
-      },
-      extends: [
-        // Handle prettier rules through eslint https://github.com/prettier/eslint-plugin-prettier/blob/master/eslint-plugin-prettier.js#L65
-        'plugin:prettier/recommended',
       ],
     },
   ],

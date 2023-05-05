@@ -3,21 +3,21 @@ import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
 import { LegacySettings } from '../../../browser'
-import { segmentio, SegmentioSettings } from '../../segmentio'
+import { customerio, CustomerioSettings } from '../../customerio'
 
 const settings: LegacySettings = {
   integrations: {
     'Braze Web Mode (Actions)': {},
     // note that Fullstory's name here doesn't contain 'Actions'
     Fullstory: {},
-    'Segment.io': {},
+    'Customer.io Data Pipelines': {},
   },
   remotePlugins: [
     {
       name: 'Braze Web Mode (Actions)',
       creationName: 'Braze Web Mode (Actions)',
       libraryName: 'brazeDestination',
-      url: 'https://cdn.segment.com/next-integrations/actions/braze/9850d2cc8308a89db62a.js',
+      url: 'https://cdp.customer.io/next-integrations/actions/braze/9850d2cc8308a89db62a.js',
       settings: {
         subscriptions: [
           {
@@ -37,7 +37,7 @@ const settings: LegacySettings = {
       name: 'Fullstory (Actions)',
       creationName: 'Fullstory (Actions)',
       libraryName: 'fullstoryDestination',
-      url: 'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
+      url: 'https://cdp.customer.io/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
       settings: {
         subscriptions: [
           {
@@ -93,9 +93,9 @@ const fullstory: Plugin = {
 }
 
 describe('schema filter', () => {
-  let options: SegmentioSettings
+  let options: CustomerioSettings
   let filterXt: Plugin
-  let segment: Plugin
+  let cio: Plugin
   let ajs: Analytics
 
   beforeEach(async () => {
@@ -104,10 +104,10 @@ describe('schema filter', () => {
 
     options = { apiKey: 'foo' }
     ajs = new Analytics({ writeKey: options.apiKey })
-    segment = segmentio(ajs, options, {})
+    cio = customerio(ajs, options, {})
     filterXt = schemaFilter({}, settings)
 
-    jest.spyOn(segment, 'track')
+    jest.spyOn(cio, 'track')
     jest.spyOn(trackEvent, 'track')
     jest.spyOn(trackPurchase, 'track')
     jest.spyOn(updateUserProfile, 'track')
@@ -123,7 +123,7 @@ describe('schema filter', () => {
 
     it('does not drop events when no plan is defined', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -132,7 +132,7 @@ describe('schema filter', () => {
 
       await ajs.track('A Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
@@ -140,7 +140,7 @@ describe('schema filter', () => {
 
     it('drops an event when the event is disabled', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -160,7 +160,7 @@ describe('schema filter', () => {
 
       await ajs.track('hi')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
 
       expect(trackEvent.track).not.toHaveBeenCalled()
@@ -170,7 +170,7 @@ describe('schema filter', () => {
 
     it('does not drop events with different names', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -188,7 +188,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
@@ -197,7 +197,7 @@ describe('schema filter', () => {
 
     it('does not drop events with same name when unplanned events are disallowed', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -216,7 +216,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
@@ -225,7 +225,7 @@ describe('schema filter', () => {
 
     it('drop events with different names when unplanned events are disallowed', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -244,7 +244,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).not.toHaveBeenCalled()
       expect(trackEvent.track).not.toHaveBeenCalled()
       expect(trackPurchase.track).not.toHaveBeenCalled()
@@ -253,7 +253,7 @@ describe('schema filter', () => {
 
     it('drops enabled event for matching destination', async () => {
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -271,7 +271,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
@@ -291,7 +291,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -301,7 +301,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
@@ -320,7 +320,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -330,7 +330,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
@@ -349,7 +349,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -360,7 +360,7 @@ describe('schema filter', () => {
       const ctx = await ajs.track('Track Event')
 
       expect(ctx.event.integrations).toEqual({ amplitude: true })
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
     })
 
     it('sets event integrations object when integration is disabled', async () => {
@@ -375,7 +375,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -385,7 +385,7 @@ describe('schema filter', () => {
 
       const ctx = await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
@@ -406,7 +406,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -445,7 +445,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -455,7 +455,7 @@ describe('schema filter', () => {
 
       await ajs.track('Track Event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
 
       expect(trackEvent.track).not.toHaveBeenCalled()
@@ -464,7 +464,7 @@ describe('schema filter', () => {
 
       await ajs.track('a non blocked event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
 
       expect(trackEvent.track).toHaveBeenCalled()
@@ -487,7 +487,7 @@ describe('schema filter', () => {
       )
 
       await ajs.register(
-        segment,
+        cio,
         trackEvent,
         trackPurchase,
         updateUserProfile,
@@ -498,7 +498,7 @@ describe('schema filter', () => {
 
       await ajs.track('hi')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
       expect(trackEvent.track).toHaveBeenCalled()
       expect(trackPurchase.track).toHaveBeenCalled()
@@ -508,7 +508,7 @@ describe('schema filter', () => {
 
       await ajs.track('a non blocked event')
 
-      expect(segment.track).toHaveBeenCalled()
+      expect(cio.track).toHaveBeenCalled()
       expect(amplitude.track).toHaveBeenCalled()
 
       expect(trackEvent.track).toHaveBeenCalled()

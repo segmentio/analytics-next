@@ -1,6 +1,6 @@
 import {
   CoreOptions,
-  CoreSegmentEvent,
+  CoreCustomerioEvent,
   Callback,
   Integrations,
   Plan,
@@ -13,15 +13,15 @@ import {
   GroupTraits,
   UserTraits,
   Traits,
-} from '@segment/analytics-core'
+} from '@customerio/cdp-analytics-core'
 
-export interface Options extends CoreOptions {}
+export interface Options extends CoreOptions { }
 
 export type { GroupTraits, UserTraits, Traits }
 
 export type EventProperties = Record<string, any>
 
-export interface SegmentEvent extends CoreSegmentEvent {}
+export interface CustomerioEvent extends CoreCustomerioEvent { }
 
 export type {
   Integrations,

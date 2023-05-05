@@ -1,8 +1,8 @@
-import { dispatch } from '@segment/analytics-core'
+import { dispatch } from '@customerio/cdp-analytics-core'
 import type { NodeEmitter } from './emitter'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
-import { SegmentEvent } from './types'
+import { CustomerioEvent } from './types'
 
 export type Callback = (err?: unknown, ctx?: Context) => void
 
@@ -13,7 +13,7 @@ const normalizeDispatchCb = (cb: Callback) => (ctx: Context) => {
 
 /* Dispatch function, but swallow promise rejections and use event emitter instead */
 export const dispatchAndEmit = async (
-  event: SegmentEvent,
+  event: CustomerioEvent,
   queue: NodeEventQueue,
   emitter: NodeEmitter,
   callback?: Callback

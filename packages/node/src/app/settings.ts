@@ -1,13 +1,13 @@
-import { ValidationError } from '@segment/analytics-core'
+import { ValidationError } from '@customerio/cdp-analytics-core'
 
 export interface AnalyticsSettings {
   /**
-   * Key that corresponds to your Segment.io project
+   * Key for your workspace
    */
   writeKey: string
   /**
   /**
-   * The base URL of the API. Default: "https://api.segment.io"
+   * The base URL of the API. Default: "https://cdp.customer.io"
    */
   host?: string
   /**
@@ -30,10 +30,6 @@ export interface AnalyticsSettings {
    * The maximum number of milliseconds to wait for an http request. Default: 10000
    */
   httpRequestTimeout?: number
-  /**
-   * Disable the analytics library. All calls will be a noop. Default: false.
-   */
-  disable?: boolean
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

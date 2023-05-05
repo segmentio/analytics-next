@@ -1,4 +1,4 @@
-import { sleep } from '@segment/analytics-core'
+import { sleep } from '@customerio/cdp-analytics-core'
 import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
@@ -42,7 +42,7 @@ describe('Lazy initialization', () => {
     expect(fetched).toBeCalledTimes(1)
     expect(fetched).toBeCalledWith(
       expect.stringContaining(
-        'https://cdn.segment.com/v1/projects/my-write-key/settings'
+        'https://cdp.customer.io/v1/projects/my-write-key/settings'
       )
     )
   })

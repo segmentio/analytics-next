@@ -5,7 +5,7 @@ import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { isValidDate } from './test-helpers/is-valid-date'
 import { pick } from 'lodash'
 import nock from 'nock'
-import { CoreContext } from '@segment/analytics-core'
+import { CoreContext } from '@customerio/cdp-analytics-core'
 
 const snapshotMatchers = {
   get batchEvent() {
@@ -39,7 +39,7 @@ describe('Method Smoke Tests', () => {
   describe('Metadata', () => {
     const calls: any[] = []
     beforeEach(async () => {
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://cdp.customer.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch', function (_body: any) {
           calls.push(_body)
           return true
@@ -65,7 +65,7 @@ describe('Method Smoke Tests', () => {
   describe('Headers', () => {
     test(`A request should have the expected headers`, async () => {
       let headers = null
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://cdp.customer.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch')
         .reply(201, function () {
           headers = this.req.headers
@@ -83,7 +83,7 @@ describe('Method Smoke Tests', () => {
                   "application/json",
                 ],
                 "user-agent": Array [
-                  "analytics-node-next/latest",
+                  "cdp-analytics-node/latest",
                 ],
               }
           `)
@@ -95,7 +95,7 @@ describe('Method Smoke Tests', () => {
     let calls: any[]
     beforeEach(async () => {
       calls = []
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://cdp.customer.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch', function (_body: any) {
           calls.push(_body)
           return true
@@ -137,7 +137,7 @@ describe('Method Smoke Tests', () => {
               "_metadata": Any<Object>,
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -172,7 +172,7 @@ describe('Method Smoke Tests', () => {
               "_metadata": Any<Object>,
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -205,7 +205,7 @@ describe('Method Smoke Tests', () => {
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -239,7 +239,7 @@ describe('Method Smoke Tests', () => {
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -270,7 +270,7 @@ describe('Method Smoke Tests', () => {
               "_metadata": Any<Object>,
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -304,7 +304,7 @@ describe('Method Smoke Tests', () => {
               "anonymousId": "foo",
               "context": Object {
                 "library": Object {
-                  "name": "@segment/analytics-node",
+                  "name": "@customerio/cdp-analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -327,7 +327,7 @@ describe('Method Smoke Tests', () => {
 
 describe('Client: requestTimeout', () => {
   beforeEach(async () => {
-    nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+    nock('https://cdp.customer.io') // using regex matching in nock changes the perf profile quite a bit
       .post('/v1/batch')
       .reply(201)
   })

@@ -6,7 +6,7 @@ import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { DestinationPlugin, Plugin } from '../../core/plugin'
-import { attempt } from '@segment/analytics-core'
+import { attempt } from '@customerio/cdp-analytics-core'
 import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
 import { pWhile } from '../../lib/p-while'
@@ -24,7 +24,7 @@ import {
   unloadIntegration,
 } from './loader'
 import { LegacyIntegration, ClassicIntegrationSource } from './types'
-import { isPlainObject } from '@segment/analytics-core'
+import { isPlainObject } from '@customerio/cdp-analytics-core'
 import {
   isDisabledIntegration as shouldSkipIntegration,
   isInstallableIntegration,
@@ -203,14 +203,13 @@ export class LegacyDestination implements DestinationPlugin {
     const plan = this.options?.plan?.track
     const ev = ctx.event.event
 
-    if (plan && ev && this.name !== 'Segment.io') {
-      // events are always sent to segment (legacy behavior)
+    if (plan && ev && this.name !== 'Customer.io Data Pipelines') {
       const planEvent = plan[ev]
       if (!isPlanEventEnabled(plan, planEvent)) {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
           All: false,
-          'Segment.io': true,
+          'Customer.io Data Pipelines': true,
         })
         ctx.cancel(
           new ContextCancelation({
