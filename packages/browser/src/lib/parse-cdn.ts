@@ -51,7 +51,7 @@ export const getCDN = (): string => {
 
 export const getNextIntegrationsURL = () => {
   const cdn = getCDN()
-  return `${cdn}/next-integrations`
+  return `${cdn}/v1/analytics-js/actions`
 }
 
 /**

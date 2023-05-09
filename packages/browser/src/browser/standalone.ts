@@ -12,8 +12,8 @@ if (process.env.ASSET_PATH) {
 
     // @ts-ignore
     __webpack_public_path__ = cdn
-      ? cdn + '/cdp/analytics-js/'
-      : 'https://cdp.customer.io/analytics-js/'
+      ? cdn + '/v1/analytics-js/'
+      : 'https://cdp.customer.io/v1/analytics-js/'
   }
 }
 

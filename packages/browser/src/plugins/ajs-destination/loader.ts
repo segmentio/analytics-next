@@ -77,9 +77,8 @@ export async function loadIntegration(
   const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
   const path = getNextIntegrationsURL()
 
-  const fullPath = `${path}/integrations/${
-    obfuscatedPathName ?? pathName
-  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
+  const fullPath = `${path}/${obfuscatedPathName ?? pathName
+    }.js?version=${version}`
 
   try {
     await loadScript(fullPath)
@@ -111,9 +110,8 @@ export async function unloadIntegration(
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(name, obfuscate)
 
-  const fullPath = `${path}/integrations/${
-    obfuscatedPathName ?? pathName
-  }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
+  const fullPath = `${path}/${obfuscatedPathName ?? pathName
+    }.js?version=${version}`
 
   return unloadScript(fullPath)
 }
