@@ -751,21 +751,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@customerio/cdp-analytics-core@workspace:*, @customerio/cdp-analytics-core@workspace:packages/core":
+"@customerio/cdp-analytics-browser@workspace:*, @customerio/cdp-analytics-browser@workspace:packages/browser":
   version: 0.0.0-use.local
-  resolution: "@customerio/cdp-analytics-core@workspace:packages/core"
+  resolution: "@customerio/cdp-analytics-browser@workspace:packages/browser"
   dependencies:
-    "@lukeed/uuid": ^2.0.0
-    dset: ^3.1.2
-    tslib: ^2.4.1
-  languageName: unknown
-  linkType: soft
-
-"@customerio/cdp-analytics-js@workspace:*, @customerio/cdp-analytics-js@workspace:packages/browser":
-  version: 0.0.0-use.local
-  resolution: "@customerio/cdp-analytics-js@workspace:packages/browser"
-  dependencies:
-    "@customerio/cdp-analytics-core": 1.2.2
+    "@customerio/cdp-analytics-core": 0.0.2
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics.js-integration": ^3.3.3
@@ -817,11 +807,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@customerio/cdp-analytics-core@workspace:*, @customerio/cdp-analytics-core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@customerio/cdp-analytics-core@workspace:packages/core"
+  dependencies:
+    "@lukeed/uuid": ^2.0.0
+    dset: ^3.1.2
+    tslib: ^2.4.1
+  languageName: unknown
+  linkType: soft
+
 "@customerio/cdp-analytics-node@workspace:*, @customerio/cdp-analytics-node@workspace:packages/node":
   version: 0.0.0-use.local
   resolution: "@customerio/cdp-analytics-node@workspace:packages/node"
   dependencies:
-    "@customerio/cdp-analytics-core": 1.2.2
+    "@customerio/cdp-analytics-core": 0.0.2
     "@internal/config": 0.0.0
     "@types/node": ^14
     "@types/uuid": ^9
@@ -900,7 +900,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/browser-integration-tests@workspace:packages/browser-integration-tests"
   dependencies:
-    "@customerio/cdp-analytics-js": "workspace:^"
+    "@customerio/cdp-analytics-browser": "workspace:^"
     "@internal/config": "workspace:^"
     "@playwright/test": ^1.28.1
     http-server: 14.1.1

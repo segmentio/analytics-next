@@ -1,4 +1,4 @@
-import { LegacySettings } from '@customerio/cdp-analytics-js'
+import { LegacySettings } from '@customerio/cdp-analytics-browser'
 
 type RemotePlugin = NonNullable<LegacySettings['remotePlugins']>[number]
 

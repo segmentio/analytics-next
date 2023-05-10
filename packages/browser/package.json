@@ -1,5 +1,5 @@
 {
-  "name": "@customerio/cdp-analytics-js",
+  "name": "@customerio/cdp-analytics-browser",
   "version": "0.0.1",
   "repository": {
     "type": "git",

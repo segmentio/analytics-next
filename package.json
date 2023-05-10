@@ -25,8 +25,8 @@
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @customerio/cdp-analytics-core",
     "core+deps": "turbo run --filter=@customerio/cdp-analytics-core",
-    "browser": "yarn workspace @customerio/cdp-analytics-js",
-    "browser+deps": "turbo run --filter=@customerio/cdp-analytics-js",
+    "browser": "yarn workspace @customerio/cdp-analytics-browser",
+    "browser+deps": "turbo run --filter=@customerio/cdp-analytics-browser",
     "node": "yarn workspace @customerio/cdp-analytics-node",
     "node+deps": "turbo run --filter=@customerio/cdp-analytics-node",
     "clean": "bash scripts/clean.sh"
@@ -62,7 +62,7 @@
     "typescript": "^4.7.0"
   },
   "resolutions": {
-    "@customerio/cdp-analytics-js": "workspace:*",
+    "@customerio/cdp-analytics-browser": "workspace:*",
     "@customerio/cdp-analytics-node": "workspace:*",
     "@customerio/cdp-analytics-core": "workspace:*"
   }

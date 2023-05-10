@@ -3,13 +3,13 @@ Customer.io Data Pipelines analytics client for browsers.
 ## Installation
 
 ```
-npm install @customerio/cdp-analytics-js
+npm install @customerio/cdp-analytics-browser
 ```
 
 ## Usage
 
 ```ts
-import { AnalyticsBrowser } from '@customerio/cdp-analytics-js'
+import { AnalyticsBrowser } from '@customerio/cdp-analytics-browser'
 
 const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
