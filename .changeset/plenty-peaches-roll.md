@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-next': patch
+'@segment/analytics-next': major
 ---
 
 Remove experimental/undocumented AnalyticsNode library from browser. @segment/analytics-node should be used.
