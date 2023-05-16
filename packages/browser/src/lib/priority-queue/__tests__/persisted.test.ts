@@ -7,6 +7,7 @@ describe('Persisted Priority Queue', () => {
   })
 
   const key = 'event-queue'
+  const writeKey = 'foo'
 
   it('a queue remembers', () => {
     const ctx = new Context(
@@ -20,15 +21,15 @@ describe('Persisted Priority Queue', () => {
     )
 
     window.localStorage.setItem(
-      `persisted-queue:v1:${key}:items`,
+      `persisted-queue:v1:${writeKey}:${key}:items`,
       JSON.stringify([ctx])
     )
     window.localStorage.setItem(
-      `persisted-queue:v1:${key}:seen`,
+      `persisted-queue:v1:${writeKey}:${key}:seen`,
       JSON.stringify({ abc: 2 })
     )
 
-    const queue = new PersistedPriorityQueue(3, key)
+    const queue = new PersistedPriorityQueue(3, key, writeKey)
     const included = queue.includes(ctx)
 
     expect(included).toBe(true)
@@ -58,16 +59,16 @@ describe('Persisted Priority Queue', () => {
       'abc'
     )
 
-    const queue = new PersistedPriorityQueue(3, key)
+    const queue = new PersistedPriorityQueue(3, key, writeKey)
     queue.push(ctx)
 
     onUnload()
 
     const items = JSON.parse(
-      localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+      localStorage.getItem(`persisted-queue:v1:${writeKey}:${key}:items`) ?? ''
     )
     const seen = JSON.parse(
-      localStorage.getItem(`persisted-queue:v1:${key}:seen`) ?? ''
+      localStorage.getItem(`persisted-queue:v1:${writeKey}:${key}:seen`) ?? ''
     )
 
     expect(items[0]).toEqual(ctx.toJSON())
@@ -85,14 +86,18 @@ describe('Persisted Priority Queue', () => {
       'abc'
     )
     window.localStorage.setItem(
-      `persisted-queue:v1:different-key:items`,
+      `persisted-queue:v1:${writeKey}:different-key:items`,
       JSON.stringify([ctx])
     )
 
-    const queue = new PersistedPriorityQueue(3, key)
+    const queue = new PersistedPriorityQueue(3, key, writeKey)
     expect(queue.todo).toBe(0)
 
-    const correctQueue = new PersistedPriorityQueue(3, 'different-key')
+    const correctQueue = new PersistedPriorityQueue(
+      3,
+      'different-key',
+      writeKey
+    )
     expect(correctQueue.todo).toBe(1)
   })
 
@@ -120,7 +125,7 @@ describe('Persisted Priority Queue', () => {
       )
 
       window.localStorage.setItem(
-        `persisted-queue:v1:${key}:items`,
+        `persisted-queue:v1:${writeKey}:${key}:items`,
         JSON.stringify([ctx])
       )
 
@@ -134,14 +139,14 @@ describe('Persisted Priority Queue', () => {
         'cde'
       )
 
-      const queue = new PersistedPriorityQueue(3, key)
+      const queue = new PersistedPriorityQueue(3, key, writeKey)
 
       expect(queue.includes(ctx)).toBe(true)
       expect(queue.includes(ctxFromDifferentTab)).not.toBe(true)
 
       // another tab sets these two events again
       window.localStorage.setItem(
-        `persisted-queue:v1:${key}:items`,
+        `persisted-queue:v1:${writeKey}:${key}:items`,
         JSON.stringify([ctx, ctxFromDifferentTab])
       )
 
@@ -158,7 +163,9 @@ describe('Persisted Priority Queue', () => {
       onUnload()
 
       const persisted = JSON.parse(
-        window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+        window.localStorage.getItem(
+          `persisted-queue:v1:${writeKey}:${key}:items`
+        ) ?? ''
       ) as unknown[]
 
       expect(persisted.length).toBe(3)
@@ -181,12 +188,12 @@ describe('Persisted Priority Queue', () => {
       )
 
       window.localStorage.setItem(
-        `persisted-queue:v1:${key}:items`,
+        `persisted-queue:v1:${writeKey}:${key}:items`,
         JSON.stringify([ctx])
       )
 
-      const firstTabQueue = new PersistedPriorityQueue(3, key)
-      const secondTabQueue = new PersistedPriorityQueue(3, key)
+      const firstTabQueue = new PersistedPriorityQueue(3, key, writeKey)
+      const secondTabQueue = new PersistedPriorityQueue(3, key, writeKey)
 
       // first tab gets a hold of it
       expect(firstTabQueue.includes(ctx)).toBe(true)
@@ -207,8 +214,8 @@ describe('Persisted Priority Queue', () => {
           }
         })
 
-      const firstTabQueue = new PersistedPriorityQueue(3, key)
-      const secondTabQueue = new PersistedPriorityQueue(3, key)
+      const firstTabQueue = new PersistedPriorityQueue(3, key, writeKey)
+      const secondTabQueue = new PersistedPriorityQueue(3, key, writeKey)
 
       const firstTabItem = new Context({ type: 'track' }, 'firstTab')
       const secondTabItem = new Context({ type: 'page' }, 'secondTab')
@@ -220,7 +227,9 @@ describe('Persisted Priority Queue', () => {
       onUnloadFunctions[0]()
 
       const stored = JSON.parse(
-        window.localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+        window.localStorage.getItem(
+          `persisted-queue:v1:${writeKey}:${key}:items`
+        ) ?? ''
       )
       expect(stored.length).toBe(2)
     })

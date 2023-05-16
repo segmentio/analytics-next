@@ -4,11 +4,11 @@ type RemotePlugin = NonNullable<LegacySettings['remotePlugins']>[number]
 
 export class SettingsBuilder {
   private settings: Record<string, any>
-  constructor(baseSettings?: Record<string, any>) {
+  constructor(writeKey: string, baseSettings?: Record<string, any>) {
     this.settings = baseSettings || {
       integrations: {
         'Segment.io': {
-          apiKey: 'writeKey',
+          apiKey: writeKey,
           unbundledIntegrations: [],
           addBundledMetadata: true,
           maybeBundledConfigIds: {},

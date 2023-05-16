@@ -66,7 +66,8 @@ export function segmentio(
     ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
     : new PersistedPriorityQueue(
         analytics.queue.queue.maxAttempts,
-        `dest-Segment.io`
+        `dest-Segment.io`,
+        settings?.apiKey ?? ''
       )
 
   const inflightEvents = new Set<Context>()

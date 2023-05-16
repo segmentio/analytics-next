@@ -47,7 +47,7 @@ const segmentio = {
 
 describe('alternative names', () => {
   test('delivers to action destinations using alternative names', async () => {
-    const eq = new EventQueue()
+    const eq = new EventQueue('writeKey')
     const fullstory = new ActionDestination('fullstory', testPlugin) // TODO: This should be re-written as higher level integration test.
     fullstory.alternativeNames.push('fullstory trackEvent')
     fullstory.type = 'destination'

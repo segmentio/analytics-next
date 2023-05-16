@@ -86,16 +86,17 @@ function mutex(key: string, onUnlock: Function, attempt = 0): void {
 }
 
 export class PersistedPriorityQueue extends PriorityQueue<Context> {
-  constructor(maxAttempts: number, key: string) {
+  constructor(maxAttempts: number, key: string, writeKey: string) {
     super(maxAttempts, [])
 
-    const itemsKey = `persisted-queue:v1:${key}:items`
-    const seenKey = `persisted-queue:v1:${key}:seen`
+    const itemsKey = `persisted-queue:v1:${writeKey}:${key}:items`
+    const seenKey = `persisted-queue:v1:${writeKey}:${key}:seen`
 
     let saved: Context[] = []
     let lastSeen: Record<string, number> = {}
 
-    mutex(key, () => {
+    const mutexKey = `${writeKey}:${key}`
+    mutex(mutexKey, () => {
       try {
         saved = persisted(itemsKey)
         lastSeen = seen(seenKey)
@@ -114,7 +115,7 @@ export class PersistedPriorityQueue extends PriorityQueue<Context> {
       if (this.todo > 0) {
         const items = [...this.queue, ...this.future]
         try {
-          mutex(key, () => {
+          mutex(mutexKey, () => {
             persistItems(itemsKey, items)
             persistSeen(seenKey, this.seen)
           })

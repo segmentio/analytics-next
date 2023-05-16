@@ -56,11 +56,15 @@ const deprecationWarning =
 const global: any = getGlobal()
 const _analytics = global?.analytics
 
-function createDefaultQueue(retryQueue = false, disablePersistance = false) {
+function createDefaultQueue(
+  writeKey: string,
+  retryQueue = false,
+  disablePersistance = false
+) {
   const maxAttempts = retryQueue ? 4 : 1
   const priorityQueue = disablePersistance
     ? new PriorityQueue(maxAttempts, [])
-    : new PersistedPriorityQueue(maxAttempts, 'event-queue')
+    : new PersistedPriorityQueue(maxAttempts, 'event-queue', writeKey)
   return new EventQueue(priorityQueue)
 }
 
@@ -140,7 +144,12 @@ export class Analytics
     this.settings = settings
     this.settings.timeout = this.settings.timeout ?? 300
     this.queue =
-      queue ?? createDefaultQueue(options?.retryQueue, disablePersistance)
+      queue ??
+      createDefaultQueue(
+        settings.writeKey,
+        options?.retryQueue,
+        disablePersistance
+      )
 
     this._universalStorage = new UniversalStorage(
       disablePersistance ? ['memory'] : ['localStorage', 'cookie', 'memory'],
