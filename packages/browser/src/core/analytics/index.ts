@@ -50,6 +50,7 @@ import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 import { HighEntropyHint } from '../../lib/client-hints/interfaces'
 import type { LegacySettings } from '../../browser'
+import { PluginFactory } from '../../plugins/remote-loader'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -73,7 +74,7 @@ function createDefaultQueue(
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  plugins?: Plugin[]
+  plugins?: (Plugin | PluginFactory)[]
   classicIntegrations?: ClassicIntegrationSource[]
 }
 
