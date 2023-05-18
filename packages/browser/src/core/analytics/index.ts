@@ -52,6 +52,7 @@ import {
   initializeStorages,
   isArrayOfStoreType,
 } from '../storage'
+import { PluginFactory } from '../../plugins/remote-loader'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -75,7 +76,7 @@ function createDefaultQueue(
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  plugins?: Plugin[]
+  plugins?: (Plugin | PluginFactory)[]
   classicIntegrations?: ClassicIntegrationSource[]
 }
 
