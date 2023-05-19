@@ -106,7 +106,7 @@ export class LegacyDestination implements DestinationPlugin {
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
-      : new PersistedPriorityQueue(4, `dest-${name}`, writeKey)
+      : new PersistedPriorityQueue(4, `${writeKey}:dest-${name}`)
 
     this.scheduleFlush()
   }

@@ -6,13 +6,13 @@ import { CoreEventQueue } from '@segment/analytics-core'
 import { isOffline } from '../connection'
 
 export class EventQueue extends CoreEventQueue<Context, AnyBrowserPlugin> {
-  constructor(writeKey: string)
+  constructor(name: string)
   constructor(priorityQueue: PriorityQueue<Context>)
-  constructor(writeKeyOrQueue: string | PriorityQueue<Context>) {
+  constructor(nameOrQueue: string | PriorityQueue<Context>) {
     super(
-      typeof writeKeyOrQueue === 'string'
-        ? new PersistedPriorityQueue(4, 'event-queue', writeKeyOrQueue)
-        : writeKeyOrQueue
+      typeof nameOrQueue === 'string'
+        ? new PersistedPriorityQueue(4, nameOrQueue)
+        : nameOrQueue
     )
   }
   async flush(): Promise<Context[]> {

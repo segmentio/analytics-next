@@ -62,12 +62,13 @@ export function segmentio(
     inflightEvents.clear()
   })
 
+  const writeKey = settings?.apiKey ?? ''
+
   const buffer = analytics.options.disableClientPersistence
     ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
     : new PersistedPriorityQueue(
         analytics.queue.queue.maxAttempts,
-        `dest-Segment.io`,
-        settings?.apiKey ?? ''
+        `${writeKey}:dest-Segment.io`
       )
 
   const inflightEvents = new Set<Context>()

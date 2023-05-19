@@ -48,8 +48,7 @@ describe('Segment.io retries', () => {
         } else {
           queue = new PPQ.PersistedPriorityQueue(
             3,
-            `test-Segment.io`,
-            options.apiKey
+            `${options.apiKey}:test-Segment.io`
           )
           queue['__type'] = 'persisted'
           Object.defineProperty(PPQ, 'PersistedPriorityQueue', {

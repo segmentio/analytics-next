@@ -28,7 +28,7 @@ jest.mock('../../core/analytics', () => ({
     emit: jest.fn(),
     on,
     queue: new EventQueue(
-      new PersistedPriorityQueue(1, 'event-queue', 'foo') as any
+      new PersistedPriorityQueue(1, 'foo:event-queue') as any
     ),
     options,
   }),
