@@ -1,5 +1,5 @@
 import jar from 'js-cookie'
-import { Analytics, InitOptions } from '../../core/analytics'
+import { Analytics } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { SegmentEvent } from '../../core/events'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
@@ -155,7 +155,7 @@ function referrerId(
 }
 
 async function clientHints(
-  options: InitOptions
+  hints: HighEntropyValues[] | undefined
 ): Promise<UserAgentDataContext> {
   const userAgentData = navigator.userAgentData
 
@@ -165,12 +165,10 @@ async function clientHints(
     platform: userAgentData.platform,
   }
 
-  if (options.highEntropyValues) {
+  if (hints) {
     try {
       // this also includes the low entropy values, so we can overwrite here
-      userAgentDataContext = await userAgentData.getHighEntropyValues(
-        options.highEntropyValues
-      )
+      userAgentDataContext = await userAgentData.getHighEntropyValues(hints)
     } catch (_) {
       return userAgentDataContext
     }
@@ -198,7 +196,7 @@ export async function normalize(
   json.writeKey = settings?.apiKey
   ctx.userAgent = window.navigator.userAgent
   if (window.navigator.userAgentData) {
-    ctx.userAgentData = await clientHints(analytics.options)
+    ctx.userAgentData = await clientHints(analytics.options.highEntropyValues)
   }
 
   // @ts-ignore
