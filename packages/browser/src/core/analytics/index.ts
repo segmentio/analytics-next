@@ -48,7 +48,6 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
-import { HighEntropyValues } from '../../plugins/segmentio/normalize'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -103,7 +102,7 @@ export interface InitOptions {
         aid?: RegExp
         uid?: RegExp
       }
-  highEntropyValues?: HighEntropyValues[]
+  highEntropyValues?: string[]
 }
 
 /* analytics-classic stubs */
