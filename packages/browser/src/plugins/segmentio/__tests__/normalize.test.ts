@@ -6,6 +6,7 @@ import { Analytics } from '../../../core/analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 import { version } from '../../../generated/version'
+import { userAgentTestData } from '../../../lib/client-hints/__tests__/index.test'
 
 describe('before loading', () => {
   let jsdom: JSDOM
@@ -72,41 +73,41 @@ describe('before loading', () => {
       }
     })
 
-    it('should add .anonymousId', () => {
+    it('should add .anonymousId', async () => {
       analytics.user().anonymousId('anon-id')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object.anonymousId === 'anon-id')
     })
 
-    it('should add .sentAt', () => {
-      normalize(analytics, object, options, {})
+    it('should add .sentAt', async () => {
+      await normalize(analytics, object, options, {})
       assert(object.sentAt)
       // assert(type(object.sentAt) === 'date')
     })
 
-    it('should add .userId', () => {
+    it('should add .userId', async () => {
       analytics.user().id('user-id')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object.userId === 'user-id')
     })
 
-    it('should not replace the .timestamp', () => {
+    it('should not replace the .timestamp', async () => {
       const timestamp = new Date()
       object.timestamp = timestamp
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object.timestamp === timestamp)
     })
 
-    it('should not replace the .userId', () => {
+    it('should not replace the .userId', async () => {
       analytics.user().id('user-id')
       object.userId = 'existing-id'
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object.userId === 'existing-id')
     })
 
-    it('should always add .anonymousId even if .userId is given', () => {
+    it('should always add .anonymousId even if .userId is given', async () => {
       object.userId = 'baz'
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object.anonymousId?.length === 36)
     })
 
@@ -114,44 +115,44 @@ describe('before loading', () => {
       object.userId = 'baz'
       object.anonymousId = '👻'
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       expect(object.anonymousId).toEqual('👻')
     })
 
-    it('should add .context', () => {
-      normalize(analytics, object, options, {})
+    it('should add .context', async () => {
+      await normalize(analytics, object, options, {})
       assert(object.context)
     })
 
-    it('should not rewrite context if provided', () => {
+    it('should not rewrite context if provided', async () => {
       const ctx = defaultCtx
       const obj = { ...object, context: ctx }
-      normalize(analytics, obj, options, {})
+      await normalize(analytics, obj, options, {})
       expect(obj.context).toEqual(ctx)
     })
 
-    it('should overwrite options with context if context does not exist', () => {
+    it('should overwrite options with context if context does not exist', async () => {
       const opts = {}
       const obj = { ...object, options: opts }
       delete obj.context
-      normalize(analytics, obj, options, {})
+      await normalize(analytics, obj, options, {})
       assert(obj.context === opts)
       assert(obj.options == null)
     })
 
-    it('should add .writeKey', () => {
-      normalize(analytics, object, options, {})
+    it('should add .writeKey', async () => {
+      await normalize(analytics, object, options, {})
       assert(object.writeKey === options.apiKey)
     })
 
-    it('should add .library', () => {
-      normalize(analytics, object, options, {})
+    it('should add .library', async () => {
+      await normalize(analytics, object, options, {})
       assert(object.context?.library)
       assert(object.context?.library.name === 'analytics.js')
       assert(object.context?.library.version === `npm:next-${version}`)
     })
 
-    it('should allow override of .library', () => {
+    it('should allow override of .library', async () => {
       const ctx = {
         library: {
           name: 'analytics-wordpress',
@@ -160,41 +161,49 @@ describe('before loading', () => {
       }
       const obj = { ...object, context: ctx }
 
-      normalize(analytics, obj, options, {})
+      await normalize(analytics, obj, options, {})
 
       assert(obj.context?.library)
       assert(obj.context?.library.name === 'analytics-wordpress')
       assert(obj.context?.library.version === '1.0.3')
     })
 
-    it('should add .userAgent', () => {
-      normalize(analytics, object, options, {})
+    it('should add .userAgent', async () => {
+      await normalize(analytics, object, options, {})
       const removeVersionNum = (agent: string) => agent.replace(/jsdom\/.*/, '')
       const userAgent1 = removeVersionNum(object.context?.userAgent as string)
       const userAgent2 = removeVersionNum(navigator.userAgent)
       assert(userAgent1 === userAgent2)
     })
 
-    it('should add .locale', () => {
-      normalize(analytics, object, options, {})
+    it('should add userAgentData when available', async () => {
+      // @ts-expect-error
+      navigator.userAgentData = userAgentTestData
+      await normalize(analytics, object, options, {})
+      console.log(object.context)
+      expect(object.context?.userAgentData).toEqual(userAgentTestData)
+    })
+
+    it('should add .locale', async () => {
+      await normalize(analytics, object, options, {})
       assert(object.context?.locale === navigator.language)
     })
 
-    it('should not replace .locale if provided', () => {
+    it('should not replace .locale if provided', async () => {
       const ctx = {
         ...defaultCtx,
         locale: 'foobar',
       }
       const obj = { ...object, context: ctx }
-      normalize(analytics, obj, options, {})
+      await normalize(analytics, obj, options, {})
       assert(obj.context?.locale === 'foobar')
     })
 
-    it('should add .campaign', () => {
+    it('should add .campaign', async () => {
       withSearchParams(
         'utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name'
       )
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -206,9 +215,9 @@ describe('before loading', () => {
       assert(object.context.campaign.name === 'name')
     })
 
-    it('should decode query params', () => {
+    it('should decode query params', async () => {
       withSearchParams('?utm_source=%5BFoo%5D')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -216,10 +225,10 @@ describe('before loading', () => {
       assert(object.context.campaign.source === '[Foo]')
     })
 
-    it('should guard against undefined utm params', () => {
+    it('should guard against undefined utm params', async () => {
       withSearchParams('?utm_source')
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -227,9 +236,9 @@ describe('before loading', () => {
       assert(object.context.campaign.source === '')
     })
 
-    it('should guard against empty utm params', () => {
+    it('should guard against empty utm params', async () => {
       withSearchParams('?utm_source=')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -237,26 +246,26 @@ describe('before loading', () => {
       assert(object.context.campaign.source === '')
     })
 
-    it('only parses utm params suffixed with _', () => {
+    it('only parses utm params suffixed with _', async () => {
       withSearchParams('?utm')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
       assert.deepStrictEqual(object.context.campaign, {})
     })
 
-    it('should guard against short utm params', () => {
+    it('should guard against short utm params', async () => {
       withSearchParams('?utm_')
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
       assert.deepStrictEqual(object.context.campaign, {})
     })
 
-    it('should allow override of .campaign', () => {
+    it('should allow override of .campaign', async () => {
       withSearchParams(
         '?utm_source=source&utm_medium=medium&utm_term=term&utm_content=content&utm_campaign=name'
       )
@@ -274,7 +283,7 @@ describe('before loading', () => {
           },
         },
       }
-      normalize(analytics, obj, options, {})
+      await normalize(analytics, obj, options, {})
       assert(obj)
       assert(obj.context)
       assert(obj.context.campaign)
@@ -285,10 +294,10 @@ describe('before loading', () => {
       assert(obj.context.campaign.name === 'overrideName')
     })
 
-    it('should add .referrer.id and .referrer.type (cookies)', () => {
+    it('should add .referrer.id and .referrer.type (cookies)', async () => {
       withSearchParams('?utm_source=source&urid=medium')
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
@@ -302,7 +311,7 @@ describe('before loading', () => {
       )
     })
 
-    it('should add .referrer.id and .referrer.type (cookieless)', () => {
+    it('should add .referrer.id and .referrer.type (cookieless)', async () => {
       withSearchParams('utm_source=source&urid=medium')
       const setCookieSpy = jest.spyOn(cookie, 'set')
       analytics = new Analytics(
@@ -310,7 +319,7 @@ describe('before loading', () => {
         { disableClientPersistence: true }
       )
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
@@ -320,10 +329,10 @@ describe('before loading', () => {
       expect(setCookieSpy).not.toHaveBeenCalled()
     })
 
-    it('should add .referrer.id and .referrer.type from cookie', () => {
+    it('should add .referrer.id and .referrer.type from cookie', async () => {
       cookie.set('s:context.referrer', '{"id":"baz","type":"millennial-media"}')
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
 
       assert(object)
       assert(object.context)
@@ -332,13 +341,13 @@ describe('before loading', () => {
       assert(object.context.referrer.type === 'millennial-media')
     })
 
-    it('should add .referrer.id and .referrer.type from cookie when no query is given', () => {
+    it('should add .referrer.id and .referrer.type from cookie when no query is given', async () => {
       cookie.set(
         's:context.referrer',
         '{"id":"medium","type":"millennial-media"}'
       )
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.referrer)
@@ -346,26 +355,26 @@ describe('before loading', () => {
       assert(object.context.referrer.type === 'millennial-media')
     })
 
-    it('shouldnt add non amp ga cookie', () => {
+    it('shouldnt add non amp ga cookie', async () => {
       cookie.set('_ga', 'some-nonamp-id')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(!object.context.amp)
     })
 
-    it('should add .amp.id from store', () => {
+    it('should add .amp.id from store', async () => {
       cookie.set('_ga', 'amp-foo')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(object.context.amp)
       assert(object.context.amp.id === 'amp-foo')
     })
 
-    it('should not add .amp if theres no _ga', () => {
+    it('should not add .amp if theres no _ga', async () => {
       cookie.remove('_ga')
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert(object)
       assert(object.context)
       assert(!object.context.amp)
@@ -376,8 +385,8 @@ describe('before loading', () => {
     })
 
     describe('unbundling', () => {
-      it('should add a list of bundled integrations', () => {
-        normalize(analytics, object, options, {
+      it('should add a list of bundled integrations', async () => {
+        await normalize(analytics, object, options, {
           'Segment.io': {},
           other: {
             bundlingStatus: 'bundled',
@@ -389,8 +398,8 @@ describe('before loading', () => {
         assert.deepEqual(object._metadata.bundled, ['Segment.io', 'other'])
       })
 
-      it('should add a list of bundled ids', () => {
-        normalize(
+      it('should add a list of bundled ids', async () => {
+        await normalize(
           analytics,
           object,
           {
@@ -412,9 +421,9 @@ describe('before loading', () => {
         assert.deepEqual(object._metadata.bundledIds, ['o_123', 'o_456'])
       })
 
-      it('should add a list of unbundled integrations when `unbundledIntegrations` is set', () => {
+      it('should add a list of unbundled integrations when `unbundledIntegrations` is set', async () => {
         options.unbundledIntegrations = ['other2']
-        normalize(analytics, object, options, {
+        await normalize(analytics, object, options, {
           other2: {
             bundlingStatus: 'unbundled',
           },
@@ -426,11 +435,11 @@ describe('before loading', () => {
       })
     })
 
-    it('should pick up messageId from AJS', () => {
-      normalize(analytics, object, options, {}) // ajs core generates the message ID here
+    it('should pick up messageId from AJS', async () => {
+      await normalize(analytics, object, options, {}) // ajs core generates the message ID here
       const messageId = object.messageId
 
-      normalize(analytics, object, options, {})
+      await normalize(analytics, object, options, {})
       assert.equal(object.messageId, messageId)
     })
   })

@@ -8,42 +8,7 @@ import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
 import { getAvailableStorageOptions, UniversalStorage } from '../../core/user'
-
-declare global {
-  interface Navigator {
-    userAgentData: UserAgentData
-  }
-}
-
-interface Brand {
-  brand: string
-  version: string
-}
-
-export type HighEntropyValues =
-  | 'architecture'
-  | 'bitness'
-  | 'model'
-  | 'platformVersion'
-  | 'fullVersionList'
-
-export interface UserAgentData {
-  brands: Brand[]
-  mobile: boolean
-  platform: string
-  getHighEntropyValues: Function
-}
-
-interface UserAgentDataContext {
-  brands: Brand[]
-  mobile: boolean
-  platform: string
-  platformVersion?: string
-  architecture?: string
-  bitness?: string
-  model?: string
-  fullVersionList?: Brand[]
-}
+import { clientHints } from '../../lib/client-hints'
 
 let cookieOptions: jar.CookieAttributes | undefined
 function getCookieOptions(): jar.CookieAttributes {
@@ -154,29 +119,6 @@ function referrerId(
   storage.set('s:context.referrer', ad)
 }
 
-async function clientHints(
-  hints: HighEntropyValues[] | undefined
-): Promise<UserAgentDataContext> {
-  const userAgentData = navigator.userAgentData
-
-  let userAgentDataContext: UserAgentDataContext = {
-    brands: userAgentData.brands,
-    mobile: userAgentData.mobile,
-    platform: userAgentData.platform,
-  }
-
-  if (hints) {
-    try {
-      // this also includes the low entropy values, so we can overwrite here
-      userAgentDataContext = await userAgentData.getHighEntropyValues(hints)
-    } catch (_) {
-      return userAgentDataContext
-    }
-  }
-
-  return userAgentDataContext
-}
-
 export async function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
@@ -194,11 +136,12 @@ export async function normalize(
 
   delete json.options
   json.writeKey = settings?.apiKey
-  ctx.userAgent = window.navigator.userAgent
-  if (window.navigator.userAgentData) {
-    ctx.userAgentData = await clientHints(analytics.options.highEntropyValues)
-  }
 
+  ctx.userAgent = window.navigator.userAgent
+  const userAgentData = await clientHints(analytics.options.highEntropyValues)
+  if (userAgentData) {
+    ctx.userAgentData = userAgentData
+  }
   // @ts-ignore
   const locale = navigator.userLanguage || navigator.language
 
