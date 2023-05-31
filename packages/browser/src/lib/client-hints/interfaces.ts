@@ -32,6 +32,10 @@ export interface NavigatorUAData extends UALowEntropyJSON {
   toJSON(): UALowEntropyJSON
 }
 
+/**
+ * Array of high entropy Client Hints to request. These may be rejected by the user agent - only required hints should be requested.
+ * @return {Object} Object containing low entropy hints and successfully resolved high entropy hints
+ */
 export type HighEntropyHint =
   | 'architecture'
   | 'bitness'
