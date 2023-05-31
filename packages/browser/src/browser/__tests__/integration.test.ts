@@ -18,6 +18,11 @@ import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { parseFetchCall } from '../../test-helpers/fetch-parse'
 import { ActionDestination } from '../../plugins/remote-loader'
+import {
+  highEntropyTestData,
+  lowEntropyTestData,
+} from '../../lib/client-hints/__tests__/index.test'
+import { UADataValues } from '../../lib/client-hints/interfaces'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -207,76 +212,112 @@ describe('Initialization', () => {
     })
   })
 
-  it('calls page if initialpageview is set', async () => {
-    jest.mock('../../core/analytics')
-    const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
-    Analytics.prototype.page = mockPage
-
-    await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
-
-    expect(mockPage).toHaveBeenCalled()
-  })
-
-  it('does not call page if initialpageview is not set', async () => {
-    jest.mock('../../core/analytics')
-    const mockPage = jest.fn()
-    Analytics.prototype.page = mockPage
-    await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
-    expect(mockPage).not.toHaveBeenCalled()
-  })
-
-  it('does not use a persisted queue when disableClientPersistence is true', async () => {
-    const [ajs] = await AnalyticsBrowser.load(
-      {
-        writeKey,
-      },
-      {
-        disableClientPersistence: true,
+  describe('Load options', () => {
+    it('gets high entropy client hints if set', async () => {
+      navigator.userAgentData = {
+        ...lowEntropyTestData,
+        getHighEntropyValues: jest
+          .fn()
+          .mockImplementation((hints: string[]): Promise<UADataValues> => {
+            let result = {}
+            Object.entries(highEntropyTestData).forEach(([k, v]) => {
+              if (hints.includes(k)) {
+                result = {
+                  ...result,
+                  [k]: v,
+                }
+              }
+            })
+            return Promise.resolve({
+              ...lowEntropyTestData,
+              ...result,
+            })
+          }),
+        toJSON: jest.fn(() => lowEntropyTestData),
       }
-    )
 
-    expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
-    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(false)
-  })
+      const [ajs] = await AnalyticsBrowser.load(
+        { writeKey },
+        { highEntropyValuesClientHints: ['architecture'] }
+      )
 
-  it('uses a persisted queue by default', async () => {
-    const [ajs] = await AnalyticsBrowser.load({
-      writeKey,
+      const evt = await ajs.track('foo')
+      expect(evt.event.context?.userAgentData).toEqual({
+        ...lowEntropyTestData,
+        architecture: 'x86',
+      })
+    })
+    it('calls page if initialpageview is set', async () => {
+      jest.mock('../../core/analytics')
+      const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
+      Analytics.prototype.page = mockPage
+
+      await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
+
+      expect(mockPage).toHaveBeenCalled()
     })
 
-    expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
-  })
+    it('does not call page if initialpageview is not set', async () => {
+      jest.mock('../../core/analytics')
+      const mockPage = jest.fn()
+      Analytics.prototype.page = mockPage
+      await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
+      expect(mockPage).not.toHaveBeenCalled()
+    })
 
-  it('disables identity persistance when disableClientPersistence is true', async () => {
-    const [ajs] = await AnalyticsBrowser.load(
-      {
+    it('does not use a persisted queue when disableClientPersistence is true', async () => {
+      const [ajs] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        {
+          disableClientPersistence: true,
+        }
+      )
+
+      expect(ajs.queue.queue instanceof PriorityQueue).toBe(true)
+      expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(false)
+    })
+
+    it('uses a persisted queue by default', async () => {
+      const [ajs] = await AnalyticsBrowser.load({
         writeKey,
-      },
-      {
-        disableClientPersistence: true,
-      }
-    )
+      })
 
-    expect(ajs.user().options.persist).toBe(false)
-    expect(ajs.group().options.persist).toBe(false)
-  })
-
-  it('fetch remote source settings by default', async () => {
-    await AnalyticsBrowser.load({
-      writeKey,
+      expect(ajs.queue.queue instanceof PersistedPriorityQueue).toBe(true)
     })
 
-    expect(fetchCalls.length).toBeGreaterThan(0)
-    expect(fetchCalls[0].url).toMatch(/\/settings$/)
-  })
+    it('disables identity persistance when disableClientPersistence is true', async () => {
+      const [ajs] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        {
+          disableClientPersistence: true,
+        }
+      )
 
-  it('does not fetch source settings if cdnSettings is set', async () => {
-    await AnalyticsBrowser.load({
-      writeKey,
-      cdnSettings: { integrations: {} },
+      expect(ajs.user().options.persist).toBe(false)
+      expect(ajs.group().options.persist).toBe(false)
     })
 
-    expect(fetchCalls.length).toBe(0)
+    it('fetch remote source settings by default', async () => {
+      await AnalyticsBrowser.load({
+        writeKey,
+      })
+
+      expect(fetchCalls.length).toBeGreaterThan(0)
+      expect(fetchCalls[0].url).toMatch(/\/settings$/)
+    })
+
+    it('does not fetch source settings if cdnSettings is set', async () => {
+      await AnalyticsBrowser.load({
+        writeKey,
+        cdnSettings: { integrations: {} },
+      })
+
+      expect(fetchCalls.length).toBe(0)
+    })
   })
 
   describe('options.integrations permutations', () => {

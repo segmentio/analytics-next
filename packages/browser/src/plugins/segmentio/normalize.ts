@@ -8,7 +8,6 @@ import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { version } from '../../generated/version'
 import { getAvailableStorageOptions, UniversalStorage } from '../../core/user'
-import { clientHints } from '../../lib/client-hints'
 
 let cookieOptions: jar.CookieAttributes | undefined
 function getCookieOptions(): jar.CookieAttributes {

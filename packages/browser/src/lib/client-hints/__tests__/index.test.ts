@@ -1,7 +1,7 @@
 import { clientHints } from '..'
 import { UADataValues, UALowEntropyJSON } from '../interfaces'
 
-export const userAgentTestData: UALowEntropyJSON = {
+export const lowEntropyTestData: UALowEntropyJSON = {
   brands: [
     {
       brand: 'Google Chrome',
@@ -20,7 +20,7 @@ export const userAgentTestData: UALowEntropyJSON = {
   platform: 'macOS',
 }
 
-export const testHighEntropyValues: UADataValues = {
+export const highEntropyTestData: UADataValues = {
   architecture: 'x86',
   bitness: '64',
 }
@@ -28,12 +28,12 @@ export const testHighEntropyValues: UADataValues = {
 describe('Client Hints API', () => {
   beforeEach(() => {
     navigator.userAgentData = {
-      ...userAgentTestData,
+      ...lowEntropyTestData,
       getHighEntropyValues: jest
         .fn()
         .mockImplementation((hints: string[]): Promise<UADataValues> => {
           let result = {}
-          Object.entries(testHighEntropyValues).forEach(([k, v]) => {
+          Object.entries(highEntropyTestData).forEach(([k, v]) => {
             if (hints.includes(k)) {
               result = {
                 ...result,
@@ -42,17 +42,19 @@ describe('Client Hints API', () => {
             }
           })
           return Promise.resolve({
-            ...userAgentTestData,
+            ...lowEntropyTestData,
             ...result,
           })
         }),
-      toJSON: jest.fn(() => userAgentTestData),
+      toJSON: jest.fn(() => {
+        return lowEntropyTestData
+      }),
     }
   })
 
   it('uses API when available', async () => {
     let userAgentData = await clientHints()
-    expect(userAgentData).toEqual(userAgentTestData)
+    expect(userAgentData).toEqual(lowEntropyTestData)
 
     navigator.userAgentData = undefined
     userAgentData = await clientHints()
@@ -61,24 +63,24 @@ describe('Client Hints API', () => {
 
   it('always gets low entropy hints', async () => {
     const userAgentData = await clientHints()
-    expect(userAgentData).toEqual(userAgentTestData)
+    expect(userAgentData).toEqual(lowEntropyTestData)
   })
 
   it('gets low entropy hints when client rejects high entropy promise', async () => {
     navigator.userAgentData = {
-      ...userAgentTestData,
+      ...lowEntropyTestData,
       getHighEntropyValues: jest.fn(() => Promise.reject()),
-      toJSON: jest.fn(() => userAgentTestData),
+      toJSON: jest.fn(() => lowEntropyTestData),
     }
 
     const userAgentData = await clientHints(['bitness'])
-    expect(userAgentData).toEqual(userAgentTestData)
+    expect(userAgentData).toEqual(lowEntropyTestData)
   })
 
   it('gets specified high entropy hints', async () => {
     const userAgentData = await clientHints(['bitness'])
     expect(userAgentData).toEqual({
-      ...userAgentTestData,
+      ...lowEntropyTestData,
       bitness: '64',
     })
   })

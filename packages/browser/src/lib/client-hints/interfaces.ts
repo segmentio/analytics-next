@@ -1,5 +1,5 @@
 // https://wicg.github.io/ua-client-hints/#dictdef-navigatoruabrandversion
-interface NavigatorUABrandVersion {
+export interface NavigatorUABrandVersion {
   readonly brand: string
   readonly version: string
 }
@@ -43,3 +43,4 @@ export type HighEntropyHint =
   | 'platformVersion'
   | 'uaFullVersion'
   | 'fullVersionList'
+  | 'wow64'
