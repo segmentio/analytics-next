@@ -225,7 +225,7 @@ async function registerPlugins(
 
   if (!shouldIgnoreSegmentio) {
     toRegister.push(
-      segmentio(
+      await segmentio(
         analytics,
         mergedSettings['Segment.io'] as SegmentioSettings,
         legacySettings.integrations

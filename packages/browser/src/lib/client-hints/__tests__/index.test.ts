@@ -1,6 +1,7 @@
 import { clientHints } from '..'
+import { UADataValues, UALowEntropyJSON } from '../interfaces'
 
-export const userAgentTestData = {
+export const userAgentTestData: UALowEntropyJSON = {
   brands: [
     {
       brand: 'Google Chrome',
@@ -19,31 +20,33 @@ export const userAgentTestData = {
   platform: 'macOS',
 }
 
-const testHighEntropyValues = {
+export const testHighEntropyValues: UADataValues = {
   architecture: 'x86',
   bitness: '64',
 }
 
 describe('Client Hints API', () => {
   beforeEach(() => {
-    // @ts-expect-error
     navigator.userAgentData = {
       ...userAgentTestData,
-      getHighEntropyValues: jest.fn((hints: string[]) => {
-        let result = {}
-        Object.entries(testHighEntropyValues).forEach(([k, v]) => {
-          if (hints.includes(k)) {
-            result = {
-              ...result,
-              [k]: v,
+      getHighEntropyValues: jest
+        .fn()
+        .mockImplementation((hints: string[]): Promise<UADataValues> => {
+          let result = {}
+          Object.entries(testHighEntropyValues).forEach(([k, v]) => {
+            if (hints.includes(k)) {
+              result = {
+                ...result,
+                [k]: v,
+              }
             }
-          }
-        })
-        return {
-          ...userAgentTestData,
-          ...result,
-        }
-      }),
+          })
+          return Promise.resolve({
+            ...userAgentTestData,
+            ...result,
+          })
+        }),
+      toJSON: jest.fn(() => userAgentTestData),
     }
   })
 
@@ -51,7 +54,6 @@ describe('Client Hints API', () => {
     let userAgentData = await clientHints()
     expect(userAgentData).toEqual(userAgentTestData)
 
-    // @ts-expect-error
     navigator.userAgentData = undefined
     userAgentData = await clientHints()
     expect(userAgentData).toBe(undefined)
@@ -63,10 +65,10 @@ describe('Client Hints API', () => {
   })
 
   it('gets low entropy hints when client rejects high entropy promise', async () => {
-    // @ts-expect-error
     navigator.userAgentData = {
       ...userAgentTestData,
       getHighEntropyValues: jest.fn(() => Promise.reject()),
+      toJSON: jest.fn(() => userAgentTestData),
     }
 
     const userAgentData = await clientHints(['bitness'])

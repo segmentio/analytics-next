@@ -119,12 +119,12 @@ function referrerId(
   storage.set('s:context.referrer', ad)
 }
 
-export async function normalize(
+export function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
-): Promise<object> {
+): object {
   const user = analytics.user()
 
   // context should always exist here (see page enrichment)? ... and why would we default to json.options? todo: delete this
@@ -138,10 +138,7 @@ export async function normalize(
   json.writeKey = settings?.apiKey
 
   ctx.userAgent = navigator.userAgent
-  const userAgentData = await clientHints(analytics.options.highEntropyValues)
-  if (userAgentData) {
-    ctx.userAgentData = userAgentData
-  }
+
   // @ts-ignore
   const locale = navigator.userLanguage || navigator.language
 
