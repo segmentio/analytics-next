@@ -31,3 +31,11 @@ export interface NavigatorUAData extends UALowEntropyJSON {
   getHighEntropyValues(hints: string[]): Promise<UADataValues>
   toJSON(): UALowEntropyJSON
 }
+
+export type HighEntropyHint =
+  | 'architecture'
+  | 'bitness'
+  | 'model'
+  | 'platformVersion'
+  | 'uaFullVersion'
+  | 'fullVersionList'

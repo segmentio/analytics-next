@@ -48,6 +48,7 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
+import { HighEntropyHint } from '../../lib/client-hints/interfaces'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -102,7 +103,7 @@ export interface InitOptions {
         aid?: RegExp
         uid?: RegExp
       }
-  highEntropyValues?: string[]
+  highEntropyValuesClientHints?: HighEntropyHint[]
 }
 
 /* analytics-classic stubs */
