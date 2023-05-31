@@ -27,7 +27,7 @@ export const highEntropyTestData: UADataValues = {
 
 describe('Client Hints API', () => {
   beforeEach(() => {
-    navigator.userAgentData = {
+    ;(window.navigator as any).userAgentData = {
       ...lowEntropyTestData,
       getHighEntropyValues: jest
         .fn()
@@ -55,8 +55,7 @@ describe('Client Hints API', () => {
   it('uses API when available', async () => {
     let userAgentData = await clientHints()
     expect(userAgentData).toEqual(lowEntropyTestData)
-
-    navigator.userAgentData = undefined
+    ;(window.navigator as any).userAgentData = undefined
     userAgentData = await clientHints()
     expect(userAgentData).toBe(undefined)
   })
@@ -67,7 +66,7 @@ describe('Client Hints API', () => {
   })
 
   it('gets low entropy hints when client rejects high entropy promise', async () => {
-    navigator.userAgentData = {
+    ;(window.navigator as any).userAgentData = {
       ...lowEntropyTestData,
       getHighEntropyValues: jest.fn(() => Promise.reject()),
       toJSON: jest.fn(() => lowEntropyTestData),

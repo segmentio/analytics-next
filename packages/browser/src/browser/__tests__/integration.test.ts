@@ -214,7 +214,7 @@ describe('Initialization', () => {
 
   describe('Load options', () => {
     it('gets high entropy client hints if set', async () => {
-      navigator.userAgentData = {
+      ;(window.navigator as any).userAgentData = {
         ...lowEntropyTestData,
         getHighEntropyValues: jest
           .fn()

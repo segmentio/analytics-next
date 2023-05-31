@@ -24,8 +24,7 @@ describe('Segment.io', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
-
-    navigator.userAgentData = {
+    ;(window.navigator as any).userAgentData = {
       ...lowEntropyTestData,
       getHighEntropyValues: jest
         .fn()
