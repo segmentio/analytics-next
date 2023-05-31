@@ -677,6 +677,7 @@ describe('addDestinationMiddleware', () => {
     const amplitude = new LegacyDestination(
       'amplitude',
       'latest',
+      writeKey,
       {
         apiKey: amplitudeWriteKey,
       },
@@ -820,6 +821,7 @@ describe('deregister', () => {
     const amplitude = new LegacyDestination(
       'amplitude',
       'latest',
+      writeKey,
       {
         apiKey: amplitudeWriteKey,
       },
@@ -1015,6 +1017,7 @@ describe('Options', () => {
       const amplitude = new LegacyDestination(
         'amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },
@@ -1051,6 +1054,7 @@ describe('Options', () => {
       const amplitude = new LegacyDestination(
         'amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },
@@ -1087,6 +1091,7 @@ describe('Options', () => {
       const amplitude = new LegacyDestination(
         'amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },

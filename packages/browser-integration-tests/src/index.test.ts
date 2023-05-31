@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { SettingsBuilder } from './fixtures/settings'
 import { standaloneMock } from './helpers/standalone-mock'
+import { extractWriteKeyFromUrl } from './helpers/extract-writekey'
 
 test.describe('Standalone tests', () => {
   test.beforeEach(standaloneMock)
@@ -14,13 +15,14 @@ test.describe('Standalone tests', () => {
             return route.continue()
           }
 
+          const writeKey = extractWriteKeyFromUrl(request.url()) || 'writeKey'
           return route.fulfill({
             status: 200,
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(
-              new SettingsBuilder()
+              new SettingsBuilder(writeKey)
                 .addActionDestinationSettings({
                   name: 'Amplitude (Actions)',
                   creationName: 'Actions Amplitude',
@@ -74,13 +76,14 @@ test.describe('Standalone tests', () => {
             return route.continue()
           }
 
+          const writeKey = extractWriteKeyFromUrl(request.url()) || 'writeKey'
           return route.fulfill({
             status: 200,
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(
-              new SettingsBuilder()
+              new SettingsBuilder(writeKey)
                 .addActionDestinationSettings({
                   name: 'Braze Cloud Mode (Actions)',
                   creationName: 'Braze Cloud Mode (Actions)',
