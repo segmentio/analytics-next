@@ -1,7 +1,7 @@
 import { CoreContext } from '../context'
 import { ID } from '../user'
 import { DeepNullable } from '../utils/ts-helpers'
-import { NavigatorUABrandVersion } from '../../../browser/src/lib/client-hints/interfaces'
+import { UADataValues } from '../../../browser/src/lib/client-hints/interfaces'
 
 export type Callback<Ctx extends CoreContext = CoreContext> = (
   ctx: Ctx
@@ -122,19 +122,7 @@ export interface CoreExtraContext {
   /**
    * User agent data returned by the Client Hints API
    */
-  userAgentData?: {
-    brands?: NavigatorUABrandVersion[]
-    mobile?: boolean
-    platform?: string
-    architecture?: string
-    bitness?: string
-    model?: string
-    platformVersion?: string
-    /** @deprecated in favour of fullVersionList */
-    uaFullVersion?: string
-    fullVersionList?: NavigatorUABrandVersion[]
-    wow64?: boolean
-  }
+  userAgentData?: UADataValues
 
   /**
    * Information about the current library.

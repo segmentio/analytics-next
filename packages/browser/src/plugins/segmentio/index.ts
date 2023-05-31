@@ -113,7 +113,7 @@ export async function segmentio(
       json = onAlias(analytics, json)
     }
 
-    const event = await normalize(analytics, json, settings, integrations)
+    const event = normalize(analytics, json, settings, integrations)
 
     return client
       .dispatch(`${remote}/${path}`, event)
