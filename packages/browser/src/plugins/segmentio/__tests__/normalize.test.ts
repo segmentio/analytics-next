@@ -6,7 +6,6 @@ import { Analytics } from '../../../core/analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 import { version } from '../../../generated/version'
-import { userAgentTestData } from '../../../lib/client-hints/__tests__/index.test'
 
 describe('before loading', () => {
   let jsdom: JSDOM
