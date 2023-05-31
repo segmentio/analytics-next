@@ -1,13 +1,3 @@
-// WICG Spec: https://wicg.github.io/ua-client-hints
-
-declare interface Navigator extends NavigatorUA {}
-declare interface WorkerNavigator extends NavigatorUA {}
-
-// https://wicg.github.io/ua-client-hints/#navigatorua
-declare interface NavigatorUA {
-  readonly userAgentData?: NavigatorUAData
-}
-
 // https://wicg.github.io/ua-client-hints/#dictdef-navigatoruabrandversion
 interface NavigatorUABrandVersion {
   readonly brand: string
@@ -15,7 +5,7 @@ interface NavigatorUABrandVersion {
 }
 
 // https://wicg.github.io/ua-client-hints/#dictdef-uadatavalues
-interface UADataValues {
+export interface UADataValues {
   readonly brands?: NavigatorUABrandVersion[]
   readonly mobile?: boolean
   readonly platform?: string
@@ -30,14 +20,14 @@ interface UADataValues {
 }
 
 // https://wicg.github.io/ua-client-hints/#dictdef-ualowentropyjson
-interface UALowEntropyJSON {
+export interface UALowEntropyJSON {
   readonly brands: NavigatorUABrandVersion[]
   readonly mobile: boolean
   readonly platform: string
 }
 
 // https://wicg.github.io/ua-client-hints/#navigatoruadata
-interface NavigatorUAData extends UALowEntropyJSON {
+export interface NavigatorUAData extends UALowEntropyJSON {
   getHighEntropyValues(hints: string[]): Promise<UADataValues>
   toJSON(): UALowEntropyJSON
 }

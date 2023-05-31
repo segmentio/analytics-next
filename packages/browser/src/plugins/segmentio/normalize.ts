@@ -137,7 +137,7 @@ export async function normalize(
   delete json.options
   json.writeKey = settings?.apiKey
 
-  ctx.userAgent = window.navigator.userAgent
+  ctx.userAgent = navigator.userAgent
   const userAgentData = await clientHints(analytics.options.highEntropyValues)
   if (userAgentData) {
     ctx.userAgentData = userAgentData
