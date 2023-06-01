@@ -1,7 +1,7 @@
-import { NavigatorUAData, UADataValues } from './interfaces'
+import { HighEntropyHint, NavigatorUAData, UADataValues } from './interfaces'
 
 export async function clientHints(
-  hints?: string[]
+  hints?: HighEntropyHint[]
 ): Promise<UADataValues | undefined> {
   const userAgentData = (navigator as any).userAgentData as
     | NavigatorUAData
