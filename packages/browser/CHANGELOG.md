@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.52.0
+
+### Minor Changes
+
+- [#867](https://github.com/segmentio/analytics-next/pull/867) [`2b3e5e4`](https://github.com/segmentio/analytics-next/commit/2b3e5e470b39ba6e23b90a8b2e61c6ed22b0fd6c) Thanks [@zikaari](https://github.com/zikaari)! - Device mode destination filters will now filter properties within arrays, just like they do in cloud mode
+
+### Patch Changes
+
+- [#861](https://github.com/segmentio/analytics-next/pull/861) [`99402e9`](https://github.com/segmentio/analytics-next/commit/99402e93902b6e5d02b8abe6944cc2f87255ca41) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes issue related to how retried events are stored in localStorage to prevent analytics.js from reading events for a different writeKey when that writeKey is used on the same domain as the current analytics.js.
+
 ## 1.51.7
 
 ### Patch Changes
