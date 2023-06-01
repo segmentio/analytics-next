@@ -103,6 +103,9 @@ export interface InitOptions {
         aid?: RegExp
         uid?: RegExp
       }
+  /**
+   * Array of high entropy Client Hints to request. These may be rejected by the user agent - only required hints should be requested.
+   */
   highEntropyValuesClientHints?: HighEntropyHint[]
 }
 
