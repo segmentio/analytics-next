@@ -28,7 +28,7 @@ export interface UALowEntropyJSON {
 
 // https://wicg.github.io/ua-client-hints/#navigatoruadata
 export interface NavigatorUAData extends UALowEntropyJSON {
-  getHighEntropyValues(hints: string[]): Promise<UADataValues>
+  getHighEntropyValues(hints: HighEntropyHint[]): Promise<UADataValues>
   toJSON(): UALowEntropyJSON
 }
 
