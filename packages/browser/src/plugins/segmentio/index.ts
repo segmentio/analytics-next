@@ -113,10 +113,11 @@ export async function segmentio(
       json = onAlias(analytics, json)
     }
 
-    const event = normalize(analytics, json, settings, integrations)
-
     return client
-      .dispatch(`${remote}/${path}`, event)
+      .dispatch(
+        `${remote}/${path}`,
+        normalize(analytics, json, settings, integrations)
+      )
       .then(() => ctx)
       .catch(() => {
         buffer.pushWithBackoff(ctx)
