@@ -118,7 +118,13 @@ describe(sourceMiddlewarePlugin, () => {
         next(payload)
       }
 
-      const dest = new LegacyDestination('Google Analytics', 'latest', {}, {})
+      const dest = new LegacyDestination(
+        'Google Analytics',
+        'latest',
+        'writeKey',
+        {},
+        {}
+      )
 
       const ctx = new Context({
         type: 'track',

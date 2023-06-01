@@ -59,6 +59,7 @@ describe('Integrations', () => {
       const amplitude = new LegacyDestination(
         'amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },
@@ -129,13 +130,20 @@ describe('Integrations', () => {
       const amplitude = new LegacyDestination(
         'Amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },
         {}
       )
 
-      const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
+      const ga = new LegacyDestination(
+        'Google-Analytics',
+        'latest',
+        writeKey,
+        {},
+        {}
+      )
 
       const [analytics] = await AnalyticsBrowser.load({
         writeKey,
@@ -156,14 +164,27 @@ describe('Integrations', () => {
       const amplitude = new LegacyDestination(
         'Amplitude',
         'latest',
+        writeKey,
         {
           apiKey: amplitudeWriteKey,
         },
         {}
       )
 
-      const ga = new LegacyDestination('Google-Analytics', 'latest', {}, {})
-      const customerIO = new LegacyDestination('Customer.io', 'latest', {}, {})
+      const ga = new LegacyDestination(
+        'Google-Analytics',
+        'latest',
+        writeKey,
+        {},
+        {}
+      )
+      const customerIO = new LegacyDestination(
+        'Customer.io',
+        'latest',
+        writeKey,
+        {},
+        {}
+      )
 
       const [analytics] = await AnalyticsBrowser.load({
         writeKey,

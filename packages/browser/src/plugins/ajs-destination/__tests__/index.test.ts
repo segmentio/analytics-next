@@ -74,6 +74,7 @@ jest.mock('unfetch', () => {
 })
 
 describe('loading ajsDestinations', () => {
+  const writeKey = 'foo'
   beforeEach(async () => {
     jest.resetAllMocks()
 
@@ -84,7 +85,7 @@ describe('loading ajsDestinations', () => {
   })
 
   it('loads version overrides', () => {
-    const destinations = ajsDestinations(cdnResponse, {}, {})
+    const destinations = ajsDestinations(writeKey, cdnResponse, {}, {})
 
     const withVersionSettings = destinations.find(
       (d) => d.name === 'WithVersionSettings'
@@ -103,7 +104,7 @@ describe('loading ajsDestinations', () => {
 
   // This test should temporary. It must be deleted once we fix the Iterable metadata
   it('ignores Iterable', () => {
-    const destinations = ajsDestinations(cdnResponse, {}, {})
+    const destinations = ajsDestinations(writeKey, cdnResponse, {}, {})
     const iterable = destinations.find((d) => d.name === 'Iterable')
     expect(iterable).toBeUndefined()
   })
@@ -111,6 +112,7 @@ describe('loading ajsDestinations', () => {
   describe('versionSettings.components', () => {
     it('ignores [componentType:browser] when bundlingStatus is unbundled', () => {
       const destinations = ajsDestinations(
+        writeKey,
         {
           integrations: {
             'Some server destination': {
@@ -141,6 +143,7 @@ describe('loading ajsDestinations', () => {
 
     it('loads [componentType:browser] when bundlingStatus is not defined', () => {
       const destinations = ajsDestinations(
+        writeKey,
         {
           integrations: {
             'Some server destination': {
@@ -170,13 +173,14 @@ describe('loading ajsDestinations', () => {
   })
 
   it('loads type:browser legacy ajs destinations from cdn', () => {
-    const destinations = ajsDestinations(cdnResponse, {}, {})
+    const destinations = ajsDestinations(writeKey, cdnResponse, {}, {})
     // ignores segment.io
     expect(destinations.length).toBe(5)
   })
 
   it('ignores type:browser when bundlingStatus is unbundled', () => {
     const destinations = ajsDestinations(
+      writeKey,
       {
         integrations: {
           'Some server destination': {
@@ -201,6 +205,7 @@ describe('loading ajsDestinations', () => {
 
   it('loads type:browser when bundlingStatus is not defined', () => {
     const destinations = ajsDestinations(
+      writeKey,
       {
         integrations: {
           'Some server destination': {
@@ -223,12 +228,13 @@ describe('loading ajsDestinations', () => {
   })
 
   it('ignores destinations of type:server', () => {
-    const destinations = ajsDestinations(cdnResponse, {}, {})
+    const destinations = ajsDestinations(writeKey, cdnResponse, {}, {})
     expect(destinations.find((d) => d.name === 'Zapier')).toBe(undefined)
   })
 
   it('does not load integrations when All:false', () => {
     const destinations = ajsDestinations(
+      writeKey,
       cdnResponse,
       {
         All: false,
@@ -240,6 +246,7 @@ describe('loading ajsDestinations', () => {
 
   it('loads integrations when All:false, <integration>: true', () => {
     const destinations = ajsDestinations(
+      writeKey,
       cdnResponse,
       {
         All: false,
@@ -256,7 +263,13 @@ describe('loading ajsDestinations', () => {
     const middleware = tsubMiddleware(
       cdnResponse.middlewareSettings!.routingRules
     )
-    const destinations = ajsDestinations(cdnResponse, {}, {}, middleware)
+    const destinations = ajsDestinations(
+      writeKey,
+      cdnResponse,
+      {},
+      {},
+      middleware
+    )
     const amplitude = destinations.find((d) => d.name === 'Amplitude')
     expect(amplitude?.middleware.length).toBe(1)
   })
@@ -267,6 +280,7 @@ describe('settings', () => {
     const dest = new LegacyDestination(
       'Yandex',
       'latest',
+      'writeKey',
       {
         type: 'custom',
       },
@@ -279,6 +293,7 @@ describe('settings', () => {
     const dest = new LegacyDestination(
       'Amplitude',
       'latest',
+      'writeKey',
       {
         type: 'browser',
       },
@@ -294,18 +309,21 @@ describe('options', () => {
     const defaultDestWithPersistance = new LegacyDestination(
       'LocalStorageUser',
       'latest',
+      'writeKey',
       {},
       {}
     )
     const destWithPersistance = new LegacyDestination(
       'LocalStorageUserToo',
       'latest',
+      'writeKey',
       {},
       { disableClientPersistence: false }
     )
     const destWithoutPersistance = new LegacyDestination(
       'MemoryUser',
       'latest',
+      'writeKey',
       {},
       { disableClientPersistence: true }
     )
@@ -326,13 +344,15 @@ describe('remote loading', () => {
   const loadAmplitude = async (
     obfuscate = false
   ): Promise<LegacyDestination> => {
+    const writeKey = 'abc'
     const ajs = new Analytics({
-      writeKey: 'abc',
+      writeKey,
     })
 
     const dest = new LegacyDestination(
       'Amplitude',
       'latest',
+      writeKey,
       {
         apiKey: AMPLITUDE_WRITEKEY,
       },
@@ -499,13 +519,15 @@ describe('plan', () => {
   })
 
   const loadAmplitude = async (plan: Plan): Promise<LegacyDestination> => {
+    const writeKey = 'abc'
     const ajs = new Analytics({
-      writeKey: 'abc',
+      writeKey,
     })
 
     const dest = new LegacyDestination(
       'amplitude',
       'latest',
+      writeKey,
       {
         apiKey: AMPLITUDE_WRITEKEY,
       },
@@ -777,7 +799,12 @@ describe('option overrides', () => {
       },
     }
 
-    const destinations = ajsDestinations(cdnSettings, {}, initOptions)
+    const destinations = ajsDestinations(
+      'writeKey',
+      cdnSettings,
+      {},
+      initOptions
+    )
     const amplitude = destinations[0]
 
     await amplitude.load(Context.system(), {} as Analytics)
