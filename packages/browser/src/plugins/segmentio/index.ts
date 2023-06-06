@@ -13,6 +13,7 @@ import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 import { SEGMENT_API_HOST } from '../../core/constants'
 import { clientHints } from '../../lib/client-hints'
+import { UADataValues } from '../../lib/client-hints/interfaces'
 
 type DeliveryStrategy =
   | {
@@ -83,9 +84,14 @@ export async function segmentio(
       ? batch(apiHost, deliveryStrategy.config)
       : standard(deliveryStrategy?.config as StandardDispatcherConfig)
 
-  const userAgentData = await clientHints(
-    analytics.options.highEntropyValuesClientHints
-  )
+  let userAgentData: UADataValues | undefined
+  try {
+    userAgentData = await clientHints(
+      analytics.options.highEntropyValuesClientHints
+    )
+  } catch {
+    userAgentData = undefined
+  }
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {
