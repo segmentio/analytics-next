@@ -86,6 +86,7 @@ export class LegacyDestination implements DestinationPlugin {
   constructor(
     name: string,
     version: string,
+    writeKey: string,
     settings: JSONObject = {},
     options: InitOptions,
     integrationSource?: ClassicIntegrationSource
@@ -105,7 +106,7 @@ export class LegacyDestination implements DestinationPlugin {
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
-      : new PersistedPriorityQueue(4, `dest-${name}`)
+      : new PersistedPriorityQueue(4, `${writeKey}:dest-${name}`)
 
     this.scheduleFlush()
   }
@@ -318,6 +319,7 @@ export class LegacyDestination implements DestinationPlugin {
 }
 
 export function ajsDestinations(
+  writeKey: string,
   settings: LegacySettings,
   globalIntegrations: Integrations = {},
   options: InitOptions = {},
@@ -372,6 +374,7 @@ export function ajsDestinations(
       const destination = new LegacyDestination(
         name,
         version,
+        writeKey,
         integrationOptions[name],
         options,
         adhocIntegrationSources?.[name]

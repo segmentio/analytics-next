@@ -46,7 +46,10 @@ describe('Segment.io retries', () => {
             value: jest.fn().mockImplementation(() => queue),
           })
         } else {
-          queue = new PPQ.PersistedPriorityQueue(3, `test-Segment.io`)
+          queue = new PPQ.PersistedPriorityQueue(
+            3,
+            `${options.apiKey}:test-Segment.io`
+          )
           queue['__type'] = 'persisted'
           Object.defineProperty(PPQ, 'PersistedPriorityQueue', {
             writable: true,

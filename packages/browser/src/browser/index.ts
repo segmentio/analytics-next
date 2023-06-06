@@ -150,6 +150,7 @@ async function flushFinalBuffer(
 }
 
 async function registerPlugins(
+  writeKey: string,
   legacySettings: LegacySettings,
   analytics: Analytics,
   opts: InitOptions,
@@ -173,6 +174,7 @@ async function registerPlugins(
           /* webpackChunkName: "ajs-destination" */ '../plugins/ajs-destination'
         ).then((mod) => {
           return mod.ajsDestinations(
+            writeKey,
             legacySettings,
             analytics.integrations,
             opts,
@@ -286,6 +288,7 @@ async function loadAnalytics(
   flushPreBuffer(analytics, preInitBuffer)
 
   const ctx = await registerPlugins(
+    settings.writeKey,
     legacySettings,
     analytics,
     opts,
