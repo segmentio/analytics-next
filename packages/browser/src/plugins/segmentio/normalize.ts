@@ -135,7 +135,8 @@ export function normalize(
 
   delete json.options
   json.writeKey = settings?.apiKey
-  ctx.userAgent = window.navigator.userAgent
+
+  ctx.userAgent = navigator.userAgent
 
   // @ts-ignore
   const locale = navigator.userLanguage || navigator.language

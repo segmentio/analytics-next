@@ -104,7 +104,7 @@ describe('schema filter', () => {
 
     options = { apiKey: 'foo' }
     ajs = new Analytics({ writeKey: options.apiKey })
-    segment = segmentio(ajs, options, {})
+    segment = await segmentio(ajs, options, {})
     filterXt = schemaFilter({}, settings)
 
     jest.spyOn(segment, 'track')

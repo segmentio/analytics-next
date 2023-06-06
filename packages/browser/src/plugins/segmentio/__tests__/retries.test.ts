@@ -57,7 +57,7 @@ describe('Segment.io retries', () => {
           })
         }
 
-        segment = segmentio(analytics, options, {})
+        segment = await segmentio(analytics, options, {})
 
         await analytics.register(segment, pageEnrichment)
       })

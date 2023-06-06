@@ -119,6 +119,29 @@ export interface CoreExtraContext {
   userAgent?: string
 
   /**
+   * User agent data returned by the Client Hints API
+   */
+  userAgentData?: {
+    brands?: {
+      brand: string
+      version: string
+    }[]
+    mobile?: boolean
+    platform?: string
+    architecture?: string
+    bitness?: string
+    model?: string
+    platformVersion?: string
+    /** @deprecated in favour of fullVersionList */
+    uaFullVersion?: string
+    fullVersionList?: {
+      brand: string
+      version: string
+    }[]
+    wow64?: boolean
+  }
+
+  /**
    * Information about the current library.
    *
    * **Automatically filled out by the library.**
