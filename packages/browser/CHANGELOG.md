@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.53.0
+
+### Minor Changes
+
+- [#870](https://github.com/segmentio/analytics-next/pull/870) [`f23f3be`](https://github.com/segmentio/analytics-next/commit/f23f3bec9a774d9e6df8e243ab8e2711bacedd37) Thanks [@silesky](https://github.com/silesky)! - Add updateCDNSettings option
+
+* [#864](https://github.com/segmentio/analytics-next/pull/864) [`6cba535`](https://github.com/segmentio/analytics-next/commit/6cba5356c5f751e3edb30f7f524d4498600895b0) Thanks [@danieljackins](https://github.com/danieljackins)! - Add Client Hints API support
+
+### Patch Changes
+
+- Updated dependencies [[`6cba535`](https://github.com/segmentio/analytics-next/commit/6cba5356c5f751e3edb30f7f524d4498600895b0)]:
+  - @segment/analytics-core@1.3.0
+
 ## 1.52.0
 
 ### Minor Changes

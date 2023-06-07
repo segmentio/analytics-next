@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.3.0
+
+### Minor Changes
+
+- [#864](https://github.com/segmentio/analytics-next/pull/864) [`6cba535`](https://github.com/segmentio/analytics-next/commit/6cba5356c5f751e3edb30f7f524d4498600895b0) Thanks [@danieljackins](https://github.com/danieljackins)! - Add Client Hints API support
+
 ## 1.2.5
 
 ### Patch Changes
