@@ -49,6 +49,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 import { HighEntropyHint } from '../../lib/client-hints/interfaces'
+import type { LegacySettings } from '../../browser'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -98,6 +99,11 @@ export interface InitOptions {
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean
+  /**
+   * This callback allows you to update/mutate CDN Settings.
+   * This is called directly after settings are fetched from the CDN.
+   */
+  updateCDNSettings?: (settings: LegacySettings) => LegacySettings
   /**
    * Disables or sets constraints on processing of query string parameters
    */
