@@ -268,9 +268,13 @@ async function loadAnalytics(
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
-  const legacySettings =
+  let legacySettings =
     settings.cdnSettings ??
     (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+
+  if (options.updateCDNSettings) {
+    legacySettings = options.updateCDNSettings(legacySettings)
+  }
 
   const retryQueue: boolean =
     legacySettings.integrations['Segment.io']?.retryQueue ?? true
