@@ -43,10 +43,7 @@ function chunks(batch: object[]): Array<object[]> {
   return result
 }
 
-export default function batch(
-  apiHost: string,
-  config?: BatchingDispatchConfig
-) {
+export default function batch(remote: string, config?: BatchingDispatchConfig) {
   let buffer: object[] = []
   let pageUnloaded = false
 
@@ -60,7 +57,7 @@ export default function batch(
 
     const writeKey = (batch[0] as CustomerioEvent)?.writeKey
 
-    return fetch(`https://${apiHost}/b`, {
+    return fetch(`${remote}/b`, {
       keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'text/plain',
