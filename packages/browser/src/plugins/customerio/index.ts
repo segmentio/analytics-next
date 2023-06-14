@@ -130,6 +130,7 @@ export function customerio(
     page: send,
     alias: send,
     group: send,
+    screen: send,
   }
 
   // Buffer may already have items if they were previously stored in localStorage.
