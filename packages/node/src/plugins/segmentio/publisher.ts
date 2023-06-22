@@ -3,10 +3,10 @@ import { abortSignalAfterTimeout } from '../../lib/abort'
 import type { Context } from '../../app/context'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
-import { fetch } from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
+import { AnalyticsHTTPClient } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,6 +28,7 @@ export interface PublisherProps {
   writeKey: string
   httpRequestTimeout?: number
   disable?: boolean
+  httpClient: AnalyticsHTTPClient
 }
 
 /**
@@ -46,6 +47,7 @@ export class Publisher {
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
+  public customclient: AnalyticsHTTPClient
   constructor(
     {
       host,
@@ -55,6 +57,7 @@ export class Publisher {
       flushInterval,
       writeKey,
       httpRequestTimeout,
+      httpClient: client,
       disable,
     }: PublisherProps,
     emitter: NodeEmitter
@@ -70,6 +73,7 @@ export class Publisher {
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
+    this.customclient = client
   }
 
   private createBatch(): ContextBatch {
@@ -218,7 +222,7 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
-        const response = await fetch(this._url, requestInit)
+        const response = await this.customclient.send(this._url, requestInit)
 
         clearTimeout(timeoutId)
 
