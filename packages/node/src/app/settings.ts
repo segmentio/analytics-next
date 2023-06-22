@@ -34,6 +34,13 @@ export interface AnalyticsSettings {
    * Disable the analytics library. All calls will be a noop. Default: false.
    */
   disable?: boolean
+
+  /**
+   * Supply a CustomHTTPTransport implementation (such as one supporting proxy)
+   * Default: DefaultFetchTransport which will use the existing global fetch, or
+   * node-fetch if it doesn't exist
+   */
+  transport?: CustomHTTPClient
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

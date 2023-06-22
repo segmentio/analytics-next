@@ -1,6 +1,5 @@
 import { abortSignalAfterTimeout } from '../abort'
 import nock from 'nock'
-import { fetch } from '../fetch'
 import { sleep } from '@segment/analytics-core'
 
 describe(abortSignalAfterTimeout, () => {
@@ -30,7 +29,8 @@ describe(abortSignalAfterTimeout, () => {
     try {
       const [signal] = abortSignalAfterTimeout(2000)
       jest.advanceTimersByTime(6000)
-      await fetch(HOST, { signal })
+      const client = new DefaultFetchClient()
+      await client.send(HOST, { signal })
       throw Error('fail test.')
     } catch (err: any) {
       expect(err.name).toMatch('AbortError')
@@ -42,7 +42,8 @@ describe(abortSignalAfterTimeout, () => {
     nock(HOST).get('/').reply(201)
     const [signal] = abortSignalAfterTimeout(0)
     try {
-      await fetch(HOST, { signal })
+      const client = new DefaultFetchClient()
+      await client.send(HOST, { signal })
       throw Error('fail test.')
     } catch (err: any) {
       expect(err.name).toMatch('AbortError')

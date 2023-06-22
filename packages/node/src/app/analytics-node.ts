@@ -51,6 +51,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         httpRequestTimeout: settings.httpRequestTimeout,
         disable: settings.disable,
         flushInterval,
+        transport: settings.transport ?? new DefaultFetchClient(),
       },
       this as NodeEmitter
     )
