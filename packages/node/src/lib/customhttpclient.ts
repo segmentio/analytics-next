@@ -1,8 +1,8 @@
-interface CustomHTTPClient {
+export interface CustomHTTPClient {
   send: (resource: any, options: any) => Promise<Response>
 }
 
-class DefaultFetchClient implements CustomHTTPClient {
+export class DefaultFetchClient implements CustomHTTPClient {
   send = async (resource: any, options: any): Promise<Response> => {
     if (globalThis.fetch) {
       return globalThis.fetch(resource, options)

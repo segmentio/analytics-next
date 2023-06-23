@@ -16,6 +16,7 @@ import {
 } from './types'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
+import { DefaultFetchClient } from '../lib/customhttpclient'
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _eventFactory: NodeEventFactory
@@ -51,7 +52,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         httpRequestTimeout: settings.httpRequestTimeout,
         disable: settings.disable,
         flushInterval,
-        transport: settings.transport ?? new DefaultFetchClient(),
+        customclient: settings.customclient ?? new DefaultFetchClient(),
       },
       this as NodeEmitter
     )

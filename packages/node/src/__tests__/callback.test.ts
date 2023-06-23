@@ -1,17 +1,22 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
-import { createError, createSuccess } from './test-helpers/factories'
+import {
+  createError,
+  createSuccess,
+  TestFetchClient,
+} from './test-helpers/factories'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { Context } from '../app/context'
 
 describe('Callback behavior', () => {
+  const testClient = new TestFetchClient()
   beforeEach(() => {
-    fetcher.mockReturnValue(createSuccess())
+    testClient.returnValue = createSuccess()
   })
 
   it('should handle success', async () => {
-    const ajs = createTestAnalytics({ maxEventsInBatch: 1 })
+    const ajs = createTestAnalytics({
+      maxEventsInBatch: 1,
+      customclient: testClient,
+    })
     const ctx = await new Promise<Context>((resolve, reject) =>
       ajs.track(
         {
@@ -29,8 +34,11 @@ describe('Callback behavior', () => {
   })
 
   it('should handle errors', async () => {
-    fetcher.mockReturnValue(createError())
-    const ajs = createTestAnalytics({ maxEventsInBatch: 1 })
+    testClient.returnValue = createError()
+    const ajs = createTestAnalytics({
+      maxEventsInBatch: 1,
+      customclient: testClient,
+    })
     const [err, ctx] = await new Promise<[any, Context]>((resolve) =>
       ajs.track(
         {
