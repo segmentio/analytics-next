@@ -1,11 +1,11 @@
 import { Request, test, expect } from '@playwright/test'
-import { SettingsBuilder } from './fixtures/settings'
 import { standaloneMock } from './helpers/standalone-mock'
 import { extractWriteKeyFromUrl } from './helpers/extract-writekey'
 import {
   PersistedQueueResult,
   getPersistedItems,
 } from './helpers/get-persisted-items'
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 
 test.describe('Segment.io Retries', () => {
   test.beforeEach(standaloneMock)
@@ -23,7 +23,7 @@ test.describe('Segment.io Retries', () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(new SettingsBuilder(writeKey).build()),
+          body: JSON.stringify(new CDNSettingsBuilder({ writeKey }).build()),
         })
       }
     )

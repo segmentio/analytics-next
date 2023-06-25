@@ -19,6 +19,23 @@
     },
     {
       "type": "node",
+      "request": "launch",
+      "name": "Jest Watch Current File",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--testTimeout=100000",
+        "--watch",
+        "--findRelatedTests",
+        "${relativeFile}"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
       "name": "Jest All",
       "request": "launch",
       "args": [

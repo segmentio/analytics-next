@@ -1,6 +1,6 @@
 const { createJestTSConfig } = require('@internal/config')
 
-module.exports = createJestTSConfig({
+module.exports = createJestTSConfig(__dirname, {
   modulePathIgnorePatterns: ['<rootDir>/e2e-tests', '<rootDir>/qa'],
   setupFilesAfterEnv: ['./jest.setup.js'],
   testEnvironment: 'jsdom',

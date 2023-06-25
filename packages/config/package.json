@@ -3,5 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "main": "./src",
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "devDependencies": {
+    "app-root-path": "^3.1.0"
+  }
 }

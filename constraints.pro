@@ -31,6 +31,9 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, Depende
     '@segment/analytics-next',
     '@segment/analytics-node',
     '@segment/analytics-core',
+    '@segment/analytics-consent-wrapper-onetrust',
+    '@segment/analytics-consent-tools',
+    '@internal/test-helpers',
     '@internal/config',
     '@types/node'
   ]).

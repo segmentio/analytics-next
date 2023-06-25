@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "es6",
+    "noEmit": true,
+    "types": [
+      "@wdio/globals/types",
+      "node",
+      "expect-webdriverio",
+      "@wdio/mocha-framework",
+      "@wdio/sauce-service"
+    ]
+  }
+}

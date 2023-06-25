@@ -1,0 +1,38 @@
+{
+  "name": "@segment/analytics-consent-tools",
+  "version": "0.0.1",
+  "main": "./dist/esm/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "!**/__tests__/**",
+    "!*.tsbuildinfo"
+  ],
+  "scripts": {
+    "test": "yarn jest",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build...": "yarn run -T turbo run --filter='@segment/analytics-consent-tools' build",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "watch": "yarn build:esm --watch",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently --raw",
+    "jest": "yarn run -T jest"
+  },
+  "devDependencies": {
+    "@internal/config": "workspace:^",
+    "@internal/test-helpers": "workspace:^",
+    "@segment/analytics-next": "workspace:^"
+  },
+  "packageManager": "yarn@3.4.1",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/consent/consent-tools",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  }
+}

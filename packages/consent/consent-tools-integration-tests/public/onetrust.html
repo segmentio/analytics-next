@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript" charset="UTF-8"
+    data-domain-script="80ca7b5c-e72f-4bd0-972a-b74d052a0820-test"></script>
+  <script type="text/javascript">
+    window.isOneTrustLoaded = new Promise(resolve => {
+      window.OptanonWrapper = function () {
+        resolve()
+        window.OneTrust.OnConsentChanged((e) => console.log('consent changed', e.detail));
+      }
+    })
+  </script>
+  <script src="dist/onetrust.bundle.js"></script>
+
+</head>
+
+<body>
+  <h1>Hello World - Serving Analytics</h1>
+  <h2>Please Check Network tab</h2>
+  <p>This page is meant to be run by webdriver.io</p>
+</body>
+
+</html>
