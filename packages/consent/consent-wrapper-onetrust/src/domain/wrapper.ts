@@ -2,7 +2,7 @@ import {
   AnyAnalytics,
   Categories,
   createWrapper,
-  CreateWrapperOptions,
+  CreateWrapperSettings,
   resolveWhen,
 } from '@segment/analytics-consent-tools'
 
@@ -15,7 +15,7 @@ import {
 // OneTrust has both a groupId (e.g. "CAT001") and a groupName (e.g. "Functional")
 // getDeniedCategories -- is this required?
 interface OneTrustOptions {
-  integrationCategoryMappings?: CreateWrapperOptions['integrationCategoryMappings']
+  integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
 }
 
 export const oneTrust = (

@@ -5,7 +5,7 @@ import {
   CDNSettingsIntegrations,
   CDNSettingsRemotePlugin,
   InitOptions,
-  CreateWrapperOptions,
+  CreateWrapperSettings,
   CDNSettings,
 } from '../types'
 import { validateCategories, validateOptions } from './validation'
@@ -155,8 +155,8 @@ const omitDisabledRemotePlugins = (
   remotePlugins: CDNSettingsRemotePlugin[],
   integrations: CDNSettingsIntegrations,
   consentedCategories: Categories,
-  integrationCategoryMappings: CreateWrapperOptions['integrationCategoryMappings'],
-  shouldEnableIntegration: CreateWrapperOptions['shouldEnableIntegration']
+  integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
+  shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
 ): CDNSettingsRemotePlugin[] =>
   remotePlugins.filter((plugin) => {
     const { creationName, libraryName } = plugin

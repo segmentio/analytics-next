@@ -1,4 +1,4 @@
-import { Categories, CreateWrapperOptions } from '../../types'
+import { Categories, CreateWrapperSettings } from '../../types'
 import { assertIsFunction, assertIsObject } from './common-validators'
 import { ValidationError } from './validation-error'
 
@@ -19,8 +19,8 @@ export function validateCategories(
 }
 
 export function validateOptions(options: {
-  [k in keyof CreateWrapperOptions]: unknown
-}): asserts options is CreateWrapperOptions {
+  [k in keyof CreateWrapperSettings]: unknown
+}): asserts options is CreateWrapperSettings {
   if (typeof options !== 'object' || !options) {
     throw new ValidationError('Options should be an object', options)
   }

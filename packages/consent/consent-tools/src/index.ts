@@ -8,7 +8,7 @@ export { resolveWhen } from './utils'
 export type {
   Wrapper,
   CreateWrapper,
-  CreateWrapperOptions,
+  CreateWrapperSettings,
   IntegrationCategoryMappings,
   Categories,
   AnyAnalytics,

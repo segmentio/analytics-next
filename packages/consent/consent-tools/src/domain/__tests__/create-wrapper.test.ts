@@ -1,7 +1,7 @@
 import { createWrapper } from '../create-wrapper'
 import { AbortLoadError, LoadContext } from '../load-cancellation'
 import type {
-  CreateWrapperOptions,
+  CreateWrapperSettings,
   AnyAnalytics,
   CDNSettings,
 } from '../../types'
@@ -20,7 +20,7 @@ const createConsentSettings = (categories: string[] = []) => ({
   },
 })
 
-const mockGetCategories: jest.MockedFn<CreateWrapperOptions['getCategories']> =
+const mockGetCategories: jest.MockedFn<CreateWrapperSettings['getCategories']> =
   jest.fn().mockImplementation(() => ({ Advertising: true }))
 
 const analyticsLoadSpy: jest.MockedFn<AnyAnalytics['load']> = jest.fn()
@@ -65,7 +65,7 @@ beforeEach(() => {
   analytics = new MockAnalytics()
 })
 
-const wrapTestAnalytics = (overrides: Partial<CreateWrapperOptions> = {}) =>
+const wrapTestAnalytics = (overrides: Partial<CreateWrapperSettings> = {}) =>
   createWrapper({
     getCategories: mockGetCategories,
     ...overrides,
