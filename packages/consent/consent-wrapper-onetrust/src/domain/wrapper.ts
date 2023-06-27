@@ -12,8 +12,6 @@ import {
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
 
-// OneTrust has both a groupId (e.g. "CAT001") and a groupName (e.g. "Functional")
-// getDeniedCategories -- is this required?
 interface OneTrustOptions {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
 }
