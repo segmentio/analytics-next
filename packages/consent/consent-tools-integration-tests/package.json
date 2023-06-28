@@ -5,7 +5,7 @@
     "dev": "yarn concurrently 'yarn watch' 'yarn build serve --open'",
     "build": "webpack",
     "watch": "yarn build --watch",
-    "build...": "yarn run -T turbo run --filter='@internal/consent-tools-integration-tests' build",
+    "build...": "yarn run -T turbo run build --filter=@internal/consent-tools-integration-tests",
     "test": "yarn test:local",
     "test:local": "wdio wdio.conf.local.ts",
     "start-server-and-test": "yarn concurrently -k 'yarn build serve' 'sleep 5 && yarn test'",
