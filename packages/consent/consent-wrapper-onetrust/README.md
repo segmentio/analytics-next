@@ -2,10 +2,15 @@ This package is for the OneTrust integration for analytics consent
 
 
 # Quick Start
-### Snippet users:
-1.) Delete `analytics.load(...)` from your snippet.
 
-2.) Use the folliwing initialization code: 
+## For snippet users (window.analytics)
+1. Delete the `analytics.load()` line from the snippet
+
+```diff
+- analytics.load("<MY_WRITE_KEY>");
+```
+
+2. Use the folliwing initialization code: 
 ```ts
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 
@@ -15,7 +20,7 @@ oneTrust(window.analytics)
 window.analytics.load('<WRITE_KEY>')
 
 ```
-### NPM Users
+## For `npm` library users
 ```ts
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 import { AnalyticsBrowser } from '@segment/analytics-next'
