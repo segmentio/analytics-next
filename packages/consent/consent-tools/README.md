@@ -1,18 +1,31 @@
 # @segment/analytics-consent-tools
-## Example
-## Wrapper Usage 
-Please see our [ onetrust example.](../consent-wrapper-onetrust)
+
+
+
+## Quick Start
 ```ts
 // wrapper.js
-import { createWrapper } from '@segment/analytics-consent-tools'
+import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
-  shouldLoad: () => Promise.resolve({ Advertising: false, Functional: true }),
-  getCategories: () => ({ Advertising: false, Functional: true }),
+  shouldLoad: (ctx) => {
+    await resolveWhen(() => 
+      window.CMP !== undefined && !window.CMP.popUpVisible()
+    500)
+
+    if (noConsentNeeded) {
+      return ctx.abort({ loadSegmentNormally: true })
+    }
+  },
+  getCategories: () => { 
+    // e.g. { Advertising: true, Functional: false }
+    return normalizeCategories(window.CMP.consentedCategories()) 
+  }
 })
 ```
 
-## Wrapper Consumer Usage
+
+## Wrapper Usage API
 ## `npm`
 ```js
 import { withCMP } from './wrapper'
@@ -44,10 +57,11 @@ withCmp(window.analytics)
 window.analytics.load('<MY_WRITE_KEY')
 ```
 
+## Wrapper Examples
+- [OneTrust](../consent-wrapper-onetrust) (beta)
 
 ## Settings / Options / Configuration
-Please check the [CreateWrapperSettings interface](src/types/settings.ts) 
-
+See the complete list of settings in the **[Settings interface](src/types/settings.ts)**
 
 ## Development
 1. Build this package + all dependencies
@@ -60,3 +74,5 @@ yarn build...
 ```
 yarn test
 ```
+
+
