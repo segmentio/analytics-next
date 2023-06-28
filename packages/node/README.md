@@ -3,7 +3,7 @@
 https://www.npmjs.com/package/@segment/analytics-node
 
 ### OFFICIAL DOCUMENTATION (FULL)
-- https://segment.com/docs/connections/sources/catalog/libraries/server/node/quickstart
+- https://segment.com/docs/connections/sources/catalog/libraries/server/node
 
 ### LEGACY NODE SDK MIGRATION GUIDE:
 - https://segment.com/docs/connections/sources/catalog/libraries/server/node/migration
