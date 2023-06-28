@@ -11,7 +11,7 @@ export const pick = <
 ): Pick<Obj, Key> => {
   return keys.reduce((acc, k) => {
     if (k in obj) {
-      ;(acc as any)[k] = obj[k]
+      acc[k] = obj[k]
     }
     return acc
   }, {} as Pick<Obj, Key>)
