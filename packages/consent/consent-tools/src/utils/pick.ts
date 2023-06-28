@@ -2,7 +2,10 @@
  * @example
  * pick({ a: 1, b: 2, c: 3 }, ['a', 'c']) => { a: 1, c: 3 }
  */
-export const pick = <Obj extends Record<Key, unknown>, Key extends string>(
+export const pick = <
+  Obj extends Record<string, unknown>,
+  Key extends keyof Obj
+>(
   obj: Obj,
   keys: Key[]
 ): Pick<Obj, Key> => {
