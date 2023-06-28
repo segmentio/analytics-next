@@ -3,7 +3,7 @@ import type { CreateWrapperSettings } from './settings'
 /**
  * first argument to AnalyticsBrowser.load
  */
-export interface Settings {
+export interface AnalyticsBrowserSettings {
   writeKey: string
   cdnURL?: string
   cdnSettings?: CDNSettings
