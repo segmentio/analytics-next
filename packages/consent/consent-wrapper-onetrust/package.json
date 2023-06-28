@@ -11,7 +11,6 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn build:esm",
     "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-wrapper-onetrust",

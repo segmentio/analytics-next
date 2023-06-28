@@ -5,10 +5,14 @@ Why is this using wd.io instead of playwright?
 - Webdriver.io has native support for lighthouse and lots of other cool stuff!
 
 ## Project structure
+- `/public` - Test server root
+  - `/dist` - Holds the webpacked page-bundles that will be injected into each html page
 
-- `src` - Test files and fixtures
-- `public` - Where asssets related to tests are kept
-- `public/dist` - Where build artifacts are kept that get loaded into the test page.
+- `/src` - Test suite files
+  - `/page-bundles` - JS that will be injected into the test page (this will be built by webpack -> public/dist)
+  - `/page-objects` - Page objects for the test suite
+  - `/page-tests ` - Tests that will be run on the page
+  
 
 ## Development
 ### 1. Build this package + deps
