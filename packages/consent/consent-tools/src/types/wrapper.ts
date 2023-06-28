@@ -1,8 +1,5 @@
 import type { CreateWrapperSettings } from './settings'
 
-/**
- * first argument to AnalyticsBrowser.load
- */
 export interface AnalyticsBrowserSettings {
   writeKey: string
   cdnURL?: string
@@ -30,10 +27,10 @@ export interface AnyAnalytics {
    * Either window.analytics.load(...) OR AnalyticsBrowser.load(...)
    */
   load(
-    writeKeyOrSettings: any,
+    writeKeyOrSettings: AnalyticsBrowserSettings | string, // sorry for the any, this should beAnalyticsBrowserSettings | string, but TS errors in tests
     /** See analytics-next function signature for more information. */
     options?: InitOptions
-  ): any
+  ): void
 }
 
 /**

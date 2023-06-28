@@ -4,6 +4,7 @@ import type {
   CreateWrapperSettings,
   AnyAnalytics,
   CDNSettings,
+  AnalyticsBrowserSettings,
 } from '../../types'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 
@@ -30,11 +31,11 @@ let consoleErrorSpy: jest.SpiedFunction<typeof console['error']>
 
 const getAnalyticsLoadLastCall = () => {
   const [arg1, arg2] = analyticsLoadSpy.mock.lastCall
-  const cdnSettings = arg1.cdnSettings
+  const cdnSettings = (arg1 as any).cdnSettings as CDNSettings
   const updateCDNSettings = arg2!.updateCDNSettings || ((id) => id)
   const updatedCDNSettings = updateCDNSettings(cdnSettings) as CDNSettings
   return {
-    args: [arg1, arg2],
+    args: [arg1 as AnalyticsBrowserSettings, arg2!] as const,
     cdnSettings,
     updatedCDNSettings,
   }
@@ -346,7 +347,6 @@ describe(createWrapper, () => {
 
       await analytics.load({
         ...DEFAULT_LOAD_SETTINGS,
-        getCategories: () => ({ Advertising: true }),
         cdnSettings: mockCdnSettings,
       })
 
