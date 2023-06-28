@@ -14,5 +14,5 @@ export const pick = <
       ;(acc as any)[k] = obj[k]
     }
     return acc
-  }, {} as Obj)
+  }, {} as Pick<Obj, Key>)
 }
