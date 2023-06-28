@@ -23,12 +23,13 @@ export interface InitOptions {
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
   on(event: 'initialize', callback: (settings: CDNSettings) => void): void
+
   /**
-   * Either window.analytics.load(...) OR AnalyticsBrowser.load(...)
+   * This interface is meant to be compatible with both the snippet (`window.analytics.load`)
+   * and the npm lib (`AnalyticsBrowser.load`)
    */
   load(
-    writeKeyOrSettings: AnalyticsBrowserSettings | string, // sorry for the any, this should beAnalyticsBrowserSettings | string, but TS errors in tests
-    /** See analytics-next function signature for more information. */
+    writeKeyOrSettings: AnalyticsBrowserSettings | string,
     options?: InitOptions
   ): void
 }
