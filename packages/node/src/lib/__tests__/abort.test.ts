@@ -1,6 +1,7 @@
 import { abortSignalAfterTimeout } from '../abort'
 import nock from 'nock'
 import { sleep } from '@segment/analytics-core'
+import { DefaultFetchClient } from '../customhttpclient'
 
 describe(abortSignalAfterTimeout, () => {
   const HOST = 'https://foo.com'

@@ -1,13 +1,15 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
-import { createError, createSuccess } from './test-helpers/factories'
+import {
+  createError,
+  createSuccess,
+  TestFetchClient,
+} from './test-helpers/factories'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { assertHttpRequestEmittedEvent } from './test-helpers/assert-shape'
 
 describe('http_request', () => {
+  const testClient = new TestFetchClient()
   it('emits an http_request event if success', async () => {
-    fetcher.mockReturnValue(createSuccess())
+    testClient.returnValue = createSuccess()
     const analytics = createTestAnalytics()
     const fn = jest.fn()
     analytics.on('http_request', fn)
@@ -19,8 +21,11 @@ describe('http_request', () => {
   })
 
   it('emits an http_request event if error', async () => {
-    fetcher.mockReturnValue(createError())
-    const analytics = createTestAnalytics({ maxRetries: 0 })
+    testClient.returnValue = createError()
+    const analytics = createTestAnalytics({
+      maxRetries: 0,
+      customClient: testClient,
+    })
     const fn = jest.fn()
     analytics.on('http_request', fn)
     await new Promise((resolve) =>
@@ -30,8 +35,11 @@ describe('http_request', () => {
   })
 
   it('if error, emits an http_request event on every retry', async () => {
-    fetcher.mockReturnValue(createError())
-    const analytics = createTestAnalytics({ maxRetries: 2 })
+    testClient.returnValue = createError()
+    const analytics = createTestAnalytics({
+      maxRetries: 2,
+      customClient: testClient,
+    })
     const fn = jest.fn()
     analytics.on('http_request', fn)
     await new Promise((resolve) =>

@@ -38,7 +38,7 @@ describe('disable', () => {
   it('should call fetch if disabled is false', async () => {
     const analytics = createTestAnalytics({
       disable: false,
-      customclient: checkFetchClient,
+      customClient: checkFetchClient,
     })
     checkFetchClient.wasCalled = false
     await new Promise((resolve) =>
@@ -49,7 +49,7 @@ describe('disable', () => {
   it('should not call fetch if disabled is true', async () => {
     const analytics = createTestAnalytics({
       disable: true,
-      customclient: checkFetchClient,
+      customClient: checkFetchClient,
     })
     checkFetchClient.wasCalled = false
     await new Promise((resolve) =>

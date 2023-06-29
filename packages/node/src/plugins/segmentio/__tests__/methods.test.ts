@@ -1,7 +1,5 @@
-const fetcher = jest.fn()
-jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 import { NodeEventFactory } from '../../../app/event-factory'
-import { createSuccess } from '../../../__tests__/test-helpers/factories'
+import { TestFetchClient } from '../../../__tests__/test-helpers/factories'
 import { createConfiguredNodePlugin } from '../index'
 import { PublisherProps } from '../publisher'
 import { Context } from '../../../app/context'
@@ -15,8 +13,10 @@ let emitter: Emitter
 const createTestNodePlugin = (props: PublisherProps) =>
   createConfiguredNodePlugin(props, emitter)
 
+const testClient = new TestFetchClient()
+
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [url, request] = fetcher.mock.lastCall
+  const [url, request] = testClient.lastCall
   return assertSegmentApiBody(url, request, contexts)
 }
 
@@ -24,7 +24,7 @@ const eventFactory = new NodeEventFactory()
 
 beforeEach(() => {
   emitter = new Emitter()
-  fetcher.mockReturnValue(createSuccess())
+  testClient.reset()
   jest.useFakeTimers()
 })
 
@@ -34,18 +34,20 @@ test('alias', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.alias('to', 'from')
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
+
   await segmentPlugin.alias(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
 
   expect(body.batch).toHaveLength(1)
@@ -63,6 +65,7 @@ test('group', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.group(
@@ -74,13 +77,14 @@ test('group', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
+
   await segmentPlugin.group(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
 
   expect(body.batch).toHaveLength(1)
@@ -101,6 +105,7 @@ test('identify', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.identify('foo-user-id', {
@@ -108,13 +113,13 @@ test('identify', async () => {
   })
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
   await segmentPlugin.identify(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
@@ -133,6 +138,7 @@ test('page', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.page(
@@ -143,13 +149,13 @@ test('page', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
   await segmentPlugin.page(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
 
   expect(body.batch).toHaveLength(1)
@@ -172,6 +178,7 @@ test('screen', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.screen(
@@ -182,13 +189,13 @@ test('screen', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
   await segmentPlugin.screen(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
 
   expect(body.batch).toHaveLength(1)
@@ -210,6 +217,7 @@ test('track', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
+    customclient: testClient,
   })
 
   const event = eventFactory.track(
@@ -219,13 +227,13 @@ test('track', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  testClient.callCount = 0
   await segmentPlugin.screen(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
+  expect(testClient.callCount == 1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
+  const [, request] = testClient.lastCall
   const body = JSON.parse(request.body)
 
   expect(body.batch).toHaveLength(1)

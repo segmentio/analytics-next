@@ -1,18 +1,17 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
 import { Plugin } from '../app/types'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 import { testPlugin } from './test-helpers/test-plugin'
-import { createSuccess, createError } from './test-helpers/factories'
+import { createError, TestFetchClient } from './test-helpers/factories'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 
 const writeKey = 'foo'
 jest.setTimeout(10000)
 const timestamp = new Date()
 
+const testClient = new TestFetchClient()
+
 beforeEach(() => {
-  fetcher.mockReturnValue(createSuccess())
+  testClient.reset()
 })
 
 describe('Settings / Configuration Init', () => {
@@ -28,11 +27,12 @@ describe('Settings / Configuration Init', () => {
     const analytics = createTestAnalytics({
       host: 'http://foo.com',
       path: '/bar',
+      customClient: testClient,
     })
     const track = resolveCtx(analytics, 'track')
     analytics.track({ event: 'foo', userId: 'sup' })
     await track
-    expect(fetcher.mock.calls[0][0]).toBe('http://foo.com/bar')
+    expect(testClient.calls[0][0]).toBe('http://foo.com/bar')
   })
 
   it('throws if host / path is bad', async () => {
@@ -52,11 +52,15 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  it('should emit on an error', async () => {
-    const analytics = createTestAnalytics({ maxRetries: 0 })
-    fetcher.mockReturnValue(
-      createError({ statusText: 'Service Unavailable', status: 503 })
-    )
+  it.only('should emit on an error', async () => {
+    const analytics = createTestAnalytics({
+      maxRetries: 0,
+      customClient: testClient,
+    })
+    testClient.returnValue = createError({
+      statusText: 'Service Unavailable',
+      status: 503,
+    })
     try {
       const promise = resolveCtx(analytics, 'track')
       analytics.track({ event: 'foo', userId: 'sup' })

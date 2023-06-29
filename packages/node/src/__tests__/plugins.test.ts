@@ -1,12 +1,11 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
-import { createSuccess } from './test-helpers/factories'
+import { TestFetchClient } from './test-helpers/factories'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
+
+const testClient = new TestFetchClient()
 
 describe('Plugins', () => {
   beforeEach(() => {
-    fetcher.mockReturnValue(createSuccess())
+    testClient.reset()
   })
 
   describe('Initialize', () => {

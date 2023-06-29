@@ -41,7 +41,7 @@ export interface AnalyticsSettings {
    * Default: DefaultFetchClient which will use the existing global fetch, or
    * node-fetch if it doesn't exist
    */
-  customclient?: CustomHTTPClient
+  customClient?: CustomHTTPClient
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {
