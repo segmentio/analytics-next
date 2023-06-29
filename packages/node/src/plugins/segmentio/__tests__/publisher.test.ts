@@ -5,7 +5,6 @@ import { Context } from '../../../app/context'
 import { NodeEventFactory } from '../../../app/event-factory'
 import { assertHttpRequestEmittedEvent } from '../../../__tests__/test-helpers/assert-shape'
 import {
-  createSuccess,
   createError,
   TestFetchClient,
 } from '../../../__tests__/test-helpers/factories'

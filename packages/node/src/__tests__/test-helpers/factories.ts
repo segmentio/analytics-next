@@ -1,4 +1,3 @@
-import { isNil } from 'lodash'
 import { CustomHTTPClient } from '../../lib/customhttpclient'
 
 export const createSuccess = (body?: any) => {
