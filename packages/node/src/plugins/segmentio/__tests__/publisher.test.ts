@@ -36,7 +36,7 @@ it('supports multiple events in a batch', async () => {
     maxEventsInBatch: 3,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   // Create 3 events of mixed types to send.
@@ -65,7 +65,7 @@ it('supports waiting a max amount of time before sending', async () => {
     maxEventsInBatch: 3,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -94,7 +94,7 @@ it('sends as soon as batch fills up or max time is reached', async () => {
     maxEventsInBatch: 2,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -131,7 +131,7 @@ it('sends if batch will exceed max size in bytes when adding event', async () =>
     maxEventsInBatch: 20,
     flushInterval: 100,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const contexts: Context[] = []
@@ -188,7 +188,7 @@ describe('flushAfterClose', () => {
       maxEventsInBatch: 20,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     publisher.flushAfterClose(3)
@@ -206,7 +206,7 @@ describe('flushAfterClose', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     publisher.flushAfterClose(3)
@@ -223,7 +223,7 @@ describe('flushAfterClose', () => {
       maxEventsInBatch: 3,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     publisher.flushAfterClose(5)
@@ -239,7 +239,7 @@ describe('flushAfterClose', () => {
       maxEventsInBatch: 7,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -256,7 +256,7 @@ describe('flushAfterClose', () => {
       maxEventsInBatch: 7,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -279,7 +279,7 @@ describe('error handling', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const context = new Context(
@@ -317,7 +317,7 @@ describe('error handling', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -350,7 +350,7 @@ describe('error handling', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -381,7 +381,7 @@ describe('error handling', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const context = new Context(eventFactory.alias('my', 'from'))
@@ -411,7 +411,7 @@ describe('error handling', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const fn = jest.fn()
@@ -437,7 +437,7 @@ describe('http_request emitter event', () => {
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      customclient: testClient,
+      httpClient: testClient,
     })
 
     const fn = jest.fn()

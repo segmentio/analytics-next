@@ -22,7 +22,7 @@ describe('Ability for users to exit without losing events', () => {
     ajs = new Analytics({
       writeKey: 'abc123',
       maxEventsInBatch: 1,
-      customClient: testClient,
+      httpClient: testClient,
     })
   })
   const _helpers = {
@@ -88,7 +88,7 @@ describe('Ability for users to exit without losing events', () => {
       ajs = new Analytics({
         writeKey: 'abc123',
         flushInterval,
-        customClient: testClient,
+        httpClient: testClient,
       })
       const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
       expect(closeAndFlushTimeout).toBe(flushInterval * 1.25)
@@ -190,7 +190,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
-        customClient: testClient,
+        httpClient: testClient,
       })
       _helpers.makeTrackCall(analytics)
       _helpers.makeTrackCall(analytics)
@@ -221,7 +221,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
-        customClient: testClient,
+        httpClient: testClient,
       })
       await analytics.register(_testPlugin)
       _helpers.makeTrackCall(analytics)

@@ -1,5 +1,5 @@
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
-import { CustomHTTPClient } from '../lib/customhttpclient'
+import { CustomHTTPClient } from '../lib/custom-http-client'
 
 export class CheckFetchClient implements CustomHTTPClient {
   private _wasCalled = false
@@ -38,7 +38,7 @@ describe('disable', () => {
   it('should call fetch if disabled is false', async () => {
     const analytics = createTestAnalytics({
       disable: false,
-      customClient: checkFetchClient,
+      httpClient: checkFetchClient,
     })
     checkFetchClient.wasCalled = false
     await new Promise((resolve) =>
@@ -49,7 +49,7 @@ describe('disable', () => {
   it('should not call fetch if disabled is true', async () => {
     const analytics = createTestAnalytics({
       disable: true,
-      customClient: checkFetchClient,
+      httpClient: checkFetchClient,
     })
     checkFetchClient.wasCalled = false
     await new Promise((resolve) =>

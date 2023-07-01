@@ -1,7 +1,7 @@
 import { abortSignalAfterTimeout } from '../abort'
 import nock from 'nock'
 import { sleep } from '@segment/analytics-core'
-import { DefaultFetchClient } from '../customhttpclient'
+import { DefaultHttpClient } from '../custom-http-client'
 
 describe(abortSignalAfterTimeout, () => {
   const HOST = 'https://foo.com'
@@ -30,7 +30,7 @@ describe(abortSignalAfterTimeout, () => {
     try {
       const [signal] = abortSignalAfterTimeout(2000)
       jest.advanceTimersByTime(6000)
-      const client = new DefaultFetchClient()
+      const client = new DefaultHttpClient()
       await client.send(HOST, { signal })
       throw Error('fail test.')
     } catch (err: any) {
@@ -43,7 +43,7 @@ describe(abortSignalAfterTimeout, () => {
     nock(HOST).get('/').reply(201)
     const [signal] = abortSignalAfterTimeout(0)
     try {
-      const client = new DefaultFetchClient()
+      const client = new DefaultHttpClient()
       await client.send(HOST, { signal })
       throw Error('fail test.')
     } catch (err: any) {

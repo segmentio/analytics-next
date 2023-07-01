@@ -27,7 +27,7 @@ describe('Settings / Configuration Init', () => {
     const analytics = createTestAnalytics({
       host: 'http://foo.com',
       path: '/bar',
-      customClient: testClient,
+      httpClient: testClient,
     })
     const track = resolveCtx(analytics, 'track')
     analytics.track({ event: 'foo', userId: 'sup' })
@@ -52,10 +52,10 @@ describe('Error handling', () => {
     expect(() => analytics.track({} as any)).toThrowError(/event/i)
   })
 
-  it.only('should emit on an error', async () => {
+  it('should emit on an error', async () => {
     const analytics = createTestAnalytics({
       maxRetries: 0,
-      customClient: testClient,
+      httpClient: testClient,
     })
     testClient.returnValue = createError({
       statusText: 'Service Unavailable',

@@ -1,5 +1,5 @@
 import { ValidationError } from '@segment/analytics-core'
-import { CustomHTTPClient } from '../lib/customhttpclient'
+import { CustomHTTPClient } from '../lib/custom-http-client'
 
 export interface AnalyticsSettings {
   /**
@@ -38,10 +38,10 @@ export interface AnalyticsSettings {
 
   /**
    * Supply a CustomHTTPClient implementation (such as one supporting proxy)
-   * Default: DefaultFetchClient which will use the existing global fetch, or
+   * Default: DefaultHttpClient which will use the existing global fetch, or
    * node-fetch if it doesn't exist
    */
-  customClient?: CustomHTTPClient
+  httpClient?: CustomHTTPClient
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

@@ -24,7 +24,7 @@ describe('http_request', () => {
     testClient.returnValue = createError()
     const analytics = createTestAnalytics({
       maxRetries: 0,
-      customClient: testClient,
+      httpClient: testClient,
     })
     const fn = jest.fn()
     analytics.on('http_request', fn)
@@ -38,7 +38,7 @@ describe('http_request', () => {
     testClient.returnValue = createError()
     const analytics = createTestAnalytics({
       maxRetries: 2,
-      customClient: testClient,
+      httpClient: testClient,
     })
     const fn = jest.fn()
     analytics.on('http_request', fn)

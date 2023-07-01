@@ -15,7 +15,7 @@ describe('Callback behavior', () => {
   it('should handle success', async () => {
     const ajs = createTestAnalytics({
       maxEventsInBatch: 1,
-      customClient: testClient,
+      httpClient: testClient,
     })
     const ctx = await new Promise<Context>((resolve, reject) =>
       ajs.track(
@@ -37,7 +37,7 @@ describe('Callback behavior', () => {
     testClient.returnValue = createError()
     const ajs = createTestAnalytics({
       maxEventsInBatch: 1,
-      customClient: testClient,
+      httpClient: testClient,
     })
     const [err, ctx] = await new Promise<[any, Context]>((resolve) =>
       ajs.track(

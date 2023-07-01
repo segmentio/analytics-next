@@ -34,7 +34,7 @@ test('alias', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.alias('to', 'from')
@@ -65,7 +65,7 @@ test('group', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.group(
@@ -105,7 +105,7 @@ test('identify', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.identify('foo-user-id', {
@@ -138,7 +138,7 @@ test('page', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.page(
@@ -178,7 +178,7 @@ test('screen', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.screen(
@@ -217,7 +217,7 @@ test('track', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    customclient: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.track(

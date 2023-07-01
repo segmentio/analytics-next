@@ -1,4 +1,4 @@
-import { CustomHTTPClient } from '../../lib/customhttpclient'
+import { CustomHTTPClient } from '../../lib/custom-http-client'
 
 export const createSuccess = (body?: any) => {
   return Promise.resolve({
