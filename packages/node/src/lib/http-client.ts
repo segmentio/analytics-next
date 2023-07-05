@@ -1,11 +1,11 @@
-export interface HttpClientOptions {
-  headers: Record<string, string>
-  body: string
-  method: string
-  signal: any // AbortSignal type does not play nicely with node-fetch
+export interface AnalyticsHTTPClientOptions {
+  headers?: Record<string, string>
+  body?: string
+  method?: string
+  signal?: any // AbortSignal type does not play nicely with node-fetch
 }
 
-export interface HttpClientResponse {
+export interface AnalyticsHTTPClientResponse {
   readonly ok: boolean
   readonly status: number
   readonly statusText: string
@@ -19,14 +19,17 @@ export interface AnalyticsHTTPClient {
   /**
    *  Compatible with the fetch API
    */
-  send(url: string, options: HttpClientOptions): Promise<HttpClientResponse>
+  send(
+    url: string,
+    options: AnalyticsHTTPClientOptions
+  ): Promise<AnalyticsHTTPClientResponse>
 }
 
 export class DefaultHTTPClient implements AnalyticsHTTPClient {
   async send(
     resource: string,
-    options: HttpClientOptions
-  ): Promise<HttpClientResponse> {
+    options: AnalyticsHTTPClientOptions
+  ): Promise<AnalyticsHTTPClientResponse> {
     if (globalThis.fetch) {
       return globalThis.fetch(resource, options)
     } // @ts-ignore

@@ -1,5 +1,11 @@
 export { Analytics } from './app/analytics-node'
 export { Context } from './app/context'
+export {
+  AnalyticsHTTPClient,
+  DefaultHTTPClient,
+  AnalyticsHTTPClientOptions,
+  AnalyticsHTTPClientResponse,
+} from './lib/http-client'
 export type {
   Plugin,
   GroupTraits,
