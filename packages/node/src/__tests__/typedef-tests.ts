@@ -31,7 +31,6 @@ export default {
       const standardFetchClient: AnalyticsHTTPClient = {
         send: fetch,
       }
-
       new Analytics({ writeKey: 'foo', httpClient: standardFetchClient })
     },
 
