@@ -17,7 +17,7 @@ export const createConsentStampingMiddleware: CreateConsentMw =
     }
     payload.obj.context.consent = {
       ...payload.obj.context.consent,
-      categoryPreferences: await getCategories(),
+      categoryPreferences: categories,
     }
     next(payload)
   }

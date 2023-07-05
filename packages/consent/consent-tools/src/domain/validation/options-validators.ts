@@ -5,17 +5,22 @@ import { ValidationError } from './validation-error'
 export function validateCategories(
   ctgs: unknown
 ): asserts ctgs is NonNullable<Categories> {
+  let hasError = true
   if (ctgs && typeof ctgs === 'object' && !Array.isArray(ctgs)) {
+    hasError = false
     for (const k in ctgs) {
-      if (typeof (ctgs as any)[k] === 'boolean') {
-        return
+      if (typeof (ctgs as any)[k] !== 'boolean') {
+        hasError = true
+        break
       }
     }
   }
-  throw new ValidationError(
-    `Consent Categories should be {[categoryName: string]: boolean}`,
-    ctgs
-  )
+  if (hasError) {
+    throw new ValidationError(
+      `Consent Categories should be {[categoryName: string]: boolean}`,
+      ctgs
+    )
+  }
 }
 
 export function validateOptions(options: {
