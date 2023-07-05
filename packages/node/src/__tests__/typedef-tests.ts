@@ -23,16 +23,16 @@ export default {
 
   'httpClient setting should be compatible with standard fetch and node-fetch interface':
     () => {
-      class NodeFetchClient implements AnalyticsHTTPClient {
-        send = require('node-fetch')
+      const nodeFetchClient: AnalyticsHTTPClient = {
+        send: require('node-fetch'),
       }
-      new Analytics({ writeKey: 'foo', httpClient: new NodeFetchClient() })
+      new Analytics({ writeKey: 'foo', httpClient: nodeFetchClient })
 
-      class StandardFetchClient implements AnalyticsHTTPClient {
-        send = fetch
+      const standardFetchClient: AnalyticsHTTPClient = {
+        send: fetch,
       }
 
-      new Analytics({ writeKey: 'foo', httpClient: new StandardFetchClient() })
+      new Analytics({ writeKey: 'foo', httpClient: standardFetchClient })
     },
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':
