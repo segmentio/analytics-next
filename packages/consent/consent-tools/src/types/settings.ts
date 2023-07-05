@@ -20,6 +20,10 @@ export interface CreateWrapperSettings {
 
   /**
    * Fetch the categories which stamp every event. Called each time a new Segment event is dispatched.
+   * @example
+   * ```ts
+   * () => ({ "Advertising": true, "Analytics": false })
+   * ```
    **/
   getCategories: () => Categories | Promise<Categories>
 
