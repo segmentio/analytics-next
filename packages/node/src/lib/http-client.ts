@@ -1,8 +1,8 @@
 export interface AnalyticsHTTPClientOptions {
-  headers: Record<string, string>
-  body: string
-  method: string
-  signal: any // AbortSignal type does not play nicely with node-fetch
+  headers?: Record<string, string>
+  body?: string
+  method?: string
+  signal?: any // AbortSignal type does not play nicely with node-fetch
 }
 
 export interface AnalyticsHTTPClientResponse {

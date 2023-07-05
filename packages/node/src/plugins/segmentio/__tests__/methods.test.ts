@@ -59,7 +59,7 @@ test('alias', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
 
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
@@ -89,7 +89,7 @@ test('group', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
 
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
@@ -118,7 +118,7 @@ test('identify', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
     ...bodyPropertyMatchers,
@@ -148,7 +148,7 @@ test('page', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
 
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
@@ -182,7 +182,7 @@ test('screen', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
 
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({
@@ -214,7 +214,7 @@ test('track', async () => {
   validateFetcherInputs(context)
 
   const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const body = JSON.parse(request.body!)
 
   expect(body.batch).toHaveLength(1)
   expect(body.batch[0]).toEqual({

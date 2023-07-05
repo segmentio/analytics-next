@@ -31,7 +31,7 @@ describe('Ability for users to exit without losing events', () => {
         url,
         method: request.method,
         headers: request.headers,
-        body: JSON.parse(request.body),
+        body: JSON.parse(request.body!),
       })),
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
       analytics.track({ userId: 'foo', event: 'Thing Updated' }, cb)
