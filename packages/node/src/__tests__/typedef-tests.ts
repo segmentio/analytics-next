@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import {
   Analytics,
   Context,
   Plugin,
   UserTraits,
   GroupTraits,
-  AnalyticsHTTPClientDELETE,
+  HTTPClient,
+  FetchHTTPClient,
 } from '../'
 
 /**
@@ -21,18 +23,27 @@ export default {
     analytics.VERSION = 'foo'
   },
 
-  'httpClient setting should be compatible with standard fetch and node-fetch interface':
+  'httpClient setting should be compatible with standard fetch and node-fetch interface, as well as functions':
     () => {
-      const nodeFetchClient: AnalyticsHTTPClientDELETE = {
-        send: require('node-fetch'),
-      }
-      new Analytics({ writeKey: 'foo', httpClient: nodeFetchClient })
-
-      const standardFetchClient: AnalyticsHTTPClientDELETE = {
-        send: fetch,
-      }
-      new Analytics({ writeKey: 'foo', httpClient: standardFetchClient })
+      new Analytics({ writeKey: 'foo', httpClient: require('node-fetch') })
+      new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
     },
+
+  'Analytics should accept an entire HTTP Client': () => {
+    class CustomClient implements HTTPClient {
+      makeRequest = () => Promise.resolve({} as Response)
+    }
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new CustomClient(),
+    })
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new FetchHTTPClient(globalThis.fetch),
+    })
+  },
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':
     () => {

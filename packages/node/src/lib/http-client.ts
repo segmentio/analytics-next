@@ -4,11 +4,6 @@ export interface HTTPFetchClientResponse {
   ok: boolean
   status: number
   statusText: string
-  /**
-   * Using string, but this is also response type
-   * "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect";
-   */
-  // type: string
 }
 
 /**
@@ -19,10 +14,6 @@ export interface HTTPFetchFn {
     url: string,
     options: FetchHTTPClientOptions
   ): Promise<HTTPFetchClientResponse>
-}
-
-export interface HTTPClient {
-  makeRequest(_options: HTTPRequestOptions): Promise<HTTPFetchClientResponse>
 }
 
 export interface HTTPRequestOptions {
@@ -38,6 +29,10 @@ export interface FetchHTTPClientOptions {
   body?: string
   method?: string
   signal?: any // AbortSignal type does not play nicely with node-fetch
+}
+
+export interface HTTPClient {
+  makeRequest(_options: HTTPRequestOptions): Promise<HTTPFetchClientResponse>
 }
 
 export class FetchHTTPClient implements HTTPClient {
