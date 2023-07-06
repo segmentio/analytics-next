@@ -1,12 +1,11 @@
 import { backoff } from '@segment/analytics-core'
-import { abortSignalAfterTimeout } from '../../lib/abort'
 import type { Context } from '../../app/context'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
-import { fetch } from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
+import { FetchHTTPClient, HTTPClient, HTTPFetchFn } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,6 +27,7 @@ export interface PublisherProps {
   writeKey: string
   httpRequestTimeout?: number
   disable?: boolean
+  httpFetchFn: HTTPFetchFn
 }
 
 /**
@@ -46,6 +46,7 @@ export class Publisher {
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
+  private _httpClient: HTTPClient
   constructor(
     {
       host,
@@ -55,6 +56,7 @@ export class Publisher {
       flushInterval,
       writeKey,
       httpRequestTimeout,
+      httpFetchFn,
       disable,
     }: PublisherProps,
     emitter: NodeEmitter
@@ -70,6 +72,7 @@ export class Publisher {
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
+    this._httpClient = new FetchHTTPClient(httpFetchFn)
   }
 
   private createBatch(): ContextBatch {
@@ -183,7 +186,6 @@ export class Publisher {
       this._closeAndFlushPendingItemsCount -= batch.length
     }
     const events = batch.getEvents()
-    const payload = JSON.stringify({ batch: events })
     const maxAttempts = this._maxRetries + 1
 
     let currentAttempt = 0
@@ -191,36 +193,25 @@ export class Publisher {
       currentAttempt++
 
       let failureReason: unknown
-      const [signal, timeoutId] = abortSignalAfterTimeout(
-        this._httpRequestTimeout
-      )
       try {
-        const requestInit = {
-          signal: signal,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Basic ${this._auth}`,
-            'User-Agent': 'analytics-node-next/latest',
-          },
-          body: payload,
-        }
-
-        this._emitter.emit('http_request', {
-          url: this._url,
-          method: requestInit.method,
-          headers: requestInit.headers,
-          body: requestInit.body,
-        })
-
         if (this._disable) {
-          clearTimeout(timeoutId)
           return batch.resolveEvents()
         }
 
-        const response = await fetch(this._url, requestInit)
-
-        clearTimeout(timeoutId)
+        const response = await this._httpClient.makeRequest(
+          {
+            timeout: this._httpRequestTimeout,
+            url: this._url,
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Basic ${this._auth}`,
+              'User-Agent': 'analytics-node-next/latest',
+            },
+            data: { batch: events },
+          },
+          this._emitter
+        )
 
         if (response.ok) {
           // Successfully sent events, so exit!

@@ -1,9 +1,5 @@
-import { createSuccess } from './test-helpers/factories'
+import { TestFetchClient } from './test-helpers/create-test-analytics'
 import { performance as perf } from 'perf_hooks'
-
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
 import { Analytics } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
 import { Plugin, SegmentEvent } from '../app/types'
@@ -17,22 +13,25 @@ const testPlugin: Plugin = {
   isLoaded: () => true,
 }
 
+const testClient = new TestFetchClient()
+const sendSpy = jest.spyOn(testClient, 'send')
+
 describe('Ability for users to exit without losing events', () => {
   let ajs!: Analytics
   beforeEach(async () => {
-    fetcher.mockReturnValue(createSuccess())
     ajs = new Analytics({
       writeKey: 'abc123',
       maxEventsInBatch: 1,
+      httpClient: testClient,
     })
   })
   const _helpers = {
-    getFetchCalls: (mockedFetchFn = fetcher) =>
-      mockedFetchFn.mock.calls.map(([url, request]) => ({
+    getFetchCalls: () =>
+      sendSpy.mock.calls.map(([url, request]) => ({
         url,
         method: request.method,
         headers: request.headers,
-        body: JSON.parse(request.body),
+        body: JSON.parse(request.body!),
       })),
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
       analytics.track({ userId: 'foo', event: 'Thing Updated' }, cb)
@@ -89,6 +88,7 @@ describe('Ability for users to exit without losing events', () => {
       ajs = new Analytics({
         writeKey: 'abc123',
         flushInterval,
+        httpClient: testClient,
       })
       const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
       expect(closeAndFlushTimeout).toBe(flushInterval * 1.25)
@@ -190,6 +190,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
+        httpClient: testClient,
       })
       _helpers.makeTrackCall(analytics)
       _helpers.makeTrackCall(analytics)
@@ -220,6 +221,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
+        httpClient: testClient,
       })
       await analytics.register(_testPlugin)
       _helpers.makeTrackCall(analytics)

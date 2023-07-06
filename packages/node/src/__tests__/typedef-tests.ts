@@ -1,4 +1,11 @@
-import { Analytics, Context, Plugin, UserTraits, GroupTraits } from '../'
+import {
+  Analytics,
+  Context,
+  Plugin,
+  UserTraits,
+  GroupTraits,
+  AnalyticsHTTPClientDELETE,
+} from '../'
 
 /**
  * These are general typescript definition tests;
@@ -13,6 +20,19 @@ export default {
     // @ts-expect-error - should not be possible
     analytics.VERSION = 'foo'
   },
+
+  'httpClient setting should be compatible with standard fetch and node-fetch interface':
+    () => {
+      const nodeFetchClient: AnalyticsHTTPClientDELETE = {
+        send: require('node-fetch'),
+      }
+      new Analytics({ writeKey: 'foo', httpClient: nodeFetchClient })
+
+      const standardFetchClient: AnalyticsHTTPClientDELETE = {
+        send: fetch,
+      }
+      new Analytics({ writeKey: 'foo', httpClient: standardFetchClient })
+    },
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':
     () => {

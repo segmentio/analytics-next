@@ -1,4 +1,5 @@
 import { ValidationError } from '@segment/analytics-core'
+import { HTTPFetchFn } from '../lib/http-client'
 
 export interface AnalyticsSettings {
   /**
@@ -34,6 +35,10 @@ export interface AnalyticsSettings {
    * Disable the analytics library. All calls will be a noop. Default: false.
    */
   disable?: boolean
+  /**
+   * Supply a default http client implementation (such as one supporting proxy). Default: The value of globalThis.fetch, with node-fetch as a fallback.
+   */
+  httpClient?: HTTPFetchFn
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

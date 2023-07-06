@@ -1,6 +1,13 @@
 export { Analytics } from './app/analytics-node'
 export { Context } from './app/context'
 export type {
+  FetchHTTPClient,
+  AnalyticsHTTPClientDELETE,
+  HTTPClientOptions,
+  HTTPFetchFn,
+  HTTPFetchClientResponse,
+} from './lib/http-client'
+export type {
   Plugin,
   GroupTraits,
   UserTraits,
