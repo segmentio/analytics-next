@@ -5,9 +5,9 @@ import {
 
 describe('disable', () => {
   const httpClient = new TestFetchClient()
-  const mockSend = jest.spyOn(httpClient, 'send')
+  const makeReqSpy = jest.spyOn(httpClient, 'makeRequest')
 
-  it('should dispatch callbacks and emit an http request, even if disabled', async () => {
+  it('should not emit an http request if disabled', async () => {
     const analytics = createTestAnalytics({
       disable: true,
     })
@@ -16,7 +16,7 @@ describe('disable', () => {
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(emitterCb).toBeCalledTimes(1)
+    expect(emitterCb).not.toBeCalled()
   })
 
   it('should call .send if disabled is false', async () => {
@@ -27,7 +27,7 @@ describe('disable', () => {
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(mockSend).toBeCalledTimes(1)
+    expect(makeReqSpy).toBeCalledTimes(1)
   })
   it('should not call .send if disabled is true', async () => {
     const analytics = createTestAnalytics({
@@ -37,6 +37,6 @@ describe('disable', () => {
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(mockSend).not.toBeCalled()
+    expect(makeReqSpy).not.toBeCalled()
   })
 })

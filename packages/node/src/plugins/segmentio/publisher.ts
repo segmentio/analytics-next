@@ -5,7 +5,7 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
-import { HTTPClient } from '../../lib/http-client'
+import { HTTPClient, HTTPRequestOptions } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -198,20 +198,26 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
-        const response = await this._httpClient.makeRequest(
-          {
-            timeout: this._httpRequestTimeout,
-            url: this._url,
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Basic ${this._auth}`,
-              'User-Agent': 'analytics-node-next/latest',
-            },
-            data: { batch: events },
+        const request: HTTPRequestOptions = {
+          timeout: this._httpRequestTimeout,
+          url: this._url,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Basic ${this._auth}`,
+            'User-Agent': 'analytics-node-next/latest',
           },
-          this._emitter
-        )
+          data: { batch: events },
+        }
+
+        this._emitter.emit('http_request', {
+          body: request.data,
+          method: request.method,
+          url: request.url,
+          headers: request.headers,
+        })
+
+        const response = await this._httpClient.makeRequest(request)
 
         if (response.ok) {
           // Successfully sent events, so exit!

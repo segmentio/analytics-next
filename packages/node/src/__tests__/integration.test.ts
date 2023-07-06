@@ -12,7 +12,7 @@ jest.setTimeout(10000)
 const timestamp = new Date()
 
 const testClient = new TestFetchClient()
-const sendSpy = jest.spyOn(testClient, 'makeRequest')
+const makeReqSpy = jest.spyOn(testClient, 'makeRequest')
 
 describe('Settings / Configuration Init', () => {
   it('throws if no writeKey', () => {
@@ -32,7 +32,7 @@ describe('Settings / Configuration Init', () => {
     const track = resolveCtx(analytics, 'track')
     analytics.track({ event: 'foo', userId: 'sup' })
     await track
-    expect(sendSpy.mock.calls[0][0]).toBe('http://foo.com/bar')
+    expect(makeReqSpy.mock.calls[0][0].url).toBe('http://foo.com/bar')
   })
 
   it('throws if host / path is bad', async () => {

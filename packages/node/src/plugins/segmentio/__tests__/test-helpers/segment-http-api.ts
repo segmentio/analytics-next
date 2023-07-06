@@ -1,10 +1,9 @@
 import { Context } from '../../../../app/context'
+import { HTTPRequestOptions } from '../../../../lib/http-client'
 
 export const bodyPropertyMatchers = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
-  timestamp: expect.stringMatching(
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-  ),
+  timestamp: expect.any(Date),
   _metadata: expect.any(Object),
   context: {
     library: {
@@ -15,15 +14,13 @@ export const bodyPropertyMatchers = {
   integrations: {},
 }
 
-export function assertSegmentApiBody(
-  url: string,
-  request: RequestInit,
+export function assertHTTPRequestOptions(
+  { data, headers, method, url }: HTTPRequestOptions,
   contexts: Context[]
 ) {
-  const body = JSON.parse(request.body as string)
   expect(url).toBe('https://api.segment.io/v1/batch')
-  expect(request.method).toBe('POST')
-  expect(request.headers).toMatchInlineSnapshot(`
+  expect(method).toBe('POST')
+  expect(headers).toMatchInlineSnapshot(`
     Object {
       "Authorization": "Basic Og==",
       "Content-Type": "application/json",
@@ -31,11 +28,13 @@ export function assertSegmentApiBody(
     }
   `)
 
-  expect(body.batch).toHaveLength(contexts.length)
-  for (let i = 0; i < contexts.length; i++) {
-    expect(body.batch[i]).toEqual({
-      ...contexts[i].event,
+  expect(data.batch).toHaveLength(contexts.length)
+  let idx = 0
+  for (const context of contexts) {
+    expect(data.batch[idx]).toEqual({
       ...bodyPropertyMatchers,
+      ...context.event,
     })
+    idx += 1
   }
 }

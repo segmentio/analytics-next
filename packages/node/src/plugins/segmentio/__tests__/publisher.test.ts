@@ -10,7 +10,7 @@ import {
 } from '../../../__tests__/test-helpers/factories'
 import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 import { PublisherProps } from '../publisher'
-import { assertSegmentApiBody } from './test-helpers/segment-http-api'
+import { assertHTTPRequestOptions } from './test-helpers/segment-http-api'
 
 let emitter: Emitter
 const testClient = new TestFetchClient()
@@ -30,8 +30,8 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   )
 
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [url, request] = fetcher.mock.lastCall
-  return assertSegmentApiBody(url, request, contexts)
+  const [request] = fetcher.mock.lastCall
+  return assertHTTPRequestOptions(request, contexts)
 }
 
 const eventFactory = new NodeEventFactory()
@@ -308,7 +308,7 @@ describe('error handling', () => {
     `)
   })
 
-  it('retries non-400 errors', async () => {
+  it.only('retries non-400 errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 

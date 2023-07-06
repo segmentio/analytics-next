@@ -6,7 +6,7 @@ import { Context } from '../../../app/context'
 import { Emitter } from '@segment/analytics-core'
 import {
   bodyPropertyMatchers,
-  assertSegmentApiBody,
+  assertHTTPRequestOptions,
 } from './test-helpers/segment-http-api'
 import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 
@@ -28,8 +28,8 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   )
 
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [url, request] = fetcher.mock.lastCall
-  return assertSegmentApiBody(url, request, contexts)
+  const [request] = fetcher.mock.lastCall
+  return assertHTTPRequestOptions(request, contexts)
 }
 
 const eventFactory = new NodeEventFactory()
@@ -41,13 +41,7 @@ beforeEach(() => {
 })
 
 test('alias', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-    httpClient: testClient,
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.alias('to', 'from')
   const context = new Context(event)
@@ -58,11 +52,11 @@ test('alias', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     type: 'alias',
     previousId: 'from',
@@ -88,11 +82,11 @@ test('group', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     traits: {
       name: 'libraries',
@@ -117,10 +111,10 @@ test('identify', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     traits: {
       name: 'Chris Radek',
@@ -147,11 +141,11 @@ test('page', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     type: 'page',
     userId: 'foo-user-id',
@@ -181,11 +175,11 @@ test('screen', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     type: 'screen',
     userId: 'foo-user-id',
@@ -213,11 +207,11 @@ test('track', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body!)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
     ...bodyPropertyMatchers,
     type: 'track',
     event: 'test event',

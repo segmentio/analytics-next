@@ -1,5 +1,5 @@
 import { ValidationError } from '@segment/analytics-core'
-import { HTTPClient } from '../lib/http-client'
+import { HTTPClient, HTTPFetchFn } from '../lib/http-client'
 
 export interface AnalyticsSettings {
   /**
@@ -36,9 +36,11 @@ export interface AnalyticsSettings {
    */
   disable?: boolean
   /**
-   * Supply a default http client implementation (such as one supporting proxy). Default: The value of globalThis.fetch, with node-fetch as a fallback.
+   * Supply a default http client implementation (such as one supporting proxy).
+   * Accepts either an HTTPClient instance or a fetch function.
+   * Default: an HTTP client that uses globalThis.fetch, with node-fetch as a fallback.
    */
-  httpClient?: HTTPClient
+  httpClient?: HTTPFetchFn | HTTPClient
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

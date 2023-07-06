@@ -2,8 +2,7 @@ export { Analytics } from './app/analytics-node'
 export { Context } from './app/context'
 export type {
   FetchHTTPClient,
-  AnalyticsHTTPClientDELETE,
-  HTTPClientOptions,
+  FetchHTTPClientOptions,
   HTTPFetchFn,
   HTTPFetchClientResponse,
 } from './lib/http-client'

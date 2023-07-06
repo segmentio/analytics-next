@@ -1,6 +1,6 @@
 import { Analytics } from '../../app/analytics-node'
 import { AnalyticsSettings } from '../../app/settings'
-import { AnalyticsHTTPClientDELETE, HTTPClient } from '../../lib/http-client'
+import { FetchHTTPClient, HTTPFetchFn } from '../../lib/http-client'
 import { createError, createSuccess } from './factories'
 
 export const createTestAnalytics = (
@@ -29,17 +29,14 @@ export type TestFetchClientOptions = {
 /**
  * Test http client. By default, it will return a successful response.
  */
-export class TestFetchClient implements HTTPClient {
-  private withError?: TestFetchClientOptions['withError']
-  private response?: TestFetchClientOptions['response']
+export class TestFetchClient extends FetchHTTPClient {
   constructor({ withError, response }: TestFetchClientOptions = {}) {
-    this.withError = withError
-    this.response = response
-  }
-  makeRequest() {
-    if (this.response) {
-      return Promise.resolve(this.response)
+    const _mockFetch: HTTPFetchFn = (..._args) => {
+      if (response) {
+        return Promise.resolve(response)
+      }
+      return Promise.resolve(withError ? createError() : createSuccess())
     }
-    return Promise.resolve(this.withError ? createError() : createSuccess())
+    super(_mockFetch)
   }
 }

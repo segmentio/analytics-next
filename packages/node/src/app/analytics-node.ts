@@ -53,7 +53,10 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         httpRequestTimeout: settings.httpRequestTimeout,
         disable: settings.disable,
         flushInterval,
-        httpClient: settings.httpClient ?? new FetchHTTPClient(fetch),
+        httpClient:
+          typeof settings.httpClient === 'function'
+            ? new FetchHTTPClient(settings.httpClient)
+            : settings.httpClient ?? new FetchHTTPClient(fetch),
       },
       this as NodeEmitter
     )

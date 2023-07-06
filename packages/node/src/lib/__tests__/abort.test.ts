@@ -1,5 +1,6 @@
 import { abortSignalAfterTimeout } from '../abort'
 import nock from 'nock'
+import { fetch } from '../fetch'
 import { sleep } from '@segment/analytics-core'
 
 describe(abortSignalAfterTimeout, () => {

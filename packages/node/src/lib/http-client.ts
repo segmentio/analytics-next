@@ -1,5 +1,3 @@
-import type { Analytics } from '../app/analytics-node'
-import { NodeEmitter } from '../app/emitter'
 import { abortSignalAfterTimeout } from './abort'
 
 export interface HTTPFetchClientResponse {
@@ -13,21 +11,21 @@ export interface HTTPFetchClientResponse {
   // type: string
 }
 
+/**
+ * This interface is meant to be compatible with different fetch implementations.
+ */
 export interface HTTPFetchFn {
   (
-    url: string | URL,
-    options?: HTTPClientOptions
+    url: string,
+    options: FetchHTTPClientOptions
   ): Promise<HTTPFetchClientResponse>
 }
 
 export interface HTTPClient {
-  makeRequest(
-    _options: HTTPRequestOptions,
-    emitter: NodeEmitter
-  ): Promise<HTTPFetchClientResponse>
+  makeRequest(_options: HTTPRequestOptions): Promise<HTTPFetchClientResponse>
 }
 
-interface HTTPRequestOptions {
+export interface HTTPRequestOptions {
   url: string
   method: string
   headers: Record<string, string>
@@ -35,24 +33,11 @@ interface HTTPRequestOptions {
   timeout: number
 }
 
-export interface HTTPClientOptions {
+export interface FetchHTTPClientOptions {
   headers?: Record<string, string>
   body?: string
   method?: string
   signal?: any // AbortSignal type does not play nicely with node-fetch
-}
-
-/**
- * A client that sends http requests.
- */
-export interface AnalyticsHTTPClientDELETE {
-  /**
-   *  Compatible with the fetch API
-   */
-  send(
-    url: string,
-    options: HTTPClientOptions
-  ): Promise<HTTPFetchClientResponse>
 }
 
 export class FetchHTTPClient implements HTTPClient {
@@ -61,8 +46,7 @@ export class FetchHTTPClient implements HTTPClient {
     this._fetch = fetchFn
   }
   async makeRequest(
-    options: HTTPRequestOptions,
-    analytics: Analytics
+    options: HTTPRequestOptions
   ): Promise<HTTPFetchClientResponse> {
     const [signal, timeoutId] = abortSignalAfterTimeout(options.timeout)
 
@@ -74,14 +58,8 @@ export class FetchHTTPClient implements HTTPClient {
       signal: signal,
     }
 
-    analytics.emit('http_request', {
-      url: requestInit.url,
-      method: requestInit.method,
-      headers: requestInit.headers,
-      body: requestInit.body,
-    })
-    const response = await this._fetch(options.url, requestInit)
-    clearTimeout(timeoutId)
-    return response
+    return this._fetch(options.url, requestInit).finally(() =>
+      clearTimeout(timeoutId)
+    )
   }
 }
