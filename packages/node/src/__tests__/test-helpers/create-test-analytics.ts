@@ -1,6 +1,6 @@
 import { Analytics } from '../../app/analytics-node'
 import { AnalyticsSettings } from '../../app/settings'
-import { AnalyticsHTTPClientDELETE } from '../../lib/http-client'
+import { AnalyticsHTTPClientDELETE, HTTPClient } from '../../lib/http-client'
 import { createError, createSuccess } from './factories'
 
 export const createTestAnalytics = (
@@ -29,14 +29,14 @@ export type TestFetchClientOptions = {
 /**
  * Test http client. By default, it will return a successful response.
  */
-export class TestFetchClient implements AnalyticsHTTPClientDELETE {
+export class TestFetchClient implements HTTPClient {
   private withError?: TestFetchClientOptions['withError']
   private response?: TestFetchClientOptions['response']
   constructor({ withError, response }: TestFetchClientOptions = {}) {
     this.withError = withError
     this.response = response
   }
-  send(..._args: Parameters<AnalyticsHTTPClientDELETE['send']>) {
+  makeRequest() {
     if (this.response) {
       return Promise.resolve(this.response)
     }

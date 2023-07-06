@@ -14,13 +14,13 @@ import { assertSegmentApiBody } from './test-helpers/segment-http-api'
 
 let emitter: Emitter
 const testClient = new TestFetchClient()
-const fetcher = jest.spyOn(testClient, 'send')
+const fetcher = jest.spyOn(testClient, 'makeRequest')
 
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
     {
       maxEventsInBatch: 1,
-      httpFetchFn: testClient,
+      httpClient: testClient,
       writeKey: '',
       flushInterval: 1000,
       maxRetries: 3,

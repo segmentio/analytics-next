@@ -12,7 +12,7 @@ import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-ana
 
 let emitter: Emitter
 const testClient = new TestFetchClient()
-const fetcher = jest.spyOn(testClient, 'send')
+const fetcher = jest.spyOn(testClient, 'makeRequest')
 
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
@@ -21,7 +21,7 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
       maxEventsInBatch: 1,
       flushInterval: 1000,
       writeKey: '',
-      httpFetchFn: testClient,
+      httpClient: testClient,
       ...props,
     },
     emitter
@@ -46,7 +46,7 @@ test('alias', async () => {
     maxEventsInBatch: 1,
     flushInterval: 1000,
     writeKey: '',
-    httpFetchFn: testClient,
+    httpClient: testClient,
   })
 
   const event = eventFactory.alias('to', 'from')

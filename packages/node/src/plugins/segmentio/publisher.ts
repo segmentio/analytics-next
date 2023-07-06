@@ -5,7 +5,7 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
-import { FetchHTTPClient, HTTPClient, HTTPFetchFn } from '../../lib/http-client'
+import { HTTPClient } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -27,7 +27,7 @@ export interface PublisherProps {
   writeKey: string
   httpRequestTimeout?: number
   disable?: boolean
-  httpFetchFn: HTTPFetchFn
+  httpClient: HTTPClient
 }
 
 /**
@@ -56,7 +56,7 @@ export class Publisher {
       flushInterval,
       writeKey,
       httpRequestTimeout,
-      httpFetchFn,
+      httpClient,
       disable,
     }: PublisherProps,
     emitter: NodeEmitter
@@ -72,7 +72,7 @@ export class Publisher {
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
-    this._httpClient = new FetchHTTPClient(httpFetchFn)
+    this._httpClient = httpClient
   }
 
   private createBatch(): ContextBatch {

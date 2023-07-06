@@ -16,6 +16,7 @@ import {
 } from './types'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
+import { FetchHTTPClient } from '../lib/http-client'
 import { fetch } from '../lib/fetch'
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
@@ -52,7 +53,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         httpRequestTimeout: settings.httpRequestTimeout,
         disable: settings.disable,
         flushInterval,
-        httpFetchFn: settings.httpClient ?? fetch,
+        httpClient: settings.httpClient ?? new FetchHTTPClient(fetch),
       },
       this as NodeEmitter
     )

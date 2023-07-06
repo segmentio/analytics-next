@@ -14,7 +14,7 @@ const testPlugin: Plugin = {
 }
 
 const testClient = new TestFetchClient()
-const sendSpy = jest.spyOn(testClient, 'send')
+const sendSpy = jest.spyOn(testClient, 'makeRequest')
 
 describe('Ability for users to exit without losing events', () => {
   let ajs!: Analytics

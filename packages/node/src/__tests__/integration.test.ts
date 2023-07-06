@@ -12,7 +12,7 @@ jest.setTimeout(10000)
 const timestamp = new Date()
 
 const testClient = new TestFetchClient()
-const sendSpy = jest.spyOn(testClient, 'send')
+const sendSpy = jest.spyOn(testClient, 'makeRequest')
 
 describe('Settings / Configuration Init', () => {
   it('throws if no writeKey', () => {
