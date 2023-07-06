@@ -32,8 +32,8 @@ export function assertHTTPRequestOptions(
   let idx = 0
   for (const context of contexts) {
     expect(data.batch[idx]).toEqual({
-      ...bodyPropertyMatchers,
       ...context.event,
+      ...bodyPropertyMatchers,
     })
     idx += 1
   }

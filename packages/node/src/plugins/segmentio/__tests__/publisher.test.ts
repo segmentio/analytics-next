@@ -308,7 +308,7 @@ describe('error handling', () => {
     `)
   })
 
-  it.only('retries non-400 errors', async () => {
+  it('retries non-400 errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 
