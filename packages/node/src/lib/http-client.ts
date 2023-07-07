@@ -7,11 +7,11 @@ import { fetch as defaultFetch } from './fetch'
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
  */
 export interface HTTPFetchFn {
-  (url: string, requestInit: HTTPFetchRequest): Promise<HTTPFetchResponse>
+  (url: string, requestInit: HTTPFetchRequest): Promise<HTTPResponse>
 }
 
 /**
- * This interface is meant to he compatible with the Request interface.
+ * This interface is meant to be compatible with the Request interface.
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Request
  */
 export interface HTTPFetchRequest {
@@ -22,10 +22,10 @@ export interface HTTPFetchRequest {
 }
 
 /**
- * This interface is meant to conform to the Fetch API Response interface.
+ * This interface is meant to very minimally conform to the Response interface.
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
-export interface HTTPFetchResponse {
+export interface HTTPResponse {
   ok: boolean
   status: number
   statusText: string
@@ -35,7 +35,7 @@ export interface HTTPFetchResponse {
  * This interface is meant to be a generic interface for making HTTP requests.
  * While it may overlap with fetch's Request interface, it is not coupled to it.
  */
-export interface HTTPRequestOptions {
+export interface HTTPClientRequestOptions {
   /**
    * URL to be used for the request
    * @example 'https://api.segment.io/v1/batch'
@@ -63,21 +63,21 @@ export interface HTTPRequestOptions {
 }
 
 /**
- * HTTP client interface for making requests.cccccbenidtinulcgklueududltvedrjgeligdefjkfb
+ * HTTP client interface for making requests
  */
 export interface HTTPClient {
-  makeRequest(_options: HTTPRequestOptions): Promise<HTTPFetchResponse>
+  makeRequest(_options: HTTPClientRequestOptions): Promise<HTTPResponse>
 }
 
 /**
- * Default HTTP client implementation using fetch.
+ * Default HTTP client implementation using fetch
  */
 export class FetchHTTPClient implements HTTPClient {
   private _fetch: HTTPFetchFn
   constructor(fetchFn?: HTTPFetchFn) {
     this._fetch = fetchFn ?? defaultFetch
   }
-  async makeRequest(options: HTTPRequestOptions): Promise<HTTPFetchResponse> {
+  async makeRequest(options: HTTPClientRequestOptions): Promise<HTTPResponse> {
     const [signal, timeoutId] = abortSignalAfterTimeout(options.timeout)
 
     const requestInit = {

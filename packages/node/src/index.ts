@@ -4,9 +4,9 @@ export {
   HTTPClient,
   FetchHTTPClient,
   HTTPFetchRequest,
-  HTTPFetchResponse,
+  HTTPResponse,
   HTTPFetchFn,
-  HTTPRequestOptions,
+  HTTPClientRequestOptions,
 } from './lib/http-client'
 
 export type {

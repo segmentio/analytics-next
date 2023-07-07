@@ -7,7 +7,7 @@ import { detectRuntime } from './env'
 /**
  * adapted from: https://www.npmjs.com/package/node-abort-controller
  */
-class AbortSignal {
+export class AbortSignal {
   onabort: globalThis.AbortSignal['onabort'] = null
   aborted = false
   eventEmitter = new Emitter()

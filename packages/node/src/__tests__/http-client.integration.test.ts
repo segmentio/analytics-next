@@ -1,8 +1,8 @@
 import { HTTPFetchFn } from '..'
+import { AbortSignal as AbortSignalShim } from '../lib/abort'
 import { httpClientOptionsBodyMatcher } from './test-helpers/assert-shape/segment-http-api'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { createSuccess } from './test-helpers/factories'
-
 const testFetch: jest.MockedFn<HTTPFetchFn> = jest
   .fn()
   .mockResolvedValue(createSuccess())
@@ -18,7 +18,13 @@ const assertFetchCallRequest = (
   })
   expect(options.method).toBe('POST')
 
-  expect(options.signal).toBeInstanceOf(AbortSignal)
+  // @ts-ignore
+  if (typeof AbortSignal !== 'undefined') {
+    // @ts-ignore
+    expect(options.signal).toBeInstanceOf(AbortSignal)
+  } else {
+    expect(options.signal).toBeInstanceOf(AbortSignalShim)
+  }
 }
 const getLastBatch = (): any[] => {
   const [, options] = testFetch.mock.lastCall
