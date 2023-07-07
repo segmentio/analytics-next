@@ -7,6 +7,7 @@ import {
 } from '@segment/analytics-consent-tools'
 
 import {
+  isAllTrackingDisabled,
   getConsentedGroupIds,
   getGroupData,
   getOneTrustGlobal,
@@ -31,10 +32,8 @@ export const oneTrust = (
         )
       }, 500)
 
-      // TODO: is this the correct logic for 'user rejected all'?
-      const ids = getConsentedGroupIds()
-      const allRejected = ids.length === 1 && ids[0] === 'C0001'
-      if (allRejected) {
+      const trackingDisabled = isAllTrackingDisabled(getConsentedGroupIds())
+      if (trackingDisabled) {
         ctx.abort({
           loadSegmentNormally: false,
         })

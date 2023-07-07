@@ -1,8 +1,4 @@
 /**
- * These are helpers that wrap the OneTrust global API
- */
-
-/**
  * @example
  * ",CAT001,FOO456" => ["CAT001", "FOO456"]
  */
@@ -88,4 +84,14 @@ export const getGroupData = (): UserConsentGroupData => {
   )
 
   return userConsentGroupData
+}
+
+/**
+ * The website needs these cookies in order to function properly (example: identify items placed into a shopping cart).
+ * This category is enabled by default, even if user has not made a selection.
+ */
+const STRICTLY_NECCESSARY_CATEGORY = 'C0001'
+
+export const isAllTrackingDisabled = (groupIds: string[]): boolean => {
+  return groupIds.length === 1 && groupIds[0] === STRICTLY_NECCESSARY_CATEGORY
 }

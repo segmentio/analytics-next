@@ -59,34 +59,34 @@ export interface CreateWrapperSettings {
    * @default
    * ```ts
    * // consent if user consents to at least one category defined in the integration
-   * (categories, consentedCategories, _info) => {
-   *    if (!categories.length) return true
-   *    return categories.some((c) => consentedCategories[c])
+   * (integrationCategories, categories, _info) => {
+   *    if (!integrationCategories.length) return true
+   *    return integrationCategories.some((c) => categories[c])
    * }
    * ```
    *
    * @example -
    * ```ts
-   * (categories, consentedCategories, _info) => {
+   * (integrationCategories, categories, _info) => {
    * // consent if user consents to _all_ categories defined in the integration
-   *    if (!categories.length) return true
-   *    return categories.every((c) => consentedCategories[c])
+   *    if (!integrationCategories.length) return true
+   *    return integrationCategories.every((c) => categories[c])
    * }
    * ```
    *
    * @example
    * ```ts
    * // count consent as usual, but always disable a particular plugin
-   * (categories, consentedCategories, { creationName }) => {
+   * (integrationCategories, categories, { creationName }) => {
    *    if (creationName === 'FullStory') return false
-   *    if (!categories.length) return true
-   *    return categories.some((c) => consentedCategories[c])
+   *    if (!integrationCategories.length) return true
+   *    return integrationCategories.some((c) => categories[c])
    * }
    * ```
    */
   shouldEnableIntegration?: (
     integrationCategories: string[],
-    userConsentedCategories: Categories,
+    categories: Categories,
     integrationInfo: Pick<
       CDNSettingsRemotePlugin,
       'creationName' | 'libraryName'
