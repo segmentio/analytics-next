@@ -10,11 +10,12 @@ import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 export const withCMP = createWrapper({
   shouldLoad: (ctx) => {
     await resolveWhen(() => 
-      window.CMP !== undefined && !window.CMP.popUpVisible()
-    500)
+      window.CMP !== undefined && !window.CMP.popUpVisible(), 500)
 
     if (noConsentNeeded) {
-      return ctx.abort({ loadSegmentNormally: true })
+      ctx.abort({ loadSegmentNormally: true })
+    } else if (allTrackingDisabled) {
+      ctx.abort({ loadSegmentNormally: false })
     }
   },
   getCategories: () => { 
