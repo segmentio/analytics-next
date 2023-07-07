@@ -3,7 +3,6 @@
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
-  "private": true,
   "files": [
     "dist/",
     "src/",
@@ -25,5 +24,11 @@
   "dependencies": {
     "@segment/analytics-consent-tools": "0.0.1"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/consent/consent-wrapper-onetrust",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  }
 }
