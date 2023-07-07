@@ -132,7 +132,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 }
 
 /**
- * Parse list of categories from `cdnSettings.integrations` object
+ * Parse list of categories from `cdnSettings.integration.myIntegration` object
  * @example
  * returns ["Analytics", "Advertising"]
  */
