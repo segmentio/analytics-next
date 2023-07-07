@@ -7,7 +7,9 @@ const testFetch: jest.MockedFn<HTTPFetchFn> = jest
   .fn()
   .mockResolvedValue(createSuccess())
 
-const assertFetchCallRequest = (url: string, options: RequestInit) => {
+const assertFetchCallRequest = (
+  ...[url, options]: typeof testFetch['mock']['lastCall']
+) => {
   expect(url).toBe('https://api.segment.io/v1/batch')
   expect(options.headers).toEqual({
     Authorization: 'Basic Zm9vOg==',
@@ -18,6 +20,12 @@ const assertFetchCallRequest = (url: string, options: RequestInit) => {
 
   expect(options.signal).toBeInstanceOf(AbortSignal)
 }
+const getLastBatch = (): any[] => {
+  const [, options] = testFetch.mock.lastCall
+  const batch = JSON.parse(options.body!).batch
+  return batch
+}
+
 describe('HTTP Client', () => {
   it('should accept a custom fetch function', async () => {
     const analytics = createTestAnalytics({ httpClient: testFetch })
@@ -27,8 +35,7 @@ describe('HTTP Client', () => {
     )
     expect(testFetch).toHaveBeenCalledTimes(1)
     assertFetchCallRequest(...testFetch.mock.lastCall)
-    const [, options] = testFetch.mock.lastCall
-    const batch = JSON.parse(options.body!).batch
+    const batch = getLastBatch()
     expect(batch.length).toBe(1)
     expect(batch[0]).toEqual({
       ...httpClientOptionsBodyMatcher,
