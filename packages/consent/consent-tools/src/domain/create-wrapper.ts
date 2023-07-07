@@ -136,17 +136,17 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
  * @example
  * returns ["Analytics", "Advertising"]
  */
-const getConsentCategories = (integrations: unknown): string[] | undefined => {
+const getConsentCategories = (integration: unknown): string[] | undefined => {
   if (
-    integrations &&
-    typeof integrations === 'object' &&
-    'consentSettings' in integrations &&
-    typeof integrations.consentSettings === 'object' &&
-    integrations.consentSettings &&
-    'categories' in integrations.consentSettings &&
-    Array.isArray(integrations.consentSettings.categories)
+    integration &&
+    typeof integration === 'object' &&
+    'consentSettings' in integration &&
+    typeof integration.consentSettings === 'object' &&
+    integration.consentSettings &&
+    'categories' in integration.consentSettings &&
+    Array.isArray(integration.consentSettings.categories)
   ) {
-    return (integrations.consentSettings.categories as string[]) || undefined
+    return (integration.consentSettings.categories as string[]) || undefined
   }
 
   return undefined
