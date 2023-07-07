@@ -15,8 +15,8 @@ import { AbortLoadError, LoadContext } from './load-cancellation'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   const {
-    disableSegmentInitialization,
-    disableConsentRequirement,
+    shouldDisableSegment,
+    shouldDisableConsentRequirement,
     getCategories,
     shouldLoad,
     integrationCategoryMappings,
@@ -33,11 +33,12 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       options
     ): Promise<void> => {
       // do not load anything -- segment included
-      if (await disableSegmentInitialization?.()) {
+      if (await shouldDisableSegment?.()) {
         return
       }
 
-      const consentRequirementDisabled = await disableConsentRequirement?.()
+      const consentRequirementDisabled =
+        await shouldDisableConsentRequirement?.()
       if (consentRequirementDisabled) {
         // ignore consent -- just call analytics.load as usual
         return ogLoad.call(analytics, settings, options)

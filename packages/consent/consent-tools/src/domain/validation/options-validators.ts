@@ -34,10 +34,10 @@ export function validateOptions(options: {
 
   options.shouldLoad && assertIsFunction(options.shouldLoad, 'shouldLoad')
 
-  options.disableConsentRequirement &&
+  options.shouldDisableConsentRequirement &&
     assertIsFunction(
-      options.disableConsentRequirement,
-      'disableConsentRequirement'
+      options.shouldDisableConsentRequirement,
+      'shouldDisableConsentRequirement'
     )
 
   options.registerConsentChanged &&
@@ -46,11 +46,8 @@ export function validateOptions(options: {
   options.shouldEnableIntegration &&
     assertIsFunction(options.shouldEnableIntegration, 'shouldEnableIntegration')
 
-  options.disableSegmentInitialization &&
-    assertIsFunction(
-      options.disableSegmentInitialization,
-      'disableSegmentInitialization'
-    )
+  options.shouldDisableSegment &&
+    assertIsFunction(options.shouldDisableSegment, 'shouldDisableSegment')
 
   options.integrationCategoryMappings &&
     assertIsObject(

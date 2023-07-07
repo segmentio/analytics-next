@@ -31,7 +31,7 @@ export interface CreateWrapperSettings {
    * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
    * Called on wrapper initialization. **shouldLoad will never be called**
    **/
-  disableConsentRequirement?: () => boolean | Promise<boolean>
+  shouldDisableConsentRequirement?: () => boolean | Promise<boolean>
 
   /**
    * Disable the Segment analytics SDK completely. analytics.load() will have no effect.
@@ -39,7 +39,7 @@ export interface CreateWrapperSettings {
    * Called on wrapper initialization. This can be useful in dev environments (e.g. 'devMode').
    * **shouldLoad will never be called**
    **/
-  disableSegmentInitialization?: () => boolean | Promise<boolean>
+  shouldDisableSegment?: () => boolean | Promise<boolean>
 
   /**
    * A callback that should be passed to onConsentChanged. This is neccessary for sending automatic "consent changed" events to segment (Future behavior)

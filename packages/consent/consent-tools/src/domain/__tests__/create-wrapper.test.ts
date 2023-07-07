@@ -420,11 +420,11 @@ describe(createWrapper, () => {
     })
   })
 
-  describe('disableConsentRequirement', () => {
+  describe('shouldDisableConsentRequirement', () => {
     describe('if true on wrapper initialization', () => {
       it('should load analytics as usual', async () => {
         wrapTestAnalytics({
-          disableConsentRequirement: () => true,
+          shouldDisableConsentRequirement: () => true,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(analyticsLoadSpy).toBeCalled()
@@ -433,7 +433,7 @@ describe(createWrapper, () => {
       it('should not call shouldLoad if called on first', async () => {
         const shouldLoad = jest.fn()
         wrapTestAnalytics({
-          disableConsentRequirement: () => true,
+          shouldDisableConsentRequirement: () => true,
           shouldLoad,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
@@ -443,7 +443,7 @@ describe(createWrapper, () => {
       it('should work with promises if false', async () => {
         const shouldLoad = jest.fn()
         wrapTestAnalytics({
-          disableConsentRequirement: () => Promise.resolve(false),
+          shouldDisableConsentRequirement: () => Promise.resolve(false),
           shouldLoad,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
@@ -453,7 +453,7 @@ describe(createWrapper, () => {
       it('should work with promises if true', async () => {
         const shouldLoad = jest.fn()
         wrapTestAnalytics({
-          disableConsentRequirement: () => Promise.resolve(true),
+          shouldDisableConsentRequirement: () => Promise.resolve(true),
           shouldLoad,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
@@ -464,7 +464,7 @@ describe(createWrapper, () => {
         const mockCdnSettings = settingsBuilder.build()
 
         wrapTestAnalytics({
-          disableConsentRequirement: () => true,
+          shouldDisableConsentRequirement: () => true,
         })
 
         const loadArgs: [any, any] = [
@@ -481,7 +481,7 @@ describe(createWrapper, () => {
 
       it('should not stamp the event with consent info', async () => {
         wrapTestAnalytics({
-          disableConsentRequirement: () => true,
+          shouldDisableConsentRequirement: () => true,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(addSourceMiddlewareSpy).not.toBeCalled()
@@ -489,10 +489,10 @@ describe(createWrapper, () => {
     })
   })
 
-  describe('disableSegmentInitialization', () => {
+  describe('shouldDisableSegment', () => {
     it('should load analytics if disableAll returns false', async () => {
       wrapTestAnalytics({
-        disableSegmentInitialization: () => false,
+        shouldDisableSegment: () => false,
       })
       await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(analyticsLoadSpy).toBeCalled()
@@ -500,7 +500,7 @@ describe(createWrapper, () => {
 
     it('should not load analytics if disableAll returns true', async () => {
       wrapTestAnalytics({
-        disableSegmentInitialization: () => true,
+        shouldDisableSegment: () => true,
       })
       await analytics.load(DEFAULT_LOAD_SETTINGS)
       expect(mockGetCategories).not.toBeCalled()
