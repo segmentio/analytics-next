@@ -43,6 +43,11 @@ export default {
       writeKey: 'foo',
       httpClient: new FetchHTTPClient(globalThis.fetch),
     })
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new FetchHTTPClient(),
+    })
   },
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':

@@ -1,7 +1,9 @@
 import { abortSignalAfterTimeout } from './abort'
+import { fetch as defaultFetch } from './fetch'
 
 /**
- * This interface is meant to be compatible with different fetch implementations.
+ * This interface is meant to be compatible with different fetch implementations (node and browser).
+ * Using the ambient fetch type is not possible because the AbortSignal type is not compatible with node-fetch.
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
  */
 export interface HTTPFetchFn {
@@ -60,14 +62,20 @@ export interface HTTPRequestOptions {
   timeout: number
 }
 
+/**
+ * HTTP client interface for making requests.cccccbenidtinulcgklueududltvedrjgeligdefjkfb
+ */
 export interface HTTPClient {
   makeRequest(_options: HTTPRequestOptions): Promise<HTTPFetchResponse>
 }
 
+/**
+ * Default HTTP client implementation using fetch.
+ */
 export class FetchHTTPClient implements HTTPClient {
   private _fetch: HTTPFetchFn
-  constructor(fetchFn: HTTPFetchFn) {
-    this._fetch = fetchFn
+  constructor(fetchFn?: HTTPFetchFn) {
+    this._fetch = fetchFn ?? defaultFetch
   }
   async makeRequest(options: HTTPRequestOptions): Promise<HTTPFetchResponse> {
     const [signal, timeoutId] = abortSignalAfterTimeout(options.timeout)
