@@ -33,10 +33,29 @@ export interface HTTPFetchRequestInit {
  * While it may overlap with fetch's Request interface, it is not coupled to it.
  */
 export interface HTTPRequestOptions {
+  /**
+   * URL to be used for the request
+   * @example 'https://api.segment.io/v1/batch'
+   */
   url: string
+  /**
+   * HTTP method to be used for the request
+   * @example 'POST'
+   **/
   method: string
+  /**
+   * Headers to be sent with the request
+   */
   headers: Record<string, string>
+  /**
+   * JSON data to be sent with the request (will be stringified)
+   * @example { "batch": [ ... ]}
+   */
   data: Record<string, any>
+  /**
+   * Timeout in milliseconds
+   * @example 10000
+   */
   timeout: number
 }
 
@@ -46,7 +65,7 @@ export interface HTTPClient {
 
 export class FetchHTTPClient implements HTTPClient {
   private _fetch: HTTPFetchFn
-  constructor(fetchFn: HTTPFetchFn | typeof globalThis.fetch) {
+  constructor(fetchFn: HTTPFetchFn) {
     this._fetch = fetchFn
   }
   async makeRequest(
