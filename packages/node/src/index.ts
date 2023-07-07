@@ -3,8 +3,8 @@ export { Context } from './app/context'
 export {
   HTTPClient,
   FetchHTTPClient,
-  HTTPFetchRequestInit,
-  HTTPFetchClientResponse,
+  HTTPFetchRequest,
+  HTTPFetchResponse,
   HTTPFetchFn,
   HTTPRequestOptions,
 } from './lib/http-client'
