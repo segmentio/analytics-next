@@ -3,7 +3,7 @@ export { Context } from './app/context'
 export {
   HTTPClient,
   FetchHTTPClient,
-  FetchHTTPClientOptions,
+  HTTPFetchRequestInit,
   HTTPFetchClientResponse,
   HTTPFetchFn,
   HTTPRequestOptions,
