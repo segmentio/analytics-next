@@ -1,5 +1,5 @@
 import { Context } from '../../../app/context'
-import { HTTPClientRequestOptions } from '../../../lib/http-client'
+import { HTTPClientRequest } from '../../../lib/http-client'
 
 /**
  * These map to the data properties of the HTTPClient options (the input value of 'makeRequest')
@@ -18,7 +18,7 @@ export const httpClientOptionsBodyMatcher = {
 }
 
 export function assertHTTPRequestOptions(
-  { data, headers, method, url }: HTTPClientRequestOptions,
+  { data, headers, method, url }: HTTPClientRequest,
   contexts: Context[]
 ) {
   expect(url).toBe('https://api.segment.io/v1/batch')

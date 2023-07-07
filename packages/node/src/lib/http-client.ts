@@ -35,7 +35,7 @@ export interface HTTPResponse {
  * This interface is meant to be a generic interface for making HTTP requests.
  * While it may overlap with fetch's Request interface, it is not coupled to it.
  */
-export interface HTTPClientRequestOptions {
+export interface HTTPClientRequest {
   /**
    * URL to be used for the request
    * @example 'https://api.segment.io/v1/batch'
@@ -66,7 +66,7 @@ export interface HTTPClientRequestOptions {
  * HTTP client interface for making requests
  */
 export interface HTTPClient {
-  makeRequest(_options: HTTPClientRequestOptions): Promise<HTTPResponse>
+  makeRequest(_options: HTTPClientRequest): Promise<HTTPResponse>
 }
 
 /**
@@ -77,7 +77,7 @@ export class FetchHTTPClient implements HTTPClient {
   constructor(fetchFn?: HTTPFetchFn) {
     this._fetch = fetchFn ?? defaultFetch
   }
-  async makeRequest(options: HTTPClientRequestOptions): Promise<HTTPResponse> {
+  async makeRequest(options: HTTPClientRequest): Promise<HTTPResponse> {
     const [signal, timeoutId] = abortSignalAfterTimeout(options.timeout)
 
     const requestInit = {

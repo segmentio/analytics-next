@@ -6,7 +6,7 @@ export {
   HTTPFetchRequest,
   HTTPResponse,
   HTTPFetchFn,
-  HTTPClientRequestOptions,
+  HTTPClientRequest,
 } from './lib/http-client'
 
 export type {

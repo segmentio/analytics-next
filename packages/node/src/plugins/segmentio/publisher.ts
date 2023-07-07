@@ -5,7 +5,7 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
-import { HTTPClient, HTTPClientRequestOptions } from '../../lib/http-client'
+import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -198,7 +198,7 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
-        const request: HTTPClientRequestOptions = {
+        const request: HTTPClientRequest = {
           timeout: this._httpRequestTimeout,
           url: this._url,
           method: 'POST',
