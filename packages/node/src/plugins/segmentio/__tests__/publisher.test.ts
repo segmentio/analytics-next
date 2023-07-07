@@ -10,7 +10,7 @@ import {
 } from '../../../__tests__/test-helpers/factories'
 import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 import { PublisherProps } from '../publisher'
-import { assertHTTPRequestOptions } from './test-helpers/segment-http-api'
+import { assertHTTPRequestOptions } from '../../../__tests__/test-helpers/assert-shape/segment-http-api'
 
 let emitter: Emitter
 const testClient = new TestFetchClient()

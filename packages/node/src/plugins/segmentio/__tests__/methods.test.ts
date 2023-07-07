@@ -5,9 +5,9 @@ import { PublisherProps } from '../publisher'
 import { Context } from '../../../app/context'
 import { Emitter } from '@segment/analytics-core'
 import {
-  bodyPropertyMatchers,
   assertHTTPRequestOptions,
-} from './test-helpers/segment-http-api'
+  httpClientOptionsBodyMatcher,
+} from '../../../__tests__/test-helpers/assert-shape'
 import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 
 let emitter: Emitter
@@ -57,7 +57,7 @@ test('alias', async () => {
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     type: 'alias',
     previousId: 'from',
     userId: 'to',
@@ -87,7 +87,7 @@ test('group', async () => {
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     traits: {
       name: 'libraries',
     },
@@ -115,7 +115,7 @@ test('identify', async () => {
   const data = request.data
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     traits: {
       name: 'Chris Radek',
     },
@@ -146,7 +146,7 @@ test('page', async () => {
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     type: 'page',
     userId: 'foo-user-id',
     name: 'Home',
@@ -180,7 +180,7 @@ test('screen', async () => {
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     type: 'screen',
     userId: 'foo-user-id',
     name: 'Home',
@@ -212,7 +212,7 @@ test('track', async () => {
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+    ...httpClientOptionsBodyMatcher,
     type: 'track',
     event: 'test event',
     userId: 'foo-user-id',

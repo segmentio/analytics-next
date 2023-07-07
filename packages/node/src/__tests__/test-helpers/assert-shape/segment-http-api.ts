@@ -1,7 +1,10 @@
-import { Context } from '../../../../app/context'
-import { HTTPRequestOptions } from '../../../../lib/http-client'
+import { Context } from '../../../app/context'
+import { HTTPRequestOptions } from '../../../lib/http-client'
 
-export const bodyPropertyMatchers = {
+/**
+ * These map to the data properties of the HTTPClient options (the input value of 'makeRequest')
+ */
+export const httpClientOptionsBodyMatcher = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
   timestamp: expect.any(Date),
   _metadata: expect.any(Object),
@@ -33,7 +36,7 @@ export function assertHTTPRequestOptions(
   for (const context of contexts) {
     expect(data.batch[idx]).toEqual({
       ...context.event,
-      ...bodyPropertyMatchers,
+      ...httpClientOptionsBodyMatcher,
     })
     idx += 1
   }
