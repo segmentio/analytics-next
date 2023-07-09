@@ -1,46 +1,35 @@
-import { HTTPFetchFn } from '..'
+import { FetchHTTPClient, HTTPFetchFn } from '..'
 import { AbortSignal as AbortSignalShim } from '../lib/abort'
 import { httpClientOptionsBodyMatcher } from './test-helpers/assert-shape/segment-http-api'
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { createSuccess } from './test-helpers/factories'
+
 const testFetch: jest.MockedFn<HTTPFetchFn> = jest
   .fn()
   .mockResolvedValue(createSuccess())
 
-const assertFetchCallRequest = (
-  ...[url, options]: typeof testFetch['mock']['lastCall']
-) => {
-  expect(url).toBe('https://api.segment.io/v1/batch')
-  expect(options.headers).toEqual({
-    Authorization: 'Basic Zm9vOg==',
-    'Content-Type': 'application/json',
-    'User-Agent': 'analytics-node-next/latest',
-  })
-  expect(options.method).toBe('POST')
+let analytics: ReturnType<typeof createTestAnalytics>
 
-  // @ts-ignore
-  if (typeof AbortSignal !== 'undefined') {
-    // @ts-ignore
-    expect(options.signal).toBeInstanceOf(AbortSignal)
-  } else {
-    expect(options.signal).toBeInstanceOf(AbortSignalShim)
-  }
-}
-const getLastBatch = (): any[] => {
-  const [, options] = testFetch.mock.lastCall
-  const batch = JSON.parse(options.body!).batch
-  return batch
-}
-
-describe('HTTP Client', () => {
-  it('should accept a custom fetch function', async () => {
-    const analytics = createTestAnalytics({ httpClient: testFetch })
-    expect(testFetch).toHaveBeenCalledTimes(0)
-    await new Promise((resolve) =>
+const helpers = {
+  makeTrackCall: () =>
+    new Promise((resolve) =>
       analytics.track({ event: 'foo', userId: 'bar' }, resolve)
-    )
-    expect(testFetch).toHaveBeenCalledTimes(1)
-    assertFetchCallRequest(...testFetch.mock.lastCall)
+    ),
+  assertFetchCallRequest: (
+    ...[url, options]: typeof testFetch['mock']['lastCall']
+  ) => {
+    expect(url).toBe('https://api.segment.io/v1/batch')
+    expect(options.headers).toEqual({
+      Authorization: 'Basic Zm9vOg==',
+      'Content-Type': 'application/json',
+      'User-Agent': 'analytics-node-next/latest',
+    })
+    expect(options.method).toBe('POST')
+    const getLastBatch = (): object[] => {
+      const [, options] = testFetch.mock.lastCall
+      const batch = JSON.parse(options.body!).batch
+      return batch
+    }
     const batch = getLastBatch()
     expect(batch.length).toBe(1)
     expect(batch[0]).toEqual({
@@ -49,9 +38,32 @@ describe('HTTP Client', () => {
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
       ),
       properties: {},
+      event: 'foo',
       type: 'track',
       userId: 'bar',
-      event: 'foo',
     })
+    // @ts-ignore
+    expect(options.signal).toBeInstanceOf(
+      typeof AbortSignal !== 'undefined' ? AbortSignal : AbortSignalShim
+    )
+  },
+}
+
+describe('httpClient option', () => {
+  it('can be a regular custom HTTP client', async () => {
+    analytics = createTestAnalytics({
+      httpClient: new FetchHTTPClient(testFetch),
+    })
+    expect(testFetch).toHaveBeenCalledTimes(0)
+    await helpers.makeTrackCall()
+    expect(testFetch).toHaveBeenCalledTimes(1)
+    helpers.assertFetchCallRequest(...testFetch.mock.lastCall)
+  })
+  it('can be a simple function that matches the fetch interface', async () => {
+    analytics = createTestAnalytics({ httpClient: testFetch })
+    expect(testFetch).toHaveBeenCalledTimes(0)
+    await helpers.makeTrackCall()
+    expect(testFetch).toHaveBeenCalledTimes(1)
+    helpers.assertFetchCallRequest(...testFetch.mock.lastCall)
   })
 })
