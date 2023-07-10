@@ -139,6 +139,18 @@ describe(createWrapper, () => {
         expect(getError() instanceof AbortLoadError).toBeTruthy()
       })
 
+      it.each([{ loadSegmentNormally: true }, { loadSegmentNormally: false }])(
+        `should not log a console error or throw an error if ctx.abort is called (%p)`,
+        async (args) => {
+          wrapTestAnalytics({
+            shouldLoad: (ctx) => ctx.abort(args),
+          })
+          const result = await analytics.load(DEFAULT_LOAD_SETTINGS)
+          expect(result).toBeUndefined()
+          expect(consoleErrorSpy).not.toBeCalled()
+        }
+      )
+
       it('should allow segment to be loaded normally (with all consent wrapper behavior disabled) via ctx.abort', async () => {
         wrapTestAnalytics({
           shouldLoad: (ctx) => {
@@ -175,33 +187,19 @@ describe(createWrapper, () => {
         expect(getError().message).toMatch(/validation/i)
       })
 
-      it('should not log a console error if error is thrown through ctx.abort', async () => {
+      it('An unrecognized Error (non-consent) error should bubble up, but we should not log any additional console error', async () => {
+        const err = new Error('hello')
         wrapTestAnalytics({
-          shouldLoad: (ctx) => ctx.abort({ loadSegmentNormally: true }),
+          shouldLoad: () => {
+            throw err
+          },
         })
 
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        await expect(() =>
+          analytics.load(DEFAULT_LOAD_SETTINGS)
+        ).rejects.toThrow(err)
+
         expect(consoleErrorSpy).not.toBeCalled()
-      })
-
-      it('should log a console error if an unrecognized Error is thrown', async () => {
-        consoleErrorSpy.mockImplementation(() => {})
-        wrapTestAnalytics({
-          shouldLoad: () => {
-            throw new Error('hello')
-          },
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(consoleErrorSpy).toBeCalledWith(new Error('hello'))
-      })
-
-      it('should result in segment never loading if an unrecognized error is thrown (same as ctx.abort({ loadSegmentNormally: false }))', async () => {
-        wrapTestAnalytics({
-          shouldLoad: () => {
-            throw new Error('hello')
-          },
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(analyticsLoadSpy).not.toBeCalled()
       })
     })

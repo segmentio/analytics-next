@@ -54,7 +54,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         // to load Segment but disable consent requirement
         if (e instanceof AbortLoadError) {
           if (e.loadSegmentNormally === true) {
-            return ogLoad.call(analytics, settings, options)
+            ogLoad.call(analytics, settings, options)
           }
           // do not load anything, but do not log anything either
           // if someone calls ctx.abort(), they are handling the error themselves
