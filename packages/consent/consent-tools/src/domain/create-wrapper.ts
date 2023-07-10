@@ -50,7 +50,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         initialCategories =
           (await shouldLoad?.(new LoadContext())) || (await getCategories())
       } catch (e: unknown) {
-        // consumer can call ctx.cancel({ loadSegmentNormally: true })
+        // consumer can call ctx.abort({ loadSegmentNormally: true })
         // to load Segment but disable consent requirement
         if (e instanceof AbortLoadError) {
           if (e.loadSegmentNormally === true) {
