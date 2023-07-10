@@ -14,6 +14,8 @@ import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
+  validateOptions(createWrapperOptions)
+
   const {
     shouldDisableSegment,
     shouldDisableConsentRequirement,
@@ -22,8 +24,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     integrationCategoryMappings,
     shouldEnableIntegration,
   } = createWrapperOptions
-
-  validateOptions(createWrapperOptions)
 
   return (analytics) => {
     const ogLoad = analytics.load
@@ -54,13 +54,14 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         // to load Segment but disable consent requirement
         if (e instanceof AbortLoadError) {
           if (e.loadSegmentNormally === true) {
-            ogLoad.call(analytics, settings, options)
+            return ogLoad.call(analytics, settings, options)
           }
+          // do not load anything, but do not log anything either
+          // if someone calls ctx.abort(), they are handling the error themselves
+          return
         } else {
-          console.error(e)
+          throw e
         }
-
-        return
       }
 
       validateCategories(initialCategories)
