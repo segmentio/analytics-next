@@ -5,7 +5,7 @@ export function assertIsFunction(
   variableName: string
 ): asserts val is Function {
   if (typeof val !== 'function') {
-    throw new ValidationError(`${variableName} is not function`, val)
+    throw new ValidationError(`${variableName} is not a function`, val)
   }
 }
 
@@ -13,7 +13,7 @@ export function assertIsObject(
   val: unknown,
   variableName: string
 ): asserts val is object {
-  if (typeof val !== 'object') {
+  if (val === null || typeof val !== 'object') {
     throw new ValidationError(`${variableName} is not an object`, val)
   }
 }

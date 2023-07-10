@@ -9,7 +9,6 @@ describe(validateOptions, () => {
   })
 
   it('should throw an instance of ValidationError', () => {
-    expect(() => validateOptions(null as any)).toThrowError(Error)
     expect(() => validateOptions(null as any)).toThrowError(ValidationError)
   })
 
@@ -42,8 +41,7 @@ describe(validateCategories, () => {
   })
 
   it('should throw an instance of ValidationError', () => {
-    expect(() => validateCategories(null)).toThrowError(Error)
-    expect(() => validateCategories(null)).toThrowError(ValidationError)
+    expect(() => validateCategories(null)).toThrow(ValidationError)
   })
 
   it('should throw with the expected error', () => {

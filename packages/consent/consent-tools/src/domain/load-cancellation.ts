@@ -1,11 +1,12 @@
+import { AnalyticsConsentError } from '../types/errors'
 import { ValidationError } from './validation/validation-error'
 
 /**
  * Thrown when a load should be cancelled.
  */
-export class AbortLoadError extends Error {
+export class AbortLoadError extends AnalyticsConsentError {
   constructor(public loadSegmentNormally: boolean) {
-    super()
+    super('AbortLoadError', '')
   }
 }
 
