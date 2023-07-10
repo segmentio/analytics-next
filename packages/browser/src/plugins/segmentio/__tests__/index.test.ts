@@ -9,7 +9,7 @@ import { UADataValues } from '../../../lib/client-hints/interfaces'
 import {
   highEntropyTestData,
   lowEntropyTestData,
-} from '../../../test-helpers/client-hints'
+} from '../../../test-helpers/fixtures/client-hints'
 
 jest.mock('unfetch', () => {
   return jest.fn()

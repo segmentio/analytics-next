@@ -2,7 +2,7 @@ import { clientHints } from '..'
 import {
   highEntropyTestData,
   lowEntropyTestData,
-} from '../../../test-helpers/client-hints'
+} from '../../../test-helpers/fixtures/client-hints'
 import { UADataValues } from '../interfaces'
 
 describe('Client Hints API', () => {

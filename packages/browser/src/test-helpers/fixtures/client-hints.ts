@@ -1,4 +1,7 @@
-import { UADataValues, UALowEntropyJSON } from '../lib/client-hints/interfaces'
+import {
+  UADataValues,
+  UALowEntropyJSON,
+} from '../../lib/client-hints/interfaces'
 
 export const lowEntropyTestData: UALowEntropyJSON = {
   brands: [

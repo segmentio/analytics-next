@@ -53,7 +53,7 @@ module.exports = {
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/ban-types': 'off', // TODO: turn on
         /** jest */
-        'jest/valid-title': 'off', // allow function names to be used as test titles
+        'jest/valid-title': 'off', // allow functions to be used as describe titles
         'jest/no-conditional-expect': 'off', // best practice, but TODO
         'jest/no-alias-methods': 'off', // best practice, but TODO
         'jest/expect-expect': 'off', // sometimes we compose assertion functions
