@@ -648,31 +648,6 @@ describe('dispatchSingle', () => {
     expect(eq.queue.length).toBe(0)
   })
 
-  it.skip('records delivery metrics', async () => {
-    // Skip because we don't support metrics atm
-    const eq = new TestEventQueue()
-    const ctx = await eq.dispatchSingle(
-      new TestCtx({
-        type: 'track',
-      })
-    )
-
-    expect(ctx.logs().map((l) => l.message)).toMatchInlineSnapshot(`
-      Array [
-        "Dispatching",
-        "Delivered",
-      ]
-    `)
-
-    expect(ctx.stats.metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
-      Array [
-        "message_dispatched",
-        "message_delivered",
-        "delivered",
-      ]
-    `)
-  })
-
   test('retries retriable cancelations', async () => {
     // make sure all backoffs return immediatelly
     jest.spyOn(timer, 'backoff').mockImplementationOnce(() => 100)

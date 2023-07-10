@@ -338,7 +338,7 @@ describe('ready', () => {
     expect(analytics['_queue'].plugins.length).toBeGreaterThan(0)
   })
 
-  it.skip('should not reject if a plugin fails registration during initialization?', async () => {
-    // TODO: we should test the unhappy path
-  })
+  it.todo(
+    'should not reject if a plugin fails registration during initialization?'
+  )
 })

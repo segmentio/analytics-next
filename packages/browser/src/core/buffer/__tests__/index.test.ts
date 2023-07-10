@@ -204,7 +204,7 @@ describe('AnalyticsBuffered', () => {
 
     test('Will ignore the .then if there is a catch block', () => {
       const thenCb = jest.fn()
-      new AnalyticsBuffered(() => {
+      const p = new AnalyticsBuffered(() => {
         return Promise.reject('nope') as any
       })
         .then(() => {
@@ -215,6 +215,7 @@ describe('AnalyticsBuffered', () => {
         })
       expect(thenCb).not.toBeCalled()
       expect.assertions(2)
+      return p
     })
   })
 })

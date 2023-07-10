@@ -18,11 +18,11 @@ import { getCDN, setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { clearAjsBrowserStorage } from '../../test-helpers/browser-storage'
 import { parseFetchCall } from '../../test-helpers/fetch-parse'
 import { ActionDestination } from '../../plugins/remote-loader'
+import { UADataValues } from '../../lib/client-hints/interfaces'
 import {
   highEntropyTestData,
   lowEntropyTestData,
-} from '../../lib/client-hints/__tests__/index.test'
-import { UADataValues } from '../../lib/client-hints/interfaces'
+} from '../../test-helpers/client-hints'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -1083,7 +1083,7 @@ describe('Options', () => {
       expect(integrationEvent.timestamp()).toBeInstanceOf(Date)
     })
 
-    it('converts iso strings to dates be default', async () => {
+    it('does not convert iso strings to dates be default if  disableAutoISOConversion is false', async () => {
       const initOptions: InitOptions = { disableAutoISOConversion: false }
       const [analytics] = await AnalyticsBrowser.load(
         {

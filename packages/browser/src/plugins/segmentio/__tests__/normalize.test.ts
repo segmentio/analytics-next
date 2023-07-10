@@ -371,10 +371,6 @@ describe('before loading', () => {
       assert(!object.context.amp)
     })
 
-    describe('failed initializations', () => {
-      it.skip('should add failedInitializations as part of _metadata object if this.analytics.failedInitilizations is not empty', () => {})
-    })
-
     describe('unbundling', () => {
       it('should add a list of bundled integrations', () => {
         normalize(analytics, object, options, {
