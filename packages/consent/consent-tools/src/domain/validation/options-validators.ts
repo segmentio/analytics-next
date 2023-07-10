@@ -40,9 +40,6 @@ export function validateOptions(options: {
       'shouldDisableConsentRequirement'
     )
 
-  options.registerConsentChanged &&
-    assertIsFunction(options.registerConsentChanged, 'registerConsentChanged')
-
   options.shouldEnableIntegration &&
     assertIsFunction(options.shouldEnableIntegration, 'shouldEnableIntegration')
 

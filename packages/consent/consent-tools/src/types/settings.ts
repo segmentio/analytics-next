@@ -42,11 +42,6 @@ export interface CreateWrapperSettings {
   shouldDisableSegment?: () => boolean | Promise<boolean>
 
   /**
-   * A callback that should be passed to onConsentChanged. This is neccessary for sending automatic "consent changed" events to segment (Future behavior)
-   **/
-  registerConsentChanged?: (callback: (categories: Categories) => void) => void
-
-  /**
    * Object that maps `integrationName -> categories`. Typically, this is not needed, as this data comes from the CDN and is attached to each integration.
    * However, it may be desirable to hardcode these mappings (e.g, for testing).
    * @example
