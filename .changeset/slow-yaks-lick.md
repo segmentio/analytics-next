@@ -1,6 +1,5 @@
 ---
-'@segment/analytics-consent-tools': minor
-'@segment/analytics-consent-wrapper-onetrust': patch
+'@segment/analytics-consent-tools': patch
 ---
 
-Release analytics-consent-tools and @segment/analytics-consent-wrapper-onetrust
+Release analytics-consent-tools 
