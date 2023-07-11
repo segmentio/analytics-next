@@ -1,5 +1,6 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
+  "version": "0.0.0",
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -22,7 +23,7 @@
     "jest": "yarn run -T jest"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "0.0.1"
+    "@segment/analytics-consent-tools": "0.0.0"
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",
