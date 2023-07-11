@@ -1,7 +1,7 @@
 # Consent Management for Analytics.js
 ## Packages
-- [@segment/analytics-consent-tools]('consent-tools/') - A library for integrating analytics with consent management platforms 
-- [@segment/analytics-consent-wrapper-onetrust]('./consent-wrapper-onetrust) - this is a library for using the OneTrust consent management platform with analytics.js
+- [@segment/analytics-consent-tools](/consent-tools) - A library for integrating analytics with consent management platforms 
+- [@segment/analytics-consent-wrapper-onetrust](/consent-wrapper-onetrust) - this is a library for using the OneTrust consent management platform with analytics.js
 
 ## Development
 
