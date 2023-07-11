@@ -1,34 +1,34 @@
 const getPackages = require('get-monorepo-packages')
+const appRootPath = require('app-root-path')
 const path = require('path')
-// do not map modules in CI to catch any package install bugs (slower)... not in use ATM
-const doNotMapPackages = process.env.JEST_SKIP_PACKAGE_MAP === 'true'
 
 /**
  * Create module mapping that resolve packages for ts-jest so typescript compilation happens in-memory
  */
-const getJestModuleMap = ({ skipPackageMap = doNotMapPackages } = {}) => {
-  /**
-   * @param location - e.g. "packages/core"
-   */
-  const createPackageMappedPath = (location) => {
-    const base = path.basename(location) // get base folder name of a package e.g. "core" or "browser"
-    return `<rootDir>/../${base}/src/$1`
+const getJestModuleMap = (configDirname, isRootConfig) => {
+  // for the sake of getPackages working correctly during a project-wide test run, the working directory must be hardcoded to the root
+  const packageRoot = isRootConfig
+    ? '.'
+    : path.relative(configDirname, appRootPath.path)
+
+  const packages = getPackages(configDirname, packageRoot)
+
+  const createPackageMappedPath = (packagePath) => {
+    const pathToMappedPackage = path.relative(configDirname, packagePath)
+    // alert: yes, this _does_ expect all modules to be in src, and it's completely ignorant of export maps.
+    const result = `<rootDir>/${pathToMappedPackage}/src/$1`
+    return result
   }
 
-  // for the sake of getPackages working correctly during a project-wide test run, the working directory must be hardcoded to the root
-  const packageRoot = global.JEST_ROOT_CONFIG ? '.' : '../../'
-  const packages = getPackages(packageRoot)
-  const moduleNameMapper = packages.reduce(
-    (acc, el) => ({
+  const moduleMap = packages.reduce(
+    (acc, pkg) => ({
       ...acc,
-      [`${el.package.name}(.*)$`]: createPackageMappedPath(el.location),
+      [`${pkg.package.name}(.*)$`]: createPackageMappedPath(pkg.location),
     }),
     {}
   )
 
-  return {
-    ...(skipPackageMap ? {} : moduleNameMapper),
-  }
+  return moduleMap
 }
 
 module.exports = { getJestModuleMap }

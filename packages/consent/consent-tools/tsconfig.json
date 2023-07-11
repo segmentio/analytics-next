@@ -1,0 +1,11 @@
+{
+  "extends": "../../../tsconfig.json",
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "module": "ESNext", // es6 modules
+    "target": "ESNext", // assume that consumers will be using webpack, so don't down-compile
+    "lib": ["ES2020", "DOM", "DOM.Iterable"], // assume that consumers will be polyfilling at least down to es2020
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  }
+}

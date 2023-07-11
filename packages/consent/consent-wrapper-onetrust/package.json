@@ -1,0 +1,34 @@
+{
+  "name": "@segment/analytics-consent-wrapper-onetrust",
+  "main": "./dist/esm/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "!**/__tests__/**",
+    "!*.tsbuildinfo"
+  ],
+  "scripts": {
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "build": "rm -rf dist && yarn build:esm",
+    "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-wrapper-onetrust",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "watch": "yarn build:esm --watch",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently --raw",
+    "jest": "yarn run -T jest"
+  },
+  "dependencies": {
+    "@segment/analytics-consent-tools": "0.0.1"
+  },
+  "packageManager": "yarn@3.4.1",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/consent/consent-wrapper-onetrust",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  }
+}

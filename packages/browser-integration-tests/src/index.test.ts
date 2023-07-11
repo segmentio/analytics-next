@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { SettingsBuilder } from './fixtures/settings'
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { standaloneMock } from './helpers/standalone-mock'
 import { extractWriteKeyFromUrl } from './helpers/extract-writekey'
 
@@ -22,7 +22,7 @@ test.describe('Standalone tests', () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(
-              new SettingsBuilder(writeKey)
+              new CDNSettingsBuilder({ writeKey })
                 .addActionDestinationSettings({
                   name: 'Amplitude (Actions)',
                   creationName: 'Actions Amplitude',
@@ -83,7 +83,7 @@ test.describe('Standalone tests', () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(
-              new SettingsBuilder(writeKey)
+              new CDNSettingsBuilder({ writeKey })
                 .addActionDestinationSettings({
                   name: 'Braze Cloud Mode (Actions)',
                   creationName: 'Braze Cloud Mode (Actions)',
