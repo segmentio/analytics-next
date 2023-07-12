@@ -54,7 +54,7 @@ export interface HTTPClientRequest {
    */
   data: Record<string, any>
   /**
-   * Specifies the timeout for a HTTP client to get an HTTP response from HTTP server
+   * Specifies the timeout (in milliseconds) for an HTTP client to get an HTTP response from HTTP server
    * @example 10000
    */
   httpRequestTimeout: number
