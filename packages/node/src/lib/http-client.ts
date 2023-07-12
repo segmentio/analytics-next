@@ -15,10 +15,10 @@ export interface HTTPFetchFn {
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Request
  */
 export interface HTTPFetchRequest {
-  headers?: Record<string, string>
-  body?: string
-  method?: HTTPClientRequest['method']
-  signal?: any // AbortSignal type does not play nicely with node-fetch
+  headers: Record<string, string>
+  body: string
+  method: HTTPClientRequest['method']
+  signal: any // AbortSignal type does not play nicely with node-fetch
 }
 
 /**

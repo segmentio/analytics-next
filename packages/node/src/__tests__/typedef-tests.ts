@@ -97,6 +97,13 @@ export default {
       new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
     },
 
+  'HTTPFetchFn options should be the expected type': () => {
+    type BadFetch = (url: string, requestInit: { _bad_object?: string }) => any
+
+    // @ts-expect-error
+    new Analytics({ writeKey: 'foo', httpClient: {} as BadFetch })
+  },
+
   'httpClient setting should be compatible with axios': () => {
     new (class implements HTTPClient {
       async makeRequest(options: HTTPClientRequest) {
