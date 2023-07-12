@@ -54,10 +54,10 @@ export interface HTTPClientRequest {
    */
   data: Record<string, any>
   /**
-   * Timeout in milliseconds
+   * Specifies the timeout for a HTTP client to get an HTTP response from HTTP server
    * @example 10000
    */
-  timeout: number
+  httpRequestTimeout: number
 }
 
 /**
@@ -76,7 +76,9 @@ export class FetchHTTPClient implements HTTPClient {
     this._fetch = fetchFn ?? defaultFetch
   }
   async makeRequest(options: HTTPClientRequest): Promise<HTTPResponse> {
-    const [signal, timeoutId] = abortSignalAfterTimeout(options.timeout)
+    const [signal, timeoutId] = abortSignalAfterTimeout(
+      options.httpRequestTimeout
+    )
 
     const requestInit = {
       url: options.url,

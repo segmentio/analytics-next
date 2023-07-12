@@ -199,7 +199,6 @@ export class Publisher {
         }
 
         const request: HTTPClientRequest = {
-          timeout: this._httpRequestTimeout,
           url: this._url,
           method: 'POST',
           headers: {
@@ -208,6 +207,7 @@ export class Publisher {
             'User-Agent': 'analytics-node-next/latest',
           },
           data: { batch: events },
+          httpRequestTimeout: this._httpRequestTimeout,
         }
 
         this._emitter.emit('http_request', {

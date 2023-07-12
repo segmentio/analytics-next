@@ -105,7 +105,7 @@ export default {
           method: options.method,
           data: options.data,
           headers: options.headers,
-          timeout: options.timeout,
+          timeout: options.httpRequestTimeout,
         })
       }
     })()
