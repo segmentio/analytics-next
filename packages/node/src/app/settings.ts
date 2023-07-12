@@ -7,7 +7,6 @@ export interface AnalyticsSettings {
    */
   writeKey: string
   /**
-  /**
    * The base URL of the API. Default: "https://api.segment.io"
    */
   host?: string
