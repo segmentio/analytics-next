@@ -308,13 +308,15 @@ describe('error handling', () => {
     `)
   })
 
-  it('retries non-400 errors', async () => {
+  it.each([
+    { status: 500, statusText: 'Internal Server Error' },
+    { status: 300, statusText: 'Multiple Choices' },
+    { status: 100, statusText: 'Continue' },
+  ])('retries non-400 errors: %p', async (response) => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 
-    fetcher.mockReturnValue(
-      createError({ status: 500, statusText: 'Internal Server Error' })
-    )
+    fetcher.mockReturnValue(createError(response))
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
@@ -331,13 +333,12 @@ describe('error handling', () => {
 
     expect(updatedContext).toBe(context)
     expect(updatedContext.failedDelivery()).toBeTruthy()
-    expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
-      Object {
-        "reason": [Error: [500] Internal Server Error],
-      }
-    `)
+    const err = updatedContext.failedDelivery()?.reason as Error
+    expect(err).toBeInstanceOf(Error)
+    expect(err.message).toEqual(
+      expect.stringContaining(response.status.toString())
+    )
   })
-
   it('retries fetch errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
