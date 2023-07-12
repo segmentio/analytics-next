@@ -17,7 +17,7 @@ export interface HTTPFetchFn {
 export interface HTTPFetchRequest {
   headers?: Record<string, string>
   body?: string
-  method?: string
+  method?: HTTPClientRequest['method']
   signal?: any // AbortSignal type does not play nicely with node-fetch
 }
 
@@ -26,7 +26,6 @@ export interface HTTPFetchRequest {
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
 export interface HTTPResponse {
-  ok: boolean
   status: number
   statusText: string
 }
@@ -42,10 +41,9 @@ export interface HTTPClientRequest {
    */
   url: string
   /**
-   * HTTP method to be used for the request
-   * @example 'POST'
+   * HTTP method to be used for the request. This will always be a 'POST' request.
    **/
-  method: string
+  method: 'POST'
   /**
    * Headers to be sent with the request
    */

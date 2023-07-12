@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+import axios from 'axios'
 import {
   Analytics,
   Context,
@@ -7,6 +8,8 @@ import {
   GroupTraits,
   HTTPClient,
   FetchHTTPClient,
+  HTTPFetchFn,
+  HTTPClientRequest,
 } from '../'
 
 /**
@@ -22,12 +25,6 @@ export default {
     // @ts-expect-error - should not be possible
     analytics.VERSION = 'foo'
   },
-
-  'httpClient setting should be compatible with standard fetch and node-fetch interface, as well as functions':
-    () => {
-      new Analytics({ writeKey: 'foo', httpClient: require('node-fetch') })
-      new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
-    },
 
   'Analytics should accept an entire HTTP Client': () => {
     class CustomClient implements HTTPClient {
@@ -91,5 +88,26 @@ export default {
   'traits should be exported': () => {
     console.log({} as GroupTraits)
     console.log({} as UserTraits)
+  },
+
+  'HTTPFetchFn should be compatible with standard fetch and node-fetch interface, as well as functions':
+    () => {
+      const fetch: HTTPFetchFn = require('node-fetch')
+      new Analytics({ writeKey: 'foo', httpClient: fetch })
+      new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
+    },
+
+  'httpClient setting should be compatible with axios': () => {
+    new (class implements HTTPClient {
+      async makeRequest(options: HTTPClientRequest) {
+        return axios({
+          url: options.url,
+          method: options.method,
+          data: options.data,
+          headers: options.headers,
+          timeout: options.timeout,
+        })
+      }
+    })()
   },
 }
