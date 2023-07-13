@@ -1,9 +1,10 @@
 {
   "name": "@segment/analytics-consent-tools",
   "version": "0.0.1",
-  "main": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist/",
     "src/",
@@ -13,9 +14,10 @@
   "scripts": {
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "build": "rm -rf dist && yarn build:esm",
-    "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-tools",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-wrapper-onetrust",
     "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "watch": "yarn build:esm --watch",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
