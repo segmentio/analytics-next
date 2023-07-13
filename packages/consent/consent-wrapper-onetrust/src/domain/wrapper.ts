@@ -7,7 +7,6 @@ import {
 } from '@segment/analytics-consent-tools'
 
 import {
-  isAllTrackingDisabled,
   getConsentedGroupIds,
   getGroupData,
   getOneTrustGlobal,
@@ -22,7 +21,7 @@ export const oneTrust = (
   options: OneTrustOptions = {}
 ) =>
   createWrapper({
-    shouldLoad: async (ctx) => {
+    shouldLoad: async () => {
       await resolveWhen(() => {
         const oneTrustGlobal = getOneTrustGlobal()
         return (
@@ -31,16 +30,8 @@ export const oneTrust = (
           oneTrustGlobal.IsAlertBoxClosed()
         )
       }, 500)
-
-      const trackingDisabled = isAllTrackingDisabled(getConsentedGroupIds())
-      if (trackingDisabled) {
-        ctx.abort({
-          loadSegmentNormally: false,
-        })
-      }
     },
     getCategories: (): Categories => {
-      // TODO: Do we check if *all* the destination's mapped cookie categories are consented by the user in the browser.?
       // so basically, if a user has 2 categories defined in the UI: [Functional, Advertising],
       // we need _all_ those categories to be valid
 
@@ -51,7 +42,6 @@ export const oneTrust = (
       // - if the user has selected categories this session
       // - if user has no categories selected because they deliberately do not consent to anything and the popup was dismissed in a previous session
       const { userSetConsentGroups, userDeniedConsentGroups } = getGroupData()
-      // TODO: filter by relevent categories
       const consentedCategories = userSetConsentGroups.reduce<Categories>(
         (acc, c) => {
           return {
