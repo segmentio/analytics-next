@@ -131,7 +131,8 @@ export function normalize(
   const ctx = json.context
 
   // This guard against missing ctx.page should not be neccessary, since context.page is always defined
-  const query: string | any = ctx.page?.search || ''
+  const query: string =
+    typeof ctx.page?.search === 'string' ? ctx.page?.search : ''
 
   delete json.options
   json.writeKey = settings?.apiKey
@@ -160,7 +161,7 @@ export function normalize(
     }
   }
 
-  if (query && typeof query === 'string' && !ctx.campaign) {
+  if (query && !ctx.campaign) {
     ctx.campaign = utm(query)
   }
 
