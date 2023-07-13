@@ -1,5 +1,14 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.0.2
+
+### Patch Changes
+
+- [#892](https://github.com/segmentio/analytics-next/pull/892) [`1d08764`](https://github.com/segmentio/analytics-next/commit/1d087647fd359b6332d597ae5b640decb3e86670) Thanks [@silesky](https://github.com/silesky)! - Make package work with next 12 and next 13 without transpiling.
+
+- Updated dependencies [[`1d08764`](https://github.com/segmentio/analytics-next/commit/1d087647fd359b6332d597ae5b640decb3e86670)]:
+  - @segment/analytics-consent-tools@0.0.2
+
 ## 0.0.1
 
 ### Patch Changes
