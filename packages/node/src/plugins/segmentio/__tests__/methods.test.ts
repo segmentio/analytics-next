@@ -1,5 +1,3 @@
-const fetcher = jest.fn()
-jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 import { NodeEventFactory } from '../../../app/event-factory'
 import { createSuccess } from '../../../__tests__/test-helpers/factories'
 import { createConfiguredNodePlugin } from '../index'
@@ -7,17 +5,31 @@ import { PublisherProps } from '../publisher'
 import { Context } from '../../../app/context'
 import { Emitter } from '@segment/analytics-core'
 import {
-  bodyPropertyMatchers,
-  assertSegmentApiBody,
-} from './test-helpers/segment-http-api'
+  assertHTTPRequestOptions,
+  httpClientOptionsBodyMatcher,
+} from '../../../__tests__/test-helpers/assert-shape'
+import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 
 let emitter: Emitter
-const createTestNodePlugin = (props: PublisherProps) =>
-  createConfiguredNodePlugin(props, emitter)
+const testClient = new TestFetchClient()
+const fetcher = jest.spyOn(testClient, 'makeRequest')
+
+const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
+  createConfiguredNodePlugin(
+    {
+      maxRetries: 3,
+      maxEventsInBatch: 1,
+      flushInterval: 1000,
+      writeKey: '',
+      httpClient: testClient,
+      ...props,
+    },
+    emitter
+  )
 
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [url, request] = fetcher.mock.lastCall
-  return assertSegmentApiBody(url, request, contexts)
+  const [request] = fetcher.mock.lastCall
+  return assertHTTPRequestOptions(request, contexts)
 }
 
 const eventFactory = new NodeEventFactory()
@@ -29,12 +41,7 @@ beforeEach(() => {
 })
 
 test('alias', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.alias('to', 'from')
   const context = new Context(event)
@@ -45,12 +52,12 @@ test('alias', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     type: 'alias',
     previousId: 'from',
     userId: 'to',
@@ -58,12 +65,7 @@ test('alias', async () => {
 })
 
 test('group', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.group(
     'foo-group-id',
@@ -80,12 +82,12 @@ test('group', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     traits: {
       name: 'libraries',
     },
@@ -96,12 +98,7 @@ test('group', async () => {
 })
 
 test('identify', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.identify('foo-user-id', {
     name: 'Chris Radek',
@@ -114,11 +111,11 @@ test('identify', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     traits: {
       name: 'Chris Radek',
     },
@@ -128,12 +125,7 @@ test('identify', async () => {
 })
 
 test('page', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.page(
     'Category',
@@ -149,12 +141,12 @@ test('page', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     type: 'page',
     userId: 'foo-user-id',
     name: 'Home',
@@ -167,12 +159,7 @@ test('page', async () => {
 })
 
 test('screen', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.screen(
     'Category',
@@ -188,12 +175,12 @@ test('screen', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     type: 'screen',
     userId: 'foo-user-id',
     name: 'Home',
@@ -205,12 +192,7 @@ test('screen', async () => {
 })
 
 test('track', async () => {
-  const { plugin: segmentPlugin } = createTestNodePlugin({
-    maxRetries: 3,
-    maxEventsInBatch: 1,
-    flushInterval: 1000,
-    writeKey: '',
-  })
+  const { plugin: segmentPlugin } = createTestNodePlugin()
 
   const event = eventFactory.track(
     'test event',
@@ -225,12 +207,12 @@ test('track', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [, request] = fetcher.mock.lastCall
-  const body = JSON.parse(request.body)
+  const [request] = fetcher.mock.lastCall
+  const data = request.data
 
-  expect(body.batch).toHaveLength(1)
-  expect(body.batch[0]).toEqual({
-    ...bodyPropertyMatchers,
+  expect(data.batch).toHaveLength(1)
+  expect(data.batch[0]).toEqual({
+    ...httpClientOptionsBodyMatcher,
     type: 'track',
     event: 'test event',
     userId: 'foo-user-id',

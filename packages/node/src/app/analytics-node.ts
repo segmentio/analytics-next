@@ -16,6 +16,7 @@ import {
 } from './types'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
+import { FetchHTTPClient } from '../lib/http-client'
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _eventFactory: NodeEventFactory
@@ -51,6 +52,10 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         httpRequestTimeout: settings.httpRequestTimeout,
         disable: settings.disable,
         flushInterval,
+        httpClient:
+          typeof settings.httpClient === 'function'
+            ? new FetchHTTPClient(settings.httpClient)
+            : settings.httpClient ?? new FetchHTTPClient(),
       },
       this as NodeEmitter
     )

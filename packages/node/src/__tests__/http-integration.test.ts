@@ -33,7 +33,7 @@ describe('Method Smoke Tests', () => {
   let scope: nock.Scope
   let ajs: Analytics
   beforeEach(async () => {
-    ajs = createTestAnalytics()
+    ajs = createTestAnalytics({}, { useRealHTTPClient: true })
   })
 
   describe('Metadata', () => {
@@ -333,10 +333,13 @@ describe('Client: requestTimeout', () => {
   })
   it('should timeout immediately if request timeout is set to 0', async () => {
     jest.useRealTimers()
-    const ajs = createTestAnalytics({
-      maxEventsInBatch: 1,
-      httpRequestTimeout: 0,
-    })
+    const ajs = createTestAnalytics(
+      {
+        maxEventsInBatch: 1,
+        httpRequestTimeout: 0,
+      },
+      { useRealHTTPClient: true }
+    )
     ajs.track({ event: 'foo', userId: 'foo', properties: { hello: 'world' } })
     try {
       await resolveCtx(ajs, 'track')

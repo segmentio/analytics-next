@@ -1,5 +1,3 @@
-const fetcher = jest.fn()
-jest.mock('../../../lib/fetch', () => ({ fetch: fetcher }))
 import { Emitter } from '@segment/analytics-core'
 import { range } from 'lodash'
 import { createConfiguredNodePlugin } from '..'
@@ -10,16 +8,30 @@ import {
   createSuccess,
   createError,
 } from '../../../__tests__/test-helpers/factories'
+import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 import { PublisherProps } from '../publisher'
-import { assertSegmentApiBody } from './test-helpers/segment-http-api'
+import { assertHTTPRequestOptions } from '../../../__tests__/test-helpers/assert-shape/segment-http-api'
 
 let emitter: Emitter
-const createTestNodePlugin = (props: PublisherProps) =>
-  createConfiguredNodePlugin(props, emitter)
+const testClient = new TestFetchClient()
+const fetcher = jest.spyOn(testClient, 'makeRequest')
+
+const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
+  createConfiguredNodePlugin(
+    {
+      maxEventsInBatch: 1,
+      httpClient: testClient,
+      writeKey: '',
+      flushInterval: 1000,
+      maxRetries: 3,
+      ...props,
+    },
+    emitter
+  )
 
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [url, request] = fetcher.mock.lastCall
-  return assertSegmentApiBody(url, request, contexts)
+  const [request] = fetcher.mock.lastCall
+  return assertHTTPRequestOptions(request, contexts)
 }
 
 const eventFactory = new NodeEventFactory()
@@ -34,8 +46,6 @@ it('supports multiple events in a batch', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
     maxEventsInBatch: 3,
-    flushInterval: 1000,
-    writeKey: '',
   })
 
   // Create 3 events of mixed types to send.
@@ -62,8 +72,6 @@ it('supports waiting a max amount of time before sending', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
     maxEventsInBatch: 3,
-    flushInterval: 1000,
-    writeKey: '',
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -90,8 +98,6 @@ it('sends as soon as batch fills up or max time is reached', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
     maxEventsInBatch: 2,
-    flushInterval: 1000,
-    writeKey: '',
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -127,7 +133,6 @@ it('sends if batch will exceed max size in bytes when adding event', async () =>
     maxRetries: 3,
     maxEventsInBatch: 20,
     flushInterval: 100,
-    writeKey: '',
   })
 
   const contexts: Context[] = []
@@ -180,10 +185,7 @@ describe('flushAfterClose', () => {
       )
 
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 20,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     publisher.flushAfterClose(3)
@@ -197,10 +199,7 @@ describe('flushAfterClose', () => {
 
   it('continues to flush on each event if batch size is 1', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     publisher.flushAfterClose(3)
@@ -213,10 +212,7 @@ describe('flushAfterClose', () => {
 
   it('sends immediately once there are no pending items, even if pending events exceeds batch size', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 3,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     publisher.flushAfterClose(5)
@@ -228,10 +224,7 @@ describe('flushAfterClose', () => {
 
   it('works if there are previous items in the batch', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 7,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -244,10 +237,7 @@ describe('flushAfterClose', () => {
 
   it('works if there are previous items in the batch AND pending items > batch size', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 7,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -266,10 +256,7 @@ describe('flushAfterClose', () => {
 describe('error handling', () => {
   it('excludes events that are too large', async () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     const context = new Context(
@@ -302,10 +289,7 @@ describe('error handling', () => {
     )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -324,19 +308,19 @@ describe('error handling', () => {
     `)
   })
 
-  it('retries non-400 errors', async () => {
+  it.each([
+    { status: 500, statusText: 'Internal Server Error' },
+    { status: 300, statusText: 'Multiple Choices' },
+    { status: 100, statusText: 'Continue' },
+  ])('retries non-400 errors: %p', async (response) => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 
-    fetcher.mockReturnValue(
-      createError({ status: 500, statusText: 'Internal Server Error' })
-    )
+    fetcher.mockReturnValue(createError(response))
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -349,13 +333,12 @@ describe('error handling', () => {
 
     expect(updatedContext).toBe(context)
     expect(updatedContext.failedDelivery()).toBeTruthy()
-    expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
-      Object {
-        "reason": [Error: [500] Internal Server Error],
-      }
-    `)
+    const err = updatedContext.failedDelivery()?.reason as Error
+    expect(err).toBeInstanceOf(Error)
+    expect(err.message).toEqual(
+      expect.stringContaining(response.status.toString())
+    )
   })
-
   it('retries fetch errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
@@ -365,8 +348,6 @@ describe('error handling', () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     const context = new Context(eventFactory.alias('my', 'from'))
@@ -394,8 +375,6 @@ describe('error handling', () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 0,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     const fn = jest.fn()
@@ -417,10 +396,7 @@ describe('error handling', () => {
 describe('http_request emitter event', () => {
   it('should emit an http_request object', async () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 3,
       maxEventsInBatch: 1,
-      flushInterval: 1000,
-      writeKey: '',
     })
 
     fetcher.mockReturnValueOnce(createSuccess())

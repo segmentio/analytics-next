@@ -1,9 +1,5 @@
-import { createSuccess } from './test-helpers/factories'
+import { TestFetchClient } from './test-helpers/create-test-analytics'
 import { performance as perf } from 'perf_hooks'
-
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
 import { Analytics } from '../app/analytics-node'
 import { sleep } from './test-helpers/sleep'
 import { Plugin, SegmentEvent } from '../app/types'
@@ -17,22 +13,26 @@ const testPlugin: Plugin = {
   isLoaded: () => true,
 }
 
+let testClient: TestFetchClient
+
 describe('Ability for users to exit without losing events', () => {
   let ajs!: Analytics
+  testClient = new TestFetchClient()
+  const makeReqSpy = jest.spyOn(testClient, 'makeRequest')
   beforeEach(async () => {
-    fetcher.mockReturnValue(createSuccess())
     ajs = new Analytics({
       writeKey: 'abc123',
       maxEventsInBatch: 1,
+      httpClient: testClient,
     })
   })
   const _helpers = {
-    getFetchCalls: (mockedFetchFn = fetcher) =>
-      mockedFetchFn.mock.calls.map(([url, request]) => ({
+    getFetchCalls: () =>
+      makeReqSpy.mock.calls.map(([{ url, method, data, headers }]) => ({
         url,
-        method: request.method,
-        headers: request.headers,
-        body: JSON.parse(request.body),
+        method,
+        headers,
+        data,
       })),
     makeTrackCall: (analytics = ajs, cb?: (...args: any[]) => void) => {
       analytics.track({ userId: 'foo', event: 'Thing Updated' }, cb)
@@ -89,6 +89,7 @@ describe('Ability for users to exit without losing events', () => {
       ajs = new Analytics({
         writeKey: 'abc123',
         flushInterval,
+        httpClient: testClient,
       })
       const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
       expect(closeAndFlushTimeout).toBe(flushInterval * 1.25)
@@ -190,6 +191,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
+        httpClient: testClient,
       })
       _helpers.makeTrackCall(analytics)
       _helpers.makeTrackCall(analytics)
@@ -204,7 +206,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(elapsedTime).toBeLessThan(100)
       const calls = _helpers.getFetchCalls()
       expect(calls.length).toBe(1)
-      expect(calls[0].body.batch.length).toBe(2)
+      expect(calls[0].data.batch.length).toBe(2)
     })
 
     test('should wait to flush if close is called and an event has not made it to the segment.io plugin yet', async () => {
@@ -220,6 +222,7 @@ describe('Ability for users to exit without losing events', () => {
         writeKey: 'foo',
         flushInterval: 10000,
         maxEventsInBatch: 15,
+        httpClient: testClient,
       })
       await analytics.register(_testPlugin)
       _helpers.makeTrackCall(analytics)
@@ -235,7 +238,7 @@ describe('Ability for users to exit without losing events', () => {
       expect(elapsedTime).toBeLessThan(TRACK_DELAY * 2)
       const calls = _helpers.getFetchCalls()
       expect(calls.length).toBe(1)
-      expect(calls[0].body.batch.length).toBe(2)
+      expect(calls[0].data.batch.length).toBe(2)
     })
   })
 })

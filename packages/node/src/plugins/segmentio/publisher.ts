@@ -1,12 +1,11 @@
 import { backoff } from '@segment/analytics-core'
-import { abortSignalAfterTimeout } from '../../lib/abort'
 import type { Context } from '../../app/context'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
-import { fetch } from '../../lib/fetch'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
+import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,6 +27,7 @@ export interface PublisherProps {
   writeKey: string
   httpRequestTimeout?: number
   disable?: boolean
+  httpClient: HTTPClient
 }
 
 /**
@@ -46,6 +46,7 @@ export class Publisher {
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
+  private _httpClient: HTTPClient
   constructor(
     {
       host,
@@ -55,6 +56,7 @@ export class Publisher {
       flushInterval,
       writeKey,
       httpRequestTimeout,
+      httpClient,
       disable,
     }: PublisherProps,
     emitter: NodeEmitter
@@ -70,6 +72,7 @@ export class Publisher {
     )
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
+    this._httpClient = httpClient
   }
 
   private createBatch(): ContextBatch {
@@ -183,7 +186,6 @@ export class Publisher {
       this._closeAndFlushPendingItemsCount -= batch.length
     }
     const events = batch.getEvents()
-    const payload = JSON.stringify({ batch: events })
     const maxAttempts = this._maxRetries + 1
 
     let currentAttempt = 0
@@ -191,38 +193,33 @@ export class Publisher {
       currentAttempt++
 
       let failureReason: unknown
-      const [signal, timeoutId] = abortSignalAfterTimeout(
-        this._httpRequestTimeout
-      )
       try {
-        const requestInit = {
-          signal: signal,
+        if (this._disable) {
+          return batch.resolveEvents()
+        }
+
+        const request: HTTPClientRequest = {
+          url: this._url,
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Basic ${this._auth}`,
             'User-Agent': 'analytics-node-next/latest',
           },
-          body: payload,
+          data: { batch: events },
+          httpRequestTimeout: this._httpRequestTimeout,
         }
 
         this._emitter.emit('http_request', {
-          url: this._url,
-          method: requestInit.method,
-          headers: requestInit.headers,
-          body: requestInit.body,
+          body: request.data,
+          method: request.method,
+          url: request.url,
+          headers: request.headers,
         })
 
-        if (this._disable) {
-          clearTimeout(timeoutId)
-          return batch.resolveEvents()
-        }
+        const response = await this._httpClient.makeRequest(request)
 
-        const response = await fetch(this._url, requestInit)
-
-        clearTimeout(timeoutId)
-
-        if (response.ok) {
+        if (response.status >= 200 && response.status < 300) {
           // Successfully sent events, so exit!
           batch.resolveEvents()
           return

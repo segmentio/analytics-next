@@ -1,11 +1,11 @@
 import { ValidationError } from '@segment/analytics-core'
+import { HTTPClient, HTTPFetchFn } from '../lib/http-client'
 
 export interface AnalyticsSettings {
   /**
    * Key that corresponds to your Segment.io project
    */
   writeKey: string
-  /**
   /**
    * The base URL of the API. Default: "https://api.segment.io"
    */
@@ -34,6 +34,12 @@ export interface AnalyticsSettings {
    * Disable the analytics library. All calls will be a noop. Default: false.
    */
   disable?: boolean
+  /**
+   * Supply a default http client implementation (such as one supporting proxy).
+   * Accepts either an HTTPClient instance or a fetch function.
+   * Default: an HTTP client that uses globalThis.fetch, with node-fetch as a fallback.
+   */
+  httpClient?: HTTPFetchFn | HTTPClient
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

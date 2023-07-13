@@ -1,4 +1,16 @@
-import { Analytics, Context, Plugin, UserTraits, GroupTraits } from '../'
+/* eslint-disable @typescript-eslint/no-var-requires */
+import axios from 'axios'
+import {
+  Analytics,
+  Context,
+  Plugin,
+  UserTraits,
+  GroupTraits,
+  HTTPClient,
+  FetchHTTPClient,
+  HTTPFetchFn,
+  HTTPClientRequest,
+} from '../'
 
 /**
  * These are general typescript definition tests;
@@ -12,6 +24,27 @@ export default {
 
     // @ts-expect-error - should not be possible
     analytics.VERSION = 'foo'
+  },
+
+  'Analytics should accept an entire HTTP Client': () => {
+    class CustomClient implements HTTPClient {
+      makeRequest = () => Promise.resolve({} as Response)
+    }
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new CustomClient(),
+    })
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new FetchHTTPClient(globalThis.fetch),
+    })
+
+    new Analytics({
+      writeKey: 'foo',
+      httpClient: new FetchHTTPClient(),
+    })
   },
 
   'track/id/pg/screen/grp calls should require either userId or anonymousId':
@@ -55,5 +88,33 @@ export default {
   'traits should be exported': () => {
     console.log({} as GroupTraits)
     console.log({} as UserTraits)
+  },
+
+  'HTTPFetchFn should be compatible with standard fetch and node-fetch interface, as well as functions':
+    () => {
+      const fetch: HTTPFetchFn = require('node-fetch')
+      new Analytics({ writeKey: 'foo', httpClient: fetch })
+      new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
+    },
+
+  'HTTPFetchFn options should be the expected type': () => {
+    type BadFetch = (url: string, requestInit: { _bad_object?: string }) => any
+
+    // @ts-expect-error
+    new Analytics({ writeKey: 'foo', httpClient: {} as BadFetch })
+  },
+
+  'httpClient setting should be compatible with axios': () => {
+    new (class implements HTTPClient {
+      async makeRequest(options: HTTPClientRequest) {
+        return axios({
+          url: options.url,
+          method: options.method,
+          data: options.data,
+          headers: options.headers,
+          timeout: options.httpRequestTimeout,
+        })
+      }
+    })()
   },
 }

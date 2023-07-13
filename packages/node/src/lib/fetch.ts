@@ -1,11 +1,13 @@
-export const fetch: typeof globalThis.fetch = async (...args) => {
+import type { HTTPFetchFn } from './http-client'
+
+export const fetch: HTTPFetchFn = async (...args) => {
   if (globalThis.fetch) {
     return globalThis.fetch(...args)
-  } // @ts-ignore
+  }
   // This guard causes is important, as it causes dead-code elimination to be enabled inside this block.
+  // @ts-ignore
   else if (typeof EdgeRuntime !== 'string') {
-    // @ts-ignore
-    return (await import('node-fetch')).default(...args) as Response
+    return (await import('node-fetch')).default(...args)
   } else {
     throw new Error(
       'Invariant: an edge runtime that does not support fetch should not exist'

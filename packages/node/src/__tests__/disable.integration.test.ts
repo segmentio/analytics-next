@@ -1,10 +1,13 @@
-const fetcher = jest.fn()
-jest.mock('../lib/fetch', () => ({ fetch: fetcher }))
-
-import { createTestAnalytics } from './test-helpers/create-test-analytics'
+import {
+  createTestAnalytics,
+  TestFetchClient,
+} from './test-helpers/create-test-analytics'
 
 describe('disable', () => {
-  it('should dispatch callbacks and emit an http request, even if disabled', async () => {
+  const httpClient = new TestFetchClient()
+  const makeReqSpy = jest.spyOn(httpClient, 'makeRequest')
+
+  it('should not emit an http request if disabled', async () => {
     const analytics = createTestAnalytics({
       disable: true,
     })
@@ -13,25 +16,27 @@ describe('disable', () => {
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(emitterCb).toBeCalledTimes(1)
+    expect(emitterCb).not.toBeCalled()
   })
 
-  it('should call fetch if disabled is false', async () => {
+  it('should call .send if disabled is false', async () => {
     const analytics = createTestAnalytics({
       disable: false,
+      httpClient: httpClient,
     })
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(fetcher).toBeCalled()
+    expect(makeReqSpy).toBeCalledTimes(1)
   })
-  it('should not call fetch if disabled is true', async () => {
+  it('should not call .send if disabled is true', async () => {
     const analytics = createTestAnalytics({
       disable: true,
+      httpClient: httpClient,
     })
     await new Promise((resolve) =>
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
-    expect(fetcher).not.toBeCalled()
+    expect(makeReqSpy).not.toBeCalled()
   })
 })
