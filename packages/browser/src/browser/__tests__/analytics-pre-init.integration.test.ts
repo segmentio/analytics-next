@@ -141,14 +141,14 @@ describe('Pre-initialization', () => {
 
   describe('Promise API', () => {
     describe('.then', () => {
-      test('.then should be called on success', (done) => {
+      test('.then should be called on success', () => {
         const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
         const newPromise = ajsBrowser.then(([analytics, context]) => {
           expect(analytics).toBeInstanceOf<typeof Analytics>(Analytics)
           expect(context).toBeInstanceOf<typeof Context>(Context)
-          done()
         })
         expect(newPromise).toBeInstanceOf<typeof Promise>(Promise)
+        return newPromise
       })
 
       it('.then should pass to the next .then', async () => {
@@ -160,15 +160,12 @@ describe('Pre-initialization', () => {
     })
 
     describe('.catch', () => {
-      it('should be capable of handling errors if using promise syntax', () => {
+      it('should be capable of handling errors if using promise syntax', async () => {
         browserLoadSpy.mockImplementationOnce((): any => Promise.reject(errMsg))
 
-        const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
-        const newPromise = ajsBrowser.catch((reason) => {
-          expect(reason).toBe(errMsg)
-        })
-        expect(newPromise).toBeInstanceOf(Promise)
-        expect.assertions(2)
+        await expect(() =>
+          AnalyticsBrowser.load({ writeKey: 'abc' })
+        ).rejects.toEqual(errMsg)
       })
     })
 

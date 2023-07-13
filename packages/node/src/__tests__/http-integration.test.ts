@@ -87,7 +87,7 @@ describe('Method Smoke Tests', () => {
                 ],
               }
           `)
-      expect(scope.isDone())
+      expect(scope.isDone()).toBeTruthy()
     })
   })
 

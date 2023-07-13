@@ -331,6 +331,7 @@ describe('Event Factory', () => {
       })
     })
 
+    // eslint-disable-next-line jest/no-disabled-tests
     describe.skip('anonymousId', () => {
       // TODO: the code should be fixed so that these tests can pass -- this eventFactory does not seem to handle these edge cases well.
       // When an event is dispatched, there are four places anonymousId can live: event.anonymousId, event.options.anonymousId, event.context.anonymousId, and the user object / localStorage.

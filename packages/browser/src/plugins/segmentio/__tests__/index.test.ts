@@ -5,11 +5,11 @@ import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import cookie from 'js-cookie'
+import { UADataValues } from '../../../lib/client-hints/interfaces'
 import {
   highEntropyTestData,
   lowEntropyTestData,
-} from '../../../lib/client-hints/__tests__/index.test'
-import { UADataValues } from '../../../lib/client-hints/interfaces'
+} from '../../../test-helpers/fixtures/client-hints'
 
 jest.mock('unfetch', () => {
   return jest.fn()
