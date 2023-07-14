@@ -39,7 +39,14 @@ export interface LegacyIntegrationConfiguration {
 
   bundlingStatus?: string
 
+  /**
+   * Consent settings for the integration
+   */
   consentSettings?: {
+    /**
+     * Consent categories for the integration
+     * @example ["Analytics", "Advertising", "CAT001"]
+     */
     categories: string[]
   }
 
@@ -69,7 +76,17 @@ export interface LegacySettings {
 
   remotePlugins?: RemotePlugin[]
 
+  /**
+   * Top level consent settings
+   */
   consentSettings?: {
+    /**
+     * All unique consent categories.
+     * There can be categories that are not included in any integration in the integrations object
+     * (e.g. 2 cloud mode categories), which is why this is needed.
+     *
+     * @example ["Analytics", "Advertising", "CAT001"]
+     */
     allCategories: string[]
   }
 }
