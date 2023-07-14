@@ -288,4 +288,38 @@ describe('Segment.io', () => {
       assert(body.to == null)
     })
   })
+
+  describe('#screen', () => {
+    it('should enqueue section, name and properties', async () => {
+      await analytics.screen(
+        'section',
+        'name',
+        { property: true },
+        { opt: true }
+      )
+
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/s"`)
+
+      const body = JSON.parse(params.body)
+
+      assert(body.name === 'name')
+      assert(body.category === 'section')
+      assert(body.properties.property === true)
+      assert(body.context.opt === true)
+      assert(body.timestamp)
+    })
+
+    it('sets properties when name and category are null', async () => {
+      // @ts-ignore test a valid ajsc page call
+      await analytics.screen(null, { foo: 'bar' })
+
+      const [url, params] = spyMock.mock.calls[0]
+      expect(url).toMatchInlineSnapshot(`"https://api.segment.io/v1/s"`)
+
+      const body = JSON.parse(params.body)
+
+      assert(body.properties.foo === 'bar')
+    })
+  })
 })
