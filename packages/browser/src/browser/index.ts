@@ -39,6 +39,10 @@ export interface LegacyIntegrationConfiguration {
 
   bundlingStatus?: string
 
+  consentSettings?: {
+    categories: string[]
+  }
+
   // Segment.io specific
   retryQueue?: boolean
 
@@ -64,6 +68,10 @@ export interface LegacySettings {
   legacyVideoPluginsEnabled?: boolean
 
   remotePlugins?: RemotePlugin[]
+
+  consentSettings?: {
+    allCategories: string[]
+  }
 }
 
 export interface AnalyticsBrowserSettings extends AnalyticsSettings {
