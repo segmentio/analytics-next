@@ -19,7 +19,7 @@ const ignoreProbeCookieWrites = (
       options?: cookie.CookieAttributes | undefined
     ]
   >
-) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies')
+) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies_check')
 
 describe('before loading', () => {
   let jsdom: JSDOM
