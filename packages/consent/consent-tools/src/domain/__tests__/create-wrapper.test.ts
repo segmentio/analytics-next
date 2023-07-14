@@ -368,11 +368,36 @@ describe(createWrapper, () => {
       )
     })
 
-    it('should allow integration if an integration has multiple categories, and user has multiple categories, but only consents to one', async () => {
+    it('should allow integration if it has one category and user has consented to that category', async () => {
       const mockCdnSettings = settingsBuilder
         .addActionDestinationSettings({
           creationName: 'mockIntegration',
-          ...createConsentSettings(['Bar', 'Something else']),
+          ...createConsentSettings(['Foo']),
+        })
+        .build()
+
+      wrapTestAnalytics({
+        shouldLoad: () => ({ Foo: true }),
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+      expect(analyticsLoadSpy).toBeCalled()
+      const { updatedCDNSettings } = getAnalyticsLoadLastCall()
+      // remote plugins should be filtered based on consent settings
+      expect(updatedCDNSettings.remotePlugins).toContainEqual(
+        mockCdnSettings.remotePlugins?.find(
+          (p) => p.creationName === 'mockIntegration'
+        )
+      )
+    })
+
+    it('should allow integration if it has multiple categories and user consents to all of them.', async () => {
+      const mockCdnSettings = settingsBuilder
+        .addActionDestinationSettings({
+          creationName: 'mockIntegration',
+          ...createConsentSettings(['Foo', 'Bar']),
         })
         .build()
 
@@ -386,18 +411,18 @@ describe(createWrapper, () => {
       expect(analyticsLoadSpy).toBeCalled()
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
       // remote plugins should be filtered based on consent settings
-      expect(updatedCDNSettings.remotePlugins).toEqual(
-        mockCdnSettings.remotePlugins?.filter(
+      expect(updatedCDNSettings.remotePlugins).toContainEqual(
+        mockCdnSettings.remotePlugins?.find(
           (p) => p.creationName === 'mockIntegration'
         )
       )
     })
 
-    it('should allow integration if it has multiple consent categories but user has only consented to one category', async () => {
+    it('should disable integration if it has multiple categories but user has only consented to one', async () => {
       const mockCdnSettings = settingsBuilder
         .addActionDestinationSettings({
           creationName: 'mockIntegration',
-          ...createConsentSettings(['Foo', 'Something else']),
+          ...createConsentSettings(['Foo', 'Bar']),
         })
         .build()
 
@@ -410,8 +435,8 @@ describe(createWrapper, () => {
       })
 
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
-      expect(updatedCDNSettings.remotePlugins).toEqual(
-        mockCdnSettings.remotePlugins?.filter(
+      expect(updatedCDNSettings.remotePlugins).not.toContainEqual(
+        mockCdnSettings.remotePlugins?.find(
           (p) => p.creationName === 'mockIntegration'
         )
       )
