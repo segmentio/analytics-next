@@ -12,6 +12,7 @@ import { validateCategories, validateOptions } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
+import { ValidationError } from './validation/validation-error'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   validateOptions(createWrapperOptions)
@@ -71,9 +72,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       )
 
       // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
-      const getFilteredSelectedCategories = async (): Promise<
-        Categories | undefined
-      > => {
+      const getFilteredSelectedCategories = async (): Promise<Categories> => {
         const cdnSettings = await cdnSettingsP
         let allCategories: string[]
         // We need to get all the unique categories so we can prune the consent object down to only the categories that are configured
@@ -90,10 +89,15 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
         if (!allCategories.length) {
           // No configured integrations found, so no categories will be sent (should not happen unless there's a configuration error)
-          return undefined
+          throw new ValidationError(
+            'Invariant: No consent categories defined in Segment',
+            []
+          )
         }
 
         const categories = await getCategories()
+
+        validateCategories(categories)
         return pick(categories, allCategories)
       }
 

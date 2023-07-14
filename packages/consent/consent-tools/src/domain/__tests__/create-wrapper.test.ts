@@ -1,3 +1,4 @@
+import * as ConsentStamping from '../consent-stamping'
 import { createWrapper } from '../create-wrapper'
 import { AbortLoadError, LoadContext } from '../load-cancellation'
 import type {
@@ -565,6 +566,90 @@ describe(createWrapper, () => {
         (el) => el.creationName === disabledDestinationCreationName
       )
       expect(disabledIntg).toBeFalsy()
+    })
+  })
+
+  describe('Consent Stamping', () => {
+    it('should throw an error if there are no configured categories', async () => {
+      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
+      const mockCdnSettings = settingsBuilder
+        .addActionDestinationSettings({
+          creationName: 'Some Other Plugin',
+        })
+        .build()
+
+      wrapTestAnalytics()
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      const getCategoriesFn = fn.mock.lastCall[0]
+      await expect(() =>
+        getCategoriesFn()
+      ).rejects.toThrowErrorMatchingInlineSnapshot(
+        `"[Validation] Invariant: No consent categories defined in Segment (Received: [])"`
+      )
+    })
+
+    it('should exclude properties that are not configured based on the allCategories array', async () => {
+      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
+      const mockCdnSettings = settingsBuilder
+        .addActionDestinationSettings({
+          creationName: 'Some Other Plugin',
+          ...createConsentSettings(['Foo']),
+        })
+        .build()
+
+      mockCdnSettings.consentSettings = {
+        allCategories: ['Foo', 'Bar'],
+      }
+
+      wrapTestAnalytics({
+        getCategories: () => ({
+          Foo: true,
+          Bar: false,
+          Rand1: false,
+          Rand2: true,
+        }),
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      const getCategoriesFn = fn.mock.lastCall[0]
+      await expect(getCategoriesFn()).resolves.toEqual({
+        Foo: true,
+        Bar: false,
+      })
+    })
+
+    it('should exclude properties that are not configured if integrationCategoryMappings are passed', async () => {
+      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
+      const mockCdnSettings = settingsBuilder
+        .addActionDestinationSettings({
+          creationName: 'Some Other Plugin',
+        })
+        .build()
+
+      wrapTestAnalytics({
+        getCategories: () => ({
+          Foo: true,
+          Rand1: true,
+          Rand2: false,
+        }),
+        integrationCategoryMappings: {
+          'Some Other Plugin': ['Foo'],
+        },
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      const getCategoriesFn = fn.mock.lastCall[0]
+      await expect(getCategoriesFn()).resolves.toEqual({ Foo: true })
     })
   })
 })
