@@ -82,9 +82,7 @@ export interface LegacySettings {
   consentSettings?: {
     /**
      * All unique consent categories.
-     * There can be categories that are not included in any integration in the integrations object
-     * (e.g. 2 cloud mode categories), which is why this is needed.
-     *
+     * There can be categories in this array that are important for consent that are not included in any integration  (e.g. 2 cloud mode categories).
      * @example ["Analytics", "Advertising", "CAT001"]
      */
     allCategories: string[]
