@@ -601,7 +601,7 @@ describe(createWrapper, () => {
         })
         .build()
 
-      mockCdnSettings.consentSettings = {
+      ;(mockCdnSettings as any).consentSettings = {
         allCategories: ['Foo', 'Bar'],
       }
 
