@@ -50,32 +50,14 @@ export interface CreateWrapperSettings {
   integrationCategoryMappings?: IntegrationCategoryMappings
 
   /**
-   * Predicate function to override default logic around whether or not to load an integration.
-   * @default
-   * ```ts
-   * // consent if user consents to at least one category defined in the integration
-   * (integrationCategories, categories, _info) => {
-   *    if (!integrationCategories.length) return true
-   *    return integrationCategories.some((c) => categories[c])
-   * }
-   * ```
-   *
-   * @example -
-   * ```ts
-   * (integrationCategories, categories, _info) => {
-   * // consent if user consents to _all_ categories defined in the integration
-   *    if (!integrationCategories.length) return true
-   *    return integrationCategories.every((c) => categories[c])
-   * }
-   * ```
-   *
+   * Predicate function to override default logic around whether or not to load an integration. By default, consent requires a user to have all categories enabled for a given integration.
    * @example
    * ```ts
-   * // count consent as usual, but always disable a particular plugin
-   * (integrationCategories, categories, { creationName }) => {
+   * // Always disable a particular plugin
+   * const shouldEnableIntegration = (integrationCategories, categories, { creationName }) => {
    *    if (creationName === 'FullStory') return false
    *    if (!integrationCategories.length) return true
-   *    return integrationCategories.some((c) => categories[c])
+   *    return integrationCategories.every((c) => categories[c])
    * }
    * ```
    */
