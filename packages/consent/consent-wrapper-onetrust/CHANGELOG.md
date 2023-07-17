@@ -1,5 +1,14 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.0.3
+
+### Patch Changes
+
+- [#895](https://github.com/segmentio/analytics-next/pull/895) [`aa56556`](https://github.com/segmentio/analytics-next/commit/aa5655659760c53183df22b6b001e0a204feffde) Thanks [@silesky](https://github.com/silesky)! - Remove strictly neccessary cookie logic
+
+- Updated dependencies [[`d9e135a`](https://github.com/segmentio/analytics-next/commit/d9e135a7174ce0a4d90fe1339c4833bd86b8f429), [`6789f9b`](https://github.com/segmentio/analytics-next/commit/6789f9b213f63698da8ca67d6631966aefc58345)]:
+  - @segment/analytics-consent-tools@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
