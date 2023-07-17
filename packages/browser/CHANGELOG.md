@@ -1,5 +1,13 @@
 # @segment/analytics-next
 
+## 1.53.1
+
+### Patch Changes
+
+- [#900](https://github.com/segmentio/analytics-next/pull/900) [`9c8b609`](https://github.com/segmentio/analytics-next/commit/9c8b609f500d2338fdbf2572639241ffdfd27f8f) Thanks [@silesky](https://github.com/silesky)! - Add consent info to typescript types
+
+* [#896](https://github.com/segmentio/analytics-next/pull/896) [`48ce3ec`](https://github.com/segmentio/analytics-next/commit/48ce3ecbdea9361dde90481d7c50207613602d52) Thanks [@oscb](https://github.com/oscb)! - Added support for `screen` events for Segment destination
+
 ## 1.53.0
 
 ### Minor Changes

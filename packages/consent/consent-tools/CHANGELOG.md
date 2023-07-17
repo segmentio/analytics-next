@@ -1,5 +1,13 @@
 # @segment/analytics-consent-tools
 
+## 0.0.3
+
+### Patch Changes
+
+- [#899](https://github.com/segmentio/analytics-next/pull/899) [`d9e135a`](https://github.com/segmentio/analytics-next/commit/d9e135a7174ce0a4d90fe1339c4833bd86b8f429) Thanks [@silesky](https://github.com/silesky)! - Validate categories for consent stamping
+
+* [#898](https://github.com/segmentio/analytics-next/pull/898) [`6789f9b`](https://github.com/segmentio/analytics-next/commit/6789f9b213f63698da8ca67d6631966aefc58345) Thanks [@silesky](https://github.com/silesky)! - Change meaning of consent to 'user has consented ALL categories'
+
 ## 0.0.2
 
 ### Patch Changes
