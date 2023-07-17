@@ -96,8 +96,8 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         }
 
         const categories = await getCategories()
-
         validateCategories(categories)
+
         return pick(categories, allCategories)
       }
 
