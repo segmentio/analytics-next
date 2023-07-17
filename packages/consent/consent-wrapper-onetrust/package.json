@@ -33,5 +33,8 @@
     "directory": "packages/consent/consent-wrapper-onetrust",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "devDependencies": {
+    "@internal/test-helpers": "workspace:^"
   }
 }

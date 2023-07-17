@@ -13,7 +13,7 @@ type GroupInfoDto = {
 /**
  * The data model used by the OneTrust lib
  */
-interface OneTrustGlobal {
+export interface OneTrustGlobal {
   GetDomainData: () => {
     Groups: GroupInfoDto[]
   }
