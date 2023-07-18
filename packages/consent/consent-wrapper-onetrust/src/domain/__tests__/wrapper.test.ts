@@ -1,5 +1,5 @@
 import * as ConsentTools from '@segment/analytics-consent-tools'
-import * as OneTrustAPI from '../lib/onetrust-api'
+import * as OneTrustAPI from '../../lib/onetrust-api'
 import { sleep } from '@internal/test-helpers'
 
 const throwNotImplemented = (): never => {
@@ -44,7 +44,7 @@ const helpers = {
   },
 }
 
-import { oneTrust } from '../domain/wrapper'
+import { oneTrust } from '../wrapper'
 
 /**
  * These tests are not meant to be comprehensive, but they should cover the most important cases.

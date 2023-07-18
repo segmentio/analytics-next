@@ -1,4 +1,4 @@
-import '../../__tests__/test-helpers/onetrust.d.ts'
+import './onetrust-globals.d.ts'
 
 import { getConsentedGroupIds, getGroupData } from '../onetrust-api'
 
