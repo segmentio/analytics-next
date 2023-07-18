@@ -7,6 +7,20 @@ import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 import { version } from '../../../generated/version'
 
+/**
+ * Filters out the calls made for probing cookie availability
+ */
+const ignoreProbeCookieWrites = (
+  fn: jest.SpyInstance<
+    string | undefined,
+    [
+      name: string,
+      value: string | object,
+      options?: cookie.CookieAttributes | undefined
+    ]
+  >
+) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies_check')
+
 describe('before loading', () => {
   let jsdom: JSDOM
 
@@ -317,7 +331,7 @@ describe('before loading', () => {
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
       expect(cookie.get('s:context.referrer')).toBeUndefined()
-      expect(setCookieSpy).not.toHaveBeenCalled()
+      expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {

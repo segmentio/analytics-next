@@ -62,15 +62,15 @@ const ONE_YEAR = 365
 
 export class Cookie extends Store {
   static available(): boolean {
-    let cookieEnabled = window.navigator.cookieEnabled
-
-    if (!cookieEnabled) {
-      jar.set('ajs:cookies', 'test')
-      cookieEnabled = document.cookie.includes('ajs:cookies')
-      jar.remove('ajs:cookies')
+    try {
+      const PROBE_COOKIE = 'ajs_cookies_check'
+      jar.set(PROBE_COOKIE, 'test')
+      const cookieEnabled = document.cookie.includes(PROBE_COOKIE)
+      jar.remove(PROBE_COOKIE)
+      return cookieEnabled
+    } catch (error) {
+      return false
     }
-
-    return cookieEnabled
   }
 
   static get defaults(): CookieOptions {
