@@ -1851,6 +1851,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-wrapper-onetrust@workspace:packages/consent/consent-wrapper-onetrust"
   dependencies:
+    "@internal/test-helpers": "workspace:^"
     "@segment/analytics-consent-tools": 0.0.3
   languageName: unknown
   linkType: soft
