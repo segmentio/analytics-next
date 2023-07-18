@@ -48,6 +48,7 @@ import { oneTrust } from '../domain/wrapper'
 
 /**
  * These tests are not meant to be comprehensive, but they should cover the most important cases.
+ * We should prefer unit tests for most functionality (see lib/__tests__)
  */
 describe('High level "integration" tests', () => {
   beforeEach(() => {
