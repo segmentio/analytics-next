@@ -10,7 +10,7 @@ beforeEach(() => {
 })
 
 describe(getConsentedGroupIds, () => {
-  it('should return an empty array if no groups are consented', () => {
+  it('should return formatted groups', () => {
     window.OnetrustActiveGroups = ',C0001,C0004,C0003,STACK42,'
     expect(getConsentedGroupIds()).toEqual([
       'C0001',
