@@ -294,6 +294,7 @@ describe('before loading', () => {
       assert(object)
       assert(object.context)
       assert(object.context.campaign === undefined)
+      assert(object.context.referrer === undefined)
     })
 
     it('should add .referrer.id and .referrer.type (cookies)', () => {
