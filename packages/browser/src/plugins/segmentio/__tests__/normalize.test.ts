@@ -55,7 +55,7 @@ describe('before loading', () => {
   describe('#normalize', () => {
     let object: SegmentEvent
     let defaultCtx: any
-    const withSearchParams = (search?: string) => {
+    const withSearchParams = (search?: any) => {
       object.context = { page: { search } }
     }
 
@@ -283,6 +283,17 @@ describe('before loading', () => {
       assert(obj.context.campaign.term === 'overrideTerm')
       assert(obj.context.campaign.content === 'overrideContent')
       assert(obj.context.campaign.name === 'overrideName')
+    })
+
+    it('should allow override of .search with object', () => {
+      withSearchParams({
+        someObject: 'foo',
+      })
+
+      normalize(analytics, object, options, {})
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign === undefined)
     })
 
     it('should add .referrer.id and .referrer.type (cookies)', () => {
