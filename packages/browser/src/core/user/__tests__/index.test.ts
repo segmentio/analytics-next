@@ -1,14 +1,12 @@
-import {
-  User,
-  LocalStorage,
-  Cookie,
-  Group,
-  UniversalStorage,
-  StoreType,
-  getAvailableStorageOptions,
-} from '..'
-import jar from 'js-cookie'
 import assert from 'assert'
+import jar from 'js-cookie'
+import { Group, User } from '..'
+import { LocalStorage, StoreType, Storage } from '../../storage'
+import {
+  disableCookies,
+  disableLocalStorage,
+} from '../../storage/__tests__/test-helpers'
+import { MemoryStorage } from '../../storage/memoryStorage'
 
 function clear(): void {
   document.cookie.split(';').forEach(function (c) {
@@ -23,9 +21,10 @@ let store: LocalStorage
 beforeEach(function () {
   store = new LocalStorage()
   clear()
+  // Restore any cookie, localstorage disable
+  jest.restoreAllMocks()
+  jest.spyOn(console, 'warn').mockImplementation(() => {}) // silence console spam.
 })
-
-jest.spyOn(console, 'warn').mockImplementation(() => {}) // silence console spam.
 
 describe('user', () => {
   const cookieKey = User.defaults.cookie.key
@@ -76,7 +75,7 @@ describe('user', () => {
 
     describe('when cookies are disabled', () => {
       beforeEach(() => {
-        jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+        disableCookies()
 
         user = new User()
         clear()
@@ -140,8 +139,8 @@ describe('user', () => {
 
     describe('when cookies and localStorage are disabled', () => {
       beforeEach(() => {
-        jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
-        jest.spyOn(LocalStorage, 'available').mockReturnValueOnce(false)
+        disableCookies()
+        disableLocalStorage()
 
         user = new User()
         clear()
@@ -159,10 +158,6 @@ describe('user', () => {
         user = new User({ persist: false })
         user.id('id')
         assert(user.id() === 'id')
-      })
-
-      it('should be null by default', () => {
-        assert(user.id() === null)
       })
 
       it('should not reset anonymousId if the user didnt have previous id', () => {
@@ -308,7 +303,7 @@ describe('user', () => {
 
     describe('when cookies are disabled', () => {
       beforeEach(() => {
-        jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+        disableCookies()
 
         user = new User()
       })
@@ -336,8 +331,8 @@ describe('user', () => {
 
     describe('when cookies and localStorage are disabled', () => {
       beforeEach(() => {
-        jest.spyOn(LocalStorage, 'available').mockReturnValueOnce(false)
-        jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
+        disableCookies()
+        disableLocalStorage()
 
         user = new User()
       })
@@ -500,40 +495,6 @@ describe('user', () => {
         expect(user.traits()).toBeUndefined()
         expect(user.traits({})).toBeUndefined()
         expect(user.traits()).toBeUndefined()
-      })
-    })
-  })
-
-  describe('#options', () => {
-    it('should have default cookie options', () => {
-      const cookie = new Cookie()
-      expect(cookie['options'].domain).toBe(undefined)
-      expect(cookie['options'].maxage).toBe(365)
-      expect(cookie['options'].path).toBe('/')
-      expect(cookie['options'].sameSite).toBe('Lax')
-      expect(cookie['options'].secure).toBe(undefined)
-    })
-
-    it('should set options properly', () => {
-      const cookie = new Cookie({ domain: 'foo', secure: true, path: '/test' })
-      expect(cookie['options'].domain).toBe('foo')
-      expect(cookie['options'].secure).toBe(true)
-      expect(cookie['options'].path).toBe('/test')
-      expect(cookie['options'].secure).toBe(true)
-    })
-
-    it('should pass options when creating cookie', () => {
-      const jarSpy = jest.spyOn(jar, 'set')
-      const cookie = new Cookie({ domain: 'foo', secure: true, path: '/test' })
-
-      cookie.set('foo', 'bar')
-
-      expect(jarSpy).toHaveBeenCalledWith('foo', 'bar', {
-        domain: 'foo',
-        expires: 365,
-        path: '/test',
-        sameSite: 'Lax',
-        secure: true,
       })
     })
   })
@@ -762,6 +723,79 @@ describe('user', () => {
       )
     })
   })
+
+  describe('storage', () => {
+    it('allows custom storage priority', () => {
+      const expected = 'CookieValue'
+      // Set a cookie first
+      jar.set('ajs_anonymous_id', expected)
+      store.set('ajs_anonymous_id', 'localStorageValue')
+      const user = new User({
+        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+      })
+      expect(user.anonymousId()).toEqual(expected)
+    })
+
+    it('custom storage priority respects availability', () => {
+      const expected = 'localStorageValue'
+      // Set a cookie first
+      jar.set('ajs_anonymous_id', 'CookieValue')
+      disableCookies()
+      store.set('ajs_anonymous_id', expected)
+      const user = new User({
+        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+      })
+      expect(user.anonymousId()).toEqual(expected)
+    })
+
+    it('persist option overrides any custom storage', () => {
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      const user = new User({
+        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        persist: false,
+      })
+      user.id('id')
+
+      expect(user.id()).toBe('id')
+      expect(jar.get('ajs_user_id')).toBeFalsy()
+      expect(store.get('ajs_user_id')).toBeFalsy()
+      expect(setCookieSpy.mock.calls.length).toBe(0)
+    })
+
+    it('disable option overrides any custom storage', () => {
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      const user = new User({
+        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        disable: true,
+      })
+      user.id('id')
+
+      expect(user.id()).toBe(null)
+      expect(jar.get('ajs_user_id')).toBeFalsy()
+      expect(store.get('ajs_user_id')).toBeFalsy()
+      expect(setCookieSpy.mock.calls.length).toBe(0)
+    })
+
+    it('can use a fully custom storage object', () => {
+      const customStore: Storage = {
+        get type() {
+          return 'something'
+        },
+        get available() {
+          return true
+        },
+        get: jest.fn().mockReturnValue('custom'),
+        set: jest.fn(),
+        clear: jest.fn(),
+        getAndSync: jest.fn().mockReturnValue('custom'),
+      }
+
+      const user = new User({ storage: customStore })
+      user.id('id')
+      expect(customStore.set).toHaveBeenCalled()
+      expect(user.id()).toBe('custom')
+    })
+  })
 })
 
 describe('group', () => {
@@ -872,64 +906,6 @@ describe('group', () => {
   })
 })
 
-describe('store', function () {
-  describe('#get', function () {
-    it('should return null if localStorage throws an error (or does not exist)', function () {
-      const getItemSpy = jest
-        .spyOn(global.Storage.prototype, 'getItem')
-        .mockImplementationOnce(() => {
-          throw new Error('getItem fail.')
-        })
-      store.set('foo', 'some value')
-      expect(store.get('foo')).toBeNull()
-      expect(getItemSpy).toBeCalledTimes(1)
-    })
-
-    it('should not get an empty record', function () {
-      expect(store.get('abc')).toBe(null)
-    })
-
-    it('should get an existing record', function () {
-      store.set('x', { a: 'b' })
-      store.set('a', 'hello world')
-      store.set('b', '')
-      store.set('c', false)
-      store.set('d', null)
-      store.set('e', undefined)
-
-      expect(store.get('x')).toStrictEqual({ a: 'b' })
-      expect(store.get('a')).toBe('hello world')
-      expect(store.get('b')).toBe('')
-      expect(store.get('c')).toBe(false)
-      expect(store.get('d')).toBe(null)
-      expect(store.get('e')).toBe('undefined')
-    })
-  })
-
-  describe('#set', function () {
-    it('should be able to set a record', function () {
-      store.set('x', { a: 'b' })
-      expect(store.get('x')).toStrictEqual({ a: 'b' })
-    })
-
-    it('should catch localStorage quota exceeded errors', () => {
-      const val = 'x'.repeat(10 * 1024 * 1024)
-      store.set('foo', val)
-
-      expect(store.get('foo')).toBe(null)
-    })
-  })
-
-  describe('#remove', function () {
-    it('should be able to remove a record', function () {
-      store.set('x', { a: 'b' })
-      expect(store.get('x')).toStrictEqual({ a: 'b' })
-      store.remove('x')
-      expect(store.get('x')).toBe(null)
-    })
-  })
-})
-
 describe('Custom cookie params', () => {
   it('allows for overriding keys', () => {
     const customUser = new User(
@@ -945,159 +921,5 @@ describe('Custom cookie params', () => {
     expect(document.cookie).toMatchInlineSnapshot(`"; ajs_user_id=some_id"`)
     expect(customUser.id()).toBe('some_id')
     expect(customUser.traits()).toEqual({ trait: true })
-  })
-})
-
-describe('universal storage', function () {
-  const defaultTargets = ['cookie', 'localStorage', 'memory'] as StoreType[]
-  const getFromLS = (key: string) => JSON.parse(localStorage.getItem(key) ?? '')
-  beforeEach(function () {
-    clear()
-  })
-
-  describe('#get', function () {
-    it('picks data from cookies first', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage(
-        defaultTargets,
-        getAvailableStorageOptions()
-      )
-      expect(us.get('ajs_test_key')).toEqual('🍪')
-    })
-
-    it('picks data from localStorage if there is no cookie target', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage(
-        ['localStorage', 'memory'],
-        getAvailableStorageOptions()
-      )
-      expect(us.get('ajs_test_key')).toEqual('💾')
-    })
-
-    it('get data from memory', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage(['memory'], getAvailableStorageOptions())
-      expect(us.get('ajs_test_key')).toBeNull()
-    })
-
-    it('order of default targets matters!', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage(
-        ['cookie', 'localStorage', 'memory'],
-        getAvailableStorageOptions()
-      )
-      expect(us.get('ajs_test_key')).toEqual('🍪')
-    })
-
-    it('returns null if there are no storage targets', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage([], getAvailableStorageOptions())
-      expect(us.get('ajs_test_key')).toBeNull()
-    })
-
-    it('can override the default targets', function () {
-      jar.set('ajs_test_key', '🍪')
-      localStorage.setItem('ajs_test_key', '💾')
-      const us = new UniversalStorage(
-        defaultTargets,
-        getAvailableStorageOptions()
-      )
-      expect(us.get('ajs_test_key', ['localStorage'])).toEqual('💾')
-      expect(us.get('ajs_test_key', ['localStorage', 'memory'])).toEqual('💾')
-      expect(us.get('ajs_test_key', ['cookie', 'memory'])).toEqual('🍪')
-      expect(us.get('ajs_test_key', ['cookie', 'localStorage'])).toEqual('🍪')
-      expect(us.get('ajs_test_key', ['cookie'])).toEqual('🍪')
-      expect(us.get('ajs_test_key', ['memory'])).toEqual(null)
-    })
-  })
-
-  describe('#set', function () {
-    it('set the data in all storage types', function () {
-      const us = new UniversalStorage<{ ajs_test_key: string }>(
-        defaultTargets,
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual('💰')
-      expect(getFromLS('ajs_test_key')).toEqual('💰')
-    })
-
-    it('skip saving data to localStorage', function () {
-      const us = new UniversalStorage(
-        ['cookie', 'memory'],
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual('💰')
-      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
-    })
-
-    it('skip saving data to cookie', function () {
-      const us = new UniversalStorage(
-        ['localStorage', 'memory'],
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual(undefined)
-      expect(getFromLS('ajs_test_key')).toEqual('💰')
-    })
-
-    it('can save and retrieve from memory when there is no other storage', function () {
-      const us = new UniversalStorage(['memory'], getAvailableStorageOptions())
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual(undefined)
-      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
-      expect(us.get('ajs_test_key')).toEqual('💰')
-    })
-
-    it('does not write to cookies when cookies are not available', function () {
-      jest.spyOn(Cookie, 'available').mockReturnValueOnce(false)
-      const us = new UniversalStorage(
-        ['localStorage', 'cookie', 'memory'],
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual(undefined)
-      expect(getFromLS('ajs_test_key')).toEqual('💰')
-      expect(us.get('ajs_test_key')).toEqual('💰')
-    })
-
-    it('does not write to LS when LS is not available', function () {
-      jest.spyOn(LocalStorage, 'available').mockReturnValueOnce(false)
-      const us = new UniversalStorage(
-        ['localStorage', 'cookie', 'memory'],
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual('💰')
-      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
-      expect(us.get('ajs_test_key')).toEqual('💰')
-    })
-
-    it('can override the default targets', function () {
-      const us = new UniversalStorage(
-        defaultTargets,
-        getAvailableStorageOptions()
-      )
-      us.set('ajs_test_key', '💰', ['localStorage'])
-      expect(jar.get('ajs_test_key')).toEqual(undefined)
-      expect(getFromLS('ajs_test_key')).toEqual('💰')
-      expect(us.get('ajs_test_key')).toEqual('💰')
-
-      us.set('ajs_test_key_2', '🦴', ['cookie'])
-      expect(jar.get('ajs_test_key_2')).toEqual('🦴')
-      expect(localStorage.getItem('ajs_test_key_2')).toEqual(null)
-      expect(us.get('ajs_test_key_2')).toEqual('🦴')
-
-      us.set('ajs_test_key_3', '👻', [])
-      expect(jar.get('ajs_test_key_3')).toEqual(undefined)
-      expect(localStorage.getItem('ajs_test_key_3')).toEqual(null)
-      expect(us.get('ajs_test_key_3')).toEqual(null)
-    })
   })
 })

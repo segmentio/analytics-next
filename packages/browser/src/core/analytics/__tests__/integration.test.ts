@@ -7,7 +7,9 @@ import {
 import { Context } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
+import { StoreType } from '../../storage'
 import { Analytics } from '../index'
+import jar from 'js-cookie'
 import {
   TestAfterPlugin,
   TestBeforePlugin,
@@ -269,6 +271,32 @@ describe('Analytics', () => {
 
       analytics.reset()
       expect(fn).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('storage', () => {
+    beforeEach(() => {
+      clearAjsBrowserStorage()
+    })
+
+    it('handles custom priority storage', async () => {
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      const expected = 'CookieValue'
+      jar.set('ajs_anonymous_id', expected)
+      localStorage.setItem('ajs_anonymous_id', 'localStorageValue')
+
+      const analytics = new Analytics(
+        { writeKey: '' },
+        {
+          storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        }
+      )
+
+      expect(analytics.user().anonymousId()).toEqual(expected)
+
+      analytics.user().id('known-user')
+      expect(analytics.user().id()).toEqual('known-user')
+      expect(setCookieSpy).toHaveBeenCalled()
     })
   })
 })
