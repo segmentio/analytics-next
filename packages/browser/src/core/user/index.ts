@@ -4,6 +4,7 @@ import { Traits } from '../events'
 import {
   CookieOptions,
   UniversalStorage,
+  MemoryStorage,
   Storage,
   StorageObject,
   StorageSettings,
@@ -13,8 +14,6 @@ import {
   isArrayOfStoreType,
   isStorageObject,
 } from '../storage'
-import { MemoryStorage } from '../storage/memoryStorage'
-import {} from '../storage/settings'
 
 export type ID = string | null | undefined
 

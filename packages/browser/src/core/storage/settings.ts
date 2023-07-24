@@ -4,21 +4,14 @@ export type StorageSettings = Storage | StoreType[]
 
 export function isArrayOfStoreType(s: StorageSettings): s is StoreType[] {
   return (
-    s !== undefined &&
-    s !== null &&
+    s &&
     Array.isArray(s) &&
     s.every((e) => Object.values(StoreType).includes(e))
   )
 }
 
 export function isStorageObject(s: StorageSettings): s is Storage {
-  return (
-    s !== undefined &&
-    s !== null &&
-    !Array.isArray(s) &&
-    typeof s === 'object' &&
-    s.get !== undefined
-  )
+  return s && !Array.isArray(s) && typeof s === 'object' && s.get !== undefined
 }
 
 export function isStoreTypeWithSettings(

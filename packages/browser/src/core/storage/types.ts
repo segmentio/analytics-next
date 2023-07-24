@@ -73,7 +73,8 @@ export abstract class BaseStorage<Data extends StorageObject = StorageObject>
   abstract set<K extends keyof Data>(key: K, value: Data[K] | null): void
   abstract clear<K extends keyof Data>(key: K): void
   /**
-   * By default a storage getAndSync will handle calls exactly as the
+   * By default a storage getAndSync will handle calls exactly as a normal get.
+   * getAndSync needs to be implemented for more complex storage types that might wrap several base storage systems (see UniversalStorage)
    */
   getAndSync<K extends keyof Data>(key: K): Data[K] | null {
     const val = this.get(key)

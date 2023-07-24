@@ -298,5 +298,27 @@ describe('Analytics', () => {
       expect(analytics.user().id()).toEqual('known-user')
       expect(setCookieSpy).toHaveBeenCalled()
     })
+
+    it('handles disabling storage', async () => {
+      const setCookieSpy = jest.spyOn(jar, 'set')
+      const expected = 'CookieValue'
+      jar.set('ajs_anonymous_id', expected)
+      localStorage.setItem('ajs_anonymous_id', 'localStorageValue')
+
+      const analytics = new Analytics(
+        { writeKey: '' },
+        {
+          storage: [StoreType.Cookie, StoreType.Memory],
+        }
+      )
+
+      expect(analytics.user().anonymousId()).toEqual(expected)
+
+      analytics.user().id('known-user')
+      expect(analytics.user().id()).toEqual('known-user')
+      expect(setCookieSpy).toHaveBeenCalled()
+      // Local storage shouldn't change
+      expect(localStorage.getItem('ajs_anonymous_id')).toBe('localStorageValue')
+    })
   })
 })

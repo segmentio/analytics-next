@@ -218,7 +218,7 @@ export class Analytics
     if (disablePersistance) {
       return new MemoryStorage()
     } else {
-      if (storageSetting !== undefined && storageSetting !== null) {
+      if (storageSetting) {
         if (isArrayOfStoreType(storageSetting)) {
           // We will create the store with the priority for customer settings
           return new UniversalStorage(
