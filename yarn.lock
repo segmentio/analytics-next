@@ -616,6 +616,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@braze/web-sdk-v3@npm:@braze/web-sdk@^3.5.1":
+  version: 3.5.1
+  resolution: "@braze/web-sdk@npm:3.5.1"
+  checksum: 2e99f0dcc7cde62cc6cc40ddff17b008cdf0b56f61883fa9cbf3183a73a200cb166c6563cd5b4aa8ebc1dd2cfd5784c4b28375cf2b58973d2a2e4edbdc5a7d76
+  languageName: node
+  linkType: hard
+
+"@braze/web-sdk@npm:@braze/web-sdk@^4.1.0":
+  version: 4.8.3
+  resolution: "@braze/web-sdk@npm:4.8.3"
+  checksum: cdd1218c4654c62f15fa78e64e87269a0251f3e802c84fa5099ba167a80617dec217f8982c1193fd82687f7e1255ea02d90cdfc5ba601f32b2a3dc5619d3deac
+  languageName: node
+  linkType: hard
+
 "@builder.io/partytown@npm:^0.7.4":
   version: 0.7.4
   resolution: "@builder.io/partytown@npm:0.7.4"
@@ -1837,6 +1851,59 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@segment/action-emitters@npm:^1.1.2":
+  version: 1.2.2
+  resolution: "@segment/action-emitters@npm:1.2.2"
+  dependencies:
+    "@types/node": ^18.11.15
+  checksum: 4db0e39c6558d5112f26b3b2c7ab88f34ee99dfa7e6cbcd6a409aa561e61bf61d909e150a4db51b00131b1fdfd415de89cb591f1ba09d888b53759980e8c66c0
+  languageName: node
+  linkType: hard
+
+"@segment/actions-core@npm:^3.76.0":
+  version: 3.77.0
+  resolution: "@segment/actions-core@npm:3.77.0"
+  dependencies:
+    "@lukeed/uuid": ^2.0.0
+    "@segment/action-emitters": ^1.1.2
+    "@segment/ajv-human-errors": ^2.11.0
+    "@segment/destination-subscriptions": ^3.28.0
+    "@types/node": ^18.11.15
+    abort-controller: ^3.0.0
+    aggregate-error: ^3.1.0
+    ajv: ^8.6.3
+    ajv-formats: ^2.1.1
+    btoa-lite: ^1.0.0
+    cross-fetch: ^3.1.4
+    dayjs: ^1.10.7
+    ts-custom-error: ^3.2.0
+  checksum: 9b3bd3a3fb3c93013cd99d60881418e1af5d9735e60e1e3abed56952cbfb9432c90b499ad1b805be335c44b3373dc0cba2abc89a7a664092aeb0c6045e779478
+  languageName: node
+  linkType: hard
+
+"@segment/ajv-human-errors@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "@segment/ajv-human-errors@npm:2.11.0"
+  peerDependencies:
+    ajv: ^8.0.0
+  checksum: ab13c5b2d95ffacf5dc6a2b7efaf49c16e850519887d6ffdd4b3c3c266c59acf9c609df742c0705f22def902b961a694efc8dba354cac6a87c0efcb392666a1f
+  languageName: node
+  linkType: hard
+
+"@segment/analytics-browser-actions-braze@npm:^1.3.0":
+  version: 1.6.0
+  resolution: "@segment/analytics-browser-actions-braze@npm:1.6.0"
+  dependencies:
+    "@braze/web-sdk": "npm:@braze/web-sdk@^4.1.0"
+    "@braze/web-sdk-v3": "npm:@braze/web-sdk@^3.5.1"
+    "@segment/actions-core": ^3.76.0
+    "@segment/browser-destination-runtime": ^1.6.0
+  peerDependencies:
+    "@segment/analytics-next": "*"
+  checksum: 7352cfd3c74275e0ec349dd252025c7233f781f79948b0b4c40cd7f36cff58b490b67098687de0da9ca0d4385d7540aba99519d12e79d7315352338f97984448
+  languageName: node
+  linkType: hard
+
 "@segment/analytics-consent-tools@0.0.4, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-tools@workspace:packages/consent/consent-tools"
@@ -1872,6 +1939,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
+    "@segment/analytics-browser-actions-braze": ^1.3.0
     "@segment/analytics-core": 1.3.0
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
@@ -1989,6 +2057,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@segment/browser-destination-runtime@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@segment/browser-destination-runtime@npm:1.6.0"
+  dependencies:
+    "@segment/actions-core": ^3.76.0
+  peerDependencies:
+    "@segment/analytics-next": "*"
+  checksum: 9ac97093ea07fc75a19c4be92a808e41413757193f19bb3f0b35716e165baaa9738f68c99dce953dc58143bb67c70ac935f5233aa9dc26cb1ee7792bddddc094
+  languageName: node
+  linkType: hard
+
+"@segment/destination-subscriptions@npm:^3.28.0":
+  version: 3.28.0
+  resolution: "@segment/destination-subscriptions@npm:3.28.0"
+  dependencies:
+    "@segment/fql-ts": ^1.10.1
+  checksum: 2e4d2e56a91f2646090c7ab3df3ea966f954c69483a6c6ee49de044ffa7837b114730ef8d8b48c79da55b8c060abe9e76e1975e3d36a60abc9daba4dc80c3e33
+  languageName: node
+  linkType: hard
+
 "@segment/facade@npm:^3.4.9":
   version: 3.4.9
   resolution: "@segment/facade@npm:3.4.9"
@@ -2005,6 +2093,15 @@ __metadata:
   version: 1.0.0
   resolution: "@segment/fmt@npm:1.0.0"
   checksum: 1f12ac0559b1df48613f5fb59c729fb003c9ee14ed3f0012978615d417419eb33ece8e9624a588b7e4f0f7504b40e220377a873b59cce3515032d2be2b7484f5
+  languageName: node
+  linkType: hard
+
+"@segment/fql-ts@npm:^1.10.1":
+  version: 1.10.1
+  resolution: "@segment/fql-ts@npm:1.10.1"
+  bin:
+    fql-ts: dist/cjs/index.js
+  checksum: 6f0c03bc5ffcdd48b4f6d0dbfbc9332dee19dc8affd47dfd45d0866e5fd0b61890aec70c50506be368ba1d6dc49b55e164a611d039bca4867dfb69211155cfca
   languageName: node
   linkType: hard
 
@@ -3745,6 +3842,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^18.11.15":
+  version: 18.17.5
+  resolution: "@types/node@npm:18.17.5"
+  checksum: b8c658a99234b99425243c324b641ed7b9ceb6bee6b06421fdc9bb7c58f9a5552e353225cc549e6982462ac384abe1985022ed76e2e4728797f59b21f659ca2b
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^20.1.0, @types/node@npm:^20.1.1":
   version: 20.3.1
   resolution: "@types/node@npm:20.3.1"
@@ -4618,6 +4722,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"abort-controller@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "abort-controller@npm:3.0.0"
+  dependencies:
+    event-target-shim: ^5.0.0
+  checksum: 170bdba9b47b7e65906a28c8ce4f38a7a369d78e2271706f020849c1bfe0ee2067d4261df8bbb66eb84f79208fd5b710df759d64191db58cfba7ce8ef9c54b75
+  languageName: node
+  linkType: hard
+
 "accepts@npm:~1.3.4, accepts@npm:~1.3.5, accepts@npm:~1.3.8":
   version: 1.3.8
   resolution: "accepts@npm:1.3.8"
@@ -4742,7 +4855,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"aggregate-error@npm:^3.0.0":
+"aggregate-error@npm:^3.0.0, aggregate-error@npm:^3.1.0":
   version: 3.1.0
   resolution: "aggregate-error@npm:3.1.0"
   dependencies:
@@ -4810,7 +4923,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ajv@npm:^8.0.0, ajv@npm:^8.9.0":
+"ajv@npm:^8.0.0, ajv@npm:^8.6.3, ajv@npm:^8.9.0":
   version: 8.12.0
   resolution: "ajv@npm:8.12.0"
   dependencies:
@@ -5712,6 +5825,13 @@ __metadata:
   dependencies:
     node-int64: ^0.4.0
   checksum: 9ba4dc58ce86300c862bffc3ae91f00b2a03b01ee07f3564beeeaf82aa243b8b03ba53f123b0b842c190d4399b94697970c8e7cf7b1ea44b61aa28c3526a4449
+  languageName: node
+  linkType: hard
+
+"btoa-lite@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "btoa-lite@npm:1.0.0"
+  checksum: c2d61993b801f8e35a96f20692a45459c753d9baa29d86d1343e714f8d6bbe7069f1a20a5ae868488f3fb137d5bd0c560f6fbbc90b5a71050919d2d2c97c0475
   languageName: node
   linkType: hard
 
@@ -6771,6 +6891,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cross-fetch@npm:^3.1.4":
+  version: 3.1.8
+  resolution: "cross-fetch@npm:3.1.8"
+  dependencies:
+    node-fetch: ^2.6.12
+  checksum: 78f993fa099eaaa041122ab037fe9503ecbbcb9daef234d1d2e0b9230a983f64d645d088c464e21a247b825a08dc444a6e7064adfa93536d3a9454b4745b3632
+  languageName: node
+  linkType: hard
+
 "cross-spawn@npm:^4.0.2":
   version: 4.0.2
   resolution: "cross-spawn@npm:4.0.2"
@@ -6949,6 +7078,13 @@ __metadata:
   version: 2.29.3
   resolution: "date-fns@npm:2.29.3"
   checksum: e01cf5b62af04e05dfff921bb9c9933310ed0e1ae9a81eb8653452e64dc841acf7f6e01e1a5ae5644d0337e9a7f936175fd2cb6819dc122fdd9c5e86c56be484
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.10.7":
+  version: 1.11.9
+  resolution: "dayjs@npm:1.11.9"
+  checksum: a4844d83dc87f921348bb9b1b93af851c51e6f71fa259604809cfe1b49d1230e6b0212dab44d1cb01994c096ad3a77ea1cf18fa55154da6efcc9d3610526ac38
   languageName: node
   linkType: hard
 
@@ -8479,6 +8615,13 @@ __metadata:
   version: 1.8.1
   resolution: "etag@npm:1.8.1"
   checksum: 571aeb3dbe0f2bbd4e4fadbdb44f325fc75335cd5f6f6b6a091e6a06a9f25ed5392f0863c5442acb0646787446e816f13cbfc6edce5b07658541dff573cab1ff
+  languageName: node
+  linkType: hard
+
+"event-target-shim@npm:^5.0.0":
+  version: 5.0.1
+  resolution: "event-target-shim@npm:5.0.1"
+  checksum: 1ffe3bb22a6d51bdeb6bf6f7cf97d2ff4a74b017ad12284cc9e6a279e727dc30a5de6bb613e5596ff4dc3e517841339ad09a7eec44266eccb1aa201a30448166
   languageName: node
   linkType: hard
 
@@ -13245,6 +13388,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-fetch@npm:^2.6.12":
+  version: 2.6.12
+  resolution: "node-fetch@npm:2.6.12"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: 3bc1655203d47ee8e313c0d96664b9673a3d4dd8002740318e9d27d14ef306693a4b2ef8d6525775056fd912a19e23f3ac0d7111ad8925877b7567b29a625592
+  languageName: node
+  linkType: hard
+
 "node-forge@npm:^1":
   version: 1.3.1
   resolution: "node-forge@npm:1.3.1"
@@ -16829,6 +16986,13 @@ __metadata:
   version: 1.0.0
   resolution: "trim@npm:1.0.0"
   checksum: 14e82b1b14f43a26aad26a175136957bae2558356f98fa1004110410d036b22cbd0c1fd0410ed69638d84d21a02d71a8059485bfb192448900c780ac4a085b8f
+  languageName: node
+  linkType: hard
+
+"ts-custom-error@npm:^3.2.0":
+  version: 3.3.1
+  resolution: "ts-custom-error@npm:3.3.1"
+  checksum: 50a1e825fced68d70049bd8d282379a635e43aa023a370fa8e736b12a6edba7f18a2d731fa194ac35303a8b625be56e121bdb31d8a0318250d1a8b277059fce3
   languageName: node
   linkType: hard
 

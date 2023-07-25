@@ -13,7 +13,7 @@ import { pageEnrichment } from '../plugins/page-enrichment'
 import {
   PluginFactory,
   remoteLoader,
-  RemotePlugin
+  RemotePlugin,
 } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
