@@ -1,5 +1,13 @@
 # @segment/analytics-next
 
+## 1.53.2
+
+### Patch Changes
+
+- [#888](https://github.com/segmentio/analytics-next/pull/888) [`f3183f2`](https://github.com/segmentio/analytics-next/commit/f3183f2163d93f98ce2f8dd7830d2bca3b47f537) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix query string parsing bug that was causing events containing the 'search' property with a non string value to be dropped
+
+* [#891](https://github.com/segmentio/analytics-next/pull/891) [`e0c7792`](https://github.com/segmentio/analytics-next/commit/e0c7792924e6f7ba0a36c200c5468141de3b9320) Thanks [@zikaari](https://github.com/zikaari)! - Fix cookie write error
+
 ## 1.53.1
 
 ### Patch Changes
