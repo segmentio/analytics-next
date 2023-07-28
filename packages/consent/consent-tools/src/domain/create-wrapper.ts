@@ -187,11 +187,10 @@ const omitDisabledRemotePlugins = (
     if (isMissingCategories) {
       return true
     }
+    // Enable if all of its consent categories are consented to
     const hasUserConsent = categories.every((c) => consentedCategories[c])
     return hasUserConsent
   }
-
-  // Enable if all of its consent categories are consented to
 
   const results = Object.keys(
     integrations
