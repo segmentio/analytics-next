@@ -8,7 +8,7 @@ import type {
   AnalyticsBrowserSettings,
 } from '../../types'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
-import { assertIntegrationsContainOnly } from './assertions/assert-integration-in-cdn-settings'
+import { assertIntegrationsContainOnly } from './assertions/integrations-assertions'
 
 const DEFAULT_LOAD_SETTINGS = {
   writeKey: 'foo',
