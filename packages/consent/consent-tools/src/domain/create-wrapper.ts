@@ -209,7 +209,7 @@ const omitDisabledRemotePlugins = (
     },
     {
       remotePlugins,
-      integrations,
+      integrations: { ...integrations }, // make shallow copy to avoid mutating original
     }
   )
 
