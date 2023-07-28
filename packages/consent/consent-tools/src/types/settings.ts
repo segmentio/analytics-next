@@ -64,9 +64,6 @@ export interface CreateWrapperSettings {
   shouldEnableIntegration?: (
     integrationCategories: string[],
     categories: Categories,
-    integrationInfo: Pick<
-      CDNSettingsRemotePlugin,
-      'creationName' | 'libraryName'
-    >
+    integrationInfo: Pick<CDNSettingsRemotePlugin, 'creationName'>
   ) => boolean
 }

@@ -113,7 +113,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
           return cdnSettings
         }
 
-        const remotePlugins = omitDisabledRemotePlugins(
+        const { remotePlugins, integrations } = omitDisabledRemotePlugins(
           cdnSettings.remotePlugins,
           cdnSettings.integrations,
           initialCategories,
@@ -121,7 +121,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
           shouldEnableIntegration
         )
 
-        return { ...cdnSettings, remotePlugins }
+        return { ...cdnSettings, remotePlugins, integrations }
       }
 
       return ogLoad.call(analytics, settings, {
@@ -157,15 +157,18 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
   return undefined
 }
 
+type CDNSettingsWithFilteredIntegrations = {
+  remotePlugins: CDNSettingsRemotePlugin[]
+  integrations: CDNSettingsIntegrations
+}
 const omitDisabledRemotePlugins = (
   remotePlugins: CDNSettingsRemotePlugin[],
   integrations: CDNSettingsIntegrations,
   consentedCategories: Categories,
   integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
   shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
-): CDNSettingsRemotePlugin[] =>
-  remotePlugins.filter((plugin) => {
-    const { creationName, libraryName } = plugin
+): CDNSettingsWithFilteredIntegrations => {
+  const isPluginEnabled = (creationName: string) => {
     const categories = integrationCategoryMappings
       ? // allow hardcoding of consent category mappings for testing (or other reasons)
         integrationCategoryMappings[creationName]
@@ -175,7 +178,6 @@ const omitDisabledRemotePlugins = (
     if (shouldEnableIntegration) {
       return shouldEnableIntegration(categories || [], consentedCategories, {
         creationName,
-        libraryName,
       })
     }
 
@@ -185,8 +187,31 @@ const omitDisabledRemotePlugins = (
     if (isMissingCategories) {
       return true
     }
-
-    // Enable if all of its consent categories are consented to
     const hasUserConsent = categories.every((c) => consentedCategories[c])
     return hasUserConsent
-  })
+  }
+
+  // Enable if all of its consent categories are consented to
+
+  const results = Object.keys(
+    integrations
+  ).reduce<CDNSettingsWithFilteredIntegrations>(
+    (acc, creationName) => {
+      if (!isPluginEnabled(creationName)) {
+        // remote disabled action destinations
+        acc.remotePlugins = acc.remotePlugins.filter(
+          (el) => el.creationName !== creationName
+        )
+        // remove disabled classic destinations and locally-installed action destinations
+        delete acc.integrations[creationName]
+      }
+      return acc
+    },
+    {
+      remotePlugins,
+      integrations,
+    }
+  )
+
+  return results
+}
