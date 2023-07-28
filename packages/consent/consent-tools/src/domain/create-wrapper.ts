@@ -211,6 +211,5 @@ const omitDisabledRemotePlugins = (
       integrations: { ...integrations }, // make shallow copy to avoid mutating original
     }
   )
-
   return results
 }
