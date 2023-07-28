@@ -26,6 +26,7 @@ import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
+import { getGlobalAnalytics } from './utils'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -148,9 +149,11 @@ function hasTsubMiddleware(settings: LegacySettings): boolean {
  */
 function flushPreBuffer(
   analytics: Analytics,
-  buffer: PreInitMethodCallBuffer
+  buffer: PreInitMethodCallBuffer,
+  bufferKey?: string
 ): void {
-  buffer.push(...popSnippetWindowBuffer())
+  const calls = getGlobalAnalytics(bufferKey)
+  buffer.push(...popSnippetWindowBuffer(calls))
   flushSetAnonymousID(analytics, buffer)
   flushOn(analytics, buffer)
 }
@@ -160,13 +163,15 @@ function flushPreBuffer(
  */
 async function flushFinalBuffer(
   analytics: Analytics,
-  buffer: PreInitMethodCallBuffer
+  buffer: PreInitMethodCallBuffer,
+  bufferKey?: string
 ): Promise<void> {
+  const calls = getGlobalAnalytics(bufferKey)
   // Call popSnippetWindowBuffer before each flush task since there may be
   // analytics calls during async function calls.
-  buffer.push(...popSnippetWindowBuffer())
+  buffer.push(...popSnippetWindowBuffer(calls))
   await flushAddSourceMiddleware(analytics, buffer)
-  buffer.push(...popSnippetWindowBuffer())
+  buffer.push(...popSnippetWindowBuffer(calls))
   flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()
@@ -312,7 +317,7 @@ async function loadAnalytics(
   Stats.initRemoteMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
-  flushPreBuffer(analytics, preInitBuffer)
+  flushPreBuffer(analytics, preInitBuffer, options.bufferKey)
 
   const ctx = await registerPlugins(
     settings.writeKey,
@@ -340,7 +345,7 @@ async function loadAnalytics(
     analytics.page().catch(console.error)
   }
 
-  await flushFinalBuffer(analytics, preInitBuffer)
+  await flushFinalBuffer(analytics, preInitBuffer, options.bufferKey)
 
   return [analytics, ctx]
 }

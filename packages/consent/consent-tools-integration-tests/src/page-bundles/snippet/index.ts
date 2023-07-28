@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
+import { AnyAnalytics } from '@segment/analytics-consent-tools'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
+import { getGlobalAnalytics } from '@segment/analytics-next'
 
-oneTrust(window.analytics, {
+oneTrust(getGlobalAnalytics() as AnyAnalytics, {
   integrationCategoryMappings: {
     Fullstory: ['C0001'],
     'Actions Amplitude': ['C0004'],
   },
 })
 
-window.analytics.load('9lSrez3BlfLAJ7NOChrqWtILiATiycoc')
-window.analytics.track('Hello from the snippet')
+getGlobalAnalytics()?.load('9lSrez3BlfLAJ7NOChrqWtILiATiycoc')
+getGlobalAnalytics()?.track('Hello from the snippet')

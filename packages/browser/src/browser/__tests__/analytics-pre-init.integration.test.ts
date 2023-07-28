@@ -278,6 +278,29 @@ describe('Pre-initialization', () => {
       expect(onTrackCb).toBeCalledWith('foo', {}, undefined)
       expect(onTrackCb).toBeCalledWith('bar', {}, undefined)
     })
+    test('events can be buffered under a custom window key', async () => {
+      const onTrackCb = jest.fn()
+      const onTrack = ['on', 'track', onTrackCb]
+      const track = ['track', 'foo']
+      const track2 = ['track', 'bar']
+      const identify = ['identify']
+
+      ;(window as any).segment = [onTrack, track, track2, identify]
+
+      await AnalyticsBrowser.standalone(writeKey, { bufferKey: 'segment' })
+
+      await sleep(100) // the snippet does not return a promise (pre-initialization) ... it sometimes has a callback as the third argument.
+      expect(trackSpy).toBeCalledWith('foo')
+      expect(trackSpy).toBeCalledWith('bar')
+      expect(trackSpy).toBeCalledTimes(2)
+
+      expect(identifySpy).toBeCalledTimes(1)
+
+      expect(getOnSpyCalls('track').length).toBe(1)
+      expect(onTrackCb).toBeCalledTimes(2) // gets called once for each track event
+      expect(onTrackCb).toBeCalledWith('foo', {}, undefined)
+      expect(onTrackCb).toBeCalledWith('bar', {}, undefined)
+    })
   })
 
   describe('Emitter methods', () => {

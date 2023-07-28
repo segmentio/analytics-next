@@ -117,6 +117,11 @@ export interface InitOptions {
    * Array of high entropy Client Hints to request. These may be rejected by the user agent - only required hints should be requested.
    */
   highEntropyValuesClientHints?: HighEntropyHint[]
+  /**
+   * Key for the global window property storing the buffered calls
+   * default: analytics
+   */
+  bufferKey?: string
 }
 
 /* analytics-classic stubs */
@@ -489,7 +494,7 @@ export class Analytics
 
   noConflict(): Analytics {
     console.warn(deprecationWarning)
-    window.analytics = _analytics ?? this
+    ;(window as any).analytics = _analytics ?? this
     return this
   }
 

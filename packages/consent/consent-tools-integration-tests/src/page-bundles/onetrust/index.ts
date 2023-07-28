@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser, getGlobalAnalytics } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 
 export const analytics = new AnalyticsBrowser()
@@ -12,4 +12,4 @@ oneTrust(analytics, {
 ;(window as any).analytics = analytics
 
 analytics.load({ writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc' })
-void window.analytics.page().then(console.log)
+void getGlobalAnalytics().page().then(console.log)
