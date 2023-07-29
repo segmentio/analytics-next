@@ -63,7 +63,7 @@ describe('LocalStorage', function () {
     it('should be able to remove a record', function () {
       store.set('x', { a: 'b' })
       expect(store.get('x')).toStrictEqual({ a: 'b' })
-      store.clear('x')
+      store.remove('x')
       expect(store.get('x')).toBe(null)
     })
   })

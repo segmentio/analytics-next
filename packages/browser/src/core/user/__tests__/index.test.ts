@@ -1,12 +1,11 @@
 import assert from 'assert'
 import jar from 'js-cookie'
 import { Group, User } from '..'
-import { LocalStorage, StoreType, Storage } from '../../storage'
+import { LocalStorage, StoreType, Store } from '../../storage'
 import {
   disableCookies,
   disableLocalStorage,
 } from '../../storage/__tests__/test-helpers'
-import { MemoryStorage } from '../../storage/memoryStorage'
 
 function clear(): void {
   document.cookie.split(';').forEach(function (c) {
@@ -149,9 +148,6 @@ describe('user', () => {
       it('should get an id from memory', () => {
         user.id('id')
         assert(user.id() === 'id')
-
-        expect(jar.get(cookieKey)).toBeFalsy()
-        expect(store.get(cookieKey)).toBeFalsy()
       })
 
       it('should get an id when not persisting', () => {
@@ -197,9 +193,6 @@ describe('user', () => {
       it('should get an id from memory', () => {
         user.id('id')
         assert(user.id() === 'id')
-
-        expect(jar.get(cookieKey)).toBeFalsy()
-        expect(store.get(cookieKey)).toBeFalsy()
       })
 
       it('should be null by default', () => {
@@ -340,7 +333,6 @@ describe('user', () => {
       it('should get an id from memory', () => {
         user.anonymousId('anon-id')
         assert(user.anonymousId() === 'anon-id')
-        expect(jar.get('ajs_anonymous_id')).toBeFalsy()
       })
     })
 
@@ -731,7 +723,9 @@ describe('user', () => {
       jar.set('ajs_anonymous_id', expected)
       store.set('ajs_anonymous_id', 'localStorageValue')
       const user = new User({
-        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        storage: {
+          stores: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        },
       })
       expect(user.anonymousId()).toEqual(expected)
     })
@@ -743,7 +737,9 @@ describe('user', () => {
       disableCookies()
       store.set('ajs_anonymous_id', expected)
       const user = new User({
-        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        storage: {
+          stores: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        },
       })
       expect(user.anonymousId()).toEqual(expected)
     })
@@ -751,7 +747,9 @@ describe('user', () => {
     it('persist option overrides any custom storage', () => {
       const setCookieSpy = jest.spyOn(jar, 'set')
       const user = new User({
-        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        storage: {
+          stores: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        },
         persist: false,
       })
       user.id('id')
@@ -765,7 +763,9 @@ describe('user', () => {
     it('disable option overrides any custom storage', () => {
       const setCookieSpy = jest.spyOn(jar, 'set')
       const user = new User({
-        storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        storage: {
+          stores: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+        },
         disable: true,
       })
       user.id('id')
@@ -774,26 +774,6 @@ describe('user', () => {
       expect(jar.get('ajs_user_id')).toBeFalsy()
       expect(store.get('ajs_user_id')).toBeFalsy()
       expect(setCookieSpy.mock.calls.length).toBe(0)
-    })
-
-    it('can use a fully custom storage object', () => {
-      const customStore: Storage = {
-        get type() {
-          return 'something'
-        },
-        get available() {
-          return true
-        },
-        get: jest.fn().mockReturnValue('custom'),
-        set: jest.fn(),
-        clear: jest.fn(),
-        getAndSync: jest.fn().mockReturnValue('custom'),
-      }
-
-      const user = new User({ storage: customStore })
-      user.id('id')
-      expect(customStore.set).toHaveBeenCalled()
-      expect(user.id()).toBe('custom')
     })
   })
 })

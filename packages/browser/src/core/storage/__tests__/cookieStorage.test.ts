@@ -1,6 +1,5 @@
 import { CookieStorage } from '../cookieStorage'
 import jar from 'js-cookie'
-import { disableCookies } from './test-helpers'
 
 describe('cookieStorage', () => {
   function clearCookies() {
@@ -13,23 +12,6 @@ describe('cookieStorage', () => {
 
   afterEach(() => {
     clearCookies()
-  })
-
-  describe('#available', () => {
-    afterEach(() => {
-      jest.restoreAllMocks()
-    })
-
-    it('is available', () => {
-      const cookie = new CookieStorage()
-      expect(cookie.available).toBe(true)
-    })
-
-    it("is unavailable if can't write cookies", () => {
-      disableCookies()
-      const cookie = new CookieStorage()
-      expect(cookie.available).toBe(false)
-    })
   })
 
   describe('cookie options', () => {

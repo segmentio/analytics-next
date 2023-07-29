@@ -1,17 +1,19 @@
-import { Storage, StoreType, StoreTypeWithSettings } from './types'
+import { StoreType, StoreTypeWithSettings } from './types'
 
-export type StorageSettings = Storage | StoreType[]
+export type UniversalStorageSettings = { stores: StoreType[] }
 
-export function isArrayOfStoreType(s: StorageSettings): s is StoreType[] {
+// This is setup this way to permit eventually a different set of settings for custom storage
+export type StorageSettings = UniversalStorageSettings
+
+export function isArrayOfStoreType(
+  s: StorageSettings
+): s is UniversalStorageSettings {
   return (
     s &&
-    Array.isArray(s) &&
-    s.every((e) => Object.values(StoreType).includes(e))
+    s.stores &&
+    Array.isArray(s.stores) &&
+    s.stores.every((e) => Object.values(StoreType).includes(e))
   )
-}
-
-export function isStorageObject(s: StorageSettings): s is Storage {
-  return s && !Array.isArray(s) && typeof s === 'object' && s.get !== undefined
 }
 
 export function isStoreTypeWithSettings(

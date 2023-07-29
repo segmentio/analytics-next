@@ -5,14 +5,12 @@ import {
   CookieOptions,
   UniversalStorage,
   MemoryStorage,
-  Storage,
   StorageObject,
   StorageSettings,
   StoreType,
   applyCookieOptions,
   initializeStorages,
   isArrayOfStoreType,
-  isStorageObject,
 } from '../storage'
 
 export type ID = string | null | undefined
@@ -35,8 +33,8 @@ export interface UserOptions {
   }
 
   /**
-   * Storage system to use
-   * @example new MemoryStorage, [StoreType.Cookie, StoreType.Memory]
+   * Store priority
+   * @example stores: [StoreType.Cookie, StoreType.Memory]
    */
   storage?: StorageSettings
 }
@@ -60,7 +58,7 @@ export class User {
   private anonKey: string
   private cookieOptions?: CookieOptions
 
-  private legacyUserStore: Storage<{
+  private legacyUserStore: UniversalStorage<{
     [k: string]:
       | {
           id?: string
@@ -68,11 +66,11 @@ export class User {
         }
       | string
   }>
-  private traitsStore: Storage<{
+  private traitsStore: UniversalStorage<{
     [k: string]: Traits
   }>
 
-  private identityStore: Storage<{
+  private identityStore: UniversalStorage<{
     [k: string]: string
   }>
 
@@ -235,7 +233,7 @@ export class User {
     options: UserOptions,
     cookieOpts?: CookieOptions,
     filterStores?: (value: StoreType) => boolean
-  ): Storage<T> {
+  ): UniversalStorage<T> {
     let stores: StoreType[] = [
       StoreType.LocalStorage,
       StoreType.Cookie,
@@ -249,16 +247,13 @@ export class User {
 
     // If persistance is disabled we will always fallback to Memory Storage
     if (!options.persist) {
-      return new MemoryStorage<T>()
+      return new UniversalStorage<T>([new MemoryStorage<T>()])
     }
 
     if (options.storage !== undefined && options.storage !== null) {
-      // If the user is sending its own storage implementation we will use that without any modifications
-      if (isStorageObject(options.storage)) {
-        return options.storage as Storage<T>
-      } else if (isArrayOfStoreType(options.storage)) {
+      if (isArrayOfStoreType(options.storage)) {
         // If the user only specified order of stores we will still apply filters and transformations e.g. not using localStorage if localStorageFallbackDisabled
-        stores = options.storage
+        stores = options.storage.stores
       }
     }
 

@@ -46,13 +46,11 @@ import {
   CookieOptions,
   MemoryStorage,
   UniversalStorage,
-  Storage,
   StorageSettings,
   StoreType,
   applyCookieOptions,
   initializeStorages,
   isArrayOfStoreType,
-  isStorageObject,
 } from '../storage'
 
 const deprecationWarning =
@@ -138,7 +136,7 @@ export class Analytics
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
-  private _universalStorage: Storage
+  private _universalStorage: UniversalStorage
 
   initialized = false
   integrations: Integrations
@@ -213,22 +211,19 @@ export class Analytics
     disablePersistance: boolean,
     storageSetting: InitOptions['storage'],
     cookieOptions?: CookieOptions | undefined
-  ): Storage {
+  ): UniversalStorage {
     // DisablePersistance option overrides all, no storage will be used outside of memory even if specified
     if (disablePersistance) {
-      return new MemoryStorage()
+      return new UniversalStorage([new MemoryStorage()])
     } else {
       if (storageSetting) {
         if (isArrayOfStoreType(storageSetting)) {
           // We will create the store with the priority for customer settings
           return new UniversalStorage(
             initializeStorages(
-              applyCookieOptions(storageSetting, cookieOptions)
+              applyCookieOptions(storageSetting.stores, cookieOptions)
             )
           )
-        } else if (isStorageObject(storageSetting)) {
-          // If it is an object we will use the customer provided storage
-          return storageSetting
         }
       }
     }
@@ -245,7 +240,7 @@ export class Analytics
     )
   }
 
-  get storage(): Storage {
+  get storage(): UniversalStorage {
     return this._universalStorage
   }
 

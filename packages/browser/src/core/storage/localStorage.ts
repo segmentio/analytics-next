@@ -1,28 +1,13 @@
-import { BaseStorage, StorageObject, StoreType } from './types'
+import { StorageObject, Store } from './types'
 
 /**
  * Data storage using browser's localStorage
  */
-export class LocalStorage<
-  Data extends StorageObject = StorageObject
-> extends BaseStorage {
+export class LocalStorage<Data extends StorageObject = StorageObject>
+  implements Store<Data>
+{
   private localStorageWarning(key: keyof Data, state: 'full' | 'unavailable') {
     console.warn(`Unable to access ${key}, localStorage may be ${state}`)
-  }
-
-  get type() {
-    return StoreType.LocalStorage
-  }
-
-  get available(): boolean {
-    const test = 'test'
-    try {
-      localStorage.setItem(test, test)
-      localStorage.removeItem(test)
-      return true
-    } catch (e) {
-      return false
-    }
   }
 
   get<K extends keyof Data>(key: K): Data[K] | null {
@@ -50,7 +35,7 @@ export class LocalStorage<
     }
   }
 
-  clear<K extends keyof Data>(key: K): void {
+  remove<K extends keyof Data>(key: K): void {
     try {
       return localStorage.removeItem(key)
     } catch (err) {

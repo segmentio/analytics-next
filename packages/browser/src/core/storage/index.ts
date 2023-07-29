@@ -2,7 +2,7 @@ import { CookieOptions, CookieStorage } from './cookieStorage'
 import { LocalStorage } from './localStorage'
 import { MemoryStorage } from './memoryStorage'
 import { isStoreTypeWithSettings } from './settings'
-import { StoreType, Storage, InitializeStorageArgs } from './types'
+import { StoreType, Store, InitializeStorageArgs } from './types'
 
 export * from './types'
 export * from './localStorage'
@@ -16,7 +16,7 @@ export * from './settings'
  * @param args StoreType and options
  * @returns Storage array
  */
-export function initializeStorages(args: InitializeStorageArgs): Storage[] {
+export function initializeStorages(args: InitializeStorageArgs): Store[] {
   const storages = args.map((s) => {
     let type: StoreType
     let settings

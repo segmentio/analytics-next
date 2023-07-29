@@ -1,20 +1,12 @@
-import { BaseStorage, StorageObject, StoreType } from './types'
+import { Store, StorageObject } from './types'
 
 /**
  * Data Storage using in memory object
  */
-export class MemoryStorage<
-  Data extends StorageObject = StorageObject
-> extends BaseStorage<Data> {
+export class MemoryStorage<Data extends StorageObject = StorageObject>
+  implements Store<Data>
+{
   private cache: Record<string, unknown> = {}
-
-  get type() {
-    return StoreType.Memory
-  }
-
-  get available(): boolean {
-    return true
-  }
 
   get<K extends keyof Data>(key: K): Data[K] | null {
     return (this.cache[key] ?? null) as Data[K] | null
@@ -24,7 +16,7 @@ export class MemoryStorage<
     this.cache[key] = value
   }
 
-  clear<K extends keyof Data>(key: K): void {
+  remove<K extends keyof Data>(key: K): void {
     delete this.cache[key]
   }
 }

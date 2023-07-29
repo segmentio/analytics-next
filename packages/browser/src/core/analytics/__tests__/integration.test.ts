@@ -288,7 +288,13 @@ describe('Analytics', () => {
       const analytics = new Analytics(
         { writeKey: '' },
         {
-          storage: [StoreType.Cookie, StoreType.LocalStorage, StoreType.Memory],
+          storage: {
+            stores: [
+              StoreType.Cookie,
+              StoreType.LocalStorage,
+              StoreType.Memory,
+            ],
+          },
         }
       )
 
@@ -308,7 +314,9 @@ describe('Analytics', () => {
       const analytics = new Analytics(
         { writeKey: '' },
         {
-          storage: [StoreType.Cookie, StoreType.Memory],
+          storage: {
+            stores: [StoreType.Cookie, StoreType.Memory],
+          },
         }
       )
 

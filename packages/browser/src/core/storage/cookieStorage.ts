@@ -1,4 +1,4 @@
-import { BaseStorage, StorageObject, StoreType } from './types'
+import { Store, StorageObject } from './types'
 import jar from 'js-cookie'
 import { tld } from '../user/tld'
 
@@ -15,25 +15,9 @@ export interface CookieOptions {
 /**
  * Data storage using browser cookies
  */
-export class CookieStorage<
-  Data extends StorageObject = StorageObject
-> extends BaseStorage {
-  get available(): boolean {
-    let cookieEnabled = window.navigator.cookieEnabled
-
-    if (!cookieEnabled) {
-      jar.set('ajs:cookies', 'test')
-      cookieEnabled = document.cookie.includes('ajs:cookies')
-      jar.remove('ajs:cookies')
-    }
-
-    return cookieEnabled
-  }
-
-  get type() {
-    return StoreType.Cookie
-  }
-
+export class CookieStorage<Data extends StorageObject = StorageObject>
+  implements Store<Data>
+{
   static get defaults(): CookieOptions {
     return {
       maxage: ONE_YEAR,
@@ -46,7 +30,6 @@ export class CookieStorage<
   private options: Required<CookieOptions>
 
   constructor(options: CookieOptions = CookieStorage.defaults) {
-    super()
     this.options = {
       ...CookieStorage.defaults,
       ...options,
@@ -91,7 +74,7 @@ export class CookieStorage<
     }
   }
 
-  clear<K extends keyof Data>(key: K): void {
+  remove<K extends keyof Data>(key: K): void {
     return jar.remove(key, this.opts())
   }
 }

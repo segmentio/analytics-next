@@ -103,21 +103,20 @@ describe('UniversalStorage', function () {
       expect(us.get('ajs_test_key')).toEqual('💰')
     })
 
-    it('does not write to cookies when cookies are not available', function () {
-      disableCookies()
+    it('handles cookie errors gracefully', function () {
+      disableCookies() // Cookies is going to throw exceptions now
       const us = new UniversalStorage([
         new LocalStorage(),
         new CookieStorage(),
         new MemoryStorage(),
       ])
       us.set('ajs_test_key', '💰')
-      expect(jar.get('ajs_test_key')).toEqual(undefined)
       expect(getFromLS('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
     })
 
     it('does not write to LS when LS is not available', function () {
-      disableLocalStorage()
+      disableLocalStorage() // Localstorage will throw exceptions
       const us = new UniversalStorage([
         new LocalStorage(),
         new CookieStorage(),
@@ -125,7 +124,6 @@ describe('UniversalStorage', function () {
       ])
       us.set('ajs_test_key', '💰')
       expect(jar.get('ajs_test_key')).toEqual('💰')
-      expect(localStorage.getItem('ajs_test_key')).toEqual(null)
       expect(us.get('ajs_test_key')).toEqual('💰')
     })
   })
