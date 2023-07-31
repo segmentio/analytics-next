@@ -113,15 +113,12 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
           return cdnSettings
         }
 
-        const { remotePlugins, integrations } = omitDisabledRemotePlugins(
-          cdnSettings.remotePlugins,
-          cdnSettings.integrations,
+        return disableIntegrations(
+          cdnSettings,
           initialCategories,
           integrationCategoryMappings,
           shouldEnableIntegration
         )
-
-        return { ...cdnSettings, remotePlugins, integrations }
       }
 
       return ogLoad.call(analytics, settings, {
@@ -157,17 +154,14 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
   return undefined
 }
 
-type CDNSettingsWithFilteredIntegrations = {
-  remotePlugins: CDNSettingsRemotePlugin[]
-  integrations: CDNSettingsIntegrations
-}
-const omitDisabledRemotePlugins = (
-  remotePlugins: CDNSettingsRemotePlugin[],
-  integrations: CDNSettingsIntegrations,
+const disableIntegrations = (
+  cdnSettings: CDNSettings,
   consentedCategories: Categories,
   integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
   shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
-): CDNSettingsWithFilteredIntegrations => {
+): CDNSettings => {
+  const { remotePlugins, integrations } = cdnSettings
+
   const isPluginEnabled = (creationName: string) => {
     const categories = integrationCategoryMappings
       ? // allow hardcoding of consent category mappings for testing (or other reasons)
@@ -193,13 +187,11 @@ const omitDisabledRemotePlugins = (
     return hasUserConsent
   }
 
-  const results = Object.keys(
-    integrations
-  ).reduce<CDNSettingsWithFilteredIntegrations>(
+  const results = Object.keys(integrations).reduce<CDNSettings>(
     (acc, creationName) => {
       if (!isPluginEnabled(creationName)) {
         // remote disabled action destinations
-        acc.remotePlugins = acc.remotePlugins.filter(
+        acc.remotePlugins = acc.remotePlugins!.filter(
           (el) => el.creationName !== creationName
         )
         // remove disabled classic destinations and locally-installed action destinations
@@ -208,6 +200,7 @@ const omitDisabledRemotePlugins = (
       return acc
     },
     {
+      ...cdnSettings,
       remotePlugins,
       integrations: { ...integrations }, // make shallow copy to avoid mutating original
     }
