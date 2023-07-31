@@ -8,6 +8,7 @@ import type {
   AnalyticsBrowserSettings,
 } from '../../types'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
+import { assertIntegrationsContainOnly } from './assertions/integrations-assertions'
 
 const DEFAULT_LOAD_SETTINGS = {
   writeKey: 'foo',
@@ -353,19 +354,12 @@ describe(createWrapper, () => {
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
 
       expect(typeof updatedCDNSettings.remotePlugins).toBe('object')
-      // remote plugins should be filtered based on consent settings
-      expect(updatedCDNSettings.remotePlugins).toEqual(
-        mockCdnSettings.remotePlugins?.filter((p) =>
-          // enabled consent
-          [creationNameNoConsentData, creationNameWithConsentMatch].includes(
-            p.creationName
-          )
-        )
-      )
 
-      // integrations should be untouched
-      expect(updatedCDNSettings.integrations).toEqual(
-        mockCdnSettings.integrations
+      // remote plugins should be filtered based on consent settings
+      assertIntegrationsContainOnly(
+        [creationNameNoConsentData, creationNameWithConsentMatch],
+        mockCdnSettings,
+        updatedCDNSettings
       )
     })
 
@@ -387,10 +381,10 @@ describe(createWrapper, () => {
       expect(analyticsLoadSpy).toBeCalled()
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
       // remote plugins should be filtered based on consent settings
-      expect(updatedCDNSettings.remotePlugins).toContainEqual(
-        mockCdnSettings.remotePlugins?.find(
-          (p) => p.creationName === 'mockIntegration'
-        )
+      assertIntegrationsContainOnly(
+        ['mockIntegration'],
+        mockCdnSettings,
+        updatedCDNSettings
       )
     })
 
@@ -412,10 +406,10 @@ describe(createWrapper, () => {
       expect(analyticsLoadSpy).toBeCalled()
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
       // remote plugins should be filtered based on consent settings
-      expect(updatedCDNSettings.remotePlugins).toContainEqual(
-        mockCdnSettings.remotePlugins?.find(
-          (p) => p.creationName === 'mockIntegration'
-        )
+      assertIntegrationsContainOnly(
+        ['mockIntegration'],
+        mockCdnSettings,
+        updatedCDNSettings
       )
     })
 
@@ -436,10 +430,10 @@ describe(createWrapper, () => {
       })
 
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
-      expect(updatedCDNSettings.remotePlugins).not.toContainEqual(
-        mockCdnSettings.remotePlugins?.find(
-          (p) => p.creationName === 'mockIntegration'
-        )
+      assertIntegrationsContainOnly(
+        ['mockIntegation'],
+        mockCdnSettings,
+        updatedCDNSettings
       )
     })
   })
@@ -558,14 +552,11 @@ describe(createWrapper, () => {
         cdnSettings: mockCdnSettings,
       })
       const { updatedCDNSettings } = getAnalyticsLoadLastCall()
-      const foundIntg = updatedCDNSettings.remotePlugins?.find(
-        (el) => el.creationName === 'ENABLED'
+      assertIntegrationsContainOnly(
+        ['ENABLED'],
+        mockCdnSettings,
+        updatedCDNSettings
       )
-      expect(foundIntg).toBeTruthy()
-      const disabledIntg = updatedCDNSettings.remotePlugins?.find(
-        (el) => el.creationName === disabledDestinationCreationName
-      )
-      expect(disabledIntg).toBeFalsy()
     })
   })
 
