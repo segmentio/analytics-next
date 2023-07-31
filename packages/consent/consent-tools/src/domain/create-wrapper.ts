@@ -2,8 +2,6 @@ import {
   Categories,
   CreateWrapper,
   AnyAnalytics,
-  CDNSettingsIntegrations,
-  CDNSettingsRemotePlugin,
   InitOptions,
   CreateWrapperSettings,
   CDNSettings,
@@ -155,7 +153,7 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
 }
 
 const disableIntegrations = (
-  { remotePlugins, integrations }: CDNSettings,
+  cdnSettings: CDNSettings,
   consentedCategories: Categories,
   integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
   shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
@@ -185,22 +183,25 @@ const disableIntegrations = (
     return hasUserConsent
   }
 
-  const results = Object.keys(integrations).reduce(
+  const newCDNSettings = Object.keys(cdnSettings).reduce(
     (acc, creationName) => {
       if (!isPluginEnabled(creationName)) {
-        // remote disabled action destinations
-        acc.remotePlugins = acc.remotePlugins.filter(
-          (el) => el.creationName !== creationName
-        )
+        // remove disabled action destinations
+        acc.remotePlugins =
+          acc.remotePlugins &&
+          acc.remotePlugins.filter((el) => el.creationName !== creationName)
+
         // remove disabled classic destinations and locally-installed action destinations
         delete acc.integrations[creationName]
       }
       return acc
     },
     {
-      remotePlugins: remotePlugins || [],
-      integrations: { ...integrations }, // make shallow copy to avoid mutating original
+      ...cdnSettings,
+      remotePlugins: cdnSettings.remotePlugins,
+      integrations: { ...cdnSettings.integrations }, // make shallow copy to avoid mutating original
     }
   )
-  return results
+
+  return newCDNSettings
 }
