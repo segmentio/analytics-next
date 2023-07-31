@@ -155,13 +155,11 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
 }
 
 const disableIntegrations = (
-  cdnSettings: CDNSettings,
+  { remotePlugins, integrations }: CDNSettings,
   consentedCategories: Categories,
   integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
   shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
 ): CDNSettings => {
-  const { remotePlugins, integrations } = cdnSettings
-
   const isPluginEnabled = (creationName: string) => {
     const categories = integrationCategoryMappings
       ? // allow hardcoding of consent category mappings for testing (or other reasons)
@@ -187,11 +185,11 @@ const disableIntegrations = (
     return hasUserConsent
   }
 
-  const results = Object.keys(integrations).reduce<CDNSettings>(
+  const results = Object.keys(integrations).reduce(
     (acc, creationName) => {
       if (!isPluginEnabled(creationName)) {
         // remote disabled action destinations
-        acc.remotePlugins = acc.remotePlugins!.filter(
+        acc.remotePlugins = acc.remotePlugins.filter(
           (el) => el.creationName !== creationName
         )
         // remove disabled classic destinations and locally-installed action destinations
@@ -200,8 +198,7 @@ const disableIntegrations = (
       return acc
     },
     {
-      ...cdnSettings,
-      remotePlugins,
+      remotePlugins: remotePlugins || [],
       integrations: { ...integrations }, // make shallow copy to avoid mutating original
     }
   )
