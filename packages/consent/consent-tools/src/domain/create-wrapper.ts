@@ -22,6 +22,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     shouldLoad,
     integrationCategoryMappings,
     shouldEnableIntegration,
+    pruneUnmappedCategories,
   } = createWrapperOptions
 
   return (analytics) => {
@@ -65,13 +66,11 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       validateCategories(initialCategories)
 
-      const cdnSettingsP = new Promise<CDNSettings>((resolve) =>
-        analytics.on('initialize', resolve)
-      )
-
-      // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
-      const getFilteredSelectedCategories = async (): Promise<Categories> => {
+      const getPrunedCategories = async (
+        cdnSettingsP: Promise<CDNSettings>
+      ): Promise<Categories> => {
         const cdnSettings = await cdnSettingsP
+        // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
         let allCategories: string[]
         // We need to get all the unique categories so we can prune the consent object down to only the categories that are configured
         // There can be categories that are not included in any integration in the integrations object (e.g. 2 cloud mode categories), which is why we need a special allCategories array
@@ -94,14 +93,27 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         }
 
         const categories = await getCategories()
-        validateCategories(categories)
 
         return pick(categories, allCategories)
       }
 
+      // create getCategories and validate them regardless of whether pruning is turned on or off
+      const getValidCategoriesForConsentStamping = pipe(
+        pruneUnmappedCategories
+          ? getPrunedCategories.bind(
+              this,
+              initializeCDNSettingsEventListener(analytics)
+            )
+          : async () => getCategories(),
+        (categories) => {
+          validateCategories(categories)
+          return categories
+        }
+      )
+
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getFilteredSelectedCategories)
+        createConsentStampingMiddleware(getValidCategoriesForConsentStamping)
       )
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
@@ -204,4 +216,12 @@ const disableIntegrations = (
     }
   )
   return results
+}
+
+const initializeCDNSettingsEventListener = (
+  analytics: AnyAnalytics
+): Promise<CDNSettings> => {
+  return new Promise<CDNSettings>((resolve) =>
+    analytics.on('initialize', resolve)
+  )
 }
