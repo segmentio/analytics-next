@@ -8,5 +8,4 @@ Hello! And thanks for contributing to the Analytics-Next 🎉
 Also make sure to describe how you tested this change, include any gifs or screenshots you find necessary.
 --->
 
-
-[] I've included a changeset (psst. run `yarn changeset`. Read about changesets [here](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md)).
+[ ] I've included a changeset (psst. run `yarn changeset`. Read about changesets [here](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md)).
