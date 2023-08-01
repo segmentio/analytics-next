@@ -6,11 +6,9 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 
 - [🏎️ Quickstart](#-quickstart)
   - [💡 Using with Segment](#-using-with-segment)
-  - [💻 Using as an NPM package](#-using-as-an-npm-package)
+  - [💻 Using as an `npm` package](#-using-as-an-npm-package)
 - [🔌 Plugins](#-plugins)
 - [🐒 Development](#-development)
-- [🧪 Testing](#-testing)
-  - [✅ Unit Testing](#-unit-testing)
 
 ---
 
@@ -24,7 +22,7 @@ The easiest and quickest way to get started with Analytics 2.0 is to [use it thr
 
 2. Start tracking!
 
-## 💻 Using as an NPM package
+## 💻 Using as an `npm` package
 
 1. Install the package
 
@@ -85,35 +83,8 @@ analytics
 ```
 
 ## Custom CDN / API Proxy
-
-Configure `cdnURL` to override `https://cdn.segment.com`.
-```ts
-const analytics = AnalyticsBrowser.load({
-  writeKey,
-  // GET http://cdn.segment.com/v1/projects/<writekey>/settings -> https://MY-CUSTOM-CDN-PROXY.com/v1/project/<writekey>/settings
-  // GET https://cdn.segment.com/next-integrations/actions/...js -> https://MY-CUSTOM-CDN-PROXY.com/next-integrations/actions/...js
-  cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com' // 🔥
- })
-```
-
-Configure `integrations['Segment.io'].apiHost` to override `https://api.segment.io/v1`.
-```ts
-const analytics = AnalyticsBrowser.load(
-    {
-      writeKey,
-      cdnURL: 'https://MY-CUSTOM-CDN-PROXY.com'
-    },
-    {
-      integrations: {
-        'Segment.io': {
-          // https://api.segment.io/v1/t -> https://MY-CUSTOM-API-PROXY.com/t
-          apiHost: 'MY-CUSTOM-API-PROXY.com/v1', // 🔥
-          protocol: 'https'
-        }
-      }
-    }
-  )
-```
+[Self Hosting or Proxying Analytics.js documentation](
+ https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/custom-proxy/#custom-cdn--api-proxy)
 
 ## Usage in Common Frameworks
 ### React
