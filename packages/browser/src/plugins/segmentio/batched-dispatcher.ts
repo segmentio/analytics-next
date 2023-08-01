@@ -1,6 +1,6 @@
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
-import { onPageLeave } from '../../lib/on-page-leave'
+import { onPageChange } from '../../lib/on-page-change'
 
 export type BatchingDispatchConfig = {
   size?: number
@@ -91,10 +91,10 @@ export default function batch(
     }, timeout)
   }
 
-  onPageLeave(() => {
-    pageUnloaded = true
+  onPageChange((unloaded: boolean) => {
+    pageUnloaded = unloaded
 
-    if (buffer.length) {
+    if (pageUnloaded && buffer.length) {
       const reqs = chunks(buffer).map(sendBatch)
       Promise.all(reqs).catch(console.error)
     }
