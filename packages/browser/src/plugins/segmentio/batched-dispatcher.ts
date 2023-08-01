@@ -91,7 +91,7 @@ export default function batch(
     }, timeout)
   }
 
-  onPageChange((unloaded: boolean) => {
+  onPageChange((unloaded) => {
     pageUnloaded = unloaded
 
     if (pageUnloaded && buffer.length) {

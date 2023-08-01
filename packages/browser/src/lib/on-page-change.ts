@@ -7,7 +7,7 @@
  *
  * adapted from https://stackoverflow.com/questions/3239834/window-onbeforeunload-not-working-on-the-ipad/52864508#52864508,
  */
-export const onPageChange = (cb: (...args: boolean[]) => void) => {
+export const onPageChange = (cb: (unloaded: boolean) => void) => {
   let unloaded = false // prevents double firing if both are supported
 
   window.addEventListener('pagehide', () => {
