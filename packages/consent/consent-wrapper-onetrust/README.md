@@ -29,7 +29,6 @@ npm install @segment/analytics-consent-wrapper-onetrust
 yarn add @segment/analytics-consent-wrapper-onetrust
 ```
 
-
 ## For `npm` library users
 
 - Use the following initialization code
