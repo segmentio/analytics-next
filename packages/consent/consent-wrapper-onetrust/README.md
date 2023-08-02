@@ -49,7 +49,6 @@ analytics.load({ writeKey: '<MY_WRITE_KEY'> })
 ```
 
 ## For snippet users (window.analytics) who _also_ use a bundler like webpack
-
 ### _NOTE:_ a pre-bundled version that can be loaded through a `<script>` is on the roadmap, but _not_ supported at this point
 
 - Install the dependency (see directions)
@@ -67,5 +66,3 @@ import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 oneTrust(window.analytics)
 window.analytics.load('<WRITE_KEY>')
 ```
-
-
