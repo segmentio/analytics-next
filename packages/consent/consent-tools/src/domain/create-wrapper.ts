@@ -102,14 +102,16 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
         pruneUnmappedCategories
           ? getPrunedCategories.bind(
               this,
-              initializeCDNSettingsEventListener(analytics)
+              new Promise<CDNSettings>((resolve) =>
+                analytics.on('initialize', resolve)
+              )
             )
-          : async () => getCategories(),
-        (categories) => {
-          validateCategories(categories)
+          : getCategories,
+        async (categories) => {
+          validateCategories(await categories)
           return categories
         }
-      )
+      ) as () => Promise<Categories>
 
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
@@ -216,12 +218,4 @@ const disableIntegrations = (
     }
   )
   return results
-}
-
-const initializeCDNSettingsEventListener = (
-  analytics: AnyAnalytics
-): Promise<CDNSettings> => {
-  return new Promise<CDNSettings>((resolve) =>
-    analytics.on('initialize', resolve)
-  )
 }
