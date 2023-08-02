@@ -4,7 +4,7 @@ This package is for the OneTrust integration for analytics consent
 # Quick Start
 
 ## Configure OneTrust + Segment
-### Ensure your OneTrust SDK is loaded before this library
+### Ensure that the OneTrust Banner SDK is loaded first
 ```html
 <head>
 <!-- This should be included before the Segment snippet -->
