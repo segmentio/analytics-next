@@ -1,5 +1,14 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.0.4
+
+### Patch Changes
+
+- [#919](https://github.com/segmentio/analytics-next/pull/919) [`e3e3971`](https://github.com/segmentio/analytics-next/commit/e3e3971c7e12ca6bc41586531b5468aa3640d922) Thanks [@silesky](https://github.com/silesky)! - Require category IDs for OneTrust mapping (e.g CAT0002, SEG0003), and do not accept category name any more. Reason: documentation is easier, and Segment currently has a 20 char limit on category IDs.
+
+- Updated dependencies [[`70cc6e6`](https://github.com/segmentio/analytics-next/commit/70cc6e61a809bd44a9e34555b64da9a3b8672fdf), [`fd0862c`](https://github.com/segmentio/analytics-next/commit/fd0862c544d4418719863e8f5418b5ab61a9ca5e)]:
+  - @segment/analytics-consent-tools@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
