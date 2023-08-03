@@ -10,12 +10,8 @@ export const analytics = new AnalyticsBrowser()
 // only run on client
 if (typeof window !== 'undefined') {
   const { ONE_TRUST_OPTIONS, WRITEKEY } = getConfig().publicRuntimeConfig
-
   const writeKey = WRITEKEY || getWriteKeyFromQueryString()
-
-  if (ONE_TRUST_OPTIONS) {
-    console.log('ONE_TRUST_OPTIONS', ONE_TRUST_OPTIONS)
-  }
+  ONE_TRUST_OPTIONS && console.log('ONE_TRUST_OPTIONS', ONE_TRUST_OPTIONS)
 
   // load the the OneTrust CMP.
   oneTrust(analytics, ONE_TRUST_OPTIONS)
