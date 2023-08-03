@@ -10,7 +10,17 @@ export const analytics = new AnalyticsBrowser()
 // only run on client
 if (typeof window !== 'undefined') {
   const { ONE_TRUST_OPTIONS, WRITEKEY } = getConfig().publicRuntimeConfig
-  ONE_TRUST_OPTIONS && console.log('ONE_TRUST_OPTIONS', ONE_TRUST_OPTIONS)
+  if (ONE_TRUST_OPTIONS.integrationCategoryMappings) {
+    console.log(
+      'integrationCategoryMappings hardcoded',
+      ONE_TRUST_OPTIONS.integrationCategoryMappings
+    )
+  } else {
+    console.log(
+      'Consent Category mappings assumed to be configured on Segment.io.'
+    )
+  }
+
   const writeKey = WRITEKEY || getWriteKeyFromQueryString()
 
   // load the the OneTrust CMP.
