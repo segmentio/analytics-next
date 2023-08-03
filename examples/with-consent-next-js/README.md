@@ -4,11 +4,12 @@ This is an example of using analytics.js with the OneTrust Consent Management Pl
 [@segment/analytics-consent-wrapper-onetrust](./packages/consent/consent-wrapper-onetrust)
 
 # Quick Start
+1. (_Optional_) To update OneTrust options (e.g. hardcode mappings):
+`cp .env.local.EXAMPLE.js .env.local.js` + modify 
 
-1. Start Server
+2. Start Server
 
 ```sh
 yarn dev
 ```
-
-2. Go to http://localhost:3000?writeKey=MY_WRITEKEY
+3. Open http://localhost:3000?writeKey=MY_WRITEKEY
