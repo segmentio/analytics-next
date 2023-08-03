@@ -41,7 +41,7 @@ export type GroupParams = {
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
-} & IdentityOptions
+} & (IdentityOptions | { userId?: string; anonymousId?: string })
 
 export type IdentifyParams = {
   /**

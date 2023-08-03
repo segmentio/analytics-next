@@ -128,6 +128,19 @@ describe('group', () => {
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('me')
   })
+
+  it('should support groups without userId or anonymousId', async () => {
+    const analytics = createTestAnalytics()
+    analytics.group({
+      groupId: 'coolKids',
+      traits: { foo: 'foo' },
+    })
+    const ctx = await resolveCtx(analytics, 'group')
+
+    expect(ctx.event.traits).toEqual({ foo: 'foo' })
+    expect(ctx.event.anonymousId).toBeUndefined()
+    expect(ctx.event.userId).toBeUndefined()
+  })
 })
 
 describe('identify', () => {
