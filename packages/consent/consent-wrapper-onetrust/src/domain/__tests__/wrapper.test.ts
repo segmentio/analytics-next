@@ -9,15 +9,12 @@ const throwNotImplemented = (): never => {
 const grpFixture = {
   StrictlyNeccessary: {
     CustomGroupId: 'C0001',
-    GroupName: 'Strictly Neccessary Cookies',
   },
   Targeting: {
     CustomGroupId: 'C0004',
-    GroupName: 'Targeting Cookies',
   },
   Performance: {
     CustomGroupId: 'C0005',
-    GroupName: 'Performance Cookies',
   },
 }
 
@@ -112,11 +109,8 @@ describe('High level "integration" tests', () => {
       // contain both consented and denied category
       expect(categories).toEqual({
         C0001: true,
-        'Strictly Neccessary Cookies': true,
         C0004: false,
-        'Targeting Cookies': false,
         C0005: false,
-        'Performance Cookies': false,
       })
     })
   })
