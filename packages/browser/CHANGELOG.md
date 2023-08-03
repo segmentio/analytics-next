@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.53.3
+
+### Patch Changes
+
+- [#915](https://github.com/segmentio/analytics-next/pull/915) [`7072377`](https://github.com/segmentio/analytics-next/commit/7072377c0adae54b844a441fa545763e0ff654ba) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix batching after page navigation
+
 ## 1.53.2
 
 ### Patch Changes
