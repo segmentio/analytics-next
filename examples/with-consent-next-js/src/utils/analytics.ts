@@ -9,10 +9,10 @@ export const analytics = new AnalyticsBrowser()
 
 // only run on client
 if (typeof window !== 'undefined') {
-  const writeKey =
+  const WRITEKEY =
     process.env.NEXT_PUBLIC_WRITEKEY || getWriteKeyFromQueryString()
 
-  const ONE_TRUST_OPTIONS = getConfig().publicRuntimeConfig.ONE_TRUST_OPTIONS
+  const { ONE_TRUST_OPTIONS } = getConfig().publicRuntimeConfig
 
   if (ONE_TRUST_OPTIONS) {
     console.log('ONE_TRUST_OPTIONS', ONE_TRUST_OPTIONS)
@@ -22,7 +22,7 @@ if (typeof window !== 'undefined') {
   oneTrust(analytics, ONE_TRUST_OPTIONS)
 
   // load analytics
-  analytics.load({ writeKey })
+  analytics.load({ writeKey: WRITEKEY })
 
   // Skip this step... this is just for the debugging purposes...
   ;(window.analytics as any) = analytics
