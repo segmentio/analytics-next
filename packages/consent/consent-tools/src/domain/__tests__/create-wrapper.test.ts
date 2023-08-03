@@ -526,6 +526,45 @@ describe(createWrapper, () => {
       expect(analyticsLoadSpy).not.toBeCalled()
     })
   })
+  test.each([
+    {
+      getCategories: () =>
+        ({
+          invalidCategory: 'hello',
+        } as any),
+      returnVal: 'Categories',
+    },
+    {
+      getCategories: () =>
+        Promise.resolve({
+          invalidCategory: 'hello',
+        }) as any,
+      returnVal: 'Promise<Categories>',
+    },
+  ])(
+    'should throw an error if getCategories() returns invalid categories during consent stamping ($returnVal))',
+    async ({ getCategories }) => {
+      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
+      const mockCdnSettings = settingsBuilder.build()
+
+      wrapTestAnalytics({
+        getCategories,
+        shouldLoad: () => {
+          // on first load, we should not get an error because this is a valid category setting
+          return { invalidCategory: true }
+        },
+      })
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      const getCategoriesFn = fn.mock.lastCall[0]
+      await expect(getCategoriesFn()).rejects.toMatchInlineSnapshot(
+        `[ValidationError: [Validation] Consent Categories should be {[categoryName: string]: boolean} (Received: {"invalidCategory":"hello"})]`
+      )
+    }
+  )
 
   describe('shouldEnableIntegration', () => {
     it('should let user customize the logic that determines whether or not a destination is enabled', async () => {
@@ -561,86 +600,140 @@ describe(createWrapper, () => {
   })
 
   describe('Consent Stamping', () => {
-    it('should throw an error if there are no configured categories', async () => {
-      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
-      const mockCdnSettings = settingsBuilder
-        .addActionDestinationSettings({
-          creationName: 'Some Other Plugin',
-        })
-        .build()
+    test.each([
+      {
+        getCategories: () => ({
+          Something: true,
+          SomethingElse: false,
+        }),
+        returnVal: 'Categories',
+      },
+      {
+        getCategories: () =>
+          Promise.resolve({
+            Something: true,
+            SomethingElse: false,
+          }),
+        returnVal: 'Promise<Categories>',
+      },
+    ])(
+      'should, by default, stamp the event with _all_ consent info if getCategories returns $returnVal',
+      async ({ getCategories }) => {
+        const fn = jest.spyOn(
+          ConsentStamping,
+          'createConsentStampingMiddleware'
+        )
+        const mockCdnSettings = settingsBuilder.build()
 
-      wrapTestAnalytics()
-      await analytics.load({
-        ...DEFAULT_LOAD_SETTINGS,
-        cdnSettings: mockCdnSettings,
+        wrapTestAnalytics({
+          getCategories,
+        })
+        await analytics.load({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
+
+        const getCategoriesFn = fn.mock.lastCall[0]
+        await expect(getCategoriesFn()).resolves.toEqual({
+          Something: true,
+          SomethingElse: false,
+        })
+      }
+    )
+
+    describe('pruneUnmappedCategories', () => {
+      it('should throw an error if there are no configured categories', async () => {
+        const fn = jest.spyOn(
+          ConsentStamping,
+          'createConsentStampingMiddleware'
+        )
+        const mockCdnSettings = settingsBuilder
+          .addActionDestinationSettings({
+            creationName: 'Some Other Plugin',
+          })
+          .build()
+
+        wrapTestAnalytics({ pruneUnmappedCategories: true })
+        await analytics.load({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
+
+        const getCategoriesFn = fn.mock.lastCall[0]
+        await expect(() =>
+          getCategoriesFn()
+        ).rejects.toThrowErrorMatchingInlineSnapshot(
+          `"[Validation] Invariant: No consent categories defined in Segment (Received: [])"`
+        )
       })
 
-      const getCategoriesFn = fn.mock.lastCall[0]
-      await expect(() =>
-        getCategoriesFn()
-      ).rejects.toThrowErrorMatchingInlineSnapshot(
-        `"[Validation] Invariant: No consent categories defined in Segment (Received: [])"`
-      )
-    })
+      it('should exclude properties that are not configured based on the allCategories array', async () => {
+        const fn = jest.spyOn(
+          ConsentStamping,
+          'createConsentStampingMiddleware'
+        )
+        const mockCdnSettings = settingsBuilder
+          .addActionDestinationSettings({
+            creationName: 'Some Other Plugin',
+            ...createConsentSettings(['Foo']),
+          })
+          .build()
 
-    it('should exclude properties that are not configured based on the allCategories array', async () => {
-      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
-      const mockCdnSettings = settingsBuilder
-        .addActionDestinationSettings({
-          creationName: 'Some Other Plugin',
-          ...createConsentSettings(['Foo']),
+        ;(mockCdnSettings as any).consentSettings = {
+          allCategories: ['Foo', 'Bar'],
+        }
+
+        wrapTestAnalytics({
+          pruneUnmappedCategories: true,
+          getCategories: () => ({
+            Foo: true,
+            Bar: false,
+            Rand1: false,
+            Rand2: true,
+          }),
         })
-        .build()
+        await analytics.load({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
 
-      ;(mockCdnSettings as any).consentSettings = {
-        allCategories: ['Foo', 'Bar'],
-      }
-
-      wrapTestAnalytics({
-        getCategories: () => ({
+        const getCategoriesFn = fn.mock.lastCall[0]
+        await expect(getCategoriesFn()).resolves.toEqual({
           Foo: true,
           Bar: false,
-          Rand1: false,
-          Rand2: true,
-        }),
-      })
-      await analytics.load({
-        ...DEFAULT_LOAD_SETTINGS,
-        cdnSettings: mockCdnSettings,
-      })
-
-      const getCategoriesFn = fn.mock.lastCall[0]
-      await expect(getCategoriesFn()).resolves.toEqual({
-        Foo: true,
-        Bar: false,
-      })
-    })
-
-    it('should exclude properties that are not configured if integrationCategoryMappings are passed', async () => {
-      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
-      const mockCdnSettings = settingsBuilder
-        .addActionDestinationSettings({
-          creationName: 'Some Other Plugin',
         })
-        .build()
-
-      wrapTestAnalytics({
-        getCategories: () => ({
-          Foo: true,
-          Rand1: true,
-          Rand2: false,
-        }),
-        integrationCategoryMappings: {
-          'Some Other Plugin': ['Foo'],
-        },
-      })
-      await analytics.load({
-        ...DEFAULT_LOAD_SETTINGS,
-        cdnSettings: mockCdnSettings,
       })
 
-      const getCategoriesFn = fn.mock.lastCall[0]
-      await expect(getCategoriesFn()).resolves.toEqual({ Foo: true })
+      it('should exclude properties that are not configured if integrationCategoryMappings are passed', async () => {
+        const fn = jest.spyOn(
+          ConsentStamping,
+          'createConsentStampingMiddleware'
+        )
+        const mockCdnSettings = settingsBuilder
+          .addActionDestinationSettings({
+            creationName: 'Some Other Plugin',
+          })
+          .build()
+
+        wrapTestAnalytics({
+          pruneUnmappedCategories: true,
+          getCategories: () => ({
+            Foo: true,
+            Rand1: true,
+            Rand2: false,
+          }),
+          integrationCategoryMappings: {
+            'Some Other Plugin': ['Foo'],
+          },
+        })
+        await analytics.load({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
+
+        const getCategoriesFn = fn.mock.lastCall[0]
+        await expect(getCategoriesFn()).resolves.toEqual({ Foo: true })
+      })
     })
   })
 })

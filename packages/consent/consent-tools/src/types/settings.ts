@@ -66,4 +66,24 @@ export interface CreateWrapperSettings {
     categories: Categories,
     integrationInfo: Pick<CDNSettingsRemotePlugin, 'creationName'>
   ) => boolean
+
+  /**
+   * Prune consent categories from the `context.consent.categoryPreferences` payload if that category is not mapped to any integration in your Segment.io source.
+   * This is helpful if you want to save on bytes sent to Segment and do need the complete list of CMP's categories for debugging or other reasons.
+   * By default, all consent categories returned by `getCategories()` are sent to Segment.
+   * @default false
+   * ### Example Behavior
+   * You have the following categories mappings defined:
+   * ```
+   * FullStory -> 'CAT002',
+   * Braze -> 'CAT003'
+   * ```
+   * ```ts
+   * // pruneUnmappedCategories = false (default)
+   * { CAT0001: true, CAT0002: true, CAT0003: true }
+   * // pruneUnmappedCategories = true
+   * { CAT0002: true, CAT0003: true  } // pruneUnmappedCategories = true
+   * ```
+   */
+  pruneUnmappedCategories?: boolean
 }
