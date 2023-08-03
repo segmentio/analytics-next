@@ -12,14 +12,14 @@ if (typeof window !== 'undefined') {
   const writeKey =
     process.env.NEXT_PUBLIC_WRITEKEY || getWriteKeyFromQueryString()
 
-  const oneTrustOptions = getConfig().publicRuntimeConfig.ONE_TRUST_OPTIONS
+  const ONE_TRUST_OPTIONS = getConfig().publicRuntimeConfig.ONE_TRUST_OPTIONS
 
-  if (oneTrustOptions) {
-    console.log('oneTrustOptions passed:', oneTrustOptions)
+  if (ONE_TRUST_OPTIONS) {
+    console.log('ONE_TRUST_OPTIONS', ONE_TRUST_OPTIONS)
   }
 
   // load the the OneTrust CMP.
-  oneTrust(analytics, oneTrustOptions)
+  oneTrust(analytics, ONE_TRUST_OPTIONS)
 
   // load analytics
   analytics.load({ writeKey })
