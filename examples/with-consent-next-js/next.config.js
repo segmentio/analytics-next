@@ -1,7 +1,9 @@
 const getEnv = () => {
   try {
     return require('./.env.local.js')
-  } catch (e) {}
+  } catch (e) {
+    // ignore
+  }
 }
 /** @type {import('next').NextConfig} */
 const nextConfig = {
