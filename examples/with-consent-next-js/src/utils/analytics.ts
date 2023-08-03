@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 import { getWriteKeyFromQueryString } from './write-key'
-
+import { oneTrustConfig } from './constants/config'
 export const analytics = new AnalyticsBrowser()
 
 // only run on client
@@ -12,13 +12,7 @@ if (typeof window !== 'undefined') {
     process.env.NEXT_PUBLIC_WRITEKEY || getWriteKeyFromQueryString()
 
   // load the the OneTrust CMP.
-  oneTrust(analytics, {
-    integrationCategoryMappings: {
-      Fullstory: ['C0001', 'NO_MATCH'],
-      'Braze Web Mode (Actions)': ['C0004', 'C0003'],
-    },
-  })
-
+  oneTrust(analytics, oneTrustConfig)
   // load analytics
   analytics.load({ writeKey })
 
