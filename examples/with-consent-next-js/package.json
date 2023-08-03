@@ -1,0 +1,24 @@
+{
+  "name": "@examples/consent-onetrust-next-js",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
+    "@segment/analytics-next": "workspace:^",
+    "@types/node": "^20.4.2",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "next": "^13.4.9",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "eslint-config-next": "^13.4.10"
+  }
+}
