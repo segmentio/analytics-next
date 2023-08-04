@@ -9,8 +9,8 @@ export const analytics = new AnalyticsBrowser()
 
 // only run on client
 if (typeof window !== 'undefined') {
-  const { ONE_TRUST_OPTIONS, WRITEKEY } = getConfig().publicRuntimeConfig
-  if (ONE_TRUST_OPTIONS.integrationCategoryMappings) {
+  const { ONE_TRUST_OPTIONS, WRITEKEY } = getConfig()
+  if (ONE_TRUST_OPTIONS?.integrationCategoryMappings) {
     console.log(
       'integrationCategoryMappings hardcoded',
       ONE_TRUST_OPTIONS.integrationCategoryMappings
