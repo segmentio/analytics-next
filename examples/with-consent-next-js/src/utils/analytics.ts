@@ -3,17 +3,17 @@ import { useEffect } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 import { getWriteKeyFromQueryString } from './write-key'
-import getConfig from 'next/config'
+import { getConfig } from './config'
 
 export const analytics = new AnalyticsBrowser()
 
 // only run on client
 if (typeof window !== 'undefined') {
-  const { ONE_TRUST_OPTIONS, WRITEKEY } = getConfig()
-  if (ONE_TRUST_OPTIONS?.integrationCategoryMappings) {
+  const config = getConfig()
+  if (config.oneTrustOptions.integrationCategoryMappings) {
     console.log(
       'integrationCategoryMappings hardcoded',
-      ONE_TRUST_OPTIONS.integrationCategoryMappings
+      config.oneTrustOptions.integrationCategoryMappings
     )
   } else {
     console.log(
@@ -21,13 +21,11 @@ if (typeof window !== 'undefined') {
     )
   }
 
-  const writeKey = WRITEKEY || getWriteKeyFromQueryString()
-
   // load the the OneTrust CMP.
-  oneTrust(analytics, ONE_TRUST_OPTIONS)
+  oneTrust(analytics, config.oneTrustOptions)
 
   // load analytics
-  analytics.load({ writeKey })
+  analytics.load({ writeKey: config.writeKey })
 
   // Skip this step... this is just for the debugging purposes...
   ;(window.analytics as any) = analytics
