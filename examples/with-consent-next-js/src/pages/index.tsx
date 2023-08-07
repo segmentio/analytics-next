@@ -14,16 +14,28 @@ const useGroups = () => {
 
   const setGroups = () => {
     // @ts-ignore
-    const data = Object.fromEntries(
+    const data =
       // @ts-ignore
       window.OneTrust.GetDomainData()
         // @ts-ignore
-        .Groups.map((el) => {
-          if (!getActiveGroups().includes(el.CustomGroupId)) return null
-          return [el.CustomGroupId, el.GroupName]
-        })
-        .filter(Boolean)
-    )
+        .Groups.reduce(
+          // @ts-ignore
+          (acc, el) => {
+            if (getActiveGroups().includes(el.CustomGroupId)) {
+              acc.enabled = {
+                ...acc.enabled,
+                [el.CustomGroupId]: el.GroupName,
+              }
+            } else {
+              acc.disabled = {
+                ...acc.disabled,
+                [el.CustomGroupId]: el.GroupName,
+              }
+            }
+            return acc
+          },
+          { enabled: {}, disabled: {} }
+        )
 
     _setGroups(data)
   }
