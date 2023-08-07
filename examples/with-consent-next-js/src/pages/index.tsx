@@ -93,7 +93,7 @@ export default function Home() {
           </div>
           {ctx.event?.context && (
             <>
-              <h2>Track Context</h2>
+              <h2>Track Context Payload</h2>
               <pre>{JSON.stringify(ctx.event?.context, undefined, 2)}</pre>
             </>
           )}
