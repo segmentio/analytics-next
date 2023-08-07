@@ -75,15 +75,7 @@ export default function Home() {
       <main>
         <div>
           <h1>Consent w/ Segment Analytics</h1>
-          <button
-            onClick={() =>
-              analytics.track('hello world').then((ctx) => {
-                setContext(ctx)
-              })
-            }
-          >
-            Click to track event
-          </button>
+
           <div>
             <h2>Enabled ✅</h2>
             <pre>{JSON.stringify(groups.enabled, undefined, 2)}</pre>
@@ -91,6 +83,17 @@ export default function Home() {
             <h2>Disabled / Not Configured ❌</h2>
             <pre>{JSON.stringify(groups.disabled, undefined, 2)}</pre>
           </div>
+          <br />
+          <br />
+          <button
+            onClick={() =>
+              analytics.track('hello world').then((ctx) => {
+                setContext(ctx)
+              })
+            }
+          >
+            Send track event
+          </button>
           {ctx.event?.context && (
             <>
               <h2>Track Context Payload</h2>
