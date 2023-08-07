@@ -59,8 +59,8 @@ export default function Home() {
     query: { writeKey },
   } = useRouter()
 
+  const [ctx, setContext] = React.useState({} as any)
   const groups = useGroups()
-
   return (
     <>
       <Head>
@@ -75,7 +75,13 @@ export default function Home() {
       <main>
         <div>
           <h1>Consent w/ Segment Analytics</h1>
-          <button onClick={() => analytics.track('hello world')}>
+          <button
+            onClick={() =>
+              analytics.track('hello world').then((ctx) => {
+                setContext(ctx)
+              })
+            }
+          >
             Click to track event
           </button>
           <div>
@@ -85,7 +91,12 @@ export default function Home() {
             <h2>Disabled / Not Configured ❌</h2>
             <pre>{JSON.stringify(groups.disabled, undefined, 2)}</pre>
           </div>
-
+          {ctx.event?.context && (
+            <>
+              <h2>Track Context</h2>
+              <pre>{JSON.stringify(ctx.event?.context, undefined, 2)}</pre>
+            </>
+          )}
           <p>
             For debugging. Please check console (window.analytics should be
             available)
