@@ -1,15 +1,17 @@
 import { CookieOptions } from './cookieStorage'
 
+export const StoreType = {
+  Cookie: 'cookie',
+  LocalStorage: 'localStorage',
+  Memory: 'memory',
+} as const
+
 /**
  * Known Storage Types
  *
  * Convenience settings for storage systems that AJS includes support for
  */
-export enum StoreType {
-  Cookie = 'cookie',
-  LocalStorage = 'localStorage',
-  Memory = 'memory',
-}
+export type StoreType = typeof StoreType[keyof typeof StoreType]
 
 export type StorageObject = Record<string, unknown>
 
@@ -41,7 +43,7 @@ export interface Store<Data extends StorageObject = StorageObject> {
 
 export interface StoreTypeWithSettings<T extends StoreType = StoreType> {
   name: T
-  settings?: T extends StoreType.Cookie ? CookieOptions : never
+  settings?: T extends 'cookie' ? CookieOptions : never
 }
 
 export type InitializeStorageArgs = (StoreTypeWithSettings | StoreType)[]

@@ -1,7 +1,7 @@
 import assert from 'assert'
 import jar from 'js-cookie'
 import { Group, User } from '..'
-import { LocalStorage, StoreType, Store } from '../../storage'
+import { LocalStorage, StoreType } from '../../storage'
 import {
   disableCookies,
   disableLocalStorage,
