@@ -3,47 +3,51 @@ import Script from 'next/script'
 import { analytics } from '@/utils/analytics'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React, { use, useEffect } from 'react'
+import React from 'react'
+
+declare global {
+  interface Window {
+    OnetrustActiveGroups: string
+    OneTrust: {
+      OnConsentChanged: (callback: () => void) => void
+      GetDomainData: () => {
+        Groups: { CustomGroupId: string; GroupName: string }[]
+      }
+    }
+  }
+}
 
 const getActiveGroups = (): string[] =>
-  // @ts-ignore
   window.OnetrustActiveGroups.trim().split(',').filter(Boolean)
 
 const useGroups = () => {
-  const [groups, _setGroups] = React.useState({})
+  const [groups, _setGroups] = React.useState({ enabled: {}, disabled: {} })
 
   const setGroups = () => {
-    // @ts-ignore
-    const data =
-      // @ts-ignore
-      window.OneTrust.GetDomainData()
-        // @ts-ignore
-        .Groups.reduce(
-          // @ts-ignore
-          (acc, el) => {
-            if (getActiveGroups().includes(el.CustomGroupId)) {
-              acc.enabled = {
-                ...acc.enabled,
-                [el.CustomGroupId]: el.GroupName,
-              }
-            } else {
-              acc.disabled = {
-                ...acc.disabled,
-                [el.CustomGroupId]: el.GroupName,
-              }
-            }
-            return acc
-          },
-          { enabled: {}, disabled: {} }
-        )
+    const data = window.OneTrust.GetDomainData().Groups.reduce(
+      (acc, el) => {
+        if (getActiveGroups().includes(el.CustomGroupId)) {
+          acc.enabled = {
+            ...acc.enabled,
+            [el.CustomGroupId]: el.GroupName,
+          }
+        } else {
+          acc.disabled = {
+            ...acc.disabled,
+            [el.CustomGroupId]: el.GroupName,
+          }
+        }
+        return acc
+      },
+      { enabled: {}, disabled: {} }
+    )
 
     _setGroups(data)
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
     ;(window as any).OptanonWrapper = function () {
       setGroups()
-      // @ts-ignore
       window.OneTrust.OnConsentChanged(() => setGroups())
     }
   }, [])
@@ -75,7 +79,11 @@ export default function Home() {
             Click to track event
           </button>
           <div>
-            <pre>{JSON.stringify(groups, undefined, 2)}</pre>
+            <h2>Enabled ✅</h2>
+            <pre>{JSON.stringify(groups.enabled, undefined, 2)}</pre>
+
+            <h2>Disabled / Not Configured ❌</h2>
+            <pre>{JSON.stringify(groups.disabled, undefined, 2)}</pre>
           </div>
 
           <p>
