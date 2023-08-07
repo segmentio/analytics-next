@@ -3,11 +3,47 @@ import Script from 'next/script'
 import { analytics } from '@/utils/analytics'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import React, { use, useEffect } from 'react'
+
+const getActiveGroups = (): string[] =>
+  // @ts-ignore
+  window.OnetrustActiveGroups.trim().split(',').filter(Boolean)
+
+const useGroups = () => {
+  const [groups, _setGroups] = React.useState({})
+
+  const setGroups = () => {
+    // @ts-ignore
+    const data = Object.fromEntries(
+      // @ts-ignore
+      window.OneTrust.GetDomainData()
+        // @ts-ignore
+        .Groups.map((el) => {
+          if (!getActiveGroups().includes(el.CustomGroupId)) return null
+          return [el.CustomGroupId, el.GroupName]
+        })
+        .filter(Boolean)
+    )
+
+    _setGroups(data)
+  }
+
+  useEffect(() => {
+    ;(window as any).OptanonWrapper = function () {
+      setGroups()
+      // @ts-ignore
+      window.OneTrust.OnConsentChanged(() => setGroups())
+    }
+  }, [])
+  return groups
+}
 
 export default function Home() {
   const {
     query: { writeKey },
   } = useRouter()
+
+  const groups = useGroups()
 
   return (
     <>
@@ -26,6 +62,9 @@ export default function Home() {
           <button onClick={() => analytics.track('hello world')}>
             Click to track event
           </button>
+          <div>
+            <pre>{JSON.stringify(groups, undefined, 2)}</pre>
+          </div>
 
           <p>
             For debugging. Please check console (window.analytics should be

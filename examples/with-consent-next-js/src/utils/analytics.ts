@@ -2,7 +2,6 @@ import { usePathname, useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-import { getWriteKeyFromQueryString } from './write-key'
 import { getConfig } from './config'
 
 export const analytics = new AnalyticsBrowser()
@@ -10,16 +9,6 @@ export const analytics = new AnalyticsBrowser()
 // only run on client
 if (typeof window !== 'undefined') {
   const config = getConfig()
-  if (config.oneTrustOptions.integrationCategoryMappings) {
-    console.log(
-      'integrationCategoryMappings hardcoded',
-      config.oneTrustOptions.integrationCategoryMappings
-    )
-  } else {
-    console.log(
-      'Consent Category mappings assumed to be configured on Segment.io.'
-    )
-  }
 
   // load the the OneTrust CMP.
   oneTrust(analytics, config.oneTrustOptions)

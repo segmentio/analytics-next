@@ -24,8 +24,13 @@ interface Config {
 }
 
 export const getConfig = (): Config => {
-  const { ONE_TRUST_OPTIONS, WRITEKEY, ONETRUST_API_KEY } = nextGetConfig()
-  const writeKey = WRITEKEY || getWriteKeyFromQueryString()
+  const {
+    publicRuntimeConfig: {
+      WRITEKEY: writeKey,
+      ONETRUST_API_KEY,
+      ONETRUST_OPTIONS,
+    },
+  } = nextGetConfig()
   const validationErrorMessages = []
   if (!writeKey) {
     validationErrorMessages.push(
@@ -47,7 +52,7 @@ export const getConfig = (): Config => {
     writeKey,
     oneTrustOptions: {
       integrationCategoryMappings:
-        ONE_TRUST_OPTIONS?.integrationCategoryMappings,
+        ONETRUST_OPTIONS?.integrationCategoryMappings,
     },
   }
 }

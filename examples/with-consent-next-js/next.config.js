@@ -7,6 +7,7 @@ const config = (() => {
 })()
 
 /** @type {import('next').NextConfig} */
+console.log(config)
 const nextConfig = {
   publicRuntimeConfig: config,
   serverRuntimeConfig: config,
