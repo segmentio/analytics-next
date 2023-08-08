@@ -7,6 +7,20 @@ import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 import { version } from '../../../generated/version'
 
+/**
+ * Filters out the calls made for probing cookie availability
+ */
+const ignoreProbeCookieWrites = (
+  fn: jest.SpyInstance<
+    string | undefined,
+    [
+      name: string,
+      value: string | object,
+      options?: cookie.CookieAttributes | undefined
+    ]
+  >
+) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies_check')
+
 describe('before loading', () => {
   let jsdom: JSDOM
 
@@ -55,7 +69,7 @@ describe('before loading', () => {
   describe('#normalize', () => {
     let object: SegmentEvent
     let defaultCtx: any
-    const withSearchParams = (search?: string) => {
+    const withSearchParams = (search?: any) => {
       object.context = { page: { search } }
     }
 
@@ -285,6 +299,18 @@ describe('before loading', () => {
       assert(obj.context.campaign.name === 'overrideName')
     })
 
+    it('should allow override of .search with object', () => {
+      withSearchParams({
+        someObject: 'foo',
+      })
+
+      normalize(analytics, object, options, {})
+      assert(object)
+      assert(object.context)
+      assert(object.context.campaign === undefined)
+      assert(object.context.referrer === undefined)
+    })
+
     it('should add .referrer.id and .referrer.type (cookies)', () => {
       withSearchParams('?utm_source=source&urid=medium')
 
@@ -317,7 +343,7 @@ describe('before loading', () => {
       expect(object.context.referrer.id).toEqual('medium')
       assert(object.context.referrer.type === 'millennial-media')
       expect(cookie.get('s:context.referrer')).toBeUndefined()
-      expect(setCookieSpy).not.toHaveBeenCalled()
+      expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
     })
 
     it('should add .referrer.id and .referrer.type from cookie', () => {

@@ -1,6 +1,7 @@
 import { pick } from '../../lib/pick'
 import type { Context } from '../../core/context'
 import type { Plugin } from '../../core/plugin'
+import { EventProperties } from '@segment/analytics-core'
 
 interface PageDefault {
   [key: string]: unknown
@@ -75,21 +76,25 @@ function enrichPageContext(ctx: Context): Context {
 
   const defaultPageContext = pageDefaults()
 
-  const pageContextFromEventProps =
-    event.properties && pick(event.properties, Object.keys(defaultPageContext))
-
-  event.context.page = {
-    ...defaultPageContext,
-    ...pageContextFromEventProps,
-    ...event.context.page,
-  }
+  let pageContextFromEventProps: Pick<EventProperties, string> | undefined =
+    undefined
 
   if (event.type === 'page') {
+    pageContextFromEventProps =
+      event.properties &&
+      pick(event.properties, Object.keys(defaultPageContext))
+
     event.properties = {
       ...defaultPageContext,
       ...event.properties,
       ...(event.name ? { name: event.name } : {}),
     }
+  }
+
+  event.context.page = {
+    ...defaultPageContext,
+    ...pageContextFromEventProps,
+    ...event.context.page,
   }
 
   return ctx

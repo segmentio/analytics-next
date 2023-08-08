@@ -2,8 +2,6 @@ import {
   Categories,
   CreateWrapper,
   AnyAnalytics,
-  CDNSettingsIntegrations,
-  CDNSettingsRemotePlugin,
   InitOptions,
   CreateWrapperSettings,
   CDNSettings,
@@ -12,6 +10,7 @@ import { validateCategories, validateOptions } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
+import { ValidationError } from './validation/validation-error'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   validateOptions(createWrapperOptions)
@@ -23,6 +22,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     shouldLoad,
     integrationCategoryMappings,
     shouldEnableIntegration,
+    pruneUnmappedCategories,
   } = createWrapperOptions
 
   return (analytics) => {
@@ -66,15 +66,11 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
       validateCategories(initialCategories)
 
-      const cdnSettingsP = new Promise<CDNSettings>((resolve) =>
-        analytics.on('initialize', resolve)
-      )
-
-      // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
-      const getFilteredSelectedCategories = async (): Promise<
-        Categories | undefined
-      > => {
+      const getPrunedCategories = async (
+        cdnSettingsP: Promise<CDNSettings>
+      ): Promise<Categories> => {
         const cdnSettings = await cdnSettingsP
+        // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
         let allCategories: string[]
         // We need to get all the unique categories so we can prune the consent object down to only the categories that are configured
         // There can be categories that are not included in any integration in the integrations object (e.g. 2 cloud mode categories), which is why we need a special allCategories array
@@ -90,16 +86,36 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
 
         if (!allCategories.length) {
           // No configured integrations found, so no categories will be sent (should not happen unless there's a configuration error)
-          return undefined
+          throw new ValidationError(
+            'Invariant: No consent categories defined in Segment',
+            []
+          )
         }
 
         const categories = await getCategories()
+
         return pick(categories, allCategories)
       }
 
+      // create getCategories and validate them regardless of whether pruning is turned on or off
+      const getValidCategoriesForConsentStamping = pipe(
+        pruneUnmappedCategories
+          ? getPrunedCategories.bind(
+              this,
+              new Promise<CDNSettings>((resolve) =>
+                analytics.on('initialize', resolve)
+              )
+            )
+          : getCategories,
+        async (categories) => {
+          validateCategories(await categories)
+          return categories
+        }
+      ) as () => Promise<Categories>
+
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getFilteredSelectedCategories)
+        createConsentStampingMiddleware(getValidCategoriesForConsentStamping)
       )
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
@@ -109,15 +125,12 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
           return cdnSettings
         }
 
-        const remotePlugins = omitDisabledRemotePlugins(
-          cdnSettings.remotePlugins,
-          cdnSettings.integrations,
+        return disableIntegrations(
+          cdnSettings,
           initialCategories,
           integrationCategoryMappings,
           shouldEnableIntegration
         )
-
-        return { ...cdnSettings, remotePlugins }
       }
 
       return ogLoad.call(analytics, settings, {
@@ -153,15 +166,15 @@ const getConsentCategories = (integration: unknown): string[] | undefined => {
   return undefined
 }
 
-const omitDisabledRemotePlugins = (
-  remotePlugins: CDNSettingsRemotePlugin[],
-  integrations: CDNSettingsIntegrations,
+const disableIntegrations = (
+  cdnSettings: CDNSettings,
   consentedCategories: Categories,
   integrationCategoryMappings: CreateWrapperSettings['integrationCategoryMappings'],
   shouldEnableIntegration: CreateWrapperSettings['shouldEnableIntegration']
-): CDNSettingsRemotePlugin[] =>
-  remotePlugins.filter((plugin) => {
-    const { creationName, libraryName } = plugin
+): CDNSettings => {
+  const { remotePlugins, integrations } = cdnSettings
+
+  const isPluginEnabled = (creationName: string) => {
     const categories = integrationCategoryMappings
       ? // allow hardcoding of consent category mappings for testing (or other reasons)
         integrationCategoryMappings[creationName]
@@ -171,7 +184,6 @@ const omitDisabledRemotePlugins = (
     if (shouldEnableIntegration) {
       return shouldEnableIntegration(categories || [], consentedCategories, {
         creationName,
-        libraryName,
       })
     }
 
@@ -182,6 +194,28 @@ const omitDisabledRemotePlugins = (
       return true
     }
 
-    const hasUserConsent = categories.some((c) => consentedCategories[c])
+    // Enable if all of its consent categories are consented to
+    const hasUserConsent = categories.every((c) => consentedCategories[c])
     return hasUserConsent
-  })
+  }
+
+  const results = Object.keys(integrations).reduce<CDNSettings>(
+    (acc, creationName) => {
+      if (!isPluginEnabled(creationName)) {
+        // remote disabled action destinations
+        acc.remotePlugins =
+          acc.remotePlugins &&
+          acc.remotePlugins.filter((el) => el.creationName !== creationName)
+        // remove disabled classic destinations and locally-installed action destinations
+        delete acc.integrations[creationName]
+      }
+      return acc
+    },
+    {
+      ...cdnSettings,
+      remotePlugins,
+      integrations: { ...integrations }, // make shallow copy to avoid mutating original
+    }
+  )
+  return results
+}

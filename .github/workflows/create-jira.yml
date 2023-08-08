@@ -1,0 +1,41 @@
+name: Create Jira Ticket
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  create_jira:
+    name: Create Jira Ticket
+    runs-on: ubuntu-latest
+    environment: IssueTracker
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+      - name: Login
+        uses: atlassian/gajira-login@master
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_TOKEN }}
+
+      - name: Create
+        id: create
+        uses: atlassian/gajira-create@master
+        with:
+          project: LIBWEB
+          issuetype: Bug
+          summary: |
+            [${{ github.event.repository.name }}] (${{ github.event.issue.number }}): ${{ github.event.issue.title }}
+          description: |
+            Github Link: ${{ github.event.issue.html_url }}
+            ${{ github.event.issue.body }}
+          # Parent and Epic Link fields (set to same)
+          fields: '{
+            "parent": {"key": "LIBWEB-1444"},
+            "customfield_10002": "LIBWEB-1444"
+            }'
+
+      - name: Log created issue
+        run: echo "Issue ${{ steps.create.outputs.issue }} was created"

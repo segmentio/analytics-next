@@ -128,7 +128,8 @@ export function normalize(
   const ctx = json.context
 
   // This guard against missing ctx.page should not be neccessary, since context.page is always defined
-  const query: string = ctx.page?.search || ''
+  const query: string =
+    typeof ctx.page?.search === 'string' ? ctx.page?.search : ''
 
   delete json.options
   json.writeKey = settings?.apiKey

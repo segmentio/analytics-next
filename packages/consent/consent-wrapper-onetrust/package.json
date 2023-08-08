@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -12,6 +12,7 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
+    "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-wrapper-onetrust",
@@ -25,7 +26,7 @@
     "jest": "yarn run -T jest"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "0.0.2"
+    "@segment/analytics-consent-tools": "0.0.4"
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",
@@ -33,5 +34,8 @@
     "directory": "packages/consent/consent-wrapper-onetrust",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "devDependencies": {
+    "@internal/test-helpers": "workspace:^"
   }
 }

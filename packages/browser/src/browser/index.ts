@@ -39,6 +39,17 @@ export interface LegacyIntegrationConfiguration {
 
   bundlingStatus?: string
 
+  /**
+   * Consent settings for the integration
+   */
+  consentSettings?: {
+    /**
+     * Consent categories for the integration
+     * @example ["Analytics", "Advertising", "CAT001"]
+     */
+    categories: string[]
+  }
+
   // Segment.io specific
   retryQueue?: boolean
 
@@ -64,6 +75,18 @@ export interface LegacySettings {
   legacyVideoPluginsEnabled?: boolean
 
   remotePlugins?: RemotePlugin[]
+
+  /**
+   * Top level consent settings
+   */
+  consentSettings?: {
+    /**
+     * All unique consent categories.
+     * There can be categories in this array that are important for consent that are not included in any integration  (e.g. 2 cloud mode categories).
+     * @example ["Analytics", "Advertising", "CAT001"]
+     */
+    allCategories: string[]
+  }
 }
 
 export interface AnalyticsBrowserSettings extends AnalyticsSettings {

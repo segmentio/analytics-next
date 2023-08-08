@@ -16,6 +16,20 @@ function clear(): void {
   localStorage.clear()
 }
 
+/**
+ * Filters out the calls made for probing cookie availability
+ */
+const ignoreProbeCookieWrites = (
+  fn: jest.SpyInstance<
+    string | undefined,
+    [
+      name: string,
+      value: string | object,
+      options?: jar.CookieAttributes | undefined
+    ]
+  >
+) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies_check')
+
 let store: LocalStorage
 beforeEach(function () {
   store = new LocalStorage()
@@ -56,7 +70,7 @@ describe('user', () => {
       assert(user.anonymousId()?.length === 36)
       expect(jar.get('ajs_anonymous_id')).toBeUndefined()
       expect(localStorage.getItem('ajs_anonymous_id')).toBeNull()
-      expect(setCookieSpy.mock.calls.length).toBe(0)
+      expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
     })
 
     it('should not overwrite anonymous id', () => {
@@ -206,7 +220,7 @@ describe('user', () => {
         user.id('foo')
 
         assert(user.anonymousId() === prev)
-        expect(setCookieSpy.mock.calls.length).toBe(0)
+        expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
       })
 
       it('should reset anonymousId if the user id changed', () => {
@@ -215,7 +229,7 @@ describe('user', () => {
         user.id('baz')
         assert(user.anonymousId() !== prev)
         assert(user.anonymousId()?.length === 36)
-        expect(setCookieSpy.mock.calls.length).toBe(0)
+        expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
       })
 
       it('should not reset anonymousId if the user id changed to null', () => {
@@ -224,7 +238,7 @@ describe('user', () => {
         user.id(null)
         assert(user.anonymousId() === prev)
         assert(user.anonymousId()?.length === 36)
-        expect(setCookieSpy.mock.calls.length).toBe(0)
+        expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
       })
     })
 
@@ -809,7 +823,7 @@ describe('group', () => {
     expect(group.id()).toBe('gid')
     expect(jar.get('ajs_group_id')).toBeFalsy()
     expect(store.get('ajs_group_id')).toBeFalsy()
-    expect(setCookieSpy.mock.calls.length).toBe(0)
+    expect(ignoreProbeCookieWrites(setCookieSpy).length).toBe(0)
   })
 
   it('behaves the same as user', () => {

@@ -7,13 +7,12 @@ const normalizeActiveGroupIds = (c: string): string[] =>
 
 type GroupInfoDto = {
   CustomGroupId: string
-  GroupName: string
 }
 
 /**
  * The data model used by the OneTrust lib
  */
-interface OneTrustGlobal {
+export interface OneTrustGlobal {
   GetDomainData: () => {
     Groups: GroupInfoDto[]
   }
@@ -43,13 +42,11 @@ export const getConsentedGroupIds = (): string[] => {
 }
 
 export type GroupInfo = {
-  customGroupId: string
-  groupName: string
+  groupId: string
 }
 
 const normalizeGroupInfo = (groupInfo: GroupInfoDto): GroupInfo => ({
-  customGroupId: groupInfo.CustomGroupId.trim(),
-  groupName: groupInfo.GroupName.trim(), // should we allow groupName?
+  groupId: groupInfo.CustomGroupId.trim(),
 })
 
 /**
@@ -73,7 +70,7 @@ export const getGroupData = (): UserConsentGroupData => {
   // partition all groups into "consent" or "deny"
   const userConsentGroupData = getAllGroups().reduce<UserConsentGroupData>(
     (acc, group) => {
-      if (userSetConsentGroupIds.includes(group.customGroupId)) {
+      if (userSetConsentGroupIds.includes(group.groupId)) {
         acc.userSetConsentGroups.push(group)
       } else {
         acc.userDeniedConsentGroups.push(group)
