@@ -126,5 +126,19 @@ describe('UniversalStorage', function () {
       expect(jar.get('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
     })
+
+    it('handles cookie getter overrides gracefully', function () {
+      ;(document as any).__defineGetter__('cookie', function () {
+        return ''
+      })
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+      us.set('ajs_test_key', '💰')
+      expect(getFromLS('ajs_test_key')).toEqual('💰')
+      expect(us.get('ajs_test_key')).toEqual('💰')
+    })
   })
 })
