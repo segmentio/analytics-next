@@ -1,5 +1,6 @@
+// if you want to hardcode the mappings, cp this file to .env.local.js and edit it
 module.exports = {
-  WRITEKEY: undefined, // REQUIRED
-  ONETRUST_API_KEY: undefined, // REQUIRED (same as data-domain-script)
-  ONE_TRUST_OPTIONS: {}, // not required
+  ONE_TRUST_OPTIONS: {
+    integrationCategoryMappings: {},
+  }, 
 }

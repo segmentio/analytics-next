@@ -7,7 +7,8 @@ const config = (() => {
 })()
 
 /** @type {import('next').NextConfig} */
-console.log(config)
+console.log('.env.local.js detected', config)
+
 const nextConfig = {
   publicRuntimeConfig: config,
   serverRuntimeConfig: config,

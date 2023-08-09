@@ -5,7 +5,7 @@ import {
   useAnalyticsPageEvent,
   useLoadAnalytics,
 } from '@/utils/hooks/analytics'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
 declare global {
@@ -61,7 +61,7 @@ const useConsentCategories = () => {
   return groups
 }
 
-const ErrorMessage = ({
+const ConfigError = ({
   title,
   description,
 }: {
@@ -69,7 +69,7 @@ const ErrorMessage = ({
   description: string
 }) => (
   <div>
-    <h1>{title}</h1>
+    <h2>{title}</h2>
     <p>{description}</p>
   </div>
 )
@@ -83,26 +83,32 @@ export default function Home({
   const configErrors = []
   if (!otKey) {
     configErrors.push(
-      <ErrorMessage
-        title={`Missing OneTrust API Key (please pass as query param)`}
+      <ConfigError
+        title={`Missing OneTrust API Key`}
         description={`Example: ?otKey=80ca7b5c-e72f-4bd0-972a-b74d052a0820-test`}
       />
     )
   }
   if (!writeKey) {
     configErrors.push(
-      <ErrorMessage
-        title={`Missing Segment Write Key (please pass as query param)`}
-        description={`Example: ?writeKey=80ca7b5c-e72f-4bd0-972a-b74d052a0820-test`}
+      <ConfigError
+        title={`Missing Segment Write Key`}
+        description={`Example: ?writeKey=9lSrez3BlfLAJ7NOChrqWtILiATiycoa`}
       />
     )
   }
   if (configErrors.length) {
+    configErrors.unshift(<h1>Missing Query Parameters Detected</h1>)
     return configErrors
   }
 
+  // NOTE: you should typically put these hooks in _document.tsx or layout.tsx
+  // I'm putting them here only because we are retrieving OTKey from a query param
+  // and NextJS does not allow getServerSideProps to be called in _document.tsx
   useAnalyticsPageEvent()
   useLoadAnalytics(writeKey)
+  // END NOTE
+
   return (
     <>
       <Head>
