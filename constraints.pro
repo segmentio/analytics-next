@@ -25,13 +25,15 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, Depende
   % A list of exception to same version rule
   \+ member(DependencyIdent, [
     % Allow examples to use different versions of react and
-    'react', 'react-dom',
-    '@types/react',
+    'react', 'react-dom', 'eslint-config-next', 'next',
+    '@types/react', '@types/react-dom',
     % Allow the usage of workspace^ -- there is a better way to do this =)
     '@segment/analytics-next',
     '@segment/analytics-node',
     '@segment/analytics-core',
     '@segment/analytics-consent-wrapper-onetrust',
+    '@example/with-next-js',
+    '@example/consent-onetrust-next-js',
     '@segment/analytics-consent-tools',
     '@internal/test-helpers',
     '@internal/config',
