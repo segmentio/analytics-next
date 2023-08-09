@@ -2,22 +2,21 @@ import { usePathname, useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-import { getConfig } from '../config'
 
 export const analytics = new AnalyticsBrowser()
 
 // only run on client
-if (typeof window !== 'undefined') {
-  const config = getConfig()
+export const useLoadAnalytics = (writeKey: string) => {
+  useEffect(() => {
+    // load the the OneTrust CMP.
+    oneTrust(analytics)
 
-  // load the the OneTrust CMP.
-  oneTrust(analytics, config.oneTrustOptions)
+    // Set analytics to load when the OneTrust CMP has consent information.
+    analytics.load({ writeKey })
 
-  // load analytics
-  analytics.load({ writeKey: config.writeKey })
-
-  // Skip this step... this is just for the debugging purposes...
-  ;(window.analytics as any) = analytics
+    // Just for debugging purposes
+    ;(window.analytics as any) = analytics
+  }, [writeKey])
 }
 
 export const useAnalyticsPageEvent = () => {

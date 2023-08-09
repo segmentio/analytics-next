@@ -1,9 +1,8 @@
 import Head from 'next/head'
 import Script from 'next/script'
-import { analytics } from '@/utils/hooks/analytics'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import React from 'react'
+import { analytics, useLoadAnalytics } from '@/utils/hooks/analytics'
+import React, { ReactNode } from 'react'
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
 declare global {
   interface Window {
@@ -58,19 +57,56 @@ const useConsentCategories = () => {
   return groups
 }
 
-export default function Home() {
-  const {
-    query: { writeKey },
-  } = useRouter()
+const ErrorMessage = ({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) => (
+  <div>
+    <h1>{title}</h1>
+    <p>{description}</p>
+  </div>
+)
 
+export default function Home({
+  otKey,
+  writeKey,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [ctx, setContext] = React.useState({} as any)
   const categories = useConsentCategories()
+  const configErrors = []
+  if (!otKey) {
+    configErrors.push(
+      <ErrorMessage
+        title={`Missing OneTrust API Key (please pass as query param)`}
+        description={`Example: ?otKey=80ca7b5c-e72f-4bd0-972a-b74d052a0820-test`}
+      />
+    )
+  }
+  if (!writeKey) {
+    configErrors.push(
+      <ErrorMessage
+        title={`Missing Segment Write Key (please pass as query param)`}
+        description={`Example: ?writeKey=80ca7b5c-e72f-4bd0-972a-b74d052a0820-test`}
+      />
+    )
+  }
+  if (configErrors.length) {
+    return configErrors
+  }
+  useLoadAnalytics(writeKey)
   return (
     <>
       <Head>
         <title>Home - OneTrust</title>
       </Head>
-
+      <Script
+        src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"
+        type="text/javascript"
+        data-domain-script={otKey}
+      />
       <main>
         <div>
           <h1>Consent w/ Segment Analytics</h1>
@@ -107,11 +143,18 @@ export default function Home() {
           <p>
             You must configure your segment consent settings for this to work.
           </p>
-          <p>
-            <Link href={`/other-page?writeKey=${writeKey}`}>Other Page</Link>
-          </p>
         </div>
       </main>
     </>
   )
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  return {
+    props: {
+      writeKey: ctx.query.writeKey || null,
+      otKey: ctx.query.otKey || null,
+    },
+  }
 }
