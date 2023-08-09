@@ -14,19 +14,23 @@ declare global {
         Groups: { CustomGroupId: string; GroupName: string }[]
       }
     }
+    OptanonWrapper: () => void
   }
 }
 
-const getActiveGroups = (): string[] =>
+const getActiveConsentCategories = (): string[] =>
   window.OnetrustActiveGroups.trim().split(',').filter(Boolean)
 
-const useGroups = () => {
-  const [groups, _setGroups] = React.useState({ enabled: {}, disabled: {} })
+/**
+ * This hook will return the consent groups that are enabled and disabled.
+ */
+const useConsentCategories = () => {
+  const [groups, _setCategories] = React.useState({ enabled: {}, disabled: {} })
 
-  const setGroups = () => {
+  const setCategories = () => {
     const data = window.OneTrust.GetDomainData().Groups.reduce(
       (acc, el) => {
-        if (getActiveGroups().includes(el.CustomGroupId)) {
+        if (getActiveConsentCategories().includes(el.CustomGroupId)) {
           acc.enabled = {
             ...acc.enabled,
             [el.CustomGroupId]: el.GroupName,
@@ -42,13 +46,13 @@ const useGroups = () => {
       { enabled: {}, disabled: {} }
     )
 
-    _setGroups(data)
+    _setCategories(data)
   }
 
   React.useEffect(() => {
-    ;(window as any).OptanonWrapper = function () {
-      setGroups()
-      window.OneTrust.OnConsentChanged(() => setGroups())
+    window.OptanonWrapper = function () {
+      setCategories()
+      window.OneTrust.OnConsentChanged(() => setCategories())
     }
   }, [])
   return groups
@@ -60,7 +64,7 @@ export default function Home() {
   } = useRouter()
 
   const [ctx, setContext] = React.useState({} as any)
-  const groups = useGroups()
+  const categories = useConsentCategories()
   return (
     <>
       <Head>
@@ -78,10 +82,10 @@ export default function Home() {
 
           <div>
             <h2>Enabled ✅</h2>
-            <pre>{JSON.stringify(groups.enabled, undefined, 2)}</pre>
+            <pre>{JSON.stringify(categories.enabled, undefined, 2)}</pre>
 
             <h2>Disabled / Not Configured ❌</h2>
-            <pre>{JSON.stringify(groups.disabled, undefined, 2)}</pre>
+            <pre>{JSON.stringify(categories.disabled, undefined, 2)}</pre>
           </div>
           <br />
           <br />
