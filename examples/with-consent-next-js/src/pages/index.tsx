@@ -70,12 +70,7 @@ export default function Home() {
       <Head>
         <title>Home - OneTrust</title>
       </Head>
-      {/* OneTrust Script */}
-      <Script
-        src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"
-        type="text/javascript"
-        data-domain-script="80ca7b5c-e72f-4bd0-972a-b74d052a0820-test"
-      />
+
       <main>
         <div>
           <h1>Consent w/ Segment Analytics</h1>
