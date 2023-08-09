@@ -81,10 +81,11 @@ export default function Home() {
           <h1>Consent w/ Segment Analytics</h1>
 
           <div>
-            <h2>Enabled ✅</h2>
+            <h2>Consent Categories</h2>
+            <h3>Enabled ✅</h3>
             <pre>{JSON.stringify(categories.enabled, undefined, 2)}</pre>
 
-            <h2>Disabled / Not Configured ❌</h2>
+            <h3>Disabled / Not Configured ❌</h3>
             <pre>{JSON.stringify(categories.disabled, undefined, 2)}</pre>
           </div>
           <br />
