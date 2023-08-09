@@ -2,7 +2,7 @@ import { usePathname, useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-import { getConfig } from './config'
+import { getConfig } from '../config'
 
 export const analytics = new AnalyticsBrowser()
 

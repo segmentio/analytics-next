@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Script from 'next/script'
-import { analytics } from '@/utils/analytics'
+import { analytics } from '@/utils/hooks/analytics'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React from 'react'
