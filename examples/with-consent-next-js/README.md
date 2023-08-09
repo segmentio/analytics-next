@@ -17,12 +17,8 @@ This is an example of using analytics.js with the OneTrust Consent Management Pl
 ```
 
 # Quick Start
-1. Follow instructions in `DEVELOPMENT.md`.
-2. Run this example
-```
-yarn dev
-```
-3. Open the following URL, replacing the "XXX" with your write key and OneTrust API key
-```
- http://localhost:3000?writekey=XXX&onetrust_api_key=XXX
-``````
+1. `nvm use && yarn install` (from root of monorepo)
+2. Set up config:
+  - `cp .env.local.EXAMPLE.js .env.local.js`
+  - Fill in required values in `.env.local.js`
+3. Run example with `yarn dev` 

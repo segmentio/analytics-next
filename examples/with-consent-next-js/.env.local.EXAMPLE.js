@@ -1,5 +1,5 @@
 module.exports = {
-  WRITEKEY: undefined, // can also pass in query string (e.g. ?writeKey=1234)
-  ONETRUST_API_KEY: undefined,
-  ONE_TRUST_OPTIONS: {},
+  WRITEKEY: undefined, // REQUIRED
+  ONETRUST_API_KEY: undefined, // REQUIRED (same as data-domain-script)
+  ONE_TRUST_OPTIONS: {}, // not required
 }

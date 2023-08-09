@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-sync-scripts */
 import { Html, Head, Main, NextScript } from 'next/document'
 import { useAnalyticsPageEvent } from '../utils/hooks/analytics'
+import { getConfig } from '../utils/config'
 export default function Document() {
   useAnalyticsPageEvent()
   return (
@@ -12,7 +13,7 @@ export default function Document() {
         <script
           src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js"
           type="text/javascript"
-          data-domain-script="80ca7b5c-e72f-4bd0-972a-b74d052a0820-test"
+          data-domain-script={getConfig().oneTrustApiKey}
         ></script>
       </body>
     </Html>

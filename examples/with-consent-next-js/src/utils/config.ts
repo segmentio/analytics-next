@@ -1,7 +1,7 @@
 import { default as nextGetConfig } from 'next/config'
 import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-import { getWriteKeyFromQueryString } from './write-key'
-import { getOneTrustApiKeyFromQueryString } from './onetrust-api-key'
+
+const ENV_FILE_PATH = './env.local.js'
 
 type OneTrustOptions = Parameters<typeof oneTrust>[1]
 
@@ -34,17 +34,15 @@ export const getConfig = (): Config => {
   const validationErrorMessages = []
   if (!writeKey) {
     validationErrorMessages.push(
-      '"writekey=XXX" is a required query parameter.'
+      `WRITEKEY=XXX" is required in ${ENV_FILE_PATH}`
     )
   }
-  const oneTrustApiKey = ONETRUST_API_KEY || getOneTrustApiKeyFromQueryString()
+  const oneTrustApiKey = ONETRUST_API_KEY
   if (!oneTrustApiKey) {
-    validationErrorMessages.push(
-      '"onetrust_api_key=XXX" is a required query parameter (same as `data-domain-script` value from the OneTrust script tag).'
-    )
+    validationErrorMessages.push('"ONETRUST_API_KEY=XXX" is required.')
   }
   if (validationErrorMessages.length) {
-    throw new Error(validationErrorMessages.join('\n'))
+    throw new Error(`${validationErrorMessages.join('\n')}. Please see README.`)
   }
 
   return {
