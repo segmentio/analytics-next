@@ -1,6 +1,10 @@
 import Head from 'next/head'
 import Script from 'next/script'
-import { analytics, useLoadAnalytics } from '@/utils/hooks/analytics'
+import {
+  analytics,
+  useAnalyticsPageEvent,
+  useLoadAnalytics,
+} from '@/utils/hooks/analytics'
 import React, { ReactNode } from 'react'
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 
@@ -96,6 +100,8 @@ export default function Home({
   if (configErrors.length) {
     return configErrors
   }
+
+  useAnalyticsPageEvent()
   useLoadAnalytics(writeKey)
   return (
     <>
