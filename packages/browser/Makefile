@@ -18,7 +18,7 @@ build-browser: build # build dependencies
 .PHONY: build-browser
 
 build: ## Builds libraries in prod mode, and all dependencies
-	yarn run -T browser+deps build
+	yarn run -T browser build...
 .PHONY: build
 
 clean: ## Clean the build directory
