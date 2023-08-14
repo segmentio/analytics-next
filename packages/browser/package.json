@@ -24,7 +24,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    ".": "yarn run -T browser...",
+    ".": "yarn run -T turbo run --filter=@segment/analytics-next",
     "build-prep": "sh scripts/build-prep.sh",
     "version": "yarn run build-prep && git add src/generated/version.ts",
     "umd": "webpack",
