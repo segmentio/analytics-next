@@ -25,11 +25,8 @@
     "release": "yarn clean && yarn build --force && changeset publish && git push origin HEAD:master --follow-tags --no-verify",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @segment/analytics-core",
-    "core...": "turbo run --filter=@segment/analytics-core",
     "browser": "yarn workspace @segment/analytics-next",
-    "browser...": "turbo run --filter=@segment/analytics-next",
     "node": "yarn workspace @segment/analytics-node",
-    "node...": "turbo run --filter=@segment/analytics-node",
     "clean": "bash scripts/clean.sh",
     "turbo": "turbo"
   },
