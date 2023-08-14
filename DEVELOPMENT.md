@@ -14,7 +14,7 @@ This project uses [Turborepo](https://turbo.build/repo/docs), for dependency-awa
 
 ### Build a specific package and all dependencies
 You have a couple options:
-1. you can _cd_ into a single package and run `yarn build...` (with ellipses) to build a package and all its dependencies (most convenient!).
+1. you can _cd_ into a single package and run `yarn . build`  build a package and all its dependencies (most convenient!).
 
 2. You can use turborepo directly to build a package and all dependencies. See: Turborepo https://turbo.build/repo/docs/core-concepts/monorepos/filtering#filter-syntax.
 

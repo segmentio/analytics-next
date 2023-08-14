@@ -5,6 +5,7 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@example/standalone-playground",
     "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && yarn http-server .'",
     "concurrently": "yarn run -T concurrently"
   },

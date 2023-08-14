@@ -80,7 +80,7 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
-      - yarn run -T core build...
+      - yarn run -T core . build
       - echo "+++ Run tests"
       - yarn run -T core lint
       - yarn run -T core test
