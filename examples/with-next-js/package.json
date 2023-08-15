@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@example/with-next-js",
     "concurrently": "yarn run -T concurrently",
     "dev": "yarn partytown && yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
     "build": "yarn partytown && next build",
