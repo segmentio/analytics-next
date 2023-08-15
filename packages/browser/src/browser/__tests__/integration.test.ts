@@ -23,6 +23,7 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../test-helpers/fixtures/client-hints'
+import { getGlobalAnalytics } from '../..'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -200,7 +201,7 @@ describe('Initialization', () => {
           {
             ...xt,
             load: async () => {
-              expect(window.analytics).toBeUndefined()
+              expect(getGlobalAnalytics()).toBeUndefined()
               expect(getCDN()).toContain(overriddenCDNUrl)
             },
           },
