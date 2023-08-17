@@ -60,13 +60,23 @@ export default function batch(
 
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
 
+    // Remove sentAt from every event as batching only needs a single timestamp
+    const updatedBatch = batch.map((event) => {
+      const { sentAt, ...newEvent } = event as SegmentEvent
+      return newEvent
+    })
+
     return fetch(`https://${apiHost}/b`, {
       keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'text/plain',
       },
       method: 'post',
-      body: JSON.stringify({ batch, writeKey }),
+      body: JSON.stringify({
+        writeKey,
+        batch: updatedBatch,
+        sentAt: new Date().toISOString(),
+      }),
     })
   }
 
