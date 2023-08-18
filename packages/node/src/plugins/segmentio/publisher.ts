@@ -6,6 +6,7 @@ import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { b64encode } from '../../lib/base-64-encode'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
+import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,6 +29,7 @@ export interface PublisherProps {
   httpRequestTimeout?: number
   disable?: boolean
   httpClient: HTTPClient
+  oauthSettings?: OauthSettings
 }
 
 /**
@@ -40,13 +42,15 @@ export class Publisher {
   private _flushInterval: number
   private _maxEventsInBatch: number
   private _maxRetries: number
-  private _auth: string
+  private _auth: string | undefined
   private _url: string
   private _closeAndFlushPendingItemsCount?: number
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
   private _httpClient: HTTPClient
+  private _writeKey: string
+  private _oauthData: OauthData | undefined
   constructor(
     {
       host,
@@ -58,6 +62,7 @@ export class Publisher {
       httpRequestTimeout,
       httpClient,
       disable,
+      oauthSettings,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -65,7 +70,6 @@ export class Publisher {
     this._maxRetries = maxRetries
     this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
     this._flushInterval = flushInterval
-    this._auth = b64encode(`${writeKey}:`)
     this._url = tryCreateFormattedUrl(
       host ?? 'https://api.segment.io',
       path ?? '/v1/batch'
@@ -73,6 +77,32 @@ export class Publisher {
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
     this._httpClient = httpClient
+    this._writeKey = writeKey
+
+    if (oauthSettings != null) {
+      this._oauthData = {
+        httpClient: httpClient,
+        settings: oauthSettings,
+      } as OauthData
+      RefreshToken(this._oauthData)
+    }
+  }
+
+  get oauthSettings() {
+    return this._oauthData?.settings
+  }
+
+  set oauthSettings(value) {
+    if (value) {
+      if (this._oauthData) {
+        this._oauthData.settings = value
+      } else {
+        this._oauthData = { settings: value } as OauthData
+      }
+      RefreshToken(this._oauthData)
+    } else {
+      // !!! error, create new analytics if you want no oauth?
+    }
   }
 
   private createBatch(): ContextBatch {
@@ -198,26 +228,50 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
+        let authString = undefined
+        if (this._oauthData?.settings) {
+          if (!this._oauthData.token) {
+            if (!this._oauthData.refreshPromise) {
+              RefreshToken(this._oauthData)
+            }
+            await this._oauthData.refreshPromise
+          }
+          authString = `Bearer ${this._oauthData.token}`
+        }
+
+        let headers
+        if (authString) {
+          headers = {
+            'Content-Type': 'application/json',
+            Authorization: authString,
+            'User-Agent': 'analytics-node-next/latest',
+          }
+        } else {
+          headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'analytics-node-next/latest',
+          }
+        }
+
         const request: HTTPClientRequest = {
           url: this._url,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Basic ${this._auth}`,
-            'User-Agent': 'analytics-node-next/latest',
-          },
-          data: { batch: events },
+          headers: headers,
+          body: JSON.stringify({ batch: events, writeKey: this._writeKey }),
           httpRequestTimeout: this._httpRequestTimeout,
         }
 
         this._emitter.emit('http_request', {
-          body: request.data,
+          body: request.body,
           method: request.method,
           url: request.url,
           headers: request.headers,
         })
 
         const response = await this._httpClient.makeRequest(request)
+
+        console.log(response.status)
+        console.log(response.statusText)
 
         if (response.status >= 200 && response.status < 300) {
           // Successfully sent events, so exit!

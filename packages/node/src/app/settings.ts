@@ -1,5 +1,6 @@
 import { ValidationError } from '@segment/analytics-core'
 import { HTTPClient, HTTPFetchFn } from '../lib/http-client'
+import { OauthSettings } from '../lib/oauth-util'
 
 export interface AnalyticsSettings {
   /**
@@ -40,6 +41,10 @@ export interface AnalyticsSettings {
    * Default: an HTTP client that uses globalThis.fetch, with node-fetch as a fallback.
    */
   httpClient?: HTTPFetchFn | HTTPClient
+  /**
+   * Set up OAuth2 authentication between the client and Segment's endpoints
+   */
+  oauthSettings?: OauthSettings
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

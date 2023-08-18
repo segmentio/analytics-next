@@ -16,7 +16,7 @@ export interface HTTPFetchFn {
  */
 export interface HTTPFetchRequest {
   headers: Record<string, string>
-  body: string
+  body: string | ReadableStream
   method: HTTPClientRequest['method']
   signal: any // AbortSignal type does not play nicely with node-fetch
 }
@@ -26,6 +26,7 @@ export interface HTTPFetchRequest {
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
 export interface HTTPResponse {
+  json(): Promise<any>
   status: number
   statusText: string
 }
@@ -49,10 +50,9 @@ export interface HTTPClientRequest {
    */
   headers: Record<string, string>
   /**
-   * JSON data to be sent with the request (will be stringified)
-   * @example { "batch": [ ... ]}
+   * Data to be sent with the request
    */
-  data: Record<string, any>
+  body: string | ReadableStream
   /**
    * Specifies the timeout (in milliseconds) for an HTTP client to get an HTTP response from the server
    * @example 10000
@@ -84,7 +84,7 @@ export class FetchHTTPClient implements HTTPClient {
       url: options.url,
       method: options.method,
       headers: options.headers,
-      body: JSON.stringify(options.data),
+      body: options.body,
       signal: signal,
     }
 

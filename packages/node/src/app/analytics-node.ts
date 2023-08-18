@@ -17,6 +17,7 @@ import {
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
 import { FetchHTTPClient } from '../lib/http-client'
+import { RefreshToken } from '../lib/oauth-util'
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _eventFactory: NodeEventFactory
@@ -56,10 +57,12 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
           typeof settings.httpClient === 'function'
             ? new FetchHTTPClient(settings.httpClient)
             : settings.httpClient ?? new FetchHTTPClient(),
+        oauthSettings: settings.oauthSettings,
       },
       this as NodeEmitter
     )
     this._publisher = publisher
+
     this.ready = this.register(plugin).then(() => undefined)
 
     this.emit('initialize', settings)
@@ -69,6 +72,14 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
   get VERSION() {
     return version
+  }
+
+  get oauthSettings() {
+    return this._publisher.oauthSettings
+  }
+
+  set oauthSettings(value) {
+    this._publisher.oauthSettings = value
   }
 
   /**
