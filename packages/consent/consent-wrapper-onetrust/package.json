@@ -6,9 +6,11 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "files": [
+    "LICENSE",
     "dist/",
     "src/",
     "!**/__tests__/**",
+    "!**/test-helpers/**",
     "!*.tsbuildinfo"
   ],
   "scripts": {

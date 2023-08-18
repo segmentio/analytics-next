@@ -28,6 +28,36 @@ export interface CreateWrapperSettings {
   getCategories: () => Categories | Promise<Categories>
 
   /**
+   * Programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
+   * An event will be sent to Segment whenever this function is called.
+   *
+   * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
+   * @example
+   * ```ts
+   * (categoriesChangedCb) => {
+   *   window.MyCMP.OnConsentChanged((ctg) => categoriesChangedCb(normalizeCategories(ctg))
+   * }
+   *
+   * /* event payload
+   * {
+   *  "type": "track",
+   *  "event": "Segment Consent Preference",
+   *  "context": {
+   *    "consent": {
+   *      "version": 2,
+   *      "categoryPreferences" : {
+   *         "C0001": true,
+   *         "C0002": false,
+   *    }
+   *  }
+   * ..
+   * ```
+   */
+  registerOnConsentChanged?: (
+    categoriesChangedCb: (categories: Categories) => void
+  ) => void
+
+  /**
    * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
    * Called on wrapper initialization. **shouldLoad will never be called**
    **/

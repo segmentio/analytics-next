@@ -2,7 +2,7 @@
   "name": "@internal/consent-tools-integration-tests",
   "private": true,
   "scripts": {
-    ".": "yarn -T turbo run --filter=@internal/consent-tools-integration-tests",
+    ".": "yarn run -T turbo run --filter=@internal/consent-tools-integration-tests...",
     "dev": "yarn concurrently 'yarn watch' 'yarn build serve --open'",
     "build": "webpack",
     "watch": "yarn build --watch",

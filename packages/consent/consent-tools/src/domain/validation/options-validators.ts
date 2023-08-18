@@ -23,7 +23,7 @@ export function validateCategories(
   }
 }
 
-export function validateOptions(options: {
+export function validateSettings(options: {
   [k in keyof CreateWrapperSettings]: unknown
 }): asserts options is CreateWrapperSettings {
   if (typeof options !== 'object' || !options) {
@@ -50,5 +50,11 @@ export function validateOptions(options: {
     assertIsObject(
       options.integrationCategoryMappings,
       'integrationCategoryMappings'
+    )
+
+  options.registerOnConsentChanged &&
+    assertIsFunction(
+      options.registerOnConsentChanged,
+      'registerOnConsentChanged'
     )
 }

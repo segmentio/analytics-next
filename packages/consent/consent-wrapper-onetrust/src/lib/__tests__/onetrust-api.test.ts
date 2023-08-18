@@ -1,6 +1,7 @@
-import './onetrust-globals.d.ts'
+import '../../test-helpers/onetrust-globals.js'
 
-import { getConsentedGroupIds, getGroupData } from '../onetrust-api'
+import { getConsentedGroupIds, getGroupDataFromGroupIds } from '../onetrust-api'
+import { OneTrustMockGlobal } from '../../test-helpers/mocks'
 
 beforeEach(() => {
   // @ts-ignore
@@ -40,11 +41,11 @@ describe(getConsentedGroupIds, () => {
   })
 })
 
-describe(getGroupData, () => {
+describe(getGroupDataFromGroupIds, () => {
   it('should partition groups into consent/deny', () => {
     window.OnetrustActiveGroups = ',C0001,C0004'
     window.OneTrust = {
-      ...window.OneTrust,
+      ...OneTrustMockGlobal,
       GetDomainData: () => ({
         Groups: [
           {
@@ -59,7 +60,7 @@ describe(getGroupData, () => {
         ],
       }),
     }
-    const data = getGroupData()
+    const data = getGroupDataFromGroupIds()
 
     expect(data.userSetConsentGroups).toEqual([
       {

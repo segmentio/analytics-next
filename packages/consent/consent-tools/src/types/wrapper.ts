@@ -23,6 +23,7 @@ export interface InitOptions {
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
   on(event: 'initialize', callback: (settings: CDNSettings) => void): void
+  track(event: string, properties?: unknown, ...args: any[]): void
 
   /**
    * This interface is meant to be compatible with both the snippet (`window.analytics.load`)

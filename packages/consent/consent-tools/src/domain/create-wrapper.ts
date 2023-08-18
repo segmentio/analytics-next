@@ -6,14 +6,15 @@ import {
   CreateWrapperSettings,
   CDNSettings,
 } from '../types'
-import { validateCategories, validateOptions } from './validation'
+import { validateCategories, validateSettings } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
 import { ValidationError } from './validation/validation-error'
+import { sendConsentChangedEvent } from './consent-changed'
 
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
-  validateOptions(createWrapperOptions)
+  validateSettings(createWrapperOptions)
 
   const {
     shouldDisableSegment,
@@ -23,6 +24,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     integrationCategoryMappings,
     shouldEnableIntegration,
     pruneUnmappedCategories,
+    registerOnConsentChanged,
   } = createWrapperOptions
 
   return (analytics) => {
@@ -117,6 +119,19 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       analytics.addSourceMiddleware(
         createConsentStampingMiddleware(getValidCategoriesForConsentStamping)
       )
+
+      if (registerOnConsentChanged) {
+        // whenever consent changes, dispatch a new event with the latest consent information
+        registerOnConsentChanged((categories) => {
+          try {
+            validateCategories(categories)
+            sendConsentChangedEvent(analytics, categories)
+          } catch (err) {
+            // Not sure if there's a better way to handle this, but this makes testing a bit easier.
+            console.error(err)
+          }
+        })
+      }
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
         cdnSettings

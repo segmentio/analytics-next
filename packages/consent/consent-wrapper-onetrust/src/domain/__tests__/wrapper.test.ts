@@ -1,6 +1,8 @@
 import * as ConsentTools from '@segment/analytics-consent-tools'
 import * as OneTrustAPI from '../../lib/onetrust-api'
 import { sleep } from '@internal/test-helpers'
+import { oneTrust } from '../wrapper'
+import { OneTrustMockGlobal } from '../../test-helpers/mocks'
 
 const throwNotImplemented = (): never => {
   throw new Error('not implemented')
@@ -18,30 +20,23 @@ const grpFixture = {
   },
 }
 
-/**
- * This can be used to mock the OneTrust global object in individual tests
- */
-const OneTrustMockGlobal: jest.Mocked<OneTrustAPI.OneTrustGlobal> = {
-  GetDomainData: jest.fn().mockImplementationOnce(throwNotImplemented),
-  IsAlertBoxClosed: jest.fn().mockImplementationOnce(() => false),
-  onConsentChanged: jest.fn(), // not implemented atm
-}
-
 const getConsentedGroupIdsSpy = jest
   .spyOn(OneTrustAPI, 'getConsentedGroupIds')
   .mockImplementationOnce(throwNotImplemented)
 
-const helpers = {
-  _createWrapperSpy: jest.spyOn(ConsentTools, 'createWrapper'),
+const createWrapperSpyHelper = {
+  _spy: jest.spyOn(ConsentTools, 'createWrapper'),
   get shouldLoad() {
-    return helpers._createWrapperSpy.mock.lastCall[0].shouldLoad!
+    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoad!
   },
   get getCategories() {
-    return helpers._createWrapperSpy.mock.lastCall[0].getCategories!
+    return createWrapperSpyHelper._spy.mock.lastCall[0].getCategories!
+  },
+  get registerOnConsentChanged() {
+    return createWrapperSpyHelper._spy.mock.lastCall[0]
+      .registerOnConsentChanged!
   },
 }
-
-import { oneTrust } from '../wrapper'
 
 /**
  * These tests are not meant to be comprehensive, but they should cover the most important cases.
@@ -49,12 +44,11 @@ import { oneTrust } from '../wrapper'
  */
 describe('High level "integration" tests', () => {
   beforeEach(() => {
-    oneTrust({} as any)
-    getConsentedGroupIdsSpy.mockReset()
-    Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     jest
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
+    getConsentedGroupIdsSpy.mockReset()
+    Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
   })
 
   describe('shouldLoad', () => {
@@ -75,13 +69,16 @@ describe('High level "integration" tests', () => {
     })
 
     it('should be resolved successfully', async () => {
+      oneTrust({} as any)
       OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
         Groups: [grpFixture.StrictlyNeccessary, grpFixture.Performance],
       })
       getConsentedGroupIdsSpy.mockImplementation(() => [
         grpFixture.StrictlyNeccessary.CustomGroupId,
       ])
-      const shouldLoadP = Promise.resolve(helpers.shouldLoad({} as any))
+      const shouldLoadP = Promise.resolve(
+        createWrapperSpyHelper.shouldLoad({} as any)
+      )
       let shouldLoadResolved = false
       void shouldLoadP.then(() => (shouldLoadResolved = true))
       await sleep(0)
@@ -95,6 +92,7 @@ describe('High level "integration" tests', () => {
 
   describe('getCategories', () => {
     it('should get categories successfully', async () => {
+      oneTrust({} as any)
       OneTrustMockGlobal.GetDomainData.mockReturnValue({
         Groups: [
           grpFixture.StrictlyNeccessary,
@@ -105,12 +103,40 @@ describe('High level "integration" tests', () => {
       getConsentedGroupIdsSpy.mockImplementation(() => [
         grpFixture.StrictlyNeccessary.CustomGroupId,
       ])
-      const categories = helpers.getCategories()
+      const categories = createWrapperSpyHelper.getCategories()
       // contain both consented and denied category
       expect(categories).toEqual({
         C0001: true,
         C0004: false,
         C0005: false,
+      })
+    })
+  })
+
+  describe('Consent changed', () => {
+    it('should enable consent changed by default', async () => {
+      oneTrust({} as any)
+      OneTrustMockGlobal.GetDomainData.mockReturnValue({
+        Groups: [
+          grpFixture.StrictlyNeccessary,
+          grpFixture.Performance,
+          grpFixture.Targeting,
+        ],
+      })
+      const onCategoriesChangedCb = jest.fn()
+      createWrapperSpyHelper.registerOnConsentChanged(onCategoriesChangedCb)
+      onCategoriesChangedCb()
+      const onConsentChangedArg =
+        OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
+      onConsentChangedArg([
+        grpFixture.StrictlyNeccessary.CustomGroupId,
+        grpFixture.Performance.CustomGroupId,
+      ])
+      // expect to be normalized!
+      expect(onCategoriesChangedCb.mock.lastCall[0]).toEqual({
+        [grpFixture.StrictlyNeccessary.CustomGroupId]: true,
+        [grpFixture.Performance.CustomGroupId]: true,
+        [grpFixture.Targeting.CustomGroupId]: false,
       })
     })
   })
