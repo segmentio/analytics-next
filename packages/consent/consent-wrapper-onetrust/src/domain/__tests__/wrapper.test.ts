@@ -129,7 +129,7 @@ describe('High level "integration" tests', () => {
       const onConsentChangedArg =
         OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
       onConsentChangedArg(
-        new CustomEvent('foo', {
+        new CustomEvent('', {
           detail: [
             grpFixture.StrictlyNeccessary.CustomGroupId,
             grpFixture.Performance.CustomGroupId,
