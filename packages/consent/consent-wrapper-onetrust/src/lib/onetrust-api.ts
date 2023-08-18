@@ -1,15 +1,25 @@
 import { Categories } from '@segment/analytics-consent-tools'
+import { OneTrustApiValidationError } from './validation'
+/**
+ * @example ["C0001", "C0002"]
+ */
+type ConsentGroupIds = string[]
 
 /**
  * @example
- * ",CAT001,FOO456" => ["CAT001", "FOO456"]
+ * ",C0001,C0002" => ["C0001", "C0002"]
  */
-const normalizeActiveGroupIds = (c: string): string[] =>
-  c.trim().split(',').filter(Boolean)
+const normalizeActiveGroupIds = (
+  oneTrustActiveGroups: string
+): ConsentGroupIds => {
+  return oneTrustActiveGroups.trim().split(',').filter(Boolean)
+}
 
 type GroupInfoDto = {
   CustomGroupId: string
 }
+
+type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 
 /**
  * The data model used by the OneTrust lib
@@ -25,7 +35,7 @@ export interface OneTrustGlobal {
    * - if a user makes a selection
    * - if a user rejects all
    */
-  OnConsentChanged: (cb: (groupIds: string[]) => void) => void
+  OnConsentChanged: (cb: (event: OtConsentChangedEvent) => void) => void
   IsAlertBoxClosed: () => boolean
 }
 
@@ -41,17 +51,25 @@ export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
     return oneTrust
   }
 
-  throw new Error(
-    `OneTrust global object is not in expected format. Received ${JSON.stringify(
-      oneTrust
-    )}`
+  throw new OneTrustApiValidationError(
+    'window.OneTrust is not in expected format',
+    oneTrust
   )
 }
 
-const getOneTrustActiveGroups = (): string | undefined =>
-  (window as any).OnetrustActiveGroups
+const getOneTrustActiveGroups = (): string | undefined => {
+  const groups = (window as any).OnetrustActiveGroups
+  if (!groups) return undefined
+  if (typeof groups !== 'string') {
+    throw new OneTrustApiValidationError(
+      `window.OnetrustActiveGroups is not a string`,
+      groups
+    )
+  }
+  return groups
+}
 
-export const getConsentedGroupIds = (): string[] => {
+export const getConsentedGroupIds = (): ConsentGroupIds => {
   const groups = getOneTrustActiveGroups()
   if (!groups) {
     return []
@@ -128,7 +146,7 @@ export const getNormalizedCategoriesFromGroupData = (
 }
 
 export const getNormalizedCategoriesFromGroupIds = (
-  groupIds: string[]
+  groupIds: ConsentGroupIds
 ): Categories => {
   return getNormalizedCategoriesFromGroupData(
     getGroupDataFromGroupIds(groupIds)

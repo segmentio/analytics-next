@@ -10,7 +10,6 @@ oneTrust(analytics, {
     'Actions Amplitude': ['C0004'],
   },
 })
-console.log('loaded?')
 ;(window as any).analytics = analytics
 
 analytics.load({ writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc' })

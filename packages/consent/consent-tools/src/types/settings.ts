@@ -35,7 +35,7 @@ export interface CreateWrapperSettings {
    * @example
    * ```ts
    * (categoriesChangedCb) => {
-   *   window.MyCMP.OnConsentChanged((ctg) => categoriesChangedCb(normalizeCategories(ctg))
+   *   window.MyCMP.OnConsentChanged((event.detail) => categoriesChangedCb(normalizeCategories(event.detail))
    * }
    *
    * /* event payload

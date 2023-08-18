@@ -39,9 +39,10 @@ export const oneTrust = (
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
       : (onCategoriesChangedCb) =>
-          getOneTrustGlobal()?.OnConsentChanged((categories) => {
-            const normalizedCategories =
-              getNormalizedCategoriesFromGroupIds(categories)
+          getOneTrustGlobal()?.OnConsentChanged((event) => {
+            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+              event.detail
+            )
             onCategoriesChangedCb(normalizedCategories)
           }),
     integrationCategoryMappings: settings.integrationCategoryMappings,
