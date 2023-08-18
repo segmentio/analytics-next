@@ -128,10 +128,14 @@ describe('High level "integration" tests', () => {
       onCategoriesChangedCb()
       const onConsentChangedArg =
         OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
-      onConsentChangedArg([
-        grpFixture.StrictlyNeccessary.CustomGroupId,
-        grpFixture.Performance.CustomGroupId,
-      ])
+      onConsentChangedArg(
+        new CustomEvent('foo', {
+          detail: [
+            grpFixture.StrictlyNeccessary.CustomGroupId,
+            grpFixture.Performance.CustomGroupId,
+          ],
+        })
+      )
       // expect to be normalized!
       expect(onCategoriesChangedCb.mock.lastCall[0]).toEqual({
         [grpFixture.StrictlyNeccessary.CustomGroupId]: true,

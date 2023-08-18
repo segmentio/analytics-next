@@ -1,4 +1,4 @@
-import '../../test-helpers/onetrust-globals.js'
+import '../../test-helpers/onetrust-globals.d.ts'
 
 import { getConsentedGroupIds, getGroupDataFromGroupIds } from '../onetrust-api'
 import { OneTrustMockGlobal } from '../../test-helpers/mocks'
