@@ -1,5 +1,4 @@
 import {
-  AnyAnalytics,
   createWrapper,
   CreateWrapperSettings,
   resolveWhen,
@@ -12,13 +11,18 @@ import {
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
 
-interface OneTrustSettings {
+export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
 }
 
+/**
+ *
+ * @param analyticsInstance - An analytics instance. Either `window.analytics`, or the instance returned by `new AnalyticsBrowser()` or `AnalyticsBrowser.load({...})`
+ * @param settings - Optional settings for configuring your OneTrust wrapper
+ */
 export const oneTrust = (
-  analytics: AnyAnalytics,
+  analyticsInstance: object,
   settings: OneTrustSettings = {}
 ) => {
   createWrapper({
@@ -46,5 +50,5 @@ export const oneTrust = (
             onCategoriesChangedCb(normalizedCategories)
           }),
     integrationCategoryMappings: settings.integrationCategoryMappings,
-  })(analytics)
+  })(analyticsInstance)
 }

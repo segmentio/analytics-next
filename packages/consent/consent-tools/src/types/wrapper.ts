@@ -36,19 +36,15 @@ export interface AnyAnalytics {
 }
 
 /**
- * This function returns a "wrapped" version of analytics.
- */
-export interface Wrapper {
-  // Returns void rather than analytics to emphasize that this function replaces the .load function of the underlying instance.
-  (analytics: AnyAnalytics): void
-}
+ * This function modifies an analytics instance to add consent management.
+ * This is an analytics instance (either window.analytics, new AnalyticsBrowser(), or the instance returned by `AnalyticsBrowser.load({...})`
+ **/
+export type Wrapper = (analyticsInstance: object) => void
 
 /**
- * This function returns a function which returns a "wrapped" version of analytics
+ * Create a function which wraps analytics instances to add consent management.
  */
-export interface CreateWrapper {
-  (options: CreateWrapperSettings): Wrapper
-}
+export type CreateWrapper = (options: CreateWrapperSettings) => Wrapper
 
 export interface Categories {
   [category: string]: boolean
