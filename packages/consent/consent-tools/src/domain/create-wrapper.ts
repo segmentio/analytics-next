@@ -6,7 +6,11 @@ import {
   CreateWrapperSettings,
   CDNSettings,
 } from '../types'
-import { validateCategories, validateSettings } from './validation'
+import {
+  validateAnalyticsInstance,
+  validateCategories,
+  validateSettings,
+} from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
@@ -28,7 +32,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   } = createWrapperOptions
 
   return (analytics) => {
-    assertAnalyticsInstance(analytics)
+    validateAnalyticsInstance(analytics)
     const ogLoad = analytics.load
 
     const loadWithConsent: AnyAnalytics['load'] = async (
@@ -234,19 +238,4 @@ const disableIntegrations = (
     }
   )
   return results
-}
-
-function assertAnalyticsInstance(
-  analytics: unknown
-): asserts analytics is AnyAnalytics {
-  if (
-    analytics &&
-    typeof analytics === 'object' &&
-    'load' in analytics &&
-    'on' in analytics &&
-    'addSourceMiddleware' in analytics
-  ) {
-    return
-  }
-  throw new Error('analytics is not an Analytics instance')
 }
