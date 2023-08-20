@@ -13,21 +13,6 @@ import { AbortLoadError, LoadContext } from './load-cancellation'
 import { ValidationError } from './validation/validation-error'
 import { sendConsentChangedEvent } from './consent-changed'
 
-function assertAnalyticsInstance(
-  analytics: unknown
-): asserts analytics is AnyAnalytics {
-  if (
-    analytics &&
-    typeof analytics === 'object' &&
-    'load' in analytics &&
-    'on' in analytics &&
-    'addSourceMiddleware' in analytics
-  ) {
-    return
-  }
-  throw new Error('analytics is not an Analytics instance')
-}
-
 export const createWrapper: CreateWrapper = (createWrapperOptions) => {
   validateSettings(createWrapperOptions)
 
@@ -249,4 +234,19 @@ const disableIntegrations = (
     }
   )
   return results
+}
+
+function assertAnalyticsInstance(
+  analytics: unknown
+): asserts analytics is AnyAnalytics {
+  if (
+    analytics &&
+    typeof analytics === 'object' &&
+    'load' in analytics &&
+    'on' in analytics &&
+    'addSourceMiddleware' in analytics
+  ) {
+    return
+  }
+  throw new Error('analytics is not an Analytics instance')
 }
