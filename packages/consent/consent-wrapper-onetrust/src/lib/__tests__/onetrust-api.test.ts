@@ -108,7 +108,6 @@ describe(getConsentedGroupIds, () => {
     expect(getConsentedGroupIds('C0001,C0004')).toEqual(['C0001', 'C0004'])
     expect(getConsentedGroupIds(',C0001,C0004')).toEqual(['C0001', 'C0004'])
     expect(getConsentedGroupIds(',')).toEqual([])
-    expect(getConsentedGroupIds(',,')).toEqual([])
     expect(getConsentedGroupIds('')).toEqual([])
     expect(getConsentedGroupIds(',,')).toEqual([])
   })
