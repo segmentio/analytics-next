@@ -57,7 +57,7 @@ export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
   )
 }
 
-const getOneTrustActiveGroups = (): string | undefined => {
+export const getOneTrustActiveGroups = (): string | undefined => {
   const groups = (window as any).OnetrustActiveGroups
   if (!groups) return undefined
   if (typeof groups !== 'string') {
@@ -69,8 +69,9 @@ const getOneTrustActiveGroups = (): string | undefined => {
   return groups
 }
 
-export const getConsentedGroupIds = (): ConsentGroupIds => {
-  const groups = getOneTrustActiveGroups()
+export const getConsentedGroupIds = (
+  groups = getOneTrustActiveGroups()
+): ConsentGroupIds => {
   if (!groups) {
     return []
   }
@@ -88,7 +89,7 @@ const normalizeGroupInfo = (groupInfo: GroupInfoDto): GroupInfo => ({
 /**
  * get *all* groups / categories, not just active ones
  */
-const getAllGroups = (): GroupInfo[] => {
+export const getAllGroups = (): GroupInfo[] => {
   const oneTrustGlobal = getOneTrustGlobal()
   if (!oneTrustGlobal) return []
   return oneTrustGlobal.GetDomainData().Groups.map(normalizeGroupInfo)
