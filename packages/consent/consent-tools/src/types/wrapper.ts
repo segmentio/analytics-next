@@ -39,6 +39,8 @@ export interface AnyAnalytics {
  * This function modifies an analytics instance to add consent management.
  * This is an analytics instance (either window.analytics, new AnalyticsBrowser(), or the instance returned by `AnalyticsBrowser.load({...})`
  **/
+// The chance of a false positive is higher than the chance that someone will pass in an object that is not an analytics instance.
+// We have an assertion function that throws an error if the analytics instance is not compatible.
 export type Wrapper = (analyticsInstance: object) => void
 
 /**

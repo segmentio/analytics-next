@@ -22,7 +22,7 @@ export interface OneTrustSettings {
  * @param settings - Optional settings for configuring your OneTrust wrapper
  */
 export const oneTrust = (
-  analyticsInstance: object,
+  analyticsInstance: object, // typing this as 'object', rather than AnyAnalytics to avoid misc type mismatches. createWrapper will throw an error if the analytics instance is not compatible.
   settings: OneTrustSettings = {}
 ) => {
   createWrapper({
