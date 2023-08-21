@@ -98,7 +98,7 @@ describe(getOneTrustActiveGroups, () => {
   it('should throw an error if OneTrustActiveGroups is invalid', () => {
     // @ts-ignore
     window.OnetrustActiveGroups = []
-    expect(() => getOneTrustActiveGroups()).toThrow()
+    expect(() => getOneTrustActiveGroups()).toThrow(OneTrustApiValidationError)
   })
 })
 
