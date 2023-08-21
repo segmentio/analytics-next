@@ -44,7 +44,7 @@ export type Wrapper = (analyticsInstance: object) => void
 /**
  * Create a function which wraps analytics instances to add consent management.
  */
-export type CreateWrapper = (options: CreateWrapperSettings) => Wrapper
+export type CreateWrapper = (settings: CreateWrapperSettings) => Wrapper
 
 export interface Categories {
   [category: string]: boolean
