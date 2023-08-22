@@ -73,6 +73,18 @@ export const RefreshTokenAsync = async (data: OauthData) => {
       .makeRequest(requestOptions)
       .then((response) => {
         if (response.status != 200) {
+          if (response.status == 429) {
+            const rateLimitResetTime = response.headers.get('X-RateLimit-Reset')
+            let rateLimitDiff = 60
+            if (rateLimitResetTime) {
+              rateLimitDiff =
+                parseInt(rateLimitResetTime) -
+                Math.round(new Date().getTime() / 1000) +
+                5
+            }
+            data.refreshTimer = setTimeout(RefreshToken, rateLimitDiff, data)
+            data.refreshTimer.unref()
+          }
           throw new Error(response.statusText)
         }
         return response.json() as Promise<{
@@ -81,11 +93,12 @@ export const RefreshTokenAsync = async (data: OauthData) => {
         }>
       })
       .then((result) => {
-        // data.refreshTimer = setTimeout(
-        //   RefreshToken,
-        //   (result.expires_in * 1000) / 2,
-        //   data
-        // )
+        data.refreshTimer = setTimeout(
+          RefreshToken,
+          (result.expires_in * 1000) / 2,
+          data
+        )
+        data.refreshTimer.unref()
         data.token = result.access_token
         return result.access_token
       })

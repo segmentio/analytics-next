@@ -76,9 +76,6 @@ describe('Method Smoke Tests', () => {
       expect(pick(headers, 'authorization', 'user-agent', 'content-type'))
         .toMatchInlineSnapshot(`
               Object {
-                "authorization": Array [
-                  "Basic Zm9vOg==",
-                ],
                 "content-type": Array [
                   "application/json",
                 ],
@@ -151,6 +148,7 @@ describe('Method Smoke Tests', () => {
               "userId": "my_user_id",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )
@@ -187,6 +185,7 @@ describe('Method Smoke Tests', () => {
               "userId": "foo",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )
@@ -217,6 +216,7 @@ describe('Method Smoke Tests', () => {
               "type": "page",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )
@@ -253,6 +253,7 @@ describe('Method Smoke Tests', () => {
               "type": "group",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )
@@ -282,6 +283,7 @@ describe('Method Smoke Tests', () => {
               "userId": "alias",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )
@@ -318,6 +320,7 @@ describe('Method Smoke Tests', () => {
               "type": "screen",
             },
           ],
+          "writeKey": "foo",
         }
       `
       )

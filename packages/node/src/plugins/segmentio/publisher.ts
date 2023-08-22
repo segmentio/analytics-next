@@ -270,9 +270,6 @@ export class Publisher {
 
         const response = await this._httpClient.makeRequest(request)
 
-        console.log(response.status)
-        console.log(response.statusText)
-
         if (response.status >= 200 && response.status < 300) {
           // Successfully sent events, so exit!
           batch.resolveEvents()
