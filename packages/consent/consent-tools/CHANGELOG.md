@@ -1,5 +1,11 @@
 # @segment/analytics-consent-tools
 
+## 0.1.0
+
+### Minor Changes
+
+- [#936](https://github.com/segmentio/analytics-next/pull/936) [`a7a0882`](https://github.com/segmentio/analytics-next/commit/a7a08827cc31dd3a558700143828ab43d27f2125) Thanks [@silesky](https://github.com/silesky)! - Add consent changed event
+
 ## 0.0.4
 
 ### Patch Changes
