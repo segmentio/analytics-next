@@ -4,6 +4,7 @@ import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 export const analytics = new AnalyticsBrowser()
 
 oneTrust(analytics, {
+  disableConsentChangedEvent: false,
   integrationCategoryMappings: {
     Fullstory: ['C0001'],
     'Actions Amplitude': ['C0004'],

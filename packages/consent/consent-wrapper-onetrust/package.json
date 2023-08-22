@@ -6,13 +6,15 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "files": [
+    "LICENSE",
     "dist/",
     "src/",
     "!**/__tests__/**",
+    "!**/test-helpers/**",
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/analytics-consent-wrapper-onetrust",
+    ".": "yarn run -T turbo run --filter=@segment/analytics-consent-wrapper-onetrust...",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",

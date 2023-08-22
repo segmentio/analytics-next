@@ -23,6 +23,7 @@ export interface InitOptions {
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
   on(event: 'initialize', callback: (settings: CDNSettings) => void): void
+  track(event: string, properties?: unknown, ...args: any[]): void
 
   /**
    * This interface is meant to be compatible with both the snippet (`window.analytics.load`)
@@ -35,19 +36,17 @@ export interface AnyAnalytics {
 }
 
 /**
- * This function returns a "wrapped" version of analytics.
- */
-export interface Wrapper {
-  // Returns void rather than analytics to emphasize that this function replaces the .load function of the underlying instance.
-  (analytics: AnyAnalytics): void
-}
+ * This function modifies an analytics instance to add consent management.
+ * This is an analytics instance (either window.analytics, new AnalyticsBrowser(), or the instance returned by `AnalyticsBrowser.load({...})`
+ **/
+// Why type this as 'object' rather than 'AnyAnalytics'? IMO, the chance of a false positive is much higher than the chance that someone will pass in an object that is not an analytics instance.
+// We have an assertion function that throws an error if the analytics instance is not compatible.
+export type Wrapper = (analyticsInstance: object) => void
 
 /**
- * This function returns a function which returns a "wrapped" version of analytics
+ * Create a function which wraps analytics instances to add consent management.
  */
-export interface CreateWrapper {
-  (options: CreateWrapperSettings): Wrapper
-}
+export type CreateWrapper = (settings: CreateWrapperSettings) => Wrapper
 
 export interface Categories {
   [category: string]: boolean
