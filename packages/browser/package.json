@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.53.3",
+  "version": "1.53.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",

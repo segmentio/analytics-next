@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.53.4
+
+### Patch Changes
+
+- [#932](https://github.com/segmentio/analytics-next/pull/932) [`b1584fc`](https://github.com/segmentio/analytics-next/commit/b1584fc1dc531b312dc6020fadc1c14bd153a557) Thanks [@oscb](https://github.com/oscb)! - `sentAt` is not set at batch upload time once per the whole batch. Individual event `sentAt` property is stripped when doing batch uploading.
+
 ## 1.53.3
 
 ### Patch Changes
