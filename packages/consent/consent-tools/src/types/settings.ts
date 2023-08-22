@@ -28,8 +28,7 @@ export interface CreateWrapperSettings {
   getCategories: () => Categories | Promise<Categories>
 
   /**
-   * Programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
-   * An event will be sent to Segment whenever this function is called.
+   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
    *
    * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
    * @example
