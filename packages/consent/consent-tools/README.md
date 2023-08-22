@@ -67,8 +67,7 @@ See the complete list of settings in the **[Settings interface](src/types/settin
 ## Development
 1. Build this package + all dependencies
 ```sh
-# include the "..."
-yarn build... 
+yarn . build
 ```
 
 2. Run tests

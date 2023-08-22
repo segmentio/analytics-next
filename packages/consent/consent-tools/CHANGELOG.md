@@ -1,5 +1,13 @@
 # @segment/analytics-consent-tools
 
+## 0.0.4
+
+### Patch Changes
+
+- [#912](https://github.com/segmentio/analytics-next/pull/912) [`70cc6e6`](https://github.com/segmentio/analytics-next/commit/70cc6e61a809bd44a9e34555b64da9a3b8672fdf) Thanks [@silesky](https://github.com/silesky)! - Support classic destinations and locally installed action destinations by removing integrations.
+
+* [#918](https://github.com/segmentio/analytics-next/pull/918) [`fd0862c`](https://github.com/segmentio/analytics-next/commit/fd0862c544d4418719863e8f5418b5ab61a9ca5e) Thanks [@silesky](https://github.com/silesky)! - Remove default behavior that prunes unmapped categories from context.contest payload. As such, by default, `allKeys` will no longer be used. Add ability to turn pruning back on via an `pruneUnmappedCategories` setting.
+
 ## 0.0.3
 
 ### Patch Changes

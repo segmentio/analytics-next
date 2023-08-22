@@ -17,8 +17,7 @@ Why is this using wd.io instead of playwright?
 ## Development
 ### 1. Build this package + deps
 ```sh
-# include the "..."
-yarn build... 
+yarn . build
 ```
 ### 2. Start server + run tests (and exit gracefully)
 ```

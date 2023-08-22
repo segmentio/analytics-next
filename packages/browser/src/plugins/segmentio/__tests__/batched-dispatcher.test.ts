@@ -49,7 +49,9 @@ describe('Batching', () => {
   beforeEach(() => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
-    jest.useFakeTimers()
+    jest.useFakeTimers({
+      now: new Date('9 Jun 1993 00:00:00Z').getTime(),
+    })
   })
 
   afterEach(() => {
@@ -92,7 +94,7 @@ describe('Batching', () => {
       Array [
         "https://https://api.segment.io/b",
         Object {
-          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}]}",
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"},{\\"event\\":\\"third\\"}],\\"sentAt\\":\\"1993-06-09T00:00:00.000Z\\"}",
           "headers": Object {
             "Content-Type": "text/plain",
           },
@@ -150,7 +152,7 @@ describe('Batching', () => {
       Array [
         "https://https://api.segment.io/b",
         Object {
-          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}]}",
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}],\\"sentAt\\":\\"1993-06-09T00:00:10.000Z\\"}",
           "headers": Object {
             "Content-Type": "text/plain",
           },
@@ -185,7 +187,7 @@ describe('Batching', () => {
       Array [
         "https://https://api.segment.io/b",
         Object {
-          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}]}",
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"}],\\"sentAt\\":\\"1993-06-09T00:00:10.000Z\\"}",
           "headers": Object {
             "Content-Type": "text/plain",
           },
@@ -199,7 +201,38 @@ describe('Batching', () => {
       Array [
         "https://https://api.segment.io/b",
         Object {
-          "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}]}",
+          "body": "{\\"batch\\":[{\\"event\\":\\"second\\"}],\\"sentAt\\":\\"1993-06-09T00:00:21.000Z\\"}",
+          "headers": Object {
+            "Content-Type": "text/plain",
+          },
+          "keepalive": false,
+          "method": "post",
+        },
+      ]
+    `)
+  })
+
+  it('removes sentAt from individual events', async () => {
+    const { dispatch } = batch(`https://api.segment.io`, {
+      size: 2,
+    })
+
+    await dispatch(`https://api.segment.io/v1/t`, {
+      event: 'first',
+      sentAt: new Date('11 Jun 1993 00:01:00Z'),
+    })
+
+    await dispatch(`https://api.segment.io/v1/t`, {
+      event: 'second',
+      sentAt: new Date('11 Jun 1993 00:02:00Z'),
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
+      Array [
+        "https://https://api.segment.io/b",
+        Object {
+          "body": "{\\"batch\\":[{\\"event\\":\\"first\\"},{\\"event\\":\\"second\\"}],\\"sentAt\\":\\"1993-06-09T00:00:00.000Z\\"}",
           "headers": Object {
             "Content-Type": "text/plain",
           },

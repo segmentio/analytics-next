@@ -49,40 +49,31 @@ describe(getGroupData, () => {
         Groups: [
           {
             CustomGroupId: 'C0001',
-            GroupName: 'Strictly Neccessary Cookies',
           },
           {
             CustomGroupId: 'C0004',
-            GroupName: 'Targeting Cookies',
           },
           {
             CustomGroupId: 'SOME_OTHER_GROUP',
-            GroupName: 'Some other group',
           },
         ],
       }),
     }
     const data = getGroupData()
 
-    expect(data.userSetConsentGroups).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "customGroupId": "C0001",
-          "groupName": "Strictly Neccessary Cookies",
-        },
-        Object {
-          "customGroupId": "C0004",
-          "groupName": "Targeting Cookies",
-        },
-      ]
-    `)
-    expect(data.userDeniedConsentGroups).toMatchInlineSnapshot(`
-    Array [
-      Object {
-        "customGroupId": "SOME_OTHER_GROUP",
-        "groupName": "Some other group",
+    expect(data.userSetConsentGroups).toEqual([
+      {
+        groupId: 'C0001',
       },
-    ]
-  `)
+      {
+        groupId: 'C0004',
+      },
+    ])
+
+    expect(data.userDeniedConsentGroups).toEqual([
+      {
+        groupId: 'SOME_OTHER_GROUP',
+      },
+    ])
   })
 })

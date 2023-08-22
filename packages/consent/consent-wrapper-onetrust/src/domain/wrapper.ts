@@ -46,8 +46,7 @@ export const oneTrust = (
         (acc, c) => {
           return {
             ...acc,
-            [c.groupName]: true,
-            [c.customGroupId]: true,
+            [c.groupId]: true,
           }
         },
         {}
@@ -57,8 +56,7 @@ export const oneTrust = (
         (acc, c) => {
           return {
             ...acc,
-            [c.groupName]: false,
-            [c.customGroupId]: false,
+            [c.groupId]: false,
           }
         },
         {}
