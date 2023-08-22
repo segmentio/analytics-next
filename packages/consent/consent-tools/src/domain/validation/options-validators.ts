@@ -62,7 +62,7 @@ export function validateSettings(options: {
 export function validateAnalyticsInstance(
   analytics: unknown
 ): asserts analytics is AnyAnalytics {
-  assertIsObject(analytics)
+  assertIsObject(analytics, 'analytics')
   if (
     'load' in analytics &&
     'on' in analytics &&

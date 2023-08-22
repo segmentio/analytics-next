@@ -11,7 +11,7 @@ export function assertIsFunction(
 
 export function assertIsObject(
   val: unknown,
-  variableName = 'value'
+  variableName: string
 ): asserts val is object {
   if (val === null || typeof val !== 'object') {
     throw new ValidationError(`${variableName} is not an object`, val)
