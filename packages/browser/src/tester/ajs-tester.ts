@@ -1,4 +1,3 @@
-import { getGlobalAnalytics } from '../browser/utils'
 import { Analytics } from '../core/analytics'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
@@ -14,7 +13,7 @@ function makeStub(page: playwright.Page) {
     ): Promise<SerializedContext> {
       return await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return getGlobalAnalytics()
+        return window.analytics
           .register(...innerArgs)
           .then((ctx) => ctx.toJSON())
         // @ts-ignore
@@ -26,11 +25,9 @@ function makeStub(page: playwright.Page) {
       // @ts-expect-error
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return getGlobalAnalytics()
-          .track(...innerArgs)
-          .then((ctx) => {
-            return ctx.toJSON()
-          })
+        return window.analytics.track(...innerArgs).then((ctx) => {
+          return ctx.toJSON()
+        })
         // @ts-ignore
       }, args)
 
@@ -39,13 +36,11 @@ function makeStub(page: playwright.Page) {
     async page(
       ...args: Parameters<Analytics['page']>
     ): Promise<SerializedContext> {
-      const ctx = await page.evaluate(async (innerArgs) => {
+      const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return getGlobalAnalytics()
-          .page(...innerArgs)
-          .then((ctx) => {
-            return ctx.toJSON()
-          })
+        return window.analytics.page(...innerArgs).then((ctx) => {
+          return ctx.toJSON()
+        })
         // @ts-ignore
       }, args)
 
@@ -57,11 +52,9 @@ function makeStub(page: playwright.Page) {
     ): Promise<SerializedContext> {
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
-        return getGlobalAnalytics()
-          .identify(...innerArgs)
-          .then((ctx) => {
-            return ctx.toJSON()
-          })
+        return window.analytics.identify(...innerArgs).then((ctx) => {
+          return ctx.toJSON()
+        })
         // @ts-ignore
       }, args)
 

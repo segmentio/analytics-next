@@ -44,7 +44,7 @@ const WebWorker: React.FC = () => {
           }}
           value="Track!"
           onClick={() => {
-            void window.analytics.track(
+            void (window as any).analytics.track(
               'Party Town Click',
               { myProp: 'hello' },
               { traits: { age: 8 } }
