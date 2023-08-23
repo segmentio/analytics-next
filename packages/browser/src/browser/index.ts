@@ -26,7 +26,7 @@ import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
-import { getGlobalAnalytics } from './utils'
+import { getGlobalAnalytics, setGlobalAnalyticsKey } from './utils'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -149,10 +149,9 @@ function hasTsubMiddleware(settings: LegacySettings): boolean {
  */
 function flushPreBuffer(
   analytics: Analytics,
-  buffer: PreInitMethodCallBuffer,
-  bufferKey?: string
+  buffer: PreInitMethodCallBuffer
 ): void {
-  const calls = getGlobalAnalytics(bufferKey)
+  const calls = getGlobalAnalytics()
   buffer.push(...popSnippetWindowBuffer(calls))
   flushSetAnonymousID(analytics, buffer)
   flushOn(analytics, buffer)
@@ -163,10 +162,9 @@ function flushPreBuffer(
  */
 async function flushFinalBuffer(
   analytics: Analytics,
-  buffer: PreInitMethodCallBuffer,
-  bufferKey?: string
+  buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  const calls = getGlobalAnalytics(bufferKey)
+  const calls = getGlobalAnalytics()
   // Call popSnippetWindowBuffer before each flush task since there may be
   // analytics calls during async function calls.
   buffer.push(...popSnippetWindowBuffer(calls))
@@ -293,6 +291,7 @@ async function loadAnalytics(
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
 ): Promise<[Analytics, Context]> {
+  if (options.bufferKey) setGlobalAnalyticsKey(options.bufferKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
@@ -317,7 +316,7 @@ async function loadAnalytics(
   Stats.initRemoteMetrics(legacySettings.metrics)
 
   // needs to be flushed before plugins are registered
-  flushPreBuffer(analytics, preInitBuffer, options.bufferKey)
+  flushPreBuffer(analytics, preInitBuffer)
 
   const ctx = await registerPlugins(
     settings.writeKey,
@@ -345,7 +344,7 @@ async function loadAnalytics(
     analytics.page().catch(console.error)
   }
 
-  await flushFinalBuffer(analytics, preInitBuffer, options.bufferKey)
+  await flushFinalBuffer(analytics, preInitBuffer)
 
   return [analytics, ctx]
 }

@@ -213,6 +213,57 @@ describe('Initialization', () => {
     })
   })
 
+  describe('bufferKey', () => {
+    const overrideKey = 'myKey'
+    const buffer = {
+      foo: 'bar',
+    }
+
+    beforeEach(() => {
+      ;(window as any)[overrideKey] = buffer
+    })
+    afterEach(() => {
+      delete (window as any)[overrideKey]
+    })
+    it('should default to window.analytics', async () => {
+      const defaultObj = { original: 'default' }
+      ;(window as any)['analytics'] = defaultObj
+
+      await AnalyticsBrowser.load({
+        writeKey,
+        plugins: [
+          {
+            ...xt,
+            load: async () => {
+              expect(getGlobalAnalytics()).toBe(defaultObj)
+            },
+          },
+        ],
+      })
+      expect.assertions(1)
+    })
+
+    it('should set the global window key for the analytics buffer with the setting option', async () => {
+      await AnalyticsBrowser.load(
+        {
+          writeKey,
+          plugins: [
+            {
+              ...xt,
+              load: async () => {
+                expect(getGlobalAnalytics()).toBe(buffer)
+              },
+            },
+          ],
+        },
+        {
+          bufferKey: overrideKey,
+        }
+      )
+      expect.assertions(1)
+    })
+  })
+
   describe('Load options', () => {
     it('gets high entropy client hints if set', async () => {
       ;(window.navigator as any).userAgentData = {

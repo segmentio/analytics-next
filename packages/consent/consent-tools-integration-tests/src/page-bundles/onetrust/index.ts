@@ -12,4 +12,4 @@ oneTrust(analytics, {
 ;(window as any).analytics = analytics
 
 analytics.load({ writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc' })
-void getGlobalAnalytics().page().then(console.log)
+void getGlobalAnalytics()?.page().then(console.log)
