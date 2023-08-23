@@ -121,7 +121,7 @@ export interface InitOptions {
    * Key for the global window property storing the buffered calls
    * default: analytics
    */
-  bufferKey?: string
+  globalAnalyticsKey?: string
 }
 
 /* analytics-classic stubs */

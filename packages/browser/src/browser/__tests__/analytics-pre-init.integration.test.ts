@@ -287,7 +287,9 @@ describe('Pre-initialization', () => {
 
       ;(window as any).segment = [onTrack, track, track2, identify]
 
-      await AnalyticsBrowser.standalone(writeKey, { bufferKey: 'segment' })
+      await AnalyticsBrowser.standalone(writeKey, {
+        globalAnalyticsKey: 'segment',
+      })
 
       await sleep(100) // the snippet does not return a promise (pre-initialization) ... it sometimes has a callback as the third argument.
       expect(trackSpy).toBeCalledWith('foo')

@@ -291,7 +291,8 @@ async function loadAnalytics(
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
 ): Promise<[Analytics, Context]> {
-  if (options.bufferKey) setGlobalAnalyticsKey(options.bufferKey)
+  if (options.globalAnalyticsKey)
+    setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 

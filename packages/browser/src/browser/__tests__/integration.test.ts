@@ -257,7 +257,7 @@ describe('Initialization', () => {
           ],
         },
         {
-          bufferKey: overrideKey,
+          globalAnalyticsKey: overrideKey,
         }
       )
       expect.assertions(1)
