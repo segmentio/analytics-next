@@ -12,11 +12,13 @@ function makeStub(page: playwright.Page) {
       ...args: Parameters<Analytics['register']>
     ): Promise<SerializedContext> {
       return await page.evaluate((innerArgs) => {
-        // @ts-ignore
-        return window.analytics
-          .register(...innerArgs)
-          .then((ctx) => ctx.toJSON())
-        // @ts-ignore
+        return (
+          // @ts-ignore
+          window.analytics
+            .register(...innerArgs)
+            // @ts-ignore
+            .then((ctx) => ctx.toJSON())
+        )
       }, args)
     },
     async track(
