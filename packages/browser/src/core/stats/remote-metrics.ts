@@ -1,6 +1,6 @@
 import { fetch } from '../../lib/fetch'
 import { version } from '../../generated/version'
-import { getVersionType } from '../../plugins/segmentio/normalize'
+import { getVersionType } from '../../lib/version-type'
 import { SEGMENT_API_HOST } from '../constants'
 
 export interface MetricsOptions {
