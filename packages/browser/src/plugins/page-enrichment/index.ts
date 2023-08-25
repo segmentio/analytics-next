@@ -132,7 +132,7 @@ export function utm(query: string): Campaign {
     const [k, v = ''] = str.split('=')
     if (k.includes('utm_') && k.length > 4) {
       let utmParam = k.substr(4) as keyof Campaign
-      if (utmParam === 'campaign') {
+      if ((utmParam as string) === 'campaign') {
         utmParam = 'name'
       }
       acc[utmParam] = gracefulDecodeURIComponent(v)
