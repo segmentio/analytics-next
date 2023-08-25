@@ -8,7 +8,7 @@ import { Campaign, EventProperties, PluginType } from '@segment/analytics-core'
 import { getVersionType } from '../../lib/version-type'
 import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
-import { getAvailableStorageOptions, UniversalStorage } from '../../core/user'
+import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
 
 interface PageDefault {
@@ -155,10 +155,7 @@ function referrerId(
 ): void {
   const storage = new UniversalStorage<{
     's:context.referrer': Ad
-  }>(
-    disablePersistance ? [] : ['cookie'],
-    getAvailableStorageOptions(getCookieOptions())
-  )
+  }>(disablePersistance ? [] : [new CookieStorage(getCookieOptions())])
 
   const stored = storage.get('s:context.referrer')
   let ad: Ad | undefined | null = ads(query)
