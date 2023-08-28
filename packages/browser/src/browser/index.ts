@@ -26,7 +26,7 @@ import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
-import { getGlobalAnalytics, setGlobalAnalyticsKey } from './utils'
+import { setGlobalAnalyticsKey } from './utils'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -151,8 +151,7 @@ function flushPreBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): void {
-  const calls = getGlobalAnalytics()
-  buffer.push(...popSnippetWindowBuffer(calls))
+  buffer.push(...popSnippetWindowBuffer())
   flushSetAnonymousID(analytics, buffer)
   flushOn(analytics, buffer)
 }
@@ -164,12 +163,11 @@ async function flushFinalBuffer(
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  const calls = getGlobalAnalytics()
   // Call popSnippetWindowBuffer before each flush task since there may be
   // analytics calls during async function calls.
-  buffer.push(...popSnippetWindowBuffer(calls))
+  buffer.push(...popSnippetWindowBuffer())
   await flushAddSourceMiddleware(analytics, buffer)
-  buffer.push(...popSnippetWindowBuffer(calls))
+  buffer.push(...popSnippetWindowBuffer())
   flushAnalyticsCallsInNewTask(analytics, buffer)
   // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
   buffer.clear()

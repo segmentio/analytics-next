@@ -21,3 +21,11 @@ export function getGlobalAnalytics(): AnalyticsSnippet | undefined {
 export function setGlobalAnalyticsKey(key: string) {
   _globalAnalyticsKey = key
 }
+
+/**
+ * Sets the global analytics object
+ * @param analytics analytics snippet
+ */
+export function setGlobalAnalytics(analytics: AnalyticsSnippet): void {
+  ;(window as any)[_globalAnalyticsKey] = analytics
+}

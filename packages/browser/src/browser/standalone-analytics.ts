@@ -1,7 +1,7 @@
 import { AnalyticsBrowser } from '.'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
 import { AnalyticsSnippet } from './standalone-interface'
-import { getGlobalAnalytics } from './utils'
+import { getGlobalAnalytics, setGlobalAnalytics } from './utils'
 
 function getWriteKey(): string | undefined {
   if (embeddedWriteKey()) {
@@ -53,8 +53,7 @@ export async function install(): Promise<void> {
     return
   }
 
-  ;(window as any).analytics = (await AnalyticsBrowser.standalone(
-    writeKey,
-    options
-  )) as AnalyticsSnippet
+  setGlobalAnalytics(
+    (await AnalyticsBrowser.standalone(writeKey, options)) as AnalyticsSnippet
+  )
 }

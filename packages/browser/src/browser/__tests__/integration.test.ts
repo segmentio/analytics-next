@@ -213,7 +213,7 @@ describe('Initialization', () => {
     })
   })
 
-  describe('bufferKey', () => {
+  describe('globalAnalyticsKey', () => {
     const overrideKey = 'myKey'
     const buffer = {
       foo: 'bar',
