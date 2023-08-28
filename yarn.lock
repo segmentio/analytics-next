@@ -3196,7 +3196,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-consent-tools@0.1.0, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
+"@segment/analytics-consent-tools@0.1.1, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-tools@workspace:packages/consent/consent-tools"
   dependencies:
@@ -3212,7 +3212,7 @@ __metadata:
   dependencies:
     "@internal/config-webpack": "workspace:^"
     "@internal/test-helpers": "workspace:^"
-    "@segment/analytics-consent-tools": 0.1.0
+    "@segment/analytics-consent-tools": 0.1.1
   languageName: unknown
   linkType: soft
 

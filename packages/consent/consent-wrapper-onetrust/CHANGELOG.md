@@ -1,5 +1,17 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.2.0
+
+### Minor Changes
+
+- [#938](https://github.com/segmentio/analytics-next/pull/938) [`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39) Thanks [@silesky](https://github.com/silesky)! - - Change API from oneTrust(analytics) -> withOneTrust(analytics). Allow withOneTrust(analytics).load(...).
+  - Add a umd bundle for snippet users
+
+### Patch Changes
+
+- Updated dependencies [[`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39)]:
+  - @segment/analytics-consent-tools@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

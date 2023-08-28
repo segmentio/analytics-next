@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.54.0
+
+### Minor Changes
+
+- [#908](https://github.com/segmentio/analytics-next/pull/908) [`1b95946`](https://github.com/segmentio/analytics-next/commit/1b95946339d32a0395ab6bf56e37ecbd6eb832ae) Thanks [@oscb](https://github.com/oscb)! - Adds storage option in analytics client to specify priority of storage (e.g use cookies over localstorage)
+
 ## 1.53.4
 
 ### Patch Changes
