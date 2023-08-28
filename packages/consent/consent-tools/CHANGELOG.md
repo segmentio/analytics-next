@@ -1,5 +1,11 @@
 # @segment/analytics-consent-tools
 
+## 0.1.1
+
+### Patch Changes
+
+- [#938](https://github.com/segmentio/analytics-next/pull/938) [`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39) Thanks [@silesky](https://github.com/silesky)! - Have `createWrapper` return analytics instance to allow `.load` to be chained.
+
 ## 0.1.0
 
 ### Minor Changes
