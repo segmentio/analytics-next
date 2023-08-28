@@ -15,4 +15,7 @@ type Extends<T, U> = T extends U ? true : false
   const f: Extends<AnalyticsSnippet, AnyAnalytics> = true
   const g: Extends<AnalyticsBrowser, AnyAnalytics> = true
   console.log(f, g)
+
+  // should be chainable
+  wrap({} as AnalyticsBrowser).load({ writeKey: 'foo' })
 }

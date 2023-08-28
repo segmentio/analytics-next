@@ -160,6 +160,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       })
     }
     analytics.load = loadWithConsent
+    return analytics
   }
 }
 

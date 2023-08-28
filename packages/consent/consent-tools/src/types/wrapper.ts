@@ -41,7 +41,9 @@ export interface AnyAnalytics {
  **/
 // Why type this as 'object' rather than 'AnyAnalytics'? IMO, the chance of a false positive is much higher than the chance that someone will pass in an object that is not an analytics instance.
 // We have an assertion function that throws an error if the analytics instance is not compatible.
-export type Wrapper = (analyticsInstance: object) => void
+export type Wrapper = <Analytics extends object>(
+  analyticsInstance: Analytics
+) => Analytics
 
 /**
  * Create a function which wraps analytics instances to add consent management.

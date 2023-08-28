@@ -117,6 +117,12 @@ describe(createWrapper, () => {
     expect(addSourceMiddlewareSpy).toBeCalledWith(expect.any(Function))
   })
 
+  it('should be chainable', async () => {
+    await wrapTestAnalytics().load(DEFAULT_LOAD_SETTINGS)
+    const { args } = getAnalyticsLoadLastCall()
+    expect(args.length).toBeTruthy()
+  })
+
   describe('shouldLoad', () => {
     describe('Throwing errors / aborting load', () => {
       const createShouldLoadThatThrows = (

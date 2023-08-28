@@ -1,7 +1,7 @@
 import * as ConsentTools from '@segment/analytics-consent-tools'
 import * as OneTrustAPI from '../../lib/onetrust-api'
 import { sleep } from '@internal/test-helpers'
-import { oneTrust } from '../wrapper'
+import { withOneTrust } from '../wrapper'
 import { OneTrustMockGlobal, analyticsMock } from '../../test-helpers/mocks'
 
 const throwNotImplemented = (): never => {
@@ -69,7 +69,7 @@ describe('High level "integration" tests', () => {
     })
 
     it('should be resolved successfully', async () => {
-      oneTrust(analyticsMock)
+      withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
         Groups: [grpFixture.StrictlyNeccessary, grpFixture.Performance],
       })
@@ -92,7 +92,7 @@ describe('High level "integration" tests', () => {
 
   describe('getCategories', () => {
     it('should get categories successfully', async () => {
-      oneTrust(analyticsMock)
+      withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValue({
         Groups: [
           grpFixture.StrictlyNeccessary,
@@ -115,7 +115,7 @@ describe('High level "integration" tests', () => {
 
   describe('Consent changed', () => {
     it('should enable consent changed by default', async () => {
-      oneTrust(analyticsMock)
+      withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValue({
         Groups: [
           grpFixture.StrictlyNeccessary,
