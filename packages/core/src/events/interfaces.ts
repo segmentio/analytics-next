@@ -474,8 +474,7 @@ export type Traits = UserTraits | GroupTraits
 
 export type Campaign = {
   name: string
-  term: string
   source: string
   medium: string
-  content: string
+  [key: string]: string
 }

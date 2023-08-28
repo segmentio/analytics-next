@@ -132,7 +132,7 @@ export function utm(query: string): Campaign {
     const [k, v = ''] = str.split('=')
     if (k.includes('utm_') && k.length > 4) {
       let utmParam = k.substr(4) as keyof Campaign
-      if ((utmParam as string) === 'campaign') {
+      if (utmParam === 'campaign') {
         utmParam = 'name'
       }
       acc[utmParam] = gracefulDecodeURIComponent(v)
@@ -158,9 +158,8 @@ function referrerId(
   }>(disablePersistance ? [] : [new CookieStorage(getCookieOptions())])
 
   const stored = storage.get('s:context.referrer')
-  let ad: Ad | undefined | null = ads(query)
 
-  ad = ad ?? stored
+  const ad = ads(query) ?? stored
 
   if (!ad) {
     return
@@ -222,19 +221,9 @@ class PageEnrichmentPlugin implements Plugin {
       evtCtx.locale = locale
     }
 
-    if (!evtCtx.library) {
-      const type = getVersionType()
-      if (type === 'web') {
-        evtCtx.library = {
-          name: 'analytics.js',
-          version: `next-${version}`,
-        }
-      } else {
-        evtCtx.library = {
-          name: 'analytics.js',
-          version: `npm:next-${version}`,
-        }
-      }
+    evtCtx.library ??= {
+      name: 'analytics.js',
+      version: `${getVersionType() === 'web' ? 'next' : 'npm:next'}-${version}`,
     }
 
     if (query && !evtCtx.campaign) {
