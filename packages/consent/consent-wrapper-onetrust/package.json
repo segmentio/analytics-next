@@ -1,10 +1,20 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
   "version": "0.1.0",
+  "keywords": [
+    "segment",
+    "analytics",
+    "consent",
+    "onetrust"
+  ],
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/umd/analytics-onetrust.umd.js"
+  ],
+  "jsdeliver": "./dist/umd/global/analytics-onetrust.umd.js",
+  "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
     "dist/",
@@ -20,12 +30,15 @@
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
-    "watch": "yarn build:esm --watch",
+    "build:bundle": "NODE_ENV=production yarn run webpack",
+    "build:bundle-dev": "NODE_ENV=development yarn run webpack",
+    "watch": "yarn concurrently 'yarn build:bundle --watch' 'yarn build:esm --watch'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently --raw",
-    "jest": "yarn run -T jest"
+    "jest": "yarn run -T jest",
+    "webpack": "yarn run -T webpack"
   },
   "dependencies": {
     "@segment/analytics-consent-tools": "0.1.0"
@@ -38,6 +51,7 @@
     "url": "https://github.com/segmentio/analytics-next"
   },
   "devDependencies": {
+    "@internal/config-webpack": "workspace:^",
     "@internal/test-helpers": "workspace:^"
   }
 }

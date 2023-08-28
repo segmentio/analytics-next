@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
+import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 
-oneTrust(window.analytics, {
+withOneTrust(window.analytics, {
   integrationCategoryMappings: {
     Fullstory: ['C0001'],
     'Actions Amplitude': ['C0004'],
