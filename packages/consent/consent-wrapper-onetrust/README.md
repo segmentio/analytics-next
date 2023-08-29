@@ -76,17 +76,17 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 
   <!--
     Add / Modify Segment Analytics Snippet
-    * Find and replace: analytics.load() -> withOneTrust(analytics).load()
+    * Find and replace: analytics.load('<MY_WRITE_KEY'>) -> withOneTrust(analytics).load('<MY_WRITE_KEY'>)
   -->
   <script>
     !function(){var analytics=window.analytics...
     ....
-    withOneTrust(analytics).load() // replace analytics.load()
+    withOneTrust(analytics).load('<MY_WRITE_KEY'>) // replace analytics.load()
   </script>
 </head>
 ```
 
-#### ⚠️ Reminder: _delete_ `analytics.load('....')` from the original Segment snippet so that only .load() is only called after `withOneTrust` is called. See comment in example above.
+#### ⚠️ Reminder: _you must modify_ `analytics.load('....')` from the original Segment snippet. See markup comment in example above.
 
 ## Other examples:
 
