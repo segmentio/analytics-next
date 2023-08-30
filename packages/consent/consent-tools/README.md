@@ -70,6 +70,10 @@ window.analytics.load('<MY_WRITE_KEY')
 
 See the complete list of settings in the **[Settings interface](src/types/settings.ts)**
 
+## Special Requirements
+
+- For npm users, this library expects a version of `@segment/analytics-next` >= **1.53.1**. Note: If your library depends on this library, you should have the appropriate peer dependency declaration. See our `package.json` for an example.
+
 ## Development
 
 1. Build this package + all dependencies

@@ -22,7 +22,7 @@ export interface InitOptions {
  */
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
-  on(event: 'initialize', callback: (settings: CDNSettings) => void): void
+  on(event: 'initialize', callback: (cdnSettings: CDNSettings) => void): void
   track(event: string, properties?: unknown, ...args: any[]): void
 
   /**
@@ -41,14 +41,16 @@ export interface AnyAnalytics {
  **/
 // Why type this as 'object' rather than 'AnyAnalytics'? IMO, the chance of a false positive is much higher than the chance that someone will pass in an object that is not an analytics instance.
 // We have an assertion function that throws an error if the analytics instance is not compatible.
-export type Wrapper = <Analytics extends object>(
+export type Wrapper<Analytics extends AnyAnalytics> = (
   analyticsInstance: Analytics
 ) => Analytics
 
 /**
  * Create a function which wraps analytics instances to add consent management.
  */
-export type CreateWrapper = (settings: CreateWrapperSettings) => Wrapper
+export type CreateWrapper<Analytics extends AnyAnalytics> = (
+  settings: CreateWrapperSettings
+) => Wrapper<Analytics>
 
 export interface Categories {
   [category: string]: boolean
