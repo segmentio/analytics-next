@@ -3219,7 +3219,7 @@ __metadata:
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-consent-tools": 0.1.1
   peerDependencies:
-    "@segment/analytics-next": ">= 1.53.1"
+    "@segment/analytics-next": ">=1.53.1"
   peerDependenciesMeta:
     "@segment/analytics-next":
       optional: true
