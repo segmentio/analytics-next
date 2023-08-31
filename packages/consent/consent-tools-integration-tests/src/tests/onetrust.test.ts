@@ -2,7 +2,6 @@
 import page from '../page-objects/onetrust'
 import { expect } from 'expect'
 import { Context } from '@segment/analytics-next'
-import { sleep } from '@segment/analytics-core'
 
 declare global {
   interface Window {
@@ -54,7 +53,7 @@ it('should send an onConsentChanged event if there has not been a selection', as
   listenToConsent()
 
   // make sure an onConsentChange event is not sent
-  await sleep(1000)
+  await browser.pause(1000)
   await expect(
     browser.execute(() => window._segmentConsentCalls)
   ).resolves.toBe(0)
