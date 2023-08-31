@@ -1,5 +1,7 @@
+import braze from '@segment/analytics-browser-actions-braze'
+
 import * as loader from '../../../lib/load-script'
-import { ActionDestination, remoteLoader } from '..'
+import { ActionDestination, PluginFactory, remoteLoader } from '..'
 import { AnalyticsBrowser, LegacySettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
@@ -138,6 +140,60 @@ describe('Remote Loader', () => {
     expect(pluginFactory).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Charlie Brown',
+      })
+    )
+  })
+
+  it('should load from given plugin sources before loading from CDN', async () => {
+    const brazeSpy = jest.spyOn({ braze }, 'braze')
+    ;(brazeSpy as any).pluginName = braze.pluginName
+
+    await remoteLoader(
+      {
+        integrations: {},
+        remotePlugins: [
+          {
+            name: 'Braze Web Mode (Actions)',
+            creationName: 'Braze Web Mode (Actions)',
+            libraryName: 'brazeDestination',
+            url: 'https://cdn.segment.com/next-integrations/actions/braze/a6f95f5869852b848386.js',
+            settings: {
+              api_key: 'test-api-key',
+              versionSettings: {
+                componentTypes: [],
+              },
+              subscriptions: [
+                {
+                  id: '3thVuvYKBcEGKEZA185Tbs',
+                  name: 'Track Calls',
+                  enabled: true,
+                  partnerAction: 'trackEvent',
+                  subscribe: 'type = "track" and event != "Order Completed"',
+                  mapping: {
+                    eventName: {
+                      '@path': '$.event',
+                    },
+                    eventProperties: {
+                      '@path': '$.properties',
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+      {},
+      {},
+      false,
+      undefined,
+      [brazeSpy as unknown as PluginFactory]
+    )
+
+    expect(brazeSpy).toHaveBeenCalledTimes(1)
+    expect(brazeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        api_key: 'test-api-key',
       })
     )
   })
