@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
-import { setVersionType } from '../plugins/segmentio/normalize'
+import { setVersionType } from '../lib/version-type'
 
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
