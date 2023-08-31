@@ -45,6 +45,7 @@ analytics.load({
 ```
 
 ## Snippet users (window.analytics)
+### Note: This assumes a project that can consume the library via es6 imports, using a like Webpack.
 
 1. Delete the `analytics.load()` line from the snippet
 
