@@ -8,22 +8,14 @@ const waitUntilReady = () =>
     }
   )
 
-interface LoadOptions {
-  /**
-   * Do not clear storage after loading the page
-   */
-  preserveStorage?: boolean
-}
-
 export abstract class BasePage {
   constructor(protected page: string) {}
 
-  async load({ preserveStorage = false }: LoadOptions = {}): Promise<void> {
+  async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
     await waitUntilReady()
     await browser.url(baseURL + '/' + this.page)
-    preserveStorage && (await this.clearStorage())
   }
 
   async clearStorage() {

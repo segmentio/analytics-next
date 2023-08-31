@@ -9,6 +9,10 @@ declare global {
   }
 }
 
+afterEach(async () => {
+  await page.clearStorage()
+})
+
 it('should stamp each event', async () => {
   await page.load()
 
