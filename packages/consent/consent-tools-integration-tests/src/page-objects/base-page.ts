@@ -8,14 +8,33 @@ const waitUntilReady = () =>
     }
   )
 
+interface LoadOptions {
+  /**
+   * Do not clear storage after loading the page
+   */
+  preserveStorage?: boolean
+}
+
 export abstract class BasePage {
   constructor(protected page: string) {}
 
-  async load(): Promise<void> {
+  async load({ preserveStorage = false }: LoadOptions = {}): Promise<void> {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
     await waitUntilReady()
-
     await browser.url(baseURL + '/' + this.page)
+    preserveStorage && (await this.clearStorage())
+  }
+
+  async clearStorage() {
+    await browser.deleteAllCookies()
+    await browser.execute(() => localStorage.clear())
+  }
+
+  /**
+   * Hard reload the page
+   */
+  reload() {
+    return browser.execute(() => window.location.reload())
   }
 }
