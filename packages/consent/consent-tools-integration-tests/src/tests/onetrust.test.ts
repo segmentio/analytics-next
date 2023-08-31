@@ -3,10 +3,8 @@ import page from '../page-objects/onetrust'
 import { expect } from 'expect'
 import { Context } from '@segment/analytics-next'
 
-declare global {
-  interface Window {
-    _segmentConsentCalls: any
-  }
+interface Window {
+  _segmentConsentCalls: number
 }
 
 afterEach(async () => {
