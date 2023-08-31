@@ -72,7 +72,7 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
   ></script>
 
   <!-- Add OneTrust Consent Wrapper -->
-  <script src="https://unpkg.com/@segment/analytics-consent-wrapper-onetrust@X.X.X/dist/umd/analytics-onetrust.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-consent-wrapper-onetrust@^0.2.0/dist/umd/analytics-onetrust.umd.js"></script>
 
   <!--
     Add / Modify Segment Analytics Snippet

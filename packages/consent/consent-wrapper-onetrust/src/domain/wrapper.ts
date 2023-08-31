@@ -1,6 +1,8 @@
 import {
+  AnyAnalytics,
   createWrapper,
   CreateWrapperSettings,
+  RegisterOnConsentChangedFunction,
   resolveWhen,
 } from '@segment/analytics-consent-tools'
 
@@ -21,11 +23,22 @@ export interface OneTrustSettings {
  * @param analyticsInstance - An analytics instance. Either `window.analytics`, or the instance returned by `new AnalyticsBrowser()` or `AnalyticsBrowser.load({...})`
  * @param settings - Optional settings for configuring your OneTrust wrapper
  */
-export const withOneTrust = <Analytics extends object>(
-  analyticsInstance: Analytics, // typing this as 'object', rather than AnyAnalytics to avoid misc type mismatches. createWrapper will throw an error if the analytics instance is not compatible.
+export const withOneTrust = <Analytics extends AnyAnalytics>(
+  analyticsInstance: Analytics,
   settings: OneTrustSettings = {}
 ): Analytics => {
-  return createWrapper({
+  const registerOnConsentChanged: RegisterOnConsentChangedFunction = async (
+    onCategoriesChangedCb
+  ) => {
+    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
+    getOneTrustGlobal()!.OnConsentChanged((event) => {
+      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+        event.detail
+      )
+      onCategoriesChangedCb(normalizedCategories)
+    })
+  }
+  return createWrapper<Analytics>({
     shouldLoad: async () => {
       await resolveWhen(() => {
         const oneTrustGlobal = getOneTrustGlobal()
@@ -42,13 +55,7 @@ export const withOneTrust = <Analytics extends object>(
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
-      : (onCategoriesChangedCb) =>
-          getOneTrustGlobal()?.OnConsentChanged((event) => {
-            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-              event.detail
-            )
-            onCategoriesChangedCb(normalizedCategories)
-          }),
+      : registerOnConsentChanged,
     integrationCategoryMappings: settings.integrationCategoryMappings,
   })(analyticsInstance)
 }

@@ -1,4 +1,6 @@
 import { AnyAnalytics, Categories } from '../types'
+import { getInitializedAnalytics } from './get-initialized-analytics'
+import { validateCategories } from './validation'
 
 /**
  * Dispatch an event that looks like:
@@ -20,7 +22,7 @@ export const sendConsentChangedEvent = (
   analytics: AnyAnalytics,
   categories: Categories
 ): void => {
-  analytics.track(
+  getInitializedAnalytics(analytics).track(
     CONSENT_CHANGED_EVENT,
     undefined,
     createConsentChangedCtxDto(categories)
@@ -34,3 +36,16 @@ const createConsentChangedCtxDto = (categories: Categories) => ({
     categoryPreferences: categories,
   },
 })
+
+export const validateAndSendConsentChangedEvent = (
+  analytics: AnyAnalytics,
+  categories: Categories
+) => {
+  try {
+    validateCategories(categories)
+    sendConsentChangedEvent(analytics, categories)
+  } catch (err) {
+    // Not sure if there's a better way to handle this, but this makes testing a bit easier.
+    console.error(err)
+  }
+}

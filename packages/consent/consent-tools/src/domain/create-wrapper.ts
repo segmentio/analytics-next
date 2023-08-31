@@ -15,9 +15,11 @@ import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
 import { ValidationError } from './validation/validation-error'
-import { sendConsentChangedEvent } from './consent-changed'
+import { validateAndSendConsentChangedEvent } from './consent-changed'
 
-export const createWrapper: CreateWrapper = (createWrapperOptions) => {
+export const createWrapper = <Analytics extends AnyAnalytics>(
+  ...[createWrapperOptions]: Parameters<CreateWrapper<Analytics>>
+): ReturnType<CreateWrapper<Analytics>> => {
   validateSettings(createWrapperOptions)
 
   const {
@@ -31,8 +33,15 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     registerOnConsentChanged,
   } = createWrapperOptions
 
-  return (analytics) => {
+  return (analytics: Analytics) => {
     validateAnalyticsInstance(analytics)
+
+    // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
+    registerOnConsentChanged?.((categories) =>
+      // whenever consent changes, dispatch a new event with the latest consent information
+      validateAndSendConsentChangedEvent(analytics, categories)
+    )
+
     const ogLoad = analytics.load
 
     const loadWithConsent: AnyAnalytics['load'] = async (
@@ -124,17 +133,6 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       analytics.addSourceMiddleware(
         createConsentStampingMiddleware(getValidCategoriesForConsentStamping)
       )
-
-      // whenever consent changes, dispatch a new event with the latest consent information
-      registerOnConsentChanged?.((categories) => {
-        try {
-          validateCategories(categories)
-          sendConsentChangedEvent(analytics, categories)
-        } catch (err) {
-          // Not sure if there's a better way to handle this, but this makes testing a bit easier.
-          console.error(err)
-        }
-      })
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
         cdnSettings

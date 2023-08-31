@@ -43,19 +43,16 @@ const createWrapperSpyHelper = {
  * We should prefer unit tests for most functionality (see lib/__tests__)
  */
 describe('High level "integration" tests', () => {
+  let resolveResolveWhen = () => {}
   beforeEach(() => {
     jest
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
     getConsentedGroupIdsSpy.mockReset()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
-  })
-
-  describe('shouldLoad', () => {
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
      */
-    let resolveResolveWhen = () => {}
     jest.spyOn(ConsentTools, 'resolveWhen').mockImplementation(async (fn) => {
       return new Promise((_resolve) => {
         resolveResolveWhen = () => {
@@ -67,7 +64,9 @@ describe('High level "integration" tests', () => {
         }
       })
     })
+  })
 
+  describe('shouldLoad', () => {
     it('should be resolved successfully', async () => {
       withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
@@ -124,8 +123,13 @@ describe('High level "integration" tests', () => {
         ],
       })
       const onCategoriesChangedCb = jest.fn()
+
       createWrapperSpyHelper.registerOnConsentChanged(onCategoriesChangedCb)
       onCategoriesChangedCb()
+
+      resolveResolveWhen() // wait for OneTrust global to be available
+      await sleep(0)
+
       const onConsentChangedArg =
         OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
       onConsentChangedArg(

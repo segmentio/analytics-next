@@ -13,7 +13,7 @@
   "sideEffects": [
     "./dist/umd/analytics-onetrust.umd.js"
   ],
-  "jsdeliver": "./dist/umd/global/analytics-onetrust.umd.js",
+  "jsdeliver": "./dist/umd/analytics-onetrust.umd.js",
   "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
@@ -32,7 +32,7 @@
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:bundle": "NODE_ENV=production yarn run webpack",
     "build:bundle-dev": "NODE_ENV=development yarn run webpack",
-    "watch": "yarn concurrently 'yarn build:bundle --watch' 'yarn build:esm --watch'",
+    "watch": "yarn concurrently 'yarn build:bundle-dev --watch' 'yarn build:esm --watch'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
@@ -42,6 +42,14 @@
   },
   "dependencies": {
     "@segment/analytics-consent-tools": "0.1.1"
+  },
+  "peerDependencies": {
+    "@segment/analytics-next": ">=1.53.1"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-next": {
+      "optional": true
+    }
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",

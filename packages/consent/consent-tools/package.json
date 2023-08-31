@@ -25,6 +25,14 @@
     "concurrently": "yarn run -T concurrently --raw",
     "jest": "yarn run -T jest"
   },
+  "peerDependencies": {
+    "@segment/analytics-next": ">=1.53.1"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-next": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@internal/config": "workspace:^",
     "@internal/test-helpers": "workspace:^",
