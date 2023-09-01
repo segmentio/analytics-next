@@ -28,7 +28,6 @@ it('should stamp each event', async () => {
     commands.map((cmd) => browser.execute(cmd))
   )
 
-  // should expect an onConsentChanged event
   await page.clickAcceptButtonAndClosePopup()
   ;(await eventsP).forEach((ctx) => {
     expect(
