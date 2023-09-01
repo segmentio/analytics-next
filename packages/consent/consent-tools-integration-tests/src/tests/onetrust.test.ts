@@ -36,7 +36,7 @@ it('should stamp each event', async () => {
   })
 })
 
-it('should send an onConsentChanged event if there has not been a selection', async () => {
+it('should send an onConsentChanged event when user clicks accept on popup', async () => {
   await page.load()
 
   // you can also use interceptors, but not clear that will work in saucelabs?
