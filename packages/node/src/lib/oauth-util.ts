@@ -35,7 +35,7 @@ export const RefreshTokenAsync = async (data: OauthData) => {
     alg: 'RS256',
     kid: data.settings.keyId,
     'Content-Type': 'application/x-www-form-urlencoded',
-  }
+  } as Record<string, string>
   const jti = Math.floor(Math.random() * 9999).toString()
 
   const body = {
@@ -83,17 +83,25 @@ export const RefreshTokenAsync = async (data: OauthData) => {
       const response = await data.httpClient.makeRequest(requestOptions)
 
       if (response.status === 200) {
+        let access_token = ''
+        let expires_in = 0
         const result = await (response.json() as Promise<{
           access_token: string
           expires_in: number
         }>)
+        try {
+          access_token = result.access_token
+          expires_in = result.expires_in
+        } catch {
+          throw new Error('Malformed token response - ' + result)
+        }
         data.refreshTimer = setTimeout(
           RefreshToken,
-          (result.expires_in * 1000) / 2,
+          (expires_in * 1000) / 2,
           data
         )
         data.refreshTimer.unref()
-        data.token = result.access_token
+        data.token = access_token
         data.refreshPromise = undefined
         return
       }
@@ -104,7 +112,7 @@ export const RefreshTokenAsync = async (data: OauthData) => {
         throw new Error(response.statusText)
       } else if (response.status == 429) {
         // Rate limit, wait until reset timestamp
-        const rateLimitResetTime = response.headers.get('X-RateLimit-Reset')
+        const rateLimitResetTime = response.headers['X-RateLimit-Reset']
         let rateLimitDiff = 60
         if (rateLimitResetTime) {
           rateLimitDiff =

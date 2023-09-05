@@ -1,6 +1,7 @@
 import { RefreshToken, OauthData, OauthSettings } from '../oauth-util'
 import { TestFetchClient } from '../../__tests__/test-helpers/create-test-analytics'
 import { readFileSync } from 'fs'
+import { HTTPResponse } from '../http-client'
 
 const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
@@ -40,16 +41,16 @@ const createOAuthSuccess = (body?: any) => {
     ok: true,
     status: 200,
     statusText: 'OK',
-  }) as unknown as Promise<Response>
+  }) as unknown as Promise<HTTPResponse>
 }
 
-const createOAuthError = (overrides: Partial<Response> = {}) => {
+const createOAuthError = (overrides: Partial<HTTPResponse> = {}) => {
   return Promise.resolve({
     ok: false,
     status: 400,
     statusText: 'Foo',
     ...overrides,
-  }) as Promise<Response>
+  }) as Promise<HTTPResponse>
 }
 
 const getOauthData = () => {
@@ -73,7 +74,7 @@ test('OAuth Success', async () => {
   fetcher.mockReturnValueOnce(
     createOAuthSuccess({
       access_token: 'token',
-      expires_in: 100,
+      expires_in: '100',
     })
   )
 
