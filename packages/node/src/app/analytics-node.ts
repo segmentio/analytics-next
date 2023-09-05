@@ -17,7 +17,6 @@ import {
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
 import { FetchHTTPClient } from '../lib/http-client'
-import { RefreshToken } from '../lib/oauth-util'
 
 export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _eventFactory: NodeEventFactory

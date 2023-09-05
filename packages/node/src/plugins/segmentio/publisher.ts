@@ -4,7 +4,6 @@ import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
-import { b64encode } from '../../lib/base-64-encode'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
 
@@ -42,7 +41,6 @@ export class Publisher {
   private _flushInterval: number
   private _maxEventsInBatch: number
   private _maxRetries: number
-  private _auth: string | undefined
   private _url: string
   private _closeAndFlushPendingItemsCount?: number
   private _httpRequestTimeout: number
@@ -80,11 +78,7 @@ export class Publisher {
     this._writeKey = writeKey
 
     if (oauthSettings != null) {
-      this._oauthData = {
-        httpClient: httpClient,
-        settings: oauthSettings,
-      } as OauthData
-      RefreshToken(this._oauthData)
+      this.oauthSettings = oauthSettings
     }
   }
 
@@ -97,11 +91,17 @@ export class Publisher {
       if (this._oauthData) {
         this._oauthData.settings = value
       } else {
-        this._oauthData = { settings: value } as OauthData
+        this._oauthData = {
+          httpClient: this._httpClient,
+          settings: value,
+          maxRetries: this._maxRetries,
+        } as OauthData
       }
       RefreshToken(this._oauthData)
     } else {
-      // !!! error, create new analytics if you want no oauth?
+      throw new Error(
+        "OAuth settings can't be removed, create a new analytics object instead."
+      )
     }
   }
 
@@ -235,6 +235,10 @@ export class Publisher {
               RefreshToken(this._oauthData)
             }
             await this._oauthData.refreshPromise
+            if (!this._oauthData.token) {
+              // If we don't have a token then authorization failed after multiple attempts
+              continue // ???
+            }
           }
           authString = `Bearer ${this._oauthData.token}`
         }
@@ -274,6 +278,18 @@ export class Publisher {
           // Successfully sent events, so exit!
           batch.resolveEvents()
           return
+        } else if (
+          this._oauthData &&
+          this._oauthData.settings &&
+          (response.status === 400 ||
+            response.status === 401 ||
+            response.status === 403)
+        ) {
+          // Retry with a new OAuth token if we have OAuth data
+          RefreshToken(this._oauthData)
+          failureReason = new Error(
+            `[${response.status}] ${response.statusText}`
+          )
         } else if (response.status === 400) {
           // https://segment.com/docs/connections/sources/catalog/libraries/server/http-api/#max-request-size
           // Request either malformed or size exceeded - don't retry.
