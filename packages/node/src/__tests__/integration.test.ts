@@ -240,6 +240,15 @@ describe('screen', () => {
 })
 
 describe('track', () => {
+  it('sets sentAt on events delivered to Segment', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const track = resolveCtx(analytics, 'track')
+    analytics.track({ event: 'hello', userId: 'foo' })
+    await track
+    expect(makeReqSpy.mock.calls[0][0].data.batch[0].sentAt).toBeDefined()
+  })
   it('generates track events', async () => {
     const analytics = createTestAnalytics()
     const eventName = 'Test Event'
