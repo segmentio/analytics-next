@@ -34,27 +34,26 @@ export abstract class BasePage {
         categories,
       },
     })
+    const settings = new CDNSettingsBuilder({ writeKey: 'something' })
+      .addActionDestinationSettings({
+        creationName: 'FullStory',
+        ...createConsentSettings(['Analytics']),
+      })
+      .addActionDestinationSettings({
+        creationName: 'Actions Amplitude',
+        ...createConsentSettings(['Advertising']),
+      })
+      .build()
+
     browser
       .mock('https://cdn.segment.com/v1/projects/**/settings')
       .then((mock) =>
-        mock.respond(
-          new CDNSettingsBuilder({ writeKey: 'something' })
-            .addActionDestinationSettings({
-              creationName: 'FullStory',
-              ...createConsentSettings(['Analytics']),
-            })
-            .addActionDestinationSettings({
-              creationName: 'Actions Amplitude',
-              ...createConsentSettings(['Advertising']),
-            })
-            .build(),
-          {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+        mock.respond(settings, {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
       )
       .catch(console.error)
   }
