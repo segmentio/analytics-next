@@ -20,5 +20,5 @@ export const analytics = new AnalyticsBrowser()
 wrap(analytics)
 
 analytics.load({
-  writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc',
+  writeKey: 'foo',
 })

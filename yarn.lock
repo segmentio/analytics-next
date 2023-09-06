@@ -2359,6 +2359,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/consent-tools-integration-tests@workspace:packages/consent/consent-tools-integration-tests"
   dependencies:
+    "@internal/test-helpers": "workspace:^"
     "@segment/analytics-consent-tools": "workspace:^"
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^"
     "@segment/analytics-next": "workspace:^"

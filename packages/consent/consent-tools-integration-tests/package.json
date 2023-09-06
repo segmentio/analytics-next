@@ -17,6 +17,7 @@
     "hoistingLimits": "workspaces"
   },
   "devDependencies": {
+    "@internal/test-helpers": "workspace:^",
     "@segment/analytics-consent-tools": "workspace:^",
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
     "@segment/analytics-next": "workspace:^",

@@ -3,10 +3,8 @@ import { expect } from 'expect'
 import { Context } from '@segment/analytics-next'
 
 // Verify that the consent tools wrapper is working as expected (no OneTrust)
-
 it('should stamp each event', async () => {
   await page.load()
-
   const commands = [
     `analytics.track("hello world")`,
     `analytics.alias("foo", "bar")`,
