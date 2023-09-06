@@ -1,6 +1,8 @@
-import page from '../page-objects/basic'
+import page from '../page-objects/consent-tools-vanilla'
 import { expect } from 'expect'
 import { Context } from '@segment/analytics-next'
+
+// Verify that the consent tools wrapper is working as expected (no OneTrust)
 
 it('should stamp each event', async () => {
   await page.load()
@@ -13,6 +15,7 @@ it('should stamp each event', async () => {
     `analytics.identify("bar", { bar: 123 })`,
   ]
 
+  await browser.pause(1000)
   const responses = await Promise.all<Context>(
     commands.map((cmd) => browser.execute(cmd))
   )

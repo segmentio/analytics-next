@@ -7,11 +7,14 @@
     "build": "webpack",
     "watch": "yarn build --watch",
     "test:local": "wdio wdio.conf.local.ts",
-    "start-server-and-test": "yarn concurrently -k 'yarn build serve' 'sleep 5 && yarn test:local'",
+    "start-server-and-test": "yarn build && yarn test:local",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "eslint": "yarn run -T eslint",
     "tsc": "tsc",
     "concurrently": "yarn run -T concurrently --raw"
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
   },
   "devDependencies": {
     "@segment/analytics-consent-tools": "workspace:^",
@@ -21,6 +24,7 @@
     "@wdio/local-runner": "^8.10.6",
     "@wdio/mocha-framework": "^8.10.6",
     "@wdio/spec-reporter": "^8.10.6",
+    "@wdio/static-server-service": "^8.10.6",
     "@wdio/types": "8",
     "expect": "^29.4.1",
     "globby": "^11.0.2",

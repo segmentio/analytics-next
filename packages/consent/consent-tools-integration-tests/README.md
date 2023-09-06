@@ -9,7 +9,7 @@ Why is this using wd.io instead of playwright?
   - `/dist` - Holds the webpacked page-bundles that will be injected into each html page
 
 - `/src` - Test suite files
-  - `/page-bundles` - JS that will be injected into the test page (this will be built by webpack -> public/dist)
+  - `/page-bundles` - For testing libraries that don't have a UMD bundle (i.e analytics-consent-tools)
   - `/page-objects` - Page objects for the test suite
   - `/page-tests ` - Tests that will be run on the page
   

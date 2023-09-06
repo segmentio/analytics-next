@@ -1,5 +1,7 @@
 import type { Options } from '@wdio/types'
 
+const PORT = 4567
+
 export const config: Options.Testrunner = {
   afterTest(test, _, { error, passed }) {
     console.log(
@@ -10,7 +12,25 @@ export const config: Options.Testrunner = {
       ].join('\n')
     )
   },
-  services: ['intercept'],
+  services: [
+    'intercept',
+    [
+      'static-server',
+      {
+        port: PORT,
+        folders: [
+          {
+            mount: '/',
+            path: './public',
+          },
+          {
+            mount: '/@segment',
+            path: './node_modules/@segment',
+          },
+        ],
+      },
+    ],
+  ],
   // services: [ /* Using webpack-dev-server instead */
   //   [
   //     'static-server',
@@ -25,7 +45,7 @@ export const config: Options.Testrunner = {
   //     },
   //   ],
   // ],
-  baseUrl: 'http://localhost:9000',
+  baseUrl: `http://localhost:${PORT}`,
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
   runner: 'local',
