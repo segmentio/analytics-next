@@ -7,6 +7,7 @@ import { HTTPClientRequest } from '../../../lib/http-client'
 export const httpClientOptionsBodyMatcher = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
   timestamp: expect.any(Date),
+  sentAt: expect.any(Date),
   _metadata: expect.any(Object),
   context: {
     library: {

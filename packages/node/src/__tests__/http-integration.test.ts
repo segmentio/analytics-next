@@ -18,6 +18,7 @@ const snapshotMatchers = {
       },
       _metadata: expect.any(Object),
       timestamp: expect.any(String),
+      sentAt: expect.any(String),
     }
   },
   get defaultReqBody() {
@@ -143,6 +144,7 @@ describe('Method Smoke Tests', () => {
               },
               "integrations": Object {},
               "messageId": Any<String>,
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "traits": Object {
                 "foo": "bar",
@@ -182,6 +184,7 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "hello": "world",
               },
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "track",
               "userId": "foo",
@@ -213,6 +216,7 @@ describe('Method Smoke Tests', () => {
               "messageId": Any<String>,
               "name": "page",
               "properties": Object {},
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "page",
             },
@@ -246,6 +250,7 @@ describe('Method Smoke Tests', () => {
               "groupId": "myGroupId",
               "integrations": Object {},
               "messageId": Any<String>,
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "traits": Object {
                 "some_traits": 123,
@@ -277,6 +282,7 @@ describe('Method Smoke Tests', () => {
               "integrations": Object {},
               "messageId": Any<String>,
               "previousId": "previous",
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "alias",
               "userId": "alias",
@@ -314,6 +320,7 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "title": "wip",
               },
+              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "screen",
             },
