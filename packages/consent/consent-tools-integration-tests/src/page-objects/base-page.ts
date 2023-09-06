@@ -15,9 +15,9 @@ export abstract class BasePage {
   async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
+    await this.mockCDNSettingsEndpoint()
     await waitUntilReady()
     await browser.url(baseURL + '/' + this.page)
-    await this.mockCDNSettingsEndpoint()
   }
 
   async clearStorage() {
@@ -28,25 +28,28 @@ export abstract class BasePage {
   /**
    * Mock the CDN Settings endpoint so that this can run offline
    */
-  private mockCDNSettingsEndpoint() {
-    const createConsentSettings = (categories: string[] = []) => ({
-      consentSettings: {
-        categories,
-      },
+  private mockCDNSettingsEndpoint(): Promise<void> {
+    const settings = new CDNSettingsBuilder({
+      writeKey: 'something',
     })
-    const settings = new CDNSettingsBuilder({ writeKey: 'something' })
-      .addActionDestinationSettings({
-        creationName: 'FullStory',
-        ...createConsentSettings(['Analytics']),
-      })
-      .addActionDestinationSettings({
-        creationName: 'Actions Amplitude',
-        ...createConsentSettings(['Advertising']),
-      })
+      .addActionDestinationSettings(
+        {
+          creationName: 'FullStory',
+          consentSettings: {
+            categories: ['Analytics'],
+          },
+        },
+        {
+          creationName: 'Actions Amplitude',
+          consentSettings: {
+            categories: ['Advertising'],
+          },
+        }
+      )
       .build()
 
-    browser
-      .mock('https://cdn.segment.com/v1/projects/**/settings')
+    return browser
+      .mock('**/settings')
       .then((mock) =>
         mock.respond(settings, {
           statusCode: 200,

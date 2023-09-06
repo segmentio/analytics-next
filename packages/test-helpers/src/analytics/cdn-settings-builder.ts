@@ -44,10 +44,10 @@ export class CDNSettingsBuilder {
     this.settings = settings
   }
 
-  addActionDestinationSettings<I extends DestinationSettingsBuilderConfig>(
-    ...remotePluginSettingsAndMore: I[]
+  addActionDestinationSettings(
+    ...destinations: DestinationSettingsBuilderConfig[]
   ) {
-    remotePluginSettingsAndMore.forEach((p) => {
+    destinations.forEach((p) => {
       const remotePlugin: RemotePlugin = {
         creationName: p.creationName ?? 'mockCreationName',
         libraryName: p.libraryName ?? 'mockLibraryName',
@@ -70,6 +70,10 @@ export class CDNSettingsBuilder {
   }
 
   build() {
+    return this.settings
+  }
+
+  toJSON() {
     return this.settings
   }
 }
