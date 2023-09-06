@@ -35,18 +35,18 @@ it('should stamp each event', async () => {
   })
 })
 
-it('should send an onConsentChanged event when user clicks accept on popup', async () => {
+it('should send a consent changed event when user clicks accept on popup', async () => {
   await page.load()
 
   const { getConsentChangedCallCount } = await page.detectConsentChanged()
-  // make sure an onConsentChange event is not sent
+
   await browser.pause(1000)
   await expect(getConsentChangedCallCount()).resolves.toBe(0)
 
   // make a consent selection in the OneTrust popup
   await page.clickAcceptButtonAndClosePopup()
 
-  // onConsentChange event should now be sent
+  // 1 consent changed event should now be sent
   await browser.waitUntil(
     async () => (await getConsentChangedCallCount()) === 1
   )
