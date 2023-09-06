@@ -15,7 +15,6 @@ afterEach(async () => {
 
 it('should stamp each event', async () => {
   await page.load()
-
   const commands = [
     `analytics.track("hello world")`,
     `analytics.alias("foo", "bar")`,
@@ -39,33 +38,16 @@ it('should stamp each event', async () => {
 it('should send an onConsentChanged event when user clicks accept on popup', async () => {
   await page.load()
 
-  // you can also use interceptors, but not clear that will work in saucelabs?
-  const listenToConsent = () => {
-    browser.execute(() => {
-      if (window._segmentConsentCalls === undefined) {
-        window._segmentConsentCalls = 0
-      }
-      window.analytics.on('track', (name) => {
-        if (name.includes('Segment Consent')) {
-          window._segmentConsentCalls += 1
-        }
-      })
-    })
-  }
-
-  listenToConsent()
-
+  const { getConsentChangedCallCount } = await page.detectConsentChanged()
   // make sure an onConsentChange event is not sent
   await browser.pause(1000)
-  await expect(
-    browser.execute(() => window._segmentConsentCalls)
-  ).resolves.toBe(0)
+  await expect(getConsentChangedCallCount()).resolves.toBe(0)
 
   // make a consent selection in the OneTrust popup
   await page.clickAcceptButtonAndClosePopup()
 
   // onConsentChange event should now be sent
   await browser.waitUntil(
-    async () => (await browser.execute(() => window._segmentConsentCalls)) === 1
+    async () => (await getConsentChangedCallCount()) === 1
   )
 })
