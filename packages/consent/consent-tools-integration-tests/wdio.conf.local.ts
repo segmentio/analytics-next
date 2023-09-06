@@ -1,6 +1,15 @@
 import type { Options } from '@wdio/types'
 
 export const config: Options.Testrunner = {
+  afterTest(test, _, { error, passed }) {
+    console.log(
+      [
+        `${passed ? '✅ Passed' : '❌ Failed'}! ${test.title}`,
+        test.file,
+        error ? error : '',
+      ].join('\n')
+    )
+  },
   services: ['intercept'],
   // services: [ /* Using webpack-dev-server instead */
   //   [

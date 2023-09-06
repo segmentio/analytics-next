@@ -10,7 +10,7 @@
       "node",
       "expect-webdriverio",
       "@wdio/mocha-framework",
-      "@wdio/sauce-service"
+      "wdio-intercept-service"
     ]
   }
 }
