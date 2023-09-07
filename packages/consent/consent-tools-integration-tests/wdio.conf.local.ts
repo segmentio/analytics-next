@@ -1,4 +1,5 @@
 import type { Options } from '@wdio/types'
+import { chromium } from 'playwright-chromium'
 
 const PORT = 4567
 
@@ -55,6 +56,7 @@ export const config: Options.Testrunner = {
       browserName: 'chrome',
       'goog:chromeOptions': {
         args: process.env.CI ? ['headless', 'disable-gpu'] : [],
+        binary: chromium.executablePath(),
       },
       acceptInsecureCerts: true,
     },
