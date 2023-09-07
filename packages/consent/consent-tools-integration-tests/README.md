@@ -12,7 +12,6 @@ Why is this using wd.io instead of playwright?
   - `/page-bundles` - For testing libraries that don't have a UMD bundle (i.e analytics-consent-tools)
   - `/page-objects` - Page objects for the test suite
   - `/page-tests ` - Tests that will be run on the page
-  
 
 ## Development
 ### 1. Build this package + deps
@@ -21,9 +20,9 @@ yarn . build
 ```
 ### 2. Start server + run tests (and exit gracefully)
 ```
-yarn start-server-and-test
+yarn test:intg
 ```
 ### 3. Make code changes.
 
-### 4. Build + re-run tests with `yarn start-server-and-test`.
+### 4. Build + re-run tests with `yarn test:intg`.
 
