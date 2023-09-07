@@ -240,7 +240,7 @@ describe('screen', () => {
 })
 
 describe('track', () => {
-  it('sets sentAt on payloads delivered to Segment', async () => {
+  it('sends sentAt field in payload', async () => {
     const analytics = createTestAnalytics({
       httpClient: testClient,
     })

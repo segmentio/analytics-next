@@ -151,7 +151,7 @@ describe('Method Smoke Tests', () => {
               "userId": "my_user_id",
             },
           ],
-          "sentAt": "2023-09-07T17:39:14.509Z",
+          "sentAt": "Any<String>",
         }
       `
       )
@@ -188,7 +188,7 @@ describe('Method Smoke Tests', () => {
               "userId": "foo",
             },
           ],
-          "sentAt": "2023-09-07T17:39:14.629Z",
+          "sentAt": "Any<String>",
         }
       `
       )
@@ -219,7 +219,7 @@ describe('Method Smoke Tests', () => {
               "type": "page",
             },
           ],
-          "sentAt": "2023-09-07T17:39:14.735Z",
+          "sentAt": "Any<String>",
         }
       `
       )
@@ -256,7 +256,7 @@ describe('Method Smoke Tests', () => {
               "type": "group",
             },
           ],
-          "sentAt": "2023-09-07T17:39:14.840Z",
+          "sentAt": "Any<String>",
         }
       `
       )
@@ -286,7 +286,7 @@ describe('Method Smoke Tests', () => {
               "userId": "alias",
             },
           ],
-          "sentAt": "2023-09-07T17:39:14.946Z",
+          "sentAt": "Any<String>",
         }
       `
       )
@@ -323,7 +323,7 @@ describe('Method Smoke Tests', () => {
               "type": "screen",
             },
           ],
-          "sentAt": "2023-09-07T17:39:15.052Z",
+          "sentAt": "Any<String>",
         }
       `
       )
