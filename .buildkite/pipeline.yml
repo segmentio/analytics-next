@@ -115,6 +115,8 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn turbo run --filter='consent-tools-integration-tests' build
       - echo "+++ Run Tests"
       - yarn turbo run --filter='consent-tools-integration-tests' test:intg
     plugins:
