@@ -7,6 +7,8 @@ import { pick } from 'lodash'
 import nock from 'nock'
 import { CoreContext } from '@segment/analytics-core'
 
+const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
 const snapshotMatchers = {
   get batchEvent() {
     return {
@@ -17,17 +19,13 @@ const snapshotMatchers = {
         },
       },
       _metadata: expect.any(Object),
-      timestamp: expect.stringMatching(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-      ),
+      timestamp: expect.stringMatching(isoDateRegEx),
     }
   },
   get defaultReqBody() {
     return {
       batch: [snapshotMatchers.batchEvent],
-      sentAt: expect.stringMatching(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-      ),
+      sentAt: expect.stringMatching(isoDateRegEx),
     }
   },
 }
