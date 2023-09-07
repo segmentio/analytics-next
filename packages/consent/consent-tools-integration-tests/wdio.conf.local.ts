@@ -14,7 +14,7 @@ export const config: Options.Testrunner = {
     )
   },
   services: [
-    'intercept',
+    'devtools',
     [
       'static-server',
       {

@@ -41,6 +41,7 @@
     "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
+    "@wdio/devtools-service": "^8.16.4",
     "concurrently": "^7.6.0",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
