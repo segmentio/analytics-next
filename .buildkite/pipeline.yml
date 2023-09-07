@@ -8,6 +8,8 @@ steps:
     commands:
       - echo "+++ Node Version"
       - echo $(node -v)
+      - echo "+++ Misc Variables"
+      - echo "CI -> $CI"
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
