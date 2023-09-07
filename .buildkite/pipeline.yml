@@ -124,7 +124,7 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSY=0 yarn install --immutable
       - echo "--- Run Tests"
-      - PLAYWRIGHT_BROWSERS_PATH=/usr/local/bin npx playwright install
+      - PLAYWRIGHT_BROWSERS_PATH=$BUILDKITE_BIN_PATH npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter='consent-tools-integration-tests' test:intg
     plugins:
