@@ -14,7 +14,7 @@ export const config: Options.Testrunner = {
     )
   },
   services: [
-    'devtools',
+    'chromedriver',
     [
       'static-server',
       {
@@ -54,9 +54,6 @@ export const config: Options.Testrunner = {
     {
       maxInstances: 5,
       browserName: 'chrome',
-      'wdio:devtoolsOptions': {
-        headless: false,
-      },
       'goog:chromeOptions': {
         binary: chromium.executablePath(),
       },
