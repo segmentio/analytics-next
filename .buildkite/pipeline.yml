@@ -113,7 +113,8 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - node -v
+      - echo "-- Node version"
+      - echo $(node -v)
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
       - echo "--- Run Tests"
