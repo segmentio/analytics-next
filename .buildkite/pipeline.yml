@@ -115,10 +115,8 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
-      - echo "--- Build bundles"
-      - yarn turbo run --filter='consent-tools-integration-tests' build
-      - echo "+++ Run Tests"
-      - cd packages/consent/consent-tools-integration-tests && yarn test:intg # buildkite doesn't seem to like running yarn turbo here.
+      - echo "--- Run Tests"
+      - yarn turbo run --filter='consent-tools-integration-tests' test
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

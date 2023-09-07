@@ -14,11 +14,7 @@ Why is this using wd.io instead of playwright?
   - `/page-tests ` - Tests that will be run on the page
 
 ## Development
-### 1. Build, start server, run tests (and exit gracefully)
+### Build, start server, run tests (and exit gracefully)
 ```
 yarn . test:intg
 ```
-### 2. Make code changes.
-
-### 3. Build + re-run tests with `yarn test:intg`.
-
