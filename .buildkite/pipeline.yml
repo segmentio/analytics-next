@@ -2,6 +2,12 @@ env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
+  - label: Log Environment
+    agents:
+      queue: v1
+    commands:
+      - echo "+++ Node Version"
+      - echo $(node -v)
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
@@ -113,8 +119,6 @@ steps:
       queue: v1
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - echo "+++ Node version"
-      - echo $(node -v)
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
       - echo "--- Run Tests"
