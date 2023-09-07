@@ -10,5 +10,8 @@
   "commit": false,
   "access": "public",
   "baseBranch": "master",
-  "linked": []
+  "linked": [],
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true
+  }
 }

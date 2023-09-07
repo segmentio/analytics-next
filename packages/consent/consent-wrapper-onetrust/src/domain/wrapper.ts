@@ -1,26 +1,44 @@
 import {
   AnyAnalytics,
-  Categories,
   createWrapper,
   CreateWrapperSettings,
+  RegisterOnConsentChangedFunction,
   resolveWhen,
 } from '@segment/analytics-consent-tools'
 
 import {
+  getNormalizedCategoriesFromGroupData,
+  getNormalizedCategoriesFromGroupIds,
   getConsentedGroupIds,
-  getGroupData,
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
 
-interface OneTrustOptions {
+export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
+  disableConsentChangedEvent?: boolean
 }
 
-export const oneTrust = (
-  analytics: AnyAnalytics,
-  options: OneTrustOptions = {}
-) =>
-  createWrapper({
+/**
+ *
+ * @param analyticsInstance - An analytics instance. Either `window.analytics`, or the instance returned by `new AnalyticsBrowser()` or `AnalyticsBrowser.load({...})`
+ * @param settings - Optional settings for configuring your OneTrust wrapper
+ */
+export const withOneTrust = <Analytics extends AnyAnalytics>(
+  analyticsInstance: Analytics,
+  settings: OneTrustSettings = {}
+): Analytics => {
+  const registerOnConsentChanged: RegisterOnConsentChangedFunction = async (
+    onCategoriesChangedCb
+  ) => {
+    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
+    getOneTrustGlobal()!.OnConsentChanged((event) => {
+      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+        event.detail
+      )
+      onCategoriesChangedCb(normalizedCategories)
+    })
+  }
+  return createWrapper<Analytics>({
     shouldLoad: async () => {
       await resolveWhen(() => {
         const oneTrustGlobal = getOneTrustGlobal()
@@ -31,39 +49,13 @@ export const oneTrust = (
         )
       }, 500)
     },
-    getCategories: (): Categories => {
-      // so basically, if a user has 2 categories defined in the UI: [Functional, Advertising],
-      // we need _all_ those categories to be valid
-
-      // Scenarios:
-      // - if the user is being asked to select categories, so the popup is still visible
-      // - if user has no categories selected because they deliberately do not consent to anything and the popup has been dismissed in this session
-      // - if user has selected categories in a past session
-      // - if the user has selected categories this session
-      // - if user has no categories selected because they deliberately do not consent to anything and the popup was dismissed in a previous session
-      const { userSetConsentGroups, userDeniedConsentGroups } = getGroupData()
-      const consentedCategories = userSetConsentGroups.reduce<Categories>(
-        (acc, c) => {
-          return {
-            ...acc,
-            [c.groupName]: true,
-            [c.customGroupId]: true,
-          }
-        },
-        {}
-      )
-
-      const deniedCategories = userDeniedConsentGroups.reduce<Categories>(
-        (acc, c) => {
-          return {
-            ...acc,
-            [c.groupName]: false,
-            [c.customGroupId]: false,
-          }
-        },
-        {}
-      )
-      return { ...consentedCategories, ...deniedCategories }
+    getCategories: () => {
+      const results = getNormalizedCategoriesFromGroupData()
+      return results
     },
-    integrationCategoryMappings: options.integrationCategoryMappings,
-  })(analytics)
+    registerOnConsentChanged: settings.disableConsentChangedEvent
+      ? undefined
+      : registerOnConsentChanged,
+    integrationCategoryMappings: settings.integrationCategoryMappings,
+  })(analyticsInstance)
+}

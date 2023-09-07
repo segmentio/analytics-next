@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { AnyAnalytics } from '@segment/analytics-consent-tools'
-import { oneTrust } from '@segment/analytics-consent-wrapper-onetrust'
+import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 import { getGlobalAnalytics } from '@segment/analytics-next'
 
-oneTrust(getGlobalAnalytics() as AnyAnalytics, {
+withOneTrust(getGlobalAnalytics() as AnyAnalytics, {
   integrationCategoryMappings: {
     Fullstory: ['C0001'],
     'Actions Amplitude': ['C0004'],

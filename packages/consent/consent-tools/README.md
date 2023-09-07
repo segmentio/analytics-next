@@ -1,16 +1,17 @@
 # @segment/analytics-consent-tools
 
-
-
 ## Quick Start
+
 ```ts
 // wrapper.js
 import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
   shouldLoad: (ctx) => {
-    await resolveWhen(() => 
-      window.CMP !== undefined && !window.CMP.popUpVisible(), 500)
+    await resolveWhen(
+      () => window.CMP !== undefined && !window.CMP.popUpVisible(),
+      500
+    )
 
     if (noConsentNeeded) {
       ctx.abort({ loadSegmentNormally: true })
@@ -18,23 +19,24 @@ export const withCMP = createWrapper({
       ctx.abort({ loadSegmentNormally: false })
     }
   },
-  getCategories: () => { 
+  getCategories: () => {
     // e.g. { Advertising: true, Functional: false }
-    return normalizeCategories(window.CMP.consentedCategories()) 
-  }
+    return normalizeCategories(window.CMP.consentedCategories())
+  },
 })
 ```
 
-
 ## Wrapper Usage API
+
 ## `npm`
+
 ```js
 import { withCMP } from './wrapper'
 import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const analytics = new AnalyticsBrowser()
 
-withCmp(analytics)
+withCMP(analytics)
 
 analytics.load({
   writeKey: '<MY_WRITE_KEY'>
@@ -43,6 +45,8 @@ analytics.load({
 ```
 
 ## Snippet users (window.analytics)
+### Note: This assumes a project that can consume the library via es6 imports, using a like Webpack.
+
 1. Delete the `analytics.load()` line from the snippet
 
 ```diff
@@ -50,30 +54,37 @@ analytics.load({
 ```
 
 2. Import Analytics
+
 ```js
 import { withCMP } from './wrapper'
 
-withCmp(window.analytics)
+withCMP(window.analytics)
 
 window.analytics.load('<MY_WRITE_KEY')
 ```
 
 ## Wrapper Examples
+
 - [OneTrust](../consent-wrapper-onetrust) (beta)
 
 ## Settings / Options / Configuration
+
 See the complete list of settings in the **[Settings interface](src/types/settings.ts)**
 
+## Special Requirements
+
+- For npm users, this library expects a version of `@segment/analytics-next` >= **1.53.1**. Note: If your library depends on this library, you should have the appropriate peer dependency declaration. See our `package.json` for an example.
+
 ## Development
+
 1. Build this package + all dependencies
+
 ```sh
-# include the "..."
-yarn build... 
+yarn . build
 ```
 
 2. Run tests
+
 ```
 yarn test
 ```
-
-

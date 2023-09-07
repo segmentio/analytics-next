@@ -5,10 +5,13 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "dev": "yarn concurrently 'yarn run -T watch --filter=standalone-playground' 'sleep 10 && yarn http-server .'",
+    ".": "yarn run -T turbo run --filter=@example/standalone-playground...",
+    "start": "yarn http-server . -o /pages",
+    "dev": "yarn concurrently 'yarn . build && yarn start' 'sleep 10 && yarn . watch'",
     "concurrently": "yarn run -T concurrently"
   },
   "dependencies": {
+    "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
     "@segment/analytics-next": "workspace:^"
   },
   "devDependencies": {

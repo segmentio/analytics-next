@@ -1,5 +1,36 @@
 # @segment/analytics-consent-tools
 
+## 0.2.0
+
+### Minor Changes
+
+- [#941](https://github.com/segmentio/analytics-next/pull/941) [`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3) Thanks [@silesky](https://github.com/silesky)! - Tighten up analytics types
+
+### Patch Changes
+
+- [#941](https://github.com/segmentio/analytics-next/pull/941) [`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3) Thanks [@silesky](https://github.com/silesky)! - - Fix `onConsentChanged` not firing in snippet environment due to to stale analytics reference.
+  - Register `onConsentChanged` early in the wrapper initialization sequence so it can catch consent changed events that occur before analytics is loaded.
+
+## 0.1.1
+
+### Patch Changes
+
+- [#938](https://github.com/segmentio/analytics-next/pull/938) [`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39) Thanks [@silesky](https://github.com/silesky)! - Have `createWrapper` return analytics instance to allow `.load` to be chained.
+
+## 0.1.0
+
+### Minor Changes
+
+- [#936](https://github.com/segmentio/analytics-next/pull/936) [`a7a0882`](https://github.com/segmentio/analytics-next/commit/a7a08827cc31dd3a558700143828ab43d27f2125) Thanks [@silesky](https://github.com/silesky)! - Add consent changed event
+
+## 0.0.4
+
+### Patch Changes
+
+- [#912](https://github.com/segmentio/analytics-next/pull/912) [`70cc6e6`](https://github.com/segmentio/analytics-next/commit/70cc6e61a809bd44a9e34555b64da9a3b8672fdf) Thanks [@silesky](https://github.com/silesky)! - Support classic destinations and locally installed action destinations by removing integrations.
+
+* [#918](https://github.com/segmentio/analytics-next/pull/918) [`fd0862c`](https://github.com/segmentio/analytics-next/commit/fd0862c544d4418719863e8f5418b5ab61a9ca5e) Thanks [@silesky](https://github.com/silesky)! - Remove default behavior that prunes unmapped categories from context.contest payload. As such, by default, `allKeys` will no longer be used. Add ability to turn pruning back on via an `pruneUnmappedCategories` setting.
+
 ## 0.0.3
 
 ### Patch Changes

@@ -1,14 +1,25 @@
+import { Categories } from '@segment/analytics-consent-tools'
+import { OneTrustApiValidationError } from './validation'
+/**
+ * @example ["C0001", "C0002"]
+ */
+type ConsentGroupIds = string[]
+
 /**
  * @example
- * ",CAT001,FOO456" => ["CAT001", "FOO456"]
+ * ",C0001,C0002" => ["C0001", "C0002"]
  */
-const normalizeActiveGroupIds = (c: string): string[] =>
-  c.trim().split(',').filter(Boolean)
+const normalizeActiveGroupIds = (
+  oneTrustActiveGroups: string
+): ConsentGroupIds => {
+  return oneTrustActiveGroups.trim().split(',').filter(Boolean)
+}
 
 type GroupInfoDto = {
   CustomGroupId: string
-  GroupName: string
 }
+
+type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 
 /**
  * The data model used by the OneTrust lib
@@ -24,18 +35,43 @@ export interface OneTrustGlobal {
    * - if a user makes a selection
    * - if a user rejects all
    */
-  onConsentChanged: (cb: (groupIds: string[]) => void) => void
+  OnConsentChanged: (cb: (event: OtConsentChangedEvent) => void) => void
   IsAlertBoxClosed: () => boolean
 }
 
-export const getOneTrustGlobal = (): OneTrustGlobal | undefined =>
-  (window as any).OneTrust
+export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
+  const oneTrust = (window as any).OneTrust
+  if (!oneTrust) return undefined
+  if (
+    typeof oneTrust === 'object' &&
+    'OnConsentChanged' in oneTrust &&
+    'IsAlertBoxClosed' in oneTrust &&
+    'GetDomainData' in oneTrust
+  ) {
+    return oneTrust
+  }
 
-const getOneTrustActiveGroups = (): string | undefined =>
-  (window as any).OnetrustActiveGroups
+  throw new OneTrustApiValidationError(
+    'window.OneTrust is not in expected format',
+    oneTrust
+  )
+}
 
-export const getConsentedGroupIds = (): string[] => {
-  const groups = getOneTrustActiveGroups()
+export const getOneTrustActiveGroups = (): string | undefined => {
+  const groups = (window as any).OnetrustActiveGroups
+  if (!groups) return undefined
+  if (typeof groups !== 'string') {
+    throw new OneTrustApiValidationError(
+      `window.OnetrustActiveGroups is not a string`,
+      groups
+    )
+  }
+  return groups
+}
+
+export const getConsentedGroupIds = (
+  groups = getOneTrustActiveGroups()
+): ConsentGroupIds => {
   if (!groups) {
     return []
   }
@@ -43,19 +79,17 @@ export const getConsentedGroupIds = (): string[] => {
 }
 
 export type GroupInfo = {
-  customGroupId: string
-  groupName: string
+  groupId: string
 }
 
 const normalizeGroupInfo = (groupInfo: GroupInfoDto): GroupInfo => ({
-  customGroupId: groupInfo.CustomGroupId.trim(),
-  groupName: groupInfo.GroupName.trim(), // should we allow groupName?
+  groupId: groupInfo.CustomGroupId.trim(),
 })
 
 /**
  * get *all* groups / categories, not just active ones
  */
-const getAllGroups = (): GroupInfo[] => {
+export const getAllGroups = (): GroupInfo[] => {
   const oneTrustGlobal = getOneTrustGlobal()
   if (!oneTrustGlobal) return []
   return oneTrustGlobal.GetDomainData().Groups.map(normalizeGroupInfo)
@@ -67,13 +101,13 @@ type UserConsentGroupData = {
 }
 
 // derive the groupIds from the active groups
-export const getGroupData = (): UserConsentGroupData => {
-  const userSetConsentGroupIds = getConsentedGroupIds()
-
+export const getGroupDataFromGroupIds = (
+  userSetConsentGroupIds = getConsentedGroupIds()
+): UserConsentGroupData => {
   // partition all groups into "consent" or "deny"
   const userConsentGroupData = getAllGroups().reduce<UserConsentGroupData>(
     (acc, group) => {
-      if (userSetConsentGroupIds.includes(group.customGroupId)) {
+      if (userSetConsentGroupIds.includes(group.groupId)) {
         acc.userSetConsentGroups.push(group)
       } else {
         acc.userDeniedConsentGroups.push(group)
@@ -84,4 +118,38 @@ export const getGroupData = (): UserConsentGroupData => {
   )
 
   return userConsentGroupData
+}
+
+export const getNormalizedCategoriesFromGroupData = (
+  groupData = getGroupDataFromGroupIds()
+): Categories => {
+  const { userSetConsentGroups, userDeniedConsentGroups } = groupData
+  const consentedCategories = userSetConsentGroups.reduce<Categories>(
+    (acc, c) => {
+      return {
+        ...acc,
+        [c.groupId]: true,
+      }
+    },
+    {}
+  )
+
+  const deniedCategories = userDeniedConsentGroups.reduce<Categories>(
+    (acc, c) => {
+      return {
+        ...acc,
+        [c.groupId]: false,
+      }
+    },
+    {}
+  )
+  return { ...consentedCategories, ...deniedCategories }
+}
+
+export const getNormalizedCategoriesFromGroupIds = (
+  groupIds: ConsentGroupIds
+): Categories => {
+  return getNormalizedCategoriesFromGroupData(
+    getGroupDataFromGroupIds(groupIds)
+  )
 }

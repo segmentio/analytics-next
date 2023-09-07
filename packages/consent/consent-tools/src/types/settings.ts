@@ -5,6 +5,10 @@ import type {
   CDNSettingsRemotePlugin,
 } from './wrapper'
 
+export type RegisterOnConsentChangedFunction = (
+  categoriesChangedCb: (categories: Categories) => void
+) => void
+
 /**
  * Consent wrapper function configuration
  */
@@ -26,6 +30,34 @@ export interface CreateWrapperSettings {
    * ```
    **/
   getCategories: () => Categories | Promise<Categories>
+
+  /**
+   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
+   *
+   * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
+   * @example
+   * ```ts
+   * async (categoriesChangedCb) => {
+   *   await resolveWhen(() => window.MyCMP !== undefined, 500)
+   *   window.MyCMP.OnConsentChanged((event.detail) => categoriesChangedCb(normalizeCategories(event.detail))
+   * }
+   *
+   * /* event payload
+   * {
+   *  "type": "track",
+   *  "event": "Segment Consent Preference",
+   *  "context": {
+   *    "consent": {
+   *      "version": 2,
+   *      "categoryPreferences" : {
+   *         "C0001": true,
+   *         "C0002": false,
+   *    }
+   *  }
+   * ..
+   * ```
+   */
+  registerOnConsentChanged?: RegisterOnConsentChangedFunction
 
   /**
    * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
@@ -64,9 +96,26 @@ export interface CreateWrapperSettings {
   shouldEnableIntegration?: (
     integrationCategories: string[],
     categories: Categories,
-    integrationInfo: Pick<
-      CDNSettingsRemotePlugin,
-      'creationName' | 'libraryName'
-    >
+    integrationInfo: Pick<CDNSettingsRemotePlugin, 'creationName'>
   ) => boolean
+
+  /**
+   * Prune consent categories from the `context.consent.categoryPreferences` payload if that category is not mapped to any integration in your Segment.io source.
+   * This is helpful if you want to save on bytes sent to Segment and do need the complete list of CMP's categories for debugging or other reasons.
+   * By default, all consent categories returned by `getCategories()` are sent to Segment.
+   * @default false
+   * ### Example Behavior
+   * You have the following categories mappings defined:
+   * ```
+   * FullStory -> 'CAT002',
+   * Braze -> 'CAT003'
+   * ```
+   * ```ts
+   * // pruneUnmappedCategories = false (default)
+   * { CAT0001: true, CAT0002: true, CAT0003: true }
+   * // pruneUnmappedCategories = true
+   * { CAT0002: true, CAT0003: true  } // pruneUnmappedCategories = true
+   * ```
+   */
+  pruneUnmappedCategories?: boolean
 }

@@ -2,6 +2,7 @@
   "name": "@example/with-vite",
   "private": true,
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@example/with-vite",
     "concurrently": "yarn run -T concurrently",
     "dev": "yarn concurrently 'yarn run -T watch --filter=with-vite' 'sleep 10 && vite'",
     "build": "tsc && vite build",

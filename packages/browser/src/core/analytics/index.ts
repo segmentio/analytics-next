@@ -24,15 +24,7 @@ import {
 } from '../events'
 import type { Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
-import {
-  CookieOptions,
-  getAvailableStorageOptions,
-  Group,
-  ID,
-  UniversalStorage,
-  User,
-  UserOptions,
-} from '../user'
+import { Group, ID, User, UserOptions } from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import type { LegacyDestination } from '../../plugins/ajs-destination'
@@ -50,6 +42,17 @@ import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 import { HighEntropyHint } from '../../lib/client-hints/interfaces'
 import type { LegacySettings } from '../../browser'
+import {
+  CookieOptions,
+  MemoryStorage,
+  UniversalStorage,
+  StorageSettings,
+  StoreType,
+  applyCookieOptions,
+  initializeStorages,
+  isArrayOfStoreType,
+} from '../storage'
+import { PluginFactory } from '../../plugins/remote-loader'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -73,7 +76,7 @@ function createDefaultQueue(
 export interface AnalyticsSettings {
   writeKey: string
   timeout?: number
-  plugins?: Plugin[]
+  plugins?: (Plugin | PluginFactory)[]
   classicIntegrations?: ClassicIntegrationSource[]
 }
 
@@ -93,6 +96,7 @@ export interface InitOptions {
   disableAutoISOConversion?: boolean
   initialPageview?: boolean
   cookie?: CookieOptions
+  storage?: StorageSettings
   user?: UserOptions
   group?: UserOptions
   integrations?: Integrations
@@ -138,9 +142,7 @@ export class Analytics
   private _group: Group
   private eventFactory: EventFactory
   private _debug = false
-  private _universalStorage: UniversalStorage<{
-    [k: string]: unknown
-  }>
+  private _universalStorage: UniversalStorage
 
   initialized = false
   integrations: Integrations
@@ -167,25 +169,33 @@ export class Analytics
         disablePersistance
       )
 
-    this._universalStorage = new UniversalStorage(
-      disablePersistance ? ['memory'] : ['localStorage', 'cookie', 'memory'],
-      getAvailableStorageOptions(cookieOptions)
+    const storageSetting = options?.storage
+    this._universalStorage = this.createStore(
+      disablePersistance,
+      storageSetting,
+      cookieOptions
     )
 
     this._user =
       user ??
       new User(
-        disablePersistance
-          ? { ...options?.user, persist: false }
-          : options?.user,
+        {
+          persist: !disablePersistance,
+          storage: options?.storage,
+          // Any User specific options override everything else
+          ...options?.user,
+        },
         cookieOptions
       ).load()
     this._group =
       group ??
       new Group(
-        disablePersistance
-          ? { ...options?.group, persist: false }
-          : options?.group,
+        {
+          persist: !disablePersistance,
+          storage: options?.storage,
+          // Any group specific options override everything else
+          ...options?.group,
+        },
         cookieOptions
       ).load()
     this.eventFactory = new EventFactory(this._user)
@@ -197,6 +207,43 @@ export class Analytics
 
   user = (): User => {
     return this._user
+  }
+
+  /**
+   * Creates the storage system based on the settings received
+   * @returns Storage
+   */
+  private createStore(
+    disablePersistance: boolean,
+    storageSetting: InitOptions['storage'],
+    cookieOptions?: CookieOptions | undefined
+  ): UniversalStorage {
+    // DisablePersistance option overrides all, no storage will be used outside of memory even if specified
+    if (disablePersistance) {
+      return new UniversalStorage([new MemoryStorage()])
+    } else {
+      if (storageSetting) {
+        if (isArrayOfStoreType(storageSetting)) {
+          // We will create the store with the priority for customer settings
+          return new UniversalStorage(
+            initializeStorages(
+              applyCookieOptions(storageSetting.stores, cookieOptions)
+            )
+          )
+        }
+      }
+    }
+    // We default to our multi storage with priority
+    return new UniversalStorage(
+      initializeStorages([
+        StoreType.LocalStorage,
+        {
+          name: StoreType.Cookie,
+          settings: cookieOptions,
+        },
+        StoreType.Memory,
+      ])
+    )
   }
 
   get storage(): UniversalStorage {

@@ -1,5 +1,31 @@
 # @segment/analytics-next
 
+## 1.54.0
+
+### Minor Changes
+
+- [#908](https://github.com/segmentio/analytics-next/pull/908) [`1b95946`](https://github.com/segmentio/analytics-next/commit/1b95946339d32a0395ab6bf56e37ecbd6eb832ae) Thanks [@oscb](https://github.com/oscb)! - Adds storage option in analytics client to specify priority of storage (e.g use cookies over localstorage)
+
+## 1.53.4
+
+### Patch Changes
+
+- [#932](https://github.com/segmentio/analytics-next/pull/932) [`b1584fc`](https://github.com/segmentio/analytics-next/commit/b1584fc1dc531b312dc6020fadc1c14bd153a557) Thanks [@oscb](https://github.com/oscb)! - `sentAt` is not set at batch upload time once per the whole batch. Individual event `sentAt` property is stripped when doing batch uploading.
+
+## 1.53.3
+
+### Patch Changes
+
+- [#915](https://github.com/segmentio/analytics-next/pull/915) [`7072377`](https://github.com/segmentio/analytics-next/commit/7072377c0adae54b844a441fa545763e0ff654ba) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix batching after page navigation
+
+## 1.53.2
+
+### Patch Changes
+
+- [#888](https://github.com/segmentio/analytics-next/pull/888) [`f3183f2`](https://github.com/segmentio/analytics-next/commit/f3183f2163d93f98ce2f8dd7830d2bca3b47f537) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix query string parsing bug that was causing events containing the 'search' property with a non string value to be dropped
+
+* [#891](https://github.com/segmentio/analytics-next/pull/891) [`e0c7792`](https://github.com/segmentio/analytics-next/commit/e0c7792924e6f7ba0a36c200c5468141de3b9320) Thanks [@zikaari](https://github.com/zikaari)! - Fix cookie write error
+
 ## 1.53.1
 
 ### Patch Changes

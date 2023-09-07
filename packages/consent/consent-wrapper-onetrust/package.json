@@ -1,32 +1,55 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
-  "version": "0.0.3",
+  "version": "0.3.0",
+  "keywords": [
+    "segment",
+    "analytics",
+    "consent",
+    "onetrust"
+  ],
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/umd/analytics-onetrust.umd.js"
+  ],
+  "jsdeliver": "./dist/umd/analytics-onetrust.umd.js",
+  "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
+    "LICENSE",
     "dist/",
     "src/",
     "!**/__tests__/**",
+    "!**/test-helpers/**",
     "!*.tsbuildinfo"
   ],
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@segment/analytics-consent-wrapper-onetrust...",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
-    "build...": "yarn run -T turbo run build --filter=@segment/analytics-consent-wrapper-onetrust",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
-    "watch": "yarn build:esm --watch",
+    "build:bundle": "NODE_ENV=production yarn run webpack",
+    "build:bundle-dev": "NODE_ENV=development yarn run webpack",
+    "watch": "yarn concurrently 'yarn build:bundle-dev --watch' 'yarn build:esm --watch'",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently --raw",
-    "jest": "yarn run -T jest"
+    "jest": "yarn run -T jest",
+    "webpack": "yarn run -T webpack"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "0.0.3"
+    "@segment/analytics-consent-tools": "0.2.0"
+  },
+  "peerDependencies": {
+    "@segment/analytics-next": ">=1.53.1"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-next": {
+      "optional": true
+    }
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",
@@ -36,6 +59,7 @@
     "url": "https://github.com/segmentio/analytics-next"
   },
   "devDependencies": {
+    "@internal/config-webpack": "workspace:^",
     "@internal/test-helpers": "workspace:^"
   }
 }

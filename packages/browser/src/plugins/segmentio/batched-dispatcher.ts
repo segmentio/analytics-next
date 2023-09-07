@@ -1,6 +1,6 @@
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
-import { onPageLeave } from '../../lib/on-page-leave'
+import { onPageChange } from '../../lib/on-page-change'
 
 export type BatchingDispatchConfig = {
   size?: number
@@ -60,13 +60,23 @@ export default function batch(
 
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
 
+    // Remove sentAt from every event as batching only needs a single timestamp
+    const updatedBatch = batch.map((event) => {
+      const { sentAt, ...newEvent } = event as SegmentEvent
+      return newEvent
+    })
+
     return fetch(`https://${apiHost}/b`, {
       keepalive: pageUnloaded,
       headers: {
         'Content-Type': 'text/plain',
       },
       method: 'post',
-      body: JSON.stringify({ batch, writeKey }),
+      body: JSON.stringify({
+        writeKey,
+        batch: updatedBatch,
+        sentAt: new Date().toISOString(),
+      }),
     })
   }
 
@@ -91,10 +101,10 @@ export default function batch(
     }, timeout)
   }
 
-  onPageLeave(() => {
-    pageUnloaded = true
+  onPageChange((unloaded) => {
+    pageUnloaded = unloaded
 
-    if (buffer.length) {
+    if (pageUnloaded && buffer.length) {
       const reqs = chunks(buffer).map(sendBatch)
       Promise.all(reqs).catch(console.error)
     }

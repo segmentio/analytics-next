@@ -15,7 +15,18 @@ export abstract class BasePage {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
     await waitUntilReady()
-
     await browser.url(baseURL + '/' + this.page)
+  }
+
+  async clearStorage() {
+    await browser.deleteAllCookies()
+    await browser.execute(() => localStorage.clear())
+  }
+
+  /**
+   * Hard reload the page
+   */
+  reload() {
+    return browser.execute(() => window.location.reload())
   }
 }
