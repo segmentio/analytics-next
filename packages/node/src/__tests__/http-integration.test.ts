@@ -18,7 +18,6 @@ const snapshotMatchers = {
       },
       _metadata: expect.any(Object),
       timestamp: expect.any(String),
-      sentAt: expect.any(String),
     }
   },
   get defaultReqBody() {
@@ -144,7 +143,6 @@ describe('Method Smoke Tests', () => {
               },
               "integrations": Object {},
               "messageId": Any<String>,
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "traits": Object {
                 "foo": "bar",
@@ -153,6 +151,7 @@ describe('Method Smoke Tests', () => {
               "userId": "my_user_id",
             },
           ],
+          "sentAt": "2023-09-07T17:39:14.509Z",
         }
       `
       )
@@ -184,12 +183,12 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "hello": "world",
               },
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "track",
               "userId": "foo",
             },
           ],
+          "sentAt": "2023-09-07T17:39:14.629Z",
         }
       `
       )
@@ -216,11 +215,11 @@ describe('Method Smoke Tests', () => {
               "messageId": Any<String>,
               "name": "page",
               "properties": Object {},
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "page",
             },
           ],
+          "sentAt": "2023-09-07T17:39:14.735Z",
         }
       `
       )
@@ -250,7 +249,6 @@ describe('Method Smoke Tests', () => {
               "groupId": "myGroupId",
               "integrations": Object {},
               "messageId": Any<String>,
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "traits": Object {
                 "some_traits": 123,
@@ -258,6 +256,7 @@ describe('Method Smoke Tests', () => {
               "type": "group",
             },
           ],
+          "sentAt": "2023-09-07T17:39:14.840Z",
         }
       `
       )
@@ -282,12 +281,12 @@ describe('Method Smoke Tests', () => {
               "integrations": Object {},
               "messageId": Any<String>,
               "previousId": "previous",
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "alias",
               "userId": "alias",
             },
           ],
+          "sentAt": "2023-09-07T17:39:14.946Z",
         }
       `
       )
@@ -320,11 +319,11 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "title": "wip",
               },
-              "sentAt": Any<String>,
               "timestamp": Any<String>,
               "type": "screen",
             },
           ],
+          "sentAt": "2023-09-07T17:39:15.052Z",
         }
       `
       )

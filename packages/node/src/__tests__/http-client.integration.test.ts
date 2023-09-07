@@ -37,9 +37,6 @@ const helpers = {
       timestamp: expect.stringMatching(
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
       ),
-      sentAt: expect.stringMatching(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-      ),
       properties: {},
       event: 'foo',
       type: 'track',

@@ -185,7 +185,7 @@ export class Publisher {
     if (this._closeAndFlushPendingItemsCount) {
       this._closeAndFlushPendingItemsCount -= batch.length
     }
-    let events = batch.getEvents()
+    const events = batch.getEvents()
     const maxAttempts = this._maxRetries + 1
 
     let currentAttempt = 0
@@ -198,14 +198,6 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
-        const currentTime = new Date()
-        events = events.map((ev) => {
-          return {
-            ...ev,
-            sentAt: currentTime,
-          }
-        })
-
         const request: HTTPClientRequest = {
           url: this._url,
           method: 'POST',
@@ -214,7 +206,7 @@ export class Publisher {
             Authorization: `Basic ${this._auth}`,
             'User-Agent': 'analytics-node-next/latest',
           },
-          data: { batch: events },
+          data: { batch: events, sentAt: new Date() },
           httpRequestTimeout: this._httpRequestTimeout,
         }
 
