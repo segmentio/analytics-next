@@ -53,6 +53,7 @@ import {
   isArrayOfStoreType,
 } from '../storage'
 import { PluginFactory } from '../../plugins/remote-loader'
+import { setGlobalAnalytics } from '../../browser/utils'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -122,7 +123,7 @@ export interface InitOptions {
    */
   highEntropyValuesClientHints?: HighEntropyHint[]
   /**
-   * Key for the global window property storing the buffered calls
+   * When using the snippet, this is the key that points to the global analytics instance (e.g. window.analytics).
    * default: analytics
    */
   globalAnalyticsKey?: string
@@ -541,7 +542,7 @@ export class Analytics
 
   noConflict(): Analytics {
     console.warn(deprecationWarning)
-    ;(window as any).analytics = _analytics ?? this
+    setGlobalAnalytics(_analytics ?? this)
     return this
   }
 
