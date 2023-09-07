@@ -151,7 +151,7 @@ describe('Method Smoke Tests', () => {
               "userId": "my_user_id",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
@@ -188,7 +188,7 @@ describe('Method Smoke Tests', () => {
               "userId": "foo",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
@@ -219,7 +219,7 @@ describe('Method Smoke Tests', () => {
               "type": "page",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
@@ -256,7 +256,7 @@ describe('Method Smoke Tests', () => {
               "type": "group",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
@@ -286,7 +286,7 @@ describe('Method Smoke Tests', () => {
               "userId": "alias",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
@@ -323,7 +323,7 @@ describe('Method Smoke Tests', () => {
               "type": "screen",
             },
           ],
-          "sentAt": "Any<String>",
+          "sentAt": Any<String>,
         }
       `
       )
