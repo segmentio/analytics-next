@@ -31,20 +31,6 @@ export const config: Options.Testrunner = {
       },
     ],
   ],
-  // services: [ /* Using webpack-dev-server instead */
-  //   [
-  //     'static-server',
-  //     {
-  //       port: 5555,
-  //       folders: [
-  //         {
-  //           mount: '/',
-  //           path: './dist/',
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // ],
   baseUrl: `http://localhost:${PORT}`,
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
