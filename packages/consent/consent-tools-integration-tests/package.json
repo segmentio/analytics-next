@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/consent-tools-integration-tests...",
-    "test:intg": "yarn build && yarn wdio:local",
+    "test:intg": "yarn wdio:local",
     "build": "webpack",
     "watch": "yarn build --watch",
     "wdio:local": "wdio wdio.conf.local.ts",

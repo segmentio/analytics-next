@@ -14,15 +14,11 @@ Why is this using wd.io instead of playwright?
   - `/page-tests ` - Tests that will be run on the page
 
 ## Development
-### 1. Build this package + deps
-```sh
-yarn . build
+### 1. Build, start server, run tests (and exit gracefully)
 ```
-### 2. Start server + run tests (and exit gracefully)
+yarn . test:intg
 ```
-yarn test:intg
-```
-### 3. Make code changes.
+### 2. Make code changes.
 
-### 4. Build + re-run tests with `yarn test:intg`.
+### 3. Build + re-run tests with `yarn test:intg`.
 
