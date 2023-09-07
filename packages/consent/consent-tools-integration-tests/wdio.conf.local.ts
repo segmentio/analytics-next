@@ -58,9 +58,6 @@ export const config: Options.Testrunner = {
         headless: false,
       },
       'goog:chromeOptions': {
-        // args: process.env.CI
-        //   ? ['headless', 'disable-gpu', 'no-sandbox', 'disable-setuid-sandbox']
-        //   : [],
         binary: chromium.executablePath(),
       },
       acceptInsecureCerts: true,

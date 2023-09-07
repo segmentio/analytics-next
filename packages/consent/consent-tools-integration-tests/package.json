@@ -21,6 +21,7 @@
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
     "@segment/analytics-next": "workspace:^",
     "@wdio/cli": "^8.10.6",
+    "@wdio/devtools-service": "^8.16.4",
     "@wdio/local-runner": "^8.10.6",
     "@wdio/mocha-framework": "^8.10.6",
     "@wdio/spec-reporter": "^8.10.6",
