@@ -13,7 +13,6 @@ it('should stamp each event', async () => {
     `analytics.identify("bar", { bar: 123 })`,
   ]
 
-  await browser.pause(1000)
   const responses = await Promise.all<Context>(
     commands.map((cmd) => browser.execute(cmd))
   )
