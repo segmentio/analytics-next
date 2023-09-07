@@ -54,6 +54,9 @@ export const config: Options.Testrunner = {
     {
       maxInstances: 5,
       browserName: 'chrome',
+      'wdio:devtoolsOptions': {
+        headless: false,
+      },
       'goog:chromeOptions': {
         // args: process.env.CI
         //   ? ['headless', 'disable-gpu', 'no-sandbox', 'disable-setuid-sandbox']
