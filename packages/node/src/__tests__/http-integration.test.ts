@@ -21,7 +21,7 @@ const snapshotMatchers = {
     }
   },
   get defaultReqBody() {
-    return { batch: [snapshotMatchers.batchEvent] }
+    return { batch: [snapshotMatchers.batchEvent], sentAt: expect.any(String) }
   },
 }
 
