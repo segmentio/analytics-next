@@ -14,7 +14,6 @@ export const config: Options.Testrunner = {
     )
   },
   services: [
-    'chromedriver',
     [
       'static-server',
       {
