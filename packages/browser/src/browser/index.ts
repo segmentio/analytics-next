@@ -108,11 +108,9 @@ export interface AnalyticsBrowserSettings extends AnalyticsSettings {
 
 export function loadLegacySettings(
   writeKey: string,
-  cdnURL?: string
+  cdnURL: string
 ): Promise<LegacySettings> {
-  const baseUrl = cdnURL ?? getCDN()
-
-  return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
+  return fetch(`${cdnURL}/v1/projects/${writeKey}/settings`)
     .then((res) => {
       if (!res.ok) {
         return res.text().then((errorResponseMessage) => {
@@ -308,7 +306,7 @@ async function loadAnalytics(
 
   let legacySettings =
     settings.cdnSettings ??
-    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+    (await loadLegacySettings(settings.writeKey, settings.cdnURL || getCDN()))
 
   if (options.updateCDNSettings) {
     legacySettings = options.updateCDNSettings(legacySettings)

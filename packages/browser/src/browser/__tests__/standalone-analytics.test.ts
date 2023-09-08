@@ -1,6 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { InitOptions } from '../../'
-import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
+import { AnalyticsBrowser } from '../../browser'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { install, AnalyticsStandalone } from '../standalone-analytics'
 import unfetch from 'unfetch'
@@ -128,7 +128,7 @@ describe('standalone bundle', () => {
       // @ts-ignore ignore Response required fields
       .mockImplementation((): Promise<Response> => fetchSettings)
 
-    await loadLegacySettings(segmentDotCom)
+    await install()
 
     expect(unfetch).toHaveBeenCalledWith(
       'https://cdn.foo.com/v1/projects/foo/settings'
@@ -143,7 +143,7 @@ describe('standalone bundle', () => {
     const mockCdn = 'http://my-overridden-cdn.com'
 
     window.analytics._cdn = mockCdn
-    await loadLegacySettings(segmentDotCom)
+    await install()
 
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
