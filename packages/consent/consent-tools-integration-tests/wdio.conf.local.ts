@@ -53,9 +53,6 @@ export const config: Options.Testrunner = {
     {
       maxInstances: 5,
       browserName: 'chrome',
-      'goog:chromeOptions': {
-        binary: chromium.executablePath(),
-      },
       acceptInsecureCerts: true,
     },
   ],
