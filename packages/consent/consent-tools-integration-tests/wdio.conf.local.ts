@@ -52,6 +52,7 @@ export const config: Options.Testrunner = {
   capabilities: [
     {
       maxInstances: 5,
+      port: 4444,
       browserName: 'chrome',
       'goog:chromeOptions': {
         binary: chromium.executablePath(),

@@ -122,7 +122,8 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - HUSKY=0 yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter='consent-tools-integration-tests' test:intg
     plugins:
