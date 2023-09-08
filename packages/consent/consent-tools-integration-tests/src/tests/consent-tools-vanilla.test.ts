@@ -9,7 +9,9 @@ it('should stamp each event', async () => {
     async () => (await browser.execute('typeof window.analytics')) !== undefined
   )
 
-  const ctx: any = await browser.execute('window.analytics.track("hello")')
+  const ctx: any = await browser.execute(() => {
+    return window.analytics.track('hello')
+  })
 
   expect((ctx.event.context as any).consent).toEqual({
     categoryPreferences: {
