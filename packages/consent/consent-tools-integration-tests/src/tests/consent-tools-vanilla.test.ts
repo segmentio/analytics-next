@@ -9,11 +9,11 @@ it('should stamp each event', async () => {
     async () => (await browser.execute('typeof window.analytics')) !== undefined
   )
 
-  const responses = await browser.execute(() =>
-    window.analytics.track('hello world')
+  const ctx = await browser.execute(
+    `return window.analytics.track('hello world')`
   )
 
-  expect((responses.event.context as any).consent).toEqual({
+  expect((ctx.event.context as any).consent).toEqual({
     categoryPreferences: {
       Advertising: true,
       Analytics: true,
