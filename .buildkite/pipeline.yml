@@ -116,21 +116,6 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
 
-  - label: '[Consent] Integration Tests'
-    agents:
-      queue: v1
-    commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
-      - echo "--- Install browsers"
-      - echo "+++ Run Browser integration tests :pray:"
-      - yarn turbo run --filter='consent-tools-integration-tests' test:intg
-    plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
-
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
     key: destinations
     agents:
