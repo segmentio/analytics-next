@@ -6,7 +6,7 @@ env:
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
   node:
-    name: "Node (Node.js v${{ matrix.node-version }}) QA"
+    name: "@segment/analytics-node (Node.js v${{ matrix.node-version }}) QA"
     runs-on: ubuntu-latest
     strategy:
       matrix:

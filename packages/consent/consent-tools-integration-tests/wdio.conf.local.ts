@@ -53,6 +53,14 @@ export const config: Options.Testrunner = {
   capabilities: [
     {
       'goog:chromeOptions': {
+        args: [
+          'no-sandbox',
+          'disable-setuid-sandbox',
+          'disable-dev-shm-usage',
+          'disable-accelerated-2d-canvas',
+          'no-zygote',
+          'disable-gpu',
+        ],
         binary: chromium.executablePath(),
       },
       maxInstances: 5,
