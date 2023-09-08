@@ -18,7 +18,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "yarn"
       - run: yarn install --immutable
-      - uses: actions/cache@v3
+      - name: Turborepo Cache
+        uses: actions/cache@v3
         with:
           path: node_modules/.cache/turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
@@ -38,7 +39,8 @@ jobs:
           node-version: 16
           cache: "yarn"
       - run: yarn install --immutable
-      - uses: actions/cache@v3
+      - name: Turborepo Cache
+        uses: actions/cache@v3
         with:
           path: node_modules/.cache/turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
