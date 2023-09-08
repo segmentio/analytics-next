@@ -1,4 +1,4 @@
-import { getGlobalAnalytics } from '../browser/utils'
+import { getGlobalAnalytics } from './global-analytics-helper'
 import { embeddedWriteKey } from './embedded-write-key'
 
 const analyticsScriptRegex =

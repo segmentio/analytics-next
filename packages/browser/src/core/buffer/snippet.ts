@@ -3,7 +3,7 @@ import type {
   PreInitMethodName,
   PreInitMethodParams,
 } from '.'
-import { getGlobalAnalytics } from '../../browser/utils'
+import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
 
 export function transformSnippetCall([
   methodName,

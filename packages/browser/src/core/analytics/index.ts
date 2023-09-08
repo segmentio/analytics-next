@@ -53,7 +53,7 @@ import {
   isArrayOfStoreType,
 } from '../storage'
 import { PluginFactory } from '../../plugins/remote-loader'
-import { setGlobalAnalytics } from '../../browser/utils'
+import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'

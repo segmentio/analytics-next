@@ -1,4 +1,4 @@
-import { AnalyticsSnippet } from './standalone-interface'
+import { AnalyticsSnippet } from '../browser/standalone-interface'
 
 /**
  * Stores the global window analytics key
@@ -6,7 +6,7 @@ import { AnalyticsSnippet } from './standalone-interface'
 let _globalAnalyticsKey = 'analytics'
 
 /**
- * Gets the global analytics instance/buffer
+ * Gets the global analytics/buffer
  * @param key name of the window property where the buffer is stored (default: analytics)
  * @returns AnalyticsSnippet
  */

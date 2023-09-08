@@ -9,4 +9,4 @@ export * from './core/user'
 
 export type { AnalyticsSnippet } from './browser/standalone-interface'
 export type { MiddlewareFunction } from './plugins/middleware'
-export { getGlobalAnalytics } from './browser/utils'
+export { getGlobalAnalytics } from './lib/global-analytics-helper'

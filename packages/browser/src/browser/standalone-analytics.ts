@@ -1,7 +1,10 @@
 import { AnalyticsBrowser } from '.'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
 import { AnalyticsSnippet } from './standalone-interface'
-import { getGlobalAnalytics, setGlobalAnalytics } from './utils'
+import {
+  getGlobalAnalytics,
+  setGlobalAnalytics,
+} from '../lib/global-analytics-helper'
 
 function getWriteKey(): string | undefined {
   if (embeddedWriteKey()) {
