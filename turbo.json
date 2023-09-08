@@ -12,17 +12,17 @@
       "outputs": ["**/dist/**", ".next/**"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["build"]
     },
     "test:intg": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["build"]
     },
     "watch": {
       "cache": false,
       "outputs": ["dist/**"]
     },
     "lint": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
     }
