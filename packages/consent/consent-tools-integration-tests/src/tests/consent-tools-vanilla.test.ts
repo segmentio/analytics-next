@@ -4,6 +4,7 @@ import { expect } from 'expect'
 // Verify that the consent tools wrapper is working as expected (no OneTrust)
 it('should stamp each event', async () => {
   await page.load()
+
   const responses = await browser.execute(() =>
     window.analytics.track('hello world')
   )
