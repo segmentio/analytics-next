@@ -55,6 +55,7 @@ export const config: Options.Testrunner = {
       browserName: 'chrome',
       'goog:chromeOptions': {
         binary: playwright.chromium.executablePath(),
+        args: ['no-sandbox', 'disable-gpu'],
       },
       acceptInsecureCerts: true,
     },
