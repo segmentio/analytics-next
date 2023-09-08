@@ -1,5 +1,7 @@
 import type { Options } from '@wdio/types'
 
+const PORT = 4567
+
 export const config: Options.Testrunner = {
   afterTest(test, _, { error, passed }) {
     console.log(
@@ -10,22 +12,26 @@ export const config: Options.Testrunner = {
       ].join('\n')
     )
   },
-  services: ['intercept'],
-  // services: [ /* Using webpack-dev-server instead */
-  //   [
-  //     'static-server',
-  //     {
-  //       port: 5555,
-  //       folders: [
-  //         {
-  //           mount: '/',
-  //           path: './dist/',
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // ],
-  baseUrl: 'http://localhost:9000',
+  services: [
+    'devtools',
+    [
+      'static-server',
+      {
+        port: PORT,
+        folders: [
+          {
+            mount: '/',
+            path: './public',
+          },
+          {
+            mount: '/@segment',
+            path: './node_modules/@segment',
+          },
+        ],
+      },
+    ],
+  ],
+  baseUrl: `http://localhost:${PORT}`,
   // WebdriverIO allows it to run your tests in arbitrary locations (e.g. locally or
   // on a remote machine).
   runner: 'local',
@@ -47,13 +53,16 @@ export const config: Options.Testrunner = {
     {
       maxInstances: 5,
       browserName: 'chrome',
+      'goog:chromeOptions': {
+        args: process.env.CI ? ['headless', 'disable-gpu'] : [],
+      },
       acceptInsecureCerts: true,
     },
   ],
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: 'debug',
+  logLevel: 'info',
   //
   // Set specific log levels per logger
   // loggers:

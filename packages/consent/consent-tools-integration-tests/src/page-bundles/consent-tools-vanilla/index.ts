@@ -3,10 +3,7 @@ import { createWrapper } from '@segment/analytics-consent-tools'
 
 const fakeCategories = { Advertising: true, Analytics: true }
 
-const wrap = createWrapper({
-  /* Load + Get initial categories */
-  shouldLoad: () => Promise.resolve(fakeCategories),
-  /* Stamp categories on every event */
+const withCMP = createWrapper({
   getCategories: () => fakeCategories,
   integrationCategoryMappings: {
     Fullstory: ['Analytics'],
@@ -14,11 +11,11 @@ const wrap = createWrapper({
   },
 })
 
-export const analytics = new AnalyticsBrowser()
-;(window as any).analytics = analytics
+const analytics = new AnalyticsBrowser()
 
-wrap(analytics)
-
-analytics.load({
-  writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc',
+withCMP(analytics).load({
+  writeKey: 'foo',
 })
+
+// for testing
+;(window as any).analytics = analytics

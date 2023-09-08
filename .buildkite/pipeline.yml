@@ -2,6 +2,14 @@ env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
+  - label: Log Environment
+    agents:
+      queue: v1
+    commands:
+      - echo "+++ Node Version"
+      - echo $(node -v)
+      - echo "+++ MiscVariables"
+      - echo "CI -> $CI"
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
@@ -183,4 +191,3 @@ steps:
     agents:
       queue: v1
     command: 'bk-snyk'
-

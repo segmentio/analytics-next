@@ -1,3 +1,4 @@
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 import assert from 'assert'
 
 const waitUntilReady = () =>
@@ -14,6 +15,7 @@ export abstract class BasePage {
   async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
     assert(baseURL)
+    await this.mockCDNSettingsEndpoint()
     await waitUntilReady()
     await browser.url(baseURL + '/' + this.page)
   }
@@ -21,6 +23,42 @@ export abstract class BasePage {
   async clearStorage() {
     await browser.deleteAllCookies()
     await browser.execute(() => localStorage.clear())
+  }
+
+  /**
+   * Mock the CDN Settings endpoint so that this can run offline
+   */
+  private mockCDNSettingsEndpoint(): Promise<void> {
+    const settings = new CDNSettingsBuilder({
+      writeKey: 'something',
+    })
+      .addActionDestinationSettings(
+        {
+          creationName: 'FullStory',
+          consentSettings: {
+            categories: ['Analytics'],
+          },
+        },
+        {
+          creationName: 'Actions Amplitude',
+          consentSettings: {
+            categories: ['Advertising'],
+          },
+        }
+      )
+      .build()
+
+    return browser
+      .mock('**/settings')
+      .then((mock) =>
+        mock.respond(settings, {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      )
+      .catch(console.error)
   }
 
   /**

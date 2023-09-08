@@ -3,24 +3,29 @@
   "private": true,
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/consent-tools-integration-tests...",
-    "dev": "yarn concurrently 'yarn watch' 'yarn build serve --open'",
+    "test:intg": "yarn wdio:local",
     "build": "webpack",
     "watch": "yarn build --watch",
-    "test:local": "wdio wdio.conf.local.ts",
-    "start-server-and-test": "yarn concurrently -k 'yarn build serve' 'sleep 5 && yarn test:local'",
+    "wdio:local": "wdio wdio.conf.local.ts",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "eslint": "yarn run -T eslint",
     "tsc": "tsc",
     "concurrently": "yarn run -T concurrently --raw"
   },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  },
   "devDependencies": {
+    "@internal/test-helpers": "workspace:^",
     "@segment/analytics-consent-tools": "workspace:^",
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
     "@segment/analytics-next": "workspace:^",
     "@wdio/cli": "^8.10.6",
+    "@wdio/devtools-service": "^8.10.6",
     "@wdio/local-runner": "^8.10.6",
     "@wdio/mocha-framework": "^8.10.6",
     "@wdio/spec-reporter": "^8.10.6",
+    "@wdio/static-server-service": "^8.10.6",
     "@wdio/types": "8",
     "expect": "^29.4.1",
     "globby": "^11.0.2",
