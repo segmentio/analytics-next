@@ -13,6 +13,7 @@ export const config: Options.Testrunner = {
     )
   },
   services: [
+    'devtools',
     [
       'static-server',
       {
