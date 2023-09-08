@@ -1,6 +1,5 @@
 import page from '../page-objects/consent-tools-vanilla'
 import { expect } from 'expect'
-import { Context } from '@segment/analytics-next'
 
 // Verify that the consent tools wrapper is working as expected (no OneTrust)
 it('should stamp each event', async () => {
@@ -10,9 +9,7 @@ it('should stamp each event', async () => {
     async () => (await browser.execute('typeof window.analytics')) !== undefined
   )
 
-  const ctx = (await browser.execute(
-    `return window.analytics.track('hello world')`
-  )) as Context
+  const ctx: any = await browser.execute('window.analytics.track("hello")')
 
   expect((ctx.event.context as any).consent).toEqual({
     categoryPreferences: {
