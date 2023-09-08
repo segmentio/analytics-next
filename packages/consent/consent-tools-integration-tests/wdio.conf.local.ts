@@ -1,5 +1,4 @@
 import type { Options } from '@wdio/types'
-import playwright from 'playwright'
 
 const PORT = 4567
 
