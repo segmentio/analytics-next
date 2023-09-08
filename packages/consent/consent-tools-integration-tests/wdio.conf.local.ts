@@ -54,7 +54,6 @@ export const config: Options.Testrunner = {
       maxInstances: 5,
       browserName: 'chrome',
       'goog:chromeOptions': {
-        args: ['--no-sandbox', '--headless'],
         binary: chromium.executablePath(),
       },
       acceptInsecureCerts: true,
