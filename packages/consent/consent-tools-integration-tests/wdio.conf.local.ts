@@ -1,5 +1,4 @@
 import type { Options } from '@wdio/types'
-import { chromium } from 'playwright-chromium'
 
 const PORT = 4567
 
@@ -52,17 +51,6 @@ export const config: Options.Testrunner = {
   maxInstances: 10,
   capabilities: [
     {
-      'goog:chromeOptions': {
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-zygote',
-          '--disable-gpu',
-        ],
-        binary: chromium.executablePath(),
-      },
       maxInstances: 5,
       browserName: 'chrome',
       acceptInsecureCerts: true,
