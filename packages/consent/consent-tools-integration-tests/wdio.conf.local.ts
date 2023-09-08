@@ -1,4 +1,5 @@
 import type { Options } from '@wdio/types'
+import { chromium } from 'playwright'
 
 const PORT = 4567
 
@@ -51,6 +52,9 @@ export const config: Options.Testrunner = {
   maxInstances: 10,
   capabilities: [
     {
+      'goog:chromeOptions': {
+        binary: chromium.executablePath(),
+      },
       maxInstances: 5,
       browserName: 'chrome',
       acceptInsecureCerts: true,
