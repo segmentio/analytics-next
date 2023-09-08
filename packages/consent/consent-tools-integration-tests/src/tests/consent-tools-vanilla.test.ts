@@ -14,7 +14,7 @@ it('should stamp each event', async () => {
   ]
 
   const responses = await Promise.all<Context>(
-    commands.map((cmd) => browser.execute(cmd))
+    commands.map((cmd) => browser.execute(`return ${cmd}`))
   )
 
   responses.forEach((ctx) => {
