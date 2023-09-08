@@ -1,12 +1,12 @@
-name: Node CI
+name: CI
 on:
   push:
 env:
   HUSKY: 0
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
-  test:
-    name: "Test (Node.js v${{ matrix.node-version }})"
+  node:
+    name: "Test Node (Node.js v${{ matrix.node-version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,5 +20,18 @@ jobs:
       - run: yarn install --immutable
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: yarn turbo run --filter='./packages/node*' test
+  consent:
+    name: Test Consent
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "yarn"
+      - run: yarn install --immutable
+      - run: npx playwright install --with-deps chromium
+      - run: yarn turbo run --filter='consent-tools-integration-tests' test:intg
+
 
 

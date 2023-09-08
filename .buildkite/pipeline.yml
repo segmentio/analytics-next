@@ -124,7 +124,6 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Install browsers"
-      - npx playwright install --with-deps chromium
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter='consent-tools-integration-tests' test:intg
     plugins:
