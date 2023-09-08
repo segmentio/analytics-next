@@ -9,21 +9,12 @@ Why is this using wd.io instead of playwright?
   - `/dist` - Holds the webpacked page-bundles that will be injected into each html page
 
 - `/src` - Test suite files
-  - `/page-bundles` - JS that will be injected into the test page (this will be built by webpack -> public/dist)
+  - `/page-bundles` - For testing libraries that don't have a UMD bundle (i.e analytics-consent-tools)
   - `/page-objects` - Page objects for the test suite
   - `/page-tests ` - Tests that will be run on the page
-  
 
 ## Development
-### 1. Build this package + deps
-```sh
-yarn . build
+### Build, start server, run tests (and exit gracefully)
 ```
-### 2. Start server + run tests (and exit gracefully)
+yarn . test:intg
 ```
-yarn start-server-and-test
-```
-### 3. Make code changes.
-
-### 4. Build + re-run tests with `yarn start-server-and-test`.
-

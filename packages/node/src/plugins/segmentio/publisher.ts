@@ -206,7 +206,7 @@ export class Publisher {
             Authorization: `Basic ${this._auth}`,
             'User-Agent': 'analytics-node-next/latest',
           },
-          data: { batch: events },
+          data: { batch: events, sentAt: new Date() },
           httpRequestTimeout: this._httpRequestTimeout,
         }
 
