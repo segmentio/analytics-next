@@ -5,8 +5,8 @@ env:
   HUSKY: 0
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
-  node:
-    name: "@segment/analytics-node (Node.js v${{ matrix.node-version }}) QA"
+  analytics-node:
+    name: "analytics-node QA (Node.js v${{ matrix.node-version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
