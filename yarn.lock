@@ -2539,7 +2539,7 @@ __metadata:
     "@wdio/types": 8
     expect: ^29.4.1
     globby: ^11.0.2
-    playwright-chromium: ^1.37.1
+    playwright: ^1.28.1
     wdio-intercept-service: ^4.4.0
     webpack: ^5.76.0
     webpack-cli: ^4.8.0
@@ -16729,32 +16729,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-chromium@npm:^1.37.1":
-  version: 1.37.1
-  resolution: "playwright-chromium@npm:1.37.1"
-  dependencies:
-    playwright-core: 1.37.1
-  bin:
-    playwright: cli.js
-  checksum: 813fd13bcabdd279313fd2658c9124ab616f94849458cafe8434de5351cc6995bfde21208335da5b139aab07f8511beaf74e31d24937fbb38b6c625c57d69cdd
-  languageName: node
-  linkType: hard
-
 "playwright-core@npm:1.28.1":
   version: 1.28.1
   resolution: "playwright-core@npm:1.28.1"
   bin:
     playwright: cli.js
   checksum: 8899e0d65de43ee10fadc171e0d48cd514bb574f3505478700094afa8a6e0dcd888a5c87af22acf31ebad455ada1327028909c42e20b8e25908b6255dc143bf0
-  languageName: node
-  linkType: hard
-
-"playwright-core@npm:1.37.1":
-  version: 1.37.1
-  resolution: "playwright-core@npm:1.37.1"
-  bin:
-    playwright-core: cli.js
-  checksum: 69f818da2230057584140d5b3af7778a4f4a822b5b18d133abfc5d259128becb943c343a2ddf6b0635277a69f28983e83e2bc3fce23595ececb1e410475b6368
   languageName: node
   linkType: hard
 
