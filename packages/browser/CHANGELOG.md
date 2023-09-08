@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.55.0
+
+### Minor Changes
+
+- [#939](https://github.com/segmentio/analytics-next/pull/939) [`ee855ba`](https://github.com/segmentio/analytics-next/commit/ee855bad751c393a40dcbde7ae861f27d2b4da26) Thanks [@zikaari](https://github.com/zikaari)! - Move context augmentation to Page Enrichment plugin
+
+* [#931](https://github.com/segmentio/analytics-next/pull/931) [`9123c0c`](https://github.com/segmentio/analytics-next/commit/9123c0c485d293ee8ba283ba7b6de6a46734449a) Thanks [@silesky](https://github.com/silesky)! - Add ability to use browser destination straight from NPM
+
+### Patch Changes
+
+- Updated dependencies [[`ee855ba`](https://github.com/segmentio/analytics-next/commit/ee855bad751c393a40dcbde7ae861f27d2b4da26)]:
+  - @segment/analytics-core@1.3.1
+
 ## 1.54.0
 
 ### Minor Changes
