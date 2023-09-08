@@ -52,9 +52,14 @@ export const config: Options.Testrunner = {
   capabilities: [
     {
       maxInstances: 5,
-      port: 4444,
       browserName: 'chrome',
       'goog:chromeOptions': {
+        args: [
+          '--no-sandbox',
+          '--headless',
+          '--disable-setuid-sandbox',
+          '--disable-gpu',
+        ],
         binary: chromium.executablePath(),
       },
       acceptInsecureCerts: true,
