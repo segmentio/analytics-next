@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.3.1
+
+### Patch Changes
+
+- [#939](https://github.com/segmentio/analytics-next/pull/939) [`ee855ba`](https://github.com/segmentio/analytics-next/commit/ee855bad751c393a40dcbde7ae861f27d2b4da26) Thanks [@zikaari](https://github.com/zikaari)! - Update Campaign type to be more relaxed
+
 ## 1.3.0
 
 ### Minor Changes

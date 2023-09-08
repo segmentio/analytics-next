@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
-    "@segment/analytics-core": "1.3.0",
+    "@segment/analytics-core": "1.3.1",
     "buffer": "^6.0.3",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.1"
