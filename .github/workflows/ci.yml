@@ -30,7 +30,6 @@ jobs:
           node-version: 16
           cache: "yarn"
       - run: yarn install --immutable
-      - run: npx playwright install --with-deps chromium
       - run: yarn turbo run --filter='consent-tools-integration-tests' test:intg
 
 
