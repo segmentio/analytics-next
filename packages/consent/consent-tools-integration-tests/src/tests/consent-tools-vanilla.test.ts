@@ -5,11 +5,7 @@ import { expect } from 'expect'
 it('should stamp each event', async () => {
   await page.load()
 
-  await browser.waitUntil(
-    async () => (await browser.execute('typeof window.analytics')) !== undefined
-  )
-
-  const ctx: any = await browser.execute(() => {
+  const ctx = await browser.execute(() => {
     return window.analytics.track('hello')
   })
 
