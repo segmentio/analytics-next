@@ -27,7 +27,9 @@ export interface OauthData {
 export const RefreshToken = (data: OauthData) => {
   clearTimeout(data.refreshTimer)
   data.refreshTimer = undefined
-  data.refreshPromise = RefreshTokenAsync(data)
+  if (!data.refreshPromise) {
+    data.refreshPromise = RefreshTokenAsync(data)
+  }
 }
 
 export const RefreshTokenAsync = async (data: OauthData) => {
