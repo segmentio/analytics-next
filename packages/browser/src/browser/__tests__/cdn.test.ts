@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from '../..'
+import { AnalyticsBrowser, getGlobalAnalytics } from '../..'
 import unfetch from 'unfetch'
 import { createSuccess } from '../../test-helpers/factories'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
@@ -45,5 +45,5 @@ it('if CDN is overridden, sets the overridden CDN global variable', async () => 
     writeKey,
     cdnURL: mockCdn,
   })
-  expect(window.analytics._cdn).toBe(mockCdn)
+  expect(getGlobalAnalytics()?._cdn).toBe(mockCdn)
 })

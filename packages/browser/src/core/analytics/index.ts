@@ -53,6 +53,7 @@ import {
   isArrayOfStoreType,
 } from '../storage'
 import { PluginFactory } from '../../plugins/remote-loader'
+import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -121,6 +122,11 @@ export interface InitOptions {
    * Array of high entropy Client Hints to request. These may be rejected by the user agent - only required hints should be requested.
    */
   highEntropyValuesClientHints?: HighEntropyHint[]
+  /**
+   * When using the snippet, this is the key that points to the global analytics instance (e.g. window.analytics).
+   * default: analytics
+   */
+  globalAnalyticsKey?: string
 }
 
 /* analytics-classic stubs */
@@ -536,7 +542,7 @@ export class Analytics
 
   noConflict(): Analytics {
     console.warn(deprecationWarning)
-    window.analytics = _analytics ?? this
+    setGlobalAnalytics(_analytics ?? this)
     return this
   }
 
