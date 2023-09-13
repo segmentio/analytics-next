@@ -56,7 +56,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
           typeof settings.httpClient === 'function'
             ? new FetchHTTPClient(settings.httpClient)
             : settings.httpClient ?? new FetchHTTPClient(),
-        oauthSettings: settings.oauthSettings,
+        tokenManagerProps: settings.tokenManagerProps,
       },
       this as NodeEmitter
     )
@@ -71,14 +71,6 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
   get VERSION() {
     return version
-  }
-
-  get oauthSettings() {
-    return this._publisher.oauthSettings
-  }
-
-  set oauthSettings(value) {
-    this._publisher.oauthSettings = value
   }
 
   /**

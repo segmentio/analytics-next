@@ -5,7 +5,8 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
-import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
+//import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
+import { TokenManager, TokenManagerProps } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,7 +29,7 @@ export interface PublisherProps {
   httpRequestTimeout?: number
   disable?: boolean
   httpClient: HTTPClient
-  oauthSettings?: OauthSettings
+  tokenManagerProps?: TokenManagerProps
 }
 
 /**
@@ -48,7 +49,7 @@ export class Publisher {
   private _disable: boolean
   private _httpClient: HTTPClient
   private _writeKey: string
-  private _oauthData: OauthData | undefined
+  private _tokenManager: TokenManager | undefined
   constructor(
     {
       host,
@@ -60,7 +61,7 @@ export class Publisher {
       httpRequestTimeout,
       httpClient,
       disable,
-      oauthSettings,
+      tokenManagerProps,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -77,31 +78,9 @@ export class Publisher {
     this._httpClient = httpClient
     this._writeKey = writeKey
 
-    if (oauthSettings != null) {
-      this.oauthSettings = oauthSettings
-    }
-  }
-
-  get oauthSettings() {
-    return this._oauthData?.settings
-  }
-
-  set oauthSettings(value) {
-    if (value) {
-      if (this._oauthData) {
-        this._oauthData.settings = value
-      } else {
-        this._oauthData = {
-          httpClient: this._httpClient,
-          settings: value,
-          maxRetries: this._maxRetries,
-        } as OauthData
-      }
-      RefreshToken(this._oauthData)
-    } else {
-      throw new Error(
-        "OAuth settings can't be removed, create a new analytics object instead."
-      )
+    if (tokenManagerProps != null) {
+      tokenManagerProps.httpClient ??= httpClient
+      this._tokenManager = new TokenManager(tokenManagerProps)
     }
   }
 
@@ -229,18 +208,10 @@ export class Publisher {
         }
 
         let authString = undefined
-        if (this._oauthData?.settings) {
-          if (!this._oauthData.token) {
-            if (!this._oauthData.refreshPromise) {
-              RefreshToken(this._oauthData)
-            }
-            await this._oauthData.refreshPromise
-            if (!this._oauthData.token) {
-              // If we don't have a token then authorization failed after multiple attempts
-              continue // ???
-            }
-          }
-          authString = `Bearer ${this._oauthData.token}`
+        if (this._tokenManager) {
+          authString = `Bearer ${
+            (await this._tokenManager.getAccessToken()).access_token
+          }`
         }
 
         let headers
@@ -279,14 +250,13 @@ export class Publisher {
           batch.resolveEvents()
           return
         } else if (
-          this._oauthData &&
-          this._oauthData.settings &&
+          this._tokenManager &&
           (response.status === 400 ||
             response.status === 401 ||
             response.status === 403)
         ) {
           // Retry with a new OAuth token if we have OAuth data
-          RefreshToken(this._oauthData)
+          this._tokenManager.clearToken()
           failureReason = new Error(
             `[${response.status}] ${response.statusText}`
           )
