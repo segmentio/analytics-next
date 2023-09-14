@@ -429,6 +429,33 @@ describe(resolveUserArguments, () => {
     expect(traits).toEqual(userTraits)
     expect(options).toEqual({})
   })
+
+  it('should accept (undefined, traits)', () => {
+    user.reset()
+    const [id, traits, options] = resolver(undefined, userTraits)
+    expect(traits).toEqual(userTraits)
+    expect(options).toEqual({})
+    expect(id).toEqual(null)
+  })
+
+  it('should accept (null, traits) with unknown identity', () => {
+    user.reset()
+    const [id, traits, options] = resolver(null, userTraits)
+    console.log(id, traits, options)
+    expect(traits).toEqual(userTraits)
+    expect(options).toEqual({})
+    expect(id).toEqual(null)
+  })
+
+  it('should accept (null, traits) when identity is set', () => {
+    user.reset()
+    user.identify('something')
+    const [id, traits, options] = resolver(null, userTraits)
+    console.log(id, traits, options)
+    expect(traits).toEqual(userTraits)
+    expect(options).toEqual({})
+    expect(id).toEqual('something')
+  })
 })
 
 describe(resolveAliasArguments, () => {
