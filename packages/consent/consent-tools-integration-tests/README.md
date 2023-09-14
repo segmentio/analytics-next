@@ -16,5 +16,5 @@ Why is this using wd.io instead of playwright?
 ## Development
 ### Build, start server, run tests (and exit gracefully)
 ```
-yarn . test:intg
+yarn . test:int
 ```

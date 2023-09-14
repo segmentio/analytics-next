@@ -14,7 +14,7 @@
     "test": {
       "dependsOn": ["build"]
     },
-    "test:intg": {
+    "test:int": {
       "dependsOn": ["build"]
     },
     "watch": {
