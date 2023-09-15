@@ -106,6 +106,7 @@ export class Publisher {
   }
 
   flushAfterClose(pendingItemsCount: number) {
+    this._tokenManager?.stopPoller()
     if (!pendingItemsCount) {
       // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
       return
@@ -209,9 +210,14 @@ export class Publisher {
 
         let authString = undefined
         if (this._tokenManager) {
-          authString = `Bearer ${
-            (await this._tokenManager.getAccessToken()).access_token
-          }`
+          const tokenPromise = this._tokenManager.getAccessToken()
+          const token = await tokenPromise
+          console.log(token)
+          if (token.access_token !== undefined) {
+            authString = `Bearer ${token}`
+          } else {
+            console.log('No access_token')
+          }
         }
 
         let headers

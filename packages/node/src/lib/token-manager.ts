@@ -71,15 +71,20 @@ export class TokenManager {
     let lastError: any
 
     while (this.isRunning) {
-      let timeUntilRefreshInMs = 0
+      let timeUntilRefreshInMs = 25
       let response: HTTPResponse
 
       try {
         response = await this.requestAccessToken()
       } catch (err) {
-        // Error without a status code - likely networking, retry (backoff or immediately?)
+        // Error without a status code - likely networking, retry
         retryCount++
         lastError = err
+
+        if (retryCount % this.maxRetries == 0) {
+          this.tokenEmitter.emit('access_token', { error: lastError })
+        }
+
         await sleep(
           backoff({
             attempt: retryCount,
@@ -91,7 +96,18 @@ export class TokenManager {
         continue
       }
 
-      // TODO: Calculate clock skew using reponse.headers.Date compared to system time
+      if (
+        response.headers !== undefined &&
+        response.headers.Date != undefined
+      ) {
+        const serverTime = Date.parse(response.headers.Date)
+        const skew = Date.now() - serverTime
+        if (this.clockSkewInSeconds == 0) {
+          this.clockSkewInSeconds = skew
+        } else {
+          this.clockSkewInSeconds = (this.clockSkewInSeconds + skew) / 2
+        }
+      }
 
       // Handle status codes!
       if (response.status === 200) {
@@ -102,7 +118,11 @@ export class TokenManager {
           // Errors reading the body (not parsing) are likely networking issues, we can retry
           retryCount++
           lastError = err
-          //console.log(lastError)
+          timeUntilRefreshInMs = backoff({
+            attempt: retryCount,
+            minTimeout: 25,
+            maxTimeout: 1000,
+          })
           continue
         }
         let token: AccessToken
@@ -110,19 +130,21 @@ export class TokenManager {
           const parsedBody = /*JSON.parse(*/ body /*)*/
           // TODO: validate JSON
           token = parsedBody
-
           this.tokenEmitter.emit('access_token', { token })
 
           // Reset our failure count
           retryCount = 0
 
           // Refresh the token after half the expiry time passes
-          timeUntilRefreshInMs = Math.floor((token.expires_in / 2) * 1000)
+          if (token !== undefined && token.expires_in !== undefined) {
+            timeUntilRefreshInMs = Math.floor((token.expires_in / 2) * 1000)
+          } else {
+            timeUntilRefreshInMs = 60 * 1000
+          }
         } catch (err) {
           // Something went really wrong with the body, lets surface an error and try again?
           this.tokenEmitter.emit('access_token', { error: err })
           retryCount = 0
-          //console.log(err)
 
           timeUntilRefreshInMs = backoff({
             attempt: retryCount,
@@ -132,8 +154,7 @@ export class TokenManager {
         }
       } else if (response.status === 429) {
         retryCount++
-        lastError = response.statusText
-        //console.log(lastError)
+        lastError = `[${response.status}] ${response.statusText}`
         const rateLimitResetTime = parseInt(
           response.headers['X-RateLimit-Reset'],
           10
@@ -149,15 +170,13 @@ export class TokenManager {
         // Unrecoverable errors
         retryCount = 0
         this.tokenEmitter.emit('access_token', {
-          error: new Error(response.statusText),
+          error: new Error(`[${response.status}] ${response.statusText}`),
         })
-        //console.log(response.statusText)
         this.stopPoller()
         return
       } else {
         retryCount++
-        lastError = new Error(response.statusText)
-        //console.log(lastError)
+        lastError = new Error(`[${response.status}] ${response.statusText}`)
         timeUntilRefreshInMs = backoff({
           attempt: retryCount,
           minTimeout: 25,
@@ -165,20 +184,16 @@ export class TokenManager {
         })
       }
 
-      if (retryCount >= this.maxRetries) {
+      if (retryCount % this.maxRetries == 0) {
         this.tokenEmitter.emit('access_token', { error: lastError })
-        //console.log(lastError)
         // TODO: figure out timing and whether to reset retries?
       }
-      //console.log('Sleeping for: ' + timeUntilRefreshInMs)
       await sleep(timeUntilRefreshInMs, this.signal)
     }
   }
 
   stopPoller() {
-    // TODO: Use abort controller to end the while loop in startPoller()
     if (this.isRunning) {
-      //console.log('Abork bork bork!')
       this.controller.abort()
     }
     this.isRunning = false
@@ -219,12 +234,10 @@ export class TokenManager {
       httpRequestTimeout: 10000,
     }
 
-    //console.log('!!!!!!!!! fetch')
     return this.httpClient.makeRequest(requestOptions)
   }
 
   async getAccessToken(): Promise<AccessToken> {
-    //console.log('############################## Access token requested')
     // Use the cached token if it is still valid, otherwise wait for a new token.
     if (this.isValidToken(this.accessToken)) {
       return this.accessToken

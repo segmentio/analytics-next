@@ -89,74 +89,62 @@ test(
   30 * 1000
 )
 
-test(
-  'OAuth retry failure',
-  async () => {
-    fetcher.mockReturnValue(createOAuthError({ status: 425 }))
+test('OAuth retry failure', async () => {
+  fetcher.mockReturnValue(createOAuthError({ status: 425 }))
 
-    const tokenManager = getTokenManager()
+  const tokenManager = getTokenManager()
 
-    await expect(tokenManager.getAccessToken()).rejects.toThrowError('Foo')
-    tokenManager.stopPoller()
+  await expect(tokenManager.getAccessToken()).rejects.toThrowError('Foo')
+  tokenManager.stopPoller()
 
-    expect(fetcher).toHaveBeenCalledTimes(3)
-  },
-  30 * 1000
-)
+  expect(fetcher).toHaveBeenCalledTimes(3)
+})
 
-test(
-  'OAuth immediate failure',
-  async () => {
-    fetcher.mockReturnValue(createOAuthError({ status: 400 }))
+test('OAuth immediate failure', async () => {
+  fetcher.mockReturnValue(createOAuthError({ status: 400 }))
 
-    const tokenManager = getTokenManager()
+  const tokenManager = getTokenManager()
 
-    await expect(tokenManager.getAccessToken()).rejects.toThrowError('Foo')
-    tokenManager.stopPoller()
+  await expect(tokenManager.getAccessToken()).rejects.toThrowError('Foo')
+  tokenManager.stopPoller()
 
-    expect(fetcher).toHaveBeenCalledTimes(1)
-  },
-  30 * 1000
-)
+  expect(fetcher).toHaveBeenCalledTimes(1)
+})
 
-test(
-  'OAuth rate limit',
-  async () => {
-    fetcher
-      .mockReturnValueOnce(
-        createOAuthError({
-          status: 429,
-          headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
-        })
-      )
-      .mockReturnValueOnce(
-        createOAuthError({
-          status: 429,
-          headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
-        })
-      )
-      .mockReturnValue(
-        createOAuthSuccess({
-          access_token: 'token',
-          expires_in: 100,
-        })
-      )
+test('OAuth rate limit', async () => {
+  fetcher
+    .mockReturnValueOnce(
+      createOAuthError({
+        status: 429,
+        headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
+      })
+    )
+    .mockReturnValueOnce(
+      createOAuthError({
+        status: 429,
+        headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
+      })
+    )
+    .mockReturnValue(
+      createOAuthSuccess({
+        access_token: 'token',
+        expires_in: 100,
+      })
+    )
 
-    const tokenManager = getTokenManager()
+  const tokenManager = getTokenManager()
 
-    const tokenPromise = tokenManager.getAccessToken()
-    await sleep(250)
-    expect(fetcher).toHaveBeenCalledTimes(1)
-    await sleep(250)
-    expect(fetcher).toHaveBeenCalledTimes(2)
-    await sleep(350)
-    expect(fetcher).toHaveBeenCalledTimes(3)
+  const tokenPromise = tokenManager.getAccessToken()
+  await sleep(250)
+  expect(fetcher).toHaveBeenCalledTimes(1)
+  await sleep(250)
+  expect(fetcher).toHaveBeenCalledTimes(2)
+  await sleep(350)
+  expect(fetcher).toHaveBeenCalledTimes(3)
 
-    const token = await tokenPromise
-    expect(tokenManager.isValidToken(token)).toBeTruthy()
-    expect(token.access_token).toBe('token')
-    expect(token.expires_in).toBe(100)
-    expect(fetcher).toHaveBeenCalledTimes(3)
-  },
-  30 * 1000
-)
+  const token = await tokenPromise
+  expect(tokenManager.isValidToken(token)).toBeTruthy()
+  expect(token.access_token).toBe('token')
+  expect(token.expires_in).toBe(100)
+  expect(fetcher).toHaveBeenCalledTimes(3)
+})
