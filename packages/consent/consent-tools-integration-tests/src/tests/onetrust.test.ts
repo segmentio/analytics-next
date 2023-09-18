@@ -1,6 +1,7 @@
-// Verify that @segment/analytics-consent-wrapper-onetrust is working as expected
+/**
+ * Verify that @segment/analytics-consent-wrapper-onetrust is working as expected
+ */
 
-/* eslint-disable @typescript-eslint/no-floating-promises */
 import page from '../page-objects/onetrust'
 import { expect } from 'expect'
 

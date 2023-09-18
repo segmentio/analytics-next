@@ -4,7 +4,7 @@
 
 ```ts
 // wrapper.js
-import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
+import { createWrapper, resolveWhen, RegisterOnConsentChangedFunction } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
   shouldLoad: (ctx) => {
@@ -23,6 +23,16 @@ export const withCMP = createWrapper({
     // e.g. { Advertising: true, Functional: false }
     return normalizeCategories(window.CMP.consentedCategories())
   },
+
+  registerOnConsentChanged: (setCategories) => {
+    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
+    getOneTrustGlobal()!.OnConsentChanged((event) => {
+      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+        event.detail
+      )
+      onCategoriesChangedCb(normalizedCategories)
+    })
+  },
 })
 ```
 
@@ -36,9 +46,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const analytics = new AnalyticsBrowser()
 
-withCMP(analytics)
-
-analytics.load({
+withCMP(analytics).load({
   writeKey: '<MY_WRITE_KEY'>
 })
 
@@ -58,9 +66,7 @@ analytics.load({
 ```js
 import { withCMP } from './wrapper'
 
-withCMP(window.analytics)
-
-window.analytics.load('<MY_WRITE_KEY')
+withCMP(window.analytics).load('<MY_WRITE_KEY')
 ```
 
 ## Wrapper Examples

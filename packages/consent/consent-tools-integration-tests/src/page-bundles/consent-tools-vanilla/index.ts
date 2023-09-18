@@ -1,14 +1,10 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { createWrapper } from '@segment/analytics-consent-tools'
 
-const fakeCategories = { Advertising: true, Analytics: true }
+const fakeCategories = { FooCategory1: true, FooCategory2: true }
 
 const withCMP = createWrapper({
   getCategories: () => fakeCategories,
-  integrationCategoryMappings: {
-    Fullstory: ['Analytics'],
-    'Actions Amplitude': ['Advertising'],
-  },
 })
 
 const analytics = new AnalyticsBrowser()
