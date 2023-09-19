@@ -4,7 +4,7 @@
 
 ```ts
 // wrapper.js
-import { createWrapper, resolveWhen, RegisterOnConsentChangedFunction } from '@segment/analytics-consent-tools'
+import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
 
