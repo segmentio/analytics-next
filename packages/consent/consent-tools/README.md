@@ -6,30 +6,40 @@
 // wrapper.js
 import { createWrapper, resolveWhen, RegisterOnConsentChangedFunction } from '@segment/analytics-consent-tools'
 
+const getCMP = async () => {
+ await resolveWhen(() => window.CMP !== undefined, 500)
+ return window.CMP
+}
+
 export const withCMP = createWrapper({
+
+  // Do not attempt to load segment until this function returns / resolves
   shouldLoad: (ctx) => {
+    const CMP = await getCMP()
     await resolveWhen(
-      () => window.CMP !== undefined && !window.CMP.popUpVisible(),
+      () => !CMP.popUpVisible(),
       500
     )
 
+    // Optional -- for granular control of initialization
     if (noConsentNeeded) {
       ctx.abort({ loadSegmentNormally: true })
     } else if (allTrackingDisabled) {
       ctx.abort({ loadSegmentNormally: false })
     }
   },
+
   getCategories: () => {
-    // e.g. { Advertising: true, Functional: false }
-    return normalizeCategories(window.CMP.consentedCategories())
+    const CMP = await getCMP()
+    return normalizeCategories(CMP.consentedCategories()) // Expected format: { foo: true, bar: false }
   },
+
   registerOnConsentChanged: (setCategories) => {
-    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
-    getOneTrustGlobal()!.OnConsentChanged((event) => {
-      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-        event.detail
-      )
-      setCategories(normalizedCategories)
+    const CMP = await getCMP()
+    CMP.onConsentChanged((newCategories) => {
+      setCategories(normalizeCategories(
+        newCategories
+      ))
     })
   },
 })
