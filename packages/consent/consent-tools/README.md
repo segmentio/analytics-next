@@ -6,11 +6,6 @@
 // wrapper.js
 import { createWrapper, resolveWhen, RegisterOnConsentChangedFunction } from '@segment/analytics-consent-tools'
 
-const getCMP = async () => {
- await resolveWhen(() => window.CMP !== undefined, 500)
- return window.CMP
-}
-
 export const withCMP = createWrapper({
 
   // Do not attempt to load segment until this function returns / resolves
@@ -41,6 +36,12 @@ export const withCMP = createWrapper({
     })
   },
 })
+
+
+const getCMP = async () => {
+ await resolveWhen(() => window.CMP !== undefined, 500)
+ return window.CMP
+}
 ```
 
 ## Wrapper Usage API
