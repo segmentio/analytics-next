@@ -1,5 +1,5 @@
 /**
- * Verify that the consent tools wrapper is working as expected (no OneTrust)
+ * Tests targeting @segment/analytics-consent-tools
  */
 
 import page from '../page-objects/consent-tools-vanilla'

@@ -1,5 +1,5 @@
 /**
- * Verify that @segment/analytics-consent-wrapper-onetrust is working as expected
+ * Tests targeting @segment/analytics-consent-wrapper-onetrust
  */
 
 import page from '../page-objects/onetrust'
