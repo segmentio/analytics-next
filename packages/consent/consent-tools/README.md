@@ -36,8 +36,8 @@ export const withCMP = createWrapper({
 
   registerOnConsentChanged: (setCategories) => {
     const CMP = await getCMP()
-    CMP.onConsentChanged((e) => {
-      setCategories(normalizeCategories(e.detail))
+    CMP.onConsentChanged((event) => {
+      setCategories(normalizeCategories(event.detail))
     })
   },
 })
