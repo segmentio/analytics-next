@@ -30,7 +30,7 @@ export const withCMP = createWrapper({
       const normalizedCategories = getNormalizedCategoriesFromGroupIds(
         event.detail
       )
-      onCategoriesChangedCb(normalizedCategories)
+      setCategories(normalizedCategories)
     })
   },
 })
