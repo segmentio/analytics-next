@@ -23,7 +23,6 @@ export const withCMP = createWrapper({
     // e.g. { Advertising: true, Functional: false }
     return normalizeCategories(window.CMP.consentedCategories())
   },
-
   registerOnConsentChanged: (setCategories) => {
     await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
     getOneTrustGlobal()!.OnConsentChanged((event) => {
