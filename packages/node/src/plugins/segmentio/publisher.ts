@@ -212,11 +212,8 @@ export class Publisher {
         if (this._tokenManager) {
           const tokenPromise = this._tokenManager.getAccessToken()
           const token = await tokenPromise
-          console.log(token)
           if (token.access_token !== undefined) {
-            authString = `Bearer ${token}`
-          } else {
-            console.log('No access_token')
+            authString = `Bearer ${token.access_token}`
           }
         }
 

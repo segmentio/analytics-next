@@ -113,7 +113,7 @@ export class TokenManager {
       if (response.status === 200) {
         let body: any
         try {
-          body = await response.json() // TODO: Replace with actual method to get body - needs discussion since different HTTP clients expose this differently (buffers, streams, strings, objects)
+          body = await response.body // TODO: Replace with actual method to get body - needs discussion since different HTTP clients expose this differently (buffers, streams, strings, objects)
         } catch (err) {
           // Errors reading the body (not parsing) are likely networking issues, we can retry
           retryCount++
@@ -127,7 +127,7 @@ export class TokenManager {
         }
         let token: AccessToken
         try {
-          const parsedBody = /*JSON.parse(*/ body /*)*/
+          const parsedBody = JSON.parse(body)
           // TODO: validate JSON
           token = parsedBody
           this.tokenEmitter.emit('access_token', { token })

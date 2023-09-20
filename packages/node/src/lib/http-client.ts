@@ -16,7 +16,7 @@ export interface HTTPFetchFn {
  */
 export interface HTTPFetchRequest {
   headers: Record<string, string>
-  body: string
+  body?: string | ReadableStream<Uint8Array>
   method: HTTPClientRequest['method']
   signal: any // AbortSignal type does not play nicely with node-fetch
 }
@@ -27,7 +27,7 @@ export interface HTTPFetchRequest {
  */
 export interface HTTPResponse {
   headers: Record<string, any>
-  json(): Promise<any>
+  body: string
   status: number
   statusText: string
 }
