@@ -8,7 +8,7 @@ import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
 
-  // Do not attempt to load segment until this function returns / resolves
+  // Wrapper waits to load segment / get categories until this function returns / resolves
   shouldLoad: (ctx) => {
     const CMP = await getCMP()
     await resolveWhen(
