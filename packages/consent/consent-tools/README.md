@@ -7,23 +7,41 @@
 import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 
 export const withCMP = createWrapper({
+
+  // Do not attempt to load segment until this function returns / resolves
   shouldLoad: (ctx) => {
+    const CMP = await getCMP()
     await resolveWhen(
-      () => window.CMP !== undefined && !window.CMP.popUpVisible(),
+      () => !CMP.popUpVisible(),
       500
     )
 
+    // Optional -- for granular control of initialization
     if (noConsentNeeded) {
       ctx.abort({ loadSegmentNormally: true })
     } else if (allTrackingDisabled) {
       ctx.abort({ loadSegmentNormally: false })
     }
   },
+
   getCategories: () => {
-    // e.g. { Advertising: true, Functional: false }
-    return normalizeCategories(window.CMP.consentedCategories())
+    const CMP = await getCMP()
+    return normalizeCategories(CMP.consentedCategories()) // Expected format: { foo: true, bar: false }
+  },
+
+  registerOnConsentChanged: (setCategories) => {
+    const CMP = await getCMP()
+    CMP.onConsentChanged((event) => {
+      setCategories(normalizeCategories(event.detail))
+    })
   },
 })
+
+
+const getCMP = async () => {
+ await resolveWhen(() => window.CMP !== undefined, 500)
+ return window.CMP
+}
 ```
 
 ## Wrapper Usage API
@@ -36,9 +54,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 
 export const analytics = new AnalyticsBrowser()
 
-withCMP(analytics)
-
-analytics.load({
+withCMP(analytics).load({
   writeKey: '<MY_WRITE_KEY'>
 })
 
@@ -58,9 +74,7 @@ analytics.load({
 ```js
 import { withCMP } from './wrapper'
 
-withCMP(window.analytics)
-
-window.analytics.load('<MY_WRITE_KEY')
+withCMP(window.analytics).load('<MY_WRITE_KEY')
 ```
 
 ## Wrapper Examples
