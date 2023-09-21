@@ -1,6 +1,5 @@
-import { sleep } from '@segment/analytics-core'
 import { HTTPResponse } from '../lib/http-client'
-import { TokenManager, TokenManagerProps } from '../lib/token-manager'
+import { TokenManagerProps } from '../lib/token-manager'
 import {
   TestFetchClient,
   createTestAnalytics,

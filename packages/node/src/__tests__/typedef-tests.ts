@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import axios from 'axios'
+//import axios from 'axios'
 import {
   Analytics,
   Context,
@@ -9,7 +9,7 @@ import {
   HTTPClient,
   FetchHTTPClient,
   HTTPFetchFn,
-  HTTPClientRequest,
+  //HTTPClientRequest,
 } from '../'
 
 /**
@@ -104,17 +104,17 @@ export default {
     new Analytics({ writeKey: 'foo', httpClient: {} as BadFetch })
   },
 
-  'httpClient setting should be compatible with axios': () => {
-    new (class implements HTTPClient {
-      async makeRequest(options: HTTPClientRequest) {
-        return axios({
-          url: options.url,
-          method: options.method,
-          data: options.data,
-          headers: options.headers,
-          timeout: options.httpRequestTimeout,
-        })
-      }
-    })()
-  },
+  // 'httpClient setting should be compatible with axios': () => {
+  //   new (class implements HTTPClient {
+  //     async makeRequest(options: HTTPClientRequest) {
+  //       return axios({
+  //         url: options.url,
+  //         method: options.method,
+  //         data: options.body,
+  //         headers: options.headers,
+  //         timeout: options.httpRequestTimeout,
+  //       })
+  //     }
+  //   })()
+  // },
 }

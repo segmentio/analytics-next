@@ -6,7 +6,7 @@ import { Context } from '../../../app/context'
 import { Emitter } from '@segment/analytics-core'
 import {
   assertHTTPRequestOptions,
-  httpClientOptionsBodyMatcher,
+  //httpClientOptionsBodyMatcher,
 } from '../../../__tests__/test-helpers/assert-shape'
 import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-analytics'
 

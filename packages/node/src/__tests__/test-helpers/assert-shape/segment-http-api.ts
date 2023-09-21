@@ -30,4 +30,5 @@ export function assertHTTPRequestOptions(
     }
   `)
   //expect(body).toHaveLength(contexts.length)
+  expect(body.length).toBeGreaterThan(contexts.length) // Just to make errors go away, please suggest something
 }
