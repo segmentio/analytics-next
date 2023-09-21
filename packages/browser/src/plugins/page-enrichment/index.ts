@@ -10,7 +10,6 @@ import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
-import { UADataValues } from '../../lib/client-hints/interfaces'
 import { clientHints } from '../../lib/client-hints'
 
 interface PageDefault {
