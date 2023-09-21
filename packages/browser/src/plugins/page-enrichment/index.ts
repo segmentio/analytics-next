@@ -10,6 +10,8 @@ import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
+import { UADataValues } from '../../lib/client-hints/interfaces'
+import { clientHints } from '../../lib/client-hints'
 
 interface PageDefault {
   [key: string]: unknown
@@ -184,7 +186,7 @@ class PageEnrichmentPlugin implements Plugin {
     return Promise.resolve()
   }
 
-  private enrich = (ctx: Context): Context => {
+  private enrich = async (ctx: Context): Promise<Context> => {
     const event = ctx.event
     const evtCtx = (event.context ??= {})
 
@@ -214,6 +216,14 @@ class PageEnrichmentPlugin implements Plugin {
 
     evtCtx.userAgent = navigator.userAgent
 
+    try {
+      evtCtx.userAgentData = await clientHints(
+        this.instance.options.highEntropyValuesClientHints
+      )
+    } catch (_) {
+      // if client hints API doesn't return anything leave undefined
+    }
+
     // @ts-ignore
     const locale = navigator.userLanguage || navigator.language
 
@@ -240,6 +250,12 @@ class PageEnrichmentPlugin implements Plugin {
       evtCtx,
       this.instance.options.disableClientPersistence ?? false
     )
+
+    try {
+      evtCtx.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    } catch (_) {
+      // If browser doesn't have support leave timezone undefined
+    }
 
     return ctx
   }
