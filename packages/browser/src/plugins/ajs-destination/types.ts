@@ -1,11 +1,11 @@
 import { Group, Identify, Track, Page, Alias } from '@segment/facade'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 import { Emitter } from '@segment/analytics-core'
 import { User } from '../../core/user'
 
 export interface LegacyIntegration extends Emitter {
   name: string
-  analytics?: Analytics
+  analytics?: Attribution
   initialize: () => void
   loaded: () => boolean
 

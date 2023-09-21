@@ -1,4 +1,4 @@
-import { Analytics } from '../core/analytics'
+import { Attribution } from '../core/analytics'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
 import playwright from 'playwright'
@@ -9,7 +9,7 @@ type BrowserType = 'chromium' | 'firefox' | 'webkit'
 function makeStub(page: playwright.Page) {
   const stub = {
     async register(
-      ...args: Parameters<Analytics['register']>
+      ...args: Parameters<Attribution['register']>
     ): Promise<SerializedContext> {
       return await page.evaluate((innerArgs) => {
         return (
@@ -22,7 +22,7 @@ function makeStub(page: playwright.Page) {
       }, args)
     },
     async track(
-      ...args: Parameters<Analytics['track']>
+      ...args: Parameters<Attribution['track']>
     ): Promise<SerializedContext> {
       // @ts-expect-error
       const ctx = await page.evaluate((innerArgs) => {
@@ -36,7 +36,7 @@ function makeStub(page: playwright.Page) {
       return ctx
     },
     async page(
-      ...args: Parameters<Analytics['page']>
+      ...args: Parameters<Attribution['page']>
     ): Promise<SerializedContext> {
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
@@ -50,7 +50,7 @@ function makeStub(page: playwright.Page) {
     },
 
     async identify(
-      ...args: Parameters<Analytics['identify']>
+      ...args: Parameters<Attribution['identify']>
     ): Promise<SerializedContext> {
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore

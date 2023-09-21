@@ -1,4 +1,4 @@
-import { Analytics } from '../core/analytics'
+import { Attribution } from '../core/analytics'
 import { Context } from '../core/context'
 import { validation } from '../plugins/validation'
 import { analyticsNode } from '../plugins/analytics-node'
@@ -9,14 +9,14 @@ import { PriorityQueue } from '../lib/priority-queue'
 export class AnalyticsNode {
   static async load(settings: {
     writeKey: string
-  }): Promise<[Analytics, Context]> {
+  }): Promise<[Attribution, Context]> {
     const cookieOptions = {
       persist: false,
     }
 
     const queue = new EventQueue(new PriorityQueue(3, []))
     const options = { user: cookieOptions, group: cookieOptions }
-    const analytics = new Analytics(settings, options, queue)
+    const analytics = new Attribution(settings, options, queue)
 
     const nodeSettings = {
       writeKey: settings.writeKey,

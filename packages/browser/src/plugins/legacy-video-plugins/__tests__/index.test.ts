@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { loadLegacyVideoPlugins } from '../index'
 
 beforeEach(async () => {
@@ -32,7 +32,7 @@ beforeEach(async () => {
 describe(loadLegacyVideoPlugins.name, () => {
   it('attaches video plugins to ajs', async () => {
     console.warn = () => {}
-    const ajs = new Analytics({
+    const ajs = new Attribution({
       writeKey: 'w_123',
     })
 

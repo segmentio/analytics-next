@@ -2,7 +2,7 @@ import assert from 'assert'
 import cookie from 'js-cookie'
 import { SegmentioSettings } from '..'
 import { normalize } from '../normalize'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
 
@@ -33,11 +33,11 @@ describe('before loading', () => {
   })
 
   let options: SegmentioSettings
-  let analytics: Analytics
+  let analytics: Attribution
 
   beforeEach(() => {
     options = { apiKey: 'foo' }
-    analytics = new Analytics({ writeKey: options.apiKey })
+    analytics = new Attribution({ writeKey: options.apiKey })
 
     window.localStorage.clear()
   })

@@ -1,5 +1,5 @@
 import { Plugin } from '../../../core/plugin'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
 import { LegacySettings } from '../../../browser'
@@ -96,14 +96,14 @@ describe('schema filter', () => {
   let options: SegmentioSettings
   let filterXt: Plugin
   let segment: Plugin
-  let ajs: Analytics
+  let ajs: Attribution
 
   beforeEach(async () => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
     options = { apiKey: 'foo' }
-    ajs = new Analytics({ writeKey: options.apiKey })
+    ajs = new Attribution({ writeKey: options.apiKey })
     segment = await segmentio(ajs, options, {})
     filterXt = schemaFilter({}, settings)
 

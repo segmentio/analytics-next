@@ -1,4 +1,4 @@
-import { Analytics } from '../analytics'
+import { Attribution } from '../analytics'
 import { Context } from '../context'
 import { isThenable } from '../../lib/is-thenable'
 import { AnalyticsBrowserCore } from '../analytics/interfaces'
@@ -35,7 +35,7 @@ export type PreInitMethodName =
 // Union of all analytics methods that _do not_ return a Promise
 type SyncPreInitMethodName = {
   [MethodName in PreInitMethodName]: ReturnType<
-    Analytics[MethodName]
+    Attribution[MethodName]
   > extends Promise<any>
     ? never
     : MethodName
@@ -43,7 +43,7 @@ type SyncPreInitMethodName = {
 
 const flushSyncAnalyticsCalls = (
   name: SyncPreInitMethodName,
-  analytics: Analytics,
+  analytics: Attribution,
   buffer: PreInitMethodCallBuffer
 ): void => {
   buffer.getCalls(name).forEach((c) => {
@@ -54,7 +54,7 @@ const flushSyncAnalyticsCalls = (
 }
 
 export const flushAddSourceMiddleware = async (
-  analytics: Analytics,
+  analytics: Attribution,
   buffer: PreInitMethodCallBuffer
 ) => {
   for (const c of buffer.getCalls('addSourceMiddleware')) {
@@ -70,7 +70,7 @@ export const flushSetAnonymousID = flushSyncAnalyticsCalls.bind(
 )
 
 export const flushAnalyticsCallsInNewTask = (
-  analytics: Analytics,
+  analytics: Attribution,
   buffer: PreInitMethodCallBuffer
 ): void => {
   buffer.toArray().forEach((m) => {
@@ -89,12 +89,12 @@ export interface PreInitMethodCall<
   method: MethodName
   args: PreInitMethodParams<MethodName>
   called: boolean
-  resolve: (v: ReturnType<Analytics[MethodName]>) => void
+  resolve: (v: ReturnType<Attribution[MethodName]>) => void
   reject: (reason: any) => void
 }
 
 export type PreInitMethodParams<MethodName extends PreInitMethodName> =
-  Parameters<Analytics[MethodName]>
+  Parameters<Attribution[MethodName]>
 
 /**
  * Infer return type; if return type is promise, unwrap it.
@@ -143,7 +143,7 @@ export class PreInitMethodCallBuffer {
  *  This function should never throw an error
  */
 export async function callAnalyticsMethod<T extends PreInitMethodName>(
-  analytics: Analytics,
+  analytics: Attribution,
   call: PreInitMethodCall<T>
 ): Promise<void> {
   try {
@@ -152,7 +152,7 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
     }
     call.called = true
 
-    const result: ReturnType<Analytics[T]> = (
+    const result: ReturnType<Attribution[T]> = (
       analytics[call.method] as Function
     )(...call.args)
 
@@ -169,15 +169,15 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
 
 export type AnalyticsLoader = (
   preInitBuffer: PreInitMethodCallBuffer
-) => Promise<[Analytics, Context]>
+) => Promise<[Attribution, Context]>
 
 export class AnalyticsBuffered
-  implements PromiseLike<[Analytics, Context]>, AnalyticsBrowserCore
+  implements PromiseLike<[Attribution, Context]>, AnalyticsBrowserCore
 {
-  instance?: Analytics
+  instance?: Attribution
   ctx?: Context
   private _preInitBuffer = new PreInitMethodCallBuffer()
-  private _promise: Promise<[Analytics, Context]>
+  private _promise: Promise<[Attribution, Context]>
   constructor(loader: AnalyticsLoader) {
     this._promise = loader(this._preInitBuffer)
     this._promise
@@ -194,7 +194,7 @@ export class AnalyticsBuffered
   then<T1, T2 = never>(
     ...args: [
       onfulfilled:
-        | ((instance: [Analytics, Context]) => T1 | PromiseLike<T1>)
+        | ((instance: [Attribution, Context]) => T1 | PromiseLike<T1>)
         | null
         | undefined,
       onrejected?: (reason: unknown) => T2 | PromiseLike<T2>
@@ -245,8 +245,8 @@ export class AnalyticsBuffered
 
   private _createMethod<T extends PreInitMethodName>(methodName: T) {
     return (
-      ...args: Parameters<Analytics[T]>
-    ): Promise<ReturnTypeUnwrap<Analytics[T]>> => {
+      ...args: Parameters<Attribution[T]>
+    ): Promise<ReturnTypeUnwrap<Attribution[T]>> => {
       if (this.instance) {
         const result = (this.instance[methodName] as Function)(...args)
         return Promise.resolve(result)
@@ -269,7 +269,7 @@ export class AnalyticsBuffered
    *  These methods will resolve when analytics is fully initialized, and return type (other than Analytics)will not be available.
    */
   private _createChainableMethod<T extends PreInitMethodName>(methodName: T) {
-    return (...args: Parameters<Analytics[T]>): AnalyticsBuffered => {
+    return (...args: Parameters<Attribution[T]>): AnalyticsBuffered => {
       if (this.instance) {
         void (this.instance[methodName] as Function)(...args)
         return this

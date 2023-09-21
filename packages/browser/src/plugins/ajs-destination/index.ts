@@ -1,6 +1,6 @@
 import { Integrations, JSONObject } from '../../core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
-import { Analytics, InitOptions } from '../../core/analytics'
+import { Attribution, InitOptions } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
@@ -119,7 +119,7 @@ export class LegacyDestination implements DestinationPlugin {
     return this.onReady ?? Promise.resolve()
   }
 
-  async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
+  async load(ctx: Context, analyticsInstance: Attribution): Promise<void> {
     if (this._ready || this.onReady !== undefined) {
       return
     }
@@ -174,7 +174,7 @@ export class LegacyDestination implements DestinationPlugin {
     }
   }
 
-  unload(_ctx: Context, _analyticsInstance: Analytics): Promise<void> {
+  unload(_ctx: Context, _analyticsInstance: Attribution): Promise<void> {
     return unloadIntegration(this.name, this.version, this.options.obfuscate)
   }
 

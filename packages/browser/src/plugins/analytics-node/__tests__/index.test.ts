@@ -1,14 +1,14 @@
 const fetcher = jest.fn()
 jest.mock('node-fetch', () => fetcher)
 
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { AnalyticsNode } from '../../..'
 
 const myDate = new Date('2016')
 const _Date = Date
 
 describe('Analytics Node', () => {
-  let ajs: Analytics
+  let ajs: Attribution
 
   beforeEach(async () => {
     jest.resetAllMocks()

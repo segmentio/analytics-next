@@ -2,7 +2,7 @@
 import jsdom from 'jsdom'
 import unfetch from 'unfetch'
 import { ajsDestinations, LegacyDestination } from '..'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { LegacySettings } from '../../../browser'
 import { Context } from '../../../core/context'
 import { Plan } from '../../../core/events'
@@ -345,7 +345,7 @@ describe('remote loading', () => {
     obfuscate = false
   ): Promise<LegacyDestination> => {
     const writeKey = 'abc'
-    const ajs = new Analytics({
+    const ajs = new Attribution({
       writeKey,
     })
 

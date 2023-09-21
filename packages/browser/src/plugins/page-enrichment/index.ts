@@ -9,7 +9,7 @@ import { getVersionType } from '../../lib/version-type'
 import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { CookieStorage, UniversalStorage } from '../../core/storage'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 
 interface PageDefault {
   [key: string]: unknown
@@ -173,13 +173,13 @@ function referrerId(
 }
 
 class PageEnrichmentPlugin implements Plugin {
-  private instance!: Analytics
+  private instance!: Attribution
 
   name = 'Page Enrichment'
   type: PluginType = 'before'
   version = '0.1.0'
   isLoaded = () => true
-  load = (_ctx: Context, instance: Analytics) => {
+  load = (_ctx: Context, instance: Attribution) => {
     this.instance = instance
     return Promise.resolve()
   }

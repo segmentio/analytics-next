@@ -1,4 +1,4 @@
-import type { Analytics, AnalyticsSettings, InitOptions } from '.'
+import type { Attribution, AnalyticsSettings, InitOptions } from '.'
 import type { Plugin } from '../plugin'
 import type {
   EventParams,
@@ -52,10 +52,10 @@ export interface AnalyticsClassic extends AnalyticsClassicStubs {
   initialize(
     settings?: AnalyticsSettings,
     options?: InitOptions
-  ): Promise<Analytics>
+  ): Promise<Attribution>
 
   /** @deprecated */
-  noConflict(): Analytics
+  noConflict(): Attribution
 
   /** @deprecated */
   normalize(msg: SegmentEvent): SegmentEvent
@@ -64,7 +64,7 @@ export interface AnalyticsClassic extends AnalyticsClassicStubs {
   readonly failedInitializations: string[]
 
   /** @deprecated */
-  pageview(url: string): Promise<Analytics>
+  pageview(url: string): Promise<Attribution>
 
   /**  @deprecated*/
   readonly plugins: any

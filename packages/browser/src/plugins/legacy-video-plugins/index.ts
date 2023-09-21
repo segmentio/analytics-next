@@ -1,7 +1,7 @@
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 
 export async function loadLegacyVideoPlugins(
-  analytics: Analytics
+  analytics: Attribution
 ): Promise<void> {
   const plugins = await import(
     // @ts-expect-error

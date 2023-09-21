@@ -1,1 +1,1 @@
-export const SEGMENT_API_HOST = 'api.segment.io/v1'
+export const ATTRIBUTION_API_HOST = 'api.attributionapp.com/v1'

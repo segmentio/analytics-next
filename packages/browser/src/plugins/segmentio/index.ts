@@ -1,5 +1,5 @@
 import { Facade } from '@segment/facade'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 import { LegacySettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
@@ -11,7 +11,7 @@ import batch, { BatchingDispatchConfig } from './batched-dispatcher'
 import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
-import { SEGMENT_API_HOST } from '../../core/constants'
+import { ATTRIBUTION_API_HOST } from '../../core/constants'
 import { clientHints } from '../../lib/client-hints'
 import { UADataValues } from '../../lib/client-hints/interfaces'
 
@@ -42,7 +42,7 @@ export type SegmentioSettings = {
 
 type JSON = ReturnType<Facade['json']>
 
-function onAlias(analytics: Analytics, json: JSON): JSON {
+function onAlias(analytics: Attribution, json: JSON): JSON {
   const user = analytics.user()
   json.previousId =
     json.previousId ?? json.from ?? user.id() ?? user.anonymousId()
@@ -53,7 +53,8 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
 }
 
 export async function segmentio(
-  analytics: Analytics,
+  writeKey: string,
+  analytics: Attribution,
   settings?: SegmentioSettings,
   integrations?: LegacySettings['integrations']
 ): Promise<Plugin> {
@@ -63,8 +64,6 @@ export async function segmentio(
     buffer.push(...Array.from(inflightEvents))
     inflightEvents.clear()
   })
-
-  const writeKey = settings?.apiKey ?? ''
 
   const buffer = analytics.options.disableClientPersistence
     ? new PriorityQueue<Context>(analytics.queue.queue.maxAttempts, [])
@@ -76,7 +75,7 @@ export async function segmentio(
   const inflightEvents = new Set<Context>()
   const flushing = false
 
-  const apiHost = settings?.apiHost ?? SEGMENT_API_HOST
+  const apiHost = settings?.apiHost ?? ATTRIBUTION_API_HOST
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
@@ -124,7 +123,7 @@ export async function segmentio(
     return client
       .dispatch(
         `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations)
+        normalize(writeKey, analytics, json, settings, integrations)
       )
       .then(() => ctx)
       .catch(() => {

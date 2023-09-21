@@ -8,7 +8,7 @@ import { Context } from '../../context'
 import { Plugin } from '../../plugin'
 import { EventQueue } from '../../queue/event-queue'
 import { StoreType } from '../../storage'
-import { Analytics } from '../index'
+import { Attribution } from '../index'
 import jar from 'js-cookie'
 import {
   TestAfterPlugin,
@@ -24,12 +24,12 @@ describe('Analytics', () => {
       describe(`with retries ${
         retriesEnabled ? 'enabled' : 'disabled'
       }`, () => {
-        let analytics: Analytics
+        let analytics: Attribution
         const attemptCount = retriesEnabled ? 2 : 1
 
         beforeEach(() => {
           const queue = new EventQueue(new PriorityQueue(attemptCount, []))
-          analytics = new Analytics({ writeKey: 'writeKey' }, {}, queue)
+          analytics = new Attribution({ writeKey: 'writeKey' }, {}, queue)
         })
 
         // Indicates plugins should throw
@@ -234,7 +234,7 @@ describe('Analytics', () => {
     })
 
     it('clears user and group data', async () => {
-      const analytics = new Analytics({ writeKey: '' })
+      const analytics = new Attribution({ writeKey: '' })
 
       analytics.user().anonymousId('unknown-user')
       analytics.user().id('known-user')
@@ -264,7 +264,7 @@ describe('Analytics', () => {
     })
 
     it('emits a reset event', async () => {
-      const analytics = new Analytics({ writeKey: '' })
+      const analytics = new Attribution({ writeKey: '' })
       const fn = jest.fn()
       analytics.on('reset', fn)
       analytics.user().id('known-user')
@@ -285,7 +285,7 @@ describe('Analytics', () => {
       jar.set('ajs_anonymous_id', expected)
       localStorage.setItem('ajs_anonymous_id', 'localStorageValue')
 
-      const analytics = new Analytics(
+      const analytics = new Attribution(
         { writeKey: '' },
         {
           storage: {
@@ -311,7 +311,7 @@ describe('Analytics', () => {
       jar.set('ajs_anonymous_id', expected)
       localStorage.setItem('ajs_anonymous_id', 'localStorageValue')
 
-      const analytics = new Analytics(
+      const analytics = new Attribution(
         { writeKey: '' },
         {
           storage: {

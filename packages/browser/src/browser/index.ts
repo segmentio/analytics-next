@@ -2,7 +2,7 @@ import { getProcessEnv } from '../lib/get-process-env'
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 import { fetch } from '../lib/fetch'
-import { Analytics, AnalyticsSettings, InitOptions } from '../core/analytics'
+import { Attribution, AnalyticsSettings, InitOptions } from '../core/analytics'
 import { Context } from '../core/context'
 import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
@@ -152,7 +152,7 @@ function hasTsubMiddleware(settings: LegacySettings): boolean {
  * This is important so users can register to 'initialize' and any events that may fire early during setup.
  */
 function flushPreBuffer(
-  analytics: Analytics,
+  analytics: Attribution,
   buffer: PreInitMethodCallBuffer
 ): void {
   buffer.push(...popSnippetWindowBuffer())
@@ -164,7 +164,7 @@ function flushPreBuffer(
  * Finish flushing buffer and cleanup.
  */
 async function flushFinalBuffer(
-  analytics: Analytics,
+  analytics: Attribution,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
   // Call popSnippetWindowBuffer before each flush task since there may be
@@ -180,7 +180,7 @@ async function flushFinalBuffer(
 async function registerPlugins(
   writeKey: string,
   legacySettings: LegacySettings,
-  analytics: Analytics,
+  analytics: Attribution,
   opts: InitOptions,
   options: InitOptions,
   pluginLikes: (Plugin | PluginFactory)[] = [],
@@ -267,6 +267,7 @@ async function registerPlugins(
   if (!shouldIgnoreSegmentio) {
     toRegister.push(
       await segmentio(
+        writeKey,
         analytics,
         mergedSettings['Segment.io'] as SegmentioSettings,
         legacySettings.integrations
@@ -303,15 +304,13 @@ async function loadAnalytics(
   settings: AnalyticsBrowserSettings,
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
-): Promise<[Analytics, Context]> {
+): Promise<[Attribution, Context]> {
   if (options.globalAnalyticsKey)
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
-  let legacySettings =
-    settings.cdnSettings ??
-    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+  let legacySettings: any = { integrations: {} }
 
   if (options.updateCDNSettings) {
     legacySettings = options.updateCDNSettings(legacySettings)
@@ -321,7 +320,7 @@ async function loadAnalytics(
     legacySettings.integrations['Segment.io']?.retryQueue ?? true
 
   const opts: InitOptions = { retryQueue, ...options }
-  const analytics = new Analytics(settings, opts)
+  const analytics = new Attribution(settings, opts)
 
   attachInspector(analytics)
 
@@ -439,7 +438,7 @@ export class AnalyticsBrowser extends AnalyticsBuffered {
   static standalone(
     writeKey: string,
     options?: InitOptions
-  ): Promise<Analytics> {
+  ): Promise<Attribution> {
     return AnalyticsBrowser.load({ writeKey }, options).then((res) => res[0])
   }
 }

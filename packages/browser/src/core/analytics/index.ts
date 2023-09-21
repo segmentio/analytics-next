@@ -134,7 +134,7 @@ function _stub(this: never) {
   console.warn(deprecationWarning)
 }
 
-export class Analytics
+export class Attribution
   extends Emitter
   implements AnalyticsCore, AnalyticsClassic
 {
@@ -374,28 +374,28 @@ export class Analytics
     })
   }
 
-  async trackClick(...args: LinkArgs): Promise<Analytics> {
+  async trackClick(...args: LinkArgs): Promise<Attribution> {
     const autotrack = await import(
       /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.link.call(this, ...args)
   }
 
-  async trackLink(...args: LinkArgs): Promise<Analytics> {
+  async trackLink(...args: LinkArgs): Promise<Attribution> {
     const autotrack = await import(
       /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.link.call(this, ...args)
   }
 
-  async trackSubmit(...args: FormArgs): Promise<Analytics> {
+  async trackSubmit(...args: FormArgs): Promise<Attribution> {
     const autotrack = await import(
       /* webpackChunkName: "auto-track" */ '../auto-track'
     )
     return autotrack.form.call(this, ...args)
   }
 
-  async trackForm(...args: FormArgs): Promise<Analytics> {
+  async trackForm(...args: FormArgs): Promise<Attribution> {
     const autotrack = await import(
       /* webpackChunkName: "auto-track" */ '../auto-track'
     )
@@ -430,7 +430,7 @@ export class Analytics
     return ctx
   }
 
-  debug(toggle: boolean): Analytics {
+  debug(toggle: boolean): Attribution {
     // Make sure legacy ajs debug gets turned off if it was enabled before upgrading.
     if (toggle === false && localStorage.getItem('debug')) {
       localStorage.removeItem('debug')
@@ -464,7 +464,7 @@ export class Analytics
     })
   }
 
-  async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {
+  async addSourceMiddleware(fn: MiddlewareFunction): Promise<Attribution> {
     await this.queue.criticalTasks.run(async () => {
       const { sourceMiddlewarePlugin } = await import(
         /* webpackChunkName: "middleware" */ '../../plugins/middleware'
@@ -488,7 +488,7 @@ export class Analytics
   addDestinationMiddleware(
     integrationName: string,
     ...middlewares: DestinationMiddlewareFunction[]
-  ): Promise<Analytics> {
+  ): Promise<Attribution> {
     const legacyDestinations = this.queue.plugins.filter(
       (xt) => xt.name.toLowerCase() === integrationName.toLowerCase()
     ) as LegacyDestination[]
@@ -522,7 +522,7 @@ export class Analytics
    * This function does not register the destination as an Analytics.JS plugin,
    * all the it does it to invoke the factory function back.
    */
-  use(legacyPluginFactory: (analytics: Analytics) => void): Analytics {
+  use(legacyPluginFactory: (analytics: Attribution) => void): Attribution {
     legacyPluginFactory(this)
     return this
   }
@@ -540,7 +540,7 @@ export class Analytics
 
   // analytics-classic api
 
-  noConflict(): Analytics {
+  noConflict(): Attribution {
     console.warn(deprecationWarning)
     setGlobalAnalytics(_analytics ?? this)
     return this
@@ -564,14 +564,14 @@ export class Analytics
   async initialize(
     _settings?: AnalyticsSettings,
     _options?: InitOptions
-  ): Promise<Analytics> {
+  ): Promise<Attribution> {
     console.warn(deprecationWarning)
     return Promise.resolve(this)
   }
 
   init = this.initialize.bind(this)
 
-  async pageview(url: string): Promise<Analytics> {
+  async pageview(url: string): Promise<Attribution> {
     console.warn(deprecationWarning)
     await this.page({ path: url })
     return this

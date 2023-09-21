@@ -3,7 +3,7 @@ import {
   MiddlewareFunction,
   sourceMiddlewarePlugin,
 } from '..'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
 import { LegacyDestination } from '../../ajs-destination'
@@ -149,7 +149,7 @@ describe(sourceMiddlewarePlugin, () => {
         // do not invoke next
       }
 
-      const ajs = new Analytics({
+      const ajs = new Attribution({
         writeKey: 'abc',
       })
 
@@ -189,7 +189,7 @@ describe(sourceMiddlewarePlugin, () => {
         },
       }
 
-      const ajs = new Analytics({
+      const ajs = new Attribution({
         writeKey: 'abc',
       })
       await ajs.register(gaDestination)

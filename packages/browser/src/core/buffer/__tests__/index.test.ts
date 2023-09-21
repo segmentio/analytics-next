@@ -5,7 +5,7 @@ import {
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
 } from '..'
-import { Analytics } from '../../analytics'
+import { Attribution } from '../../analytics'
 import { Context } from '../../context'
 import { sleep } from '../../../lib/sleep'
 import { User } from '../../user'
@@ -65,10 +65,10 @@ describe('PreInitMethodCallBuffer', () => {
 describe('AnalyticsBuffered', () => {
   describe('Happy path', () => {
     it('should return a promise-like object', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
+      const ajs = new Attribution({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
       const buffered = new AnalyticsBuffered(() =>
-        Promise.resolve<[Analytics, Context]>([ajs, ctx])
+        Promise.resolve<[Attribution, Context]>([ajs, ctx])
       )
       expect(buffered).toBeInstanceOf(AnalyticsBuffered)
       expect(typeof buffered.then).toBe('function')
@@ -77,10 +77,10 @@ describe('AnalyticsBuffered', () => {
     })
 
     it('should have instance and ctx properties defined when loader is done', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
+      const ajs = new Attribution({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
       const buffered = new AnalyticsBuffered(() =>
-        Promise.resolve<[Analytics, Context]>([ajs, ctx])
+        Promise.resolve<[Attribution, Context]>([ajs, ctx])
       )
       expect(buffered.instance).not.toBeDefined()
       expect(buffered.ctx).not.toBeDefined()
@@ -90,10 +90,10 @@ describe('AnalyticsBuffered', () => {
     })
 
     it('should convert to a promise on await', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
+      const ajs = new Attribution({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
       const [analytics, context] = await new AnalyticsBuffered(() => {
-        return Promise.resolve<[Analytics, Context]>([ajs, ctx])
+        return Promise.resolve<[Attribution, Context]>([ajs, ctx])
       })
 
       expect(analytics).toEqual(ajs)
@@ -101,7 +101,7 @@ describe('AnalyticsBuffered', () => {
     })
 
     it('should wrap async methods in a promise', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
+      const ajs = new Attribution({ writeKey: 'foo' })
       const ctx = new Context({ type: 'track' })
 
       ajs.track = () => Promise.resolve(ctx)
@@ -127,7 +127,7 @@ describe('AnalyticsBuffered', () => {
     })
 
     it('should wrap synchronous methods in a promise', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
+      const ajs = new Attribution({ writeKey: 'foo' })
       ajs.user = () => new User()
       const ctx = new Context({ type: 'track' })
 
@@ -153,13 +153,15 @@ describe('AnalyticsBuffered', () => {
 
     describe('the "this" value of proxied analytics methods', () => {
       test('should be the ajs instance for non-chainable methods (that return a promise)', async () => {
-        const ajs = new Analytics({ writeKey: 'foo' })
-        jest.spyOn(ajs, 'track').mockImplementation(function (this: Analytics) {
-          expect(this).toBe(ajs)
-          return Promise.resolve(ctx)
-        })
+        const ajs = new Attribution({ writeKey: 'foo' })
+        jest
+          .spyOn(ajs, 'track')
+          .mockImplementation(function (this: Attribution) {
+            expect(this).toBe(ajs)
+            return Promise.resolve(ctx)
+          })
         const ctx = new Context({ type: 'track' })
-        const result: [Analytics, Context] = [ajs, ctx]
+        const result: [Attribution, Context] = [ajs, ctx]
         const buffered = new AnalyticsBuffered(() => Promise.resolve(result))
         await buffered
         void buffered.track('foo', {})
@@ -168,13 +170,13 @@ describe('AnalyticsBuffered', () => {
     })
 
     test('should be the ajs instance for chainable methods', async () => {
-      const ajs = new Analytics({ writeKey: 'foo' })
-      jest.spyOn(ajs, 'on').mockImplementation(function (this: Analytics) {
+      const ajs = new Attribution({ writeKey: 'foo' })
+      jest.spyOn(ajs, 'on').mockImplementation(function (this: Attribution) {
         expect(this).toBe(ajs)
         return ajs
       })
       const ctx = new Context({ type: 'page' })
-      const result: [Analytics, Context] = [ajs, ctx]
+      const result: [Attribution, Context] = [ajs, ctx]
       const buffered = new AnalyticsBuffered(() => Promise.resolve(result))
       await buffered
       void buffered.on('foo', jest.fn)
@@ -221,7 +223,7 @@ describe('AnalyticsBuffered', () => {
 })
 
 describe('callAnalyticsMethod', () => {
-  let ajs!: Analytics
+  let ajs!: Attribution
   let resolveSpy!: jest.Mock<any, any>
   let rejectSpy!: jest.Mock<any, any>
   let methodCall!: PreInitMethodCall
@@ -236,7 +238,7 @@ describe('callAnalyticsMethod', () => {
       reject: rejectSpy,
     } as PreInitMethodCall
 
-    ajs = new Analytics({
+    ajs = new Attribution({
       writeKey: 'abc',
     })
   })
@@ -326,7 +328,7 @@ describe('flushAnalyticsCallsInNewTask', () => {
       asyncMethod
     )
 
-    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    flushAnalyticsCallsInNewTask(new Attribution({ writeKey: 'abc' }), buffer)
     expect(synchronousMethod.resolve).not.toBeCalled()
     expect(asyncMethod.resolve).not.toBeCalled()
     await sleep(0)
@@ -347,7 +349,7 @@ describe('flushAnalyticsCallsInNewTask', () => {
     } as PreInitMethodCall<any>
 
     const buffer = new PreInitMethodCallBuffer().push(asyncMethod)
-    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    flushAnalyticsCallsInNewTask(new Attribution({ writeKey: 'abc' }), buffer)
     await sleep(0)
     expect(asyncMethod.reject).toBeCalledWith('oops!')
   })
@@ -381,7 +383,7 @@ describe('flushAnalyticsCallsInNewTask', () => {
       synchronousMethod,
       asyncMethod
     )
-    flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
+    flushAnalyticsCallsInNewTask(new Attribution({ writeKey: 'abc' }), buffer)
     await sleep(0)
     expect(synchronousMethod.reject).toBeCalled()
     expect(asyncMethod.resolve).toBeCalled()

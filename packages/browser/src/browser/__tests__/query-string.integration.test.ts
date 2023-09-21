@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
 import { AnalyticsBrowser } from '..'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
@@ -39,10 +39,10 @@ describe('queryString', () => {
 
   it('applies query string logic before analytics is finished initializing', async () => {
     let analyticsInitializedBeforeQs: boolean | undefined
-    const originalQueryString = Analytics.prototype.queryString
+    const originalQueryString = Attribution.prototype.queryString
     const mockQueryString = jest
       .fn()
-      .mockImplementation(async function (this: Analytics, ...args) {
+      .mockImplementation(async function (this: Attribution, ...args) {
         // simulate network latency when retrieving the bundle
         await new Promise((r) => setTimeout(r, 500))
         return originalQueryString.apply(this, args).then((result) => {
@@ -51,7 +51,7 @@ describe('queryString', () => {
           return result
         })
       })
-    Analytics.prototype.queryString = mockQueryString
+    Attribution.prototype.queryString = mockQueryString
 
     jsd.reconfigure({
       url: 'https://localhost/?ajs_aid=123',
@@ -68,7 +68,7 @@ describe('queryString', () => {
 
   it('applies query string logic if window.location.search is present', async () => {
     const mockQueryString = jest
-      .spyOn(Analytics.prototype, 'queryString')
+      .spyOn(Attribution.prototype, 'queryString')
       .mockImplementation(() => Promise.resolve([]))
 
     jsd.reconfigure({
@@ -81,7 +81,7 @@ describe('queryString', () => {
 
   it('applies query string logic if window.location.hash is present', async () => {
     const mockQueryString = jest
-      .spyOn(Analytics.prototype, 'queryString')
+      .spyOn(Attribution.prototype, 'queryString')
       .mockImplementation(() => Promise.resolve([]))
 
     jsd.reconfigure({
@@ -104,7 +104,7 @@ describe('queryString', () => {
     const mockQueryString = jest
       .fn()
       .mockImplementation(() => Promise.resolve())
-    Analytics.prototype.queryString = mockQueryString
+    Attribution.prototype.queryString = mockQueryString
 
     jsd.reconfigure({
       url: 'https://localhost/#about?ajs_id=123',

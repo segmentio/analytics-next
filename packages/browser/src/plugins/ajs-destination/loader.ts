@@ -1,4 +1,4 @@
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 import { LegacyIntegrationConfiguration } from '../../browser'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
@@ -46,7 +46,7 @@ function recordLoadMetrics(fullPath: string, ctx: Context, name: string): void {
 export function buildIntegration(
   integrationSource: ClassicIntegrationSource,
   integrationSettings: { [key: string]: any },
-  analyticsInstance: Analytics
+  analyticsInstance: Attribution
 ): LegacyIntegration {
   let integrationCtr: ClassicIntegrationBuilder
   // GA and Appcues use a different interface to instantiating integrations

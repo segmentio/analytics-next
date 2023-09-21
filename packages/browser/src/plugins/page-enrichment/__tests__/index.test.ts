@@ -1,13 +1,13 @@
 import cookie from 'js-cookie'
 import assert from 'assert'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { pageEnrichment, pageDefaults } from '..'
 import { pick } from '../../../lib/pick'
 import { SegmentioSettings } from '../../segmentio'
 import { version } from '../../../generated/version'
 import { CoreExtraContext } from '@segment/analytics-core'
 
-let ajs: Analytics
+let ajs: Attribution
 
 const helpers = {
   get pageProps() {
@@ -37,7 +37,7 @@ const ignoreProbeCookieWrites = (
 
 describe('Page Enrichment', () => {
   beforeEach(async () => {
-    ajs = new Analytics({
+    ajs = new Attribution({
       writeKey: 'abc_123',
     })
 
@@ -261,7 +261,7 @@ describe('pageDefaults', () => {
 
 describe('Other visitor metadata', () => {
   let options: SegmentioSettings
-  let analytics: Analytics
+  let analytics: Attribution
 
   const amendSearchParams = (search?: any): CoreExtraContext => ({
     page: { search },
@@ -269,7 +269,7 @@ describe('Other visitor metadata', () => {
 
   beforeEach(async () => {
     options = { apiKey: 'foo' }
-    analytics = new Analytics({ writeKey: options.apiKey })
+    analytics = new Attribution({ writeKey: options.apiKey })
 
     await analytics.register(pageEnrichment)
   })
@@ -491,7 +491,7 @@ describe('Other visitor metadata', () => {
 
   it('should add .referrer.id and .referrer.type (cookieless)', async () => {
     const setCookieSpy = jest.spyOn(cookie, 'set')
-    analytics = new Analytics(
+    analytics = new Attribution(
       { writeKey: options.apiKey },
       { disableClientPersistence: true }
     )

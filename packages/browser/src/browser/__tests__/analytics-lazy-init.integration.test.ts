@@ -1,7 +1,7 @@
 import { sleep } from '@segment/analytics-core'
 import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 import { createSuccess } from '../../test-helpers/factories'
 
 jest.mock('unfetch')
@@ -13,11 +13,11 @@ const mockFetchSettingsSuccessResponse = () => {
 }
 
 describe('Lazy initialization', () => {
-  let trackSpy: jest.SpiedFunction<Analytics['track']>
+  let trackSpy: jest.SpiedFunction<Attribution['track']>
   let fetched: jest.MockedFn<typeof unfetch>
   beforeEach(() => {
     fetched = mockFetchSettingsSuccessResponse()
-    trackSpy = jest.spyOn(Analytics.prototype, 'track')
+    trackSpy = jest.spyOn(Attribution.prototype, 'track')
   })
 
   it('Should be able to delay initialization ', async () => {

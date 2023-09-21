@@ -4,7 +4,7 @@ import { createMockFetchImplementation } from '../../test-helpers/fixtures/creat
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { JSDOM } from 'jsdom'
-import { Analytics, InitOptions } from '../../core/analytics'
+import { Attribution, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 // @ts-ignore loadLegacySettings mocked dependency is accused as unused
@@ -302,7 +302,7 @@ describe('Initialization', () => {
     it('calls page if initialpageview is set', async () => {
       jest.mock('../../core/analytics')
       const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
-      Analytics.prototype.page = mockPage
+      Attribution.prototype.page = mockPage
 
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
 
@@ -312,7 +312,7 @@ describe('Initialization', () => {
     it('does not call page if initialpageview is not set', async () => {
       jest.mock('../../core/analytics')
       const mockPage = jest.fn()
-      Analytics.prototype.page = mockPage
+      Attribution.prototype.page = mockPage
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
       expect(mockPage).not.toHaveBeenCalled()
     })
@@ -680,7 +680,7 @@ describe('Alias', () => {
 describe('pageview', () => {
   it('makes a page call with the given url', async () => {
     console.warn = (): void => {}
-    const analytics = new Analytics({ writeKey: writeKey })
+    const analytics = new Attribution({ writeKey: writeKey })
     const mockPage = jest.spyOn(analytics, 'page')
     await analytics.pageview('www.foo.com')
 

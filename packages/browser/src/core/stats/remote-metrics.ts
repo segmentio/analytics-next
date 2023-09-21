@@ -1,7 +1,7 @@
 import { fetch } from '../../lib/fetch'
 import { version } from '../../generated/version'
 import { getVersionType } from '../../lib/version-type'
-import { SEGMENT_API_HOST } from '../constants'
+import { ATTRIBUTION_API_HOST } from '../constants'
 
 export interface MetricsOptions {
   host?: string
@@ -61,7 +61,7 @@ export class RemoteMetrics {
   queue: RemoteMetric[]
 
   constructor(options?: MetricsOptions) {
-    this.host = options?.host ?? SEGMENT_API_HOST
+    this.host = options?.host ?? ATTRIBUTION_API_HOST
     this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20

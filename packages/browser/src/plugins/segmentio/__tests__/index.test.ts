@@ -1,7 +1,7 @@
 import assert from 'assert'
 import unfetch from 'unfetch'
 import { segmentio, SegmentioSettings } from '..'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import cookie from 'js-cookie'
@@ -17,7 +17,7 @@ jest.mock('unfetch', () => {
 
 describe('Segment.io', () => {
   let options: SegmentioSettings
-  let analytics: Analytics
+  let analytics: Attribution
   let segment: Plugin
   let spyMock: jest.SpyInstance
 
@@ -49,7 +49,7 @@ describe('Segment.io', () => {
     }
 
     options = { apiKey: 'foo' }
-    analytics = new Analytics({ writeKey: options.apiKey })
+    analytics = new Attribution({ writeKey: options.apiKey })
     segment = await segmentio(analytics, options, {})
 
     await analytics.register(segment, pageEnrichment)
@@ -81,7 +81,7 @@ describe('Segment.io', () => {
         apiKey: 'foo',
         protocol: 'http',
       }
-      const analytics = new Analytics({ writeKey: options.apiKey })
+      const analytics = new Attribution({ writeKey: options.apiKey })
       const segment = await segmentio(analytics, options, {})
       await analytics.register(segment, pageEnrichment)
 
@@ -95,7 +95,7 @@ describe('Segment.io', () => {
 
   describe('configuring a keep alive', () => {
     it('should accept keepalive configuration', async () => {
-      const analytics = new Analytics({ writeKey: 'foo' })
+      const analytics = new Attribution({ writeKey: 'foo' })
 
       await analytics.register(
         await segmentio(analytics, {
@@ -114,7 +114,7 @@ describe('Segment.io', () => {
     })
 
     it('should default to no keepalive', async () => {
-      const analytics = new Analytics({ writeKey: 'foo' })
+      const analytics = new Attribution({ writeKey: 'foo' })
 
       const segment = await segmentio(analytics, {
         apiKey: '',

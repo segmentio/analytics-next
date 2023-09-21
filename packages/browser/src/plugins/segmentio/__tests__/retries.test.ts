@@ -1,5 +1,5 @@
 import { segmentio, SegmentioSettings } from '..'
-import { Analytics } from '../../../core/analytics'
+import { Attribution } from '../../../core/analytics'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../../core/connection'
 import { Plugin } from '../../../core/plugin'
@@ -15,7 +15,7 @@ type QueueType = 'priority' | 'persisted'
 
 describe('Segment.io retries', () => {
   let options: SegmentioSettings
-  let analytics: Analytics
+  let analytics: Attribution
   let segment: Plugin
   let queue: (PPQ.PersistedPriorityQueue | PQ.PriorityQueue<Context>) & {
     __type?: QueueType
@@ -30,7 +30,7 @@ describe('Segment.io retries', () => {
         isOffline = jest.fn().mockImplementation(() => true)
 
         options = { apiKey: 'foo' }
-        analytics = new Analytics(
+        analytics = new Attribution(
           { writeKey: options.apiKey },
           {
             retryQueue: true,

@@ -1,6 +1,6 @@
 import { pickPrefix } from './pickPrefix'
 import { gracefulDecodeURIComponent } from './gracefulDecodeURIComponent'
-import { Analytics } from '../analytics'
+import { Attribution } from '../analytics'
 import { Context } from '../context'
 import { isPlainObject } from '@segment/analytics-core'
 
@@ -9,7 +9,7 @@ export interface QueryStringParams {
 }
 
 export function queryString(
-  analytics: Analytics,
+  analytics: Attribution,
   query: string
 ): Promise<Context[]> {
   const a = document.createElement('a')

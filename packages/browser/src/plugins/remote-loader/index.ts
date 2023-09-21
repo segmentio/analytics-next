@@ -9,7 +9,7 @@ import {
   DestinationMiddlewareFunction,
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -101,11 +101,11 @@ export class ActionDestination implements DestinationPlugin {
     return this.action.ready ? this.action.ready() : Promise.resolve()
   }
 
-  load(ctx: Context, analytics: Analytics): Promise<unknown> {
+  load(ctx: Context, analytics: Attribution): Promise<unknown> {
     return this.action.load(ctx, analytics)
   }
 
-  unload(ctx: Context, analytics: Analytics): Promise<unknown> | unknown {
+  unload(ctx: Context, analytics: Attribution): Promise<unknown> | unknown {
     return this.action.unload?.(ctx, analytics)
   }
 }

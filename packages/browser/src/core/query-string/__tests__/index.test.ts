@@ -1,11 +1,11 @@
 import { queryString } from '..'
-import { Analytics } from '../../analytics'
+import { Attribution } from '../../analytics'
 
-let analytics: Analytics
+let analytics: Attribution
 
 describe('queryString', () => {
   beforeEach(() => {
-    analytics = new Analytics({
+    analytics = new Attribution({
       writeKey: 'abc',
     })
   })

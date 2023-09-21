@@ -1,6 +1,6 @@
 import { AnalyticsBrowser } from '../..'
 import unfetch from 'unfetch'
-import { Analytics } from '../../core/analytics'
+import { Attribution } from '../../core/analytics'
 import { Context } from '../../core/context'
 import * as Factory from '../../test-helpers/factories'
 import { sleep } from '../../lib/sleep'
@@ -26,13 +26,13 @@ const errMsg = 'errMsg'
 jest.spyOn(console, 'error').mockImplementation(() => {}) // silence console spam
 
 describe('Pre-initialization', () => {
-  const trackSpy = jest.spyOn(Analytics.prototype, 'track')
-  const identifySpy = jest.spyOn(Analytics.prototype, 'identify')
-  const onSpy = jest.spyOn(Analytics.prototype, 'on')
+  const trackSpy = jest.spyOn(Attribution.prototype, 'track')
+  const identifySpy = jest.spyOn(Attribution.prototype, 'identify')
+  const onSpy = jest.spyOn(Attribution.prototype, 'on')
   const getOnSpyCalls = (event: string) =>
     onSpy.mock.calls.filter(([arg1]) => arg1 === event)
 
-  const readySpy = jest.spyOn(Analytics.prototype, 'ready')
+  const readySpy = jest.spyOn(Attribution.prototype, 'ready')
   const browserLoadSpy = jest.spyOn(AnalyticsBrowser, 'load')
   const consoleErrorSpy = jest.spyOn(console, 'error')
 
@@ -50,9 +50,11 @@ describe('Pre-initialization', () => {
       )
       expect(ajsBrowser.instance).toBeUndefined()
       const [ajs, ctx] = await ajsBrowser
-      expect(ajsBrowser.instance).toBeInstanceOf<typeof Analytics>(Analytics)
+      expect(ajsBrowser.instance).toBeInstanceOf<typeof Attribution>(
+        Attribution
+      )
       expect(ajsBrowser.ctx).toBeInstanceOf<typeof Context>(Context)
-      expect(ajs).toBeInstanceOf<typeof Analytics>(Analytics)
+      expect(ajs).toBeInstanceOf<typeof Attribution>(Attribution)
       expect(ctx).toBeInstanceOf<typeof Context>(Context)
     })
 
@@ -144,7 +146,7 @@ describe('Pre-initialization', () => {
       test('.then should be called on success', () => {
         const ajsBrowser = AnalyticsBrowser.load({ writeKey: 'abc' })
         const newPromise = ajsBrowser.then(([analytics, context]) => {
-          expect(analytics).toBeInstanceOf<typeof Analytics>(Analytics)
+          expect(analytics).toBeInstanceOf<typeof Attribution>(Attribution)
           expect(context).toBeInstanceOf<typeof Context>(Context)
         })
         expect(newPromise).toBeInstanceOf<typeof Promise>(Promise)
@@ -390,10 +392,10 @@ describe('Pre-initialization', () => {
     test('the "this" value of "emitted" event callbacks should be Analytics', async () => {
       const ajsBrowser = AnalyticsBrowser.load({ writeKey })
       ajsBrowser.on('track', function onTrackCb(this: any) {
-        expect(this).toBeInstanceOf(Analytics)
+        expect(this).toBeInstanceOf(Attribution)
       })
       ajsBrowser.once('group', function trackOnceCb(this: any) {
-        expect(this).toBeInstanceOf(Analytics)
+        expect(this).toBeInstanceOf(Attribution)
       })
 
       await Promise.all([
