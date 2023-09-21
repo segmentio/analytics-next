@@ -116,13 +116,13 @@ test('OAuth rate limit', async () => {
     .mockReturnValueOnce(
       createOAuthError({
         status: 429,
-        headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
+        headers: { 'X-RateLimit-Reset': Date.now() + 250 },
       })
     )
     .mockReturnValueOnce(
       createOAuthError({
         status: 429,
-        headers: { 'X-RateLimit-Reset': Date.now() + 1000 },
+        headers: { 'X-RateLimit-Reset': Date.now() + 500 },
       })
     )
     .mockReturnValue(
@@ -135,11 +135,11 @@ test('OAuth rate limit', async () => {
   const tokenManager = getTokenManager()
 
   const tokenPromise = tokenManager.getAccessToken()
-  await sleep(250)
+  await sleep(25)
   expect(fetcher).toHaveBeenCalledTimes(1)
   await sleep(250)
   expect(fetcher).toHaveBeenCalledTimes(2)
-  await sleep(350)
+  await sleep(250)
   expect(fetcher).toHaveBeenCalledTimes(3)
 
   const token = await tokenPromise

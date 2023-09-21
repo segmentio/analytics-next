@@ -27,7 +27,7 @@ export interface HTTPFetchRequest {
  */
 export interface HTTPResponse {
   headers: Record<string, any>
-  body: string | ReadableStream<Uint8Array> | null
+  json(): Promise<any>
   status: number
   statusText: string
 }

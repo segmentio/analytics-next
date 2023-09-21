@@ -1,9 +1,11 @@
+import { sleep } from '@segment/analytics-core'
 import { HTTPResponse } from '../lib/http-client'
 import { TokenManager, TokenManagerProps } from '../lib/token-manager'
 import {
   TestFetchClient,
   createTestAnalytics,
 } from './test-helpers/create-test-analytics'
+import { createError } from './test-helpers/factories'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
 const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
@@ -40,6 +42,9 @@ const timestamp = new Date()
 
 const oauthTestClient = new TestFetchClient()
 const oauthFetcher = jest.spyOn(oauthTestClient, 'makeRequest')
+
+const tapiTestClient = new TestFetchClient()
+const tapiFetcher = jest.spyOn(tapiTestClient, 'makeRequest')
 
 const getTokenManagerProps = () => {
   const tokenManagerProps = {
@@ -106,9 +111,7 @@ describe('OAuth Success', () => {
 
     await analytics.closeAndFlush()
   })
-})
-describe('OAuth Retry Success', () => {
-  it('track event with OAuth', async () => {
+  it('track event with OAuth after retry', async () => {
     const analytics = createTestAnalytics({
       tokenManagerProps: getTokenManagerProps(),
     })
@@ -143,35 +146,180 @@ describe('OAuth Retry Success', () => {
 
     await analytics.closeAndFlush()
   })
-})
 
-describe('OAuth Failure', () => {
-  it('surfaces error', async () => {
+  it('delays appropriately on 429 error', async () => {
     const analytics = createTestAnalytics({
       tokenManagerProps: getTokenManagerProps(),
     })
-    oauthFetcher.mockReturnValue(createOAuthError({ status: 425 }))
-
-    const eventName = 'Test Event'
+    const retryTime = Date.now() + 250
+    oauthFetcher
+      .mockReturnValueOnce(
+        createOAuthError({
+          status: 429,
+          headers: { 'X-RateLimit-Reset': retryTime },
+        })
+      )
+      .mockReturnValue(
+        createOAuthSuccess({
+          access_token: 'token',
+          expires_in: 100,
+        })
+      )
 
     analytics.track({
-      event: eventName,
+      event: 'Test Event',
       anonymousId: 'unknown',
       userId: 'known',
       timestamp: timestamp,
     })
-
-    const ctx1 = await resolveCtx(analytics, 'track')
-
+    const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
     expect(ctx1.event.type).toEqual('track')
-    expect(ctx1.event.event).toEqual(eventName)
-    expect(ctx1.event.properties).toEqual({})
-    expect(ctx1.event.anonymousId).toEqual('unknown')
-    expect(ctx1.event.userId).toEqual('known')
-    expect(ctx1.event.timestamp).toEqual(timestamp)
-
-    expect(oauthFetcher).toHaveBeenCalledTimes(3)
-
     await analytics.closeAndFlush()
+    expect(retryTime).toBeLessThan(Date.now())
+  })
+})
+
+describe('OAuth Failure', () => {
+  it('surfaces error after retries', async () => {
+    const analytics = createTestAnalytics({
+      tokenManagerProps: getTokenManagerProps(),
+    })
+
+    oauthFetcher.mockReturnValue(createOAuthError({ status: 500 }))
+
+    const eventName = 'Test Event'
+
+    try {
+      analytics.track({
+        event: eventName,
+        anonymousId: 'unknown',
+        userId: 'known',
+        timestamp: timestamp,
+      })
+
+      const ctx1 = await resolveCtx(analytics, 'track')
+
+      expect(ctx1.event.type).toEqual('track')
+      expect(ctx1.event.event).toEqual(eventName)
+      expect(ctx1.event.properties).toEqual({})
+      expect(ctx1.event.anonymousId).toEqual('unknown')
+      expect(ctx1.event.userId).toEqual('known')
+      expect(ctx1.event.timestamp).toEqual(timestamp)
+
+      expect(oauthFetcher).toHaveBeenCalledTimes(3)
+
+      await analytics.closeAndFlush()
+
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.reason).toEqual(new Error('[500] Foo'))
+      expect(err.code).toMatch(/delivery_failure/)
+    }
+  })
+
+  it('surfaces error after failing immediately', async () => {
+    const logger = jest.fn()
+    const analytics = createTestAnalytics({
+      tokenManagerProps: getTokenManagerProps(),
+    }).on('error', (err) => {
+      logger(err)
+    })
+
+    oauthFetcher.mockReturnValue(createOAuthError({ status: 400 }))
+
+    try {
+      analytics.track({
+        event: 'Test Event',
+        anonymousId: 'unknown',
+        userId: 'known',
+        timestamp: timestamp,
+      })
+
+      const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
+      expect(ctx1.event.type).toEqual('track')
+      await analytics.closeAndFlush()
+
+      expect(logger).toHaveBeenCalledWith('foo')
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.reason).toEqual(new Error('[400] Foo'))
+      expect(err.code).toMatch(/delivery_failure/)
+    }
+  })
+
+  it('handles a bad key', async () => {
+    const props = getTokenManagerProps()
+    props.clientKey = Buffer.from('Garbage')
+    const analytics = createTestAnalytics({
+      tokenManagerProps: props,
+    })
+
+    try {
+      analytics.track({
+        event: 'Test Event',
+        anonymousId: 'unknown',
+        userId: 'known',
+        timestamp: timestamp,
+      })
+      await analytics.closeAndFlush()
+      const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
+      expect(ctx1.event.type).toEqual('track')
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.reason).toEqual(
+        new Error(
+          'secretOrPrivateKey must be an asymmetric key when using RS256'
+        )
+      )
+    }
+  })
+
+  describe('TAPI rejection', () => {
+    it('surfaces error', async () => {
+      const analytics = createTestAnalytics({
+        tokenManagerProps: getTokenManagerProps(),
+        httpClient: tapiTestClient,
+      })
+      const eventName = 'Test Event'
+
+      oauthFetcher.mockReturnValue(
+        createOAuthSuccess({
+          access_token: 'token',
+          expires_in: 100,
+        })
+      )
+      tapiFetcher.mockReturnValue(
+        createError({
+          status: 400,
+          statusText:
+            '{"success":false,"message":"malformed JSON","code":"invalid_request"}',
+        })
+      )
+
+      try {
+        analytics.track({
+          event: eventName,
+          anonymousId: 'unknown',
+          userId: 'known',
+          timestamp: timestamp,
+        })
+
+        const ctx1 = await resolveCtx(analytics, 'track')
+
+        expect(ctx1.event.type).toEqual('track')
+        expect(ctx1.event.event).toEqual(eventName)
+        expect(ctx1.event.properties).toEqual({})
+        expect(ctx1.event.anonymousId).toEqual('unknown')
+        expect(ctx1.event.userId).toEqual('known')
+        expect(ctx1.event.timestamp).toEqual(timestamp)
+
+        expect(oauthFetcher).toHaveBeenCalledTimes(1)
+
+        await analytics.closeAndFlush()
+        throw new Error('fail')
+      } catch (err: any) {
+        expect(err.code).toBe('delivery_failure')
+      }
+    })
   })
 })

@@ -113,7 +113,7 @@ export class TokenManager {
       if (response.status === 200) {
         let body: any
         try {
-          body = await response.body // TODO: Replace with actual method to get body - needs discussion since different HTTP clients expose this differently (buffers, streams, strings, objects)
+          body = await response.json() //body?.getReader().read() // TODO: Replace with actual method to get body - needs discussion since different HTTP clients expose this differently (buffers, streams, strings, objects)
         } catch (err) {
           // Errors reading the body (not parsing) are likely networking issues, we can retry
           retryCount++
@@ -127,7 +127,7 @@ export class TokenManager {
         }
         let token: AccessToken
         try {
-          const parsedBody = JSON.parse(body)
+          const parsedBody = /*JSON.parse(*/ body //)
           // TODO: validate JSON
           token = parsedBody
           this.tokenEmitter.emit('access_token', { token })
@@ -161,10 +161,9 @@ export class TokenManager {
         )
         if (isFinite(rateLimitResetTime)) {
           timeUntilRefreshInMs =
-            (rateLimitResetTime - Date.now()) / 2 +
-            this.clockSkewInSeconds * 1000
+            rateLimitResetTime - Date.now() + this.clockSkewInSeconds * 1000
         } else {
-          timeUntilRefreshInMs = 60 * 1000
+          timeUntilRefreshInMs = 5 * 1000
         }
       } else if ([400, 401, 415].includes(response.status)) {
         // Unrecoverable errors
