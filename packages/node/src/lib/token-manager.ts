@@ -7,6 +7,7 @@ import {
 } from './http-client'
 import { SignOptions, sign } from 'jsonwebtoken'
 import { Emitter, backoff, sleep } from '@segment/analytics-core'
+import { AbortSignal, AbortController } from './abort'
 
 type AccessToken = {
   access_token: string

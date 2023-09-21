@@ -41,7 +41,7 @@ export class AbortSignal {
  * This polyfill is only neccessary to support versions of node < 14.17.
  * Can be removed once node 14 support is dropped.
  */
-class AbortController {
+export class AbortController {
   signal = new AbortSignal()
   abort() {
     if (this.signal.aborted) return

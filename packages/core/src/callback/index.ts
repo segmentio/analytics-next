@@ -1,4 +1,5 @@
 import { CoreContext } from '../context'
+import { Emitter } from '../emitter'
 import type { Callback } from '../events'
 
 export function pTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
@@ -18,7 +19,7 @@ export function pTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
 
 export function sleep(
   timeoutInMs: number,
-  signal?: AbortSignal
+  signal?: { addEventListener(...args: Parameters<Emitter['on']>): void }
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(resolve, timeoutInMs)
