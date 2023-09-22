@@ -267,6 +267,29 @@ describe('pageDefaults', () => {
 describe('Other visitor metadata', () => {
   let options: SegmentioSettings
   let analytics: Analytics
+  ;(window.navigator as any).userAgentData = {
+    ...lowEntropyTestData,
+    getHighEntropyValues: jest
+      .fn()
+      .mockImplementation((hints: string[]): Promise<UADataValues> => {
+        let result = {}
+        Object.entries(highEntropyTestData).forEach(([k, v]) => {
+          if (hints.includes(k)) {
+            result = {
+              ...result,
+              [k]: v,
+            }
+          }
+        })
+        return Promise.resolve({
+          ...lowEntropyTestData,
+          ...result,
+        })
+      }),
+    toJSON: jest.fn(() => {
+      return lowEntropyTestData
+    }),
+  }
 
   const amendSearchParams = (search?: any): CoreExtraContext => ({
     page: { search },
@@ -290,7 +313,7 @@ describe('Other visitor metadata', () => {
 
   it('should add .timezone', async () => {
     const ctx = await analytics.track('test')
-    assert(ctx.event.context?.timezone)
+    assert(typeof ctx.event.context?.timezone === 'string')
   })
 
   it('should add .library', async () => {
@@ -324,32 +347,7 @@ describe('Other visitor metadata', () => {
   })
 
   it('should add .userAgentData when available', async () => {
-    ;(window.navigator as any).userAgentData = {
-      ...lowEntropyTestData,
-      getHighEntropyValues: jest
-        .fn()
-        .mockImplementation((hints: string[]): Promise<UADataValues> => {
-          let result = {}
-          Object.entries(highEntropyTestData).forEach(([k, v]) => {
-            if (hints.includes(k)) {
-              result = {
-                ...result,
-                [k]: v,
-              }
-            }
-          })
-          return Promise.resolve({
-            ...lowEntropyTestData,
-            ...result,
-          })
-        }),
-      toJSON: jest.fn(() => {
-        return lowEntropyTestData
-      }),
-    }
-
     const ctx = await analytics.track('event')
-
     expect(ctx.event.context?.userAgentData).toEqual(lowEntropyTestData)
   })
 

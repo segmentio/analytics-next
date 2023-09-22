@@ -11,6 +11,7 @@ import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDeco
 import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
 import { clientHints } from '../../lib/client-hints'
+import { UADataValues } from '../../lib/client-hints/interfaces'
 
 interface PageDefault {
   [key: string]: unknown
@@ -175,17 +176,25 @@ function referrerId(
 
 class PageEnrichmentPlugin implements Plugin {
   private instance!: Analytics
+  private userAgentData: UADataValues | undefined
 
   name = 'Page Enrichment'
   type: PluginType = 'before'
   version = '0.1.0'
   isLoaded = () => true
-  load = (_ctx: Context, instance: Analytics) => {
+  load = async (_ctx: Context, instance: Analytics) => {
     this.instance = instance
+    try {
+      this.userAgentData = await clientHints(
+        this.instance.options.highEntropyValuesClientHints
+      )
+    } catch (_) {
+      // if client hints API doesn't return anything leave undefined
+    }
     return Promise.resolve()
   }
 
-  private enrich = async (ctx: Context): Promise<Context> => {
+  private enrich = (ctx: Context): Context => {
     const event = ctx.event
     const evtCtx = (event.context ??= {})
 
@@ -214,14 +223,7 @@ class PageEnrichmentPlugin implements Plugin {
     const query: string = evtCtx.page.search || ''
 
     evtCtx.userAgent = navigator.userAgent
-
-    try {
-      evtCtx.userAgentData = await clientHints(
-        this.instance.options.highEntropyValuesClientHints
-      )
-    } catch (_) {
-      // if client hints API doesn't return anything leave undefined
-    }
+    evtCtx.userAgentData = this.userAgentData
 
     // @ts-ignore
     const locale = navigator.userLanguage || navigator.language
