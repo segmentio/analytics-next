@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.56.0
+
+### Minor Changes
+
+- [#928](https://github.com/segmentio/analytics-next/pull/928) [`7f4232c`](https://github.com/segmentio/analytics-next/commit/7f4232cbdb60a4475c565e5d262b25182e47baf4) Thanks [@oscb](https://github.com/oscb)! - Adds `globalAnalyticsKey` option for setting custom global window buffers
+
+### Patch Changes
+
+- [#949](https://github.com/segmentio/analytics-next/pull/949) [`fcf42f6`](https://github.com/segmentio/analytics-next/commit/fcf42f68b4226b55417bbaeb6305d33129ede96d) Thanks [@silesky](https://github.com/silesky)! - Fix regression where we no longer export UniversalStorage (used in destinations)
+
 ## 1.55.0
 
 ### Minor Changes
