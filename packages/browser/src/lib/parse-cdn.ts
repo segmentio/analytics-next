@@ -1,3 +1,4 @@
+import { getGlobalAnalytics } from './global-analytics-helper'
 import { embeddedWriteKey } from './embedded-write-key'
 
 const analyticsScriptRegex =
@@ -20,13 +21,14 @@ const getCDNUrlFromScriptTag = (): string | undefined => {
 
 let _globalCDN: string | undefined // set globalCDN as in-memory singleton
 const getGlobalCDNUrl = (): string | undefined => {
-  const result = _globalCDN ?? window.analytics?._cdn
+  const result = _globalCDN ?? getGlobalAnalytics()?._cdn
   return result
 }
 
 export const setGlobalCDNUrl = (cdn: string) => {
-  if (window.analytics) {
-    window.analytics._cdn = cdn
+  const globalAnalytics = getGlobalAnalytics()
+  if (globalAnalytics) {
+    globalAnalytics._cdn = cdn
   }
   _globalCDN = cdn
 }
@@ -60,7 +62,7 @@ export const getNextIntegrationsURL = () => {
  * @returns the path to Analytics JS 1.0
  **/
 export function getLegacyAJSPath(): string {
-  const writeKey = embeddedWriteKey() ?? window.analytics._writeKey
+  const writeKey = embeddedWriteKey() ?? getGlobalAnalytics()?._writeKey
 
   const scripts = Array.prototype.slice.call(
     document.querySelectorAll('script')

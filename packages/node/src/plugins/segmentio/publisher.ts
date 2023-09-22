@@ -235,7 +235,11 @@ export class Publisher {
           url: this._url,
           method: 'POST',
           headers: headers,
-          body: JSON.stringify({ batch: events, writeKey: this._writeKey }),
+          body: JSON.stringify({
+            batch: events,
+            writeKey: this._writeKey,
+            sentAt: new Date(),
+          }),
           httpRequestTimeout: this._httpRequestTimeout,
         }
 

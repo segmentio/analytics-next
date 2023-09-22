@@ -1,4 +1,5 @@
 import * as ConsentStamping from '../consent-stamping'
+import * as ConsentChanged from '../consent-changed'
 import { createWrapper } from '../create-wrapper'
 import { AbortLoadError, LoadContext } from '../load-cancellation'
 import type {
@@ -6,6 +7,7 @@ import type {
   AnyAnalytics,
   CDNSettings,
   AnalyticsBrowserSettings,
+  Categories,
 } from '../../types'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { assertIntegrationsContainOnly } from './assertions/integrations-assertions'
@@ -29,6 +31,7 @@ const mockGetCategories: jest.MockedFn<CreateWrapperSettings['getCategories']> =
 const analyticsLoadSpy: jest.MockedFn<AnyAnalytics['load']> = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
 let analyticsOnSpy: jest.MockedFn<AnyAnalytics['on']>
+const analyticsTrackSpy: jest.MockedFn<AnyAnalytics['track']> = jest.fn()
 let consoleErrorSpy: jest.SpiedFunction<typeof console['error']>
 
 const getAnalyticsLoadLastCall = () => {
@@ -61,6 +64,7 @@ beforeEach(() => {
   })
 
   class MockAnalytics implements AnyAnalytics {
+    track = analyticsTrackSpy
     on = analyticsOnSpy
     load = analyticsLoadSpy
     addSourceMiddleware = addSourceMiddlewareSpy
@@ -111,6 +115,12 @@ describe(createWrapper, () => {
     wrapTestAnalytics()
     await analytics.load(DEFAULT_LOAD_SETTINGS)
     expect(addSourceMiddlewareSpy).toBeCalledWith(expect.any(Function))
+  })
+
+  it('should be chainable', async () => {
+    await wrapTestAnalytics().load(DEFAULT_LOAD_SETTINGS)
+    const { args } = getAnalyticsLoadLastCall()
+    expect(args.length).toBeTruthy()
   })
 
   describe('shouldLoad', () => {
@@ -300,8 +310,16 @@ describe(createWrapper, () => {
     )
   })
 
-  describe('Validation', () => {
-    it('should throw an error if categories are in the wrong format', async () => {
+  describe('Settings Validation', () => {
+    /* NOTE: This test suite is meant to be minimal -- please see validation/__tests__ */
+
+    test('createWrapper should throw if user-defined settings/configuration/options are invalid', () => {
+      expect(() =>
+        wrapTestAnalytics({ getCategories: {} as any })
+      ).toThrowError(/validation/i)
+    })
+
+    test('analytics.load should reject if categories are in the wrong format', async () => {
       wrapTestAnalytics({
         shouldLoad: () => Promise.resolve('sup' as any),
       })
@@ -310,7 +328,7 @@ describe(createWrapper, () => {
       )
     })
 
-    it('should throw an error if categories are undefined', async () => {
+    test('analytics.load should reject if categories are undefined', async () => {
       wrapTestAnalytics({
         getCategories: () => undefined as any,
         shouldLoad: () => undefined,
@@ -734,6 +752,62 @@ describe(createWrapper, () => {
         const getCategoriesFn = fn.mock.lastCall[0]
         await expect(getCategoriesFn()).resolves.toEqual({ Foo: true })
       })
+    })
+  })
+
+  describe('registerOnConsentChanged', () => {
+    const sendConsentChangedEventSpy = jest.spyOn(
+      ConsentChanged,
+      'sendConsentChangedEvent'
+    )
+
+    let categoriesChangedCb: (categories: Categories) => void = () => {
+      throw new Error('Not implemented')
+    }
+
+    const registerOnConsentChanged = jest.fn(
+      (consentChangedCb: (c: Categories) => void) => {
+        // simulate a OneTrust.onConsentChanged event callback
+        categoriesChangedCb = jest.fn((categories: Categories) =>
+          consentChangedCb(categories)
+        )
+      }
+    )
+    it('should expect a callback', async () => {
+      wrapTestAnalytics({
+        registerOnConsentChanged: registerOnConsentChanged,
+      })
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
+
+      expect(sendConsentChangedEventSpy).not.toBeCalled()
+      expect(registerOnConsentChanged).toBeCalledTimes(1)
+      categoriesChangedCb({ C0001: true, C0002: false })
+      expect(registerOnConsentChanged).toBeCalledTimes(1)
+      expect(sendConsentChangedEventSpy).toBeCalledTimes(1)
+
+      // if OnConsentChanged callback is called with categories, it should send event
+      expect(analyticsTrackSpy).toBeCalledWith(
+        'Segment Consent Preference',
+        undefined,
+        { consent: { categoryPreferences: { C0001: true, C0002: false } } }
+      )
+    })
+    it('should throw an error if categories are invalid', async () => {
+      consoleErrorSpy.mockImplementationOnce(() => undefined)
+
+      wrapTestAnalytics({
+        registerOnConsentChanged: registerOnConsentChanged,
+      })
+
+      await analytics.load(DEFAULT_LOAD_SETTINGS)
+      expect(consoleErrorSpy).not.toBeCalled()
+      categoriesChangedCb(['OOPS'] as any)
+      expect(consoleErrorSpy).toBeCalledTimes(1)
+      const err = consoleErrorSpy.mock.lastCall[0]
+      expect(err.toString()).toMatch(/validation/i)
+      // if OnConsentChanged callback is called with categories, it should send event
+      expect(sendConsentChangedEventSpy).not.toBeCalled()
+      expect(analyticsTrackSpy).not.toBeCalled()
     })
   })
 })

@@ -1,27 +1,33 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
+/**
+ * Tests targeting @segment/analytics-consent-wrapper-onetrust
+ */
+
 import page from '../page-objects/onetrust'
 import { expect } from 'expect'
-import { Context } from '@segment/analytics-next'
-it('should stamp each event', async () => {
+
+declare global {
+  interface Window {
+    _segmentConsentCalls: number
+  }
+}
+
+afterEach(async () => {
+  await page.clearStorage()
+})
+
+it('should send a consent changed event when user clicks accept on popup', async () => {
   await page.load()
 
-  const commands = [
-    `analytics.track("hello world")`,
-    `analytics.alias("foo", "bar")`,
-    `analytics.page()`,
-    `analytics.group("foo", { bar: 123 })`,
-    `analytics.identify("bar", { bar: 123 })`,
-  ]
+  const { getConsentChangedCallCount } = await page.detectConsentChanged()
 
-  const r = Promise.all<Context>(commands.map((cmd) => browser.execute(cmd)))
+  await browser.pause(1000)
+  await expect(getConsentChangedCallCount()).resolves.toBe(0)
 
+  // make a consent selection in the OneTrust popup
   await page.clickAcceptButtonAndClosePopup()
 
-  const responses = await r
-
-  responses.forEach((ctx) => {
-    expect(
-      Object.keys((ctx.event.context as any).consent.categoryPreferences).length
-    ).toBeGreaterThan(0)
-  })
+  // 1 consent changed event should now be sent
+  await browser.waitUntil(
+    async () => (await getConsentChangedCallCount()) === 1
+  )
 })

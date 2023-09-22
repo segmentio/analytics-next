@@ -1,35 +1,51 @@
-import { validateCategories, validateOptions } from '../options-validators'
+import { CreateWrapperSettings } from '../../../types'
+import { validateCategories, validateSettings } from '../options-validators'
 import { ValidationError } from '../validation-error'
 
-describe(validateOptions, () => {
+const DEFAULT_OPTIONS: CreateWrapperSettings = {
+  getCategories: () => ({}),
+}
+
+describe(validateSettings, () => {
   it('should throw if options is not a plain object', () => {
-    expect(() => validateOptions(null as any)).toThrow()
-    expect(() => validateOptions(undefined as any)).toThrow()
-    expect(() => validateOptions('hello' as any)).toThrow()
+    expect(() => validateSettings(null as any)).toThrow()
+    expect(() => validateSettings(undefined as any)).toThrow()
+    expect(() => validateSettings('hello' as any)).toThrow()
   })
 
   it('should throw an instance of ValidationError', () => {
-    expect(() => validateOptions(null as any)).toThrowError(ValidationError)
+    expect(() => validateSettings(null as any)).toThrowError(ValidationError)
   })
 
   it('should throw with the expected error', () => {
     expect(() =>
-      validateOptions(null as any)
+      validateSettings(null as any)
     ).toThrowErrorMatchingInlineSnapshot(
       `"[Validation] Options should be an object (Received: null)"`
     )
   })
 
   it('should throw if required property(s) are not included', () => {
-    expect(() => validateOptions({} as any)).toThrow()
+    expect(() => validateSettings({} as any)).toThrow()
   })
 
   it('should throw if getCategories() is not a function', () => {
     expect(() =>
-      validateOptions({
+      validateSettings({
         getCategories: {},
       })
     ).toThrow()
+  })
+
+  it('should throw if registerOnChanged() is not a function', () => {
+    expect(() =>
+      validateSettings({
+        ...DEFAULT_OPTIONS,
+        registerOnConsentChanged: {} as any,
+      })
+    ).toThrowErrorMatchingInlineSnapshot(
+      `"[Validation] registerOnConsentChanged is not a function (Received: {})"`
+    )
   })
 })
 

@@ -6,14 +6,21 @@ import {
   CreateWrapperSettings,
   CDNSettings,
 } from '../types'
-import { validateCategories, validateOptions } from './validation'
+import {
+  validateAnalyticsInstance,
+  validateCategories,
+  validateSettings,
+} from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
 import { pipe, pick, uniq } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
 import { ValidationError } from './validation/validation-error'
+import { validateAndSendConsentChangedEvent } from './consent-changed'
 
-export const createWrapper: CreateWrapper = (createWrapperOptions) => {
-  validateOptions(createWrapperOptions)
+export const createWrapper = <Analytics extends AnyAnalytics>(
+  ...[createWrapperOptions]: Parameters<CreateWrapper<Analytics>>
+): ReturnType<CreateWrapper<Analytics>> => {
+  validateSettings(createWrapperOptions)
 
   const {
     shouldDisableSegment,
@@ -23,9 +30,18 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
     integrationCategoryMappings,
     shouldEnableIntegration,
     pruneUnmappedCategories,
+    registerOnConsentChanged,
   } = createWrapperOptions
 
-  return (analytics) => {
+  return (analytics: Analytics) => {
+    validateAnalyticsInstance(analytics)
+
+    // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
+    registerOnConsentChanged?.((categories) =>
+      // whenever consent changes, dispatch a new event with the latest consent information
+      validateAndSendConsentChangedEvent(analytics, categories)
+    )
+
     const ogLoad = analytics.load
 
     const loadWithConsent: AnyAnalytics['load'] = async (
@@ -142,6 +158,7 @@ export const createWrapper: CreateWrapper = (createWrapperOptions) => {
       })
     }
     analytics.load = loadWithConsent
+    return analytics
   }
 }
 

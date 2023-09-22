@@ -1,5 +1,41 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.3.0
+
+### Minor Changes
+
+- [#941](https://github.com/segmentio/analytics-next/pull/941) [`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3) Thanks [@silesky](https://github.com/silesky)! - Tighten up analytics types
+
+### Patch Changes
+
+- [#941](https://github.com/segmentio/analytics-next/pull/941) [`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3) Thanks [@silesky](https://github.com/silesky)! - - Fix `onConsentChanged` not firing in snippet environment due to to stale analytics reference.
+  - Register `onConsentChanged` early in the wrapper initialization sequence so it can catch consent changed events that occur before analytics is loaded.
+- Updated dependencies [[`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3), [`d8c5ad9`](https://github.com/segmentio/analytics-next/commit/d8c5ad9dff06e42656504657fdd27e6a67b875e3)]:
+  - @segment/analytics-consent-tools@0.2.0
+
+## 0.2.0
+
+### Minor Changes
+
+- [#938](https://github.com/segmentio/analytics-next/pull/938) [`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39) Thanks [@silesky](https://github.com/silesky)! - - Change API from oneTrust(analytics) -> withOneTrust(analytics). Allow withOneTrust(analytics).load(...).
+  - Add a umd bundle for snippet users
+
+### Patch Changes
+
+- Updated dependencies [[`2191eb3`](https://github.com/segmentio/analytics-next/commit/2191eb34b501c21f963f0e39426f89b5e6baed39)]:
+  - @segment/analytics-consent-tools@0.1.1
+
+## 0.1.0
+
+### Minor Changes
+
+- [#936](https://github.com/segmentio/analytics-next/pull/936) [`a7a0882`](https://github.com/segmentio/analytics-next/commit/a7a08827cc31dd3a558700143828ab43d27f2125) Thanks [@silesky](https://github.com/silesky)! - Add consent changed event
+
+### Patch Changes
+
+- Updated dependencies [[`a7a0882`](https://github.com/segmentio/analytics-next/commit/a7a08827cc31dd3a558700143828ab43d27f2125)]:
+  - @segment/analytics-consent-tools@0.1.0
+
 ## 0.0.4
 
 ### Patch Changes

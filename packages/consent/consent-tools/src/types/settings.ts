@@ -5,6 +5,10 @@ import type {
   CDNSettingsRemotePlugin,
 } from './wrapper'
 
+export type RegisterOnConsentChangedFunction = (
+  categoriesChangedCb: (categories: Categories) => void
+) => void
+
 /**
  * Consent wrapper function configuration
  */
@@ -26,6 +30,34 @@ export interface CreateWrapperSettings {
    * ```
    **/
   getCategories: () => Categories | Promise<Categories>
+
+  /**
+   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
+   *
+   * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
+   * @example
+   * ```ts
+   * async (categoriesChangedCb) => {
+   *   await resolveWhen(() => window.MyCMP !== undefined, 500)
+   *   window.MyCMP.OnConsentChanged((event.detail) => categoriesChangedCb(normalizeCategories(event.detail))
+   * }
+   *
+   * /* event payload
+   * {
+   *  "type": "track",
+   *  "event": "Segment Consent Preference",
+   *  "context": {
+   *    "consent": {
+   *      "version": 2,
+   *      "categoryPreferences" : {
+   *         "C0001": true,
+   *         "C0002": false,
+   *    }
+   *  }
+   * ..
+   * ```
+   */
+  registerOnConsentChanged?: RegisterOnConsentChangedFunction
 
   /**
    * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).

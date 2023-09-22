@@ -1,5 +1,40 @@
 # @segment/analytics-next
 
+## 1.56.0
+
+### Minor Changes
+
+- [#928](https://github.com/segmentio/analytics-next/pull/928) [`7f4232c`](https://github.com/segmentio/analytics-next/commit/7f4232cbdb60a4475c565e5d262b25182e47baf4) Thanks [@oscb](https://github.com/oscb)! - Adds `globalAnalyticsKey` option for setting custom global window buffers
+
+### Patch Changes
+
+- [#949](https://github.com/segmentio/analytics-next/pull/949) [`fcf42f6`](https://github.com/segmentio/analytics-next/commit/fcf42f68b4226b55417bbaeb6305d33129ede96d) Thanks [@silesky](https://github.com/silesky)! - Fix regression where we no longer export UniversalStorage (used in destinations)
+
+## 1.55.0
+
+### Minor Changes
+
+- [#939](https://github.com/segmentio/analytics-next/pull/939) [`ee855ba`](https://github.com/segmentio/analytics-next/commit/ee855bad751c393a40dcbde7ae861f27d2b4da26) Thanks [@zikaari](https://github.com/zikaari)! - Move context augmentation to Page Enrichment plugin
+
+* [#931](https://github.com/segmentio/analytics-next/pull/931) [`9123c0c`](https://github.com/segmentio/analytics-next/commit/9123c0c485d293ee8ba283ba7b6de6a46734449a) Thanks [@silesky](https://github.com/silesky)! - Add ability to use browser destination straight from NPM
+
+### Patch Changes
+
+- Updated dependencies [[`ee855ba`](https://github.com/segmentio/analytics-next/commit/ee855bad751c393a40dcbde7ae861f27d2b4da26)]:
+  - @segment/analytics-core@1.3.1
+
+## 1.54.0
+
+### Minor Changes
+
+- [#908](https://github.com/segmentio/analytics-next/pull/908) [`1b95946`](https://github.com/segmentio/analytics-next/commit/1b95946339d32a0395ab6bf56e37ecbd6eb832ae) Thanks [@oscb](https://github.com/oscb)! - Adds storage option in analytics client to specify priority of storage (e.g use cookies over localstorage)
+
+## 1.53.4
+
+### Patch Changes
+
+- [#932](https://github.com/segmentio/analytics-next/pull/932) [`b1584fc`](https://github.com/segmentio/analytics-next/commit/b1584fc1dc531b312dc6020fadc1c14bd153a557) Thanks [@oscb](https://github.com/oscb)! - `sentAt` is not set at batch upload time once per the whole batch. Individual event `sentAt` property is stripped when doing batch uploading.
+
 ## 1.53.3
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-tools",
-  "version": "0.0.4",
+  "version": "0.2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -24,6 +24,14 @@
     "eslint": "yarn run -T eslint",
     "concurrently": "yarn run -T concurrently --raw",
     "jest": "yarn run -T jest"
+  },
+  "peerDependencies": {
+    "@segment/analytics-next": ">=1.53.1"
+  },
+  "peerDependenciesMeta": {
+    "@segment/analytics-next": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@internal/config": "workspace:^",

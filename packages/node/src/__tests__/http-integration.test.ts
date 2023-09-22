@@ -7,6 +7,8 @@ import { pick } from 'lodash'
 import nock from 'nock'
 import { CoreContext } from '@segment/analytics-core'
 
+const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
 const snapshotMatchers = {
   get batchEvent() {
     return {
@@ -17,11 +19,14 @@ const snapshotMatchers = {
         },
       },
       _metadata: expect.any(Object),
-      timestamp: expect.any(String),
+      timestamp: expect.stringMatching(isoDateRegEx),
     }
   },
   get defaultReqBody() {
-    return { batch: [snapshotMatchers.batchEvent] }
+    return {
+      batch: [snapshotMatchers.batchEvent],
+      sentAt: expect.stringMatching(isoDateRegEx),
+    }
   },
 }
 
@@ -140,7 +145,7 @@ describe('Method Smoke Tests', () => {
               },
               "integrations": Object {},
               "messageId": Any<String>,
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "traits": Object {
                 "foo": "bar",
               },
@@ -149,6 +154,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "writeKey": "foo",
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
         }
       `
       )
@@ -180,12 +186,16 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "hello": "world",
               },
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "foo",
             },
           ],
+<<<<<<< HEAD
           "writeKey": "foo",
+=======
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+>>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
         }
       `
       )
@@ -212,11 +222,15 @@ describe('Method Smoke Tests', () => {
               "messageId": Any<String>,
               "name": "page",
               "properties": Object {},
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "page",
             },
           ],
+<<<<<<< HEAD
           "writeKey": "foo",
+=======
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+>>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
         }
       `
       )
@@ -246,14 +260,18 @@ describe('Method Smoke Tests', () => {
               "groupId": "myGroupId",
               "integrations": Object {},
               "messageId": Any<String>,
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "traits": Object {
                 "some_traits": 123,
               },
               "type": "group",
             },
           ],
+<<<<<<< HEAD
           "writeKey": "foo",
+=======
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+>>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
         }
       `
       )
@@ -278,12 +296,16 @@ describe('Method Smoke Tests', () => {
               "integrations": Object {},
               "messageId": Any<String>,
               "previousId": "previous",
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "alias",
               "userId": "alias",
             },
           ],
+<<<<<<< HEAD
           "writeKey": "foo",
+=======
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+>>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
         }
       `
       )
@@ -316,11 +338,15 @@ describe('Method Smoke Tests', () => {
               "properties": Object {
                 "title": "wip",
               },
-              "timestamp": Any<String>,
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "screen",
             },
           ],
+<<<<<<< HEAD
           "writeKey": "foo",
+=======
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+>>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
         }
       `
       )

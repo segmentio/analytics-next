@@ -10,7 +10,11 @@ import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
 import { createDeferred } from '../lib/create-deferred'
 import { pageEnrichment } from '../plugins/page-enrichment'
-import { remoteLoader, RemotePlugin } from '../plugins/remote-loader'
+import {
+  PluginFactory,
+  remoteLoader,
+  RemotePlugin,
+} from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
 import { validation } from '../plugins/validation'
@@ -26,6 +30,7 @@ import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
+import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -178,9 +183,19 @@ async function registerPlugins(
   analytics: Analytics,
   opts: InitOptions,
   options: InitOptions,
-  plugins: Plugin[],
+  pluginLikes: (Plugin | PluginFactory)[] = [],
   legacyIntegrationSources: ClassicIntegrationSource[]
 ): Promise<Context> {
+  const plugins = pluginLikes?.filter(
+    (pluginLike) => typeof pluginLike === 'object'
+  ) as Plugin[]
+
+  const pluginSources = pluginLikes?.filter(
+    (pluginLike) =>
+      typeof pluginLike === 'function' &&
+      typeof pluginLike.pluginName === 'string'
+  ) as PluginFactory[]
+
   const tsubMiddleware = hasTsubMiddleware(legacySettings)
     ? await import(
         /* webpackChunkName: "tsub-middleware" */ '../plugins/routing-middleware'
@@ -229,7 +244,8 @@ async function registerPlugins(
     analytics.integrations,
     mergedSettings,
     options.obfuscate,
-    tsubMiddleware
+    tsubMiddleware,
+    pluginSources
   ).catch(() => [])
 
   const toRegister = [
@@ -288,6 +304,8 @@ async function loadAnalytics(
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
 ): Promise<[Analytics, Context]> {
+  if (options.globalAnalyticsKey)
+    setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
@@ -308,6 +326,7 @@ async function loadAnalytics(
   attachInspector(analytics)
 
   const plugins = settings.plugins ?? []
+
   const classicIntegrations = settings.classicIntegrations ?? []
   Stats.initRemoteMetrics(legacySettings.metrics)
 

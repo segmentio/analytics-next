@@ -9,17 +9,20 @@
         "**/*.tsx",
         ":!**/__tests__/**"
       ],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["**/dist/**", ".next/**"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["build"]
+    },
+    "test:int": {
+      "dependsOn": ["build"]
     },
     "watch": {
       "cache": false,
       "outputs": ["dist/**"]
     },
     "lint": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["build"],
       "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
     }

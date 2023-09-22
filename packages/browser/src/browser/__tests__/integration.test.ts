@@ -23,6 +23,7 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../test-helpers/fixtures/client-hints'
+import { getGlobalAnalytics } from '../..'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -200,7 +201,7 @@ describe('Initialization', () => {
           {
             ...xt,
             load: async () => {
-              expect(window.analytics).toBeUndefined()
+              expect(getGlobalAnalytics()).toBeUndefined()
               expect(getCDN()).toContain(overriddenCDNUrl)
             },
           },
@@ -209,6 +210,57 @@ describe('Initialization', () => {
 
       expect(fetchCalls[0].url).toContain(overriddenCDNUrl)
       expect.assertions(3)
+    })
+  })
+
+  describe('globalAnalyticsKey', () => {
+    const overrideKey = 'myKey'
+    const buffer = {
+      foo: 'bar',
+    }
+
+    beforeEach(() => {
+      ;(window as any)[overrideKey] = buffer
+    })
+    afterEach(() => {
+      delete (window as any)[overrideKey]
+    })
+    it('should default to window.analytics', async () => {
+      const defaultObj = { original: 'default' }
+      ;(window as any)['analytics'] = defaultObj
+
+      await AnalyticsBrowser.load({
+        writeKey,
+        plugins: [
+          {
+            ...xt,
+            load: async () => {
+              expect(getGlobalAnalytics()).toBe(defaultObj)
+            },
+          },
+        ],
+      })
+      expect.assertions(1)
+    })
+
+    it('should set the global window key for the analytics buffer with the setting option', async () => {
+      await AnalyticsBrowser.load(
+        {
+          writeKey,
+          plugins: [
+            {
+              ...xt,
+              load: async () => {
+                expect(getGlobalAnalytics()).toBe(buffer)
+              },
+            },
+          ],
+        },
+        {
+          globalAnalyticsKey: overrideKey,
+        }
+      )
+      expect.assertions(1)
     })
   })
 
