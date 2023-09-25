@@ -17,19 +17,8 @@ export function pTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
   })
 }
 
-export function sleep(
-  timeoutInMs: number,
-  signal?: { addEventListener(...args: Parameters<Emitter['on']>): void }
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(resolve, timeoutInMs)
-    if (signal) {
-      signal.addEventListener('abort', () => {
-        clearTimeout(timeout)
-        reject(new DOMException('Aborted', 'AbortError'))
-      })
-    }
-  })
+export function sleep(timeoutInMs: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
 }
 
 /**

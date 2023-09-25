@@ -247,7 +247,9 @@ describe('track', () => {
     const track = resolveCtx(analytics, 'track')
     analytics.track({ event: 'hello', userId: 'foo' })
     await track
-    expect(makeReqSpy.mock.calls[0][0].data.sentAt).toBeInstanceOf(Date)
+    expect(
+      new Date(JSON.parse(makeReqSpy.mock.calls[0][0].body).sentAt)
+    ).toBeInstanceOf(Date)
   })
   it('generates track events', async () => {
     const analytics = createTestAnalytics()

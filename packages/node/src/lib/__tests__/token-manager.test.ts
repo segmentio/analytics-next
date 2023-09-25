@@ -1,7 +1,7 @@
 import { sleep } from '@segment/analytics-core'
 import { TestFetchClient } from '../../__tests__/test-helpers/create-test-analytics'
 import { HTTPResponse } from '../http-client'
-import { TokenManager, TokenManagerProps } from '../token-manager'
+import { TokenManager, OauthSettings } from '../token-manager'
 
 const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
@@ -37,7 +37,7 @@ const fetcher = jest.spyOn(testClient, 'makeRequest')
 
 const createOAuthSuccess = (body?: any) => {
   return Promise.resolve({
-    json: () => Promise.resolve(body),
+    text: () => Promise.resolve(body),
     ok: true,
     status: 200,
     statusText: 'OK',
@@ -54,7 +54,7 @@ const createOAuthError = (overrides: Partial<HTTPResponse> = {}) => {
 }
 
 const getTokenManager = () => {
-  const tokenManagerProps = {
+  const oauthSettings = {
     httpClient: testClient,
     maxRetries: 3,
     clientId: 'clientId',
@@ -62,19 +62,16 @@ const getTokenManager = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as TokenManagerProps
+  } as OauthSettings
 
-  return new TokenManager(tokenManagerProps)
+  return new TokenManager(oauthSettings)
 }
 
 test(
   'OAuth Success',
   async () => {
     fetcher.mockReturnValueOnce(
-      createOAuthSuccess({
-        access_token: 'token',
-        expires_in: 100,
-      })
+      createOAuthSuccess({ access_token: 'token', expires_in: 100 })
     )
 
     const tokenManager = getTokenManager()
@@ -126,10 +123,7 @@ test('OAuth rate limit', async () => {
       })
     )
     .mockReturnValue(
-      createOAuthSuccess({
-        access_token: 'token',
-        expires_in: 100,
-      })
+      createOAuthSuccess({ access_token: 'token', expires_in: 100 })
     )
 
   const tokenManager = getTokenManager()

@@ -1,5 +1,5 @@
 import { HTTPResponse } from '../lib/http-client'
-import { TokenManagerProps } from '../lib/token-manager'
+import { OauthSettings } from '../lib/token-manager'
 import {
   TestFetchClient,
   createTestAnalytics,
@@ -45,8 +45,8 @@ const oauthFetcher = jest.spyOn(oauthTestClient, 'makeRequest')
 const tapiTestClient = new TestFetchClient()
 const tapiFetcher = jest.spyOn(tapiTestClient, 'makeRequest')
 
-const getTokenManagerProps = () => {
-  const tokenManagerProps = {
+const getOauthSettings = () => {
+  const oauthSettings = {
     httpClient: oauthTestClient,
     maxRetries: 3,
     clientId: 'clientId',
@@ -54,13 +54,13 @@ const getTokenManagerProps = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as TokenManagerProps
-  return tokenManagerProps
+  } as OauthSettings
+  return oauthSettings
 }
 
 const createOAuthSuccess = (body?: any) => {
   return Promise.resolve({
-    json: () => Promise.resolve(body),
+    text: () => Promise.resolve(body),
     ok: true,
     status: 200,
     statusText: 'OK',
@@ -76,18 +76,15 @@ const createOAuthError = (overrides: Partial<HTTPResponse> = {}) => {
   }) as Promise<HTTPResponse>
 }
 
-describe('OAuth Success', () => {
+describe('OAuth Integration Success', () => {
   it('track event with OAuth', async () => {
     const analytics = createTestAnalytics({
-      tokenManagerProps: getTokenManagerProps(),
+      oauthSettings: getOauthSettings(),
     })
     const eventName = 'Test Event'
 
     oauthFetcher.mockReturnValue(
-      createOAuthSuccess({
-        access_token: 'token',
-        expires_in: 100,
-      })
+      createOAuthSuccess({ access_token: 'token', expires_in: 100 })
     )
 
     analytics.track({
@@ -112,15 +109,12 @@ describe('OAuth Success', () => {
   })
   it('track event with OAuth after retry', async () => {
     const analytics = createTestAnalytics({
-      tokenManagerProps: getTokenManagerProps(),
+      oauthSettings: getOauthSettings(),
     })
     oauthFetcher
       .mockReturnValueOnce(createOAuthError({ status: 425 }))
       .mockReturnValueOnce(
-        createOAuthSuccess({
-          access_token: 'token',
-          expires_in: 100,
-        })
+        createOAuthSuccess({ access_token: 'token', expires_in: 100 })
       )
 
     const eventName = 'Test Event'
@@ -148,7 +142,7 @@ describe('OAuth Success', () => {
 
   it('delays appropriately on 429 error', async () => {
     const analytics = createTestAnalytics({
-      tokenManagerProps: getTokenManagerProps(),
+      oauthSettings: getOauthSettings(),
     })
     const retryTime = Date.now() + 250
     oauthFetcher
@@ -159,10 +153,7 @@ describe('OAuth Success', () => {
         })
       )
       .mockReturnValue(
-        createOAuthSuccess({
-          access_token: 'token',
-          expires_in: 100,
-        })
+        createOAuthSuccess({ access_token: 'token', expires_in: 100 })
       )
 
     analytics.track({
@@ -181,7 +172,7 @@ describe('OAuth Success', () => {
 describe('OAuth Failure', () => {
   it('surfaces error after retries', async () => {
     const analytics = createTestAnalytics({
-      tokenManagerProps: getTokenManagerProps(),
+      oauthSettings: getOauthSettings(),
     })
 
     oauthFetcher.mockReturnValue(createOAuthError({ status: 500 }))
@@ -219,7 +210,7 @@ describe('OAuth Failure', () => {
   it('surfaces error after failing immediately', async () => {
     const logger = jest.fn()
     const analytics = createTestAnalytics({
-      tokenManagerProps: getTokenManagerProps(),
+      oauthSettings: getOauthSettings(),
     }).on('error', (err) => {
       logger(err)
     })
@@ -247,10 +238,10 @@ describe('OAuth Failure', () => {
   })
 
   it('handles a bad key', async () => {
-    const props = getTokenManagerProps()
+    const props = getOauthSettings()
     props.clientKey = Buffer.from('Garbage')
     const analytics = createTestAnalytics({
-      tokenManagerProps: props,
+      oauthSettings: props,
     })
 
     try {
@@ -276,16 +267,13 @@ describe('OAuth Failure', () => {
   describe('TAPI rejection', () => {
     it('surfaces error', async () => {
       const analytics = createTestAnalytics({
-        tokenManagerProps: getTokenManagerProps(),
+        oauthSettings: getOauthSettings(),
         httpClient: tapiTestClient,
       })
       const eventName = 'Test Event'
 
       oauthFetcher.mockReturnValue(
-        createOAuthSuccess({
-          access_token: 'token',
-          expires_in: 100,
-        })
+        createOAuthSuccess({ access_token: 'token', expires_in: 100 })
       )
       tapiFetcher.mockReturnValue(
         createError({

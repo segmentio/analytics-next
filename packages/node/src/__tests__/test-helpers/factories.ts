@@ -1,6 +1,7 @@
 export const createSuccess = (body?: any) => {
   return Promise.resolve({
     json: () => Promise.resolve(body),
+    text: () => Promise.resolve(JSON.stringify(body)),
     ok: true,
     status: 200,
     statusText: 'OK',

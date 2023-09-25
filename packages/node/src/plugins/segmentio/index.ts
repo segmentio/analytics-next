@@ -4,6 +4,7 @@ import { detectRuntime } from '../../lib/env'
 import { Plugin } from '../../app/types'
 import { Context } from '../../app/context'
 import { NodeEmitter } from '../../app/emitter'
+export { OauthSettings } from '../../lib/token-manager'
 
 function normalizeEvent(ctx: Context) {
   ctx.updateEvent('context.library.name', '@segment/analytics-node')

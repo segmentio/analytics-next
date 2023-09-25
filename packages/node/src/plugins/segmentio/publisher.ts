@@ -6,7 +6,7 @@ import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 //import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
-import { TokenManager, TokenManagerProps } from '../../lib/token-manager'
+import { TokenManager, OauthSettings } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -29,7 +29,7 @@ export interface PublisherProps {
   httpRequestTimeout?: number
   disable?: boolean
   httpClient: HTTPClient
-  tokenManagerProps?: TokenManagerProps
+  oauthSettings?: OauthSettings
 }
 
 /**
@@ -61,7 +61,7 @@ export class Publisher {
       httpRequestTimeout,
       httpClient,
       disable,
-      tokenManagerProps,
+      oauthSettings: oauthSettings,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -78,9 +78,12 @@ export class Publisher {
     this._httpClient = httpClient
     this._writeKey = writeKey
 
-    if (tokenManagerProps != null) {
-      tokenManagerProps.httpClient ??= httpClient
-      this._tokenManager = new TokenManager(tokenManagerProps)
+    if (oauthSettings) {
+      this._tokenManager = new TokenManager({
+        httpClient,
+        maxRetries,
+        ...oauthSettings,
+      })
     }
   }
 
@@ -212,7 +215,7 @@ export class Publisher {
         if (this._tokenManager) {
           const tokenPromise = this._tokenManager.getAccessToken()
           const token = await tokenPromise
-          if (token.access_token !== undefined) {
+          if (token && token.access_token) {
             authString = `Bearer ${token.access_token}`
           }
         }

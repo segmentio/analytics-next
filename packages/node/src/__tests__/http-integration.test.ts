@@ -153,8 +153,8 @@ describe('Method Smoke Tests', () => {
               "userId": "my_user_id",
             },
           ],
-          "writeKey": "foo",
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -191,11 +191,8 @@ describe('Method Smoke Tests', () => {
               "userId": "foo",
             },
           ],
-<<<<<<< HEAD
-          "writeKey": "foo",
-=======
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
->>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
+          "writeKey": "foo",
         }
       `
       )
@@ -226,11 +223,8 @@ describe('Method Smoke Tests', () => {
               "type": "page",
             },
           ],
-<<<<<<< HEAD
-          "writeKey": "foo",
-=======
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
->>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
+          "writeKey": "foo",
         }
       `
       )
@@ -267,11 +261,8 @@ describe('Method Smoke Tests', () => {
               "type": "group",
             },
           ],
-<<<<<<< HEAD
-          "writeKey": "foo",
-=======
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
->>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
+          "writeKey": "foo",
         }
       `
       )
@@ -301,11 +292,8 @@ describe('Method Smoke Tests', () => {
               "userId": "alias",
             },
           ],
-<<<<<<< HEAD
-          "writeKey": "foo",
-=======
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
->>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
+          "writeKey": "foo",
         }
       `
       )
@@ -342,11 +330,8 @@ describe('Method Smoke Tests', () => {
               "type": "screen",
             },
           ],
-<<<<<<< HEAD
-          "writeKey": "foo",
-=======
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
->>>>>>> 03a0a9b3744b7f534601ad1d665f784d0ff13006
+          "writeKey": "foo",
         }
       `
       )

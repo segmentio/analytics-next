@@ -42,15 +42,6 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
     this._closeAndFlushDefaultTimeout = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
 
-    if (
-      settings.tokenManagerProps &&
-      settings.tokenManagerProps.httpClient == undefined
-    ) {
-      settings.tokenManagerProps.httpClient =
-        typeof settings.httpClient === 'function'
-          ? new FetchHTTPClient(settings.httpClient)
-          : settings.httpClient ?? new FetchHTTPClient()
-    }
     const { plugin, publisher } = createConfiguredNodePlugin(
       {
         writeKey: settings.writeKey,
@@ -65,7 +56,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
           typeof settings.httpClient === 'function'
             ? new FetchHTTPClient(settings.httpClient)
             : settings.httpClient ?? new FetchHTTPClient(),
-        tokenManagerProps: settings.tokenManagerProps,
+        oauthSettings: settings.oauthSettings,
       },
       this as NodeEmitter
     )

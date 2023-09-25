@@ -26,8 +26,8 @@ export interface HTTPFetchRequest {
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
 export interface HTTPResponse {
-  headers: Record<string, any>
-  json(): Promise<any>
+  headers?: Record<string, any>
+  text?: () => Promise<string>
   status: number
   statusText: string
 }
