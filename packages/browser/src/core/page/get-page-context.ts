@@ -1,5 +1,8 @@
 import { isPlainObject } from '@segment/analytics-core'
 
+/**
+ * Final Page Context object expected in the Segment Event
+ */
 export interface PageContext {
   path: string
   referrer: string
