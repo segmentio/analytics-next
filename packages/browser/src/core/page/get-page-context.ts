@@ -25,6 +25,9 @@ export interface BufferedPageContext {
   r: PageContext['referrer']
 }
 
+/**
+ * `BufferedPageContext` object builder
+ */
 export const createBufferedPageContext = (
   url: string,
   canonicalUrl: CanonicalUrl,
@@ -113,6 +116,9 @@ export const createPageContext = ({
   }
 }
 
+/**
+ * Get page properties from the browser window/document.
+ */
 export const getDefaultBufferedPageContext = (): BufferedPageContext => {
   const c = document.querySelector("link[rel='canonical']")
   return createBufferedPageContext(
