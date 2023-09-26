@@ -246,8 +246,8 @@ async function registerPlugins(
   ).catch(() => [])
 
   const toRegister = [
-    envEnrichment,
     validation,
+    envEnrichment,
     ...plugins,
     ...legacyDestinations,
     ...remotePlugins,
