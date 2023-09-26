@@ -89,8 +89,8 @@ const formatCanonicalPath = (canonicalUrl: string) => {
 }
 
 /**
- * create a PageContext from a BufferedPageContext
- * BufferedPageContext keys are minified to save bytes in the snippet.
+ * Create a `PageContext` from a `BufferedPageContext`.
+ * `BufferedPageContext` keys are minified to save bytes in the snippet.
  */
 export const createPageContext = ({
   c: canonicalUrl,
