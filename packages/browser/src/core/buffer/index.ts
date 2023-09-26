@@ -240,6 +240,7 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
     )(...call.args)
 
     if (isThenable(result)) {
+      // do not defer for non-async methods
       await result
     }
 
