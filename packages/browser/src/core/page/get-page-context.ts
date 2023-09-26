@@ -88,6 +88,10 @@ const formatCanonicalPath = (canonicalUrl: string) => {
   return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
 }
 
+/**
+ * create a PageContext from a BufferedPageContext
+ * BufferedPageContext keys are minified to save bytes in the snippet.
+ */
 export const createPageContext = ({
   c: canonicalUrl,
   p: pathname,
