@@ -6,7 +6,9 @@ import { HTTPClientRequest } from '../../../lib/http-client'
  */
 export const httpClientOptionsBodyMatcher = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
-  timestamp: expect.any(Date),
+  timestamp: expect.stringMatching(
+    /^20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z/
+  ),
   _metadata: expect.any(Object),
   context: {
     library: {
@@ -29,6 +31,5 @@ export function assertHTTPRequestOptions(
       "User-Agent": "analytics-node-next/latest",
     }
   `)
-  //expect(body).toHaveLength(contexts.length)
-  expect(body.length).toBeGreaterThan(contexts.length) // Just to make errors go away, please suggest something
+  expect(JSON.parse(body).batch).toHaveLength(contexts.length)
 }
