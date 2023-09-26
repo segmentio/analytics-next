@@ -6,7 +6,7 @@ import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 //import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
-import { TokenManager, OauthSettings } from '../../lib/token-manager'
+import { TokenManager, OAuthSettings } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -29,7 +29,7 @@ export interface PublisherProps {
   httpRequestTimeout?: number
   disable?: boolean
   httpClient: HTTPClient
-  oauthSettings?: OauthSettings
+  oauthSettings?: OAuthSettings
 }
 
 /**

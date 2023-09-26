@@ -14,7 +14,7 @@ type AccessToken = {
   expires_in: number
 }
 
-export type OauthSettings = {
+export type OAuthSettings = {
   clientId: string
   clientKey: Buffer
   keyId: string
@@ -49,7 +49,7 @@ export class TokenManager {
   private lastError: any
   private pollerTimer?: ReturnType<typeof setTimeout>
 
-  constructor(props: OauthSettings) {
+  constructor(props: OAuthSettings) {
     this.keyId = props.keyId
     this.clientId = props.clientId
     this.clientKey = props.clientKey

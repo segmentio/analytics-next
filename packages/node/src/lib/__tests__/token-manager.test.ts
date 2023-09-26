@@ -1,7 +1,7 @@
 import { sleep } from '@segment/analytics-core'
 import { TestFetchClient } from '../../__tests__/test-helpers/create-test-analytics'
 import { HTTPResponse } from '../http-client'
-import { TokenManager, OauthSettings } from '../token-manager'
+import { TokenManager, OAuthSettings } from '../token-manager'
 
 const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
@@ -62,7 +62,7 @@ const getTokenManager = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as OauthSettings
+  } as OAuthSettings
 
   return new TokenManager(oauthSettings)
 }

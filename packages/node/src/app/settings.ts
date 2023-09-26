@@ -1,6 +1,6 @@
 import { ValidationError } from '@segment/analytics-core'
 import { HTTPClient, HTTPFetchFn } from '../lib/http-client'
-import { OauthSettings } from '../lib/token-manager'
+import { OAuthSettings } from '../lib/token-manager'
 
 export interface AnalyticsSettings {
   /**
@@ -44,7 +44,7 @@ export interface AnalyticsSettings {
   /**
    * Set up OAuth2 authentication between the client and Segment's endpoints
    */
-  oauthSettings?: OauthSettings
+  oauthSettings?: OAuthSettings
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

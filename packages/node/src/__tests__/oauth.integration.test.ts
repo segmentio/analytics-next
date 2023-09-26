@@ -1,5 +1,5 @@
 import { HTTPResponse } from '../lib/http-client'
-import { OauthSettings } from '../lib/token-manager'
+import { OAuthSettings } from '../lib/token-manager'
 import {
   TestFetchClient,
   createTestAnalytics,
@@ -54,7 +54,7 @@ const getOauthSettings = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as OauthSettings
+  } as OAuthSettings
   return oauthSettings
 }
 
