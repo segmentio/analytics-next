@@ -614,6 +614,7 @@ describe('Dispatch', () => {
         "message_dispatched",
         "plugin_time",
         "plugin_time",
+        "plugin_time",
         "message_delivered",
         "plugin_time",
         "delivered",

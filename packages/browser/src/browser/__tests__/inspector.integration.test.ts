@@ -55,7 +55,7 @@ describe('Inspector', () => {
 
     await deliveryPromise
 
-    expect(enrichedFn).toHaveBeenCalledTimes(1) // will be called once for every before or enrichment plugin.
+    expect(enrichedFn).toHaveBeenCalledTimes(2) // will be called once for every before or enrichment plugin.
     expect(deliveredFn).toHaveBeenCalledTimes(1)
   })
 

@@ -30,6 +30,7 @@ import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
+import { pageEnrichment } from '../plugins/page-enrichment'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -245,6 +246,7 @@ async function registerPlugins(
   ).catch(() => [])
 
   const toRegister = [
+    pageEnrichment,
     validation,
     ...plugins,
     ...legacyDestinations,
