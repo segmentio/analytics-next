@@ -1,7 +1,7 @@
 import cookie from 'js-cookie'
 import assert from 'assert'
 import { Analytics } from '../../../core/analytics'
-import { pageEnrichment, pageDefaults } from '..'
+import { pageEnrichment } from '..'
 import { pick } from '../../../lib/pick'
 import { SegmentioSettings } from '../../segmentio'
 import { version } from '../../../generated/version'
@@ -214,53 +214,6 @@ describe('Page Enrichment', () => {
     })
 
     expect(called).toBe(true)
-  })
-})
-
-describe('pageDefaults', () => {
-  const el = document.createElement('link')
-  el.setAttribute('rel', 'canonical')
-
-  beforeEach(() => {
-    el.setAttribute('href', '')
-    document.clear()
-  })
-
-  afterEach(() => {
-    jest.restoreAllMocks()
-  })
-
-  it('handles no canonical links', () => {
-    const defs = pageDefaults()
-    expect(defs.url).not.toBeNull()
-  })
-
-  it('handles canonical links', () => {
-    el.setAttribute('href', 'http://www.segment.local')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local')
-  })
-
-  it('handles canonical links with a path', () => {
-    el.setAttribute('href', 'http://www.segment.local/test')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local/test')
-    expect(defs.path).toEqual('/test')
-  })
-
-  it('handles canonical links with search params in the url', () => {
-    el.setAttribute('href', 'http://www.segment.local?test=true')
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual('http://www.segment.local?test=true')
-  })
-
-  it('if canonical does not exist, returns fallback', () => {
-    document.body.appendChild(el)
-    const defs = pageDefaults()
-    expect(defs.url).toEqual(window.location.href)
   })
 })
 
@@ -490,19 +443,46 @@ describe('Other visitor metadata', () => {
   })
 
   it('should allow override of .search with object', async () => {
+    const searchParams = {
+      something_else: 'bar',
+      utm_custom: 'foo',
+      utm_campaign: 'hello',
+    }
     const ctx = await analytics.track(
       'test',
       {},
       {
-        context: amendSearchParams({
-          someObject: 'foo',
-        }),
+        context: amendSearchParams(searchParams),
       }
     )
     assert(ctx.event)
     assert(ctx.event.context)
-    assert(ctx.event.context.campaign === undefined)
     assert(ctx.event.context.referrer === undefined)
+    assert(ctx.event.context.campaign)
+    assert(ctx.event.context.page?.search)
+    expect(ctx.event.context.page.search).toEqual(searchParams)
+    expect(ctx.event.context.campaign).toEqual({ name: 'hello', custom: 'foo' })
+  })
+
+  it('should not throw an error if the object is invalid', async () => {
+    const searchParams = {
+      invalidNested: {
+        foo: {
+          bar: null,
+        },
+      },
+    }
+    const ctx = await analytics.track(
+      'test',
+      {},
+      {
+        context: amendSearchParams(searchParams),
+      }
+    )
+    assert(ctx.event)
+    assert(ctx.event.context)
+    assert(ctx.event.context.referrer === undefined)
+    expect(ctx.event.context.page?.search).toEqual(searchParams)
   })
 
   it('should add .referrer.id and .referrer.type (cookies)', async () => {

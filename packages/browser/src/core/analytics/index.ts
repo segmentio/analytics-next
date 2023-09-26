@@ -54,6 +54,8 @@ import {
 } from '../storage'
 import { PluginFactory } from '../../plugins/remote-loader'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
+import { hasBufferedPageContextAsLastArg } from '../buffer'
+import { BufferedPageContext, PageContext, createPageContext } from '../page'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -134,6 +136,13 @@ function _stub(this: never) {
   console.warn(deprecationWarning)
 }
 
+const popPageContext = (args: any[]): PageContext | undefined => {
+  if (hasBufferedPageContextAsLastArg(args)) {
+    const ctx = args.pop() as BufferedPageContext
+    return createPageContext(ctx)
+  }
+}
+
 export class Analytics
   extends Emitter
   implements AnalyticsCore, AnalyticsClassic
@@ -199,10 +208,9 @@ export class Analytics
         },
         cookieOptions
       ).load()
-    this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
-
+    this.eventFactory = new EventFactory(this._user)
     autoBind(this)
   }
 
@@ -252,13 +260,15 @@ export class Analytics
   }
 
   async track(...args: EventParams): Promise<DispatchedEvent> {
+    const pageCtx = popPageContext(args)
     const [name, data, opts, cb] = resolveArguments(...args)
 
     const segmentEvent = this.eventFactory.track(
       name,
       data as EventProperties,
       opts,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
 
     return this._dispatch(segmentEvent, cb).then((ctx) => {
@@ -268,6 +278,7 @@ export class Analytics
   }
 
   async page(...args: PageParams): Promise<DispatchedEvent> {
+    const pageCtx = popPageContext(args)
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
@@ -276,7 +287,8 @@ export class Analytics
       page,
       properties,
       options,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
 
     return this._dispatch(segmentEvent, callback).then((ctx) => {
@@ -286,6 +298,7 @@ export class Analytics
   }
 
   async identify(...args: IdentifyParams): Promise<DispatchedEvent> {
+    const pageCtx = popPageContext(args)
     const [id, _traits, options, callback] = resolveUserArguments(this._user)(
       ...args
     )
@@ -295,7 +308,8 @@ export class Analytics
       this._user.id(),
       this._user.traits(),
       options,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
 
     return this._dispatch(segmentEvent, callback).then((ctx) => {
@@ -312,6 +326,7 @@ export class Analytics
   group(): Group
   group(...args: GroupParams): Promise<DispatchedEvent>
   group(...args: GroupParams): Promise<DispatchedEvent> | Group {
+    const pageCtx = popPageContext(args)
     if (args.length === 0) {
       return this._group
     }
@@ -328,7 +343,8 @@ export class Analytics
       groupId,
       groupTraits,
       options,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
 
     return this._dispatch(segmentEvent, callback).then((ctx) => {
@@ -338,12 +354,14 @@ export class Analytics
   }
 
   async alias(...args: AliasParams): Promise<DispatchedEvent> {
+    const pageCtx = popPageContext(args)
     const [to, from, options, callback] = resolveAliasArguments(...args)
     const segmentEvent = this.eventFactory.alias(
       to,
       from,
       options,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
     return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit('alias', to, from, ctx.event.options)
@@ -352,6 +370,7 @@ export class Analytics
   }
 
   async screen(...args: PageParams): Promise<DispatchedEvent> {
+    const pageCtx = popPageContext(args)
     const [category, page, properties, options, callback] =
       resolvePageArguments(...args)
 
@@ -360,7 +379,8 @@ export class Analytics
       page,
       properties,
       options,
-      this.integrations
+      this.integrations,
+      pageCtx
     )
     return this._dispatch(segmentEvent, callback).then((ctx) => {
       this.emit(

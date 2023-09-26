@@ -3,6 +3,12 @@ import { Context } from '../context'
 import { isThenable } from '../../lib/is-thenable'
 import { AnalyticsBrowserCore } from '../analytics/interfaces'
 import { version } from '../../generated/version'
+import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
+import {
+  isBufferedPageContext,
+  BufferedPageContext,
+  getDefaultBufferedPageContext,
+} from '../page'
 
 /**
  * The names of any AnalyticsBrowser methods that also exist on Analytics
@@ -80,10 +86,17 @@ export const flushAnalyticsCallsInNewTask = (
   })
 }
 
+export const hasBufferedPageContextAsLastArg = (
+  args: unknown[]
+): args is [...unknown[], BufferedPageContext] | [BufferedPageContext] => {
+  const lastArg = args[args.length - 1]
+  return isBufferedPageContext(lastArg)
+}
+
 /**
  *  Represents a buffered method call that occurred before initialization.
  */
-export interface PreInitMethodCall<
+export class PreInitMethodCall<
   MethodName extends PreInitMethodName = PreInitMethodName
 > {
   method: MethodName
@@ -91,10 +104,33 @@ export interface PreInitMethodCall<
   called: boolean
   resolve: (v: ReturnType<Analytics[MethodName]>) => void
   reject: (reason: any) => void
+  constructor(
+    method: PreInitMethodCall<MethodName>['method'],
+    args: PreInitMethodParams<MethodName>,
+    resolve: PreInitMethodCall<MethodName>['resolve'] = () => {},
+    reject: PreInitMethodCall<MethodName>['reject'] = console.error
+  ) {
+    this.method = method
+    this.resolve = resolve
+    this.reject = reject
+    this.called = false
+
+    /**
+     * For specific events, we want to add page context here
+     */
+    const shouldAddPageContext = (
+      ['track', 'screen', 'alias', 'group', 'page', 'identify'] as MethodName[]
+    ).includes(method)
+    this.args =
+      shouldAddPageContext && !hasBufferedPageContextAsLastArg(args)
+        ? [...args, getDefaultBufferedPageContext()]
+        : args
+  }
 }
 
 export type PreInitMethodParams<MethodName extends PreInitMethodName> =
-  Parameters<Analytics[MethodName]>
+  | [...Parameters<Analytics[MethodName]>, BufferedPageContext]
+  | Parameters<Analytics[MethodName]>
 
 /**
  * Infer return type; if return type is promise, unwrap it.
@@ -107,34 +143,81 @@ type ReturnTypeUnwrap<Fn> = Fn extends (...args: any[]) => infer ReturnT
 
 type MethodCallMap = Partial<Record<PreInitMethodName, PreInitMethodCall[]>>
 
+type SnippetWindowBufferedMethodCall<
+  MethodName extends PreInitMethodName = PreInitMethodName
+> = [MethodName, ...PreInitMethodParams<MethodName>]
+
+/**
+ * A list of the method calls before initialization for snippet users
+ * For example, [["track", "foo", {bar: 123}], ["page"], ["on", "ready", function(){..}]
+ */
+type SnippetBuffer = SnippetWindowBufferedMethodCall[]
+
 /**
  *  Represents any and all the buffered method calls that occurred before initialization.
  */
 export class PreInitMethodCallBuffer {
-  private _value = {} as MethodCallMap
+  private _callMap: MethodCallMap = {}
 
-  toArray(): PreInitMethodCall[] {
-    return ([] as PreInitMethodCall[]).concat(...Object.values(this._value))
+  constructor(...calls: PreInitMethodCall[]) {
+    this.push(...calls)
+  }
+
+  /**
+   * Pull any buffered method calls from the window object, and use them to hydrate the instance buffer.
+   */
+  private get calls() {
+    this._pushSnippetWindowBuffer()
+    return this._callMap
+  }
+
+  private set calls(calls: MethodCallMap) {
+    this._callMap = calls
   }
 
   getCalls<T extends PreInitMethodName>(methodName: T): PreInitMethodCall<T>[] {
-    return (this._value[methodName] ?? []) as PreInitMethodCall<T>[]
+    return (this.calls[methodName] ?? []) as PreInitMethodCall<T>[]
   }
 
-  push(...calls: PreInitMethodCall[]): PreInitMethodCallBuffer {
+  push(...calls: PreInitMethodCall[]): void {
     calls.forEach((call) => {
-      if (this._value[call.method]) {
-        this._value[call.method]!.push(call)
+      if (this.calls[call.method]) {
+        this.calls[call.method]!.push(call)
       } else {
-        this._value[call.method] = [call]
+        this.calls[call.method] = [call]
       }
     })
-    return this
   }
 
-  clear(): PreInitMethodCallBuffer {
-    this._value = {} as MethodCallMap
-    return this
+  clear(): void {
+    // clear calls in the global snippet buffered array.
+    this._pushSnippetWindowBuffer()
+    // clear calls in this instance
+    this.calls = {}
+  }
+
+  toArray(): PreInitMethodCall[] {
+    return ([] as PreInitMethodCall[]).concat(...Object.values(this.calls))
+  }
+
+  /**
+   * Fetch the buffered method calls from the window object,
+   * normalize them, and use them to hydrate the buffer.
+   * This removes existing buffered calls from the window object.
+   */
+  private _pushSnippetWindowBuffer(): void {
+    const wa = getGlobalAnalytics()
+    if (!Array.isArray(wa)) return undefined
+    const buffered: SnippetBuffer = wa.splice(0, wa.length)
+    const calls = buffered.map((v) => this._transformSnippetCall(v))
+    this.push(...calls)
+  }
+
+  private _transformSnippetCall([
+    methodName,
+    ...args
+  ]: SnippetWindowBufferedMethodCall): PreInitMethodCall {
+    return new PreInitMethodCall(methodName, args)
   }
 }
 
@@ -157,7 +240,6 @@ export async function callAnalyticsMethod<T extends PreInitMethodName>(
     )(...call.args)
 
     if (isThenable(result)) {
-      // do not defer for non-async methods
       await result
     }
 
@@ -176,9 +258,13 @@ export class AnalyticsBuffered
 {
   instance?: Analytics
   ctx?: Context
-  private _preInitBuffer = new PreInitMethodCallBuffer()
+  /**
+   * We're going to assume that page URL
+   */
+  private _preInitBuffer: PreInitMethodCallBuffer
   private _promise: Promise<[Analytics, Context]>
   constructor(loader: AnalyticsLoader) {
+    this._preInitBuffer = new PreInitMethodCallBuffer()
     this._promise = loader(this._preInitBuffer)
     this._promise
       .then(([ajs, ctx]) => {
@@ -251,15 +337,10 @@ export class AnalyticsBuffered
         const result = (this.instance[methodName] as Function)(...args)
         return Promise.resolve(result)
       }
-
       return new Promise((resolve, reject) => {
-        this._preInitBuffer.push({
-          method: methodName,
-          args,
-          resolve: resolve,
-          reject: reject,
-          called: false,
-        } as PreInitMethodCall)
+        this._preInitBuffer.push(
+          new PreInitMethodCall(methodName, args, resolve as any, reject)
+        )
       })
     }
   }
@@ -274,13 +355,7 @@ export class AnalyticsBuffered
         void (this.instance[methodName] as Function)(...args)
         return this
       } else {
-        this._preInitBuffer.push({
-          method: methodName,
-          args,
-          resolve: () => {},
-          reject: console.error,
-          called: false,
-        } as PreInitMethodCall)
+        this._preInitBuffer.push(new PreInitMethodCall(methodName, args))
       }
 
       return this

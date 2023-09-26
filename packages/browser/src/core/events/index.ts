@@ -9,30 +9,31 @@ import {
   SegmentEvent,
 } from './interfaces'
 import md5 from 'spark-md5'
+import { addPageContext, PageContext } from '../page'
 
 export * from './interfaces'
 
 export class EventFactory {
-  user: User
-
-  constructor(user: User) {
-    this.user = user
-  }
+  constructor(public user: User) {}
 
   track(
     event: string,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      event,
-      type: 'track' as const,
-      properties,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        event,
+        type: 'track' as const,
+        properties,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+      },
+      pageCtx
+    )
   }
 
   page(
@@ -40,7 +41,8 @@ export class EventFactory {
     page: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'page' as const,
@@ -59,10 +61,13 @@ export class EventFactory {
       event.name = page
     }
 
-    return this.normalize({
-      ...this.baseEvent(),
-      ...event,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...event,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   screen(
@@ -70,7 +75,8 @@ export class EventFactory {
     screen: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const event: Partial<SegmentEvent> = {
       type: 'screen' as const,
@@ -86,50 +92,61 @@ export class EventFactory {
     if (screen !== null) {
       event.name = screen
     }
-
-    return this.normalize({
-      ...this.baseEvent(),
-      ...event,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...event,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   identify(
     userId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      type: 'identify' as const,
-      userId,
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        type: 'identify' as const,
+        userId,
+        traits,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+      },
+      pageCtx
+    )
   }
 
   group(
     groupId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
-    return this.normalize({
-      ...this.baseEvent(),
-      type: 'group' as const,
-      traits,
-      options: { ...options },
-      integrations: { ...globalIntegrations },
-      groupId,
-    })
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        type: 'group' as const,
+        traits,
+        options: { ...options },
+        integrations: { ...globalIntegrations },
+        groupId,
+      },
+      pageCtx
+    )
   }
 
   alias(
     to: string,
     from: string | null,
     options?: Options,
-    globalIntegrations?: Integrations
+    globalIntegrations?: Integrations,
+    pageCtx?: PageContext
   ): SegmentEvent {
     const base: Partial<SegmentEvent> = {
       userId: to,
@@ -149,10 +166,13 @@ export class EventFactory {
       } as SegmentEvent)
     }
 
-    return this.normalize({
-      ...this.baseEvent(),
-      ...base,
-    } as SegmentEvent)
+    return this.normalize(
+      {
+        ...this.baseEvent(),
+        ...base,
+      } as SegmentEvent,
+      pageCtx
+    )
   }
 
   private baseEvent(): Partial<SegmentEvent> {
@@ -204,7 +224,7 @@ export class EventFactory {
     return [context, overrides]
   }
 
-  public normalize(event: SegmentEvent): SegmentEvent {
+  public normalize(event: SegmentEvent, pageCtx?: PageContext): SegmentEvent {
     // set anonymousId globally if we encounter an override
     //segment.com/docs/connections/sources/catalog/libraries/website/javascript/identity/#override-the-anonymous-id-using-the-options-object
     event.options?.anonymousId &&
@@ -235,21 +255,17 @@ export class EventFactory {
     const [context, overrides] = this.context(event)
     const { options, ...rest } = event
 
-    const body = {
+    const newEvent: SegmentEvent = {
       timestamp: new Date(),
       ...rest,
       context,
       integrations: allIntegrations,
       ...overrides,
+      messageId: 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid()),
     }
 
-    const messageId = 'ajs-next-' + md5.hash(JSON.stringify(body) + uuid())
+    addPageContext(newEvent, pageCtx)
 
-    const evt: SegmentEvent = {
-      ...body,
-      messageId,
-    }
-
-    return evt
+    return newEvent
   }
 }
