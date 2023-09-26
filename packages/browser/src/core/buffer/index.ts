@@ -259,9 +259,6 @@ export class AnalyticsBuffered
 {
   instance?: Analytics
   ctx?: Context
-  /**
-   * We're going to assume that page URL
-   */
   private _preInitBuffer: PreInitMethodCallBuffer
   private _promise: Promise<[Analytics, Context]>
   constructor(loader: AnalyticsLoader) {
