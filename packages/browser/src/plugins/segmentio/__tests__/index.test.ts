@@ -3,7 +3,7 @@ import unfetch from 'unfetch'
 import { segmentio, SegmentioSettings } from '..'
 import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
-import { pageEnrichment } from '../../page-enrichment'
+import { envEnrichment } from '../../env-enrichment'
 import cookie from 'js-cookie'
 
 jest.mock('unfetch', () => {
@@ -24,7 +24,7 @@ describe('Segment.io', () => {
     analytics = new Analytics({ writeKey: options.apiKey })
     segment = await segmentio(analytics, options, {})
 
-    await analytics.register(segment, pageEnrichment)
+    await analytics.register(segment, envEnrichment)
 
     window.localStorage.clear()
 
@@ -55,7 +55,7 @@ describe('Segment.io', () => {
       }
       const analytics = new Analytics({ writeKey: options.apiKey })
       const segment = await segmentio(analytics, options, {})
-      await analytics.register(segment, pageEnrichment)
+      await analytics.register(segment, envEnrichment)
 
       // @ts-ignore test a valid ajsc page call
       await analytics.page(null, { foo: 'bar' })

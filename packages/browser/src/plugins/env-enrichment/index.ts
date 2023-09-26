@@ -119,7 +119,7 @@ const objectToQueryString = (obj: Record<string, string>): string => {
   }
 }
 
-class PageEnrichmentPlugin implements Plugin {
+class EnvironmentEnrichmentPlugin implements Plugin {
   private instance!: Analytics
   private userAgentData: UADataValues | undefined
 
@@ -194,4 +194,4 @@ class PageEnrichmentPlugin implements Plugin {
   screen = this.enrich
 }
 
-export const pageEnrichment = new PageEnrichmentPlugin()
+export const envEnrichment = new EnvironmentEnrichmentPlugin()

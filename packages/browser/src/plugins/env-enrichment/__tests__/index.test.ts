@@ -1,7 +1,7 @@
 import cookie from 'js-cookie'
 import assert from 'assert'
 import { Analytics } from '../../../core/analytics'
-import { pageEnrichment } from '..'
+import { envEnrichment } from '..'
 import { pick } from '../../../lib/pick'
 import { SegmentioSettings } from '../../segmentio'
 import { version } from '../../../generated/version'
@@ -12,11 +12,6 @@ import {
   lowEntropyTestData,
 } from '../../../test-helpers/fixtures/client-hints'
 import { getDefaultPageContext } from '../../../core/page'
-
-/**
- * TODO: move this to top level tests and rename to page-enrichment.integration.test.ts
- * These tests test functionality outside of the plugin (e.g. addPageContext)
- */
 
 let ajs: Analytics
 
@@ -46,7 +41,7 @@ describe('Page Enrichment', () => {
       writeKey: 'abc_123',
     })
 
-    await ajs.register(pageEnrichment)
+    await ajs.register(envEnrichment)
   })
 
   test('enriches page calls', async () => {
@@ -252,7 +247,7 @@ describe('Other visitor metadata', () => {
     options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
 
-    await analytics.register(pageEnrichment)
+    await analytics.register(envEnrichment)
   })
 
   afterEach(() => {
@@ -514,7 +509,7 @@ describe('Other visitor metadata', () => {
       { disableClientPersistence: true }
     )
 
-    await analytics.register(pageEnrichment)
+    await analytics.register(envEnrichment)
 
     const ctx = await analytics.track(
       'test',
