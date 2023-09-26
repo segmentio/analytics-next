@@ -2,4 +2,6 @@
 '@segment/analytics-next': minor
 ---
 
-Fix stale page context information for buffered events, so page data is resilient to quick navigation changes. Parse UTM params into context.campaign if users pass an object to a page call.
+- Capture page context information faster, so context.campaign and context.page are more resilient to quick navigation changes.
+- Parse UTM params into context.campaign if users pass an object to a page call.
+
