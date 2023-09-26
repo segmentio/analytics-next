@@ -1,5 +1,4 @@
 import { CoreContext } from '../context'
-import { Emitter } from '../emitter'
 import type { Callback } from '../events'
 
 export function pTimeout<T>(promise: Promise<T>, timeout: number): Promise<T> {
