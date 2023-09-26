@@ -4,8 +4,9 @@ import { getDefaultPageContext, PageContext } from './get-page-context'
 
 /**
  *
- * Adds information about the current page to context.
- * URL changes frequently, so this is meant to be captured as close to the event call as possible.
+ * Augments a segment event with information about the current page.
+ * Page information like URL changes frequently, so this is meant to be captured as close to the event call as possible.
+ * Things like `userAgent` do not change, so they can be augmented later in the flow.
  */
 export const addPageContext = (
   event: SegmentEvent,
