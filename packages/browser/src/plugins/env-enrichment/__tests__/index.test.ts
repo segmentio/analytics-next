@@ -2,7 +2,6 @@ import cookie from 'js-cookie'
 import assert from 'assert'
 import { Analytics } from '../../../core/analytics'
 import { envEnrichment } from '..'
-import { pick } from '../../../lib/pick'
 import { SegmentioSettings } from '../../segmentio'
 import { version } from '../../../generated/version'
 import { CoreExtraContext } from '@segment/analytics-core'
@@ -11,15 +10,6 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../../test-helpers/fixtures/client-hints'
-import { getDefaultPageContext } from '../../../core/page'
-
-let ajs: Analytics
-
-const helpers = {
-  get pageProps() {
-    return getDefaultPageContext()
-  },
-}
 
 /**
  * Filters out the calls made for probing cookie availability
@@ -34,183 +24,6 @@ const ignoreProbeCookieWrites = (
     ]
   >
 ) => fn.mock.calls.filter((c) => c[0] !== 'ajs_cookies_check')
-
-describe('Page Enrichment', () => {
-  beforeEach(async () => {
-    ajs = new Analytics({
-      writeKey: 'abc_123',
-    })
-
-    await ajs.register(envEnrichment)
-  })
-
-  test('enriches page calls', async () => {
-    const ctx = await ajs.page('Checkout', {})
-
-    expect(ctx.event.properties).toMatchInlineSnapshot(`
-      Object {
-        "name": "Checkout",
-        "path": "/",
-        "referrer": "",
-        "search": "",
-        "title": "",
-        "url": "http://localhost/",
-      }
-    `)
-  })
-
-  test('enriches track events with the page context', async () => {
-    const ctx = await ajs.track('My event', {
-      banana: 'phone',
-    })
-
-    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-      Object {
-        "path": "/",
-        "referrer": "",
-        "search": "",
-        "title": "",
-        "url": "http://localhost/",
-      }
-    `)
-  })
-
-  describe('event.properties override behavior', () => {
-    test('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
-      const eventProps = { ...helpers.pageProps }
-      ;(eventProps as any)['should_not_show_up'] = 'hello'
-      const ctx = await ajs.page('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual(
-        pick(eventProps, ['url', 'path', 'referrer', 'search', 'title'])
-      )
-    })
-
-    test('special page properties in event.properties (url, referrer, etc) are not copied to context.page in non-page calls', async () => {
-      const eventProps = { ...helpers.pageProps }
-      ;(eventProps as any)['should_not_show_up'] = 'hello'
-      const ctx = await ajs.track('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toMatchInlineSnapshot(`
-      Object {
-        "path": "/",
-        "referrer": "",
-        "search": "",
-        "title": "",
-        "url": "http://localhost/",
-      }
-    `)
-    })
-
-    test('event page properties should not be mutated', async () => {
-      const eventProps = { ...helpers.pageProps }
-      const ctx = await ajs.page('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual(eventProps)
-    })
-
-    test('page properties should have defaults', async () => {
-      const eventProps = pick(helpers.pageProps, ['path', 'referrer'])
-      const ctx = await ajs.page('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual({
-        ...eventProps,
-        url: 'http://localhost/',
-        search: '',
-        title: '',
-      })
-    })
-
-    test('undefined / null / empty string properties on event get overridden as usual', async () => {
-      const eventProps = { ...helpers.pageProps }
-      eventProps.referrer = ''
-      eventProps.path = undefined as any
-      eventProps.title = null as any
-      const ctx = await ajs.page('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual(
-        expect.objectContaining({ referrer: '', path: undefined, title: null })
-      )
-    })
-  })
-
-  test('enriches page events with the page context', async () => {
-    const ctx = await ajs.page(
-      'My event',
-      { banana: 'phone' },
-      { page: { url: 'not-localhost' } }
-    )
-
-    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "",
-            "search": "",
-            "title": "",
-            "url": "not-localhost",
-          }
-      `)
-  })
-  test('enriches page events using properties', async () => {
-    const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
-
-    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "foo",
-            "search": "",
-            "title": "",
-            "url": "http://localhost/",
-          }
-      `)
-  })
-
-  test('in page events, event.name overrides event.properties.name', async () => {
-    const ctx = await ajs.page('My Event', undefined, undefined, {
-      name: 'some propery name',
-    })
-    expect(ctx.event.properties!.name).toBe('My Event')
-  })
-
-  test('in non-page events, event.name does not override event.properties.name', async () => {
-    const ctx = await ajs.track('My Event', {
-      name: 'some propery name',
-    })
-    expect(ctx.event.properties!.name).toBe('some propery name')
-  })
-
-  test('enriches identify events with the page context', async () => {
-    const ctx = await ajs.identify('Netto', {
-      banana: 'phone',
-    })
-
-    expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-      Object {
-        "path": "/",
-        "referrer": "",
-        "search": "",
-        "title": "",
-        "url": "http://localhost/",
-      }
-    `)
-  })
-
-  test('runs before any other plugin', async () => {
-    let called = false
-
-    await ajs.addSourceMiddleware(({ payload, next }) => {
-      called = true
-      expect(payload.obj?.context?.page).not.toBeFalsy()
-      next(payload)
-    })
-
-    await ajs.track('My event', {
-      banana: 'phone',
-    })
-
-    expect(called).toBe(true)
-  })
-})
 
 describe('Other visitor metadata', () => {
   let options: SegmentioSettings
