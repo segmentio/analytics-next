@@ -6,6 +6,11 @@ import { pick } from '../../../lib/pick'
 import { SegmentioSettings } from '../../segmentio'
 import { version } from '../../../generated/version'
 import { CoreExtraContext } from '@segment/analytics-core'
+import { UADataValues } from '../../../lib/client-hints/interfaces'
+import {
+  highEntropyTestData,
+  lowEntropyTestData,
+} from '../../../test-helpers/fixtures/client-hints'
 
 let ajs: Analytics
 
@@ -262,6 +267,29 @@ describe('pageDefaults', () => {
 describe('Other visitor metadata', () => {
   let options: SegmentioSettings
   let analytics: Analytics
+  ;(window.navigator as any).userAgentData = {
+    ...lowEntropyTestData,
+    getHighEntropyValues: jest
+      .fn()
+      .mockImplementation((hints: string[]): Promise<UADataValues> => {
+        let result = {}
+        Object.entries(highEntropyTestData).forEach(([k, v]) => {
+          if (hints.includes(k)) {
+            result = {
+              ...result,
+              [k]: v,
+            }
+          }
+        })
+        return Promise.resolve({
+          ...lowEntropyTestData,
+          ...result,
+        })
+      }),
+    toJSON: jest.fn(() => {
+      return lowEntropyTestData
+    }),
+  }
 
   const amendSearchParams = (search?: any): CoreExtraContext => ({
     page: { search },
@@ -281,6 +309,11 @@ describe('Other visitor metadata', () => {
     if (window.localStorage) {
       window.localStorage.clear()
     }
+  })
+
+  it('should add .timezone', async () => {
+    const ctx = await analytics.track('test')
+    assert(typeof ctx.event.context?.timezone === 'string')
   })
 
   it('should add .library', async () => {
@@ -311,6 +344,11 @@ describe('Other visitor metadata', () => {
     const userAgent1 = removeVersionNum(ctx.event.context?.userAgent as string)
     const userAgent2 = removeVersionNum(navigator.userAgent)
     assert(userAgent1 === userAgent2)
+  })
+
+  it('should add .userAgentData when available', async () => {
+    const ctx = await analytics.track('event')
+    expect(ctx.event.context?.userAgentData).toEqual(lowEntropyTestData)
   })
 
   it('should add .locale', async () => {

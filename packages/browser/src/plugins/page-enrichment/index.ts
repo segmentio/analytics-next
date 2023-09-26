@@ -10,6 +10,8 @@ import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
 import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
+import { clientHints } from '../../lib/client-hints'
+import { UADataValues } from '../../lib/client-hints/interfaces'
 
 interface PageDefault {
   [key: string]: unknown
@@ -174,13 +176,21 @@ function referrerId(
 
 class PageEnrichmentPlugin implements Plugin {
   private instance!: Analytics
+  private userAgentData: UADataValues | undefined
 
   name = 'Page Enrichment'
   type: PluginType = 'before'
   version = '0.1.0'
   isLoaded = () => true
-  load = (_ctx: Context, instance: Analytics) => {
+  load = async (_ctx: Context, instance: Analytics) => {
     this.instance = instance
+    try {
+      this.userAgentData = await clientHints(
+        this.instance.options.highEntropyValuesClientHints
+      )
+    } catch (_) {
+      // if client hints API doesn't return anything leave undefined
+    }
     return Promise.resolve()
   }
 
@@ -213,6 +223,7 @@ class PageEnrichmentPlugin implements Plugin {
     const query: string = evtCtx.page.search || ''
 
     evtCtx.userAgent = navigator.userAgent
+    evtCtx.userAgentData = this.userAgentData
 
     // @ts-ignore
     const locale = navigator.userLanguage || navigator.language
@@ -240,6 +251,12 @@ class PageEnrichmentPlugin implements Plugin {
       evtCtx,
       this.instance.options.disableClientPersistence ?? false
     )
+
+    try {
+      evtCtx.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    } catch (_) {
+      // If browser doesn't have support leave timezone undefined
+    }
 
     return ctx
   }
