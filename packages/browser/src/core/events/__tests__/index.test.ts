@@ -13,13 +13,6 @@ describe('Event Factory', () => {
   const shopper = { totalSpent: 100 }
 
   const defaultContext = {
-    locale: 'en-US',
-    library: {
-      // already tested in page-enrichment
-      name: 'analytics.js',
-      version: expect.stringContaining('npm:next-'),
-    },
-    userAgent: navigator.userAgent,
     page: getDefaultPageContext(),
   }
 

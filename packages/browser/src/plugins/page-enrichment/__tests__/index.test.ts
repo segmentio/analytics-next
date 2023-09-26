@@ -11,6 +11,10 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../../test-helpers/fixtures/client-hints'
+/**
+ * TODO: move this to top level tests and rename to page-enrichment.integration.test.ts
+ * These tests are not unit tests and test functionality outside of the plugin.
+ */
 
 let ajs: Analytics
 

@@ -232,7 +232,7 @@ export interface SegmentEventMetadata {
   nodeVersion?: string
   bundledConfigIds?: string[]
   unbundledConfigIds?: string[]
-  bundledIds?: string[]
+  bufferedPageContext?: string[]
 }
 
 export type Timestamp = Date | string
