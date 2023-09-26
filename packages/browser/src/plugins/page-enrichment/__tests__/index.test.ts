@@ -11,22 +11,18 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../../test-helpers/fixtures/client-hints'
+import { getDefaultPageContext } from '../../../core/page'
+
 /**
  * TODO: move this to top level tests and rename to page-enrichment.integration.test.ts
- * These tests are not unit tests and test functionality outside of the plugin.
+ * These tests test functionality outside of the plugin (e.g. addPageContext)
  */
 
 let ajs: Analytics
 
 const helpers = {
   get pageProps() {
-    return {
-      url: 'http://foo.com/bar?foo=hello_world',
-      path: '/bar',
-      search: '?foo=hello_world',
-      referrer: 'http://google.com',
-      title: 'Hello World',
-    }
+    return getDefaultPageContext()
   },
 }
 
