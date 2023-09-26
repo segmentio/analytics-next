@@ -4,6 +4,7 @@ import {
   PreInitMethodCall,
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
+  PreInitMethodName,
 } from '..'
 import { Analytics } from '../../analytics'
 import { Context } from '../../context'
@@ -16,14 +17,8 @@ describe(PreInitMethodCallBuffer, () => {
   beforeEach(() => {
     GlobalAnalytics.setGlobalAnalytics(undefined as any)
   })
-  describe('page context', () => {
-    it('should append page context to arguments', () => {
-      const call = new PreInitMethodCall('identify', ['foo'], jest.fn())
-      expect(call.args).toEqual(['foo', getBufferedPageCtxFixture()])
-    })
-  })
 
-  describe('toArray', () => {
+  describe('toArray()', () => {
     it('should convert the map back to an array', () => {
       const call1 = new PreInitMethodCall('identify', [], jest.fn())
       const call2 = new PreInitMethodCall('identify', [], jest.fn())
@@ -49,7 +44,7 @@ describe(PreInitMethodCallBuffer, () => {
     })
   })
 
-  describe('push', () => {
+  describe('push()', () => {
     it('should add method calls', () => {
       const call1 = new PreInitMethodCall('identify', [], jest.fn())
       const buffer = new PreInitMethodCallBuffer()
@@ -69,7 +64,7 @@ describe(PreInitMethodCallBuffer, () => {
     })
   })
 
-  describe('getCalls', () => {
+  describe('getCalls()', () => {
     it('should fetch calls by name', async () => {
       const buffer = new PreInitMethodCallBuffer()
       const call1 = new PreInitMethodCall('identify', [], jest.fn())
@@ -79,7 +74,7 @@ describe(PreInitMethodCallBuffer, () => {
       expect(buffer.getCalls('identify')).toEqual([call1, call2])
       expect(buffer.getCalls('group')).toEqual([call3])
     })
-    it('should also read from global analytics buffer', () => {
+    it('should read from Snippet Buffer', () => {
       const call1 = new PreInitMethodCall('identify', ['foo'], jest.fn())
       GlobalAnalytics.setGlobalAnalytics([['identify', 'snippet']] as any)
 
@@ -95,7 +90,7 @@ describe(PreInitMethodCallBuffer, () => {
       expect(calls[1]).toEqual(call1)
     })
   })
-  describe('clear', () => {
+  describe('clear()', () => {
     it('should clear calls', () => {
       const call1 = new PreInitMethodCall('identify', [], jest.fn())
       const call2 = new PreInitMethodCall('identify', [], jest.fn())
@@ -108,8 +103,8 @@ describe(PreInitMethodCallBuffer, () => {
     })
   })
 
-  describe('snippet buffer', () => {
-    it('should read from the global analytics instance', () => {
+  describe('Snippet buffer (method calls)', () => {
+    it('should be read from the global analytics instance', () => {
       const getGlobalAnalyticsSpy = jest.spyOn(
         GlobalAnalytics,
         'getGlobalAnalytics'
@@ -119,6 +114,26 @@ describe(PreInitMethodCallBuffer, () => {
       expect(getGlobalAnalyticsSpy).not.toBeCalled()
       buffer.toArray()
       expect(getGlobalAnalyticsSpy).toBeCalled()
+    })
+  })
+  describe('BufferedPageContext', () => {
+    test.each([
+      'track',
+      'screen',
+      'alias',
+      'group',
+      'page',
+      'identify',
+    ] as PreInitMethodName[])('should be appended to %p calls.', (method) => {
+      const call = new PreInitMethodCall(method, ['foo'], jest.fn())
+      expect(call.args).toEqual(['foo', getBufferedPageCtxFixture()])
+    })
+    it('should not be appended for other method calls', () => {
+      const fn = jest.fn()
+      const onCall = new PreInitMethodCall('on', ['foo', fn])
+      expect(onCall.args).toEqual(['foo', fn])
+      const setAnonIdCall = new PreInitMethodCall('setAnonymousId', [])
+      expect(setAnonIdCall.args).toEqual([])
     })
   })
 })
