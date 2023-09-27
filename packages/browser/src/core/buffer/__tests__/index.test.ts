@@ -442,10 +442,9 @@ describe(flushAnalyticsCallsInNewTask, () => {
     )
 
     const buffer = new PreInitMethodCallBuffer(synchronousMethod, asyncMethod)
-    buffer.push(synchronousMethod, asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     await sleep(0)
-    expect(synchronousMethod.reject).toBeCalled()
-    expect(asyncMethod.resolve).toBeCalled()
+    expect(synchronousMethod.reject).toBeCalledTimes(1)
+    expect(asyncMethod.resolve).toBeCalledTimes(1)
   })
 })
