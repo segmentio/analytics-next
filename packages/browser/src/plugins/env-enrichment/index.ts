@@ -140,8 +140,8 @@ class EnvironmentEnrichmentPlugin implements Plugin {
   }
 
   private enrich = (ctx: Context): Context => {
-    const event = ctx.event
-    const evtCtx = (event.context ??= {})
+    // Note: context should never actually be undefined here, since it is set as part of event creation.
+    const evtCtx = ctx.event.context!
 
     // Note: page should never be undefined here, since it is set as part of event creation.
     const search = evtCtx.page!.search || ''
