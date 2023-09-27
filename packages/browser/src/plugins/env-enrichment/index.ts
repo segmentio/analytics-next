@@ -143,7 +143,9 @@ class EnvironmentEnrichmentPlugin implements Plugin {
     const event = ctx.event
     const evtCtx = (event.context ??= {})
 
+    // Note: page should never be undefined here, since it is set as part of event creation.
     const search = evtCtx.page!.search || ''
+
     const query =
       typeof search === 'object' ? objectToQueryString(search) : search
 
