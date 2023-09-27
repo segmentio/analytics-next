@@ -9,7 +9,7 @@ import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
 import { createDeferred } from '../lib/create-deferred'
-
+import { envEnrichment } from '../plugins/env-enrichment'
 import {
   PluginFactory,
   remoteLoader,
@@ -30,7 +30,6 @@ import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
-import { envEnrichment } from '../plugins/env-enrichment'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
