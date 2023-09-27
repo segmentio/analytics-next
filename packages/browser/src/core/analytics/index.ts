@@ -208,9 +208,9 @@ export class Analytics
         },
         cookieOptions
       ).load()
+    this.eventFactory = new EventFactory(this._user)
     this.integrations = options?.integrations ?? {}
     this.options = options ?? {}
-    this.eventFactory = new EventFactory(this._user)
     autoBind(this)
   }
 
