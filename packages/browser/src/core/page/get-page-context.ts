@@ -137,6 +137,6 @@ export const getDefaultBufferedPageContext = (): BufferedPageContext => {
 /**
  * Get page properties from the browser window/document.
  */
-export function getDefaultPageContext(): PageContext {
+export const getDefaultPageContext = (): PageContext => {
   return createPageContext(getDefaultBufferedPageContext())
 }
