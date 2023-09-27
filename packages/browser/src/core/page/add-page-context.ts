@@ -1,6 +1,6 @@
 import { pick } from '../../lib/pick'
 import { EventProperties, SegmentEvent } from '../events'
-import { getDefaultPageContext, PageContext } from './get-page-context'
+import { getDefaultPageContext } from './get-page-context'
 
 /**
  *
@@ -10,11 +10,9 @@ import { getDefaultPageContext, PageContext } from './get-page-context'
  */
 export const addPageContext = (
   event: SegmentEvent,
-  pageCtx: PageContext | undefined
+  pageCtx = getDefaultPageContext()
 ): void => {
-  const evtCtx = (event.context ??= {})
-  pageCtx ??= getDefaultPageContext()
-
+  const evtCtx = event.context! // Context should be set earlier in the flow
   let pageContextFromEventProps: Pick<EventProperties, string> | undefined
   if (event.type === 'page') {
     pageContextFromEventProps =
