@@ -37,7 +37,7 @@ const fetcher = jest.spyOn(testClient, 'makeRequest')
 
 const createOAuthSuccess = (body?: any) => {
   return Promise.resolve({
-    text: () => Promise.resolve(body),
+    text: () => Promise.resolve(JSON.stringify(body)),
     ok: true,
     status: 200,
     statusText: 'OK',

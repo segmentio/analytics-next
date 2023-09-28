@@ -6,7 +6,7 @@ import {
   HTTPResponse,
 } from './http-client'
 import { SignOptions, sign } from 'jsonwebtoken'
-import { Emitter, backoff } from '@segment/analytics-core'
+import { Emitter, backoff, sleep } from '@segment/analytics-core'
 import { AbortSignal, AbortController } from './abort'
 
 type AccessToken = {
@@ -110,7 +110,6 @@ export class TokenManager {
     if (response.status === 200) {
       let body: any
       if (typeof response.text != 'function') {
-        console.log(response)
         this.tokenEmitter.emit('access_token', {
           error: new Error(
             'HTTPClient does not implement response.text method'
@@ -137,7 +136,7 @@ export class TokenManager {
       }
       let token: AccessToken
       try {
-        const parsedBody = /*JSON.parse(*/ body //)
+        const parsedBody = JSON.parse(body)
         // TODO: validate JSON
         token = parsedBody
         this.tokenEmitter.emit('access_token', { token })
@@ -166,16 +165,23 @@ export class TokenManager {
       this.retryCount++
       this.lastError = `[${response.status}] ${response.statusText}`
       if (response.headers) {
-        const rateLimitResetTime = parseInt(
+        const rateLimitResetTimestamp = parseInt(
           response.headers['X-RateLimit-Reset'],
           10
         )
-        if (isFinite(rateLimitResetTime)) {
+        if (isFinite(rateLimitResetTimestamp)) {
           timeUntilRefreshInMs =
-            rateLimitResetTime - Date.now() + this.clockSkewInSeconds * 1000
+            rateLimitResetTimestamp -
+            Date.now() +
+            this.clockSkewInSeconds * 1000
         } else {
           timeUntilRefreshInMs = 5 * 1000
         }
+        // We want subsequent calls to get_token to be able to interrupt our
+        //  Timeout when it's waiting for e.g. a long normal expiration, but
+        //  not when we're waiting for a rate limit reset. Sleep instead.
+        await sleep(timeUntilRefreshInMs)
+        timeUntilRefreshInMs = 0
       }
     } else if ([400, 401, 415].includes(response.status)) {
       // Unrecoverable errors
@@ -244,7 +250,6 @@ export class TokenManager {
       },
       httpRequestTimeout: 10000,
     }
-
     return this.httpClient.makeRequest(requestOptions)
   }
 
@@ -259,7 +264,7 @@ export class TokenManager {
     this.stopPoller()
 
     // startPoller needs to be called somewhere, either lazily when a token is first requested, or at instantiation.
-    // Doing it lazily for this example
+    // Doing it lazily currently
     this.pollerLoop().catch(() => {})
 
     return new Promise((resolve, reject) => {
