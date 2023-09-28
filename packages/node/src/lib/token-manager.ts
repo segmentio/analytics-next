@@ -219,7 +219,7 @@ export class TokenManager {
     const jwtBody = {
       iss: this.clientId,
       sub: this.clientId,
-      aud: 'https://oauth2.segment.io',
+      aud: this.authServer,
       iat: currentUTCInSeconds,
       exp: currentUTCInSeconds + 60,
       jti,
