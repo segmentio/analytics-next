@@ -15,7 +15,7 @@ module.exports = {
   devtool: 'source-map',
   stats: isWatch ? 'errors-warnings' : 'normal',
   mode: isProd ? 'production' : 'development',
-  target: ['web', 'es5'], // target es5 for ie11 support (compiles modules to es5)
+  target: ['web', 'es5'], // target es5 for ie11 support (generates module boilerplate in es5)
   module: {
     rules: [
       {
