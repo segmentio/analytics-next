@@ -1,5 +1,8 @@
 const TerserPlugin = require('terser-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
+const {
+  ECMAVersionValidatorPlugin,
+} = require('ecma-version-validator-webpack-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const isWatch = process.env.WATCH === 'true'
@@ -67,5 +70,6 @@ module.exports = {
     new CircularDependencyPlugin({
       failOnError: true,
     }),
+    new ECMAVersionValidatorPlugin({ ecmaVersion: 5 }), // ensure we don't accidentally break ie11 syntax.
   ],
 }

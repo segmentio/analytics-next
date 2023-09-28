@@ -11,6 +11,7 @@
     "@types/circular-dependency-plugin": "^5",
     "babel-loader": "^8.0.0",
     "circular-dependency-plugin": "^5.2.2",
+    "ecma-version-validator-webpack-plugin": "^1.2.1",
     "terser-webpack-plugin": "^5.1.4",
     "webpack": "^5.76.0",
     "webpack-cli": "^4.8.0",

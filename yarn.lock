@@ -2507,6 +2507,7 @@ __metadata:
     "@types/circular-dependency-plugin": ^5
     babel-loader: ^8.0.0
     circular-dependency-plugin: ^5.2.2
+    ecma-version-validator-webpack-plugin: ^1.2.1
     terser-webpack-plugin: ^5.1.4
     webpack: ^5.76.0
     webpack-cli: ^4.8.0
@@ -9704,6 +9705,17 @@ __metadata:
     wcwidth:
       optional: true
   checksum: 66961b19751a68d2d30ce9b74ef750c374cc3112bbcac3d1ed5a939e43c035ecf6b1954098df2d5b05f1e853ab2b67de893794390dcbf0abe1f157fddeb52174
+  languageName: node
+  linkType: hard
+
+"ecma-version-validator-webpack-plugin@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "ecma-version-validator-webpack-plugin@npm:1.2.1"
+  dependencies:
+    acorn: ^8.7.0
+  peerDependencies:
+    webpack: ^4.40.0 || ^5.0.0
+  checksum: 9a0f6d9beb600f1af054f65a52790c3784d5d4c19cb10b9ae7446682613349ade952b355cca0e60b45616e66ce9b1914d183a909ce136bb05b47f364dd6bfabf
   languageName: node
   linkType: hard
 
