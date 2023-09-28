@@ -70,6 +70,6 @@ module.exports = {
     new CircularDependencyPlugin({
       failOnError: true,
     }),
-    new ECMAVersionValidatorPlugin({ ecmaVersion: 5 }), // ensure we don't accidentally break ie11 syntax.
+    new ECMAVersionValidatorPlugin({ ecmaVersion: 5 }), // ensure our js bundle only contains syntax supported in ie11. This does not check polyfills.
   ],
 }
