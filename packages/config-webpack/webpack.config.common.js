@@ -37,7 +37,6 @@ module.exports = {
             },
           },
         ],
-        // exclude: /node_modules/, // transpile node_modules for ie11 support
       },
     ],
   },
