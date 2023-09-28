@@ -5,9 +5,11 @@
       "dependsOn": ["^build"],
       "inputs": [
         "**/tsconfig*.json",
+        "**/babel.config*",
+        "**/webpack.config*",
         "**/*.ts",
         "**/*.tsx",
-        ":!**/__tests__/**"
+        "!**/__tests__/**"
       ],
       "outputs": ["**/dist/**", ".next/**"]
     },
