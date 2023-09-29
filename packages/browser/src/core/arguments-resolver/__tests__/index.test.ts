@@ -441,7 +441,6 @@ describe(resolveUserArguments, () => {
   it('should accept (null, traits) with unknown identity', () => {
     user.reset()
     const [id, traits, options] = resolver(null, userTraits)
-    console.log(id, traits, options)
     expect(traits).toEqual(userTraits)
     expect(options).toEqual({})
     expect(id).toEqual(null)
@@ -451,7 +450,6 @@ describe(resolveUserArguments, () => {
     user.reset()
     user.identify('something')
     const [id, traits, options] = resolver(null, userTraits)
-    console.log(id, traits, options)
     expect(traits).toEqual(userTraits)
     expect(options).toEqual({})
     expect(id).toEqual('something')
