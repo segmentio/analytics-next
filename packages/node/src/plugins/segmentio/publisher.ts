@@ -78,9 +78,9 @@ export class Publisher {
     this._writeKey = writeKey
 
     if (oauthSettings) {
+      oauthSettings.httpClient ??= httpClient
+      oauthSettings.maxRetries ??= maxRetries
       this._tokenManager = new TokenManager({
-        httpClient,
-        maxRetries,
         ...oauthSettings,
       })
     }

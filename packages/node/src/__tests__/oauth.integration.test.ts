@@ -39,7 +39,9 @@ mDyRxq7ohIzLkw8b8buDeuXZ
 jest.setTimeout(10000)
 const timestamp = new Date()
 
-const oauthTestClient = new TestFetchClient()
+class OauthFetchClient extends TestFetchClient {}
+
+const oauthTestClient = new OauthFetchClient()
 const oauthFetcher = jest.spyOn(oauthTestClient, 'makeRequest')
 
 const tapiTestClient = new TestFetchClient()
@@ -264,49 +266,76 @@ describe('OAuth Failure', () => {
     }
   })
 
-  describe('TAPI rejection', () => {
-    it('surfaces error', async () => {
-      const analytics = createTestAnalytics({
-        oauthSettings: getOauthSettings(),
-        httpClient: tapiTestClient,
-      })
-      const eventName = 'Test Event'
-
-      oauthFetcher.mockReturnValue(
-        createOAuthSuccess({ access_token: 'token', expires_in: 100 })
-      )
-      tapiFetcher.mockReturnValue(
-        createError({
-          status: 400,
-          statusText:
-            '{"success":false,"message":"malformed JSON","code":"invalid_request"}',
-        })
-      )
-
-      try {
-        analytics.track({
-          event: eventName,
-          anonymousId: 'unknown',
-          userId: 'known',
-          timestamp: timestamp,
-        })
-
-        const ctx1 = await resolveCtx(analytics, 'track')
-
-        expect(ctx1.event.type).toEqual('track')
-        expect(ctx1.event.event).toEqual(eventName)
-        expect(ctx1.event.properties).toEqual({})
-        expect(ctx1.event.anonymousId).toEqual('unknown')
-        expect(ctx1.event.userId).toEqual('known')
-        expect(ctx1.event.timestamp).toEqual(timestamp)
-
-        expect(oauthFetcher).toHaveBeenCalledTimes(1)
-
-        await analytics.closeAndFlush()
-        throw new Error('fail')
-      } catch (err: any) {
-        expect(err.code).toBe('delivery_failure')
-      }
+  it('OAuth inherits Analytics custom client', async () => {
+    const oauthSettings = getOauthSettings()
+    oauthSettings.httpClient = undefined
+    const analytics = createTestAnalytics({
+      oauthSettings: oauthSettings,
+      httpClient: tapiTestClient,
     })
+    tapiFetcher.mockReturnValue(createOAuthError({ status: 415 }))
+
+    try {
+      analytics.track({
+        event: 'Test Event',
+        anonymousId: 'unknown',
+        userId: 'known',
+        timestamp: timestamp,
+      })
+
+      await resolveCtx(analytics, 'track')
+      await analytics.closeAndFlush()
+
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.reason).toEqual(new Error('[415] Foo'))
+      expect(err.code).toMatch(/delivery_failure/)
+    }
+  })
+})
+
+describe('TAPI rejection', () => {
+  it('surfaces error', async () => {
+    const analytics = createTestAnalytics({
+      oauthSettings: getOauthSettings(),
+      httpClient: tapiTestClient,
+    })
+    const eventName = 'Test Event'
+
+    oauthFetcher.mockReturnValue(
+      createOAuthSuccess({ access_token: 'token', expires_in: 100 })
+    )
+    tapiFetcher.mockReturnValue(
+      createError({
+        status: 400,
+        statusText:
+          '{"success":false,"message":"malformed JSON","code":"invalid_request"}',
+      })
+    )
+
+    try {
+      analytics.track({
+        event: eventName,
+        anonymousId: 'unknown',
+        userId: 'known',
+        timestamp: timestamp,
+      })
+
+      const ctx1 = await resolveCtx(analytics, 'track')
+
+      expect(ctx1.event.type).toEqual('track')
+      expect(ctx1.event.event).toEqual(eventName)
+      expect(ctx1.event.properties).toEqual({})
+      expect(ctx1.event.anonymousId).toEqual('unknown')
+      expect(ctx1.event.userId).toEqual('known')
+      expect(ctx1.event.timestamp).toEqual(timestamp)
+
+      expect(oauthFetcher).toHaveBeenCalledTimes(1)
+
+      await analytics.closeAndFlush()
+      throw new Error('fail')
+    } catch (err: any) {
+      expect(err.code).toBe('delivery_failure')
+    }
   })
 })
