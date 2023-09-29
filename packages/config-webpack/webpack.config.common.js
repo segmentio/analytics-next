@@ -1,5 +1,8 @@
 const TerserPlugin = require('terser-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
+const {
+  ECMAVersionValidatorPlugin,
+} = require('ecma-version-validator-webpack-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 const isWatch = process.env.WATCH === 'true'
@@ -15,6 +18,7 @@ module.exports = {
   devtool: 'source-map',
   stats: isWatch ? 'errors-warnings' : 'normal',
   mode: isProd ? 'production' : 'development',
+  target: ['web', 'es5'], // target es5 for ie11 support (generates module boilerplate in es5)
   module: {
     rules: [
       {
@@ -37,7 +41,6 @@ module.exports = {
             },
           },
         ],
-        exclude: /node_modules/,
       },
     ],
   },
@@ -67,5 +70,6 @@ module.exports = {
     new CircularDependencyPlugin({
       failOnError: true,
     }),
+    new ECMAVersionValidatorPlugin({ ecmaVersion: 5 }), // ensure our js bundle only contains syntax supported in ie11. This does not check polyfills.
   ],
 }

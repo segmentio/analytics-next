@@ -101,13 +101,13 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 
 - We build three versions of the library:
 
-1. `cjs` (CommonJS modules) - for library users
-2. `esm` (es6 modules) - for library users
+1. `cjs` (CommonJS modules) - for npm library users
+2. `esm` (es6 modules) - for npm library users
 3. `umd` (bundle) - for snippet users (typically)
 
 ### Browser Support
 
-- `cjs/esm` - ONLY support modern JS syntax. We expect our typical `npm install` users to employ something like babel if they need legacy browser support.
+- `cjs/esm` - Support modern JS syntax (ES2020). These are our npm library users, so we expect them to transpile this module themselves using something like babel/webpack if they need extra legacy browser support.
 
 - `umd` - Support back to IE11, but **do not** polyfill . See our docs on [supported browsers](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/supported-browsers).
 
