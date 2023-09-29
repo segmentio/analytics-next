@@ -7,7 +7,6 @@ import {
 } from './http-client'
 import { SignOptions, sign } from 'jsonwebtoken'
 import { Emitter, backoff, sleep } from '@segment/analytics-core'
-import { AbortSignal, AbortController } from './abort'
 
 type AccessToken = {
   access_token: string
@@ -38,9 +37,6 @@ export class TokenManager {
   private maxRetries: number
   private clockSkewInSeconds = 0
 
-  private controller: AbortController
-  private signal: AbortSignal
-
   private accessToken?: AccessToken
   private tokenEmitter = new Emitter<{
     access_token: [{ token: AccessToken } | { error: unknown }]
@@ -61,11 +57,6 @@ export class TokenManager {
       if ('token' in event) {
         this.accessToken = event.token
       }
-    })
-    this.controller = new AbortController()
-    this.signal = this.controller.signal
-    this.signal.addEventListener('abort', () => {
-      clearTimeout(this.pollerTimer)
     })
     this.retryCount = 0
   }
@@ -92,7 +83,7 @@ export class TokenManager {
           minTimeout: 25,
           maxTimeout: 1000,
         })
-      ).unref()
+      )?.unref()
       return
     }
 
@@ -119,7 +110,7 @@ export class TokenManager {
         return
       }
       try {
-        body = await response.text() //body?.getReader().read() // TODO: Replace with actual method to get body - needs discussion since different HTTP clients expose this differently (buffers, streams, strings, objects)
+        body = await response.text()
       } catch (err) {
         // Errors reading the body (not parsing) are likely networking issues, we can retry
         this.retryCount++
@@ -132,7 +123,8 @@ export class TokenManager {
         this.pollerTimer = setTimeout(
           this.pollerLoop.bind(this),
           timeUntilRefreshInMs
-        ).unref()
+        )?.unref()
+        return
       }
       let token: AccessToken
       try {
@@ -146,7 +138,7 @@ export class TokenManager {
 
         // Refresh the token after half the expiry time passes
         if (token !== undefined && token.expires_in !== undefined) {
-          timeUntilRefreshInMs = Math.floor((token.expires_in / 2) * 1000)
+          timeUntilRefreshInMs = (token.expires_in / 2) * 1000
         } else {
           timeUntilRefreshInMs = 60 * 1000
         }
@@ -208,11 +200,10 @@ export class TokenManager {
     this.pollerTimer = setTimeout(
       this.pollerLoop.bind(this),
       timeUntilRefreshInMs
-    ).unref()
+    )?.unref()
   }
 
   stopPoller() {
-    this.controller.abort()
     clearTimeout(this.pollerTimer)
   }
 

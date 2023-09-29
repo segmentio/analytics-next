@@ -5,7 +5,6 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
-//import { RefreshToken, OauthSettings, OauthData } from '../../lib/oauth-util'
 import { TokenManager, OAuthSettings } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
@@ -213,25 +212,18 @@ export class Publisher {
 
         let authString = undefined
         if (this._tokenManager) {
-          const tokenPromise = this._tokenManager.getAccessToken()
-          const token = await tokenPromise
+          const token = await this._tokenManager.getAccessToken()
           if (token && token.access_token) {
             authString = `Bearer ${token.access_token}`
           }
         }
 
-        let headers
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'User-Agent': 'analytics-node-next/latest',
+        }
         if (authString) {
-          headers = {
-            'Content-Type': 'application/json',
-            Authorization: authString,
-            'User-Agent': 'analytics-node-next/latest',
-          }
-        } else {
-          headers = {
-            'Content-Type': 'application/json',
-            'User-Agent': 'analytics-node-next/latest',
-          }
+          headers['Authorization'] = authString
         }
 
         const request: HTTPClientRequest = {
