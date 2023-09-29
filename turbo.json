@@ -9,7 +9,8 @@
         "**/webpack.config*",
         "**/*.ts",
         "**/*.tsx",
-        "!**/__tests__/**"
+        "!**/__tests__/**",
+        "!src/**/test-helpers/**"
       ],
       "outputs": ["**/dist/**", ".next/**"]
     },
