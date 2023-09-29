@@ -5,11 +5,6 @@ import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { pageEnrichment } from '../../page-enrichment'
 import cookie from 'js-cookie'
-import { UADataValues } from '../../../lib/client-hints/interfaces'
-import {
-  highEntropyTestData,
-  lowEntropyTestData,
-} from '../../../test-helpers/fixtures/client-hints'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -24,29 +19,6 @@ describe('Segment.io', () => {
   beforeEach(async () => {
     jest.resetAllMocks()
     jest.restoreAllMocks()
-    ;(window.navigator as any).userAgentData = {
-      ...lowEntropyTestData,
-      getHighEntropyValues: jest
-        .fn()
-        .mockImplementation((hints: string[]): Promise<UADataValues> => {
-          let result = {}
-          Object.entries(highEntropyTestData).forEach(([k, v]) => {
-            if (hints.includes(k)) {
-              result = {
-                ...result,
-                [k]: v,
-              }
-            }
-          })
-          return Promise.resolve({
-            ...lowEntropyTestData,
-            ...result,
-          })
-        }),
-      toJSON: jest.fn(() => {
-        return lowEntropyTestData
-      }),
-    }
 
     options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
@@ -198,14 +170,6 @@ describe('Segment.io', () => {
       assert(body.properties.prop === true)
       assert(body.traits == null)
       assert(body.timestamp)
-    })
-
-    it('should add userAgentData when available', async () => {
-      await analytics.track('event')
-      const [_, params] = spyMock.mock.calls[0]
-      const body = JSON.parse(params.body)
-
-      expect(body.context?.userAgentData).toEqual(lowEntropyTestData)
     })
   })
 

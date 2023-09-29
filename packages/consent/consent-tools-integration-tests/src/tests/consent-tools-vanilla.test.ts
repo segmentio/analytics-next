@@ -1,7 +1,10 @@
+/**
+ * Tests targeting @segment/analytics-consent-tools
+ */
+
 import page from '../page-objects/consent-tools-vanilla'
 import { expect } from 'expect'
 
-// Verify that the consent tools wrapper is working as expected (no OneTrust)
 it('should stamp each event', async () => {
   await page.load()
 
@@ -11,8 +14,8 @@ it('should stamp each event', async () => {
 
   expect((ctx.event.context as any).consent).toEqual({
     categoryPreferences: {
-      Advertising: true,
-      Analytics: true,
+      FooCategory1: true,
+      FooCategory2: true,
     },
   })
 })

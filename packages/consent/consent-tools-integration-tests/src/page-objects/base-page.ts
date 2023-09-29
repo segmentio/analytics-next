@@ -36,13 +36,13 @@ export abstract class BasePage {
         {
           creationName: 'FullStory',
           consentSettings: {
-            categories: ['Analytics'],
+            categories: ['FooCategory2'],
           },
         },
         {
           creationName: 'Actions Amplitude',
           consentSettings: {
-            categories: ['Advertising'],
+            categories: ['FooCategory1'],
           },
         }
       )

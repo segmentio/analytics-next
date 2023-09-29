@@ -103,7 +103,7 @@ import { Analytics } from '@segment/analytics-node';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const analytics = new Analytics({
-  writeKey: 'DjTUVRhleGaZX31JQpj6XIAaprCIb25W',
+  writeKey: '<MY_WRITE_KEY>',
   maxEventsInBatch: 1,
 })
   .on('error', console.error)
