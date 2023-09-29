@@ -45,7 +45,7 @@ export interface HTTPClientRequest {
   /**
    * HTTP method to be used for the request. This will always be a 'POST' request.
    **/
-  method: 'POST'
+  method: 'POST' | (string & {})
   /**
    * Headers to be sent with the request
    */

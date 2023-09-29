@@ -13,6 +13,17 @@ type AccessToken = {
   expires_in: number
 }
 
+const isAccessToken = (thing: unknown): thing is AccessToken => {
+  return Boolean(
+    thing &&
+      typeof thing === 'object' &&
+      'access_token' in thing &&
+      'expires_in' in thing &&
+      typeof thing.access_token === 'string' &&
+      typeof thing.expires_in === 'number'
+  )
+}
+
 export type OAuthSettings = {
   clientId: string
   clientKey: Buffer
@@ -72,7 +83,7 @@ export class TokenManager {
       this.retryCount++
       this.lastError = err
 
-      if (this.retryCount % this.maxRetries == 0) {
+      if (this.retryCount % this.maxRetries === 0) {
         this.tokenEmitter.emit('access_token', { error: this.lastError })
       }
 
@@ -88,12 +99,10 @@ export class TokenManager {
     }
 
     if (response.headers !== undefined && response.headers.Date != undefined) {
-      const serverTime = Date.parse(response.headers.Date)
-      const skew = Date.now() - serverTime
-      if (this.clockSkewInSeconds == 0) {
-        this.clockSkewInSeconds = skew
-      } else {
-        this.clockSkewInSeconds = (this.clockSkewInSeconds + skew) / 2
+      try {
+        this.clockSkewInSeconds = Date.now() - Date.parse(response.headers.Date)
+      } catch (err) {
+        // Unable to parse, move on with last or 0 skew
       }
     }
 
@@ -106,7 +115,6 @@ export class TokenManager {
             'HTTPClient does not implement response.text method'
           ),
         })
-        clearTimeout(this.pollerTimer)
         return
       }
       try {
@@ -126,26 +134,26 @@ export class TokenManager {
         )?.unref()
         return
       }
-      let token: AccessToken
       try {
-        const parsedBody = JSON.parse(body)
-        // TODO: validate JSON
-        token = parsedBody
+        const token = JSON.parse(body)
+
+        if (!isAccessToken(token)) {
+          throw new Error(
+            'Response did not contain a valid access_token and expires_in'
+          )
+        }
+
         this.tokenEmitter.emit('access_token', { token })
 
         // Reset our failure count
         this.retryCount = 0
 
         // Refresh the token after half the expiry time passes
-        if (token !== undefined && token.expires_in !== undefined) {
-          timeUntilRefreshInMs = (token.expires_in / 2) * 1000
-        } else {
-          timeUntilRefreshInMs = 60 * 1000
-        }
+        timeUntilRefreshInMs = (token.expires_in / 2) * 1000
       } catch (err) {
         // Something went really wrong with the body, lets surface an error and try again?
         this.tokenEmitter.emit('access_token', { error: err })
-        this.retryCount = 0
+        this.retryCount = 0 // Reset because we've emitted an error
 
         timeUntilRefreshInMs = backoff({
           attempt: this.retryCount,
@@ -193,7 +201,7 @@ export class TokenManager {
       })
     }
 
-    if (this.retryCount % this.maxRetries == 0) {
+    if (this.retryCount % this.maxRetries === 0) {
       this.tokenEmitter.emit('access_token', { error: this.lastError })
       // TODO: figure out timing and whether to reset retries?
     }
