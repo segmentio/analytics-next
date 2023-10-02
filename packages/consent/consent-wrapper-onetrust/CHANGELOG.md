@@ -1,5 +1,16 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.3.1
+
+### Patch Changes
+
+- [#959](https://github.com/segmentio/analytics-next/pull/959) [`32da78b`](https://github.com/segmentio/analytics-next/commit/32da78b922d6ffe030585dc7ba1b271b78d5f6dd) Thanks [@silesky](https://github.com/silesky)! - Support older browsers
+
+* [#962](https://github.com/segmentio/analytics-next/pull/962) [`a725117`](https://github.com/segmentio/analytics-next/commit/a7251174c293be1845d6dbfb20a47c4a490c2d3a) Thanks [@silesky](https://github.com/silesky)! - Change tsconfig compile target from ESNext->ES2020
+
+* Updated dependencies [[`32da78b`](https://github.com/segmentio/analytics-next/commit/32da78b922d6ffe030585dc7ba1b271b78d5f6dd)]:
+  - @segment/analytics-consent-tools@0.2.1
+
 ## 0.3.0
 
 ### Minor Changes

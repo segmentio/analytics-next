@@ -1,5 +1,11 @@
 # @segment/analytics-consent-tools
 
+## 0.2.1
+
+### Patch Changes
+
+- [#959](https://github.com/segmentio/analytics-next/pull/959) [`32da78b`](https://github.com/segmentio/analytics-next/commit/32da78b922d6ffe030585dc7ba1b271b78d5f6dd) Thanks [@silesky](https://github.com/silesky)! - Support older browsers
+
 ## 0.2.0
 
 ### Minor Changes
