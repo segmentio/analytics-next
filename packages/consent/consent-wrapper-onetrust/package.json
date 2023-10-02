@@ -13,7 +13,7 @@
   "sideEffects": [
     "./dist/umd/analytics-onetrust.umd.js"
   ],
-  "jsdeliver": "./dist/umd/analytics-onetrust.umd.js",
+  "jsdelivr": "./dist/umd/analytics-onetrust.umd.js",
   "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
