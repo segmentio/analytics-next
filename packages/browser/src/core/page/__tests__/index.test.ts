@@ -5,11 +5,12 @@ import {
   isBufferedPageContext,
 } from '../'
 import { pickBy } from 'lodash'
-const ogLocation = window.location
+
+const originalLocation = window.location
 beforeEach(() => {
   Object.defineProperty(window, 'location', {
     value: {
-      ...ogLocation,
+      ...originalLocation,
     },
     writable: true,
   })
@@ -19,7 +20,7 @@ describe(isBufferedPageContext, () => {
   it('should return true if object is page context', () => {
     expect(isBufferedPageContext(getDefaultBufferedPageContext())).toBe(true)
   })
-  it('should returm false if object is not page context', () => {
+  it('should return false if object is not page context', () => {
     expect(isBufferedPageContext(undefined)).toBe(false)
     expect(isBufferedPageContext({})).toBe(false)
     expect(isBufferedPageContext('')).toBe(false)
