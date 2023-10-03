@@ -174,9 +174,11 @@ export class Publisher {
       return ctxPromise
     } else {
       // this should only occur if max event size is exceeded
-      ctx.setFailedDelivery({
-        reason: new Error(fbAddStatus.message),
-      })
+      if ('message' in fbAddStatus) {
+        ctx.setFailedDelivery({
+          reason: new Error(fbAddStatus.message),
+        })
+      }
       return Promise.resolve(ctx)
     }
   }

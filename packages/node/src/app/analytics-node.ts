@@ -94,7 +94,10 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
   }
 
-  private _dispatch(segmentEvent: SegmentEvent, callback?: Callback) {
+  private _dispatch(
+    segmentEvent: SegmentEvent,
+    callback?: Callback
+  ): undefined {
     if (this._isClosed) {
       this.emit('call_after_close', segmentEvent as SegmentEvent)
       return undefined

@@ -60,7 +60,9 @@ class AbortController {
 /**
  * @param timeoutMs - Set a request timeout, after which the request is cancelled.
  */
-export const abortSignalAfterTimeout = (timeoutMs: number) => {
+export const abortSignalAfterTimeout = (
+  timeoutMs: number
+): [globalThis.AbortSignal | AbortSignal, NodeJS.Timeout] | [] => {
   if (detectRuntime() === 'cloudflare-worker') {
     return [] // TODO: this is broken in cloudflare workers, otherwise results in "A hanging Promise was canceled..." error.
   }
@@ -73,5 +75,5 @@ export const abortSignalAfterTimeout = (timeoutMs: number) => {
   // Allow Node.js processes to exit early if only the timeout is running
   timeoutId?.unref?.()
 
-  return [ac.signal, timeoutId] as const
+  return [ac.signal, timeoutId]
 }
