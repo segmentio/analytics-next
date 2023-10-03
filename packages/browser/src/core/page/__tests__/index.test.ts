@@ -65,9 +65,27 @@ describe(getDefaultPageContext, () => {
       document.clear()
     })
 
-    it('handles no canonical links', () => {
+    it('returns location.href if canonical URL does not exist', () => {
+      el.setAttribute('rel', 'nope')
+      document.body.appendChild(el)
       const defs = getDefaultPageContext()
-      expect(defs.url).not.toBeNull()
+      expect(defs.url).toEqual(window.location.href)
+    })
+
+    it('does not throw an error if canonical URL is not a valid URL', () => {
+      el.setAttribute('href', 'foo.com/bar')
+      document.body.appendChild(el)
+      const defs = getDefaultPageContext()
+      expect(defs.url).toEqual('foo.com/bar') // this is analytics.js classic behavior
+      expect(defs.path).toEqual('/foo.com/bar') // this is analytics.js classic behavior
+    })
+
+    it('handles a leading slash', () => {
+      el.setAttribute('href', 'foo')
+      document.body.appendChild(el)
+      const defs = getDefaultPageContext()
+      expect(defs.url).toEqual('foo')
+      expect(defs.path).toEqual('/foo') // this is analytics.js classic behavior
     })
 
     it('handles canonical links', () => {
@@ -107,13 +125,6 @@ describe(getDefaultPageContext, () => {
       document.body.appendChild(el)
       const defs = getDefaultPageContext()
       expect(defs.url).toEqual('http://www.segment.local?foo=123')
-    })
-
-    it('returns location.href if canonical URL does not exist', () => {
-      el.setAttribute('rel', 'nope')
-      document.body.appendChild(el)
-      const defs = getDefaultPageContext()
-      expect(defs.url).toEqual(window.location.href)
     })
   })
 })

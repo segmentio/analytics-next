@@ -84,11 +84,13 @@ const removeHash = (href: string) => {
   return hashIdx === -1 ? href : href.slice(0, hashIdx)
 }
 
-const formatCanonicalPath = (canonicalUrl: string) => {
-  const a = document.createElement('a')
-  a.href = canonicalUrl
-  // remove leading slash from canonical URL path
-  return a.pathname[0] === '/' ? a.pathname : '/' + a.pathname
+const parseCanonicalPath = (canonicalUrl: string): string => {
+  try {
+    return new URL(canonicalUrl).pathname
+  } catch (_e) {
+    // this is classic behavior -- we assume that if the canonical URL is invalid, it's a raw path.
+    return canonicalUrl[0] === '/' ? canonicalUrl : '/' + canonicalUrl
+  }
 }
 
 /**
@@ -103,7 +105,7 @@ export const createPageContext = ({
   r: referrer,
   t: title,
 }: BufferedPageContext): PageContext => {
-  const newPath = canonicalUrl ? formatCanonicalPath(canonicalUrl) : pathname
+  const newPath = canonicalUrl ? parseCanonicalPath(canonicalUrl) : pathname
   const newUrl = canonicalUrl
     ? createCanonicalURL(canonicalUrl, search)
     : removeHash(url)
