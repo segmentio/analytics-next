@@ -5,7 +5,8 @@ import { extractPromiseParts } from '../../lib/extract-promise-parts'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
-import { TokenManager, OAuthSettings } from '../../lib/token-manager'
+import { TokenManager, OAuthSettings } from '../../lib/types'
+import { dependencyInjection } from '../../lib/dependency-injection'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -78,6 +79,7 @@ export class Publisher {
     this._writeKey = writeKey
 
     if (oauthSettings) {
+      const TokenManager = dependencyInjection.get('TokenManager')
       oauthSettings.httpClient ??= httpClient
       oauthSettings.maxRetries ??= maxRetries
       this._tokenManager = new TokenManager({

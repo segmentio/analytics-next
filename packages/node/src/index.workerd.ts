@@ -26,5 +26,5 @@ import { Analytics } from './app/analytics-node'
 export default Analytics
 
 import { dependencyInjection } from './lib/dependency-injection'
-import { TokenManager } from './lib/token-manager'
-dependencyInjection.registerDependency('TokenManager', TokenManager)
+import { TokenManagerNoOp } from './lib/token-manager-noop'
+dependencyInjection.registerDependency('TokenManager', TokenManagerNoOp)

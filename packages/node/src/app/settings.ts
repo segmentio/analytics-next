@@ -1,6 +1,6 @@
 import { ValidationError } from '@segment/analytics-core'
 import { HTTPClient, HTTPFetchFn } from '../lib/http-client'
-import { OAuthSettings } from '../lib/token-manager'
+import { OAuthSettings } from '../lib/types'
 
 export interface AnalyticsSettings {
   /**
