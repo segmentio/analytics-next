@@ -6,6 +6,7 @@ import {
   createTestAnalytics,
   TestFetchClient,
 } from './test-helpers/create-test-analytics'
+import { isDate } from 'lodash'
 
 const writeKey = 'foo'
 jest.setTimeout(10000)
@@ -248,8 +249,8 @@ describe('track', () => {
     analytics.track({ event: 'hello', userId: 'foo' })
     await track
     expect(
-      new Date(JSON.parse(makeReqSpy.mock.calls[0][0].body).sentAt)
-    ).toBeInstanceOf(Date)
+      isDate(JSON.parse(makeReqSpy.mock.calls[0][0].body).sentAt)
+    ).toBeTruthy()
   })
   it('generates track events', async () => {
     const analytics = createTestAnalytics()

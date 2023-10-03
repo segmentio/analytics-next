@@ -223,9 +223,7 @@ export class Publisher {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'User-Agent': 'analytics-node-next/latest',
-        }
-        if (authString) {
-          headers['Authorization'] = authString
+          ...(authString ? { Authorization: authString } : {}),
         }
 
         const request: HTTPClientRequest = {
