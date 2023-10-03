@@ -421,7 +421,7 @@ describe('Event Factory', () => {
   })
 
   describe('Page context augmentation', () => {
-    // minimal tests -- more tests should be specifically around addPageContext tests
+    // minimal tests -- more tests should be specifically around addPageContext
     factory = new EventFactory(new User())
     it('adds a default pageContext if pageContext is not defined', () => {
       const event = factory.identify('foo')
