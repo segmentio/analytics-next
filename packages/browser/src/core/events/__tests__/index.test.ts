@@ -1,7 +1,7 @@
 import uuid from '@lukeed/uuid'
 import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
-import { getDefaultPageContext, isBufferedPageContext } from '../../page'
+import { getDefaultPageContext } from '../../page'
 import { User } from '../../user'
 import { SegmentEvent, Options } from '../interfaces'
 
@@ -20,6 +20,7 @@ describe('Event Factory', () => {
     user = new User()
     user.reset()
     factory = new EventFactory(user)
+    defaultContext.page = getDefaultPageContext()
   })
 
   describe('alias', () => {
@@ -158,7 +159,7 @@ describe('Event Factory', () => {
       const track = factory.track('Order Completed', shoes, {
         opt1: true,
       })
-      expect(track.context).toEqual({ opt1: true, ...defaultContext })
+      expect(track.context).toEqual({ ...defaultContext, opt1: true })
     })
 
     test('sets context correctly if property arg is undefined', () => {
@@ -167,7 +168,7 @@ describe('Event Factory', () => {
       })
 
       expect(track.context?.page).toEqual({
-        ...getDefaultPageContext(),
+        ...defaultContext.page,
         path: '/custom',
       })
     })
@@ -252,9 +253,9 @@ describe('Event Factory', () => {
       })
 
       expect(track.context).toEqual({
+        ...defaultContext,
         opt1: true,
         opt2: '🥝',
-        ...defaultContext,
       })
     })
 
@@ -270,9 +271,9 @@ describe('Event Factory', () => {
       })
 
       expect(track.context).toEqual({
+        ...defaultContext,
         opt1: true,
         opt2: '🥝',
-        ...defaultContext,
       })
     })
 
@@ -419,64 +420,31 @@ describe('Event Factory', () => {
     })
   })
 
-  describe('pageContext', () => {
-    let events: [
-      SegmentEvent['type'],
-      NonNullable<SegmentEvent['context']>['page']
-    ][]
-    beforeAll(() => {
-      events = [
-        factory.identify(
-          'foo',
-          undefined,
-          undefined,
-          undefined,
-          getDefaultPageContext()
-        ),
-        factory.track(
-          'foo',
-          undefined,
-          undefined,
-          undefined,
-          getDefaultPageContext()
-        ),
-        factory.group(
-          'foo',
-          undefined,
-          undefined,
-          undefined,
-          getDefaultPageContext()
-        ),
-        factory.page(
-          'foo',
-          'bar',
-          undefined,
-          undefined,
-          undefined,
-          getDefaultPageContext()
-        ),
-        factory.alias(
-          'foo',
-          'bar',
-          undefined,
-          undefined,
-          getDefaultPageContext()
-        ),
-      ].map((el) => [el.type, el.context?.page])
+  describe('Page context augmentation', () => {
+    // minimal tests -- more tests should be specifically around addPageContext tests
+    factory = new EventFactory(new User())
+    it('adds a default pageContext if pageContext is not defined', () => {
+      const event = factory.identify('foo')
+      expect(event.context?.page).toEqual(defaultContext.page)
     })
 
-    test(`context.page has the expected properties`, async () => {
-      events.forEach(([type, page]) => {
-        expect({
-          type,
-          isBufferedPageContext: isBufferedPageContext(page),
-          page,
-        }).toEqual({
-          type,
-          isBufferedPageContext: false,
-          page: getDefaultPageContext(),
-        })
-      })
+    const pageCtx = { ...defaultContext.page, title: 'foo test' }
+    test.each([
+      factory.identify('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.track('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.group('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.page('foo', 'bar', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.alias('foo', 'bar', undefined, undefined, { ...pageCtx }),
+    ])(`$type: Event has the expected page properties`, async (event) => {
+      expect(event.context?.page).toEqual(pageCtx)
     })
   })
 })
