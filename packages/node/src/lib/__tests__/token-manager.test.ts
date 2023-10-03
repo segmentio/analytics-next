@@ -1,7 +1,8 @@
 import { sleep } from '@segment/analytics-core'
 import { TestFetchClient } from '../../__tests__/test-helpers/create-test-analytics'
 import { HTTPResponse } from '../http-client'
-import { TokenManager, OAuthSettings } from '../token-manager'
+import { OAuthSettings } from '../types'
+import { TokenManager } from '../token-manager'
 
 const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
