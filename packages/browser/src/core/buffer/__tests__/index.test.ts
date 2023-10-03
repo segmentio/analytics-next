@@ -125,8 +125,13 @@ describe(PreInitMethodCallBuffer, () => {
       'page',
       'identify',
     ] as PreInitMethodName[])('should be appended to %p calls.', (method) => {
-      const call = new PreInitMethodCall(method, ['foo'], jest.fn())
-      expect(call.args).toEqual(['foo', getBufferedPageCtxFixture()])
+      const buffer = new PreInitMethodCallBuffer(
+        new PreInitMethodCall(method, ['foo'], jest.fn())
+      )
+      expect(buffer.getCalls(method)[0].args).toEqual([
+        'foo',
+        getBufferedPageCtxFixture(),
+      ])
     })
     it('should not be appended for other method calls', () => {
       const fn = jest.fn()

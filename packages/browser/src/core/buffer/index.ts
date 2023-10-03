@@ -114,17 +114,7 @@ export class PreInitMethodCall<
     this.resolve = resolve
     this.reject = reject
     this.called = false
-
-    /**
-     * For specific events, we want to add page context here
-     */
-    const shouldAddPageContext = (
-      ['track', 'screen', 'alias', 'group', 'page', 'identify'] as MethodName[]
-    ).includes(method)
-    this.args =
-      shouldAddPageContext && !hasBufferedPageContextAsLastArg(args)
-        ? [...args, getDefaultBufferedPageContext()]
-        : args
+    this.args = args
   }
 }
 
@@ -181,6 +171,21 @@ export class PreInitMethodCallBuffer {
 
   push(...calls: PreInitMethodCall[]): void {
     calls.forEach((call) => {
+      const eventsExpectingPageContext: PreInitMethodName[] = [
+        'track',
+        'screen',
+        'alias',
+        'group',
+        'page',
+        'identify',
+      ]
+      if (
+        eventsExpectingPageContext.includes(call.method) &&
+        !hasBufferedPageContextAsLastArg(call.args)
+      ) {
+        call.args = [...call.args, getDefaultBufferedPageContext()]
+      }
+
       if (this.calls[call.method]) {
         this.calls[call.method]!.push(call)
       } else {
