@@ -59,14 +59,11 @@ export function isBufferedPageContext(
   if (!isPlainObject(bufferedPageCtx)) return false
   if (bufferedPageCtx.__t !== BufferedPageContextDiscriminant) return false
 
-  for (const k of BUFFERED_PAGE_CONTEXT_KEYS) {
-    if (!(k in bufferedPageCtx)) return false
-  }
-  // if object has both the correct key names AND the right number of keys, assume it's a BufferedPageContext
-  if (
-    Object.keys(bufferedPageCtx).length !== BUFFERED_PAGE_CONTEXT_KEYS.length
-  ) {
-    return false
+  // ensure obj has all the keys we expect, and none we don't.
+  for (const k in bufferedPageCtx) {
+    if (!BUFFERED_PAGE_CONTEXT_KEYS.includes(k as keyof BufferedPageContext)) {
+      return false
+    }
   }
   return true
 }

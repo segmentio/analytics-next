@@ -77,6 +77,14 @@ describe(getDefaultPageContext, () => {
       expect(defs.url).toEqual('http://www.segment.local')
     })
 
+    it('favors canonical path over location.pathname', () => {
+      window.location.pathname = '/nope'
+      el.setAttribute('href', 'http://www.segment.local/test')
+      document.body.appendChild(el)
+      const defs = getDefaultPageContext()
+      expect(defs.path).toEqual('/test')
+    })
+
     it('handles canonical links with a path', () => {
       el.setAttribute('href', 'http://www.segment.local/test')
       document.body.appendChild(el)
@@ -101,7 +109,8 @@ describe(getDefaultPageContext, () => {
       expect(defs.url).toEqual('http://www.segment.local?foo=123')
     })
 
-    it('returns fallback if canonical does not exist', () => {
+    it('returns location.href if canonical URL does not exist', () => {
+      el.setAttribute('rel', 'nope')
       document.body.appendChild(el)
       const defs = getDefaultPageContext()
       expect(defs.url).toEqual(window.location.href)
