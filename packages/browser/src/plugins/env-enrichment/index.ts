@@ -116,13 +116,11 @@ const objectToQueryString = (
 ): string => {
   try {
     const searchParams = new URLSearchParams()
-    Object.entries(obj).forEach(([key, values]) => {
-      if (Array.isArray(values)) {
-        values.forEach((value) => {
-          searchParams.append(key, value)
-        })
+    Object.entries(obj).forEach(([k, v]) => {
+      if (Array.isArray(v)) {
+        v.forEach((value) => searchParams.append(k, value))
       } else {
-        searchParams.append(key, values)
+        searchParams.append(k, v)
       }
     })
     return searchParams.toString()
