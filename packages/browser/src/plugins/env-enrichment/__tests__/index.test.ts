@@ -293,6 +293,34 @@ describe('Other visitor metadata', () => {
     expect(ctx.event.context.page?.search).toEqual(searchParams)
   })
 
+  test.each([
+    {
+      bar: ['123', '456'],
+      utm_campaign: 'hello',
+      utm_custom: ['foo', 'bar'],
+    },
+    '?bar=123&bar=456&utm_campaign=hello&utm_custom=foo&utm_custom=bar',
+  ])(
+    'should work as expected if there are multiple values for the same param (%p)',
+    async (params) => {
+      const ctx = await analytics.track(
+        'test',
+        {},
+        {
+          context: amendSearchParams(params),
+        }
+      )
+      assert(ctx.event)
+      assert(ctx.event.context)
+      assert(ctx.event.context.referrer === undefined)
+      expect(ctx.event.context.page?.search).toEqual(params)
+      expect(ctx.event.context.campaign).toEqual({
+        name: 'hello',
+        custom: 'bar',
+      })
+    }
+  )
+
   it('should add .referrer.id and .referrer.type (cookies)', async () => {
     const ctx = await analytics.track(
       'test',

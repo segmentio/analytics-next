@@ -108,12 +108,24 @@ function referrerId(
 
 /**
  *
- * @param obj e.g. { foo: 'b', bar: 'd'}
- * @returns e.g. 'foo=b&bar=d'
+ * @param obj e.g. { foo: 'b', bar: 'd', baz: ['123', '456']}
+ * @returns e.g. 'foo=b&bar=d&baz=123&baz=456'
  */
-const objectToQueryString = (obj: Record<string, string>): string => {
+const objectToQueryString = (
+  obj: Record<string, string | string[]>
+): string => {
   try {
-    return new URLSearchParams(obj).toString()
+    const searchParams = new URLSearchParams()
+    Object.entries(obj).forEach(([key, values]) => {
+      if (Array.isArray(values)) {
+        values.forEach((value) => {
+          searchParams.append(key, value)
+        })
+      } else {
+        searchParams.append(key, values)
+      }
+    })
+    return searchParams.toString()
   } catch {
     return ''
   }
