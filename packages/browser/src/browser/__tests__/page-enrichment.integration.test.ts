@@ -194,9 +194,17 @@ describe('Page Enrichment', () => {
     `)
   })
 
-  it('runs before any other plugin', async () => {
+  it('enriches before any other plugin', async () => {
     await ajs.addSourceMiddleware(({ payload, next }) => {
-      expect(payload.obj?.context?.page).not.toBeFalsy()
+      expect(payload.obj?.context?.page).toMatchInlineSnapshot(`
+        Object {
+          "path": "/",
+          "referrer": "",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        }
+      `)
       next(payload)
     })
 
