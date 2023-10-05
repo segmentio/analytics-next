@@ -24,7 +24,7 @@ describe(pick, () => {
   it('does not mutate object reference', () => {
     const e = {
       obj: { a: 1, '0': false, c: 3 },
-      keys: ['a', '0'] as const,
+      keys: ['a', '0'],
       expected: { a: 1, '0': false },
     }
     const ogObj = { ...e.obj }

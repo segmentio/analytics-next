@@ -9,6 +9,7 @@ import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
 import { EventQueue } from '../../core/queue/event-queue'
 import { AnalyticsStandalone } from '../standalone-interface'
+import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -28,9 +29,7 @@ jest.mock('../../core/analytics', () => ({
     register,
     emit: jest.fn(),
     on,
-    queue: new EventQueue(
-      new PersistedPriorityQueue(1, 'foo:event-queue') as any
-    ),
+    queue: new EventQueue(new PersistedPriorityQueue(1, 'event-queue') as any),
     options,
   }),
 }))
@@ -68,6 +67,7 @@ describe('standalone bundle', () => {
     `.trim()
 
     const virtualConsole = new jsdom.VirtualConsole()
+
     const jsd = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
@@ -159,12 +159,20 @@ describe('standalone bundle', () => {
 
     await sleep(0)
 
-    expect(track).toHaveBeenCalledWith('fruit basket', {
-      fruits: ['🍌', '🍇'],
-    })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
+    expect(track).toHaveBeenCalledWith(
+      'fruit basket',
+      {
+        fruits: ['🍌', '🍇'],
+      },
+      getBufferedPageCtxFixture()
+    )
+    expect(identify).toHaveBeenCalledWith(
+      'netto',
+      {
+        employer: 'segment',
+      },
+      getBufferedPageCtxFixture()
+    )
 
     expect(page).toHaveBeenCalled()
   })
@@ -270,13 +278,25 @@ describe('standalone bundle', () => {
 
     await sleep(0)
 
-    expect(track).toHaveBeenCalledWith('fruit basket', {
-      fruits: ['🍌', '🍇'],
-    })
-    expect(track).toHaveBeenCalledWith('race conditions', { foo: 'bar' })
-    expect(identify).toHaveBeenCalledWith('netto', {
-      employer: 'segment',
-    })
+    expect(track).toHaveBeenCalledWith(
+      'fruit basket',
+      {
+        fruits: ['🍌', '🍇'],
+      },
+      getBufferedPageCtxFixture()
+    )
+    expect(track).toHaveBeenCalledWith(
+      'race conditions',
+      { foo: 'bar' },
+      getBufferedPageCtxFixture()
+    )
+    expect(identify).toHaveBeenCalledWith(
+      'netto',
+      {
+        employer: 'segment',
+      },
+      getBufferedPageCtxFixture()
+    )
 
     expect(page).toHaveBeenCalled()
   })

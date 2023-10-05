@@ -1,7 +1,9 @@
-import { LegacySettings } from '../..'
+import { AnalyticsBrowserSettings } from '../..'
 import { mockIntegrationName } from './classic-destination'
 
-export const cdnSettingsKitchenSink: LegacySettings = {
+type CDNSettings = NonNullable<AnalyticsBrowserSettings['cdnSettings']>
+
+export const cdnSettingsKitchenSink: CDNSettings = {
   integrations: {
     [mockIntegrationName]: {},
     'Customer.io': {
@@ -292,7 +294,7 @@ export const cdnSettingsKitchenSink: LegacySettings = {
   remotePlugins: [],
 }
 
-export const cdnSettingsMinimal: LegacySettings = {
+export const cdnSettingsMinimal: CDNSettings = {
   integrations: {
     [mockIntegrationName]: {},
   },

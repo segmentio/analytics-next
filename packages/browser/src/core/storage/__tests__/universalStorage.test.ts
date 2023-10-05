@@ -12,12 +12,14 @@ describe('UniversalStorage', function () {
     new MemoryStorage(),
   ]
   const getFromLS = (key: string) => JSON.parse(localStorage.getItem(key) ?? '')
-  beforeEach(function () {
-    clear()
+  jest.spyOn(console, 'warn').mockImplementation(() => {
+    // avoid accidental noise in console
+    throw new Error('console.warn should be mocked!')
   })
 
-  afterEach(() => {
+  beforeEach(function () {
     jest.restoreAllMocks()
+    clear()
   })
 
   function clear(): void {
@@ -104,6 +106,10 @@ describe('UniversalStorage', function () {
     })
 
     it('handles cookie errors gracefully', function () {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+
       disableCookies() // Cookies is going to throw exceptions now
       const us = new UniversalStorage([
         new LocalStorage(),
@@ -113,9 +119,17 @@ describe('UniversalStorage', function () {
       us.set('ajs_test_key', '💰')
       expect(getFromLS('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
+      expect(consoleWarnSpy.mock.calls.length).toEqual(1)
+      expect(consoleWarnSpy.mock.lastCall[0]).toContain(
+        "CookieStorage: Can't set key"
+      )
     })
 
     it('does not write to LS when LS is not available', function () {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+
       disableLocalStorage() // Localstorage will throw exceptions
       const us = new UniversalStorage([
         new LocalStorage(),
@@ -125,9 +139,14 @@ describe('UniversalStorage', function () {
       us.set('ajs_test_key', '💰')
       expect(jar.get('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
+      expect(consoleWarnSpy.mock.lastCall[0]).toContain('localStorage')
     })
 
     it('handles cookie getter overrides gracefully', function () {
+      const consoleWarnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {})
+
       ;(document as any).__defineGetter__('cookie', function () {
         return ''
       })
@@ -139,6 +158,10 @@ describe('UniversalStorage', function () {
       us.set('ajs_test_key', '💰')
       expect(getFromLS('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
+      expect(consoleWarnSpy.mock.lastCall[0]).toContain(
+        "CookieStorage: Can't set key"
+      )
+      expect(consoleWarnSpy.mock.lastCall[0]).toContain('TypeError')
     })
   })
 })

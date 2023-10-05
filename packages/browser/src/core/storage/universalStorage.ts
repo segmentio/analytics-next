@@ -1,5 +1,17 @@
 import { Store, StorageObject } from './types'
 
+// not adding to private method because those method names do not get minified atm, and does not use 'this'
+const _logStoreKeyError = (
+  store: Store,
+  action: 'set' | 'get' | 'remove',
+  key: string,
+  err: unknown
+) => {
+  console.warn(
+    `${store.constructor.name}: Can't ${action} key "${key}" | Err: ${err}`
+  )
+}
+
 /**
  * Uses multiple storages in a priority list to get/set values in the order they are specified.
  */
@@ -20,28 +32,28 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
           return val
         }
       } catch (e) {
-        console.warn(`Can't access ${key}: ${e}`)
+        _logStoreKeyError(store, 'get', key, e)
       }
     }
     return null
   }
 
   set<K extends keyof Data>(key: K, value: Data[K] | null): void {
-    this.stores.forEach((s) => {
+    this.stores.forEach((store) => {
       try {
-        s.set(key, value)
+        store.set(key, value)
       } catch (e) {
-        console.warn(`Can't set ${key}: ${e}`)
+        _logStoreKeyError(store, 'set', key, e)
       }
     })
   }
 
   clear<K extends keyof Data>(key: K): void {
-    this.stores.forEach((s) => {
+    this.stores.forEach((store) => {
       try {
-        s.remove(key)
+        store.remove(key)
       } catch (e) {
-        console.warn(`Can't remove ${key}: ${e}`)
+        _logStoreKeyError(store, 'remove', key, e)
       }
     })
   }

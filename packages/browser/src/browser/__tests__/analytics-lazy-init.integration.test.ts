@@ -1,4 +1,5 @@
 import { sleep } from '@segment/analytics-core'
+import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
 import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
@@ -27,7 +28,7 @@ describe('Lazy initialization', () => {
     expect(trackSpy).not.toBeCalled()
     analytics.load({ writeKey: 'abc' })
     await track
-    expect(trackSpy).toBeCalledWith('foo')
+    expect(trackSpy).toBeCalledWith('foo', getBufferedPageCtxFixture())
   })
 
   it('.load method return an analytics instance', async () => {

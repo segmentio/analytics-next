@@ -19,6 +19,17 @@ const mockFetchCdnSettings = (cdnSettings: any = {}) => {
     .mockImplementation(createMockFetchImplementation(cdnSettings))
 }
 
+jest.spyOn(console, 'warn').mockImplementation((...errMsgs) => {
+  if (errMsgs[0].includes('deprecate')) {
+    // get rid of deprecation wawrning spam
+    return
+  }
+  console.warn(
+    'Unexpected console.warn spam in your jest test - please stub out. ' +
+      JSON.stringify(errMsgs)
+  )
+})
+
 describe('Integrations', () => {
   beforeEach(async () => {
     mockFetchCdnSettings()

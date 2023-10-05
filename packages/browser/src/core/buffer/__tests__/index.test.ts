@@ -4,65 +4,146 @@ import {
   PreInitMethodCall,
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
+  PreInitMethodName,
 } from '..'
 import { Analytics } from '../../analytics'
 import { Context } from '../../context'
 import { sleep } from '../../../lib/sleep'
 import { User } from '../../user'
+import { getBufferedPageCtxFixture } from '../../../test-helpers/fixtures'
+import * as GlobalAnalytics from '../../../lib/global-analytics-helper'
 
-describe('PreInitMethodCallBuffer', () => {
-  describe('push', () => {
-    it('should return this', async () => {
-      const buffer = new PreInitMethodCallBuffer()
-      const result = buffer.push({} as any)
-      expect(result).toBeInstanceOf(PreInitMethodCallBuffer)
-    })
-  })
-  describe('toArray should return an array', () => {
-    it('toArray() should convert the map back to an array', async () => {
-      const buffer = new PreInitMethodCallBuffer()
-      const method1 = { method: 'foo' } as any
-      const method2 = { method: 'foo', args: [1] } as any
-      const method3 = { method: 'bar' } as any
-      buffer.push(method1, method2, method3)
-      expect(buffer.toArray()).toEqual([method1, method2, method3])
-    })
+describe(PreInitMethodCallBuffer, () => {
+  beforeEach(() => {
+    GlobalAnalytics.setGlobalAnalytics(undefined as any)
   })
 
-  describe('clear', () => {
-    it('should return this', async () => {
-      const buffer = new PreInitMethodCallBuffer()
-      const result = buffer.push({} as any)
-      expect(result).toBeInstanceOf(PreInitMethodCallBuffer)
+  describe('toArray()', () => {
+    it('should convert the map back to an array', () => {
+      const call1 = new PreInitMethodCall('identify', [], jest.fn())
+      const call2 = new PreInitMethodCall('identify', [], jest.fn())
+      const call3 = new PreInitMethodCall('group', [], jest.fn())
+      const buffer = new PreInitMethodCallBuffer(call1, call2, call3)
+      expect(buffer.toArray()).toEqual([call1, call2, call3])
+    })
+
+    it('should also read from global analytics buffer', () => {
+      const call1 = new PreInitMethodCall('identify', ['foo'], jest.fn())
+      ;(window as any).analytics = [['track', 'snippet']]
+
+      const buffer = new PreInitMethodCallBuffer(call1)
+      const calls = buffer.toArray()
+      expect(calls.length).toBe(2)
+      expect(calls[0]).toEqual(
+        expect.objectContaining<Partial<PreInitMethodCall>>({
+          method: 'track',
+          args: ['snippet', getBufferedPageCtxFixture()],
+        })
+      )
+      expect(calls[1]).toEqual(call1)
     })
   })
-  describe('getCalls', () => {
-    it('should return calls', async () => {
+
+  describe('push()', () => {
+    it('should add method calls', () => {
+      const call1 = new PreInitMethodCall('identify', [], jest.fn())
       const buffer = new PreInitMethodCallBuffer()
+      buffer.push(call1)
+      expect(buffer.toArray()).toEqual([call1])
+    })
 
-      const fooCall1 = {
-        method: 'foo',
-        args: ['bar'],
-      } as any
+    it('should work if the calls were added at different times or in different ways', () => {
+      const call1 = new PreInitMethodCall('identify', [], jest.fn())
+      const call2 = new PreInitMethodCall('identify', [], jest.fn())
+      const call3 = new PreInitMethodCall('group', [], jest.fn())
+      const call4 = new PreInitMethodCall('group', [], jest.fn())
+      const buffer = new PreInitMethodCallBuffer(call1)
+      buffer.push(call2, call3)
+      buffer.push(call4)
+      expect(buffer.toArray()).toEqual([call1, call2, call3, call4])
+    })
+  })
 
-      const barCall = {
-        method: 'bar',
-        args: ['foobar'],
-      } as any
+  describe('getCalls()', () => {
+    it('should fetch calls by name', async () => {
+      const buffer = new PreInitMethodCallBuffer()
+      const call1 = new PreInitMethodCall('identify', [], jest.fn())
+      const call2 = new PreInitMethodCall('identify', [], jest.fn())
+      const call3 = new PreInitMethodCall('group', [], jest.fn())
+      buffer.push(call1, call2, call3)
+      expect(buffer.getCalls('identify')).toEqual([call1, call2])
+      expect(buffer.getCalls('group')).toEqual([call3])
+    })
+    it('should read from Snippet Buffer', () => {
+      const call1 = new PreInitMethodCall('identify', ['foo'], jest.fn())
+      GlobalAnalytics.setGlobalAnalytics([['identify', 'snippet']] as any)
 
-      const fooCall2 = {
-        method: 'foo',
-        args: ['baz'],
-      } as any
+      const buffer = new PreInitMethodCallBuffer(call1)
+      const calls = buffer.getCalls('identify')
+      expect(calls.length).toBe(2)
+      expect(calls[0]).toEqual(
+        expect.objectContaining<Partial<PreInitMethodCall>>({
+          method: 'identify',
+          args: ['snippet', getBufferedPageCtxFixture()],
+        })
+      )
+      expect(calls[1]).toEqual(call1)
+    })
+  })
+  describe('clear()', () => {
+    it('should clear calls', () => {
+      const call1 = new PreInitMethodCall('identify', [], jest.fn())
+      const call2 = new PreInitMethodCall('identify', [], jest.fn())
+      const call3 = new PreInitMethodCall('group', [], jest.fn())
+      GlobalAnalytics.setGlobalAnalytics([['track', 'bar']] as any)
+      const buffer = new PreInitMethodCallBuffer(call1, call2, call3)
+      buffer.clear()
+      expect(buffer.toArray()).toEqual([])
+      expect(GlobalAnalytics.getGlobalAnalytics()).toEqual([])
+    })
+  })
 
-      const calls: PreInitMethodCall<any>[] = [fooCall1, fooCall2, barCall]
-      const result = buffer.push(...calls)
-      expect(result.getCalls('foo' as any)).toEqual([fooCall1, fooCall2])
+  describe('Snippet buffer (method calls)', () => {
+    it('should be read from the global analytics instance', () => {
+      const getGlobalAnalyticsSpy = jest.spyOn(
+        GlobalAnalytics,
+        'getGlobalAnalytics'
+      )
+
+      const buffer = new PreInitMethodCallBuffer()
+      expect(getGlobalAnalyticsSpy).not.toBeCalled()
+      buffer.toArray()
+      expect(getGlobalAnalyticsSpy).toBeCalled()
+    })
+  })
+  describe('BufferedPageContext', () => {
+    test.each([
+      'track',
+      'screen',
+      'alias',
+      'group',
+      'page',
+      'identify',
+    ] as PreInitMethodName[])('should be appended to %p calls.', (method) => {
+      const buffer = new PreInitMethodCallBuffer(
+        new PreInitMethodCall(method, ['foo'], jest.fn())
+      )
+      expect(buffer.getCalls(method)[0].args).toEqual([
+        'foo',
+        getBufferedPageCtxFixture(),
+      ])
+    })
+    it('should not be appended for other method calls', () => {
+      const fn = jest.fn()
+      const onCall = new PreInitMethodCall('on', ['foo', fn])
+      expect(onCall.args).toEqual(['foo', fn])
+      const setAnonIdCall = new PreInitMethodCall('setAnonymousId', [])
+      expect(setAnonIdCall.args).toEqual([])
     })
   })
 })
 
-describe('AnalyticsBuffered', () => {
+describe(AnalyticsBuffered, () => {
   describe('Happy path', () => {
     it('should return a promise-like object', async () => {
       const ajs = new Analytics({ writeKey: 'foo' })
@@ -220,7 +301,7 @@ describe('AnalyticsBuffered', () => {
   })
 })
 
-describe('callAnalyticsMethod', () => {
+describe(callAnalyticsMethod, () => {
   let ajs!: Analytics
   let resolveSpy!: jest.Mock<any, any>
   let rejectSpy!: jest.Mock<any, any>
@@ -228,14 +309,12 @@ describe('callAnalyticsMethod', () => {
   beforeEach(() => {
     resolveSpy = jest.fn().mockImplementation((el) => `resolved: ${el}`)
     rejectSpy = jest.fn().mockImplementation((el) => `rejected: ${el}`)
-    methodCall = {
-      args: ['foo', {}],
-      called: false,
-      method: 'track',
-      resolve: resolveSpy,
-      reject: rejectSpy,
-    } as PreInitMethodCall
-
+    methodCall = new PreInitMethodCall(
+      'track',
+      ['foo', {}],
+      resolveSpy,
+      rejectSpy
+    )
     ajs = new Analytics({
       writeKey: 'abc',
     })
@@ -297,7 +376,7 @@ describe('callAnalyticsMethod', () => {
   })
 })
 
-describe('flushAnalyticsCallsInNewTask', () => {
+describe(flushAnalyticsCallsInNewTask, () => {
   test('should defer buffered method calls, regardless of whether or not they are async', async () => {
     // @ts-ignore
     Analytics.prototype['synchronousMethod'] = () => 123
@@ -305,27 +384,21 @@ describe('flushAnalyticsCallsInNewTask', () => {
     // @ts-ignore
     Analytics.prototype['asyncMethod'] = () => Promise.resolve(123)
 
-    const synchronousMethod = {
-      method: 'synchronousMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
-
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
-
-    const buffer = new PreInitMethodCallBuffer().push(
-      synchronousMethod,
-      asyncMethod
+    const synchronousMethod = new PreInitMethodCall(
+      'synchronousMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
     )
 
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
+
+    const buffer = new PreInitMethodCallBuffer(synchronousMethod, asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     expect(synchronousMethod.resolve).not.toBeCalled()
     expect(asyncMethod.resolve).not.toBeCalled()
@@ -338,15 +411,14 @@ describe('flushAnalyticsCallsInNewTask', () => {
     // @ts-ignore
     Analytics.prototype['asyncMethod'] = () => Promise.reject('oops!')
 
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
 
-    const buffer = new PreInitMethodCallBuffer().push(asyncMethod)
+    const buffer = new PreInitMethodCallBuffer(asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     await sleep(0)
     expect(asyncMethod.reject).toBeCalledWith('oops!')
@@ -361,29 +433,23 @@ describe('flushAnalyticsCallsInNewTask', () => {
       throw new Error('Ooops!')
     }
 
-    const synchronousMethod = {
-      method: 'synchronousMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
-
-    const asyncMethod = {
-      method: 'asyncMethod' as any,
-      args: ['foo'],
-      called: false,
-      resolve: jest.fn(),
-      reject: jest.fn(),
-    } as PreInitMethodCall<any>
-
-    const buffer = new PreInitMethodCallBuffer().push(
-      synchronousMethod,
-      asyncMethod
+    const synchronousMethod = new PreInitMethodCall(
+      'synchronousMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
     )
+    const asyncMethod = new PreInitMethodCall(
+      'asyncMethod' as any,
+      ['foo'],
+      jest.fn(),
+      jest.fn()
+    )
+
+    const buffer = new PreInitMethodCallBuffer(synchronousMethod, asyncMethod)
     flushAnalyticsCallsInNewTask(new Analytics({ writeKey: 'abc' }), buffer)
     await sleep(0)
-    expect(synchronousMethod.reject).toBeCalled()
-    expect(asyncMethod.resolve).toBeCalled()
+    expect(synchronousMethod.reject).toBeCalledTimes(1)
+    expect(asyncMethod.resolve).toBeCalledTimes(1)
   })
 })

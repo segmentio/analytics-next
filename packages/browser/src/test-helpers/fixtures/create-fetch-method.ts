@@ -3,7 +3,7 @@ import { createSuccess } from '../factories'
 import { cdnSettingsMinimal } from './cdn-settings'
 
 export const createMockFetchImplementation = (
-  cdnSettings: Partial<LegacySettings> = {}
+  cdnSettings: Partial<LegacySettings> = cdnSettingsMinimal
 ) => {
   return (...[url, req]: Parameters<typeof fetch>) => {
     const reqUrl = url.toString()

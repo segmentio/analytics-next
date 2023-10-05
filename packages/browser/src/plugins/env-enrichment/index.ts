@@ -1,10 +1,9 @@
 import jar from 'js-cookie'
-import { pick } from '../../lib/pick'
 import type { Context } from '../../core/context'
 import type { Plugin } from '../../core/plugin'
 import { version } from '../../generated/version'
 import { SegmentEvent } from '../../core/events'
-import { Campaign, EventProperties, PluginType } from '@segment/analytics-core'
+import { Campaign, PluginType } from '@segment/analytics-core'
 import { getVersionType } from '../../lib/version-type'
 import { tld } from '../../core/user/tld'
 import { gracefulDecodeURIComponent } from '../../core/query-string/gracefulDecodeURIComponent'
@@ -12,15 +11,6 @@ import { CookieStorage, UniversalStorage } from '../../core/storage'
 import { Analytics } from '../../core/analytics'
 import { clientHints } from '../../lib/client-hints'
 import { UADataValues } from '../../lib/client-hints/interfaces'
-
-interface PageDefault {
-  [key: string]: unknown
-  path: string
-  referrer: string
-  search: string
-  title: string
-  url: string
-}
 
 let cookieOptions: jar.CookieAttributes | undefined
 function getCookieOptions(): jar.CookieAttributes {
@@ -66,64 +56,6 @@ function ads(query: string): Ad | undefined {
   }
 }
 
-/**
- * Get the current page's canonical URL.
- */
-function canonical(): string | undefined {
-  const canon = document.querySelector("link[rel='canonical']")
-  if (canon) {
-    return canon.getAttribute('href') || undefined
-  }
-}
-
-/**
- * Return the canonical path for the page.
- */
-
-function canonicalPath(): string {
-  const canon = canonical()
-  if (!canon) {
-    return window.location.pathname
-  }
-
-  const a = document.createElement('a')
-  a.href = canon
-  const pathname = !a.pathname.startsWith('/') ? '/' + a.pathname : a.pathname
-
-  return pathname
-}
-
-/**
- * Return the canonical URL for the page concat the given `search`
- * and strip the hash.
- */
-
-export function canonicalUrl(search = ''): string {
-  const canon = canonical()
-  if (canon) {
-    return canon.includes('?') ? canon : `${canon}${search}`
-  }
-  const url = window.location.href
-  const i = url.indexOf('#')
-  return i === -1 ? url : url.slice(0, i)
-}
-
-/**
- * Return a default `options.context.page` object.
- *
- * https://segment.com/docs/spec/page/#properties
- */
-
-export function pageDefaults(): PageDefault {
-  return {
-    path: canonicalPath(),
-    referrer: document.referrer,
-    search: location.search,
-    title: document.title,
-    url: canonicalUrl(location.search),
-  }
-}
-
 export function utm(query: string): Campaign {
   if (query.startsWith('?')) {
     query = query.substring(1)
@@ -133,7 +65,7 @@ export function utm(query: string): Campaign {
   return query.split('&').reduce((acc, str) => {
     const [k, v = ''] = str.split('=')
     if (k.includes('utm_') && k.length > 4) {
-      let utmParam = k.substr(4) as keyof Campaign
+      let utmParam = k.slice(4) as keyof Campaign
       if (utmParam === 'campaign') {
         utmParam = 'name'
       }
@@ -174,7 +106,30 @@ function referrerId(
   storage.set('s:context.referrer', ad)
 }
 
-class PageEnrichmentPlugin implements Plugin {
+/**
+ *
+ * @param obj e.g. { foo: 'b', bar: 'd', baz: ['123', '456']}
+ * @returns e.g. 'foo=b&bar=d&baz=123&baz=456'
+ */
+const objectToQueryString = (
+  obj: Record<string, string | string[]>
+): string => {
+  try {
+    const searchParams = new URLSearchParams()
+    Object.entries(obj).forEach(([k, v]) => {
+      if (Array.isArray(v)) {
+        v.forEach((value) => searchParams.append(k, value))
+      } else {
+        searchParams.append(k, v)
+      }
+    })
+    return searchParams.toString()
+  } catch {
+    return ''
+  }
+}
+
+class EnvironmentEnrichmentPlugin implements Plugin {
   private instance!: Analytics
   private userAgentData: UADataValues | undefined
 
@@ -195,32 +150,13 @@ class PageEnrichmentPlugin implements Plugin {
   }
 
   private enrich = (ctx: Context): Context => {
-    const event = ctx.event
-    const evtCtx = (event.context ??= {})
+    // Note: Types are off - context should never be undefined here, since it is set as part of event creation.
+    const evtCtx = ctx.event.context!
 
-    const defaultPageContext = pageDefaults()
+    const search = evtCtx.page!.search || ''
 
-    let pageContextFromEventProps: Pick<EventProperties, string> | undefined
-
-    if (event.type === 'page') {
-      pageContextFromEventProps =
-        event.properties &&
-        pick(event.properties, Object.keys(defaultPageContext))
-
-      event.properties = {
-        ...defaultPageContext,
-        ...event.properties,
-        ...(event.name ? { name: event.name } : {}),
-      }
-    }
-
-    evtCtx.page = {
-      ...defaultPageContext,
-      ...pageContextFromEventProps,
-      ...evtCtx.page,
-    }
-
-    const query: string = evtCtx.page.search || ''
+    const query =
+      typeof search === 'object' ? objectToQueryString(search) : search
 
     evtCtx.userAgent = navigator.userAgent
     evtCtx.userAgentData = this.userAgentData
@@ -269,4 +205,4 @@ class PageEnrichmentPlugin implements Plugin {
   screen = this.enrich
 }
 
-export const pageEnrichment = new PageEnrichmentPlugin()
+export const envEnrichment = new EnvironmentEnrichmentPlugin()
