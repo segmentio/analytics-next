@@ -194,7 +194,7 @@ describe('Page Enrichment', () => {
     `)
   })
 
-  it('enriches before any other plugin', async () => {
+  it('page object is accessible in all plugins', async () => {
     await ajs.addSourceMiddleware(({ payload, next }) => {
       expect(payload.obj?.context?.page).toMatchInlineSnapshot(`
         Object {
