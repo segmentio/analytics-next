@@ -223,15 +223,10 @@ export class PreInitMethodCallBuffer {
     const wa = getGlobalAnalytics()
     if (!Array.isArray(wa)) return undefined
     const buffered: SnippetBuffer = wa.splice(0, wa.length)
-    const calls = buffered.map((v) => this._transformSnippetCall(v))
+    const calls = buffered.map(
+      ([methodName, ...args]) => new PreInitMethodCall(methodName, args)
+    )
     this.push(...calls)
-  }
-
-  private _transformSnippetCall([
-    methodName,
-    ...args
-  ]: SnippetWindowBufferedMethodCall): PreInitMethodCall {
-    return new PreInitMethodCall(methodName, args)
   }
 }
 
