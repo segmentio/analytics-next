@@ -1,7 +1,8 @@
-import { pick } from 'lodash'
 import unfetch from 'unfetch'
 import { Analytics, AnalyticsBrowser } from '../..'
+import { PageContext } from '../../core/page'
 import {
+  cdnSettingsMinimal,
   createMockFetchImplementation,
   getPageCtxFixture,
 } from '../../test-helpers/fixtures'
@@ -12,12 +13,11 @@ jest.mocked(unfetch).mockImplementation(createMockFetchImplementation())
 let ajs: Analytics
 
 beforeEach(async () => {
-  await AnalyticsBrowser.load({
+  const [analytics] = await AnalyticsBrowser.load({
     writeKey: 'abc_123',
-    cdnSettings: { integrations: {} },
-  }).then(([analytics]) => {
-    ajs = analytics
+    cdnSettings: { ...cdnSettingsMinimal },
   })
+  ajs = analytics
 })
 describe('Page Enrichment', () => {
   test('enriches page calls', async () => {
@@ -39,7 +39,6 @@ describe('Page Enrichment', () => {
     const ctx = await ajs.track('My event', {
       banana: 'phone',
     })
-
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
       Object {
         "path": "/",
@@ -53,48 +52,58 @@ describe('Page Enrichment', () => {
 
   describe('event.properties override behavior', () => {
     test('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
-      const eventProps = getPageCtxFixture()
-      ;(eventProps as any)['should_not_show_up'] = 'hello'
-      const ctx = await ajs.page('My Event', eventProps)
+      const ctx = await ajs.page('My Event', {
+        path: 'foo',
+        referrer: 'bar',
+        search: 'baz',
+        title: 'qux',
+        url: 'http://fake.com',
+        should_not_show_up: 'hello',
+      } as PageContext & { [key: string]: unknown })
       const page = ctx.event.context!.page
-      expect(page).toEqual(
-        pick(eventProps, ['url', 'path', 'referrer', 'search', 'title'])
-      )
+      expect(page).toMatchInlineSnapshot(`
+        Object {
+          "path": "foo",
+          "referrer": "bar",
+          "search": "baz",
+          "title": "qux",
+          "url": "http://fake.com",
+        }
+      `)
     })
 
     test('special page properties in event.properties (url, referrer, etc) are not copied to context.page in non-page calls', async () => {
-      const eventProps = getPageCtxFixture()
-      ;(eventProps as any)['should_not_show_up'] = 'hello'
-      const ctx = await ajs.track('My Event', eventProps)
+      const ctx = await ajs.track('My Event', {
+        path: 'foo',
+        referrer: 'bar',
+        search: 'baz',
+        title: 'qux',
+        url: 'http://fake.com',
+      } as PageContext & { [key: string]: any })
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
-      Object {
-        "path": "/",
-        "referrer": "",
-        "search": "",
-        "title": "",
-        "url": "http://localhost/",
-      }
-    `)
+        Object {
+          "path": "/",
+          "referrer": "",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        }
+      `)
     })
 
-    test('event page properties should not be mutated', async () => {
-      const eventProps = getPageCtxFixture()
-      const ctx = await ajs.page('My Event', eventProps)
+    test('page properties should override defaults in page calls', async () => {
+      const ctx = await ajs.page('My Event', { path: 'override' })
       const page = ctx.event.context!.page
-      expect(page).toEqual(eventProps)
-    })
-
-    test('page properties should have defaults', async () => {
-      const eventProps = pick(getPageCtxFixture(), ['path', 'referrer'])
-      const ctx = await ajs.page('My Event', eventProps)
-      const page = ctx.event.context!.page
-      expect(page).toEqual({
-        ...eventProps,
-        url: 'http://localhost/',
-        search: '',
-        title: '',
-      })
+      expect(page).toMatchInlineSnapshot(`
+        Object {
+          "path": "override",
+          "referrer": "",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        }
+      `)
     })
 
     test('undefined / null / empty string properties on event get overridden as usual', async () => {
