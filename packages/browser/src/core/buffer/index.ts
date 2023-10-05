@@ -8,6 +8,8 @@ import {
   isBufferedPageContext,
   BufferedPageContext,
   getDefaultBufferedPageContext,
+  createPageContext,
+  PageContext,
 } from '../page'
 
 /**
@@ -84,6 +86,13 @@ export const flushAnalyticsCallsInNewTask = (
       callAnalyticsMethod(analytics, m).catch(console.error)
     }, 0)
   })
+}
+
+export const popPageContext = (args: unknown[]): PageContext | undefined => {
+  if (hasBufferedPageContextAsLastArg(args)) {
+    const ctx = args.pop() as BufferedPageContext
+    return createPageContext(ctx)
+  }
 }
 
 export const hasBufferedPageContextAsLastArg = (

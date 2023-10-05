@@ -54,8 +54,7 @@ import {
 } from '../storage'
 import { PluginFactory } from '../../plugins/remote-loader'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
-import { hasBufferedPageContextAsLastArg } from '../buffer'
-import { BufferedPageContext, PageContext, createPageContext } from '../page'
+import { popPageContext } from '../buffer'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -134,13 +133,6 @@ export interface InitOptions {
 /* analytics-classic stubs */
 function _stub(this: never) {
   console.warn(deprecationWarning)
-}
-
-const popPageContext = (args: any[]): PageContext | undefined => {
-  if (hasBufferedPageContextAsLastArg(args)) {
-    const ctx = args.pop() as BufferedPageContext
-    return createPageContext(ctx)
-  }
 }
 
 export class Analytics
