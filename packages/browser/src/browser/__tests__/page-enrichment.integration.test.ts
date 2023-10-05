@@ -4,7 +4,6 @@ import { PageContext } from '../../core/page'
 import {
   cdnSettingsMinimal,
   createMockFetchImplementation,
-  getPageCtxFixture,
 } from '../../test-helpers/fixtures'
 
 jest.mock('unfetch')
@@ -20,7 +19,7 @@ beforeEach(async () => {
   ajs = analytics
 })
 describe('Page Enrichment', () => {
-  test('enriches page calls', async () => {
+  it('enriches page calls', async () => {
     const ctx = await ajs.page('Checkout', {})
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
@@ -35,7 +34,7 @@ describe('Page Enrichment', () => {
     `)
   })
 
-  test('enriches track events with the page context', async () => {
+  it('enriches track events with the page context', async () => {
     const ctx = await ajs.track('My event', {
       banana: 'phone',
     })
@@ -51,15 +50,18 @@ describe('Page Enrichment', () => {
   })
 
   describe('event.properties override behavior', () => {
-    test('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
-      const ctx = await ajs.page('My Event', {
-        path: 'foo',
-        referrer: 'bar',
-        search: 'baz',
-        title: 'qux',
-        url: 'http://fake.com',
-        should_not_show_up: 'hello',
-      } as PageContext & { [key: string]: unknown })
+    it('special page properties in event.properties (url, referrer, etc) are copied to context.page', async () => {
+      const pageProps: PageContext & { [key: string]: unknown } = Object.freeze(
+        {
+          path: 'foo',
+          referrer: 'bar',
+          search: 'baz',
+          title: 'qux',
+          url: 'http://fake.com',
+          should_not_show_up: 'hello',
+        }
+      )
+      const ctx = await ajs.page('My Event', pageProps)
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
         Object {
@@ -72,16 +74,25 @@ describe('Page Enrichment', () => {
       `)
     })
 
-    test('special page properties in event.properties (url, referrer, etc) are not copied to context.page in non-page calls', async () => {
-      const ctx = await ajs.track('My Event', {
+    it('special page properties in event.properties (url, referrer, etc) are not copied to context.page in non-page calls', async () => {
+      const eventProps = Object.freeze({
         path: 'foo',
         referrer: 'bar',
         search: 'baz',
-        title: 'qux',
         url: 'http://fake.com',
-      } as PageContext & { [key: string]: any })
-      const page = ctx.event.context!.page
-      expect(page).toMatchInlineSnapshot(`
+        foo: 'hello',
+      })
+      const ctx = await ajs.track('My Event', eventProps)
+      expect(ctx.event.properties).toMatchInlineSnapshot(`
+        Object {
+          "foo": "hello",
+          "path": "foo",
+          "referrer": "bar",
+          "search": "baz",
+          "url": "http://fake.com",
+        }
+      `)
+      expect(ctx.event.context!.page).toMatchInlineSnapshot(`
         Object {
           "path": "/",
           "referrer": "",
@@ -92,8 +103,9 @@ describe('Page Enrichment', () => {
       `)
     })
 
-    test('page properties should override defaults in page calls', async () => {
-      const ctx = await ajs.page('My Event', { path: 'override' })
+    it('page properties should override defaults in page calls', async () => {
+      const pageProps = Object.freeze({ path: 'override' })
+      const ctx = await ajs.page('My Event', pageProps)
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
         Object {
@@ -106,11 +118,13 @@ describe('Page Enrichment', () => {
       `)
     })
 
-    test('undefined / null / empty string properties on event get overridden as usual', async () => {
-      const eventProps = getPageCtxFixture()
-      eventProps.referrer = ''
-      eventProps.path = undefined as any
-      eventProps.title = null as any
+    it('undefined / null / empty string properties on event get overridden as usual', async () => {
+      const eventProps = Object.freeze({
+        referrer: '',
+        path: undefined,
+        title: null,
+      })
+
       const ctx = await ajs.page('My Event', eventProps)
       const page = ctx.event.context!.page
       expect(page).toEqual(
@@ -119,7 +133,7 @@ describe('Page Enrichment', () => {
     })
   })
 
-  test('enriches page events with the page context', async () => {
+  it('enriches page events with the page context', async () => {
     const ctx = await ajs.page(
       'My event',
       { banana: 'phone' },
@@ -136,7 +150,7 @@ describe('Page Enrichment', () => {
           }
       `)
   })
-  test('enriches page events using properties', async () => {
+  it('enriches page events using properties', async () => {
     const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
@@ -150,21 +164,21 @@ describe('Page Enrichment', () => {
       `)
   })
 
-  test('in page events, event.name overrides event.properties.name', async () => {
+  it('in page events, event.name overrides event.properties.name', async () => {
     const ctx = await ajs.page('My Event', undefined, undefined, {
       name: 'some propery name',
     })
     expect(ctx.event.properties!.name).toBe('My Event')
   })
 
-  test('in non-page events, event.name does not override event.properties.name', async () => {
+  it('in non-page events, event.name does not override event.properties.name', async () => {
     const ctx = await ajs.track('My Event', {
       name: 'some propery name',
     })
     expect(ctx.event.properties!.name).toBe('some propery name')
   })
 
-  test('enriches identify events with the page context', async () => {
+  it('enriches identify events with the page context', async () => {
     const ctx = await ajs.identify('Netto', {
       banana: 'phone',
     })
@@ -180,11 +194,8 @@ describe('Page Enrichment', () => {
     `)
   })
 
-  test('runs before any other plugin', async () => {
-    let called = false
-
+  it('runs before any other plugin', async () => {
     await ajs.addSourceMiddleware(({ payload, next }) => {
-      called = true
       expect(payload.obj?.context?.page).not.toBeFalsy()
       next(payload)
     })
@@ -192,7 +203,6 @@ describe('Page Enrichment', () => {
     await ajs.track('My event', {
       banana: 'phone',
     })
-
-    expect(called).toBe(true)
+    expect.assertions(1)
   })
 })
