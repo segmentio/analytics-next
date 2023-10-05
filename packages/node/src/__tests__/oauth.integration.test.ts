@@ -7,7 +7,7 @@ import {
 import { createError } from './test-helpers/factories'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
-const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
+const privateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
 PQsH2aOXZJ2r1q+6hpVK1R5JV1p41PUzn8pOxyXFHWB+53dUd4B8qywKS36XQjp0
 VmhR1tQ22znQ9ZCM6y4LGeOJBjAZiFZLcGQNNrDFC0WGWTrK1ZTS2K7p5qy4fIXG
@@ -34,7 +34,7 @@ sKPfP9LVRnY+l1BWLEilvB+xBzqMwh2YWkIlWI6PMQKBgGi6TBnxp81lOYrxVRDj
 /3ycRnVDmBdlQKFunvfzUBmG1mG/G0YHeVSUKZJGX7w2l+jnDwIA383FcUeA8X6A
 l9q+amhtkwD/6fbkAu/xoWNl+11IFoxd88y2ByBFoEKB6UVLuCTSKwXDqzEZet7x
 mDyRxq7ohIzLkw8b8buDeuXZ
------END PRIVATE KEY-----`)
+-----END PRIVATE KEY-----`
 
 jest.setTimeout(10000)
 const timestamp = new Date()
@@ -241,7 +241,7 @@ describe('OAuth Failure', () => {
 
   it('handles a bad key', async () => {
     const props = getOauthSettings()
-    props.clientKey = Buffer.from('Garbage')
+    props.clientKey = 'Garbage'
     const analytics = createTestAnalytics({
       oauthSettings: props,
     })

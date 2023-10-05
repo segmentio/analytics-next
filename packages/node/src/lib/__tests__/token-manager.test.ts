@@ -4,7 +4,7 @@ import { HTTPResponse } from '../http-client'
 import { OAuthSettings } from '../types'
 import { TokenManager } from '../token-manager'
 
-const privateKey = Buffer.from(`-----BEGIN PRIVATE KEY-----
+const privateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
 PQsH2aOXZJ2r1q+6hpVK1R5JV1p41PUzn8pOxyXFHWB+53dUd4B8qywKS36XQjp0
 VmhR1tQ22znQ9ZCM6y4LGeOJBjAZiFZLcGQNNrDFC0WGWTrK1ZTS2K7p5qy4fIXG
@@ -31,7 +31,7 @@ sKPfP9LVRnY+l1BWLEilvB+xBzqMwh2YWkIlWI6PMQKBgGi6TBnxp81lOYrxVRDj
 /3ycRnVDmBdlQKFunvfzUBmG1mG/G0YHeVSUKZJGX7w2l+jnDwIA383FcUeA8X6A
 l9q+amhtkwD/6fbkAu/xoWNl+11IFoxd88y2ByBFoEKB6UVLuCTSKwXDqzEZet7x
 mDyRxq7ohIzLkw8b8buDeuXZ
------END PRIVATE KEY-----`)
+-----END PRIVATE KEY-----`
 
 const testClient = new TestFetchClient()
 const fetcher = jest.spyOn(testClient, 'makeRequest')

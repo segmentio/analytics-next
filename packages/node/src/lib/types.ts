@@ -1,6 +1,6 @@
 import { HTTPClient } from './http-client'
 
-export type OAuthSettings = {
+export interface OAuthSettings {
   /**
    * The OAuth App ID from Access Management under Workspace Settings in the Segment Dashboard.
    */
@@ -8,7 +8,7 @@ export type OAuthSettings = {
   /**
    * The private key that matches the public key set in the OAuth app in the Segment Dashboard.
    */
-  clientKey: Buffer
+  clientKey: string
   /**
    * The ID for the matching public key as given in the Segment Dashboard after it is uploaded.
    */
@@ -41,6 +41,7 @@ export type OAuthSettings = {
 export type AccessToken = {
   access_token: string
   expires_in: number
+  expires_at?: number
 }
 
 export interface TokenManager {

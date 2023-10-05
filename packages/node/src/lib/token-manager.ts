@@ -30,7 +30,7 @@ export class TokenManager implements ITokenManager {
   private clientAssertionType =
     'urn:ietf:params:oauth:client-assertion-type:jwt-bearer' as const
   private clientId: string
-  private clientKey: Buffer
+  private clientKey: string
   private keyId: string
   private scope: string
   private authServer: string
@@ -87,10 +87,13 @@ export class TokenManager implements ITokenManager {
       )?.unref()
       return
     }
-
-    if (response.headers !== undefined && response.headers.Date != undefined) {
+    if (
+      response.headers !== undefined &&
+      response.headers.get('Date') != undefined
+    ) {
       try {
-        this.clockSkewInSeconds = Date.now() - Date.parse(response.headers.Date)
+        this.clockSkewInSeconds =
+          (Date.now() - Date.parse(response.headers.get('Date'))) / 1000
       } catch (err) {
         // Unable to parse, move on with last or 0 skew
       }
@@ -133,6 +136,8 @@ export class TokenManager implements ITokenManager {
           )
         }
 
+        token.expires_at = Math.round(Date.now() / 1000) + token.expires_in
+
         this.tokenEmitter.emit('access_token', { token })
 
         // Reset our failure count
@@ -156,7 +161,7 @@ export class TokenManager implements ITokenManager {
       this.lastError = `[${response.status}] ${response.statusText}`
       if (response.headers) {
         const rateLimitResetTimestamp = parseInt(
-          response.headers['X-RateLimit-Reset'],
+          response.headers.get('X-RateLimit-Reset'),
           10
         )
         if (isFinite(rateLimitResetTimestamp)) {
@@ -210,13 +215,14 @@ export class TokenManager implements ITokenManager {
    */
   private requestAccessToken(): Promise<HTTPResponse> {
     const jti = uuid()
-    const currentUTCInSeconds = Math.round(Date.now() / 1000)
+    const currentUTCInSeconds =
+      Math.round(Date.now() / 1000) - this.clockSkewInSeconds
     const jwtBody = {
       iss: this.clientId,
       sub: this.clientId,
       aud: this.authServer,
-      iat: currentUTCInSeconds,
-      exp: currentUTCInSeconds + 60,
+      iat: currentUTCInSeconds - 5,
+      exp: currentUTCInSeconds + 55,
       jti,
     }
 
@@ -272,8 +278,10 @@ export class TokenManager implements ITokenManager {
   }
 
   isValidToken(token?: AccessToken): token is AccessToken {
-    // TODO: Check if it has already expired?
-    // otherwise this check is pretty much useless
-    return typeof token !== 'undefined' && token !== null
+    return (
+      typeof token !== 'undefined' &&
+      token !== null &&
+      token.expires_in < Date.now() / 1000
+    )
   }
 }
