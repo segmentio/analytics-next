@@ -24,6 +24,35 @@ const isAccessToken = (thing: unknown): thing is AccessToken => {
   )
 }
 
+function convertHeaders(
+  headers: HTTPResponse['headers']
+): Record<string, string> {
+  const lowercaseHeaders: Record<string, string> = {}
+  if (!headers) return {}
+  if (isHeaders(headers)) {
+    for (const [name, value] of headers.entries()) {
+      lowercaseHeaders[name.toLowerCase()] = value
+    }
+    return lowercaseHeaders
+  }
+  for (const [name, value] of Object.entries(headers)) {
+    lowercaseHeaders[name.toLowerCase()] = value as string
+  }
+  return lowercaseHeaders
+}
+
+function isHeaders(thing: unknown): thing is HTTPResponse['headers'] {
+  if (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'entries' in Object(thing) &&
+    typeof Object(thing).entries === 'function'
+  ) {
+    return true
+  }
+  return false
+}
+
 export class TokenManager implements ITokenManager {
   private alg = 'RS256' as const
   private grantType = 'client_credentials' as const
@@ -65,9 +94,11 @@ export class TokenManager implements ITokenManager {
   async pollerLoop() {
     let timeUntilRefreshInMs = 25
     let response: HTTPResponse
+    let headers: Record<string, string>
 
     try {
       response = await this.requestAccessToken()
+      headers = convertHeaders(response.headers)
     } catch (err) {
       // Error without a status code - likely networking, retry
       this.retryCount++
@@ -87,13 +118,10 @@ export class TokenManager implements ITokenManager {
       )?.unref()
       return
     }
-    if (
-      response.headers !== undefined &&
-      response.headers.get('date') != undefined
-    ) {
+    if (headers && headers['date']) {
       try {
         this.clockSkewInSeconds =
-          (Date.now() - Date.parse(response.headers.get('date'))) / 1000
+          (Date.now() - Date.parse(headers['date'])) / 1000
       } catch (err) {
         // Unable to parse, move on with last or 0 skew
       }
@@ -159,9 +187,9 @@ export class TokenManager implements ITokenManager {
     } else if (response.status === 429) {
       this.retryCount++
       this.lastError = `[${response.status}] ${response.statusText}`
-      if (response.headers && response.headers.get('X-rateLimit-Reset')) {
+      if (headers && headers['x-ratelimit-reset']) {
         const rateLimitResetTimestamp = parseInt(
-          response.headers.get('X-RateLimit-Reset'),
+          headers['x-ratelimit-reset'],
           10
         )
         if (isFinite(rateLimitResetTimestamp)) {
@@ -245,13 +273,7 @@ export class TokenManager implements ITokenManager {
       },
       httpRequestTimeout: 10000,
     }
-    return this.httpClient.makeRequest(requestOptions).then((response) => {
-      // Check if the response's headers has an entries method and convert it to a Record<>
-      if (typeof response.headers?.entries !== 'function') {
-        response.headers = new Headers(response.headers as Record<string, any>)
-      }
-      return response
-    })
+    return this.httpClient.makeRequest(requestOptions)
   }
 
   async getAccessToken(): Promise<AccessToken> {
