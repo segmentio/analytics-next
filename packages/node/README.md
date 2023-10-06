@@ -56,7 +56,7 @@ app.post('/cart', (req, res) => {
 ```
 
 
-## Settings & Configuration 
+## Settings & Configuration
 See the documentation: https://segment.com/docs/connections/sources/catalog/libraries/server/node/#configuration
 
 You can also see the complete list of settings in the [AnalyticsSettings interface](src/app/settings.ts).
@@ -67,7 +67,8 @@ You can also see the complete list of settings in the [AnalyticsSettings interfa
 
 
 
-## Usage in AWS Lambda
+## Usage in non-node runtimes
+### Usage in AWS Lambda
 - [AWS lambda execution environment](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html) is challenging for typically non-response-blocking async activites like tracking or logging, since the runtime terminates / freezes after a response is emitted.
 
 Here is an example of using analytics.js within a handler:
@@ -97,7 +98,7 @@ module.exports.handler = async (event) => {
 };
 ```
 
-## Usage in Vercel Edge Functions
+### Usage in Vercel Edge Functions
 ```ts
 import { Analytics } from '@segment/analytics-node';
 import { NextRequest, NextResponse } from 'next/server';
@@ -120,7 +121,7 @@ export default async (req: NextRequest) => {
 };
 ```
 
-## Usage in Cloudflare Workers
+### Usage in Cloudflare Workers
 ```ts
 import { Analytics, Context } from '@segment/analytics-node';
 
@@ -138,7 +139,7 @@ export default {
     await new Promise((resolve, reject) =>
       analytics.track({ ... }, resolve)
     );
-    
+
     ...
     return new Response(...)
   },

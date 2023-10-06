@@ -1,6 +1,7 @@
 import uuid from '@lukeed/uuid'
 import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
+import { getDefaultPageContext } from '../../page'
 import { User } from '../../user'
 import { SegmentEvent, Options } from '../interfaces'
 
@@ -11,10 +12,15 @@ describe('Event Factory', () => {
   const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
 
+  const defaultContext = {
+    page: getDefaultPageContext(),
+  }
+
   beforeEach(() => {
     user = new User()
     user.reset()
     factory = new EventFactory(user)
+    defaultContext.page = getDefaultPageContext()
   })
 
   describe('alias', () => {
@@ -67,7 +73,7 @@ describe('Event Factory', () => {
 
     it('accepts properties', () => {
       const page = factory.page('category', 'name', shoes)
-      expect(page.properties).toEqual(shoes)
+      expect(page.properties).toEqual(expect.objectContaining(shoes))
     })
 
     it('ignores category and page if not passed in', () => {
@@ -153,7 +159,7 @@ describe('Event Factory', () => {
       const track = factory.track('Order Completed', shoes, {
         opt1: true,
       })
-      expect(track.context).toEqual({ opt1: true })
+      expect(track.context).toEqual({ ...defaultContext, opt1: true })
     })
 
     test('sets context correctly if property arg is undefined', () => {
@@ -161,7 +167,10 @@ describe('Event Factory', () => {
         context: { page: { path: '/custom' } },
       })
 
-      expect(track.context).toEqual({ page: { path: '/custom' } })
+      expect(track.context?.page).toEqual({
+        ...defaultContext.page,
+        path: '/custom',
+      })
     })
 
     test('sets integrations', () => {
@@ -243,7 +252,11 @@ describe('Event Factory', () => {
         },
       })
 
-      expect(track.context).toEqual({ opt1: true, opt2: '🥝' })
+      expect(track.context).toEqual({
+        ...defaultContext,
+        opt1: true,
+        opt2: '🥝',
+      })
     })
 
     test('should not move known options into `context`', () => {
@@ -257,7 +270,11 @@ describe('Event Factory', () => {
         timestamp: new Date(),
       })
 
-      expect(track.context).toEqual({ opt1: true, opt2: '🥝' })
+      expect(track.context).toEqual({
+        ...defaultContext,
+        opt1: true,
+        opt2: '🥝',
+      })
     })
 
     test('accepts an anonymous id', () => {
@@ -265,7 +282,7 @@ describe('Event Factory', () => {
         anonymousId: 'anon-1',
       })
 
-      expect(track.context).toEqual({})
+      expect(track.context).toEqual(defaultContext)
       expect(track.anonymousId).toEqual('anon-1')
     })
 
@@ -275,7 +292,7 @@ describe('Event Factory', () => {
         timestamp,
       })
 
-      expect(track.context).toEqual({})
+      expect(track.context).toEqual(defaultContext)
       expect(track.timestamp).toEqual(timestamp)
     })
 
@@ -302,6 +319,7 @@ describe('Event Factory', () => {
       })
 
       expect(track.context).toEqual({
+        ...defaultContext,
         library: {
           name: 'ajs-next',
           version: '0.1.0',
@@ -322,6 +340,7 @@ describe('Event Factory', () => {
       })
 
       expect(track.context).toEqual({
+        ...defaultContext,
         library: {
           name: 'ajs-next',
           version: '0.1.0',
@@ -395,9 +414,37 @@ describe('Event Factory', () => {
           integrations: { Segment: true },
           type: 'track',
           userId: 'user-id',
-          context: {},
+          context: defaultContext,
         })
       })
+    })
+  })
+
+  describe('Page context augmentation', () => {
+    // minimal tests -- more tests should be specifically around addPageContext
+    factory = new EventFactory(new User())
+    it('adds a default pageContext if pageContext is not defined', () => {
+      const event = factory.identify('foo')
+      expect(event.context?.page).toEqual(defaultContext.page)
+    })
+
+    const pageCtx = { ...defaultContext.page, title: 'foo test' }
+    test.each([
+      factory.identify('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.track('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.group('foo', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.page('foo', 'bar', undefined, undefined, undefined, {
+        ...pageCtx,
+      }),
+      factory.alias('foo', 'bar', undefined, undefined, { ...pageCtx }),
+    ])(`$type: Event has the expected page properties`, async (event) => {
+      expect(event.context?.page).toEqual(pageCtx)
     })
   })
 })

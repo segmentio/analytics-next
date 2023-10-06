@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.57.0
+
+### Minor Changes
+
+- [#956](https://github.com/segmentio/analytics-next/pull/956) [`f5cdb82`](https://github.com/segmentio/analytics-next/commit/f5cdb824050c22a9aaa86a450b8f1f4a7f4fb144) Thanks [@danieljackins](https://github.com/danieljackins)! - Set timezone and allow userAgentData to be overridden
+
 ## 1.56.0
 
 ### Minor Changes

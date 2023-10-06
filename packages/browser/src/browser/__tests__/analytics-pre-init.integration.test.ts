@@ -6,6 +6,7 @@ import * as Factory from '../../test-helpers/factories'
 import { sleep } from '../../lib/sleep'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { User } from '../../core/user'
+import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
 
 jest.mock('unfetch')
 
@@ -61,7 +62,11 @@ describe('Pre-initialization', () => {
       const trackCtxPromise = ajsBrowser.track('foo', { name: 'john' })
       const result = await trackCtxPromise
       expect(result).toBeInstanceOf(Context)
-      expect(trackSpy).toBeCalledWith('foo', { name: 'john' })
+      expect(trackSpy).toBeCalledWith(
+        'foo',
+        { name: 'john' },
+        getBufferedPageCtxFixture()
+      )
       expect(trackSpy).toBeCalledTimes(1)
     })
 
@@ -107,11 +112,19 @@ describe('Pre-initialization', () => {
 
       await Promise.all([trackCtxPromise, trackCtxPromise2, identifyCtxPromise])
 
-      expect(trackSpy).toBeCalledWith('foo', { name: 'john' })
-      expect(trackSpy).toBeCalledWith('bar', { age: 123 })
+      expect(trackSpy).toBeCalledWith(
+        'foo',
+        { name: 'john' },
+        getBufferedPageCtxFixture()
+      )
+      expect(trackSpy).toBeCalledWith(
+        'bar',
+        { age: 123 },
+        getBufferedPageCtxFixture()
+      )
       expect(trackSpy).toBeCalledTimes(2)
 
-      expect(identifySpy).toBeCalledWith('hello')
+      expect(identifySpy).toBeCalledWith('hello', getBufferedPageCtxFixture())
       expect(identifySpy).toBeCalledTimes(1)
     })
 
@@ -234,8 +247,8 @@ describe('Pre-initialization', () => {
       await AnalyticsBrowser.standalone(writeKey)
 
       await sleep(100) // the snippet does not return a promise (pre-initialization) ... it sometimes has a callback as the third argument.
-      expect(trackSpy).toBeCalledWith('foo')
-      expect(trackSpy).toBeCalledWith('bar')
+      expect(trackSpy).toBeCalledWith('foo', getBufferedPageCtxFixture())
+      expect(trackSpy).toBeCalledWith('bar', getBufferedPageCtxFixture())
       expect(trackSpy).toBeCalledTimes(2)
 
       expect(identifySpy).toBeCalledTimes(1)
@@ -262,11 +275,11 @@ describe('Pre-initialization', () => {
       await AnalyticsBrowser.standalone(writeKey)
 
       await sleep(100) // the snippet does not return a promise (pre-initialization) ... it sometimes has a callback as the third argument.
-      expect(trackSpy).toBeCalledWith('foo')
-      expect(trackSpy).toBeCalledWith('bar')
+      expect(trackSpy).toBeCalledWith('foo', getBufferedPageCtxFixture())
+      expect(trackSpy).toBeCalledWith('bar', getBufferedPageCtxFixture())
       expect(trackSpy).toBeCalledTimes(2)
 
-      expect(identifySpy).toBeCalledWith()
+      expect(identifySpy).toBeCalledWith(getBufferedPageCtxFixture())
       expect(identifySpy).toBeCalledTimes(1)
       expect(consoleErrorSpy).toBeCalledTimes(1)
 
@@ -292,8 +305,8 @@ describe('Pre-initialization', () => {
       })
 
       await sleep(100) // the snippet does not return a promise (pre-initialization) ... it sometimes has a callback as the third argument.
-      expect(trackSpy).toBeCalledWith('foo')
-      expect(trackSpy).toBeCalledWith('bar')
+      expect(trackSpy).toBeCalledWith('foo', getBufferedPageCtxFixture())
+      expect(trackSpy).toBeCalledWith('bar', getBufferedPageCtxFixture())
       expect(trackSpy).toBeCalledTimes(2)
 
       expect(identifySpy).toBeCalledTimes(1)

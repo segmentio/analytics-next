@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.56.0",
+  "version": "1.57.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -24,7 +24,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/analytics-next",
+    ".": "yarn run -T turbo run --filter=@segment/analytics-next...",
     "build-prep": "sh scripts/build-prep.sh",
     "version": "yarn run build-prep && git add src/generated/version.ts",
     "umd": "webpack",
@@ -44,7 +44,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "28.5 KB"
+      "limit": "28.8 KB"
     }
   ],
   "dependencies": {

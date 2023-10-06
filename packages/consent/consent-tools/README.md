@@ -9,7 +9,7 @@ import { createWrapper, resolveWhen } from '@segment/analytics-consent-tools'
 export const withCMP = createWrapper({
 
   // Wrapper waits to load segment / get categories until this function returns / resolves
-  shouldLoad: (ctx) => {
+  shouldLoad: async (ctx) => {
     const CMP = await getCMP()
     await resolveWhen(
       () => !CMP.popUpVisible(),
@@ -24,12 +24,12 @@ export const withCMP = createWrapper({
     }
   },
 
-  getCategories: () => {
+  getCategories: async () => {
     const CMP = await getCMP()
     return normalizeCategories(CMP.consentedCategories()) // Expected format: { foo: true, bar: false }
   },
 
-  registerOnConsentChanged: (setCategories) => {
+  registerOnConsentChanged: async (setCategories) => {
     const CMP = await getCMP()
     CMP.onConsentChanged((event) => {
       setCategories(normalizeCategories(event.detail))
