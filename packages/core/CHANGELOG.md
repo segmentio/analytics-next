@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.3.2
+
+### Patch Changes
+
+- [#852](https://github.com/segmentio/analytics-next/pull/852) [`897f4cc`](https://github.com/segmentio/analytics-next/commit/897f4cc69de4cdd38efd0cd70567bfed0c454fec) Thanks [@silesky](https://github.com/silesky)! - Tighten isPlainObject type guard
+
 ## 1.3.1
 
 ### Patch Changes
