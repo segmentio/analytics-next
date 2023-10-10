@@ -118,7 +118,7 @@ export class TokenManager implements ITokenManager {
       )?.unref()
       return
     }
-    if (headers && headers['date']) {
+    if (headers['date']) {
       try {
         this.clockSkewInSeconds =
           (Date.now() - Date.parse(headers['date'])) / 1000
@@ -187,7 +187,7 @@ export class TokenManager implements ITokenManager {
     } else if (response.status === 429) {
       this.retryCount++
       this.lastError = `[${response.status}] ${response.statusText}`
-      if (headers && headers['x-ratelimit-reset']) {
+      if (headers['x-ratelimit-reset']) {
         const rateLimitResetTimestamp = parseInt(
           headers['x-ratelimit-reset'],
           10
