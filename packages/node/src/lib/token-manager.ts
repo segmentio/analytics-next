@@ -109,7 +109,7 @@ export class TokenManager implements ITokenManager {
       }
 
       this.pollerTimer = setTimeout(
-        this.pollerLoop.bind(this),
+        () => this.pollerLoop(),
         backoff({
           attempt: this.retryCount,
           minTimeout: 25,
@@ -150,7 +150,7 @@ export class TokenManager implements ITokenManager {
           maxTimeout: 1000,
         })
         this.pollerTimer = setTimeout(
-          this.pollerLoop.bind(this),
+          () => this.pollerLoop(),
           timeUntilRefreshInMs
         )?.unref()
         return
@@ -229,7 +229,7 @@ export class TokenManager implements ITokenManager {
       // TODO: figure out timing and whether to reset retries?
     }
     this.pollerTimer = setTimeout(
-      this.pollerLoop.bind(this),
+      () => this.pollerLoop(),
       timeUntilRefreshInMs
     )?.unref()
   }
