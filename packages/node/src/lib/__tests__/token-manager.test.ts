@@ -36,23 +36,20 @@ mDyRxq7ohIzLkw8b8buDeuXZ
 const testClient = new TestFetchClient()
 const fetcher = jest.spyOn(testClient, 'makeRequest')
 
-const createOAuthSuccess = (body?: any) => {
-  return Promise.resolve({
-    text: () => Promise.resolve(JSON.stringify(body)),
-    ok: true,
-    status: 200,
-    statusText: 'OK',
-  }) as unknown as Promise<HTTPResponse>
-}
+const createOAuthSuccess = async (body?: any): Promise<HTTPResponse> => ({
+  text: () => Promise.resolve(JSON.stringify(body)),
+  status: 200,
+  statusText: 'OK',
+})
 
-const createOAuthError = (overrides: Partial<HTTPResponse> = {}) => {
-  return Promise.resolve({
-    ok: false,
-    status: 400,
-    statusText: 'Foo',
-    ...overrides,
-  }) as Promise<HTTPResponse>
-}
+const createOAuthError = async (
+  overrides: Partial<HTTPResponse> = {}
+): Promise<HTTPResponse> => ({
+  text: () => Promise.resolve(''),
+  status: 400,
+  statusText: 'Foo',
+  ...overrides,
+})
 
 const getTokenManager = () => {
   const oauthSettings = {

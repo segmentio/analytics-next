@@ -69,6 +69,7 @@ const createOAuthError = async (
 ): Promise<HTTPResponse> => ({
   status: 400,
   statusText: 'Foo',
+  text: () => Promise.resolve(''),
   ...overrides,
 })
 

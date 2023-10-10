@@ -24,6 +24,12 @@ const isAccessToken = (thing: unknown): thing is AccessToken => {
   )
 }
 
+const isValidCustomResponse = (
+  response: HTTPResponse
+): response is HTTPResponse & Required<Pick<HTTPResponse, 'text'>> => {
+  return typeof response.text === 'function'
+}
+
 function convertHeaders(
   headers: HTTPResponse['headers']
 ): Record<string, string> {
@@ -72,7 +78,6 @@ export class TokenManager implements ITokenManager {
     access_token: [{ token: AccessToken } | { error: unknown }]
   }>()
   private retryCount: number
-  private lastError: any
   private pollerTimer?: ReturnType<typeof setTimeout>
 
   constructor(props: OAuthSettings) {
@@ -91,71 +96,34 @@ export class TokenManager implements ITokenManager {
     this.retryCount = 0
   }
 
+  stopPoller() {
+    clearTimeout(this.pollerTimer)
+  }
+
   async pollerLoop() {
     let timeUntilRefreshInMs = 25
     let response: HTTPResponse
-    let headers: Record<string, string>
 
     try {
       response = await this.requestAccessToken()
-      headers = convertHeaders(response.headers)
     } catch (err) {
       // Error without a status code - likely networking, retry
-      this.retryCount++
-      this.lastError = err
-
-      if (this.retryCount % this.maxRetries === 0) {
-        this.tokenEmitter.emit('access_token', { error: this.lastError })
-      }
-
-      this.pollerTimer = setTimeout(
-        () => this.pollerLoop(),
-        backoff({
-          attempt: this.retryCount,
-          minTimeout: 25,
-          maxTimeout: 1000,
-        })
-      )?.unref()
-      return
+      return this.handleTransientError({ error: err })
     }
+
+    if (!isValidCustomResponse(response)) {
+      return this.handleInvalidCustomResponse()
+    }
+
+    const headers = convertHeaders(response.headers)
     if (headers['date']) {
-      try {
-        this.clockSkewInSeconds =
-          (Date.now() - Date.parse(headers['date'])) / 1000
-      } catch (err) {
-        // Unable to parse, move on with last or 0 skew
-      }
+      this.updateClockSkew(Date.parse(headers['date']))
     }
 
     // Handle status codes!
     if (response.status === 200) {
-      let body: string
-      if (typeof response.text != 'function') {
-        this.tokenEmitter.emit('access_token', {
-          error: new Error(
-            'HTTPClient does not implement response.text method'
-          ),
-        })
-        return
-      }
       try {
-        body = await response.text()
-      } catch (err) {
-        // Errors reading the body (not parsing) are likely networking issues, we can retry
-        this.retryCount++
-        this.lastError = err
-        timeUntilRefreshInMs = backoff({
-          attempt: this.retryCount,
-          minTimeout: 25,
-          maxTimeout: 1000,
-        })
-        this.pollerTimer = setTimeout(
-          () => this.pollerLoop(),
-          timeUntilRefreshInMs
-        )?.unref()
-        return
-      }
-      try {
+        const body = await response.text()
         const token = JSON.parse(body)
 
         if (!isAccessToken(token)) {
@@ -164,78 +132,117 @@ export class TokenManager implements ITokenManager {
           )
         }
 
+        // Success, we have a token!
         token.expires_at = Math.round(Date.now() / 1000) + token.expires_in
-
         this.tokenEmitter.emit('access_token', { token })
 
         // Reset our failure count
         this.retryCount = 0
-
         // Refresh the token after half the expiry time passes
         timeUntilRefreshInMs = (token.expires_in / 2) * 1000
+        return this.queueNextPoll(timeUntilRefreshInMs)
       } catch (err) {
         // Something went really wrong with the body, lets surface an error and try again?
-        this.tokenEmitter.emit('access_token', { error: err })
-        this.retryCount = 0 // Reset because we've emitted an error
-
-        timeUntilRefreshInMs = backoff({
-          attempt: this.retryCount,
-          minTimeout: 25,
-          maxTimeout: 1000,
-        })
+        return this.handleTransientError({ error: err, forceEmitError: true })
       }
     } else if (response.status === 429) {
-      this.retryCount++
-      this.lastError = `[${response.status}] ${response.statusText}`
-      if (headers['x-ratelimit-reset']) {
-        const rateLimitResetTimestamp = parseInt(
-          headers['x-ratelimit-reset'],
-          10
-        )
-        if (isFinite(rateLimitResetTimestamp)) {
-          timeUntilRefreshInMs =
-            rateLimitResetTimestamp -
-            Date.now() +
-            this.clockSkewInSeconds * 1000
-        } else {
-          timeUntilRefreshInMs = 5 * 1000
-        }
-        // We want subsequent calls to get_token to be able to interrupt our
-        //  Timeout when it's waiting for e.g. a long normal expiration, but
-        //  not when we're waiting for a rate limit reset. Sleep instead.
-        await sleep(timeUntilRefreshInMs)
-        timeUntilRefreshInMs = 0
-      }
+      // Rate limited, wait for the reset time
+      return await this.handleRateLimited(
+        response,
+        headers,
+        timeUntilRefreshInMs
+      )
     } else if ([400, 401, 415].includes(response.status)) {
-      // Unrecoverable errors
-      this.retryCount = 0
-      this.tokenEmitter.emit('access_token', {
+      // Unrecoverable errors, stops the poller
+      return this.handleUnrecoverableErrors(response)
+    } else {
+      return this.handleTransientError({
         error: new Error(`[${response.status}] ${response.statusText}`),
       })
-      this.stopPoller()
-      return
-    } else {
-      this.retryCount++
-      this.lastError = new Error(`[${response.status}] ${response.statusText}`)
-      timeUntilRefreshInMs = backoff({
-        attempt: this.retryCount,
-        minTimeout: 25,
-        maxTimeout: 1000,
-      })
+    }
+  }
+
+  private handleTransientError({
+    error,
+    forceEmitError,
+  }: {
+    error: unknown
+    forceEmitError?: boolean
+  }) {
+    this.incrementRetries({ error, forceEmitError })
+
+    const timeUntilRefreshInMs = backoff({
+      attempt: this.retryCount,
+      minTimeout: 25,
+      maxTimeout: 1000,
+    })
+    this.queueNextPoll(timeUntilRefreshInMs)
+  }
+
+  private handleInvalidCustomResponse() {
+    this.tokenEmitter.emit('access_token', {
+      error: new Error('HTTPClient does not implement response.text method'),
+    })
+  }
+
+  private async handleRateLimited(
+    response: HTTPResponse,
+    headers: Record<string, string>,
+    timeUntilRefreshInMs: number
+  ) {
+    this.incrementRetries({
+      error: new Error(`[${response.status}] ${response.statusText}`),
+    })
+
+    if (headers['x-ratelimit-reset']) {
+      const rateLimitResetTimestamp = parseInt(headers['x-ratelimit-reset'], 10)
+      if (isFinite(rateLimitResetTimestamp)) {
+        timeUntilRefreshInMs =
+          rateLimitResetTimestamp - Date.now() + this.clockSkewInSeconds * 1000
+      } else {
+        timeUntilRefreshInMs = 5 * 1000
+      }
+      // We want subsequent calls to get_token to be able to interrupt our
+      //  Timeout when it's waiting for e.g. a long normal expiration, but
+      //  not when we're waiting for a rate limit reset. Sleep instead.
+      await sleep(timeUntilRefreshInMs)
+      timeUntilRefreshInMs = 0
     }
 
-    if (this.retryCount % this.maxRetries === 0) {
-      this.tokenEmitter.emit('access_token', { error: this.lastError })
-      // TODO: figure out timing and whether to reset retries?
+    this.queueNextPoll(timeUntilRefreshInMs)
+  }
+
+  private handleUnrecoverableErrors(response: HTTPResponse) {
+    this.retryCount = 0
+    this.tokenEmitter.emit('access_token', {
+      error: new Error(`[${response.status}] ${response.statusText}`),
+    })
+    this.stopPoller()
+  }
+
+  private updateClockSkew(dateInMs: number) {
+    this.clockSkewInSeconds = (Date.now() - dateInMs) / 1000
+  }
+
+  private incrementRetries({
+    error,
+    forceEmitError,
+  }: {
+    error: unknown
+    forceEmitError?: boolean
+  }) {
+    this.retryCount++
+    if (forceEmitError || this.retryCount % this.maxRetries === 0) {
+      this.retryCount = 0
+      this.tokenEmitter.emit('access_token', { error: error })
     }
+  }
+
+  private queueNextPoll(timeUntilRefreshInMs: number) {
     this.pollerTimer = setTimeout(
       () => this.pollerLoop(),
       timeUntilRefreshInMs
     )?.unref()
-  }
-
-  stopPoller() {
-    clearTimeout(this.pollerTimer)
   }
 
   /**
