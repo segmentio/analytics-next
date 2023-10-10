@@ -9,6 +9,8 @@ export {
   HTTPClientRequest,
 } from './lib/http-client'
 
+export { OAuthSettings } from './lib/types'
+
 export type {
   Plugin,
   GroupTraits,
