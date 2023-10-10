@@ -129,7 +129,7 @@ export class TokenManager implements ITokenManager {
 
     // Handle status codes!
     if (response.status === 200) {
-      let body: any
+      let body: string
       if (typeof response.text != 'function') {
         this.tokenEmitter.emit('access_token', {
           error: new Error(
