@@ -47,8 +47,8 @@ const oauthFetcher = jest.spyOn(oauthTestClient, 'makeRequest')
 const tapiTestClient = new TestFetchClient()
 const tapiFetcher = jest.spyOn(tapiTestClient, 'makeRequest')
 
-const getOauthSettings = () => {
-  const oauthSettings = {
+const getOauthSettings = () =>
+  ({
     httpClient: oauthTestClient,
     maxRetries: 3,
     clientId: 'clientId',
@@ -56,27 +56,21 @@ const getOauthSettings = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as OAuthSettings
-  return oauthSettings
-}
+  } as OAuthSettings)
 
-const createOAuthSuccess = (body?: any) => {
-  return Promise.resolve({
-    text: () => Promise.resolve(JSON.stringify(body)),
-    ok: true,
-    status: 200,
-    statusText: 'OK',
-  }) as unknown as Promise<HTTPResponse>
-}
+const createOAuthSuccess = async (body?: any): Promise<HTTPResponse> => ({
+  text: () => Promise.resolve(JSON.stringify(body)),
+  status: 200,
+  statusText: 'OK',
+})
 
-const createOAuthError = (overrides: Partial<HTTPResponse> = {}) => {
-  return Promise.resolve({
-    ok: false,
-    status: 400,
-    statusText: 'Foo',
-    ...overrides,
-  }) as Promise<HTTPResponse>
-}
+const createOAuthError = async (
+  overrides: Partial<HTTPResponse> = {}
+): Promise<HTTPResponse> => ({
+  status: 400,
+  statusText: 'Foo',
+  ...overrides,
+})
 
 describe('OAuth Integration Success', () => {
   it('track event with OAuth', async () => {
