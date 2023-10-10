@@ -7,6 +7,7 @@ import {
 import { createError } from './test-helpers/factories'
 import { resolveCtx } from './test-helpers/resolve-ctx'
 
+// NOTE: Fake private key for illustrative purposes only
 const privateKey = `-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDVll7uJaH322IN
 PQsH2aOXZJ2r1q+6hpVK1R5JV1p41PUzn8pOxyXFHWB+53dUd4B8qywKS36XQjp0
