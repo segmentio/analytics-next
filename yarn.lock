@@ -3518,7 +3518,7 @@ __metadata:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-browser-actions-braze": ^1.3.0
-    "@segment/analytics-core": 1.3.1
+    "@segment/analytics-core": 1.3.2
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
@@ -3574,7 +3574,7 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.3.1
+    "@segment/analytics-core": 1.3.2
     "@types/jsonwebtoken": ^9
     "@types/node": ^16
     axios: ^1.4.0

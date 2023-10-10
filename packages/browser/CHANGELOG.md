@@ -1,5 +1,17 @@
 # @segment/analytics-next
 
+## 1.58.0
+
+### Minor Changes
+
+- [#852](https://github.com/segmentio/analytics-next/pull/852) [`897f4cc`](https://github.com/segmentio/analytics-next/commit/897f4cc69de4cdd38efd0cd70567bfed0c454fec) Thanks [@silesky](https://github.com/silesky)! - - Capture page context information faster, so context.campaign and context.page are more resilient to quick navigation changes.
+  - Parse UTM params into context.campaign if users pass an object to a page call.
+
+### Patch Changes
+
+- Updated dependencies [[`897f4cc`](https://github.com/segmentio/analytics-next/commit/897f4cc69de4cdd38efd0cd70567bfed0c454fec)]:
+  - @segment/analytics-core@1.3.2
+
 ## 1.57.0
 
 ### Minor Changes
