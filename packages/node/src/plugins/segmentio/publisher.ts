@@ -110,7 +110,6 @@ export class Publisher {
   }
 
   flushAfterClose(pendingItemsCount: number) {
-    this._tokenManager?.stopPoller()
     if (!pendingItemsCount) {
       // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
       return
