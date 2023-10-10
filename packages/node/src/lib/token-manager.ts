@@ -249,6 +249,12 @@ export class TokenManager implements ITokenManager {
    * Solely responsible for building the HTTP request and calling the token service.
    */
   private requestAccessToken(): Promise<HTTPResponse> {
+    // Set issued at time to 5 seconds in the past to account for clock skew
+    const ISSUED_AT_BUFFER_IN_SECONDS = 5
+    const MAX_EXPIRY_IN_SECONDS = 60
+    // Final expiry time takes into account the issued at time, so need to subtract IAT buffer
+    const EXPIRY_IN_SECONDS =
+      MAX_EXPIRY_IN_SECONDS - ISSUED_AT_BUFFER_IN_SECONDS
     const jti = uuid()
     const currentUTCInSeconds =
       Math.round(Date.now() / 1000) - this.clockSkewInSeconds
@@ -256,8 +262,8 @@ export class TokenManager implements ITokenManager {
       iss: this.clientId,
       sub: this.clientId,
       aud: this.authServer,
-      iat: currentUTCInSeconds - 5,
-      exp: currentUTCInSeconds + 55,
+      iat: currentUTCInSeconds - ISSUED_AT_BUFFER_IN_SECONDS,
+      exp: currentUTCInSeconds + EXPIRY_IN_SECONDS,
       jti,
     }
 
