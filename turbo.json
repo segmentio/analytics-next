@@ -28,6 +28,9 @@
       "dependsOn": ["build"],
       "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
+    },
+    "cloudflare-workers": {
+      "dependsOn": ["build"]
     }
   }
 }

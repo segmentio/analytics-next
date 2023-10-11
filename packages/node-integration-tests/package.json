@@ -11,7 +11,7 @@
     "concurrently": "yarn run -T concurrently",
     "ts-node": "yarn run -T ts-node",
     "test": "yarn perf && yarn durability",
-    "cf-workers": "yarn run -T jest src/cloudflare"
+    "cloudflare-workers": "yarn run -T jest src/cloudflare"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231002.0",
