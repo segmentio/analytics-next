@@ -10,16 +10,20 @@
     "durability": "yarn ts-node src/durability-tests/durability-tests.ts",
     "concurrently": "yarn run -T concurrently",
     "ts-node": "yarn run -T ts-node",
-    "test": "yarn perf && yarn durability"
+    "test": "yarn jest && yarn perf && yarn durability",
+    "jest": "yarn run -T jest"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20231002.0",
+    "@internal/config": "workspace:^",
     "@internal/test-helpers": "workspace:^",
     "@segment/analytics-node": "workspace:^",
     "@types/analytics-node": "^3.1.9",
     "@types/autocannon": "^7",
     "@types/node": "^16",
     "analytics-node": "^6.2.0",
-    "autocannon": "^7.10.0"
+    "autocannon": "^7.10.0",
+    "wrangler": "^3.11.0"
   },
   "packageManager": "yarn@3.4.1"
 }
