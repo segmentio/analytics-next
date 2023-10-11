@@ -47,7 +47,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
-      - run: yarn turbo run --filter='./packages/node-integration-tests' cf-workers
+      - run: yarn turbo run --filter='./packages/node-integration-tests' cloudflare-workers
   consent-intg-tests:
     name: Consent Integration Tests
     runs-on: ubuntu-latest
