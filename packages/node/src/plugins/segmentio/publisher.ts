@@ -61,7 +61,7 @@ export class Publisher {
       httpRequestTimeout,
       httpClient,
       disable,
-      oauthSettings: oauthSettings,
+      oauthSettings,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -82,9 +82,7 @@ export class Publisher {
       const TokenManager = dependencyInjection.get('TokenManager')
       oauthSettings.httpClient ??= httpClient
       oauthSettings.maxRetries ??= maxRetries
-      this._tokenManager = new TokenManager({
-        ...oauthSettings,
-      })
+      this._tokenManager = new TokenManager(oauthSettings)
     }
   }
 
