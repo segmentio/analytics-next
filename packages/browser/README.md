@@ -86,8 +86,13 @@ analytics
 [Self Hosting or Proxying Analytics.js documentation](
  https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/custom-proxy/#custom-cdn--api-proxy)
 
-## Usage in Common Frameworks
-### React
+## Usage in Common Frameworks / SPAs
+
+### Next.js
+- https://github.com/vercel/next.js/tree/canary/examples/with-segment-analytics
+- https://github.com/vercel/next.js/tree/canary/examples/with-segment-analytics-pages-router
+
+### Vanilla React
 ```tsx
 import { AnalyticsBrowser } from '@segment/analytics-next'
 
@@ -101,12 +106,9 @@ const App = () => (
 )
 ```
 
-More React Examples:
-> Warning ⚠️ Some of these examples may be overly-complex for your use case, we recommend the simple approach outlined above.
-- Our [playground](/examples/with-next-js/) (written in NextJS) -- this can be run with `yarn dev`.
-- Complex [React example repo](https://github.com/segmentio/react-example/) which outlines using the [Segment snippet](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-quick-start) and using the [Segment npm package](https://github.com/segmentio/react-example/tree/main/src/examples/analytics-package).
 
-### `Vue`
+
+### Vue
 
 1. Export analytics instance.
 
