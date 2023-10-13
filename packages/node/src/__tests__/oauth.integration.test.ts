@@ -48,19 +48,18 @@ const oauthFetcher = jest.spyOn(oauthTestClient, 'makeRequest')
 const tapiTestClient = new TestFetchClient()
 const tapiFetcher = jest.spyOn(tapiTestClient, 'makeRequest')
 
-const getOauthSettings = () =>
-  ({
-    httpClient: oauthTestClient,
-    maxRetries: 3,
-    clientId: 'clientId',
-    clientKey: privateKey,
-    keyId: 'keyId',
-    scope: 'scope',
-    authServer: 'http://127.0.0.1:1234',
-  } as OAuthSettings)
+const getOAuthSettings = (): OAuthSettings => ({
+  httpClient: oauthTestClient,
+  maxRetries: 3,
+  clientId: 'clientId',
+  clientKey: privateKey,
+  keyId: 'keyId',
+  scope: 'scope',
+  authServer: 'http://127.0.0.1:1234',
+})
 
 const createOAuthSuccess = async (body?: any): Promise<HTTPResponse> => ({
-  text: () => Promise.resolve(JSON.stringify(body)),
+  text: async () => JSON.stringify(body),
   status: 200,
   statusText: 'OK',
 })
@@ -70,14 +69,14 @@ const createOAuthError = async (
 ): Promise<HTTPResponse> => ({
   status: 400,
   statusText: 'Foo',
-  text: () => Promise.resolve(''),
+  text: async () => '',
   ...overrides,
 })
 
 describe('OAuth Integration Success', () => {
   it('track event with OAuth', async () => {
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
     })
     const eventName = 'Test Event'
 
@@ -107,7 +106,7 @@ describe('OAuth Integration Success', () => {
   })
   it('track event with OAuth after retry', async () => {
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
     })
     oauthFetcher
       .mockReturnValueOnce(createOAuthError({ status: 425 }))
@@ -140,7 +139,7 @@ describe('OAuth Integration Success', () => {
 
   it('delays appropriately on 429 error', async () => {
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
     })
     const retryTime = Date.now() + 250
     oauthFetcher
@@ -170,7 +169,7 @@ describe('OAuth Integration Success', () => {
 describe('OAuth Failure', () => {
   it('surfaces error after retries', async () => {
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
     })
 
     oauthFetcher.mockReturnValue(createOAuthError({ status: 500 }))
@@ -208,7 +207,7 @@ describe('OAuth Failure', () => {
   it('surfaces error after failing immediately', async () => {
     const logger = jest.fn()
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
     }).on('error', (err) => {
       logger(err)
     })
@@ -236,7 +235,7 @@ describe('OAuth Failure', () => {
   })
 
   it('handles a bad key', async () => {
-    const props = getOauthSettings()
+    const props = getOAuthSettings()
     props.clientKey = 'Garbage'
     const analytics = createTestAnalytics({
       oauthSettings: props,
@@ -263,7 +262,7 @@ describe('OAuth Failure', () => {
   })
 
   it('OAuth inherits Analytics custom client', async () => {
-    const oauthSettings = getOauthSettings()
+    const oauthSettings = getOAuthSettings()
     oauthSettings.httpClient = undefined
     const analytics = createTestAnalytics({
       oauthSettings: oauthSettings,
@@ -293,7 +292,7 @@ describe('OAuth Failure', () => {
 describe('TAPI rejection', () => {
   it('surfaces error', async () => {
     const analytics = createTestAnalytics({
-      oauthSettings: getOauthSettings(),
+      oauthSettings: getOAuthSettings(),
       httpClient: tapiTestClient,
     })
     const eventName = 'Test Event'

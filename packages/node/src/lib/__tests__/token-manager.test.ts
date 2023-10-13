@@ -38,7 +38,7 @@ const testClient = new TestFetchClient()
 const fetcher = jest.spyOn(testClient, 'makeRequest')
 
 const createOAuthSuccess = async (body?: any): Promise<HTTPResponse> => ({
-  text: () => Promise.resolve(JSON.stringify(body)),
+  text: async () => JSON.stringify(body),
   status: 200,
   statusText: 'OK',
 })
@@ -46,7 +46,7 @@ const createOAuthSuccess = async (body?: any): Promise<HTTPResponse> => ({
 const createOAuthError = async (
   overrides: Partial<HTTPResponse> = {}
 ): Promise<HTTPResponse> => ({
-  text: () => Promise.resolve(''),
+  text: async () => '',
   status: 400,
   statusText: 'Foo',
   ...overrides,
