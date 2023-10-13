@@ -1,8 +1,7 @@
 import { sleep } from '@segment/analytics-core'
 import { TestFetchClient } from '../../__tests__/test-helpers/create-test-analytics'
 import { HTTPResponse } from '../http-client'
-import { OAuthSettings } from '../types'
-import { TokenManager } from '../token-manager'
+import { TokenManager, TokenManagerSettings } from '../token-manager'
 
 // NOTE: Fake private key for illustrative purposes only
 const privateKey = `-----BEGIN PRIVATE KEY-----
@@ -53,7 +52,7 @@ const createOAuthError = async (
 })
 
 const getTokenManager = () => {
-  const oauthSettings = {
+  const oauthSettings: TokenManagerSettings = {
     httpClient: testClient,
     maxRetries: 3,
     clientId: 'clientId',
@@ -61,7 +60,7 @@ const getTokenManager = () => {
     keyId: 'keyId',
     scope: 'scope',
     authServer: 'http://127.0.0.1:1234',
-  } as OAuthSettings
+  }
 
   return new TokenManager(oauthSettings)
 }

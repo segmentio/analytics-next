@@ -1,4 +1,5 @@
 import { HTTPClient } from './http-client'
+import { TokenManagerSettings } from './token-manager'
 
 export interface OAuthSettings {
   /**
@@ -53,5 +54,5 @@ export interface TokenManager {
 }
 
 export interface TokenManagerConstructor {
-  new (props: OAuthSettings): TokenManager
+  new (settings: TokenManagerSettings): TokenManager
 }

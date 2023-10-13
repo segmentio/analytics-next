@@ -80,9 +80,11 @@ export class Publisher {
 
     if (oauthSettings) {
       const TokenManager = dependencyInjection.get('TokenManager')
-      oauthSettings.httpClient ??= httpClient
-      oauthSettings.maxRetries ??= maxRetries
-      this._tokenManager = new TokenManager(oauthSettings)
+      this._tokenManager = new TokenManager({
+        ...oauthSettings,
+        httpClient: oauthSettings.httpClient ?? httpClient,
+        maxRetries: oauthSettings.maxRetries ?? maxRetries,
+      })
     }
   }
 

@@ -1,10 +1,5 @@
 import { uuid } from './uuid'
-import {
-  FetchHTTPClient,
-  HTTPClient,
-  HTTPClientRequest,
-  HTTPResponse,
-} from './http-client'
+import { HTTPClient, HTTPClientRequest, HTTPResponse } from './http-client'
 import { SignOptions, sign } from 'jsonwebtoken'
 import { Emitter, backoff, sleep } from '@segment/analytics-core'
 import type {
@@ -59,6 +54,11 @@ function isHeaders(thing: unknown): thing is HTTPResponse['headers'] {
   return false
 }
 
+export interface TokenManagerSettings extends OAuthSettings {
+  httpClient: HTTPClient
+  maxRetries: number
+}
+
 export class TokenManager implements ITokenManager {
   private alg = 'RS256' as const
   private grantType = 'client_credentials' as const
@@ -80,14 +80,14 @@ export class TokenManager implements ITokenManager {
   private retryCount: number
   private pollerTimer?: ReturnType<typeof setTimeout>
 
-  constructor(props: OAuthSettings) {
+  constructor(props: TokenManagerSettings) {
     this.keyId = props.keyId
     this.clientId = props.clientId
     this.clientKey = props.clientKey
     this.authServer = props.authServer ?? 'https://oauth2.segment.io'
     this.scope = props.scope ?? 'tracking_api:write'
-    this.httpClient = props.httpClient ?? new FetchHTTPClient()
-    this.maxRetries = props.maxRetries ?? 3
+    this.httpClient = props.httpClient
+    this.maxRetries = props.maxRetries
     this.tokenEmitter.on('access_token', (event) => {
       if ('token' in event) {
         this.accessToken = event.token
