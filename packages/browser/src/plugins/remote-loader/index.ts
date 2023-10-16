@@ -129,8 +129,6 @@ export class ActionDestination implements DestinationPlugin {
         `action_plugin_name:${this.action.name}`,
       ])
 
-      console.log(error)
-
       throw error
     }
   }
