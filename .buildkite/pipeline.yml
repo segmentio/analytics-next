@@ -98,6 +98,21 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
 
+  - label: '[Generic Utils] Lint + Test'
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - echo "+++ Run QA"
+      - yarn turbo run --filter=analytics-generic-utils lint
+      - yarn turbo run --filter=analytics-generic-utils test
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['.yarn/cache/']
+
   - label: '[Consent] Lint + Test'
     agents:
       queue: v1
