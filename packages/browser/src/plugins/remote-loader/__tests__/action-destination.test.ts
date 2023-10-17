@@ -1,16 +1,18 @@
 import unfetch from 'unfetch'
 import braze from '@segment/analytics-browser-actions-braze'
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 
 import { AnalyticsBrowser } from '../../../browser'
 import { createSuccess } from '../../../test-helpers/factories'
 import { JSDOM } from 'jsdom'
 
+const writeKey = 'abc'
+
 jest.mock('unfetch')
 jest.mocked(unfetch).mockImplementation(() =>
-  createSuccess({
-    integrations: {},
-    remotePlugins: [
-      {
+  createSuccess(
+    new CDNSettingsBuilder({ writeKey })
+      .addActionDestinationSettings({
         name: 'Braze Web Mode (Actions)',
         creationName: 'Braze Web Mode (Actions)',
         libraryName: 'brazeDestination',
@@ -38,9 +40,9 @@ jest.mocked(unfetch).mockImplementation(() =>
             },
           ],
         },
-      },
-    ],
-  })
+      })
+      .build()
+  )
 )
 
 beforeEach(async () => {
