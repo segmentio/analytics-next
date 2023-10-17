@@ -10,8 +10,8 @@
     "durability": "yarn ts-node src/durability-tests/durability-tests.ts",
     "concurrently": "yarn run -T concurrently",
     "ts-node": "yarn run -T ts-node",
-    "test": "yarn perf && yarn durability",
-    "cloudflare-workers": "yarn run -T jest src/cloudflare"
+    "test:perf-and-durability": "yarn perf && yarn durability",
+    "test:cloudflare-workers": "yarn run -T jest src/cloudflare-tests"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20231002.0",

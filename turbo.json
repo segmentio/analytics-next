@@ -29,7 +29,10 @@
       "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
       "outputs": []
     },
-    "cloudflare-workers": {
+    "test:cloudflare-workers": {
+      "dependsOn": ["build"]
+    },
+    "test:perf-and-durability": {
       "dependsOn": ["build"]
     }
   }

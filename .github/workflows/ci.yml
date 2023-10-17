@@ -27,6 +27,7 @@ jobs:
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: yarn turbo run --filter='./packages/node*' test
+      - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
   analytics-node-cf-workers:
     name: 'analytics-node QA (Cloudflare Workers)'
     runs-on: ubuntu-latest
@@ -47,7 +48,7 @@ jobs:
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
-      - run: yarn turbo run --filter='./packages/node-integration-tests' cloudflare-workers
+      - run: yarn turbo run --filter='./packages/node-integration-tests' test:cloudflare-workers
   consent-intg-tests:
     name: Consent Integration Tests
     runs-on: ubuntu-latest
