@@ -1,6 +1,6 @@
 import { join as joinPath } from 'path'
 import { unstable_dev } from 'wrangler'
-import { MockSegmentServer } from '../common/mock-segment'
+import { MockSegmentServer } from '../server/mock-segment-workers'
 
 const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
