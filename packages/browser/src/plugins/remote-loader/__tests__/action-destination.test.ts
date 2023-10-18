@@ -1,9 +1,8 @@
 import unfetch from 'unfetch'
-import braze from '@segment/analytics-browser-actions-braze'
+import { PluginFactory } from '..'
 
 import { AnalyticsBrowser } from '../../../browser'
 import { createSuccess } from '../../../test-helpers/factories'
-import { JSDOM } from 'jsdom'
 
 jest.mock('unfetch')
 jest.mocked(unfetch).mockImplementation(() =>
@@ -11,30 +10,15 @@ jest.mocked(unfetch).mockImplementation(() =>
     integrations: {},
     remotePlugins: [
       {
-        name: 'Braze Web Mode (Actions)',
-        creationName: 'Braze Web Mode (Actions)',
-        libraryName: 'brazeDestination',
-        url: 'https://cdn.segment.com/next-integrations/actions/braze/a6f95f5869852b848386.js',
+        name: 'testDestination',
+        libraryName: 'testDestination',
         settings: {
-          api_key: 'test-api-key',
-          versionSettings: {
-            componentTypes: [],
-          },
           subscriptions: [
             {
-              id: '3thVuvYKBcEGKEZA185Tbs',
               name: 'Track Calls',
               enabled: true,
               partnerAction: 'trackEvent',
-              subscribe: 'type = "track" and event != "Order Completed"',
-              mapping: {
-                eventName: {
-                  '@path': '$.event',
-                },
-                eventProperties: {
-                  '@path': '$.properties',
-                },
-              },
+              subscribe: 'type = "track"',
             },
           ],
         },
@@ -43,39 +27,24 @@ jest.mocked(unfetch).mockImplementation(() =>
   })
 )
 
-beforeEach(async () => {
-  const html = `
-  <!DOCTYPE html>
-    <head>
-      <script>'hi'</script>
-    </head>
-    <body>
-    </body>
-  </html>
-  `.trim()
+const testDestination: PluginFactory = () => {
+  return {
+    name: 'testDestination',
+    version: '1.0.0',
+    type: 'destination',
+    isLoaded: () => true,
+    load: () => Promise.resolve(),
+    track: (ctx) => Promise.resolve(ctx),
+  }
+}
 
-  const jsd = new JSDOM(html, {
-    runScripts: 'dangerously',
-    resources: 'usable',
-    url: 'https://localhost',
-  })
-
-  const windowSpy = jest.spyOn(global, 'window', 'get')
-  windowSpy.mockImplementation(
-    () => jsd.window as unknown as Window & typeof globalThis
-  )
-
-  const documentSpy = jest.spyOn(global, 'document', 'get')
-  documentSpy.mockImplementation(
-    () => jsd.window.document as unknown as Document
-  )
-})
+testDestination.pluginName = 'testDestination'
 
 describe('ActionDestination', () => {
   it('captures essential metrics when invoking methods on an action plugin', async () => {
     const ajs = AnalyticsBrowser.load({
       writeKey: 'abc',
-      plugins: [braze as any],
+      plugins: [testDestination],
     })
 
     await ajs.ready()
@@ -83,10 +52,7 @@ describe('ActionDestination', () => {
     expect(ajs.ctx?.stats.metrics[0]).toMatchObject(
       expect.objectContaining({
         metric: 'analytics_js.action_plugin.invoke',
-        tags: [
-          'method:load',
-          'action_plugin_name:Braze Web Mode (Actions) trackEvent',
-        ],
+        tags: ['method:load', 'action_plugin_name:testDestination'],
       })
     )
 
@@ -99,10 +65,7 @@ describe('ActionDestination', () => {
     expect(actionInvokeMetric).toMatchObject(
       expect.objectContaining({
         metric: 'analytics_js.action_plugin.invoke',
-        tags: [
-          'method:track',
-          'action_plugin_name:Braze Web Mode (Actions) trackEvent',
-        ],
+        tags: ['method:track', 'action_plugin_name:testDestination'],
       })
     )
   })
