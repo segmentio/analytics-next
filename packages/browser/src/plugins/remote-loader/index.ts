@@ -79,7 +79,21 @@ export class ActionDestination implements DestinationPlugin {
         transformedContext = await this.transform(ctx)
       }
 
-      await this.action[methodName]!(transformedContext)
+      try {
+        ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
+          `method:${methodName}`,
+          `action_plugin_name:${this.action.name}`,
+        ])
+
+        await this.action[methodName]!(transformedContext)
+      } catch (error) {
+        ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
+          `method:${methodName}`,
+          `action_plugin_name:${this.action.name}`,
+        ])
+
+        throw error
+      }
 
       return ctx
     }
@@ -101,8 +115,22 @@ export class ActionDestination implements DestinationPlugin {
     return this.action.ready ? this.action.ready() : Promise.resolve()
   }
 
-  load(ctx: Context, analytics: Analytics): Promise<unknown> {
-    return this.action.load(ctx, analytics)
+  async load(ctx: Context, analytics: Analytics): Promise<unknown> {
+    try {
+      ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
+        `method:load`,
+        `action_plugin_name:${this.action.name}`,
+      ])
+
+      return await this.action.load(ctx, analytics)
+    } catch (error) {
+      ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
+        `method:load`,
+        `action_plugin_name:${this.action.name}`,
+      ])
+
+      throw error
+    }
   }
 
   unload(ctx: Context, analytics: Analytics): Promise<unknown> | unknown {
