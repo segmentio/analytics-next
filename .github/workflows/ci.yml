@@ -6,17 +6,17 @@ env:
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
   analytics-node:
-    name: "analytics-node QA (Node.js v${{ matrix.node-version }})"
+    name: 'analytics-node QA (Node.js v${{ matrix.node-version }})'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [ 14, 16, 18 ]
+        node-version: [14, 16, 18]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "yarn"
+          cache: 'yarn'
       - run: yarn install --immutable
       - name: Turbo cache
         uses: actions/cache@v3
@@ -27,6 +27,28 @@ jobs:
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: yarn turbo run --filter='./packages/node*' test
+      - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
+  analytics-node-cf-workers:
+    name: 'analytics-node QA (Cloudflare Workers)'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - name: Turbo cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules/.cache/turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      - run: yarn turbo run --filter='./packages/node-integration-tests' test:cloudflare-workers
   consent-intg-tests:
     name: Consent Integration Tests
     runs-on: ubuntu-latest
@@ -37,7 +59,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: "yarn"
+          cache: 'yarn'
       - run: yarn install --immutable
       - name: Turbo cache
         uses: actions/cache@v3
@@ -47,6 +69,3 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='consent-tools-integration-tests' test:int
-
-
-
