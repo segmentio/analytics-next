@@ -2569,7 +2569,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internal/test-helpers@workspace:^, @internal/test-helpers@workspace:packages/test-helpers":
+"@internal/test-helpers@0.0.0, @internal/test-helpers@workspace:^, @internal/test-helpers@workspace:packages/test-helpers":
   version: 0.0.0-use.local
   resolution: "@internal/test-helpers@workspace:packages/test-helpers"
   dependencies:
@@ -3516,6 +3516,7 @@ __metadata:
   resolution: "@segment/analytics-next@workspace:packages/browser"
   dependencies:
     "@internal/config": 0.0.0
+    "@internal/test-helpers": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-browser-actions-braze": ^1.3.0
     "@segment/analytics-core": 1.3.2
