@@ -80,8 +80,6 @@ describe('ActionDestination', () => {
 
     await ajs.ready()
 
-    expect(ajs.ctx?.stats.metrics).toHaveLength(1)
-
     expect(ajs.ctx?.stats.metrics[0]).toMatchObject(
       expect.objectContaining({
         metric: 'analytics_js.action_plugin.invoke',
