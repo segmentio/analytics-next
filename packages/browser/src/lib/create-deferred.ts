@@ -16,6 +16,6 @@ export const createDeferred = <T>() => {
     resolve,
     reject,
     promise,
-    settled,
+    isSettled: () => settled,
   }
 }
