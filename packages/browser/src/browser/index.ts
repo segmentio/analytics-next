@@ -347,7 +347,6 @@ async function loadAnalytics(
 
   options = {
     retryQueue,
-    destinationTimeout: 3000,
     ...options,
   }
 
@@ -385,7 +384,6 @@ async function loadAnalytics(
     .ready()
     .then(() => {
       analytics.initialized = true
-      console.log('emitting initialize')
       analytics.emit('initialize', settings, options)
     })
     .catch(() => {})

@@ -302,8 +302,6 @@ export abstract class CoreEventQueue<
       }, 0)
     })
 
-    console.log('Running after plugins')
-
     ctx.stats.increment('message_delivered')
 
     this.emit('message_delivered', ctx)
