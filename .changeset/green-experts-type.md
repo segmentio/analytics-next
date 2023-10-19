@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-generic-utils': patch
+'@segment/analytics-generic-utils': major
 '@segment/analytics-node': patch
 ---
 
