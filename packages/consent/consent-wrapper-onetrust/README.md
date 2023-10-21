@@ -58,7 +58,7 @@ If you don't see a "Consent Management" option like the one below, please contac
 
 1. Ensure that OneTrust Snippet is loaded. [See example above.](#add-onetrust-snippet-and-integration-to-your-page)
 
-1. Install the package from npm
+2. Install the package from npm
 
 ```sh
 # npm
@@ -71,7 +71,7 @@ yarn add @segment/analytics-consent-wrapper-onetrust
 pnpm add @segment/analytics-consent-wrapper-onetrust
 ```
 
-2. Initialize alongside analytics
+3. Initialize alongside analytics
 
 ```ts
 import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
