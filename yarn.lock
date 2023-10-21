@@ -3747,7 +3747,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@segment/analytics-generic-utils@0.0.1, @segment/analytics-generic-utils@workspace:packages/generic-utils":
+"@segment/analytics-generic-utils@1.0.0, @segment/analytics-generic-utils@workspace:packages/generic-utils":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-generic-utils@workspace:packages/generic-utils"
   languageName: unknown
@@ -3817,7 +3817,7 @@ __metadata:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.3.2
-    "@segment/analytics-generic-utils": 0.0.1
+    "@segment/analytics-generic-utils": 1.0.0
     "@types/node": ^16
     axios: ^1.4.0
     buffer: ^6.0.3
