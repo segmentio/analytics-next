@@ -60,7 +60,7 @@ describe('Remote Loader', () => {
       },
       {},
       {},
-      true
+      { obfuscate: true }
     )
     const btoaName = btoa('to').replace(/=/g, '')
     expect(loader.loadScript).toHaveBeenCalledWith(
@@ -185,7 +185,7 @@ describe('Remote Loader', () => {
       },
       {},
       {},
-      false,
+      undefined,
       undefined,
       [brazeSpy as unknown as PluginFactory]
     )
@@ -357,7 +357,7 @@ describe('Remote Loader', () => {
     expect(plugins).toHaveLength(3)
     expect(plugins).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           action: one,
           name: 'multiple plugins',
           version: '1.0.0',
@@ -370,8 +370,8 @@ describe('Remote Loader', () => {
           identify: expect.any(Function),
           page: expect.any(Function),
           screen: expect.any(Function),
-        },
-        {
+        }),
+        expect.objectContaining({
           action: two,
           name: 'multiple plugins',
           version: '1.0.0',
@@ -384,8 +384,8 @@ describe('Remote Loader', () => {
           identify: expect.any(Function),
           page: expect.any(Function),
           screen: expect.any(Function),
-        },
-        {
+        }),
+        expect.objectContaining({
           action: three,
           name: 'single plugin',
           version: '1.0.0',
@@ -398,7 +398,7 @@ describe('Remote Loader', () => {
           identify: expect.any(Function),
           page: expect.any(Function),
           screen: expect.any(Function),
-        },
+        }),
       ])
     )
     expect(multiPluginFactory).toHaveBeenCalledWith({ foo: true })
@@ -500,7 +500,7 @@ describe('Remote Loader', () => {
     expect(plugins).toHaveLength(1)
     expect(plugins).toEqual(
       expect.arrayContaining([
-        {
+        expect.objectContaining({
           action: validPlugin,
           name: 'valid plugin',
           version: '1.0.0',
@@ -513,7 +513,7 @@ describe('Remote Loader', () => {
           identify: expect.any(Function),
           page: expect.any(Function),
           screen: expect.any(Function),
-        },
+        }),
       ])
     )
     expect(console.warn).toHaveBeenCalledTimes(1)
@@ -827,7 +827,13 @@ describe('Remote Loader', () => {
       cdnSettings.middlewareSettings!.routingRules
     )
 
-    const plugins = await remoteLoader(cdnSettings, {}, {}, false, middleware)
+    const plugins = await remoteLoader(
+      cdnSettings,
+      {},
+      {},
+      undefined,
+      middleware
+    )
     const plugin = plugins[0]
     await expect(() =>
       plugin.track!(new Context({ type: 'track', event: 'Item Impression' }))
@@ -845,7 +851,7 @@ describe('Remote Loader', () => {
       name: 'valid',
       version: '1.0.0',
       type: 'enrichment',
-      load: () => {},
+      load: () => Promise.resolve(),
       isLoaded: () => true,
       track: (ctx: Context) => ctx,
     }
@@ -890,8 +896,15 @@ describe('Remote Loader', () => {
 
     const middleware = jest.fn().mockImplementation(() => true)
 
-    const plugins = await remoteLoader(cdnSettings, {}, {}, false, middleware)
+    const plugins = await remoteLoader(
+      cdnSettings,
+      {},
+      {},
+      undefined,
+      middleware
+    )
     const plugin = plugins[0] as ActionDestination
+    await plugin.load(new Context(null as any), null as any)
     plugin.addMiddleware(middleware)
     await plugin.track(new Context({ type: 'track' }))
     expect(middleware).not.toHaveBeenCalled()
@@ -902,7 +915,7 @@ describe('Remote Loader', () => {
       name: 'valid',
       version: '1.0.0',
       type: 'enrichment',
-      load: () => {},
+      load: () => Promise.resolve(),
       isLoaded: () => true,
       track: (ctx: Context) => {
         ctx.event.name += 'bar'
@@ -932,8 +945,9 @@ describe('Remote Loader', () => {
       return Promise.resolve(true)
     })
 
-    const plugins = await remoteLoader(cdnSettings, {}, {}, false)
+    const plugins = await remoteLoader(cdnSettings, {}, {})
     const plugin = plugins[0] as ActionDestination
+    await plugin.load(new Context(null as any), null as any)
     const newCtx = await plugin.track(
       new Context({ type: 'track', name: 'foo' })
     )

@@ -353,7 +353,7 @@ describe('Pre-initialization', () => {
       const onReadyPromise = analytics.ready(onReadyCb)
       expect(onReadyCb).not.toHaveBeenCalled()
       await onReadyPromise
-      expect(readySpy).toHaveBeenCalledTimes(1)
+      expect(readySpy).toHaveBeenCalledTimes(2)
       expect(onReadyCb).toHaveBeenCalledTimes(1)
       expect(readySpy).toHaveBeenCalledWith(expect.any(Function))
     })
