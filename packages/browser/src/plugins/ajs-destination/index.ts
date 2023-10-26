@@ -76,8 +76,8 @@ export class LegacyDestination implements DestinationPlugin {
 
   private _ready: boolean | undefined
   private _initialized: boolean | undefined
-  private readyPromise = createDeferred<void>()
-  private initializePromise = createDeferred<void>()
+  private readyPromise = createDeferred<boolean>()
+  private initializePromise = createDeferred<boolean>()
   private disableAutoISOConversion: boolean
 
   integrationSource?: ClassicIntegrationSource
@@ -106,12 +106,14 @@ export class LegacyDestination implements DestinationPlugin {
       delete this.settings['type']
     }
 
-    this.readyPromise.promise
-      .then(() => (this._ready = true))
-      .catch(() => (this._ready = false))
-    this.initializePromise.promise
-      .then(() => (this._initialized = true))
-      .catch(() => (this._initialized = false))
+    this.readyPromise.promise.then(
+      (isReady) => (this._ready = isReady),
+      () => {}
+    )
+    this.initializePromise.promise.then(
+      (isInitialized) => (this._initialized = isInitialized),
+      () => {}
+    )
 
     this.options = options
     this.buffer = options.disableClientPersistence
@@ -125,12 +127,12 @@ export class LegacyDestination implements DestinationPlugin {
     return !!this._ready
   }
 
-  ready(): Promise<unknown> {
+  ready(): Promise<boolean> {
     return this.readyPromise.promise
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
-    if (typeof this._ready === 'boolean') {
+    if (this._ready !== undefined) {
       return
     }
 
@@ -150,17 +152,16 @@ export class LegacyDestination implements DestinationPlugin {
     )
 
     setTimeout(() => {
-      const e = 'Destination timed out'
-      this.initializePromise.reject(e)
-      this.readyPromise.reject(e)
+      this.initializePromise.resolve(false)
+      this.readyPromise.resolve(false)
     }, this.options.destinationTimeout ?? DEFAULT_DESTINATION_TIMEOUT)
 
     this.integration!.once('ready', () => {
-      this.readyPromise.resolve()
+      this.readyPromise.resolve(true)
     })
 
     this.integration!.on('initialize', () => {
-      this.initializePromise.resolve()
+      this.initializePromise.resolve(true)
     })
 
     try {
@@ -269,7 +270,12 @@ export class LegacyDestination implements DestinationPlugin {
 
     try {
       if (this.integration) {
-        await this.ready()
+        if (!(await this.ready())) {
+          throw new Error(
+            'Something prevented the integration from getting ready'
+          )
+        }
+
         await this.integration!.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {

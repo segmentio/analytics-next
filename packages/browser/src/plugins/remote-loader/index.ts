@@ -87,14 +87,19 @@ export class ActionDestination implements DestinationPlugin {
         transformedContext = await this.transform(ctx)
       }
 
-      await this.ready()
-
       try {
         recordIntegrationMetric(ctx, {
           integrationName: this.action.name,
           methodName,
           type: 'action',
         })
+
+        if (!(await this.ready())) {
+          throw new Error(
+            'Something prevented the destination from getting ready'
+          )
+        }
+
         await this.action[methodName]!(transformedContext)
       } catch (error) {
         recordIntegrationMetric(ctx, {
@@ -122,13 +127,19 @@ export class ActionDestination implements DestinationPlugin {
     return this.action.isLoaded()
   }
 
-  ready(): Promise<unknown> {
-    return this.loadPromise.promise
+  async ready(): Promise<boolean> {
+    const loadOutput = await this.loadPromise.promise
+    return !(loadOutput instanceof Error)
   }
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
     if (this.loadPromise.isSettled()) {
-      return this.loadPromise
+      const prevLoad = await this.loadPromise.promise
+      if (prevLoad instanceof Error) {
+        throw prevLoad
+      } else {
+        return prevLoad
+      }
     }
 
     try {
@@ -140,8 +151,9 @@ export class ActionDestination implements DestinationPlugin {
 
       const ret = await pTimeout(
         this.action.load(ctx, analytics),
-        this.destinationTimeout
+        this.type === 'destination' ? this.destinationTimeout : Infinity
       )
+
       this.loadPromise.resolve(ret)
       return ret
     } catch (error) {
@@ -152,7 +164,7 @@ export class ActionDestination implements DestinationPlugin {
         didError: true,
       })
 
-      this.loadPromise.reject(error)
+      this.loadPromise.resolve(error)
       throw error
     }
   }
