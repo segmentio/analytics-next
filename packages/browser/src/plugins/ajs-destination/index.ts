@@ -30,8 +30,6 @@ import {
   isInstallableIntegration,
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
-import { createDeferred } from '../../lib/create-deferred'
-import { DEFAULT_DESTINATION_TIMEOUT } from '../../core/constants'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -74,10 +72,10 @@ export class LegacyDestination implements DestinationPlugin {
   type: Plugin['type'] = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
 
-  private _ready: boolean | undefined
-  private _initialized: boolean | undefined
-  private readyPromise = createDeferred<boolean>()
-  private initializePromise = createDeferred<boolean>()
+  private _ready = false
+  private _initialized = false
+  private onReady: Promise<unknown> | undefined
+  private onInitialize: Promise<unknown> | undefined
   private disableAutoISOConversion: boolean
 
   integrationSource?: ClassicIntegrationSource
@@ -106,15 +104,6 @@ export class LegacyDestination implements DestinationPlugin {
       delete this.settings['type']
     }
 
-    this.readyPromise.promise.then(
-      (isReady) => (this._ready = isReady),
-      () => {}
-    )
-    this.initializePromise.promise.then(
-      (isInitialized) => (this._initialized = isInitialized),
-      () => {}
-    )
-
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
@@ -124,15 +113,15 @@ export class LegacyDestination implements DestinationPlugin {
   }
 
   isLoaded(): boolean {
-    return !!this._ready
+    return this._ready
   }
 
-  ready(): Promise<boolean> {
-    return this.readyPromise.promise
+  ready(): Promise<unknown> {
+    return this.onReady ?? Promise.resolve()
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
-    if (this._ready !== undefined) {
+    if (this._ready || this.onReady !== undefined) {
       return
     }
 
@@ -151,17 +140,22 @@ export class LegacyDestination implements DestinationPlugin {
       analyticsInstance
     )
 
-    setTimeout(() => {
-      this.initializePromise.resolve(false)
-      this.readyPromise.resolve(false)
-    }, this.options.destinationTimeout ?? DEFAULT_DESTINATION_TIMEOUT)
+    this.onReady = new Promise((resolve) => {
+      const onReadyFn = (): void => {
+        this._ready = true
+        resolve(true)
+      }
 
-    this.integration!.once('ready', () => {
-      this.readyPromise.resolve(true)
+      this.integration!.once('ready', onReadyFn)
     })
 
-    this.integration!.on('initialize', () => {
-      this.initializePromise.resolve(true)
+    this.onInitialize = new Promise((resolve) => {
+      const onInit = (): void => {
+        this._initialized = true
+        resolve(true)
+      }
+
+      this.integration!.on('initialize', onInit)
     })
 
     try {
@@ -270,13 +264,7 @@ export class LegacyDestination implements DestinationPlugin {
 
     try {
       if (this.integration) {
-        if (!(await this.ready())) {
-          throw new Error(
-            'Something prevented the integration from getting ready'
-          )
-        }
-
-        await this.integration!.invoke.call(this.integration, eventType, event)
+        await this.integration.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
       recordIntegrationMetric(ctx, {
@@ -300,8 +288,9 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration.initialize()
     }
 
-    await this.initializePromise.promise
-    return this.send(ctx, Page as ClassType<Page>, 'page')
+    return this.onInitialize!.then(() => {
+      return this.send(ctx, Page as ClassType<Page>, 'page')
+    })
   }
 
   async identify(ctx: Context): Promise<Context> {
