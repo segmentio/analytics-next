@@ -62,16 +62,16 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         await loadWrapper
         const ctx = new LoadContext()
         if (await shouldDisableConsentRequirement?.()) {
-          throw ctx.abort({ loadSegmentNormally: true })
+          throw ctx.abort({ disableConsentRequirement: true })
         }
 
         initialCategories =
           (await shouldLoadSegment?.(ctx)) || (await getCategories())
       } catch (e: unknown) {
-        // consumer can call ctx.abort({ loadSegmentNormally: true })
+        // consumer can call ctx.abort({ disableConsentRequirement: true })
         // to load Segment but disable consent requirement
         if (e instanceof AbortLoadError) {
-          if (e.loadSegmentNormally === true) {
+          if (e.disableConsentRequirement === true) {
             ogLoad.call(analytics, settings, options)
           }
           // do not load anything, but do not log anything either

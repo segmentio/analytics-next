@@ -144,7 +144,7 @@ describe(createWrapper, () => {
 
       it('should throw a special error if ctx.abort is called', async () => {
         const { shouldLoadSegment, getError } = createShouldLoadThatThrows({
-          loadSegmentNormally: true,
+          disableConsentRequirement: true,
         })
         wrapTestAnalytics({
           shouldLoadSegment,
@@ -153,7 +153,10 @@ describe(createWrapper, () => {
         expect(getError() instanceof AbortLoadError).toBeTruthy()
       })
 
-      it.each([{ loadSegmentNormally: true }, { loadSegmentNormally: false }])(
+      it.each([
+        { disableConsentRequirement: true },
+        { disableConsentRequirement: false },
+      ])(
         `should not log a console error or throw an error if ctx.abort is called (%p)`,
         async (args) => {
           wrapTestAnalytics({
@@ -169,7 +172,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoadSegment: (ctx) => {
             ctx.abort({
-              loadSegmentNormally: true, // magic config option
+              disableConsentRequirement: true, // magic config option
             })
           },
         })
@@ -182,7 +185,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoadSegment: (ctx) => {
             ctx.abort({
-              loadSegmentNormally: false, // magic config option
+              disableConsentRequirement: false, // magic config option
             })
             throw new Error('Fail')
           },

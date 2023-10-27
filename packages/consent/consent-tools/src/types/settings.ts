@@ -29,6 +29,25 @@ export interface CreateWrapperSettings {
    * Wait until this function resolves/returns before loading analytics.
    * This function should return a list of initial categories.
    * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
+   * @example
+   * ```ts
+   *   // Wrapper waits to load segment / get categories until this function returns / resolves
+   * shouldLoadSegment: async (ctx) => {
+   *   await resolveWhen(
+   *     () => !window.CMP.popUpVisible(),
+   *     500
+   *   )
+   *
+   *   // Optional
+   *   if (noConsentNeeded) {
+   *    // load Segment normally
+   *     ctx.abort({ disableConsentRequirement: true })
+   *   } else if (noTrackingNeeded) {
+   *    // do not load Segment
+   *     ctx.abort({ disableConsentRequirement: false })
+   *   }
+   * },
+   * ```
    **/
   shouldLoadSegment?: (
     context: LoadContext
@@ -72,8 +91,9 @@ export interface CreateWrapperSettings {
   registerOnConsentChanged?: RegisterOnConsentChangedFunction
 
   /**
-   * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
-   * Called on wrapper initialization. **shouldLoadSegment will never be called**
+   * This permanently disables the consent requirement (i.e device mode gating, event pref stamping) enforced by the wrapper.
+   * This is the same as doing "ctx.abort({ disableConsentRequirement: true })" inside of `shouldLoadSegment`.
+   * Called once on wrapper initialization. **shouldLoadSegment will never be called**
    **/
   shouldDisableConsentRequirement?: () => boolean | Promise<boolean>
 

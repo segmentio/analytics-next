@@ -5,17 +5,17 @@ import { ValidationError } from './validation/validation-error'
  * Thrown when a load should be cancelled.
  */
 export class AbortLoadError extends AnalyticsConsentError {
-  constructor(public loadSegmentNormally: boolean) {
+  constructor(public disableConsentRequirement: boolean) {
     super('AbortLoadError', '')
   }
 }
 
 export interface AbortLoadOptions {
   /**
-   * Whether or not to load segment.
-   * If true -- load segment normally (and disable consent requirement.) Wrapper is essentially a no-op
+   * Whether or not to disable the consent requirement that is normally enforced by the wrapper.
+   * If true -- load segment normally.
    */
-  loadSegmentNormally: boolean
+  disableConsentRequirement: boolean
 }
 
 export class LoadContext {
@@ -26,6 +26,6 @@ export class LoadContext {
     if (typeof options !== 'object') {
       throw new ValidationError('arg should be an object', options)
     }
-    throw new AbortLoadError(options.loadSegmentNormally)
+    throw new AbortLoadError(options.disableConsentRequirement)
   }
 }
