@@ -21,9 +21,9 @@ export const withCMP = createWrapper({
 
     // Optional -- for granular control of initialization
     if (noConsentNeeded) {
-      ctx.abort({ disableConsentRequirement: true })
+      ctx.abort({ loadSegmentNormally: true })
     } else if (allTrackingDisabled) {
-      ctx.abort({ disableConsentRequirement: false })
+      ctx.abort({ loadSegmentNormally: false })
     }
   },
 

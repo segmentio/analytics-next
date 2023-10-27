@@ -40,10 +40,10 @@ export interface CreateWrapperSettings {
    *   // Optional
    *   if (noConsentNeeded) {
    *    // load Segment normally
-   *     ctx.abort({ disableConsentRequirement: true })
+   *     ctx.abort({ loadSegmentNormally: true })
    *   } else if (noTrackingNeeded) {
    *    // do not load Segment
-   *     ctx.abort({ disableConsentRequirement: false })
+   *     ctx.abort({ loadSegmentNormally: false })
    *   }
    * },
    * ```
