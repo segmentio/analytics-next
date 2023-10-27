@@ -80,18 +80,10 @@ export class ActionDestination implements DestinationPlugin {
       }
 
       try {
-        ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
-          `method:${methodName}`,
-          `action_plugin_name:${this.action.name}`,
-        ])
-
+        this.recordMetric(ctx, methodName)
         await this.action[methodName]!(transformedContext)
       } catch (error) {
-        ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
-          `method:${methodName}`,
-          `action_plugin_name:${this.action.name}`,
-        ])
-
+        this.recordMetric(ctx, methodName, true)
         throw error
       }
 
@@ -117,24 +109,28 @@ export class ActionDestination implements DestinationPlugin {
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
     try {
-      ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
-        `method:load`,
-        `action_plugin_name:${this.action.name}`,
-      ])
-
+      this.recordMetric(ctx, 'load')
       return await this.action.load(ctx, analytics)
     } catch (error) {
-      ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
-        `method:load`,
-        `action_plugin_name:${this.action.name}`,
-      ])
-
+      this.recordMetric(ctx, 'load', true)
       throw error
     }
   }
 
   unload(ctx: Context, analytics: Analytics): Promise<unknown> | unknown {
     return this.action.unload?.(ctx, analytics)
+  }
+
+  private recordMetric(ctx: Context, methodName: string, errored = false) {
+    ctx.stats.increment(
+      `analytics_js.integration.invoke${errored ? '.error' : ''}`,
+      1,
+      [
+        `method:${methodName}`,
+        `integration_name:${this.action.name}`,
+        `type:${this.action.type}`,
+      ]
+    )
   }
 }
 

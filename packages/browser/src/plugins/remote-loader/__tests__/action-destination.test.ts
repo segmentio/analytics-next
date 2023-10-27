@@ -51,21 +51,29 @@ describe('ActionDestination', () => {
 
     expect(ajs.ctx?.stats.metrics[0]).toMatchObject(
       expect.objectContaining({
-        metric: 'analytics_js.action_plugin.invoke',
-        tags: ['method:load', 'action_plugin_name:testDestination'],
+        metric: 'analytics_js.integration.invoke',
+        tags: [
+          'method:load',
+          'integration_name:testDestination',
+          'type:destination',
+        ],
       })
     )
 
     const trackCtx = await ajs.track('test')
 
     const actionInvokeMetric = trackCtx.stats.metrics.find(
-      (m) => m.metric === 'analytics_js.action_plugin.invoke'
+      (m) => m.metric === 'analytics_js.integration.invoke'
     )
 
     expect(actionInvokeMetric).toMatchObject(
       expect.objectContaining({
-        metric: 'analytics_js.action_plugin.invoke',
-        tags: ['method:track', 'action_plugin_name:testDestination'],
+        metric: 'analytics_js.integration.invoke',
+        tags: [
+          'method:track',
+          'integration_name:testDestination',
+          'type:destination',
+        ],
       })
     )
   })

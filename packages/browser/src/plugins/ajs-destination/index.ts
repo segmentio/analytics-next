@@ -257,6 +257,7 @@ export class LegacyDestination implements DestinationPlugin {
     ctx.stats.increment('analytics_js.integration.invoke', 1, [
       `method:${eventType}`,
       `integration_name:${this.name}`,
+      `type:classic-destination`,
     ])
 
     try {
@@ -267,6 +268,7 @@ export class LegacyDestination implements DestinationPlugin {
       ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
         `method:${eventType}`,
         `integration_name:${this.name}`,
+        `type:classic-destination`,
       ])
       throw err
     }
