@@ -1,5 +1,5 @@
 import { OneTrustGlobal } from '../lib/onetrust-api'
-import { addMockImplementation } from './utils'
+import { addDebugMockImplementation } from './utils'
 import type { AnyAnalytics } from '@segment/analytics-consent-tools'
 /**
  * This can be used to mock the OneTrust global object in individual tests
@@ -22,5 +22,5 @@ export const analyticsMock: jest.Mocked<AnyAnalytics> = {
   track: jest.fn(),
 }
 
-addMockImplementation(OneTrustMockGlobal)
-addMockImplementation(analyticsMock)
+addDebugMockImplementation(OneTrustMockGlobal)
+addDebugMockImplementation(analyticsMock)

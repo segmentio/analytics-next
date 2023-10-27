@@ -1,4 +1,4 @@
-export const addMockImplementation = (mock: jest.Mocked<any>) => {
+export const addDebugMockImplementation = (mock: jest.Mocked<any>) => {
   Object.entries(mock).forEach(([method, value]) => {
     // automatically add mock implementation for debugging purposes
     if (typeof value === 'function') {
