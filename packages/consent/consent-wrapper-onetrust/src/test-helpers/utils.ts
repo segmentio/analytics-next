@@ -1,3 +1,6 @@
+/**
+ * Allows mocked objects to throw a helpful error message when a method is called without an implementation
+ */
 export const addDebugMockImplementation = (mock: jest.Mocked<any>) => {
   Object.entries(mock).forEach(([method, value]) => {
     // automatically add mock implementation for debugging purposes
