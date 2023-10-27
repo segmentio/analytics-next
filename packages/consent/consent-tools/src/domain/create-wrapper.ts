@@ -56,20 +56,17 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         return
       }
 
-      await loadWrapper
-      const consentRequirementDisabled =
-        await shouldDisableConsentRequirement?.()
-      if (consentRequirementDisabled) {
-        // ignore consent -- just call analytics.load as usual
-        return ogLoad.call(analytics, settings, options)
-      }
-
       // use these categories to disable/enable the appropriate device mode plugins
       let initialCategories: Categories
       try {
+        await loadWrapper
+        const ctx = new LoadContext()
+        if (await shouldDisableConsentRequirement?.()) {
+          throw ctx.abort({ loadSegmentNormally: true })
+        }
+
         initialCategories =
-          (await shouldLoadSegment?.(new LoadContext())) ||
-          (await getCategories())
+          (await shouldLoadSegment?.(ctx)) || (await getCategories())
       } catch (e: unknown) {
         // consumer can call ctx.abort({ loadSegmentNormally: true })
         // to load Segment but disable consent requirement
