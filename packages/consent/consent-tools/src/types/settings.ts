@@ -49,7 +49,7 @@ export interface CreateWrapperSettings {
    * ```
    **/
   shouldLoadSegment?: (
-    context: LoadContext
+    ctx: LoadContext
   ) => Categories | void | Promise<Categories | void>
 
   /**
