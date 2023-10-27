@@ -37,7 +37,6 @@ export interface CreateWrapperSettings {
    *     () => !window.CMP.popUpVisible(),
    *     500
    *   )
-   *
    *   // Optional
    *   if (noConsentNeeded) {
    *    // load Segment normally
