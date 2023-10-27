@@ -2,7 +2,6 @@ import {
   AnyAnalytics,
   createWrapper,
   CreateWrapperSettings,
-  RegisterOnConsentChangedFunction,
   resolveWhen,
 } from '@segment/analytics-consent-tools'
 
@@ -27,17 +26,6 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
   analyticsInstance: Analytics,
   settings: OneTrustSettings = {}
 ): Analytics => {
-  const registerOnConsentChanged: RegisterOnConsentChangedFunction = async (
-    onCategoriesChangedCb
-  ) => {
-    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
-    getOneTrustGlobal()!.OnConsentChanged((event) => {
-      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-        event.detail
-      )
-      onCategoriesChangedCb(normalizedCategories)
-    })
-  }
   return createWrapper<Analytics>({
     // wait for OneTrust global to be available before wrapper is loaded
     shouldLoadWrapper: async () => {
@@ -46,10 +34,9 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
     shouldLoadSegment: async () => {
       await resolveWhen(() => {
-        const oneTrustGlobal = getOneTrustGlobal()
         return (
           Boolean(getConsentedGroupIds().length) &&
-          oneTrustGlobal!.IsAlertBoxClosed()
+          getOneTrustGlobal()!.IsAlertBoxClosed()
         )
       }, 500)
     },
@@ -59,7 +46,14 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
-      : registerOnConsentChanged,
+      : (onCategoriesChangedCb) => {
+          getOneTrustGlobal()!.OnConsentChanged((event) => {
+            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+              event.detail
+            )
+            onCategoriesChangedCb(normalizedCategories)
+          })
+        },
     integrationCategoryMappings: settings.integrationCategoryMappings,
   })(analyticsInstance)
 }
