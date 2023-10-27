@@ -39,13 +39,17 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     })
   }
   return createWrapper<Analytics>({
-    shouldLoad: async () => {
+    // wait for OneTrust global to be available before wrapper is loaded
+    shouldLoadWrapper: async () => {
+      await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
+    },
+    // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
+    shouldLoadSegment: async () => {
       await resolveWhen(() => {
         const oneTrustGlobal = getOneTrustGlobal()
         return (
-          oneTrustGlobal !== undefined &&
           Boolean(getConsentedGroupIds().length) &&
-          oneTrustGlobal.IsAlertBoxClosed()
+          oneTrustGlobal!.IsAlertBoxClosed()
         )
       }, 500)
     },

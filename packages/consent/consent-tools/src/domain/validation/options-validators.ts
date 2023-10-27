@@ -32,7 +32,8 @@ export function validateSettings(options: {
 
   assertIsFunction(options.getCategories, 'getCategories')
 
-  options.shouldLoad && assertIsFunction(options.shouldLoad, 'shouldLoad')
+  options.shouldLoadSegment &&
+    assertIsFunction(options.shouldLoadSegment, 'shouldLoadSegment')
 
   options.shouldDisableConsentRequirement &&
     assertIsFunction(

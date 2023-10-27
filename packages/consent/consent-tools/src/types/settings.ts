@@ -14,11 +14,23 @@ export type RegisterOnConsentChangedFunction = (
  */
 export interface CreateWrapperSettings {
   /**
+   * Wait until this function's Promise resolves before attempting to initialize the wrapper with any settings passed into it.
+   * Typically, this is used to wait for a CMP global object (e.g. window.OneTrust) to be available.
+   * This function is called as early possible in the lifecycle, before `shouldLoadWrapper`, `registerOnConsentChanged` and `getCategories`.
+   * Throwing an error here will prevent the wrapper from loading (just as if `shouldDisableSegment` returned true).
+   * @example
+   * ```ts
+   * () => resolveWhen(() => window.myCMP !== undefined, 500)
+   * ```
+   **/
+  shouldLoadWrapper?: () => Promise<void>
+
+  /**
    * Wait until this function resolves/returns before loading analytics.
    * This function should return a list of initial categories.
    * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
    **/
-  shouldLoad?: (
+  shouldLoadSegment?: (
     context: LoadContext
   ) => Categories | void | Promise<Categories | void>
 
@@ -61,7 +73,7 @@ export interface CreateWrapperSettings {
 
   /**
    * This permanently disables any consent requirement (i.e device mode gating, event pref stamping).
-   * Called on wrapper initialization. **shouldLoad will never be called**
+   * Called on wrapper initialization. **shouldLoadSegment will never be called**
    **/
   shouldDisableConsentRequirement?: () => boolean | Promise<boolean>
 
@@ -69,7 +81,7 @@ export interface CreateWrapperSettings {
    * Disable the Segment analytics SDK completely. analytics.load() will have no effect.
    * .track / .identify etc calls should not throw any errors, but analytics settings will never be fetched and no events will be sent to Segment.
    * Called on wrapper initialization. This can be useful in dev environments (e.g. 'devMode').
-   * **shouldLoad will never be called**
+   * **shouldLoadSegment will never be called**
    **/
   shouldDisableSegment?: () => boolean | Promise<boolean>
 
