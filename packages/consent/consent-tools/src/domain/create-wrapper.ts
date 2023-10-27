@@ -24,7 +24,6 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
   const {
     shouldDisableSegment,
-    shouldDisableConsentRequirement,
     getCategories,
     shouldLoadSegment,
     integrationCategoryMappings,
@@ -60,13 +59,9 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
       let initialCategories: Categories
       try {
         await loadWrapper
-        const ctx = new LoadContext()
-        if (await shouldDisableConsentRequirement?.()) {
-          throw ctx.abort({ disableConsentRequirement: true })
-        }
-
         initialCategories =
-          (await shouldLoadSegment?.(ctx)) || (await getCategories())
+          (await shouldLoadSegment?.(new LoadContext())) ||
+          (await getCategories())
       } catch (e: unknown) {
         // consumer can call ctx.abort({ disableConsentRequirement: true })
         // to load Segment but disable consent requirement

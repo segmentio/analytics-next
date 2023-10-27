@@ -169,16 +169,26 @@ describe(createWrapper, () => {
       )
 
       it('should allow segment to be loaded normally (with all consent wrapper behavior disabled) via ctx.abort', async () => {
+        const mockCdnSettings = settingsBuilder.build()
+
         wrapTestAnalytics({
           shouldLoadSegment: (ctx) => {
             ctx.abort({
-              disableConsentRequirement: true, // magic config option
+              disableConsentRequirement: true,
             })
           },
         })
 
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        const loadArgs: [any, any] = [
+          {
+            ...DEFAULT_LOAD_SETTINGS,
+            cdnSettings: mockCdnSettings,
+          },
+          {},
+        ]
+        await analytics.load(...loadArgs)
         expect(analyticsLoadSpy).toBeCalled()
+        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
       })
 
       it('should allow segment loading to be completely aborted via ctx.abort', async () => {
@@ -458,75 +468,6 @@ describe(createWrapper, () => {
         mockCdnSettings,
         updatedCDNSettings
       )
-    })
-  })
-
-  describe('shouldDisableConsentRequirement', () => {
-    describe('if true on wrapper initialization', () => {
-      it('should load analytics as usual', async () => {
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(analyticsLoadSpy).toBeCalled()
-      })
-
-      it('should not call shouldLoadSegment if called on first', async () => {
-        const shouldLoadSegment = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-          shouldLoadSegment,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoadSegment).not.toBeCalled()
-      })
-
-      it('should work with promises if false', async () => {
-        const shouldLoadSegment = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => Promise.resolve(false),
-          shouldLoadSegment,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoadSegment).toBeCalled()
-      })
-
-      it('should work with promises if true', async () => {
-        const shouldLoadSegment = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => Promise.resolve(true),
-          shouldLoadSegment,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoadSegment).not.toBeCalled()
-      })
-
-      it('should forward all arguments to the original analytics.load method', async () => {
-        const mockCdnSettings = settingsBuilder.build()
-
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-
-        const loadArgs: [any, any] = [
-          {
-            ...DEFAULT_LOAD_SETTINGS,
-            cdnSettings: mockCdnSettings,
-          },
-          {},
-        ]
-        await analytics.load(...loadArgs)
-        expect(analyticsLoadSpy).toBeCalled()
-        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
-      })
-
-      it('should not stamp the event with consent info', async () => {
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(addSourceMiddlewareSpy).not.toBeCalled()
-      })
     })
   })
 

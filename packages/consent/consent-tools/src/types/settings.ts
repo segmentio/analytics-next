@@ -91,13 +91,6 @@ export interface CreateWrapperSettings {
   registerOnConsentChanged?: RegisterOnConsentChangedFunction
 
   /**
-   * This permanently disables the consent requirement (i.e device mode gating, event pref stamping) enforced by the wrapper.
-   * This is the same as doing "ctx.abort({ disableConsentRequirement: true })" inside of `shouldLoadSegment`.
-   * Called once on wrapper initialization. **shouldLoadSegment will never be called**
-   **/
-  shouldDisableConsentRequirement?: () => boolean | Promise<boolean>
-
-  /**
    * Disable the Segment analytics SDK completely. analytics.load() will have no effect.
    * .track / .identify etc calls should not throw any errors, but analytics settings will never be fetched and no events will be sent to Segment.
    * Called on wrapper initialization. This can be useful in dev environments (e.g. 'devMode').

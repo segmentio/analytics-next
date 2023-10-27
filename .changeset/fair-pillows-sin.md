@@ -3,5 +3,5 @@
 ---
 
 * Rename `shouldLoad` -> `shouldLoadSegment`
-* Rename `ctx.abort({ loadSegmentNormally -> disableConsentRequirement` to be more consistent with the setting that shares that name.
+* Remove redundant `shouldDisableConsentRequirement` setting, in favor of shouldLoad's `ctx.abort({  disableConsentRequirement: true/false })`
 * Create `shouldLoadWrapper` API for waiting for consent script initialization.
