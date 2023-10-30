@@ -111,22 +111,56 @@ export const resolveUserArguments = <T extends Traits, U extends User>(
   user: U
 ): ResolveUser<T> => {
   return (...args): ReturnType<ResolveUser<T>> => {
-    let id: string | ID | null = null
-    id = args.find(isString) ?? args.find(isNumber)?.toString() ?? user.id()
+    const values: {
+      id?: ID
+      traits?: T | null
+      options?: Options
+      callback?: Callback
+    } = {}
+    // It's a stack so it's reversed so that we go through each of the expected arguments
+    const orderStack: Array<keyof typeof values> = [
+      'callback',
+      'options',
+      'traits',
+      'id',
+    ]
 
-    const objects = args.filter((obj) => {
-      if (id === null) {
-        return isPlainObject(obj)
+    // Read each argument and eval the possible values here
+    for (const arg of args) {
+      let current = orderStack.pop()
+      if (current === 'id') {
+        if (isString(arg) || isNumber(arg)) {
+          values.id = arg.toString()
+          continue
+        }
+        if (arg === null || arg === undefined) {
+          continue
+        }
+        // First argument should always be the id, if it is not a valid value we can skip it
+        current = orderStack.pop()
       }
-      return isPlainObject(obj) || obj === null
-    }) as Array<Traits | null>
 
-    const traits = (objects[0] ?? {}) as T
-    const opts = (objects[1] ?? {}) as Options
+      // Traits and Options
+      if (
+        (current === 'traits' || current === 'options') &&
+        (arg === null || arg === undefined || isPlainObject(arg))
+      ) {
+        values[current] = arg as T
+      }
 
-    const resolvedCallback = args.find(isFunction) as Callback | undefined
+      // Callback
+      if (isFunction(arg)) {
+        values.callback = arg as Callback
+        break // This is always the last argument
+      }
+    }
 
-    return [id, traits, opts, resolvedCallback]
+    return [
+      values.id ?? user.id(),
+      (values.traits ?? {}) as T,
+      values.options ?? {},
+      values.callback,
+    ]
   }
 }
 

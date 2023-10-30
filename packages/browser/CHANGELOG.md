@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.59.0
+
+### Minor Changes
+
+- [#971](https://github.com/segmentio/analytics-next/pull/971) [`2f1ae75`](https://github.com/segmentio/analytics-next/commit/2f1ae75896123e0aeaa1608fde15312adddd5614) Thanks [@zikaari](https://github.com/zikaari)! - Capture action plugin metrics
+
+### Patch Changes
+
+- [#950](https://github.com/segmentio/analytics-next/pull/950) [`c0dadc7`](https://github.com/segmentio/analytics-next/commit/c0dadc759dccd88c6d95d14fcf7732fad2b051a1) Thanks [@oscb](https://github.com/oscb)! - Fixes calls to .identify() with null as id
+
 ## 1.58.0
 
 ### Minor Changes

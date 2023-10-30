@@ -1,7 +1,7 @@
 import { backoff } from '@segment/analytics-core'
 import type { Context } from '../../app/context'
 import { tryCreateFormattedUrl } from '../../lib/create-url'
-import { extractPromiseParts } from '../../lib/extract-promise-parts'
+import { createDeferred } from '@segment/analytics-generic-utils'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
@@ -137,7 +137,7 @@ export class Publisher {
   enqueue(ctx: Context): Promise<Context> {
     const batch = this._batch ?? this.createBatch()
 
-    const { promise: ctxPromise, resolve } = extractPromiseParts<Context>()
+    const { promise: ctxPromise, resolve } = createDeferred<Context>()
 
     const pendingItem: PendingItem = {
       context: ctx,

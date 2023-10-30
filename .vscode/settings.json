@@ -29,4 +29,10 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "eslint.format.enable": true,
 }
