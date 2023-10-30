@@ -128,7 +128,7 @@ export class ActionDestination implements DestinationPlugin {
       [
         `method:${methodName}`,
         `integration_name:${this.action.name}`,
-        `type:${this.action.type}`,
+        `type:action`,
       ]
     )
   }

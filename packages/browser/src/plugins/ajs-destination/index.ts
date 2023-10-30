@@ -158,18 +158,10 @@ export class LegacyDestination implements DestinationPlugin {
     })
 
     try {
-      ctx.stats.increment('analytics_js.integration.invoke', 1, [
-        `method:initialize`,
-        `integration_name:${this.name}`,
-      ])
-
+      this.recordMetric(ctx, 'initialize', true)
       this.integration.initialize()
     } catch (error) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
-        `method:initialize`,
-        `integration_name:${this.name}`,
-      ])
-
+      this.recordMetric(ctx, 'initialize', true)
       throw error
     }
   }
@@ -187,6 +179,14 @@ export class LegacyDestination implements DestinationPlugin {
       // page events can't be buffered because of destinations that automatically add page views
       ctx.event.type !== 'page' &&
       (isOffline() || this._ready === false || this._initialized === false)
+    )
+  }
+
+  private recordMetric(ctx: Context, methodName: string, errored = false) {
+    ctx.stats.increment(
+      `analytics_js.integration.invoke${errored ? '.error' : ''}`,
+      1,
+      [`method:${methodName}`, `integration_name:${this.name}`, `type:classic`]
     )
   }
 
@@ -254,22 +254,14 @@ export class LegacyDestination implements DestinationPlugin {
       traverse: !this.disableAutoISOConversion,
     })
 
-    ctx.stats.increment('analytics_js.integration.invoke', 1, [
-      `method:${eventType}`,
-      `integration_name:${this.name}`,
-      `type:classic-destination`,
-    ])
+    this.recordMetric(ctx, eventType)
 
     try {
       if (this.integration) {
         await this.integration.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
-        `method:${eventType}`,
-        `integration_name:${this.name}`,
-        `type:classic-destination`,
-      ])
+      this.recordMetric(ctx, eventType, true)
       throw err
     }
 

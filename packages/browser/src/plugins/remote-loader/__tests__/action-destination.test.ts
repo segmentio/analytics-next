@@ -55,7 +55,7 @@ describe('ActionDestination', () => {
         tags: [
           'method:load',
           'integration_name:testDestination',
-          'type:destination',
+          'type:action',
         ],
       })
     )
@@ -72,7 +72,7 @@ describe('ActionDestination', () => {
         tags: [
           'method:track',
           'integration_name:testDestination',
-          'type:destination',
+          'type:action',
         ],
       })
     )
