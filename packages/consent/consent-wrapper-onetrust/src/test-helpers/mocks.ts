@@ -1,5 +1,5 @@
 import { OneTrustGlobal } from '../lib/onetrust-api'
-import { throwNotImplemented } from './utils'
+import { addDebugMockImplementation } from './utils'
 import type { AnyAnalytics } from '@segment/analytics-consent-tools'
 /**
  * This can be used to mock the OneTrust global object in individual tests
@@ -10,14 +10,17 @@ import type { AnyAnalytics } from '@segment/analytics-consent-tools'
  * ````
  */
 export const OneTrustMockGlobal: jest.Mocked<OneTrustGlobal> = {
-  GetDomainData: jest.fn().mockImplementation(throwNotImplemented),
-  IsAlertBoxClosed: jest.fn().mockImplementation(throwNotImplemented),
-  OnConsentChanged: jest.fn().mockImplementation(throwNotImplemented), // not implemented atm
+  GetDomainData: jest.fn(),
+  IsAlertBoxClosed: jest.fn(),
+  OnConsentChanged: jest.fn(),
 }
 
 export const analyticsMock: jest.Mocked<AnyAnalytics> = {
-  addSourceMiddleware: jest.fn().mockImplementation(throwNotImplemented),
-  load: jest.fn().mockImplementation(throwNotImplemented),
-  on: jest.fn().mockImplementation(throwNotImplemented),
-  track: jest.fn().mockImplementation(throwNotImplemented),
+  addSourceMiddleware: jest.fn(),
+  load: jest.fn(),
+  on: jest.fn(),
+  track: jest.fn(),
 }
+
+addDebugMockImplementation(OneTrustMockGlobal)
+addDebugMockImplementation(analyticsMock)

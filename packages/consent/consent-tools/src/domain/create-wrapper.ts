@@ -24,23 +24,25 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
   const {
     shouldDisableSegment,
-    shouldDisableConsentRequirement,
     getCategories,
-    shouldLoad,
+    shouldLoadSegment,
     integrationCategoryMappings,
     shouldEnableIntegration,
     pruneUnmappedCategories,
     registerOnConsentChanged,
+    shouldLoadWrapper,
   } = createWrapperOptions
 
   return (analytics: Analytics) => {
     validateAnalyticsInstance(analytics)
-
-    // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
-    registerOnConsentChanged?.((categories) =>
-      // whenever consent changes, dispatch a new event with the latest consent information
-      validateAndSendConsentChangedEvent(analytics, categories)
-    )
+    const loadWrapper = shouldLoadWrapper?.() || Promise.resolve()
+    void loadWrapper.then(() => {
+      // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
+      registerOnConsentChanged?.((categories) =>
+        // whenever consent changes, dispatch a new event with the latest consent information
+        validateAndSendConsentChangedEvent(analytics, categories)
+      )
+    })
 
     const ogLoad = analytics.load
 
@@ -53,18 +55,13 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         return
       }
 
-      const consentRequirementDisabled =
-        await shouldDisableConsentRequirement?.()
-      if (consentRequirementDisabled) {
-        // ignore consent -- just call analytics.load as usual
-        return ogLoad.call(analytics, settings, options)
-      }
-
       // use these categories to disable/enable the appropriate device mode plugins
       let initialCategories: Categories
       try {
+        await loadWrapper
         initialCategories =
-          (await shouldLoad?.(new LoadContext())) || (await getCategories())
+          (await shouldLoadSegment?.(new LoadContext())) ||
+          (await getCategories())
       } catch (e: unknown) {
         // consumer can call ctx.abort({ loadSegmentNormally: true })
         // to load Segment but disable consent requirement

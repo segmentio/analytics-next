@@ -123,29 +123,31 @@ describe(createWrapper, () => {
     expect(args.length).toBeTruthy()
   })
 
-  describe('shouldLoad', () => {
+  describe('shouldLoadSegment', () => {
     describe('Throwing errors / aborting load', () => {
       const createShouldLoadThatThrows = (
         ...args: Parameters<LoadContext['abort']>
       ) => {
         let err: Error
-        const shouldLoad = jest.fn().mockImplementation((ctx: LoadContext) => {
-          try {
-            ctx.abort(...args)
-            throw new Error('Fail')
-          } catch (_err: any) {
-            err = _err
-          }
-        })
-        return { shouldLoad, getError: () => err }
+        const shouldLoadSegment = jest
+          .fn()
+          .mockImplementation((ctx: LoadContext) => {
+            try {
+              ctx.abort(...args)
+              throw new Error('Fail')
+            } catch (_err: any) {
+              err = _err
+            }
+          })
+        return { shouldLoadSegment, getError: () => err }
       }
 
       it('should throw a special error if ctx.abort is called', async () => {
-        const { shouldLoad, getError } = createShouldLoadThatThrows({
+        const { shouldLoadSegment, getError } = createShouldLoadThatThrows({
           loadSegmentNormally: true,
         })
         wrapTestAnalytics({
-          shouldLoad,
+          shouldLoadSegment,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(getError() instanceof AbortLoadError).toBeTruthy()
@@ -155,7 +157,7 @@ describe(createWrapper, () => {
         `should not log a console error or throw an error if ctx.abort is called (%p)`,
         async (args) => {
           wrapTestAnalytics({
-            shouldLoad: (ctx) => ctx.abort(args),
+            shouldLoadSegment: (ctx) => ctx.abort(args),
           })
           const result = await analytics.load(DEFAULT_LOAD_SETTINGS)
           expect(result).toBeUndefined()
@@ -164,21 +166,31 @@ describe(createWrapper, () => {
       )
 
       it('should allow segment to be loaded normally (with all consent wrapper behavior disabled) via ctx.abort', async () => {
+        const mockCdnSettings = settingsBuilder.build()
+
         wrapTestAnalytics({
-          shouldLoad: (ctx) => {
+          shouldLoadSegment: (ctx) => {
             ctx.abort({
-              loadSegmentNormally: true, // magic config option
+              loadSegmentNormally: true,
             })
           },
         })
 
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
+        const loadArgs: [any, any] = [
+          {
+            ...DEFAULT_LOAD_SETTINGS,
+            cdnSettings: mockCdnSettings,
+          },
+          {},
+        ]
+        await analytics.load(...loadArgs)
         expect(analyticsLoadSpy).toBeCalled()
+        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
       })
 
       it('should allow segment loading to be completely aborted via ctx.abort', async () => {
         wrapTestAnalytics({
-          shouldLoad: (ctx) => {
+          shouldLoadSegment: (ctx) => {
             ctx.abort({
               loadSegmentNormally: false, // magic config option
             })
@@ -189,11 +201,11 @@ describe(createWrapper, () => {
         expect(analyticsLoadSpy).not.toBeCalled()
       })
       it('should throw a validation error if ctx.abort is called incorrectly', async () => {
-        const { getError, shouldLoad } = createShouldLoadThatThrows(
+        const { getError, shouldLoadSegment } = createShouldLoadThatThrows(
           undefined as any
         )
         wrapTestAnalytics({
-          shouldLoad,
+          shouldLoadSegment,
         })
         await analytics.load(DEFAULT_LOAD_SETTINGS)
         expect(getError().message).toMatch(/validation/i)
@@ -202,7 +214,7 @@ describe(createWrapper, () => {
       it('An unrecognized Error (non-consent) error should bubble up, but we should not log any additional console error', async () => {
         const err = new Error('hello')
         wrapTestAnalytics({
-          shouldLoad: () => {
+          shouldLoadSegment: () => {
             throw err
           },
         })
@@ -215,7 +227,7 @@ describe(createWrapper, () => {
         expect(analyticsLoadSpy).not.toBeCalled()
       })
     })
-    it('should first call shouldLoad(), then wait for it to resolve/return before calling analytics.load()', async () => {
+    it('should first call shouldLoadSegment(), then wait for it to resolve/return before calling analytics.load()', async () => {
       const fnCalls: string[] = []
       analyticsLoadSpy.mockImplementationOnce(() => {
         fnCalls.push('analytics.load')
@@ -224,31 +236,31 @@ describe(createWrapper, () => {
       const shouldLoadMock: jest.Mock<undefined> = jest
         .fn()
         .mockImplementationOnce(async () => {
-          fnCalls.push('shouldLoad')
+          fnCalls.push('shouldLoadSegment')
         })
 
       wrapTestAnalytics({
-        shouldLoad: shouldLoadMock,
+        shouldLoadSegment: shouldLoadMock,
       })
 
       await analytics.load(DEFAULT_LOAD_SETTINGS)
-      expect(fnCalls).toEqual(['shouldLoad', 'analytics.load'])
+      expect(fnCalls).toEqual(['shouldLoadSegment', 'analytics.load'])
     })
   })
 
   describe('getCategories', () => {
     test.each([
       {
-        shouldLoad: () => undefined,
+        shouldLoadSegment: () => undefined,
         returnVal: 'undefined',
       },
       {
-        shouldLoad: () => Promise.resolve(undefined),
+        shouldLoadSegment: () => Promise.resolve(undefined),
         returnVal: 'Promise<undefined>',
       },
     ])(
-      'if shouldLoad() returns nil ($returnVal), intial categories will come from getCategories()',
-      async ({ shouldLoad }) => {
+      'if shouldLoadSegment() returns nil ($returnVal), intial categories will come from getCategories()',
+      async ({ shouldLoadSegment }) => {
         const mockCdnSettings = {
           integrations: {
             mockIntegration: {
@@ -258,7 +270,7 @@ describe(createWrapper, () => {
         }
 
         wrapTestAnalytics({
-          shouldLoad: shouldLoad,
+          shouldLoadSegment: shouldLoadSegment,
         })
         await analytics.load({
           ...DEFAULT_LOAD_SETTINGS,
@@ -282,7 +294,7 @@ describe(createWrapper, () => {
         returnVal: 'Promise<Categories>',
       },
     ])(
-      'if shouldLoad() returns categories ($returnVal), those will be the initial categories',
+      'if shouldLoadSegment() returns categories ($returnVal), those will be the initial categories',
       async ({ getCategories }) => {
         const mockCdnSettings = {
           integrations: {
@@ -296,7 +308,7 @@ describe(createWrapper, () => {
 
         wrapTestAnalytics({
           getCategories: mockGetCategories,
-          shouldLoad: () => undefined,
+          shouldLoadSegment: () => undefined,
         })
         await analytics.load({
           ...DEFAULT_LOAD_SETTINGS,
@@ -321,7 +333,7 @@ describe(createWrapper, () => {
 
     test('analytics.load should reject if categories are in the wrong format', async () => {
       wrapTestAnalytics({
-        shouldLoad: () => Promise.resolve('sup' as any),
+        shouldLoadSegment: () => Promise.resolve('sup' as any),
       })
       await expect(() => analytics.load(DEFAULT_LOAD_SETTINGS)).rejects.toThrow(
         /validation/i
@@ -331,7 +343,7 @@ describe(createWrapper, () => {
     test('analytics.load should reject if categories are undefined', async () => {
       wrapTestAnalytics({
         getCategories: () => undefined as any,
-        shouldLoad: () => undefined,
+        shouldLoadSegment: () => undefined,
       })
       await expect(() => analytics.load(DEFAULT_LOAD_SETTINGS)).rejects.toThrow(
         /validation/i
@@ -390,7 +402,7 @@ describe(createWrapper, () => {
         .build()
 
       wrapTestAnalytics({
-        shouldLoad: () => ({ Foo: true }),
+        shouldLoadSegment: () => ({ Foo: true }),
       })
       await analytics.load({
         ...DEFAULT_LOAD_SETTINGS,
@@ -415,7 +427,7 @@ describe(createWrapper, () => {
         .build()
 
       wrapTestAnalytics({
-        shouldLoad: () => ({ Foo: true, Bar: true }),
+        shouldLoadSegment: () => ({ Foo: true, Bar: true }),
       })
       await analytics.load({
         ...DEFAULT_LOAD_SETTINGS,
@@ -440,7 +452,7 @@ describe(createWrapper, () => {
         .build()
 
       wrapTestAnalytics({
-        shouldLoad: () => ({ Foo: true }),
+        shouldLoadSegment: () => ({ Foo: true }),
       })
       await analytics.load({
         ...DEFAULT_LOAD_SETTINGS,
@@ -453,75 +465,6 @@ describe(createWrapper, () => {
         mockCdnSettings,
         updatedCDNSettings
       )
-    })
-  })
-
-  describe('shouldDisableConsentRequirement', () => {
-    describe('if true on wrapper initialization', () => {
-      it('should load analytics as usual', async () => {
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(analyticsLoadSpy).toBeCalled()
-      })
-
-      it('should not call shouldLoad if called on first', async () => {
-        const shouldLoad = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-          shouldLoad,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoad).not.toBeCalled()
-      })
-
-      it('should work with promises if false', async () => {
-        const shouldLoad = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => Promise.resolve(false),
-          shouldLoad,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoad).toBeCalled()
-      })
-
-      it('should work with promises if true', async () => {
-        const shouldLoad = jest.fn()
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => Promise.resolve(true),
-          shouldLoad,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(shouldLoad).not.toBeCalled()
-      })
-
-      it('should forward all arguments to the original analytics.load method', async () => {
-        const mockCdnSettings = settingsBuilder.build()
-
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-
-        const loadArgs: [any, any] = [
-          {
-            ...DEFAULT_LOAD_SETTINGS,
-            cdnSettings: mockCdnSettings,
-          },
-          {},
-        ]
-        await analytics.load(...loadArgs)
-        expect(analyticsLoadSpy).toBeCalled()
-        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
-      })
-
-      it('should not stamp the event with consent info', async () => {
-        wrapTestAnalytics({
-          shouldDisableConsentRequirement: () => true,
-        })
-        await analytics.load(DEFAULT_LOAD_SETTINGS)
-        expect(addSourceMiddlewareSpy).not.toBeCalled()
-      })
     })
   })
 
@@ -567,7 +510,7 @@ describe(createWrapper, () => {
 
       wrapTestAnalytics({
         getCategories,
-        shouldLoad: () => {
+        shouldLoadSegment: () => {
           // on first load, we should not get an error because this is a valid category setting
           return { invalidCategory: true }
         },

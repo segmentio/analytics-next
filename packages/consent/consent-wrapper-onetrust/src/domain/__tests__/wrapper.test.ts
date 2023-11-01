@@ -4,10 +4,6 @@ import { sleep } from '@internal/test-helpers'
 import { withOneTrust } from '../wrapper'
 import { OneTrustMockGlobal, analyticsMock } from '../../test-helpers/mocks'
 
-const throwNotImplemented = (): never => {
-  throw new Error('not implemented')
-}
-
 const grpFixture = {
   StrictlyNeccessary: {
     CustomGroupId: 'C0001',
@@ -22,12 +18,17 @@ const grpFixture = {
 
 const getConsentedGroupIdsSpy = jest
   .spyOn(OneTrustAPI, 'getConsentedGroupIds')
-  .mockImplementationOnce(throwNotImplemented)
+  .mockImplementationOnce(() => {
+    throw new Error('not implemented')
+  })
 
 const createWrapperSpyHelper = {
   _spy: jest.spyOn(ConsentTools, 'createWrapper'),
-  get shouldLoad() {
-    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoad!
+  get shouldLoadWrapper() {
+    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoadWrapper!
+  },
+  get shouldLoadSegment() {
+    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoadSegment!
   },
   get getCategories() {
     return createWrapperSpyHelper._spy.mock.lastCall[0].getCategories!
@@ -37,7 +38,6 @@ const createWrapperSpyHelper = {
       .registerOnConsentChanged!
   },
 }
-
 /**
  * These tests are not meant to be comprehensive, but they should cover the most important cases.
  * We should prefer unit tests for most functionality (see lib/__tests__)
@@ -66,7 +66,7 @@ describe('High level "integration" tests', () => {
     })
   })
 
-  describe('shouldLoad', () => {
+  describe('shouldLoadSegment', () => {
     it('should be resolved successfully', async () => {
       withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
@@ -76,7 +76,7 @@ describe('High level "integration" tests', () => {
         grpFixture.StrictlyNeccessary.CustomGroupId,
       ])
       const shouldLoadP = Promise.resolve(
-        createWrapperSpyHelper.shouldLoad({} as any)
+        createWrapperSpyHelper.shouldLoadSegment({} as any)
       )
       let shouldLoadResolved = false
       void shouldLoadP.then(() => (shouldLoadResolved = true))
@@ -124,11 +124,14 @@ describe('High level "integration" tests', () => {
       })
       const onCategoriesChangedCb = jest.fn()
 
+      void createWrapperSpyHelper.shouldLoadWrapper()
       createWrapperSpyHelper.registerOnConsentChanged(onCategoriesChangedCb)
       onCategoriesChangedCb()
 
       resolveResolveWhen() // wait for OneTrust global to be available
       await sleep(0)
+
+      analyticsMock.track.mockImplementationOnce(() => {}) // ignore track event sent by consent changed
 
       const onConsentChangedArg =
         OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
@@ -140,6 +143,7 @@ describe('High level "integration" tests', () => {
           ],
         })
       )
+
       // expect to be normalized!
       expect(onCategoriesChangedCb.mock.lastCall[0]).toEqual({
         [grpFixture.StrictlyNeccessary.CustomGroupId]: true,
