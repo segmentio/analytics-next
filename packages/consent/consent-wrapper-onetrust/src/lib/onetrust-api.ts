@@ -21,13 +21,15 @@ type GroupInfoDto = {
 
 type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 
+export interface OneTrustDomainData {
+  ShowAlertNotice: boolean
+  Groups: GroupInfoDto[]
+}
 /**
  * The data model used by the OneTrust lib
  */
 export interface OneTrustGlobal {
-  GetDomainData: () => {
-    Groups: GroupInfoDto[]
-  }
+  GetDomainData: () => OneTrustDomainData
   /**
    *  This callback appears to fire whenever the alert box is closed, no matter what.
    * E.g:
@@ -50,10 +52,19 @@ export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
   ) {
     return oneTrust
   }
+  // if "show banner" is unchecked, window.OneTrust returns {geolocationResponse: {…}} before it actually returns the OneTrust object
+  if ('geolocationResponse' in oneTrust) {
+    return undefined
+  }
 
-  throw new OneTrustApiValidationError(
-    'window.OneTrust is not in expected format',
-    oneTrust
+  console.error(
+    // OneTrust API has some gotchas -- since this function is often as a polling loop, not
+    // throwing an error since it's possible that some setup is happening behind the scenes and
+    // the OneTrust API is not available yet (e.g. see the geolocationResponse edge case).
+    new OneTrustApiValidationError(
+      'window.OneTrust is unexpected type',
+      oneTrust
+    ).message
   )
 }
 

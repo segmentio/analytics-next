@@ -34,9 +34,14 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
     shouldLoadSegment: async () => {
       await resolveWhen(() => {
+        const OneTrust = getOneTrustGlobal()!
         return (
+          // if any groups at all are consented to
           Boolean(getConsentedGroupIds().length) &&
-          getOneTrustGlobal()!.IsAlertBoxClosed()
+          // if show banner is unchecked in the UI
+          (OneTrust.GetDomainData().ShowAlertNotice === false ||
+            // if alert box is closed by end user
+            OneTrust.IsAlertBoxClosed())
         )
       }, 500)
     },
