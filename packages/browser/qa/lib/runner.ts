@@ -1,4 +1,5 @@
 import { Browser } from 'playwright'
+import { DEFAULT_DESTINATION_TIMEOUT } from '../../src/core/constants'
 import { JSONValue } from '../../src/core/events'
 import { getMetrics } from './benchmark'
 
@@ -94,7 +95,11 @@ export async function run(params: ComparisonParams) {
     await page.goto(url)
 
     await page.waitForLoadState('networkidle')
-    await page.waitForFunction(`window.analytics.initialized === true`)
+    await page.waitForFunction(
+      `window.analytics.initialized === true`,
+      undefined,
+      { timeout: DEFAULT_DESTINATION_TIMEOUT + 1000 },
+    )
 
     // This forces every timestamp to look exactly the same.
     // Moving this prototype manipulation after networkidle fixed a race condition around Object.freeze that interfered with certain scripts.
