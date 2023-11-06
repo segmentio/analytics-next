@@ -10,6 +10,7 @@ import { validateCategories, validateSettings } from './validation'
 import { pipe } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
 import { AnalyticsService } from './analytics'
+import { segmentShouldBeDisabled } from './disable-segment'
 
 export const createWrapper = <Analytics extends AnyAnalytics>(
   ...[createWrapperSettings]: Parameters<CreateWrapper<Analytics>>
@@ -99,6 +100,8 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
           updateCDNSettings,
           options?.updateCDNSettings || ((id) => id)
         ),
+        disable: (cdnSettings) =>
+          isDisabled(cdnSettings, initialCategories, options?.disable),
       })
     }
     analyticsService.replaceLoadMethod(loadWithConsent)
@@ -179,4 +182,21 @@ const disableIntegrations = (
     }
   )
   return results
+}
+
+const isDisabled = (
+  cdnSettings: CDNSettings,
+  initialCategories: Categories,
+  disableOpt: InitOptions['disable'] | undefined
+): boolean => {
+  const shouldBeDisabled = segmentShouldBeDisabled(
+    initialCategories,
+    cdnSettings.consentSettings
+  )
+  return (
+    shouldBeDisabled ||
+    (typeof disableOpt === 'function'
+      ? disableOpt(cdnSettings)
+      : disableOpt === true)
+  )
 }
