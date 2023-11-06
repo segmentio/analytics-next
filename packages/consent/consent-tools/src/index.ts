@@ -11,6 +11,7 @@ export type {
   CreateWrapperSettings,
   IntegrationCategoryMappings,
   Categories,
+  GetCategoriesFunction,
   RegisterOnConsentChangedFunction,
   AnyAnalytics,
 } from './types'
