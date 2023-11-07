@@ -2,19 +2,12 @@ import * as ConsentTools from '@segment/analytics-consent-tools'
 import * as OneTrustAPI from '../../lib/onetrust-api'
 import { sleep } from '@internal/test-helpers'
 import { withOneTrust } from '../wrapper'
-import { OneTrustMockGlobal, analyticsMock } from '../../test-helpers/mocks'
-
-const grpFixture = {
-  StrictlyNeccessary: {
-    CustomGroupId: 'C0001',
-  },
-  Targeting: {
-    CustomGroupId: 'C0004',
-  },
-  Performance: {
-    CustomGroupId: 'C0005',
-  },
-}
+import {
+  OneTrustMockGlobal,
+  analyticsMock,
+  domainDataMock,
+  domainGroupMock,
+} from '../../test-helpers/mocks'
 
 const getConsentedGroupIdsSpy = jest
   .spyOn(OneTrustAPI, 'getConsentedGroupIds')
@@ -43,7 +36,7 @@ const createWrapperSpyHelper = {
  * We should prefer unit tests for most functionality (see lib/__tests__)
  */
 describe('High level "integration" tests', () => {
-  let resolveResolveWhen = () => {}
+  let checkResolveWhen = () => {}
   beforeEach(() => {
     jest
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
@@ -54,38 +47,57 @@ describe('High level "integration" tests', () => {
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
      */
     jest.spyOn(ConsentTools, 'resolveWhen').mockImplementation(async (fn) => {
-      return new Promise((_resolve) => {
-        resolveResolveWhen = () => {
-          if (fn()) {
-            _resolve()
-          } else {
-            throw new Error('Refuse to resolve, resolveWhen condition is false')
-          }
+      return new Promise((_resolve, _reject) => {
+        checkResolveWhen = () => {
+          fn() ? _resolve() : _reject('predicate failed.')
         }
       })
     })
   })
 
   describe('shouldLoadSegment', () => {
-    it('should be resolved successfully', async () => {
+    it('should load if alert box is closed and groups are defined', async () => {
       withOneTrust(analyticsMock)
-      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
-        Groups: [grpFixture.StrictlyNeccessary, grpFixture.Performance],
-      })
-      getConsentedGroupIdsSpy.mockImplementation(() => [
-        grpFixture.StrictlyNeccessary.CustomGroupId,
-      ])
-      const shouldLoadP = Promise.resolve(
+
+      const shouldLoadSegment = Promise.resolve(
         createWrapperSpyHelper.shouldLoadSegment({} as any)
       )
-      let shouldLoadResolved = false
-      void shouldLoadP.then(() => (shouldLoadResolved = true))
-      await sleep(0)
-      expect(shouldLoadResolved).toBe(false)
+      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce(domainDataMock)
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
-      resolveResolveWhen()
-      const result = await shouldLoadP
-      expect(result).toBe(undefined)
+      getConsentedGroupIdsSpy.mockImplementation(() => [
+        domainGroupMock.StrictlyNeccessary.CustomGroupId,
+      ])
+      checkResolveWhen()
+      await expect(shouldLoadSegment).resolves.toBeUndefined()
+    })
+
+    it('should not load at all if no groups are defined', async () => {
+      withOneTrust(analyticsMock)
+      getConsentedGroupIdsSpy.mockImplementation(() => [])
+      const shouldLoadSegment = Promise.resolve(
+        createWrapperSpyHelper.shouldLoadSegment({} as any)
+      )
+      void shouldLoadSegment.catch(() => {})
+      OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
+      checkResolveWhen()
+      await expect(shouldLoadSegment).rejects.toEqual(expect.anything())
+    })
+
+    it("should load regardless of AlertBox status if showAlertNotice is true (e.g. 'show banner is unchecked')", async () => {
+      withOneTrust(analyticsMock)
+      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
+        ...domainDataMock,
+        ShowAlertNotice: false, // meaning, it's open
+      })
+      getConsentedGroupIdsSpy.mockImplementation(() => [
+        domainGroupMock.StrictlyNeccessary.CustomGroupId,
+      ])
+      const shouldLoadSegment = Promise.resolve(
+        createWrapperSpyHelper.shouldLoadSegment({} as any)
+      )
+      OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(false) // alert box is _never open
+      checkResolveWhen()
+      await expect(shouldLoadSegment).resolves.toBeUndefined()
     })
   })
 
@@ -93,14 +105,15 @@ describe('High level "integration" tests', () => {
     it('should get categories successfully', async () => {
       withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValue({
+        ...domainDataMock,
         Groups: [
-          grpFixture.StrictlyNeccessary,
-          grpFixture.Performance,
-          grpFixture.Targeting,
+          domainGroupMock.StrictlyNeccessary,
+          domainGroupMock.Performance,
+          domainGroupMock.Targeting,
         ],
       })
       getConsentedGroupIdsSpy.mockImplementation(() => [
-        grpFixture.StrictlyNeccessary.CustomGroupId,
+        domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const categories = createWrapperSpyHelper.getCategories()
       // contain both consented and denied category
@@ -116,10 +129,11 @@ describe('High level "integration" tests', () => {
     it('should enable consent changed by default', async () => {
       withOneTrust(analyticsMock)
       OneTrustMockGlobal.GetDomainData.mockReturnValue({
+        ...domainDataMock,
         Groups: [
-          grpFixture.StrictlyNeccessary,
-          grpFixture.Performance,
-          grpFixture.Targeting,
+          domainGroupMock.StrictlyNeccessary,
+          domainGroupMock.Performance,
+          domainGroupMock.Targeting,
         ],
       })
       const onCategoriesChangedCb = jest.fn()
@@ -128,7 +142,7 @@ describe('High level "integration" tests', () => {
       createWrapperSpyHelper.registerOnConsentChanged(onCategoriesChangedCb)
       onCategoriesChangedCb()
 
-      resolveResolveWhen() // wait for OneTrust global to be available
+      checkResolveWhen() // wait for OneTrust global to be available
       await sleep(0)
 
       analyticsMock.track.mockImplementationOnce(() => {}) // ignore track event sent by consent changed
@@ -138,17 +152,17 @@ describe('High level "integration" tests', () => {
       onConsentChangedArg(
         new CustomEvent('', {
           detail: [
-            grpFixture.StrictlyNeccessary.CustomGroupId,
-            grpFixture.Performance.CustomGroupId,
+            domainGroupMock.StrictlyNeccessary.CustomGroupId,
+            domainGroupMock.Performance.CustomGroupId,
           ],
         })
       )
 
       // expect to be normalized!
       expect(onCategoriesChangedCb.mock.lastCall[0]).toEqual({
-        [grpFixture.StrictlyNeccessary.CustomGroupId]: true,
-        [grpFixture.Performance.CustomGroupId]: true,
-        [grpFixture.Targeting.CustomGroupId]: false,
+        [domainGroupMock.StrictlyNeccessary.CustomGroupId]: true,
+        [domainGroupMock.Performance.CustomGroupId]: true,
+        [domainGroupMock.Targeting.CustomGroupId]: false,
       })
     })
   })
