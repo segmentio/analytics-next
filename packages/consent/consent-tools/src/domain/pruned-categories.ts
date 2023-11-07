@@ -1,4 +1,4 @@
-import { uniq, pick } from 'lodash'
+import { uniq, pick } from '../utils'
 import {
   CDNSettings,
   CreateWrapperSettings,
