@@ -62,14 +62,6 @@ module.exports = {
       },
       overrides: [
         {
-          files: ['**/__tests__/**', '**/scripts/**'],
-          rules: {
-            'require-await': 'off',
-            '@typescript-eslint/require-await': 'off',
-            '@typescript-eslint/no-restricted-imports': 'off',
-          },
-        },
-        {
           files: ['**/src/**'],
           rules: {
             '@typescript-eslint/no-restricted-imports': [
@@ -85,6 +77,14 @@ module.exports = {
                 ],
               },
             ],
+          },
+        },
+        {
+          files: ['**/__tests__/**', '**/scripts/**'],
+          rules: {
+            'require-await': 'off',
+            '@typescript-eslint/require-await': 'off',
+            '@typescript-eslint/no-restricted-imports': 'off',
           },
         },
       ],
