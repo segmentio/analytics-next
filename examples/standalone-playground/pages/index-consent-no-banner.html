@@ -1,0 +1,215 @@
+<html>
+
+<head>
+
+
+  <!-- Form: WriteKey -->
+  <form method="get">
+    <input type="text" name="writeKey" placeholder="Writekey" />
+    <button>Load</button>
+  </form>
+  <script>
+    const { searchParams } = new URL(document.location);
+    const writeKey = searchParams.get("writeKey");
+    document.querySelector("input").value = writeKey;
+  </script>
+
+  <!-- Form: Clear OneTrust Cookie -->
+  <button id="clear-ot-cookies">Clear OneTrust Cookies & Reload</button>
+  <script>
+    document.getElementById('clear-ot-cookies').addEventListener('click', () => {
+      ['OptanonConsent', 'OptanonAlertBoxClosed'].forEach((name) => {
+        document.cookie =
+          name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      });
+      window.location.reload();
+      console.log("OneTrust Cookies cleared.");
+    })
+  </script>
+
+
+  <!-- OneTrust Vendor Script -->
+  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript"
+    data-domain-script="09b87b90-1b30-4d68-9610-9d2fe11234f3-test"></script>
+  <script type="text/javascript">
+    const wk = document.querySelector("input").value
+    wk && console.log('should be on the following url ->', `${window.location.origin + window.location.pathname}?writeKey=${wk}&otpreview=true&otgeo=za`)
+    function OptanonWrapper() {
+      // debugging.
+      if (!window.OnetrustActiveGroups.replaceAll(',', '')) {
+        window.OnetrustActiveGroups = ',CAT0001' // very hacky, simulates at least one group if none exist
+      }
+      console.log('ShowAlertNotice: should be false (initially) ->', window.OneTrust.GetDomainData().ShowAlertNotice)
+      console.log('OneTrust.testLog() ->', window.OneTrust.testLog())
+    }
+  </script>
+  <!-- OneTrust Wrapper -->
+  <script
+    src="/node_modules/@segment/analytics-consent-wrapper-onetrust/dist/umd/analytics-onetrust.umd.development.js">
+    </script>
+  <!-- Segment Snippet (Modified)-->
+  <script>
+    if (writeKey) {
+      !(function () {
+        var analytics = (window.analytics = window.analytics || [])
+        if (!analytics.initialize)
+          if (analytics.invoked)
+            window.console &&
+              console.error &&
+              console.error('Segment snippet included twice.')
+          else {
+            analytics.invoked = !0
+            analytics.methods = [
+              'screen',
+              'register',
+              'deregister',
+              'trackSubmit',
+              'trackClick',
+              'trackLink',
+              'trackForm',
+              'pageview',
+              'identify',
+              'reset',
+              'group',
+              'track',
+              'ready',
+              'alias',
+              'debug',
+              'page',
+              'once',
+              'off',
+              'on',
+              'addSourceMiddleware',
+              'addIntegrationMiddleware',
+              'setAnonymousId',
+              'addDestinationMiddleware',
+              'emit'
+            ]
+            analytics.factory = function (e) {
+              return function () {
+                if (window.analytics.initialized) {
+                  // Sometimes users assigned analytics to a variable before analytics is done loading, resulting in a stale reference.
+                  // If so, proxy any calls to the 'real' analytics instance.
+                  return window.analytics[e].apply(window.analytics, arguments);
+                }
+                var t = Array.prototype.slice.call(arguments)
+                t.unshift(e)
+                analytics.push(t)
+                return analytics
+              }
+            }
+            for (var e = 0; e < analytics.methods.length; e++) {
+              var key = analytics.methods[e]
+              analytics[key] = analytics.factory(key)
+            }
+            analytics.load = function (key, e) {
+              var t = document.createElement('script')
+              t.type = 'text/javascript'
+              t.async = !0
+              t.src =
+                'https://cdn.segment.com/analytics.js/v1/' +
+                writeKey +
+                '/analytics.min.js'
+              var n = document.getElementsByTagName('script')[0]
+              n.parentNode.insertBefore(t, n)
+              analytics._loadOptions = e
+            }
+            analytics.SNIPPET_VERSION = '4.13.1'
+            analytics._writeKey = writeKey
+            withOneTrust(analytics).load()
+            analytics.page()
+          }
+      })()
+    }
+  </script>
+
+</head>
+
+<body>
+  <form>
+    <textarea name="event" id="event">
+{
+  "name": "hi",
+  "properties": { },
+  "traits": { },
+  "options": { }
+}
+    </textarea>
+    <div>
+      <button id="track">Track</button>
+      <button id="identify">Identify</button>
+    </div>
+  </form>
+  <h2>Consent Changed Event</h2>
+  <pre id="consent-changed"></pre>
+  <h2>Logs</h2>
+  <pre id="logs"></pre>
+
+  <script type="text/javascript">
+    const displayConsentLogs = (str) => document.querySelector('#consent-changed').textContent = str
+    analytics.on('track', (name, properties, options) => {
+      if (name.includes("Segment Consent")) {
+        displayConsentLogs("Consent Changed Event Fired")
+        setTimeout(() => displayConsentLogs(''), 3000)
+      }
+    })
+    const displayRegularLogs = (str) => document.querySelector('#logs').textContent = str
+    const logEvent = (promise) => {
+      if (Array.isArray(promise)) {
+        displayRegularLogs('Analytics is not initialized!')
+        setTimeout(() => displayRegularLogs(''), 5000)
+        return
+      }
+      if (promise) {
+        promise.then((ctx) => {
+          ctx.flush()
+          displayRegularLogs(JSON.stringify(
+            ctx.event,
+            null,
+            2
+          ))
+        })
+      }
+    }
+
+
+    document.querySelector('#track').addEventListener('click', async (e) => {
+      e.preventDefault()
+      const contents = document.querySelector('#event').value
+      const evt = JSON.parse(contents)
+      const promise = window.analytics.track(
+        evt.name ?? '',
+        evt.properties ?? {},
+        evt.options ?? {}
+      )
+      logEvent(promise)
+    })
+
+    document
+      .querySelector('#identify')
+      .addEventListener('click', async (e) => {
+        e.preventDefault()
+        const contents = document.querySelector('#event').value
+        const evt = JSON.parse(contents)
+        const promise = window.analytics.identify(
+          evt.name ?? '',
+          evt.properties ?? {},
+          evt.options ?? {}
+        )
+        logEvent(promise)
+      })
+  </script>
+  <style>
+    body {
+      font-family: monospace;
+    }
+
+    #event {
+      margin: 2em 0;
+      min-height: 200px;
+      min-width: 700px;
+    }
+  </style>
+</body>
+
+</html>

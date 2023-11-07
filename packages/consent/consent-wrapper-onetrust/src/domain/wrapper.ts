@@ -2,7 +2,6 @@ import {
   AnyAnalytics,
   createWrapper,
   CreateWrapperSettings,
-  RegisterOnConsentChangedFunction,
   resolveWhen,
 } from '@segment/analytics-consent-tools'
 
@@ -27,25 +26,22 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
   analyticsInstance: Analytics,
   settings: OneTrustSettings = {}
 ): Analytics => {
-  const registerOnConsentChanged: RegisterOnConsentChangedFunction = async (
-    onCategoriesChangedCb
-  ) => {
-    await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
-    getOneTrustGlobal()!.OnConsentChanged((event) => {
-      const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-        event.detail
-      )
-      onCategoriesChangedCb(normalizedCategories)
-    })
-  }
   return createWrapper<Analytics>({
-    shouldLoad: async () => {
+    // wait for OneTrust global to be available before wrapper is loaded
+    shouldLoadWrapper: async () => {
+      await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
+    },
+    // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
+    shouldLoadSegment: async () => {
       await resolveWhen(() => {
-        const oneTrustGlobal = getOneTrustGlobal()
+        const OneTrust = getOneTrustGlobal()!
         return (
-          oneTrustGlobal !== undefined &&
+          // if any groups at all are consented to
           Boolean(getConsentedGroupIds().length) &&
-          oneTrustGlobal.IsAlertBoxClosed()
+          // if show banner is unchecked in the UI
+          (OneTrust.GetDomainData().ShowAlertNotice === false ||
+            // if alert box is closed by end user
+            OneTrust.IsAlertBoxClosed())
         )
       }, 500)
     },
@@ -55,7 +51,14 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
-      : registerOnConsentChanged,
+      : (onCategoriesChangedCb) => {
+          getOneTrustGlobal()!.OnConsentChanged((event) => {
+            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
+              event.detail
+            )
+            onCategoriesChangedCb(normalizedCategories)
+          })
+        },
     integrationCategoryMappings: settings.integrationCategoryMappings,
   })(analyticsInstance)
 }

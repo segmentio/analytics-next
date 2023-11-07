@@ -12,10 +12,10 @@ import {
   validateSettings,
 } from './validation'
 import { createConsentStampingMiddleware } from './consent-stamping'
-import { pipe, pick, uniq } from '../utils'
+import { pipe } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
-import { ValidationError } from './validation/validation-error'
 import { validateAndSendConsentChangedEvent } from './consent-changed'
+import { getPrunedCategories } from './pruned-categories'
 
 export const createWrapper = <Analytics extends AnyAnalytics>(
   ...[createWrapperOptions]: Parameters<CreateWrapper<Analytics>>
@@ -24,23 +24,25 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
   const {
     shouldDisableSegment,
-    shouldDisableConsentRequirement,
     getCategories,
-    shouldLoad,
+    shouldLoadSegment,
     integrationCategoryMappings,
     shouldEnableIntegration,
     pruneUnmappedCategories,
     registerOnConsentChanged,
+    shouldLoadWrapper,
   } = createWrapperOptions
 
   return (analytics: Analytics) => {
     validateAnalyticsInstance(analytics)
-
-    // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
-    registerOnConsentChanged?.((categories) =>
-      // whenever consent changes, dispatch a new event with the latest consent information
-      validateAndSendConsentChangedEvent(analytics, categories)
-    )
+    const loadWrapper = shouldLoadWrapper?.() || Promise.resolve()
+    void loadWrapper.then(() => {
+      // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
+      registerOnConsentChanged?.((categories) =>
+        // whenever consent changes, dispatch a new event with the latest consent information
+        validateAndSendConsentChangedEvent(analytics, categories)
+      )
+    })
 
     const ogLoad = analytics.load
 
@@ -53,18 +55,13 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         return
       }
 
-      const consentRequirementDisabled =
-        await shouldDisableConsentRequirement?.()
-      if (consentRequirementDisabled) {
-        // ignore consent -- just call analytics.load as usual
-        return ogLoad.call(analytics, settings, options)
-      }
-
       // use these categories to disable/enable the appropriate device mode plugins
       let initialCategories: Categories
       try {
+        await loadWrapper
         initialCategories =
-          (await shouldLoad?.(new LoadContext())) || (await getCategories())
+          (await shouldLoadSegment?.(new LoadContext())) ||
+          (await getCategories())
       } catch (e: unknown) {
         // consumer can call ctx.abort({ loadSegmentNormally: true })
         // to load Segment but disable consent requirement
@@ -82,56 +79,28 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
       validateCategories(initialCategories)
 
-      const getPrunedCategories = async (
-        cdnSettingsP: Promise<CDNSettings>
-      ): Promise<Categories> => {
-        const cdnSettings = await cdnSettingsP
-        // we don't want to send _every_ category to segment, only the ones that the user has explicitly configured in their integrations
-        let allCategories: string[]
-        // We need to get all the unique categories so we can prune the consent object down to only the categories that are configured
-        // There can be categories that are not included in any integration in the integrations object (e.g. 2 cloud mode categories), which is why we need a special allCategories array
-        if (integrationCategoryMappings) {
-          allCategories = uniq(
-            Object.values(integrationCategoryMappings).reduce((p, n) =>
-              p.concat(n)
-            )
+      // we need to register the listener before .load is called so we don't miss it.
+      // note: the 'initialize' API event is emitted so before the final flushing of events, so this promise won't block the pipeline.
+      const cdnSettings = new Promise<CDNSettings>((resolve) =>
+        analytics.on('initialize', resolve)
+      )
+
+      // normalize getCategories pruning is turned on or off
+      const getCategoriesForConsentStamping = async (): Promise<Categories> => {
+        if (pruneUnmappedCategories) {
+          return getPrunedCategories(
+            getCategories,
+            await cdnSettings,
+            integrationCategoryMappings
           )
         } else {
-          allCategories = cdnSettings.consentSettings?.allCategories || []
+          return getCategories()
         }
-
-        if (!allCategories.length) {
-          // No configured integrations found, so no categories will be sent (should not happen unless there's a configuration error)
-          throw new ValidationError(
-            'Invariant: No consent categories defined in Segment',
-            []
-          )
-        }
-
-        const categories = await getCategories()
-
-        return pick(categories, allCategories)
       }
-
-      // create getCategories and validate them regardless of whether pruning is turned on or off
-      const getValidCategoriesForConsentStamping = pipe(
-        pruneUnmappedCategories
-          ? getPrunedCategories.bind(
-              this,
-              new Promise<CDNSettings>((resolve) =>
-                analytics.on('initialize', resolve)
-              )
-            )
-          : getCategories,
-        async (categories) => {
-          validateCategories(await categories)
-          return categories
-        }
-      ) as () => Promise<Categories>
 
       // register listener to stamp all events with latest consent information
       analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getValidCategoriesForConsentStamping)
+        createConsentStampingMiddleware(getCategoriesForConsentStamping)
       )
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
@@ -153,7 +122,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         ...options,
         updateCDNSettings: pipe(
           updateCDNSettings,
-          options?.updateCDNSettings ? options.updateCDNSettings : (f) => f
+          options?.updateCDNSettings || ((id) => id)
         ),
       })
     }

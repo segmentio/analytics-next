@@ -68,7 +68,7 @@ function createDefaultQueue(
   retryQueue = false,
   disablePersistance = false
 ) {
-  const maxAttempts = retryQueue ? 4 : 1
+  const maxAttempts = retryQueue ? 10 : 1
   const priorityQueue = disablePersistance
     ? new PriorityQueue(maxAttempts, [])
     : new PersistedPriorityQueue(maxAttempts, name)

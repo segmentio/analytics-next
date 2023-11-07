@@ -9,7 +9,7 @@ import {
   getOneTrustGlobal,
   getAllGroups,
 } from '../onetrust-api'
-import { OneTrustMockGlobal } from '../../test-helpers/mocks'
+import { domainDataMock, OneTrustMockGlobal } from '../../test-helpers/mocks'
 import { OneTrustApiValidationError } from '../validation'
 
 beforeEach(() => {
@@ -21,13 +21,39 @@ beforeEach(() => {
 
 describe(getOneTrustGlobal, () => {
   it('should get the global', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementationOnce(() => {})
     ;(window as any).OneTrust = OneTrustMockGlobal
     expect(getOneTrustGlobal()).toEqual(OneTrustMockGlobal)
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 
-  it('should throw an error if the global is missing fields', () => {
+  it('should handle null or undefined', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementationOnce(() => {})
+    ;(window as any).OneTrust = undefined
+    expect(getOneTrustGlobal()).toBeUndefined()
+    ;(window as any).OneTrust = null
+    expect(getOneTrustGlobal()).toBeUndefined()
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
+  })
+
+  it('should log an error if the global is an unexpected type', () => {
     ;(window as any).OneTrust = {}
-    expect(() => getOneTrustGlobal()).toThrow(OneTrustApiValidationError)
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementationOnce(() => {})
+    expect(getOneTrustGlobal()).toBeUndefined()
+    expect(consoleErrorSpy.mock.lastCall[0]).toMatch(/window.OneTrust/i)
+  })
+
+  it('should not log an error if OneTrust just returns geolocationResponse', () => {
+    ;(window as any).OneTrust = { geolocationResponse: {} as any }
+    const consoleErrorSpy = jest.spyOn(console, 'error')
+    expect(getOneTrustGlobal()).toBeUndefined()
+    expect(consoleErrorSpy).not.toHaveBeenCalled()
   })
 })
 
@@ -41,6 +67,7 @@ describe(getAllGroups, () => {
     window.OneTrust = {
       ...OneTrustMockGlobal,
       GetDomainData: () => ({
+        ...domainDataMock,
         Groups: [
           {
             CustomGroupId: 'C0001',
@@ -125,6 +152,7 @@ describe(getGroupDataFromGroupIds, () => {
     window.OneTrust = {
       ...OneTrustMockGlobal,
       GetDomainData: () => ({
+        ...domainDataMock,
         Groups: [
           {
             CustomGroupId: 'C0001',
@@ -162,6 +190,7 @@ describe(getNormalizedCategoriesFromGroupIds, () => {
     window.OneTrust = {
       ...OneTrustMockGlobal,
       GetDomainData: () => ({
+        ...domainDataMock,
         Groups: [
           {
             CustomGroupId: 'C0001',
