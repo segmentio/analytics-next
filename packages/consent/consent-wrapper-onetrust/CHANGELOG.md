@@ -1,5 +1,16 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.3.2
+
+### Patch Changes
+
+- [`4ca9f84`](https://github.com/segmentio/analytics-next/commit/4ca9f84106ba1f86953b6b8632bb49929416cb64) Thanks [@silesky](https://github.com/silesky)! - #987
+
+  Fix bug: if showAlertNotice is false and Segment has default categories, we want to immediately load Segment with any default categories.
+
+- Updated dependencies [[`930af49`](https://github.com/segmentio/analytics-next/commit/930af49b27f7c2973304c7ae76b67d264223e6f6), [`a361575`](https://github.com/segmentio/analytics-next/commit/a361575152f8313dfded3b0cc4b9912b4e2a41c3), [`008a019`](https://github.com/segmentio/analytics-next/commit/008a01927973340bd93cd0097e45c455d49baea5)]:
+  - @segment/analytics-consent-tools@1.0.0
+
 ## 0.3.1
 
 ### Patch Changes

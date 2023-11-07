@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.60.0
+
+### Minor Changes
+
+- [#989](https://github.com/segmentio/analytics-next/pull/989) [`1faabf1`](https://github.com/segmentio/analytics-next/commit/1faabf1f51de63423f8995adf837137ab2d9d800) Thanks [@silesky](https://github.com/silesky)! - Change default retries to 10 to match docs + ajs classic
+
 ## 1.59.0
 
 ### Minor Changes
