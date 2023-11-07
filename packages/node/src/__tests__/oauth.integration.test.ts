@@ -254,9 +254,7 @@ describe('OAuth Failure', () => {
       throw new Error('fail')
     } catch (err: any) {
       expect(err.reason).toEqual(
-        new Error(
-          'secretOrPrivateKey must be an asymmetric key when using RS256'
-        )
+        new TypeError('"pkcs8" must be PKCS#8 formatted string')
       )
     }
   })
