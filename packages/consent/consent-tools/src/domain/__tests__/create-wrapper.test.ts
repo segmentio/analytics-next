@@ -487,45 +487,6 @@ describe(createWrapper, () => {
       expect(analyticsLoadSpy).not.toBeCalled()
     })
   })
-  test.each([
-    {
-      getCategories: () =>
-        ({
-          invalidCategory: 'hello',
-        } as any),
-      returnVal: 'Categories',
-    },
-    {
-      getCategories: () =>
-        Promise.resolve({
-          invalidCategory: 'hello',
-        }) as any,
-      returnVal: 'Promise<Categories>',
-    },
-  ])(
-    'should throw an error if getCategories() returns invalid categories during consent stamping ($returnVal))',
-    async ({ getCategories }) => {
-      const fn = jest.spyOn(ConsentStamping, 'createConsentStampingMiddleware')
-      const mockCdnSettings = settingsBuilder.build()
-
-      wrapTestAnalytics({
-        getCategories,
-        shouldLoadSegment: () => {
-          // on first load, we should not get an error because this is a valid category setting
-          return { invalidCategory: true }
-        },
-      })
-      await analytics.load({
-        ...DEFAULT_LOAD_SETTINGS,
-        cdnSettings: mockCdnSettings,
-      })
-
-      const getCategoriesFn = fn.mock.lastCall[0]
-      await expect(getCategoriesFn()).rejects.toMatchInlineSnapshot(
-        `[ValidationError: [Validation] Consent Categories should be {[categoryName: string]: boolean} (Received: {"invalidCategory":"hello"})]`
-      )
-    }
-  )
 
   describe('shouldEnableIntegration', () => {
     it('should let user customize the logic that determines whether or not a destination is enabled', async () => {

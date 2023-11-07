@@ -5,9 +5,17 @@ import type {
   CDNSettingsRemotePlugin,
 } from './wrapper'
 
+/**
+ * See {@link CreateWrapperSettings.registerOnConsentChanged}
+ */
 export type RegisterOnConsentChangedFunction = (
   categoriesChangedCb: (categories: Categories) => void
 ) => void
+
+/**
+ * See {@link CreateWrapperSettings.getCategories}
+ */
+export type GetCategoriesFunction = () => Categories | Promise<Categories>
 
 /**
  * Consent wrapper function configuration
@@ -55,11 +63,9 @@ export interface CreateWrapperSettings {
   /**
    * Fetch the categories which stamp every event. Called each time a new Segment event is dispatched.
    * @example
-   * ```ts
    * () => ({ "Advertising": true, "Analytics": false })
-   * ```
    **/
-  getCategories: () => Categories | Promise<Categories>
+  getCategories: GetCategoriesFunction
 
   /**
    * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
