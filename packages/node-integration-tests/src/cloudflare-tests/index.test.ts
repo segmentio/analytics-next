@@ -91,6 +91,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `
@@ -235,6 +236,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `
@@ -314,6 +316,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
         Object {
           "batch": Array [
@@ -359,6 +362,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
         Object {
           "batch": Array [
@@ -404,6 +408,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `
