@@ -1,6 +1,6 @@
 import { uuid } from './uuid'
 import { HTTPClient, HTTPClientRequest, HTTPResponse } from './http-client'
-import { SignOptions, sign } from 'jsonwebtoken'
+import { SignJWT, importPKCS8 } from 'jose'
 import { Emitter, backoff, sleep } from '@segment/analytics-core'
 import type {
   AccessToken,
@@ -248,7 +248,7 @@ export class TokenManager implements ITokenManager {
   /**
    * Solely responsible for building the HTTP request and calling the token service.
    */
-  private requestAccessToken(): Promise<HTTPResponse> {
+  private async requestAccessToken(): Promise<HTTPResponse> {
     // Set issued at time to 5 seconds in the past to account for clock skew
     const ISSUED_AT_BUFFER_IN_SECONDS = 5
     const MAX_EXPIRY_IN_SECONDS = 60
@@ -267,12 +267,10 @@ export class TokenManager implements ITokenManager {
       jti,
     }
 
-    const signingOptions: SignOptions = {
-      algorithm: this.alg,
-      keyid: this.keyId,
-    }
-
-    const signedJwt = sign(jwtBody, this.clientKey, signingOptions)
+    const key = await importPKCS8(this.clientKey, 'RS256')
+    const signedJwt = await new SignJWT(jwtBody)
+      .setProtectedHeader({ alg: this.alg, kid: this.keyId, typ: 'JWT' })
+      .sign(key)
 
     const requestBody = `grant_type=${this.grantType}&client_assertion_type=${this.clientAssertionType}&client_assertion=${signedJwt}&scope=${this.scope}`
     const accessTokenEndpoint = `${this.authServer}/token`

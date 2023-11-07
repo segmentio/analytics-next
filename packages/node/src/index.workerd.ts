@@ -5,5 +5,5 @@ import { Analytics } from './index.common'
 export default Analytics
 
 import { dependencyInjection } from './lib/dependency-injection'
-import { NullTokenManager } from './lib/null-token-manager'
-dependencyInjection.registerDependency('TokenManager', NullTokenManager)
+import { TokenManager } from './lib/token-manager'
+dependencyInjection.registerDependency('TokenManager', TokenManager)
