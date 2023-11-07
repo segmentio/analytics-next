@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-consent-onetrust': patch
+'@segment/analytics-consent-wrapper-onetrust': patch
 ---
 
 #987
