@@ -23,7 +23,7 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../test-helpers/fixtures/client-hints'
-import { getGlobalAnalytics } from '../..'
+import { getGlobalAnalytics, NullAnalytics } from '../..'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -94,11 +94,11 @@ const amplitudeWriteKey = 'bar'
 
 beforeEach(() => {
   setGlobalCDNUrl(undefined as any)
+  fetchCalls = []
 })
 
 describe('Initialization', () => {
   beforeEach(async () => {
-    fetchCalls = []
     jest.resetAllMocks()
     jest.resetModules()
   })
@@ -1207,6 +1207,58 @@ describe('Options', () => {
         iso: '2020-10-10',
       })
       expect(integrationEvent.timestamp()).toBeInstanceOf(Date)
+    })
+  })
+
+  describe('disable', () => {
+    /**
+     * Note: other tests in null-analytics.test.ts cover the NullAnalytics class (including persistence)
+     */
+    it('should return a null version of analytics / context', async () => {
+      const [analytics, context] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        { disable: true }
+      )
+      expect(context).toBeInstanceOf(Context)
+      expect(analytics).toBeInstanceOf(NullAnalytics)
+      expect(analytics.initialized).toBe(true)
+    })
+
+    it('should not fetch cdn settings or dispatch events', async () => {
+      const [analytics] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        { disable: true }
+      )
+      await analytics.track('foo')
+      expect(fetchCalls.length).toBe(0)
+    })
+
+    it('should only accept a boolean value', async () => {
+      const [analytics] = await AnalyticsBrowser.load(
+        {
+          writeKey,
+        },
+        // @ts-ignore
+        { disable: 'true' }
+      )
+      expect(analytics).not.toBeInstanceOf(NullAnalytics)
+    })
+
+    it('should allow access to cdnSettings', async () => {
+      const disableSpy = jest.fn().mockReturnValue(true)
+      const [analytics] = await AnalyticsBrowser.load(
+        {
+          cdnSettings: { integrations: {}, foo: 123 },
+          writeKey,
+        },
+        { disable: disableSpy }
+      )
+      expect(analytics).toBeInstanceOf(NullAnalytics)
+      expect(disableSpy).toBeCalledWith({ integrations: {}, foo: 123 })
     })
   })
 })
