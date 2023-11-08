@@ -3707,6 +3707,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@segment/analytics-browser-cdn-settings@workspace:packages/browser-cdn-settings":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-browser-cdn-settings@workspace:packages/browser-cdn-settings"
+  dependencies:
+    "@segment/analytics-browser-globals": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@segment/analytics-browser-globals@workspace:^, @segment/analytics-browser-globals@workspace:packages/browser-globals":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-browser-globals@workspace:packages/browser-globals"
+  languageName: unknown
+  linkType: soft
+
 "@segment/analytics-consent-tools@0.2.1, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-tools@workspace:packages/consent/consent-tools"
