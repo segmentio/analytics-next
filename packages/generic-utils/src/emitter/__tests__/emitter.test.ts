@@ -93,7 +93,7 @@ describe(Emitter, () => {
     expect(warnSpy).toHaveBeenCalledTimes(1)
   })
 
-  it('has no warning if maxListenersPerEvent is 0', () => {
+  it('has no warning if listener limit is set to 0', () => {
     const fn = jest.fn()
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
     const em = new Emitter({ maxListeners: 0 })
