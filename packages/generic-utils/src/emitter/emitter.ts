@@ -6,7 +6,7 @@ export interface EmitterOptions {
   /** How many event listeners for a particular event before emitting a warning (0 = disabled)
    *  @default 10
    **/
-  maxListenersPerEvent?: number
+  maxListeners?: number
 }
 
 /**
@@ -23,9 +23,9 @@ export interface EmitterOptions {
  * ```
  */
 export class Emitter<Contract extends EmitterContract = EmitterContract> {
-  maxListenersPerEvent: number
+  maxListeners: number
   constructor(options?: EmitterOptions) {
-    this.maxListenersPerEvent = options?.maxListenersPerEvent ?? 10
+    this.maxListeners = options?.maxListeners ?? 10
   }
   private callbacks: Partial<Contract> = {}
   private warned = false
@@ -37,13 +37,13 @@ export class Emitter<Contract extends EmitterContract = EmitterContract> {
       return
     }
     if (
-      this.maxListenersPerEvent &&
-      this.callbacks[event]!.length > this.maxListenersPerEvent
+      this.maxListeners &&
+      this.callbacks[event]!.length > this.maxListeners
     ) {
       console.warn(
         `Event Emitter: Possible memory leak detected; ${String(
           event
-        )} has exceeded ${this.maxListenersPerEvent} callbacks. `
+        )} has exceeded ${this.maxListeners} callbacks.`
       )
       this.warned = true
     }

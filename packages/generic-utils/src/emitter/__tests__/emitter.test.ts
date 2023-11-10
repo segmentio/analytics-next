@@ -74,13 +74,13 @@ describe(Emitter, () => {
 
   it('has a default max listeners of 10', () => {
     const em = new Emitter()
-    expect(em.maxListenersPerEvent).toBe(10)
+    expect(em.maxListeners).toBe(10)
   })
 
   it('should warn if possible memory leak', () => {
     const fn = jest.fn()
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const em = new Emitter({ maxListenersPerEvent: 3 })
+    const em = new Emitter({ maxListeners: 3 })
     em.on('test', fn)
     em.on('test', fn)
     em.on('test', fn)
@@ -96,8 +96,8 @@ describe(Emitter, () => {
   it('has no warning if maxListenersPerEvent is 0', () => {
     const fn = jest.fn()
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const em = new Emitter({ maxListenersPerEvent: 0 })
-    expect(em.maxListenersPerEvent).toBe(0)
+    const em = new Emitter({ maxListeners: 0 })
+    expect(em.maxListeners).toBe(0)
     em.on('test', fn)
     expect(warnSpy).not.toHaveBeenCalled()
     em.on('test', fn)
