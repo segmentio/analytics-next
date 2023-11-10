@@ -13,7 +13,8 @@ import {
 import type { FormArgs, LinkArgs } from '../auto-track'
 import { isOffline } from '../connection'
 import { Context } from '../context'
-import { dispatch, Emitter } from '@segment/analytics-core'
+import { dispatch } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import {
   Callback,
   EventFactory,

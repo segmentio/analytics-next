@@ -3742,6 +3742,7 @@ __metadata:
   resolution: "@segment/analytics-core@workspace:packages/core"
   dependencies:
     "@lukeed/uuid": ^2.0.0
+    "@segment/analytics-generic-utils": 1.0.0
     dset: ^3.1.2
     tslib: ^2.4.1
   languageName: unknown

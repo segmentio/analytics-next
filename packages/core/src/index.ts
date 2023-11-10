@@ -1,4 +1,3 @@
-export * from './emitter'
 export * from './emitter/interface'
 export * from './plugins'
 export * from './events/interfaces'

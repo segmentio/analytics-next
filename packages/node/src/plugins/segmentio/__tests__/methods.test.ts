@@ -3,7 +3,7 @@ import { createSuccess } from '../../../__tests__/test-helpers/factories'
 import { createConfiguredNodePlugin } from '../index'
 import { PublisherProps } from '../publisher'
 import { Context } from '../../../app/context'
-import { Emitter } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import {
   assertHTTPRequestOptions,
   httpClientOptionsBodyMatcher,

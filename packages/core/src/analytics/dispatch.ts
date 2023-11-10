@@ -2,7 +2,7 @@ import { CoreContext } from '../context'
 import { Callback } from '../events/interfaces'
 import { CoreEventQueue } from '../queue/event-queue'
 import { invokeCallback } from '../callback'
-import { Emitter } from '../emitter'
+import { Emitter } from '@segment/analytics-generic-utils'
 
 export type DispatchOptions<Ctx extends CoreContext = CoreContext> = {
   timeout?: number

@@ -1,4 +1,4 @@
-import { Emitter } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import { range } from 'lodash'
 import { createConfiguredNodePlugin } from '..'
 import { Context } from '../../../app/context'
