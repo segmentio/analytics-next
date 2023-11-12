@@ -43,7 +43,7 @@ export class Emitter<Contract extends EmitterContract = EmitterContract> {
       console.warn(
         `Event Emitter: Possible memory leak detected; ${String(
           event
-        )} has exceeded ${this.maxListeners} callbacks.`
+        )} has exceeded ${this.maxListeners} listeners.`
       )
       this.warned = true
     }
