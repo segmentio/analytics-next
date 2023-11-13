@@ -1,5 +1,19 @@
 # @segment/analytics-consent-tools
 
+## 1.0.0
+
+### Major Changes
+
+- [#983](https://github.com/segmentio/analytics-next/pull/983) [`930af49`](https://github.com/segmentio/analytics-next/commit/930af49b27f7c2973304c7ae76b67d264223e6f6) Thanks [@silesky](https://github.com/silesky)! - \* Rename `shouldLoad` -> `shouldLoadSegment`
+  - Remove redundant `shouldDisableConsentRequirement` setting, in favor of shouldLoad's `ctx.abort({loadSegmentNormally: true})`
+  - Create `shouldLoadWrapper` API for waiting for consent script initialization.
+
+### Patch Changes
+
+- [#990](https://github.com/segmentio/analytics-next/pull/990) [`a361575`](https://github.com/segmentio/analytics-next/commit/a361575152f8313dfded3b0cc4b9912b4e2a41c3) Thanks [@silesky](https://github.com/silesky)! - Refactor consent wrapper; export GetCategoriesFunction
+
+* [#991](https://github.com/segmentio/analytics-next/pull/991) [`008a019`](https://github.com/segmentio/analytics-next/commit/008a01927973340bd93cd0097e45c455d49baea5) Thanks [@silesky](https://github.com/silesky)! - Import from local utils rather than lodash
+
 ## 0.2.1
 
 ### Patch Changes
