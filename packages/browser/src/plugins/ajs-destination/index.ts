@@ -29,6 +29,7 @@ import {
   isDisabledIntegration as shouldSkipIntegration,
   isInstallableIntegration,
 } from './utils'
+import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -158,10 +159,19 @@ export class LegacyDestination implements DestinationPlugin {
     })
 
     try {
-      this.recordMetric(ctx, 'initialize', true)
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: 'initialize',
+        type: 'classic',
+      })
       this.integration.initialize()
     } catch (error) {
-      this.recordMetric(ctx, 'initialize', true)
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: 'initialize',
+        type: 'classic',
+        didError: true,
+      })
       throw error
     }
   }
@@ -179,14 +189,6 @@ export class LegacyDestination implements DestinationPlugin {
       // page events can't be buffered because of destinations that automatically add page views
       ctx.event.type !== 'page' &&
       (isOffline() || this._ready === false || this._initialized === false)
-    )
-  }
-
-  private recordMetric(ctx: Context, methodName: string, errored = false) {
-    ctx.stats.increment(
-      `analytics_js.integration.invoke${errored ? '.error' : ''}`,
-      1,
-      [`method:${methodName}`, `integration_name:${this.name}`, `type:classic`]
     )
   }
 
@@ -254,14 +256,23 @@ export class LegacyDestination implements DestinationPlugin {
       traverse: !this.disableAutoISOConversion,
     })
 
-    this.recordMetric(ctx, eventType)
+    recordIntegrationMetric(ctx, {
+      integrationName: this.name,
+      methodName: eventType,
+      type: 'classic',
+    })
 
     try {
       if (this.integration) {
         await this.integration.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
-      this.recordMetric(ctx, eventType, true)
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: eventType,
+        type: 'classic',
+        didError: true,
+      })
       throw err
     }
 

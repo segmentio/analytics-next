@@ -10,6 +10,7 @@ import {
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
 import { Analytics } from '../../core/analytics'
+import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -80,10 +81,19 @@ export class ActionDestination implements DestinationPlugin {
       }
 
       try {
-        this.recordMetric(ctx, methodName)
+        recordIntegrationMetric(ctx, {
+          integrationName: this.action.name,
+          methodName,
+          type: 'action',
+        })
         await this.action[methodName]!(transformedContext)
       } catch (error) {
-        this.recordMetric(ctx, methodName, true)
+        recordIntegrationMetric(ctx, {
+          integrationName: this.action.name,
+          methodName,
+          type: 'action',
+          didError: true,
+        })
         throw error
       }
 
@@ -109,28 +119,25 @@ export class ActionDestination implements DestinationPlugin {
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
     try {
-      this.recordMetric(ctx, 'load')
+      recordIntegrationMetric(ctx, {
+        integrationName: this.action.name,
+        methodName: 'load',
+        type: 'action',
+      })
       return await this.action.load(ctx, analytics)
     } catch (error) {
-      this.recordMetric(ctx, 'load', true)
+      recordIntegrationMetric(ctx, {
+        integrationName: this.action.name,
+        methodName: 'load',
+        type: 'action',
+        didError: true,
+      })
       throw error
     }
   }
 
   unload(ctx: Context, analytics: Analytics): Promise<unknown> | unknown {
     return this.action.unload?.(ctx, analytics)
-  }
-
-  private recordMetric(ctx: Context, methodName: string, errored = false) {
-    ctx.stats.increment(
-      `analytics_js.integration.invoke${errored ? '.error' : ''}`,
-      1,
-      [
-        `method:${methodName}`,
-        `integration_name:${this.action.name}`,
-        `type:action`,
-      ]
-    )
   }
 }
 
