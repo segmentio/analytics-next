@@ -68,6 +68,7 @@ describe(AnalyticsService, () => {
       expect(replaceLoadMethod).not.toBeCalled()
     })
   })
+
   describe('replaceLoadMethod', () => {
     it('should replace the load method with the provided function', () => {
       const replaceLoadMethod = jest.fn()
