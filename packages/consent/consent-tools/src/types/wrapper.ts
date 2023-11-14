@@ -11,7 +11,7 @@ export interface AnalyticsBrowserSettings {
  * 2nd arg to AnalyticsBrowser.load / analytics
  */
 export interface InitOptions {
-  updateCDNSettings(cdnSettings: CDNSettings): CDNSettings
+  updateCDNSettings?(cdnSettings: CDNSettings): CDNSettings
 }
 
 /**

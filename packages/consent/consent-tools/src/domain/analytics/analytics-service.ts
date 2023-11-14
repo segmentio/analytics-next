@@ -7,12 +7,8 @@ import { getInitializedAnalytics } from './get-initialized-analytics'
  * This class is a wrapper around the analytics.js library.
  */
 export class AnalyticsService {
-  /**
-   * The original analytics.load fn
-   */
-  loadNormally: AnyAnalytics['load']
   cdnSettings: Promise<CDNSettings>
-  private rawAnalytics: AnyAnalytics
+  private _uninitializedAnalytics: AnyAnalytics
   /**
    * There is a known bug for people who attempt to to wrap the library: the analytics reference does not get updated when the analytics.js library loads.
    * Thus, we need to proxy events to the global reference instead.
@@ -21,7 +17,7 @@ export class AnalyticsService {
    * https://github.com/segmentio/snippet/commit/081faba8abab0b2c3ec840b685c4ff6d6cccf79c
    */
   private get analytics() {
-    return getInitializedAnalytics(this.rawAnalytics)
+    return getInitializedAnalytics(this._uninitializedAnalytics)
   }
   /**
    *
@@ -29,13 +25,18 @@ export class AnalyticsService {
    */
   constructor(uninitializedAnalytics: AnyAnalytics) {
     validateAnalyticsInstance(uninitializedAnalytics)
-    this.rawAnalytics = uninitializedAnalytics
-    this.loadNormally = this.rawAnalytics.load.bind(this.rawAnalytics)
+    this._uninitializedAnalytics = uninitializedAnalytics
+    this.loadNormally = uninitializedAnalytics.load.bind(
+      this._uninitializedAnalytics
+    )
     this.cdnSettings = new Promise<CDNSettings>((resolve) =>
       this.analytics.on('initialize', resolve)
     )
   }
-
+  /**
+   * The original analytics.load fn
+   */
+  loadNormally: AnyAnalytics['load']
   /**
    * Replace the load fn with a new one
    */

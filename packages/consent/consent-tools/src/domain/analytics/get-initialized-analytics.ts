@@ -17,7 +17,7 @@ export const getInitializedAnalytics = (
       window as any
     )[opts?.globalAnalyticsKey ?? 'analytics']
     // we could probably skip this check and always return globalAnalytics, since they _should_ be set to the same thing at this point
-    // however, this imitates the snippet 'proxy' logic
+    // however, we _never_ want to call methods on an uninitialized analytics instance. Better to keep buffering.
     if ((globalAnalytics as any)?.initialized) {
       return globalAnalytics!
     }

@@ -16,25 +16,60 @@ describe(AnalyticsService, () => {
         ValidationError
       )
     })
+  })
 
-    it('should set the rawAnalytics property', () => {
-      expect(analyticsService['rawAnalytics']).toBe(analyticsMock)
-    })
+  describe('cdnSettings', () => {
+    it('should be a promise', async () => {
+      expect(analyticsMock.on).toBeCalledTimes(1)
+      expect(analyticsMock.on.mock.lastCall[0]).toBe('initialize')
+      analyticsMock.on.mock.lastCall[1]({ integrations: {} })
 
-    it('should set the loadNormally property', () => {
-      expect(analyticsService['loadNormally']).toBe(analyticsMock.load)
-    })
-
-    it('should set the cdnSettings property', () => {
-      expect(analyticsService['cdnSettings']).toBeInstanceOf(Promise)
+      await expect(analyticsService['cdnSettings']).resolves.toEqual({
+        integrations: {},
+      })
     })
   })
 
+  describe('loadNormally', () => {
+    it('loads normally', async () => {
+      analyticsService = new AnalyticsService(analyticsMock)
+      analyticsService.loadNormally('foo')
+      expect(analyticsMock.load).toBeCalled()
+    })
+
+    it('sets the this method correctly', async () => {
+      let that: any
+      function fn(this: any) {
+        console.log('called')
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        that = this
+      }
+      const o = { ...analyticsMock, load: fn, name: 'some instance' }
+      analyticsService = new AnalyticsService(o)
+      analyticsService.loadNormally('foo')
+      expect(that.name).toEqual('some instance')
+    })
+
+    it('will always call the original .load method', async () => {
+      const ogLoad = jest.fn()
+      analyticsService = new AnalyticsService({
+        ...analyticsMock,
+        load: ogLoad,
+      })
+      const replaceLoadMethod = jest.fn()
+      analyticsService.replaceLoadMethod(replaceLoadMethod)
+      analyticsService.loadNormally('foo')
+      expect(ogLoad).toHaveBeenCalled()
+      analyticsService.replaceLoadMethod(replaceLoadMethod)
+      analyticsService.loadNormally('foo')
+      expect(replaceLoadMethod).not.toBeCalled()
+    })
+  })
   describe('replaceLoadMethod', () => {
     it('should replace the load method with the provided function', () => {
-      const newLoadFn = jest.fn()
-      analyticsService.replaceLoadMethod(newLoadFn)
-      expect(analyticsService['analytics'].load).toBe(newLoadFn)
+      const replaceLoadMethod = jest.fn()
+      analyticsService.replaceLoadMethod(replaceLoadMethod)
+      expect(analyticsService['analytics'].load).toBe(replaceLoadMethod)
     })
   })
 
@@ -42,8 +77,9 @@ describe(AnalyticsService, () => {
     it('should add the middleware to the analytics instance', () => {
       const mockMiddleware = jest.fn()
       analyticsService.configureConsentStampingMiddleware(mockMiddleware)
-      expect(analyticsMock.addSourceMiddleware).toHaveBeenCalledWith(
-        mockMiddleware
+      expect(analyticsMock.addSourceMiddleware).toBeCalledTimes(1)
+      expect(analyticsMock.addSourceMiddleware).toBeCalledWith(
+        expect.any(Function)
       )
     })
   })
@@ -52,7 +88,7 @@ describe(AnalyticsService, () => {
     it('should call the track method with the expected arguments', () => {
       const mockCategories = { C0001: true, C0002: false }
       analyticsService.consentChange(mockCategories)
-      expect(analyticsMock.track).toHaveBeenCalledWith(
+      expect(analyticsMock.track).toBeCalledWith(
         'Segment Consent Preference',
         undefined,
         { consent: { categoryPreferences: mockCategories } }
@@ -64,7 +100,7 @@ describe(AnalyticsService, () => {
       console.error = jest.fn()
       analyticsService.consentChange(mockCategories)
       expect(console.error).toBeCalledTimes(1)
-      expect(console.error).toHaveBeenCalledWith(expect.any(ValidationError))
+      expect(console.error).toBeCalledWith(expect.any(ValidationError))
     })
   })
 })
