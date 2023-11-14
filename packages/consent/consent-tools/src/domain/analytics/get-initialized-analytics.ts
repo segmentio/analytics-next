@@ -13,11 +13,13 @@ export const getInitializedAnalytics = (
   const isSnippetUser = Array.isArray(analytics)
   if (isSnippetUser) {
     const opts = (analytics as any)._loadOptions ?? {}
-    const globalAnalytics = (window as any)[
-      opts?.globalAnalyticsKey ?? 'analytics'
-    ]
-    if ((globalAnalytics as any).initialized) {
-      return globalAnalytics
+    const globalAnalytics: MaybeInitializedAnalytics | undefined = (
+      window as any
+    )[opts?.globalAnalyticsKey ?? 'analytics']
+    // we could probably skip this check and always return globalAnalytics, since they _should_ be set to the same thing at this point
+    // however, this imitates the snippet 'proxy' logic
+    if ((globalAnalytics as any)?.initialized) {
+      return globalAnalytics!
     }
   }
 
