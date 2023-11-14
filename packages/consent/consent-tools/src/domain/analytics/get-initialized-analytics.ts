@@ -1,6 +1,9 @@
 import { AnyAnalytics, MaybeInitializedAnalytics } from '../../types'
 
 /**
+ * Get possibly-initialized analytics.
+ *
+ * Reason:
  * There is a known bug for people who attempt to to wrap the library: the analytics reference does not get updated when the analytics.js library loads.
  * Thus, we need to proxy events to the global reference instead.
  *

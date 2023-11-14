@@ -5,7 +5,7 @@ beforeEach(() => {
   delete (window as any).foo
 })
 
-describe('getInitializedAnalytics', () => {
+describe(getInitializedAnalytics, () => {
   it('should return the window.analytics object if the snippet user passes a stale reference', () => {
     ;(window as any).analytics = { initialized: true }
     const analytics = [] as any
