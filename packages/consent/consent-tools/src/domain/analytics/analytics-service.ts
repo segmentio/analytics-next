@@ -8,7 +8,11 @@ import { getInitializedAnalytics } from './get-initialized-analytics'
  */
 export class AnalyticsService {
   cdnSettings: Promise<CDNSettings>
-  private _uninitializedAnalytics: AnyAnalytics
+  /**
+   * The original analytics.load fn
+   */
+  loadNormally: AnyAnalytics['load']
+
   /**
    * There is a known bug for people who attempt to to wrap the library: the analytics reference does not get updated when the analytics.js library loads.
    * Thus, we need to proxy events to the global reference instead.
@@ -19,6 +23,9 @@ export class AnalyticsService {
   private get analytics() {
     return getInitializedAnalytics(this._uninitializedAnalytics)
   }
+
+  private _uninitializedAnalytics: AnyAnalytics
+
   /**
    *
    * @param uninitializedAnalytics an analytics instance before .load is called.
@@ -33,10 +40,7 @@ export class AnalyticsService {
       this.analytics.on('initialize', resolve)
     )
   }
-  /**
-   * The original analytics.load fn
-   */
-  loadNormally: AnyAnalytics['load']
+
   /**
    * Replace the load fn with a new one
    */
