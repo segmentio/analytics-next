@@ -42,6 +42,7 @@ describe('High level "integration" tests', () => {
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
     getConsentedGroupIdsSpy.mockReset()
+    analyticsMock.on = jest.fn()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.

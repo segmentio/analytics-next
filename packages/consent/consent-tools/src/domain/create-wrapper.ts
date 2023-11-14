@@ -6,16 +6,11 @@ import {
   CreateWrapperSettings,
   CDNSettings,
 } from '../types'
-import {
-  validateAnalyticsInstance,
-  validateCategories,
-  validateSettings,
-} from './validation'
-import { createConsentStampingMiddleware } from './consent-stamping'
+import { validateCategories, validateSettings } from './validation'
 import { pipe } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
-import { validateAndSendConsentChangedEvent } from './consent-changed'
 import { getPrunedCategories } from './pruned-categories'
+import { AnalyticsService } from './analytics'
 
 export const createWrapper = <Analytics extends AnyAnalytics>(
   ...[createWrapperOptions]: Parameters<CreateWrapper<Analytics>>
@@ -33,18 +28,16 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
     shouldLoadWrapper,
   } = createWrapperOptions
 
-  return (analytics: Analytics) => {
-    validateAnalyticsInstance(analytics)
+  return (rawAnalytics: Analytics) => {
+    const analyticsService = new AnalyticsService(rawAnalytics)
     const loadWrapper = shouldLoadWrapper?.() || Promise.resolve()
     void loadWrapper.then(() => {
       // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
       registerOnConsentChanged?.((categories) =>
         // whenever consent changes, dispatch a new event with the latest consent information
-        validateAndSendConsentChangedEvent(analytics, categories)
+        analyticsService.consentChange(categories)
       )
     })
-
-    const ogLoad = analytics.load
 
     const loadWithConsent: AnyAnalytics['load'] = async (
       settings,
@@ -67,7 +60,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         // to load Segment but disable consent requirement
         if (e instanceof AbortLoadError) {
           if (e.loadSegmentNormally === true) {
-            ogLoad.call(analytics, settings, options)
+            analyticsService.loadNormally(settings, options)
           }
           // do not load anything, but do not log anything either
           // if someone calls ctx.abort(), they are handling the error themselves
@@ -79,18 +72,12 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
       validateCategories(initialCategories)
 
-      // we need to register the listener before .load is called so we don't miss it.
-      // note: the 'initialize' API event is emitted so before the final flushing of events, so this promise won't block the pipeline.
-      const cdnSettings = new Promise<CDNSettings>((resolve) =>
-        analytics.on('initialize', resolve)
-      )
-
       // normalize getCategories pruning is turned on or off
       const getCategoriesForConsentStamping = async (): Promise<Categories> => {
         if (pruneUnmappedCategories) {
           return getPrunedCategories(
             getCategories,
-            await cdnSettings,
+            await analyticsService.cdnSettings,
             integrationCategoryMappings
           )
         } else {
@@ -99,8 +86,8 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
       }
 
       // register listener to stamp all events with latest consent information
-      analytics.addSourceMiddleware(
-        createConsentStampingMiddleware(getCategoriesForConsentStamping)
+      analyticsService.configureConsentStampingMiddleware(
+        getCategoriesForConsentStamping
       )
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
@@ -118,7 +105,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         )
       }
 
-      return ogLoad.call(analytics, settings, {
+      return analyticsService.loadNormally(settings, {
         ...options,
         updateCDNSettings: pipe(
           updateCDNSettings,
@@ -126,8 +113,8 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         ),
       })
     }
-    analytics.load = loadWithConsent
-    return analytics
+    analyticsService.replaceLoadMethod(loadWithConsent)
+    return rawAnalytics
   }
 }
 

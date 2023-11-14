@@ -1,4 +1,4 @@
-import { AnyAnalytics } from '../types'
+import { AnyAnalytics, MaybeInitializedAnalytics } from '../../types'
 
 /**
  * There is a known bug for people who attempt to to wrap the library: the analytics reference does not get updated when the analytics.js library loads.
@@ -9,7 +9,7 @@ import { AnyAnalytics } from '../types'
  */
 export const getInitializedAnalytics = (
   analytics: AnyAnalytics
-): AnyAnalytics => {
+): MaybeInitializedAnalytics => {
   const isSnippetUser = Array.isArray(analytics)
   if (isSnippetUser) {
     const opts = (analytics as any)._loadOptions ?? {}

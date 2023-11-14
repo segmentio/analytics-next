@@ -1,3 +1,4 @@
+import { OptionalField } from '../utils'
 import type { CreateWrapperSettings } from './settings'
 
 export interface AnalyticsBrowserSettings {
@@ -12,6 +13,11 @@ export interface AnalyticsBrowserSettings {
 export interface InitOptions {
   updateCDNSettings(cdnSettings: CDNSettings): CDNSettings
 }
+
+/**
+ * analytics instance that may have been initialized. For example, AnalyticsBrowser (has load) // or 'Analytics' (does not have load)
+ */
+export type MaybeInitializedAnalytics = OptionalField<AnyAnalytics, 'load'>
 
 /**
  * This interface is a stub of the actual Segment analytics instance.
