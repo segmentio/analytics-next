@@ -31,26 +31,29 @@ describe(AnalyticsService, () => {
   })
 
   describe('loadNormally', () => {
-    it('loads normally', async () => {
+    it('loads normally', () => {
       analyticsService = new AnalyticsService(analyticsMock)
       analyticsService.loadNormally('foo')
       expect(analyticsMock.load).toBeCalled()
     })
 
-    it('sets the this method correctly', async () => {
+    it('uses the correct value of *this*', () => {
       let that: any
       function fn(this: any) {
-        console.log('called')
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         that = this
       }
-      const o = { ...analyticsMock, load: fn, name: 'some instance' }
-      analyticsService = new AnalyticsService(o)
+      const _analyticsMock = {
+        ...analyticsMock,
+        load: fn,
+        name: 'some instance',
+      }
+      analyticsService = new AnalyticsService(_analyticsMock)
       analyticsService.loadNormally('foo')
       expect(that.name).toEqual('some instance')
     })
 
-    it('will always call the original .load method', async () => {
+    it('will always call the original .load method', () => {
       const ogLoad = jest.fn()
       analyticsService = new AnalyticsService({
         ...analyticsMock,
