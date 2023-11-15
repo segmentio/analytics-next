@@ -90,6 +90,30 @@ describe(AnalyticsService, () => {
         expect.any(Function)
       )
     })
+
+    it('should stamp consent', async () => {
+      const payload = {
+        obj: {
+          context: {},
+        },
+      }
+      analyticsService.configureConsentStampingMiddleware({
+        getCategories: () => ({
+          C0001: true,
+          C0002: false,
+        }),
+      })
+      await analyticsMock.addSourceMiddleware.mock.lastCall[0]({
+        payload,
+        next: jest.fn(),
+      })
+      expect((payload.obj.context as any).consent).toEqual({
+        categoryPreferences: {
+          C0001: true,
+          C0002: false,
+        },
+      })
+    })
   })
 
   describe('consentChange', () => {
