@@ -15,8 +15,9 @@ export interface InitOptions {
 }
 
 /**
- * Analytics instance initialized, so it does not have a load method.
+ * Underling analytics instance so it does not have a load method.
  * This type is neccessary because the final 'initialized' Analytics instance in `window.analytics` does not have a load method (ditto, new AnalyticsBrowser().instance)
+ * This is compatible with one of the following interfaces: `Analytics`, `AnalyticsSnippet`, `AnalyticsBrowser`.
  */
 export type MaybeInitializedAnalytics = {
   initialized?: boolean
@@ -24,11 +25,7 @@ export type MaybeInitializedAnalytics = {
 
 /**
  * This interface is a stub of the actual Segment analytics instance.
- * This can be either:
- * - the _buffered_ analytics instance (`AnalyticsSnippet`)
- * - the instance returned by `AnalyticsBrowser.load({...})`
- * - the instance created by `new AnalyticsBrowser(...)`
- *
+ * Either `AnalyticsSnippet` _or_ `AnalyticsBrowser`.
  */
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
