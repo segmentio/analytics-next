@@ -28,8 +28,8 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
     shouldLoadWrapper,
   } = createWrapperOptions
 
-  return (uninitializedAnalytics: Analytics) => {
-    const analyticsService = new AnalyticsService(uninitializedAnalytics)
+  return (analytics: Analytics) => {
+    const analyticsService = new AnalyticsService(analytics)
     const loadWrapper = shouldLoadWrapper?.() || Promise.resolve()
     void loadWrapper.then(() => {
       // Call this function as early as possible. OnConsentChanged events can happen before .load is called.
