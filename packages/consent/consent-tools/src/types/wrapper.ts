@@ -15,9 +15,12 @@ export interface InitOptions {
 }
 
 /**
- * analytics instance that may have been initialized. For example, AnalyticsBrowser (has load) // or 'Analytics' (does not have load)
+ * Analytics instance initialized, so it does not have a load method.
+ * This type is neccessary because the underlying 'initialized' Analytics instance in `window.analytics` does not have a load method.
  */
-export type MaybeInitializedAnalytics = OptionalField<AnyAnalytics, 'load'>
+export type MaybeInitializedAnalytics = OptionalField<AnyAnalytics, 'load'> & {
+  initialized?: true
+}
 
 /**
  * This interface is a stub of the actual Segment analytics instance.
@@ -25,6 +28,7 @@ export type MaybeInitializedAnalytics = OptionalField<AnyAnalytics, 'load'>
  * - window.analytics (i.e `AnalyticsSnippet`)
  * - the instance returned by `AnalyticsBrowser.load({...})`
  * - the instance created by `new AnalyticsBrowser(...)`
+ *
  */
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
