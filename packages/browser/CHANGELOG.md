@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.61.0
+
+### Minor Changes
+
+- [#985](https://github.com/segmentio/analytics-next/pull/985) [`083f9a1`](https://github.com/segmentio/analytics-next/commit/083f9a18e2cde4132cd31a61d76f26d07c35cad9) Thanks [@zikaari](https://github.com/zikaari)! - Update integration metrics capturing strategy
+
 ## 1.60.0
 
 ### Minor Changes
