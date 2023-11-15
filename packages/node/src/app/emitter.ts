@@ -1,4 +1,5 @@
-import { CoreEmitterContract, Emitter } from '@segment/analytics-core'
+import type { CoreEmitterContract } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import { Context } from './context'
 import type { AnalyticsSettings } from './settings'
 import { SegmentEvent } from './types'

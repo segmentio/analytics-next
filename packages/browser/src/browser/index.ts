@@ -8,7 +8,7 @@ import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
-import { createDeferred } from '../lib/create-deferred'
+import { createDeferred } from '@segment/analytics-generic-utils'
 import { envEnrichment } from '../plugins/env-enrichment'
 import {
   PluginFactory,
