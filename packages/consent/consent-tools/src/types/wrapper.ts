@@ -16,16 +16,16 @@ export interface InitOptions {
 
 /**
  * Analytics instance initialized, so it does not have a load method.
- * This type is neccessary because the underlying 'initialized' Analytics instance in `window.analytics` does not have a load method.
+ * This type is neccessary because the final 'initialized' Analytics instance in `window.analytics` does not have a load method (ditto, new AnalyticsBrowser().instance)
  */
-export type MaybeInitializedAnalytics = OptionalField<AnyAnalytics, 'load'> & {
-  initialized?: true
-}
+export type MaybeInitializedAnalytics = {
+  initialized?: boolean
+} & OptionalField<AnyAnalytics, 'load'>
 
 /**
  * This interface is a stub of the actual Segment analytics instance.
  * This can be either:
- * - window.analytics (i.e `AnalyticsSnippet`)
+ * - the _buffered_ analytics instance (`AnalyticsSnippet`)
  * - the instance returned by `AnalyticsBrowser.load({...})`
  * - the instance created by `new AnalyticsBrowser(...)`
  *
@@ -36,7 +36,7 @@ export interface AnyAnalytics {
   track(event: string, properties?: unknown, ...args: any[]): void
 
   /**
-   * This interface is meant to be compatible with both the snippet (`window.analytics.load`)
+   * This interface is meant to be compatible with both the snippet (`analytics.load`)
    * and the npm lib (`AnalyticsBrowser.load`)
    */
   load(
