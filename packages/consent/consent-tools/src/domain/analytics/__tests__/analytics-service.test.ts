@@ -78,9 +78,13 @@ describe(AnalyticsService, () => {
   })
 
   describe('configureConsentStampingMiddleware', () => {
+    // More tests are in create-wrapper.test.ts... should probably move the integration-y tests here
     it('should add the middleware to the analytics instance', () => {
-      const mockMiddleware = jest.fn()
-      analyticsService.configureConsentStampingMiddleware(mockMiddleware)
+      analyticsService.configureConsentStampingMiddleware({
+        getCategories: () => ({
+          C0001: true,
+        }),
+      })
       expect(analyticsMock.addSourceMiddleware).toBeCalledTimes(1)
       expect(analyticsMock.addSourceMiddleware).toBeCalledWith(
         expect.any(Function)

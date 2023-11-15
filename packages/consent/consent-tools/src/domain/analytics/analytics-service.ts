@@ -2,9 +2,11 @@ import {
   AnyAnalytics,
   Categories,
   CDNSettings,
+  CreateWrapperSettings,
   MaybeInitializedAnalytics,
 } from '../../types'
 import { createConsentStampingMiddleware } from '../consent-stamping'
+import { getPrunedCategories } from '../pruned-categories'
 import { validateAnalyticsInstance, validateCategories } from '../validation'
 
 /**
@@ -39,8 +41,28 @@ export class AnalyticsService {
     this.analytics.load = loadFn
   }
 
-  configureConsentStampingMiddleware(getCategories: () => Promise<Categories>) {
-    const MW = createConsentStampingMiddleware(getCategories)
+  configureConsentStampingMiddleware({
+    getCategories,
+    pruneUnmappedCategories,
+    integrationCategoryMappings,
+  }: Pick<
+    CreateWrapperSettings,
+    'getCategories' | 'pruneUnmappedCategories' | 'integrationCategoryMappings'
+  >): void {
+    // normalize getCategories pruning is turned on or off
+    const getCategoriesForConsentStamping = async (): Promise<Categories> => {
+      if (pruneUnmappedCategories) {
+        return getPrunedCategories(
+          getCategories,
+          await this.cdnSettings,
+          integrationCategoryMappings
+        )
+      } else {
+        return getCategories()
+      }
+    }
+
+    const MW = createConsentStampingMiddleware(getCategoriesForConsentStamping)
     return this.analytics.addSourceMiddleware(MW)
   }
 

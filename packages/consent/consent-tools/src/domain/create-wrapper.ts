@@ -9,24 +9,23 @@ import {
 import { validateCategories, validateSettings } from './validation'
 import { pipe } from '../utils'
 import { AbortLoadError, LoadContext } from './load-cancellation'
-import { getPrunedCategories } from './pruned-categories'
 import { AnalyticsService } from './analytics'
 
 export const createWrapper = <Analytics extends AnyAnalytics>(
-  ...[createWrapperOptions]: Parameters<CreateWrapper<Analytics>>
+  ...[createWrapperSettings]: Parameters<CreateWrapper<Analytics>>
 ): ReturnType<CreateWrapper<Analytics>> => {
-  validateSettings(createWrapperOptions)
+  validateSettings(createWrapperSettings)
 
   const {
     shouldDisableSegment,
     getCategories,
     shouldLoadSegment,
     integrationCategoryMappings,
-    shouldEnableIntegration,
     pruneUnmappedCategories,
+    shouldEnableIntegration,
     registerOnConsentChanged,
     shouldLoadWrapper,
-  } = createWrapperOptions
+  } = createWrapperSettings
 
   return (analytics: Analytics) => {
     const analyticsService = new AnalyticsService(analytics)
@@ -72,23 +71,12 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
       validateCategories(initialCategories)
 
-      // normalize getCategories pruning is turned on or off
-      const getCategoriesForConsentStamping = async (): Promise<Categories> => {
-        if (pruneUnmappedCategories) {
-          return getPrunedCategories(
-            getCategories,
-            await analyticsService.cdnSettings,
-            integrationCategoryMappings
-          )
-        } else {
-          return getCategories()
-        }
-      }
-
       // register listener to stamp all events with latest consent information
-      analyticsService.configureConsentStampingMiddleware(
-        getCategoriesForConsentStamping
-      )
+      analyticsService.configureConsentStampingMiddleware({
+        getCategories,
+        integrationCategoryMappings,
+        pruneUnmappedCategories,
+      })
 
       const updateCDNSettings: InitOptions['updateCDNSettings'] = (
         cdnSettings
