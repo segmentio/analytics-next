@@ -10,6 +10,7 @@ import {
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
 import { Analytics } from '../../core/analytics'
+import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -80,18 +81,19 @@ export class ActionDestination implements DestinationPlugin {
       }
 
       try {
-        ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
-          `method:${methodName}`,
-          `action_plugin_name:${this.action.name}`,
-        ])
-
+        recordIntegrationMetric(ctx, {
+          integrationName: this.action.name,
+          methodName,
+          type: 'action',
+        })
         await this.action[methodName]!(transformedContext)
       } catch (error) {
-        ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
-          `method:${methodName}`,
-          `action_plugin_name:${this.action.name}`,
-        ])
-
+        recordIntegrationMetric(ctx, {
+          integrationName: this.action.name,
+          methodName,
+          type: 'action',
+          didError: true,
+        })
         throw error
       }
 
@@ -117,18 +119,19 @@ export class ActionDestination implements DestinationPlugin {
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
     try {
-      ctx.stats.increment('analytics_js.action_plugin.invoke', 1, [
-        `method:load`,
-        `action_plugin_name:${this.action.name}`,
-      ])
-
+      recordIntegrationMetric(ctx, {
+        integrationName: this.action.name,
+        methodName: 'load',
+        type: 'action',
+      })
       return await this.action.load(ctx, analytics)
     } catch (error) {
-      ctx.stats.increment('analytics_js.action_plugin.invoke.error', 1, [
-        `method:load`,
-        `action_plugin_name:${this.action.name}`,
-      ])
-
+      recordIntegrationMetric(ctx, {
+        integrationName: this.action.name,
+        methodName: 'load',
+        type: 'action',
+        didError: true,
+      })
       throw error
     }
   }
