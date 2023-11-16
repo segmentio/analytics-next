@@ -1,3 +1,4 @@
+import { OptionalField } from '../utils'
 import type { CreateWrapperSettings } from './settings'
 
 export interface AnalyticsBrowserSettings {
@@ -10,15 +11,21 @@ export interface AnalyticsBrowserSettings {
  * 2nd arg to AnalyticsBrowser.load / analytics
  */
 export interface InitOptions {
-  updateCDNSettings(cdnSettings: CDNSettings): CDNSettings
+  updateCDNSettings?(cdnSettings: CDNSettings): CDNSettings
 }
 
 /**
+ * Underling analytics instance so it does not have a load method.
+ * This type is neccessary because the final 'initialized' Analytics instance in `window.analytics` does not have a load method (ditto, new AnalyticsBrowser().instance)
+ * This is compatible with one of the following interfaces: `Analytics`, `AnalyticsSnippet`, `AnalyticsBrowser`.
+ */
+export type MaybeInitializedAnalytics = {
+  initialized?: boolean
+} & OptionalField<AnyAnalytics, 'load'>
+
+/**
  * This interface is a stub of the actual Segment analytics instance.
- * This can be either:
- * - window.analytics (i.e `AnalyticsSnippet`)
- * - the instance returned by `AnalyticsBrowser.load({...})`
- * - the instance created by `new AnalyticsBrowser(...)`
+ * Either `AnalyticsSnippet` _or_ `AnalyticsBrowser`.
  */
 export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
@@ -26,7 +33,7 @@ export interface AnyAnalytics {
   track(event: string, properties?: unknown, ...args: any[]): void
 
   /**
-   * This interface is meant to be compatible with both the snippet (`window.analytics.load`)
+   * This interface is meant to be compatible with both the snippet (`analytics.load`)
    * and the npm lib (`AnalyticsBrowser.load`)
    */
   load(

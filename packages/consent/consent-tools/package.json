@@ -9,7 +9,8 @@
     "dist/",
     "src/",
     "!**/__tests__/**",
-    "!*.tsbuildinfo"
+    "!*.tsbuildinfo",
+    "!**/test-helpers/**"
   ],
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/analytics-consent-tools",

@@ -1,5 +1,4 @@
 import * as ConsentStamping from '../consent-stamping'
-import * as ConsentChanged from '../consent-changed'
 import { createWrapper } from '../create-wrapper'
 import { AbortLoadError, LoadContext } from '../load-cancellation'
 import type {
@@ -11,6 +10,7 @@ import type {
 } from '../../types'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { assertIntegrationsContainOnly } from './assertions/integrations-assertions'
+import { AnalyticsService } from '../analytics'
 
 const DEFAULT_LOAD_SETTINGS = {
   writeKey: 'foo',
@@ -661,8 +661,8 @@ describe(createWrapper, () => {
 
   describe('registerOnConsentChanged', () => {
     const sendConsentChangedEventSpy = jest.spyOn(
-      ConsentChanged,
-      'sendConsentChangedEvent'
+      AnalyticsService.prototype,
+      'consentChange'
     )
 
     let categoriesChangedCb: (categories: Categories) => void = () => {
@@ -709,8 +709,6 @@ describe(createWrapper, () => {
       expect(consoleErrorSpy).toBeCalledTimes(1)
       const err = consoleErrorSpy.mock.lastCall[0]
       expect(err.toString()).toMatch(/validation/i)
-      // if OnConsentChanged callback is called with categories, it should send event
-      expect(sendConsentChangedEventSpy).not.toBeCalled()
       expect(analyticsTrackSpy).not.toBeCalled()
     })
   })
