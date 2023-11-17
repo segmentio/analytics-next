@@ -719,7 +719,7 @@ describe(createWrapper, () => {
   describe('Disabling Segment Automatically', () => {
     // if user has no unmapped destinations and only irrelevant categories, we disable segment.
     // for more tests, see disable-segment.test.ts
-    it('should be disabled if segment should be disabled', async () => {
+    it('should always disable if segmentShouldBeDisabled returns true', async () => {
       disableSegmentMock.segmentShouldBeDisabled.mockReturnValue(true)
       wrapTestAnalytics()
       await analytics.load({
@@ -732,7 +732,7 @@ describe(createWrapper, () => {
         )
       ).toBe(true)
     })
-    it('should not be disabled if segment should be enabled', async () => {
+    it('should disable if segmentShouldBeDisabled returns false and disable is not overridden', async () => {
       disableSegmentMock.segmentShouldBeDisabled.mockReturnValue(false)
       wrapTestAnalytics()
       await analytics.load({
