@@ -100,11 +100,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
           updateCDNSettings,
           options?.updateCDNSettings || ((id) => id)
         ),
-        disable:
-          options?.disable === true
-            ? true
-            : (cdnSettings) =>
-                isDisabled(cdnSettings, initialCategories, options?.disable),
+        disable: createDisableOption(initialCategories, options?.disable),
       })
     }
     analyticsService.replaceLoadMethod(loadWithConsent)
@@ -187,13 +183,17 @@ const disableIntegrations = (
   return results
 }
 
-const isDisabled = (
-  cdnSettings: CDNSettings,
+const createDisableOption = (
   initialCategories: Categories,
   disable: InitOptions['disable']
-): boolean => {
-  return (
-    segmentShouldBeDisabled(initialCategories, cdnSettings.consentSettings) ||
-    (typeof disable === 'function' ? disable(cdnSettings) : disable === true)
-  )
+): NonNullable<InitOptions['disable']> => {
+  if (disable === true) {
+    return true
+  }
+  return (cdnSettings: CDNSettings) => {
+    return (
+      segmentShouldBeDisabled(initialCategories, cdnSettings.consentSettings) ||
+      (typeof disable === 'function' ? disable(cdnSettings) : false)
+    )
+  }
 }
