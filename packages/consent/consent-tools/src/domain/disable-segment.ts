@@ -11,7 +11,7 @@ export const segmentShouldBeDisabled = (
     return false
   }
 
-  // disable if _all_ of the the consented categories are _not_ in allCategories
+  // disable if _all_ of the the consented categories are irrelevant to segment
   return Object.keys(consentCategories)
     .filter((c) => consentCategories[c])
     .every((c) => !consentSettings.allCategories.includes(c))
