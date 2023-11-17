@@ -746,7 +746,7 @@ describe(createWrapper, () => {
       ).toBe(false)
     })
 
-    it('should be disabled if a user overrides disable with a true value, regardless of what we calculate', async () => {
+    it('should be disabled if if a user overrides disabled with boolean: true, and pass through a boolean', async () => {
       disableSegmentMock.segmentShouldBeDisabled.mockReturnValue(false)
       wrapTestAnalytics()
       await analytics.load(
@@ -757,9 +757,7 @@ describe(createWrapper, () => {
       )
       expect(
         // @ts-ignore
-        analyticsLoadSpy.mock.lastCall[1].disable!(
-          DEFAULT_LOAD_SETTINGS.cdnSettings
-        )
+        analyticsLoadSpy.mock.lastCall[1].disable
       ).toBe(true)
     })
 
@@ -795,6 +793,24 @@ describe(createWrapper, () => {
           DEFAULT_LOAD_SETTINGS.cdnSettings
         )
       ).toBe(true)
+    })
+
+    it('should enable if user passes the wrong option to "load"', async () => {
+      disableSegmentMock.segmentShouldBeDisabled.mockReturnValue(false)
+      wrapTestAnalytics()
+      await analytics.load(
+        {
+          ...DEFAULT_LOAD_SETTINGS,
+        },
+        // @ts-ignore
+        { disable: 'foo' }
+      )
+      expect(
+        // @ts-ignore
+        analyticsLoadSpy.mock.lastCall[1].disable!(
+          DEFAULT_LOAD_SETTINGS.cdnSettings
+        )
+      ).toBe(false)
     })
   })
 })
