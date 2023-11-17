@@ -129,6 +129,24 @@ export interface InitOptions {
    * default: analytics
    */
   globalAnalyticsKey?: string
+
+  /**
+   * Disable sending any data to Segment's servers. All emitted events and API calls (including .ready()), will be no-ops, and no cookies or localstorage will be used.
+   *
+   * @example
+   * ### Basic (Will not not fetch any CDN settings)
+   * ```ts
+   * disable: process.env.NODE_ENV === 'test'
+   * ```
+   *
+   * ### Advanced (Fetches CDN Settings. Do not use this unless you require CDN settings for some reason)
+   * ```ts
+   * disable: (cdnSettings) => cdnSettings.foo === 'bar'
+   * ```
+   */
+  disable?:
+    | boolean
+    | ((cdnSettings: LegacySettings) => boolean | Promise<boolean>)
 }
 
 /* analytics-classic stubs */
@@ -650,5 +668,15 @@ export class Analytics
       if (!an[method]) return
     }
     an[method].apply(this, args)
+  }
+}
+
+/**
+ * @returns a no-op analytics instance that does not create cookies or localstorage, or send any events to segment.
+ */
+export class NullAnalytics extends Analytics {
+  constructor() {
+    super({ writeKey: '' }, { disableClientPersistence: true })
+    this.initialized = true
   }
 }

@@ -2,7 +2,12 @@ import { getProcessEnv } from '../lib/get-process-env'
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 import { fetch } from '../lib/fetch'
-import { Analytics, AnalyticsSettings, InitOptions } from '../core/analytics'
+import {
+  Analytics,
+  AnalyticsSettings,
+  NullAnalytics,
+  InitOptions,
+} from '../core/analytics'
 import { Context } from '../core/context'
 import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
@@ -300,6 +305,11 @@ async function loadAnalytics(
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
 ): Promise<[Analytics, Context]> {
+  // return no-op analytics instance if disabled
+  if (options.disable === true) {
+    return [new NullAnalytics(), Context.system()]
+  }
+
   if (options.globalAnalyticsKey)
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
@@ -311,6 +321,14 @@ async function loadAnalytics(
 
   if (options.updateCDNSettings) {
     legacySettings = options.updateCDNSettings(legacySettings)
+  }
+
+  // if options.disable is a function, we allow user to disable analytics based on CDN Settings
+  if (typeof options.disable === 'function') {
+    const disabled = await options.disable(legacySettings)
+    if (disabled) {
+      return [new NullAnalytics(), Context.system()]
+    }
   }
 
   const retryQueue: boolean =
