@@ -5,8 +5,8 @@ import { createDeferred } from '@segment/analytics-generic-utils'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
-import { TokenManager, OAuthSettings } from '../../lib/types'
-import { dependencyInjection } from '../../lib/dependency-injection'
+import { OAuthSettings } from '../../lib/types'
+import { TokenManager } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -79,7 +79,6 @@ export class Publisher {
     this._writeKey = writeKey
 
     if (oauthSettings) {
-      const TokenManager = dependencyInjection.get('TokenManager')
       this._tokenManager = new TokenManager({
         ...oauthSettings,
         httpClient: oauthSettings.httpClient ?? httpClient,
@@ -112,6 +111,9 @@ export class Publisher {
   flushAfterClose(pendingItemsCount: number) {
     if (!pendingItemsCount) {
       // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
+      if (this._tokenManager) {
+        this._tokenManager.stopPoller()
+      }
       return
     }
 
@@ -124,7 +126,14 @@ export class Publisher {
     // Any mismatch is because some globally pending items are in plugins.
     const isExpectingNoMoreItems = this._batch.length === pendingItemsCount
     if (isExpectingNoMoreItems) {
-      this.send(this._batch).catch(noop)
+      this.send(this._batch)
+        .catch(noop)
+        .finally(() => {
+          // stop poller so program can exit ().
+          if (this._tokenManager) {
+            this._tokenManager.stopPoller()
+          }
+        })
       this.clearBatch()
     }
   }

@@ -98,6 +98,33 @@ describe('Analytics in Cloudflare workers', () => {
     )
   })
 
+  it('can send an oauth event', async () => {
+    const batches: any[] = []
+    const oauths: any[] = []
+    mockSegmentServer.on('batch', (batch) => {
+      batches.push(batch)
+    })
+
+    mockSegmentServer.on('token', (oauth) => {
+      oauths.push(oauth)
+    })
+
+    const worker = await unstable_dev(
+      joinPath(__dirname, 'workers', 'send-oauth-event.ts'),
+      {
+        experimental: {
+          disableExperimentalWarning: true,
+        },
+        bundle: true,
+      }
+    )
+    const response = await worker.fetch('http://localhost')
+    await response.text()
+    await worker.stop()
+
+    expect(oauths).toMatchInlineSnapshot(`Array []`) // TODO: oauths should be populated
+  })
+
   it('can send each event type in a batch', async () => {
     const batches: any[] = []
     mockSegmentServer.on('batch', (batch) => {

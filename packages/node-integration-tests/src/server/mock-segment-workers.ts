@@ -68,11 +68,11 @@ export class MockSegmentServer {
     })
   }
 
-  on(_event: 'batch', handler: BatchHandler) {
+  on(_event: 'batch' | 'token', handler: BatchHandler) {
     this.onBatchHandlers.add(handler)
   }
 
-  off(_event: 'batch', handler: BatchHandler) {
+  off(_event: 'batch' | 'token', handler: BatchHandler) {
     this.onBatchHandlers.delete(handler)
   }
 }

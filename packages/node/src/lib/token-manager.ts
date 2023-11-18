@@ -239,10 +239,10 @@ export class TokenManager implements ITokenManager {
   }
 
   private queueNextPoll(timeUntilRefreshInMs: number) {
-    this.pollerTimer = setTimeout(
-      () => this.pollerLoop(),
-      timeUntilRefreshInMs
-    )?.unref()
+    this.pollerTimer = setTimeout(() => this.pollerLoop(), timeUntilRefreshInMs)
+    if (this.pollerTimer.unref) {
+      this.pollerTimer.unref()
+    }
   }
 
   /**
