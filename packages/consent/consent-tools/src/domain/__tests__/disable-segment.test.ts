@@ -2,7 +2,7 @@ import { CDNSettingsConsent } from '../../types'
 import { segmentShouldBeDisabled } from '../disable-segment'
 
 describe('segmentShouldBeDisabled', () => {
-  it('should be disabled if user has only consented to irrelevant vategories', () => {
+  it('should be disabled if user has only consented to irrelevant categories: multiple', () => {
     const consentCategories = { foo: true, bar: true, baz: false }
     const consentSettings: CDNSettingsConsent = {
       allCategories: ['baz', 'qux'],
@@ -13,7 +13,7 @@ describe('segmentShouldBeDisabled', () => {
     )
   })
 
-  it('should be disabled if user has only consented to irrelevant categories', () => {
+  it('should be disabled if user has only consented to irrelevant categories: single', () => {
     const consentCategories = { foo: true }
     const consentSettings = {
       allCategories: ['bar'],
