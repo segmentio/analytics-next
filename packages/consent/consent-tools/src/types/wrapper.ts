@@ -12,6 +12,7 @@ export interface AnalyticsBrowserSettings {
  */
 export interface InitOptions {
   updateCDNSettings?(cdnSettings: CDNSettings): CDNSettings
+  disable?: boolean | ((cdnSettings: CDNSettings) => boolean)
 }
 
 /**
@@ -67,13 +68,17 @@ export interface IntegrationCategoryMappings {
   [integrationName: string]: string[]
 }
 
+export interface CDNSettingsConsent {
+  // all unique categories keys
+  allCategories: string[]
+  // where user has unmapped enabled destinations
+  hasUnmappedDestinations: boolean
+}
+
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
   remotePlugins?: CDNSettingsRemotePlugin[]
-  consentSettings?: {
-    // all unique categories keys
-    allCategories: string[]
-  }
+  consentSettings?: CDNSettingsConsent
 }
 
 /**

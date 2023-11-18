@@ -90,11 +90,16 @@ export interface LegacySettings {
    */
   consentSettings?: {
     /**
-     * All unique consent categories.
+     * All unique consent categories for enabled destinations.
      * There can be categories in this array that are important for consent that are not included in any integration  (e.g. 2 cloud mode categories).
      * @example ["Analytics", "Advertising", "CAT001"]
      */
     allCategories: string[]
+
+    /**
+     * Whether or not there are any unmapped destinations for enabled destinations.
+     */
+    hasUnmappedDestinations: boolean
   }
 }
 
