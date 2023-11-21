@@ -1,7 +1,7 @@
 ---
 '@segment/analytics-consent-tools': minor
 ---
-Segment will not load, or, if already loaded, will not send events to segment, if all of the following conditions are met:
+analytics will not initialize if all of the following conditions are met:
 1. No destinations without a consent mapping (consentSettings.hasUnmappedDestinations == false)
 
     AND
