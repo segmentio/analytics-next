@@ -86,7 +86,7 @@ analytics
 [Self Hosting or Proxying Analytics.js documentation](
  https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/custom-proxy/#custom-cdn--api-proxy)
 
-## Usage in Common Frameworks / SPAs
+## Examples / Usage in Common Frameworks and SPAs
 
 ### Next.js
 - https://github.com/vercel/next.js/tree/canary/examples/with-segment-analytics
