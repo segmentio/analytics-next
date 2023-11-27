@@ -1,11 +1,11 @@
 {
-  "name": "@example/with-next-js",
+  "name": "@playground/next-playground",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@example/with-next-js",
+    ".": "yarn run -T turbo run --filter=@playground/next-playground...",
     "concurrently": "yarn run -T concurrently",
-    "dev": "yarn partytown && yarn concurrently 'yarn run -T watch --filter=with-next-js' 'sleep 10 && next dev'",
+    "dev": "yarn partytown && yarn concurrently 'yarn run -T watch --filter=next-playground' 'sleep 10 && next dev'",
     "build": "yarn partytown && next build",
     "partytown": "partytown copylib public/~partytown",
     "start": "next start",

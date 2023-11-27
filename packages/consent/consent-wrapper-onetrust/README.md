@@ -88,7 +88,7 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 > Note: Playgrounds are meant for experimentation / testing, and as such, may be a bit overly complicated.
 > We recommend you try to follcaow the documentation for best practice.
 
-- [Standalone playground](/examples/standalone-playground/pages/index-consent.html)
+- [Standalone playground](/apps/standalone-playground/pages/index-consent.html)
 
 ## Environments
 

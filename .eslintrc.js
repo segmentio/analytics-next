@@ -19,7 +19,7 @@ module.exports = {
         project: [
           './tsconfig.json',
           './packages/*/tsconfig.json',
-          './examples/*/tsconfig.json',
+          './apps/*/tsconfig.json',
         ],
       },
       extends: [
