@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@1.6.0/schema.json",
-  "ignore": ["@example/*"],
+  "ignore": ["@playground/*"],
   "changelog": [
     "@changesets/changelog-github",
     {
