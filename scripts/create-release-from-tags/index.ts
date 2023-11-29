@@ -25,7 +25,6 @@ export const getCurrentGitTags = async (): Promise<Tag[]> => {
     'tag',
     '--points-at',
     'HEAD',
-    '--column',
   ])
   if (code !== 0) {
     throw new Error(stderr.toString())
@@ -34,10 +33,8 @@ export const getCurrentGitTags = async (): Promise<Tag[]> => {
   return parseRawTags(stdout.toString())
 }
 
-export const getConfig = async ({
-  DRY_RUN,
-  TAGS,
-}: NodeJS.ProcessEnv): Promise<Config> => {
+export const getConfig = async (): Promise<Config> => {
+  const { DRY_RUN, TAGS } = process.env
   const isDryRun = Boolean(DRY_RUN)
   const tags = TAGS ? parseRawTags(TAGS) : await getCurrentGitTags()
 
@@ -116,7 +113,12 @@ const extractPartsFromTag = (rawTag: string): Tag | undefined => {
  * @param rawTags - string delimited list of tags (e.g. `@segment/analytics-next@2.1.1 @segment/analytics-core@1.0.0`)
  */
 export const parseRawTags = (rawTags: string): Tag[] => {
-  return rawTags.trim().split(' ').map(extractPartsFromTag).filter(exists)
+  return rawTags
+    .trim()
+    .replace(new RegExp('\\n', 'g'), ' ') // remove any newLine characters
+    .split(' ')
+    .map(extractPartsFromTag)
+    .filter(exists)
 }
 
 /**
@@ -187,6 +189,7 @@ export const createReleaseFromTags = async (config: Config) => {
   console.log('Processing tags:', config.tags, '\n')
 
   for (const tag of config.tags) {
+    console.log(`\n ---> Creating release for tag: ${tag.raw}`)
     await createGithubReleaseFromTag(tag, { dryRun: config.isDryRun })
   }
 }
