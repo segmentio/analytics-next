@@ -1,5 +1,11 @@
 # @segment/analytics-generic-utils
 
+## 1.1.0
+
+### Minor Changes
+
+- [#993](https://github.com/segmentio/analytics-next/pull/993) [`d9b47c4`](https://github.com/segmentio/analytics-next/commit/d9b47c43e5e08efce14fe4150536ff60b8df91e0) Thanks [@silesky](https://github.com/silesky)! - Add Emitter library. Log default warning if a listeners exceeds 10 for a specific event type (configurable)
+
 ## 1.0.0
 
 ### Major Changes

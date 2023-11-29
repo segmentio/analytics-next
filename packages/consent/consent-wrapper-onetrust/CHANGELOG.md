@@ -1,5 +1,12 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [[`57be1ac`](https://github.com/segmentio/analytics-next/commit/57be1acd556a9779edbc5fd4d3f820fb50b65697), [`dcf279c`](https://github.com/segmentio/analytics-next/commit/dcf279c4591c84952c78022ddfbad945aab8cfde)]:
+  - @segment/analytics-consent-tools@1.1.0
+
 ## 0.3.2
 
 ### Patch Changes
