@@ -1,5 +1,21 @@
 # @segment/analytics-consent-tools
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1001](https://github.com/segmentio/analytics-next/pull/1001) [`57be1ac`](https://github.com/segmentio/analytics-next/commit/57be1acd556a9779edbc5fd4d3f820fb50b65697) Thanks [@silesky](https://github.com/silesky)! - analytics will not initialize if all of the following conditions are met:
+
+  1. No destinations without a consent mapping (consentSettings.hasUnmappedDestinations == false)
+
+     AND
+
+  2. User has not consented to any category present in the consentSettings.allCategories array.
+
+### Patch Changes
+
+- [#997](https://github.com/segmentio/analytics-next/pull/997) [`dcf279c`](https://github.com/segmentio/analytics-next/commit/dcf279c4591c84952c78022ddfbad945aab8cfde) Thanks [@silesky](https://github.com/silesky)! - Refactor internally to add AnalyticsService
+
 ## 1.0.0
 
 ### Major Changes

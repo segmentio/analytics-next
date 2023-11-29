@@ -1,5 +1,19 @@
 # @segment/analytics-next
 
+## 1.62.0
+
+### Minor Changes
+
+- [#992](https://github.com/segmentio/analytics-next/pull/992) [`a72f473`](https://github.com/segmentio/analytics-next/commit/a72f4736a743e6a6487fd7b5c764639402f9e7ba) Thanks [@silesky](https://github.com/silesky)! - Add 'disable' boolean option to allow for disabling Segment in a testing environment.
+
+### Patch Changes
+
+- [#1001](https://github.com/segmentio/analytics-next/pull/1001) [`57be1ac`](https://github.com/segmentio/analytics-next/commit/57be1acd556a9779edbc5fd4d3f820fb50b65697) Thanks [@silesky](https://github.com/silesky)! - add hasUnmappedDestinations property to types
+
+- Updated dependencies [[`d9b47c4`](https://github.com/segmentio/analytics-next/commit/d9b47c43e5e08efce14fe4150536ff60b8df91e0), [`d9b47c4`](https://github.com/segmentio/analytics-next/commit/d9b47c43e5e08efce14fe4150536ff60b8df91e0)]:
+  - @segment/analytics-core@1.4.0
+  - @segment/analytics-generic-utils@1.1.0
+
 ## 1.61.0
 
 ### Minor Changes

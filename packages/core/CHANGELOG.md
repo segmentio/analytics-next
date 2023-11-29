@@ -1,5 +1,16 @@
 # @segment/analytics-core
 
+## 1.4.0
+
+### Minor Changes
+
+- [#993](https://github.com/segmentio/analytics-next/pull/993) [`d9b47c4`](https://github.com/segmentio/analytics-next/commit/d9b47c43e5e08efce14fe4150536ff60b8df91e0) Thanks [@silesky](https://github.com/silesky)! - Consume Emitter module from `@segment/analytics-generic-utils`
+
+### Patch Changes
+
+- Updated dependencies [[`d9b47c4`](https://github.com/segmentio/analytics-next/commit/d9b47c43e5e08efce14fe4150536ff60b8df91e0)]:
+  - @segment/analytics-generic-utils@1.1.0
+
 ## 1.3.2
 
 ### Patch Changes
