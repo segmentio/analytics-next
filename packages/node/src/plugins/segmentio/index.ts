@@ -41,7 +41,7 @@ export function createNodePlugin(publisher: Publisher): SegmentNodePlugin {
 
   return {
     name: 'Segment.io',
-    type: 'after',
+    type: 'destination',
     version: '1.0.0',
     isLoaded: () => true,
     load: () => Promise.resolve(),
