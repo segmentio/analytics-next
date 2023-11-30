@@ -125,7 +125,7 @@ export function segmentio(
 
   const segmentio: Plugin = {
     name: 'Segment.io',
-    type: 'after',
+    type: 'destination',
     version: '0.1.0',
     isLoaded: (): boolean => true,
     load: (): Promise<void> => Promise.resolve(),
