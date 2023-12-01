@@ -30,7 +30,6 @@ import {
   isInstallableIntegration,
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
-import { createDeferred } from '../../lib/create-deferred'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -75,8 +74,8 @@ export class LegacyDestination implements DestinationPlugin {
 
   private _ready: boolean | undefined
   private _initialized: boolean | undefined
-  private readyPromise = createDeferred<boolean>()
-  private initializePromise = createDeferred<boolean>()
+  private onReady: Promise<unknown> | undefined
+  private onInitialize: Promise<unknown> | undefined
   private disableAutoISOConversion: boolean
 
   integrationSource?: ClassicIntegrationSource
@@ -105,15 +104,6 @@ export class LegacyDestination implements DestinationPlugin {
       delete this.settings['type']
     }
 
-    this.readyPromise.promise.then(
-      (isReady) => (this._ready = isReady),
-      () => {}
-    )
-    this.initializePromise.promise.then(
-      (isInitialized) => (this._initialized = isInitialized),
-      () => {}
-    )
-
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
@@ -126,12 +116,12 @@ export class LegacyDestination implements DestinationPlugin {
     return !!this._ready
   }
 
-  ready(): Promise<boolean> {
-    return this.readyPromise.promise
+  ready(): Promise<unknown> {
+    return this.onReady ?? Promise.resolve()
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
-    if (this._ready !== undefined) {
+    if (this._ready || this.onReady !== undefined) {
       return
     }
 
@@ -150,12 +140,22 @@ export class LegacyDestination implements DestinationPlugin {
       analyticsInstance
     )
 
-    this.integration!.once('ready', () => {
-      this.readyPromise.resolve(true)
+    this.onReady = new Promise((resolve) => {
+      const onReadyFn = (): void => {
+        this._ready = true
+        resolve(true)
+      }
+
+      this.integration!.once('ready', onReadyFn)
     })
 
-    this.integration!.on('initialize', () => {
-      this.initializePromise.resolve(true)
+    this.onInitialize = new Promise((resolve) => {
+      const onInit = (): void => {
+        this._initialized = true
+        resolve(true)
+      }
+
+      this.integration!.on('initialize', onInit)
     })
 
     try {
@@ -294,8 +294,9 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration.initialize()
     }
 
-    await this.initializePromise.promise
-    return this.send(ctx, Page as ClassType<Page>, 'page')
+    return this.onInitialize!.then(() => {
+      return this.send(ctx, Page as ClassType<Page>, 'page')
+    })
   }
 
   async identify(ctx: Context): Promise<Context> {
