@@ -30,6 +30,7 @@ import {
   isInstallableIntegration,
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
+import { createDeferred } from '../../lib/create-deferred'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -75,7 +76,7 @@ export class LegacyDestination implements DestinationPlugin {
   private _ready: boolean | undefined
   private _initialized: boolean | undefined
   private onReady: Promise<unknown> | undefined
-  private onInitialize: Promise<unknown> | undefined
+  private initializePromise = createDeferred<boolean>()
   private disableAutoISOConversion: boolean
 
   integrationSource?: ClassicIntegrationSource
@@ -104,6 +105,11 @@ export class LegacyDestination implements DestinationPlugin {
       delete this.settings['type']
     }
 
+    this.initializePromise.promise.then(
+      (isInitialized) => (this._initialized = isInitialized),
+      () => {}
+    )
+
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
@@ -117,7 +123,7 @@ export class LegacyDestination implements DestinationPlugin {
   }
 
   ready(): Promise<unknown> {
-    return this.onReady ?? Promise.resolve()
+    return this.initializePromise.promise
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
@@ -149,13 +155,8 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration!.once('ready', onReadyFn)
     })
 
-    this.onInitialize = new Promise((resolve) => {
-      const onInit = (): void => {
-        this._initialized = true
-        resolve(true)
-      }
-
-      this.integration!.on('initialize', onInit)
+    this.integration!.on('initialize', () => {
+      this.initializePromise.resolve(true)
     })
 
     try {
@@ -172,6 +173,7 @@ export class LegacyDestination implements DestinationPlugin {
         type: 'classic',
         didError: true,
       })
+      this.initializePromise.resolve(false)
       throw error
     }
   }
