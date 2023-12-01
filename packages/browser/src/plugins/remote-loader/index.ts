@@ -9,8 +9,10 @@ import {
   DestinationMiddlewareFunction,
 } from '../middleware'
 import { Context, ContextCancelation } from '../../core/context'
-import { Analytics } from '../../core/analytics'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
+import { Analytics, InitOptions } from '../../core/analytics'
+import { pTimeout } from '@segment/analytics-core'
+import { createDeferred } from '../../lib/create-deferred'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -31,14 +33,18 @@ export class ActionDestination implements DestinationPlugin {
   type: Plugin['type']
 
   alternativeNames: string[] = []
+  options: InitOptions
+
+  private loadPromise = createDeferred<unknown>()
 
   middleware: DestinationMiddlewareFunction[] = []
 
   action: Plugin
 
-  constructor(name: string, action: Plugin) {
+  constructor(name: string, action: Plugin, options: InitOptions) {
     this.action = action
     this.name = name
+    this.options = options
     this.type = action.type
     this.alternativeNames.push(action.name)
   }
@@ -80,6 +86,8 @@ export class ActionDestination implements DestinationPlugin {
         transformedContext = await this.transform(ctx)
       }
 
+      await this.ready()
+
       try {
         recordIntegrationMetric(ctx, {
           integrationName: this.action.name,
@@ -114,17 +122,27 @@ export class ActionDestination implements DestinationPlugin {
   }
 
   ready(): Promise<unknown> {
-    return this.action.ready ? this.action.ready() : Promise.resolve()
+    return this.loadPromise.promise
   }
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
+    if (this.loadPromise.settled) {
+      return this.loadPromise
+    }
+
     try {
       recordIntegrationMetric(ctx, {
         integrationName: this.action.name,
         methodName: 'load',
         type: 'action',
       })
-      return await this.action.load(ctx, analytics)
+
+      const ret = await pTimeout(
+        this.action.load(ctx, analytics),
+        this.options.destinationTimeout!
+      )
+      this.loadPromise.resolve(ret)
+      return ret
     } catch (error) {
       recordIntegrationMetric(ctx, {
         integrationName: this.action.name,
@@ -132,6 +150,8 @@ export class ActionDestination implements DestinationPlugin {
         type: 'action',
         didError: true,
       })
+
+      this.loadPromise.reject(error)
       throw error
     }
   }
@@ -227,7 +247,7 @@ export async function remoteLoader(
   settings: LegacySettings,
   userIntegrations: Integrations,
   mergedIntegrations: Record<string, JSONObject>,
-  obfuscate?: boolean,
+  options: InitOptions,
   routingMiddleware?: DestinationMiddlewareFunction,
   pluginSources?: PluginFactory[]
 ): Promise<Plugin[]> {
@@ -243,7 +263,7 @@ export async function remoteLoader(
         const pluginFactory =
           pluginSources?.find(
             ({ pluginName }) => pluginName === remotePlugin.name
-          ) || (await loadPluginFactory(remotePlugin, obfuscate))
+          ) || (await loadPluginFactory(remotePlugin, options.obfuscate))
 
         if (pluginFactory) {
           const plugin = await pluginFactory({
@@ -261,7 +281,8 @@ export async function remoteLoader(
           plugins.forEach((plugin) => {
             const wrapper = new ActionDestination(
               remotePlugin.creationName,
-              plugin
+              plugin,
+              options
             )
 
             /** Make sure we only apply destination filters to actions of the "destination" type to avoid causing issues for hybrid destinations */

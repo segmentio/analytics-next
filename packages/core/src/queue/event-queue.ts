@@ -49,25 +49,21 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
-    await Promise.resolve(plugin.load(ctx, instance))
-      .then(() => {
-        this.plugins.push(plugin)
+    if (plugin.type === 'destination') {
+      plugin.load(ctx, instance).catch((err) => {
+        this.failedInitializations.push(plugin.name)
+        console.warn(plugin.name, err)
+
+        ctx.log('warn', 'Failed to load destination', {
+          plugin: plugin.name,
+          error: err,
+        })
       })
-      .catch((err) => {
-        if (plugin.type === 'destination') {
-          this.failedInitializations.push(plugin.name)
-          console.warn(plugin.name, err)
+    } else {
+      await plugin.load(ctx, instance)
+    }
 
-          ctx.log('warn', 'Failed to load destination', {
-            plugin: plugin.name,
-            error: err,
-          })
-
-          return
-        }
-
-        throw err
-      })
+    this.plugins.push(plugin)
   }
 
   async deregister(
@@ -305,6 +301,8 @@ export abstract class CoreEventQueue<
         Promise.all(attempts).then(resolve).catch(reject)
       }, 0)
     })
+
+    console.log('Running after plugins')
 
     ctx.stats.increment('message_delivered')
 
