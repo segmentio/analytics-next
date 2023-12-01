@@ -296,9 +296,8 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration.initialize()
     }
 
-    return this.onInitialize!.then(() => {
-      return this.send(ctx, Page as ClassType<Page>, 'page')
-    })
+    await this.initializePromise.promise
+    return this.send(ctx, Page as ClassType<Page>, 'page')
   }
 
   async identify(ctx: Context): Promise<Context> {
