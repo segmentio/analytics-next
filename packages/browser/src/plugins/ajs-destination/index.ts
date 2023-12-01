@@ -266,12 +266,6 @@ export class LegacyDestination implements DestinationPlugin {
 
     try {
       if (this.integration) {
-        if (!(await this.ready())) {
-          throw new Error(
-            'Something prevented the integration from getting ready'
-          )
-        }
-
         await this.integration!.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
