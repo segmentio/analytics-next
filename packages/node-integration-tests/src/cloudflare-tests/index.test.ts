@@ -122,7 +122,41 @@ describe('Analytics in Cloudflare workers', () => {
     await response.text()
     await worker.stop()
 
-    expect(oauths).toMatchInlineSnapshot(`Array []`) // TODO: oauths should be populated
+    console.log(batches)
+
+    expect(oauths[0]).toHaveLength(756)
+
+    expect(batches).toMatchInlineSnapshot(
+      batches.map(() => snapshotMatchers.getReqBody(1)),
+      `
+      Array [
+        Object {
+          "batch": Array [
+            Object {
+              "_metadata": Object {
+                "jsRuntime": "cloudflare-worker",
+              },
+              "context": Object {
+                "library": Object {
+                  "name": "@segment/analytics-node",
+                  "version": Any<String>,
+                },
+              },
+              "event": "some-event",
+              "integrations": Object {},
+              "messageId": Any<String>,
+              "properties": Object {},
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+              "type": "track",
+              "userId": "some-user",
+            },
+          ],
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
+        },
+      ]
+    `
+    )
   })
 
   it('can send each event type in a batch', async () => {
