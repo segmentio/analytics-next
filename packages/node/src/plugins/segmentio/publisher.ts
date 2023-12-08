@@ -42,11 +42,12 @@ export class Publisher {
   private _maxRetries: number
   private _auth: string
   private _url: string
-  private _closeAndFlushPendingItemsCount?: number
+  private _flushPendingItemsCount?: number
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
   private _httpClient: HTTPClient
+
   constructor(
     {
       host,
@@ -96,13 +97,13 @@ export class Publisher {
     this._batch = undefined
   }
 
-  flushAfterClose(pendingItemsCount: number) {
+  flush(pendingItemsCount: number): void {
     if (!pendingItemsCount) {
-      // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
+      // if number of pending items is 0, there is nothing to flush
       return
     }
 
-    this._closeAndFlushPendingItemsCount = pendingItemsCount
+    this._flushPendingItemsCount = pendingItemsCount
 
     // if batch is empty, there's nothing to flush, and when things come in, enqueue will handle them.
     if (!this._batch) return
@@ -145,7 +146,7 @@ export class Publisher {
     const addStatus = batch.tryAdd(pendingItem)
     if (addStatus.success) {
       const isExpectingNoMoreItems =
-        batch.length === this._closeAndFlushPendingItemsCount
+        batch.length === this._flushPendingItemsCount
       const isFull = batch.length === this._flushAt
       if (isFull || isExpectingNoMoreItems) {
         this.send(batch).catch(noop)
@@ -166,7 +167,7 @@ export class Publisher {
 
     if (fbAddStatus.success) {
       const isExpectingNoMoreItems =
-        fallbackBatch.length === this._closeAndFlushPendingItemsCount
+        fallbackBatch.length === this._flushPendingItemsCount
       if (isExpectingNoMoreItems) {
         this.send(fallbackBatch).catch(noop)
         this.clearBatch()
@@ -182,8 +183,8 @@ export class Publisher {
   }
 
   private async send(batch: ContextBatch) {
-    if (this._closeAndFlushPendingItemsCount) {
-      this._closeAndFlushPendingItemsCount -= batch.length
+    if (this._flushPendingItemsCount) {
+      this._flushPendingItemsCount -= batch.length
     }
     const events = batch.getEvents()
     const maxAttempts = this._maxRetries + 1
