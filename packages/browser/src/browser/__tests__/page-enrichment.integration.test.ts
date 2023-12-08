@@ -23,7 +23,7 @@ describe('Page Enrichment', () => {
     const ctx = await ajs.page('Checkout', {})
 
     expect(ctx.event.properties).toMatchInlineSnapshot(`
-      Object {
+      {
         "name": "Checkout",
         "path": "/",
         "referrer": "",
@@ -39,7 +39,7 @@ describe('Page Enrichment', () => {
       banana: 'phone',
     })
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-      Object {
+      {
         "path": "/",
         "referrer": "",
         "search": "",
@@ -64,7 +64,7 @@ describe('Page Enrichment', () => {
       const ctx = await ajs.page('My Event', pageProps)
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
-        Object {
+        {
           "path": "foo",
           "referrer": "bar",
           "search": "baz",
@@ -84,7 +84,7 @@ describe('Page Enrichment', () => {
       })
       const ctx = await ajs.track('My Event', eventProps)
       expect(ctx.event.properties).toMatchInlineSnapshot(`
-        Object {
+        {
           "foo": "hello",
           "path": "foo",
           "referrer": "bar",
@@ -93,7 +93,7 @@ describe('Page Enrichment', () => {
         }
       `)
       expect(ctx.event.context!.page).toMatchInlineSnapshot(`
-        Object {
+        {
           "path": "/",
           "referrer": "",
           "search": "",
@@ -108,7 +108,7 @@ describe('Page Enrichment', () => {
       const ctx = await ajs.page('My Event', pageProps)
       const page = ctx.event.context!.page
       expect(page).toMatchInlineSnapshot(`
-        Object {
+        {
           "path": "override",
           "referrer": "",
           "search": "",
@@ -141,27 +141,27 @@ describe('Page Enrichment', () => {
     )
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "",
-            "search": "",
-            "title": "",
-            "url": "not-localhost",
-          }
-      `)
+      {
+        "path": "/",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "not-localhost",
+      }
+    `)
   })
   it('enriches page events using properties', async () => {
     const ctx = await ajs.page('My event', { banana: 'phone', referrer: 'foo' })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-          Object {
-            "path": "/",
-            "referrer": "foo",
-            "search": "",
-            "title": "",
-            "url": "http://localhost/",
-          }
-      `)
+      {
+        "path": "/",
+        "referrer": "foo",
+        "search": "",
+        "title": "",
+        "url": "http://localhost/",
+      }
+    `)
   })
 
   it('in page events, event.name overrides event.properties.name', async () => {
@@ -184,7 +184,7 @@ describe('Page Enrichment', () => {
     })
 
     expect(ctx.event.context?.page).toMatchInlineSnapshot(`
-      Object {
+      {
         "path": "/",
         "referrer": "",
         "search": "",
@@ -197,7 +197,7 @@ describe('Page Enrichment', () => {
   it('page object is accessible in all plugins', async () => {
     await ajs.addSourceMiddleware(({ payload, next }) => {
       expect(payload.obj?.context?.page).toMatchInlineSnapshot(`
-        Object {
+        {
           "path": "/",
           "referrer": "",
           "search": "",

@@ -211,7 +211,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
 
       expect((await xt.track!(evt)).event.context).toMatchInlineSnapshot(`
-        Object {
+        {
           "hello": "from the other side",
         }
       `)
@@ -223,7 +223,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
 
       expect((await xt.identify!(evt)).event.context).toMatchInlineSnapshot(`
-        Object {
+        {
           "hello": "from the other side",
         }
       `)
@@ -235,7 +235,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
 
       expect((await xt.page!(evt)).event.context).toMatchInlineSnapshot(`
-        Object {
+        {
           "hello": "from the other side",
         }
       `)
@@ -247,7 +247,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
 
       expect((await xt.group!(evt)).event.context).toMatchInlineSnapshot(`
-        Object {
+        {
           "hello": "from the other side",
         }
       `)
@@ -259,7 +259,7 @@ describe(sourceMiddlewarePlugin, () => {
       })
 
       expect((await xt.alias!(evt)).event.context).toMatchInlineSnapshot(`
-        Object {
+        {
           "hello": "from the other side",
         }
       `)

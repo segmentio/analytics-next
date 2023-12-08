@@ -39,7 +39,7 @@ describe(loadLegacyVideoPlugins.name, () => {
     await loadLegacyVideoPlugins(ajs)
 
     expect(ajs.plugins).toMatchInlineSnapshot(`
-      Object {
+      {
         "VimeoAnalytics": [Function],
         "YouTubeAnalytics": [Function],
       }
