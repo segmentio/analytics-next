@@ -20,7 +20,8 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Run tests"
       - yarn constraints
-      - yarn run test:scripts
+      - yarn scripts test
+      - yarn scripts lint
       - yarn run test:check-dts
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
