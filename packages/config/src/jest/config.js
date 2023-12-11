@@ -4,8 +4,8 @@ const path = require('path')
 /**
  * Create Config
  * @param {string} dirname - __dirname from the package that's importing this config.
- * @param {import('jest').Config} Overrides.
- * @returns {import('jest').Config}
+ * @param {import('ts-jest').JestConfigWithTsJest} Overrides.
+ * @returns {import('ts-jest').JestConfigWithTsJest}
  */
 const createJestTSConfig = (
   dirname,
@@ -36,10 +36,13 @@ const createJestTSConfig = (
      * Equivalent to calling jest.clearAllMocks() before each test.
      */
     clearMocks: true,
-    globals: {
-      'ts-jest': {
-        isolatedModules: true,
-      },
+    transform: {
+      '^.+\\.tsx?$': [
+        'ts-jest',
+        {
+          isolatedModules: true,
+        },
+      ],
     },
     ...(overridesToMerge || {}),
   }

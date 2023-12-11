@@ -54,7 +54,7 @@ describe(invokeCallback, () => {
 
     const logs = returned.logs()
     expect(logs[0].extras).toMatchInlineSnapshot(`
-      Object {
+      {
         "error": [Error: Promise timed out],
       }
     `)
@@ -76,7 +76,7 @@ describe(invokeCallback, () => {
 
     const logs = returned.logs()
     expect(logs[0].extras).toMatchInlineSnapshot(`
-      Object {
+      {
         "error": [Error: 👻 boo!],
       }
     `)

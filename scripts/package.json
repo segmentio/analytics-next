@@ -1,0 +1,20 @@
+{
+  "name": "@internal/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    ".": "yarn run -T turbo run --filter=@internal/scripts",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "create-release-from-tags": "yarn ts-node-script --files create-release-from-tags/run.ts",
+    "test": "yarn jest",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
+  },
+  "packageManager": "yarn@3.4.1",
+  "devDependencies": {
+    "@types/node": "^16",
+    "ts-node": "^10.8.0"
+  }
+}

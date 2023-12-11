@@ -85,7 +85,7 @@ describe('Remote Middleware', () => {
       .filter(Boolean)
 
     expect(sources).toMatchInlineSnapshot(`
-      Array [
+      [
         "https://cdn.segment.com/next-integrations/middleware/analytics.js-middleware-braze-deduplicate/latest/analytics.js-middleware-braze-deduplicate.js.gz",
       ]
     `)
@@ -107,7 +107,7 @@ describe('Remote Middleware', () => {
     expect(md[0]).toMatchInlineSnapshot(`[Function]`)
 
     expect(ctx.logs().map((l) => l.message)).toMatchInlineSnapshot(`
-      Array [
+      [
         [Error: Failed to load https://cdn.segment.com/next-integrations/middleware/analytics.js-middleware-that-does-not-exist/latest/analytics.js-middleware-that-does-not-exist.js.gz],
       ]
     `)

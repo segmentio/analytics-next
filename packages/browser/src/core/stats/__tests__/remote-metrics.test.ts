@@ -32,7 +32,7 @@ describe('remote metrics', () => {
     })
     remote.increment('analytics_js.banana', ['phone:1'])
 
-    expect(remote.queue).toMatchInlineSnapshot(`Array []`)
+    expect(remote.queue).toMatchInlineSnapshot(`[]`)
   })
 
   test('ignores messages after reaching threshold', () => {
@@ -80,9 +80,9 @@ describe('remote metrics', () => {
     expect(request).toMatchInlineSnapshot(
       { body: expect.anything() },
       `
-      Object {
+      {
         "body": Anything,
-        "headers": Object {
+        "headers": {
           "Content-Type": "text/plain",
         },
         "method": "POST",
@@ -101,11 +101,11 @@ describe('remote metrics', () => {
         ],
       },
       `
-      Object {
-        "series": Array [
-          Object {
+      {
+        "series": [
+          {
             "metric": "analytics_js.banana",
-            "tags": Object {
+            "tags": {
               "library": "analytics.js",
               "library_version": Any<String>,
               "phone": "1",

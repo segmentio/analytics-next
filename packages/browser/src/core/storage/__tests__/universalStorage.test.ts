@@ -120,7 +120,7 @@ describe('UniversalStorage', function () {
       expect(getFromLS('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
       expect(consoleWarnSpy.mock.calls.length).toEqual(1)
-      expect(consoleWarnSpy.mock.lastCall[0]).toContain(
+      expect(consoleWarnSpy.mock.lastCall![0]).toContain(
         "CookieStorage: Can't set key"
       )
     })
@@ -139,7 +139,7 @@ describe('UniversalStorage', function () {
       us.set('ajs_test_key', '💰')
       expect(jar.get('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
-      expect(consoleWarnSpy.mock.lastCall[0]).toContain('localStorage')
+      expect(consoleWarnSpy.mock.lastCall![0]).toContain('localStorage')
     })
 
     it('handles cookie getter overrides gracefully', function () {
@@ -158,10 +158,10 @@ describe('UniversalStorage', function () {
       us.set('ajs_test_key', '💰')
       expect(getFromLS('ajs_test_key')).toEqual('💰')
       expect(us.get('ajs_test_key')).toEqual('💰')
-      expect(consoleWarnSpy.mock.lastCall[0]).toContain(
+      expect(consoleWarnSpy.mock.lastCall![0]).toContain(
         "CookieStorage: Can't set key"
       )
-      expect(consoleWarnSpy.mock.lastCall[0]).toContain('TypeError')
+      expect(consoleWarnSpy.mock.lastCall![0]).toContain('TypeError')
     })
   })
 })

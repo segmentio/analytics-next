@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "module": "esnext",
+    "target": "es6",
+    "moduleResolution": "node",
+    "lib": ["es2020"]
+  }
+}

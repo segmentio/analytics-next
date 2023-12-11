@@ -571,7 +571,7 @@ describe('plan', () => {
 
     expect(dest.integration?.track).not.toHaveBeenCalled()
     expect(ctx.event.integrations).toMatchInlineSnapshot(`
-      Object {
+      {
         "All": false,
         "Segment.io": true,
       }
@@ -601,7 +601,7 @@ describe('plan', () => {
 
     expect(dest.integration?.track).not.toHaveBeenCalled()
     expect(ctx.event.integrations).toMatchInlineSnapshot(`
-      Object {
+      {
         "All": false,
         "Segment.io": true,
       }
