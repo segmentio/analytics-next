@@ -13,6 +13,7 @@ import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-ana
 let emitter: Emitter
 const testClient = new TestFetchClient()
 const fetcher = jest.spyOn(testClient, 'makeRequest')
+const lastRequest = fetcher.mock.lastCall![0]
 
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
@@ -28,8 +29,7 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   )
 
 const validateFetcherInputs = (...contexts: Context[]) => {
-  const [request] = fetcher.mock.lastCall
-  return assertHTTPRequestOptions(request, contexts)
+  return assertHTTPRequestOptions(lastRequest, contexts)
 }
 
 const eventFactory = new NodeEventFactory()
@@ -52,8 +52,7 @@ test('alias', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -82,8 +81,7 @@ test('group', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -111,8 +109,7 @@ test('identify', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
     ...httpClientOptionsBodyMatcher,
@@ -141,8 +138,7 @@ test('page', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -175,8 +171,7 @@ test('screen', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -207,8 +202,7 @@ test('track', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
   validateFetcherInputs(context)
 
-  const [request] = fetcher.mock.lastCall
-  const data = request.data
+  const data = lastRequest.data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
