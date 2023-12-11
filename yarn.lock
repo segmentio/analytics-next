@@ -2850,6 +2850,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/scripts@workspace:scripts"
   dependencies:
+    "@node-kit/yarn-workspace-root": ^3.2.0
     "@types/node": ^16
     ts-node: ^10.8.0
   languageName: unknown
@@ -3604,6 +3605,24 @@ __metadata:
   version: 2.1.8-no-fsevents.3
   resolution: "@nicolo-ribaudo/chokidar-2@npm:2.1.8-no-fsevents.3"
   checksum: ee55cc9241aeea7eb94b8a8551bfa4246c56c53bc71ecda0a2104018fcc328ba5723b33686bdf9cc65d4df4ae65e8016b89e0bbdeb94e0309fe91bb9ced42344
+  languageName: node
+  linkType: hard
+
+"@node-kit/extra.fs@npm:3.2.0":
+  version: 3.2.0
+  resolution: "@node-kit/extra.fs@npm:3.2.0"
+  checksum: 48781d37ddd45f544774c17fccf31e1bfe648a16354cf8b20b28f0315798d977336a50c2a4cbb421fd9016792a0860cb2254e7450885324e7ace08903176b58b
+  languageName: node
+  linkType: hard
+
+"@node-kit/yarn-workspace-root@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@node-kit/yarn-workspace-root@npm:3.2.0"
+  dependencies:
+    "@node-kit/extra.fs": 3.2.0
+    find-up: ^5.0.0
+    micromatch: ^4.0.5
+  checksum: 18eca9649017f1b419a230909c319d57fe26400d3074685bb89946be30b3eb6670594dc7bb20d1a4d83cb4b991acf9818026b214fb879717f5ca0290ed934c3e
   languageName: node
   linkType: hard
 

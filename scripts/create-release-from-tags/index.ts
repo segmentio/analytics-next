@@ -3,6 +3,7 @@ import getPackages from 'get-monorepo-packages'
 import path from 'path'
 import fs from 'fs'
 import { exists } from '../utils/exists'
+import { yarnWorkspaceRootSync } from '@node-kit/yarn-workspace-root'
 
 export type Config = {
   isDryRun: boolean
@@ -47,10 +48,18 @@ export const getConfig = async (): Promise<Config> => {
   }
 }
 
-const getChangelogPath = (packageName: string): string | undefined => {
-  const result = getPackages('.').find((p) =>
-    p.package.name.includes(packageName)
-  )
+const getRelativeWorkspaceRoot = (): string => {
+  const root = yarnWorkspaceRootSync()
+  if (!root) {
+    throw new Error('cannot get workspace root.')
+  }
+  return path.relative(process.cwd(), root)
+}
+
+const packages = getPackages(getRelativeWorkspaceRoot())
+
+export const getChangelogPath = (packageName: string): string | undefined => {
+  const result = packages.find((p) => p.package.name.includes(packageName))
   if (!result)
     throw new Error(`could not find package with name: ${packageName}.`)
 
