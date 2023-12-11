@@ -16,7 +16,7 @@ const helpers = {
       analytics.track({ event: 'foo', userId: 'bar' }, resolve)
     ),
   assertFetchCallRequest: (
-    ...[url, options]: typeof testFetch['mock']['lastCall']
+    ...[url, options]: NonNullable<typeof testFetch['mock']['lastCall']>
   ) => {
     expect(url).toBe('https://api.segment.io/v1/batch')
     expect(options.headers).toEqual({
@@ -26,7 +26,7 @@ const helpers = {
     })
     expect(options.method).toBe('POST')
     const getLastBatch = (): object[] => {
-      const [, options] = testFetch.mock.lastCall
+      const [, options] = testFetch.mock.lastCall!
       const batch = JSON.parse(options.body!).batch
       return batch
     }
@@ -57,13 +57,13 @@ describe('httpClient option', () => {
     expect(testFetch).toHaveBeenCalledTimes(0)
     await helpers.makeTrackCall()
     expect(testFetch).toHaveBeenCalledTimes(1)
-    helpers.assertFetchCallRequest(...testFetch.mock.lastCall)
+    helpers.assertFetchCallRequest(...testFetch.mock.lastCall!)
   })
   it('can be a simple function that matches the fetch interface', async () => {
     analytics = createTestAnalytics({ httpClient: testFetch })
     expect(testFetch).toHaveBeenCalledTimes(0)
     await helpers.makeTrackCall()
     expect(testFetch).toHaveBeenCalledTimes(1)
-    helpers.assertFetchCallRequest(...testFetch.mock.lastCall)
+    helpers.assertFetchCallRequest(...testFetch.mock.lastCall!)
   })
 })
