@@ -12,8 +12,8 @@ import { TestFetchClient } from '../../../__tests__/test-helpers/create-test-ana
 
 let emitter: Emitter
 const testClient = new TestFetchClient()
-const fetcher = jest.spyOn(testClient, 'makeRequest')
-const lastRequest = fetcher.mock.lastCall![0]
+const makeReqSpy = jest.spyOn(testClient, 'makeRequest')
+const getLastRequest = () => makeReqSpy.mock.lastCall![0]
 
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
@@ -28,15 +28,15 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
     emitter
   )
 
-const validateFetcherInputs = (...contexts: Context[]) => {
-  return assertHTTPRequestOptions(lastRequest, contexts)
+const validateMakeReqInputs = (...contexts: Context[]) => {
+  return assertHTTPRequestOptions(getLastRequest(), contexts)
 }
 
 const eventFactory = new NodeEventFactory()
 
 beforeEach(() => {
   emitter = new Emitter()
-  fetcher.mockReturnValue(createSuccess())
+  makeReqSpy.mockReturnValue(createSuccess())
   jest.useFakeTimers()
 })
 
@@ -46,13 +46,13 @@ test('alias', async () => {
   const event = eventFactory.alias('to', 'from')
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.alias(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -75,13 +75,13 @@ test('group', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.group(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -103,13 +103,13 @@ test('identify', async () => {
   })
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.identify(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
     ...httpClientOptionsBodyMatcher,
@@ -132,13 +132,13 @@ test('page', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.page(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -165,13 +165,13 @@ test('screen', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.screen(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -196,13 +196,13 @@ test('track', async () => {
   )
   const context = new Context(event)
 
-  fetcher.mockReturnValueOnce(createSuccess())
+  makeReqSpy.mockReturnValueOnce(createSuccess())
   await segmentPlugin.screen(context)
 
-  expect(fetcher).toHaveBeenCalledTimes(1)
-  validateFetcherInputs(context)
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  validateMakeReqInputs(context)
 
-  const data = lastRequest.data
+  const data = getLastRequest().data
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({

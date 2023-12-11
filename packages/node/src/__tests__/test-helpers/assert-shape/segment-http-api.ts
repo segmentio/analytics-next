@@ -23,13 +23,11 @@ export function assertHTTPRequestOptions(
 ) {
   expect(url).toBe('https://api.segment.io/v1/batch')
   expect(method).toBe('POST')
-  expect(headers).toMatchInlineSnapshot(`
-    Object {
-      "Authorization": "Basic Og==",
-      "Content-Type": "application/json",
-      "User-Agent": "analytics-node-next/latest",
-    }
-  `)
+  expect(headers).toEqual({
+    Authorization: 'Basic Og==',
+    'Content-Type': 'application/json',
+    'User-Agent': 'analytics-node-next/latest',
+  })
 
   expect(data.batch).toHaveLength(contexts.length)
   let idx = 0
