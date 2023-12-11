@@ -5,9 +5,14 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/scripts",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "test": "yarn jest",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
-    "concurrently": "yarn run -T concurrently"
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "devDependencies": {
+    "@types/node": "^16"
+  }
 }

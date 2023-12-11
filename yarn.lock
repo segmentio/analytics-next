@@ -2849,6 +2849,8 @@ __metadata:
 "@internal/scripts@workspace:scripts":
   version: 0.0.0-use.local
   resolution: "@internal/scripts@workspace:scripts"
+  dependencies:
+    "@types/node": ^16
   languageName: unknown
   linkType: soft
 
