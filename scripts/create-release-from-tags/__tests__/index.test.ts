@@ -15,11 +15,11 @@ describe('parseReleaseNotes', () => {
       "
           ### Minor Changes
 
-          * [#606](https://github.com/segmentio/analytics-next/pull/606) [\\\\\`b9c6356\\\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - foo!)
+          * [#606](https://github.com/segmentio/analytics-next/pull/606) [\\\`b9c6356\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - foo!)
 
           ### Patch Changes
 
-          * [#404](https://github.com/segmentio/analytics-next/pull/404) [\\\\\`b9abc6\\\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - bar!)
+          * [#404](https://github.com/segmentio/analytics-next/pull/404) [\\\`b9abc6\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - bar!)
       "
     `)
   })
@@ -30,11 +30,11 @@ describe('parseReleaseNotes', () => {
       "
           ### Minor Changes
 
-          * [#606](https://github.com/segmentio/analytics-next/pull/606) [\\\\\`b9c6356\\\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - foo!)
+          * [#606](https://github.com/segmentio/analytics-next/pull/606) [\\\`b9c6356\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - foo!)
 
           ### Patch Changes
 
-          * [#404](https://github.com/segmentio/analytics-next/pull/404) [\\\\\`b9abc6\\\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - bar!)"
+          * [#404](https://github.com/segmentio/analytics-next/pull/404) [\\\`b9abc6\\\`](https://github.com/segmentio/analytics-next/commit/b9c6356b7d35ee8acb6ecbd1eebc468d18d63958) Thanks [@silesky] - bar!)"
     `)
   })
 })
@@ -45,18 +45,18 @@ describe('parseRawTags', () => {
       '@segment/analytics-next@2.1.1 @segment/analytics-foo@1.0.1 @segment/analytics-core@1.0.0'
     const tags = parseRawTags(rawTags)
     expect(tags).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "name": "@segment/analytics-next",
           "raw": "@segment/analytics-next@2.1.1",
           "versionNumber": "2.1.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-foo",
           "raw": "@segment/analytics-foo@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-core",
           "raw": "@segment/analytics-core@1.0.0",
           "versionNumber": "1.0.0",
@@ -71,23 +71,23 @@ describe('parseRawTags', () => {
     `
     const tags = parseRawTags(rawTags)
     expect(tags).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "name": "@segment/analytics-next",
           "raw": "@segment/analytics-next@2.1.1",
           "versionNumber": "2.1.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-foo",
           "raw": "@segment/analytics-foo@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-core",
           "raw": "@segment/analytics-core@1.0.0",
           "versionNumber": "1.0.0",
         },
-        Object {
+        {
           "name": "@segment/analytics-bar",
           "raw": "@segment/analytics-bar@1.0.1",
           "versionNumber": "1.0.1",
@@ -103,38 +103,38 @@ describe('parseRawTags', () => {
     `
     const tags = parseRawTags(rawTags)
     expect(tags).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "name": "@segment/analytics-next",
           "raw": "@segment/analytics-next@2.1.1",
           "versionNumber": "2.1.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-foo",
           "raw": "@segment/analytics-foo@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-bar",
           "raw": "@segment/analytics-bar@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-next",
           "raw": "@segment/analytics-next@2.1.1",
           "versionNumber": "2.1.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-baz",
           "raw": "@segment/analytics-baz@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-foobar",
           "raw": "@segment/analytics-foobar@1.0.1",
           "versionNumber": "1.0.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-core",
           "raw": "@segment/analytics-core@1.0.0",
           "versionNumber": "1.0.0",
@@ -149,13 +149,13 @@ describe('parseRawTags', () => {
     `
     const tags = parseRawTags(rawTags)
     expect(tags).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "name": "@segment/analytics-next",
           "raw": "@segment/analytics-next@2.1.1",
           "versionNumber": "2.1.1",
         },
-        Object {
+        {
           "name": "@segment/analytics-core",
           "raw": "@segment/analytics-core@1.0.0",
           "versionNumber": "1.0.0",

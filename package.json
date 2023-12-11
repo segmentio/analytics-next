@@ -5,7 +5,8 @@
   "workspaces": [
     "playgrounds/*",
     "packages/*",
-    "packages/consent/*"
+    "packages/consent/*",
+    "scripts"
   ],
   "engines": {
     "node": "^16.16.0"

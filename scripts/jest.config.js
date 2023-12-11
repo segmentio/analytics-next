@@ -1,13 +1,3 @@
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  testMatch: ['**/?(*.)+(test).[jt]s?(x)'],
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        isolatedModules: true,
-      },
-    ],
-  },
-}
+const { createJestTSConfig } = require('@internal/config')
+
+module.exports = createJestTSConfig(__dirname)

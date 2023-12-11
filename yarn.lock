@@ -2846,6 +2846,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/scripts@workspace:scripts":
+  version: 0.0.0-use.local
+  resolution: "@internal/scripts@workspace:scripts"
+  languageName: unknown
+  linkType: soft
+
 "@internal/test-helpers@workspace:^, @internal/test-helpers@workspace:packages/test-helpers":
   version: 0.0.0-use.local
   resolution: "@internal/test-helpers@workspace:packages/test-helpers"

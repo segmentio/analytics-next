@@ -1,0 +1,13 @@
+{
+  "name": "@internal/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    ".": "yarn run -T turbo run --filter=@internal/scripts",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently"
+  },
+  "packageManager": "yarn@3.4.1"
+}
