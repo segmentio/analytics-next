@@ -28,6 +28,7 @@
     "core": "yarn workspace @segment/analytics-core",
     "browser": "yarn workspace @segment/analytics-next",
     "node": "yarn workspace @segment/analytics-node",
+    "scripts": "yarn workspace @internal/scripts",
     "clean": "bash scripts/clean.sh",
     "turbo": "turbo"
   },

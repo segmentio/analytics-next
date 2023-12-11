@@ -2851,6 +2851,7 @@ __metadata:
   resolution: "@internal/scripts@workspace:scripts"
   dependencies:
     "@types/node": ^16
+    ts-node: ^10.8.0
   languageName: unknown
   linkType: soft
 
