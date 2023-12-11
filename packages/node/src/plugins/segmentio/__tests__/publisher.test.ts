@@ -276,7 +276,7 @@ describe('error handling', () => {
     expect(updatedContext).toBe(context)
     expect(updatedContext.failedDelivery()).toBeTruthy()
     expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
-      Object {
+      {
         "reason": [Error: Event exceeds maximum event size of 32 KB],
       }
     `)
@@ -302,7 +302,7 @@ describe('error handling', () => {
     expect(updatedContext).toBe(context)
     expect(updatedContext.failedDelivery()).toBeTruthy()
     expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
-      Object {
+      {
         "reason": [Error: [400] Bad Request],
       }
     `)
@@ -361,7 +361,7 @@ describe('error handling', () => {
     expect(updatedContext).toBe(context)
     expect(updatedContext.failedDelivery()).toBeTruthy()
     expect(updatedContext.failedDelivery()).toMatchInlineSnapshot(`
-      Object {
+      {
         "reason": [Error: Connection Error],
       }
     `)
