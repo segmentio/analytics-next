@@ -14,6 +14,7 @@
   },
   "packageManager": "yarn@3.4.1",
   "devDependencies": {
+    "@node-kit/yarn-workspace-root": "^3.2.0",
     "@types/node": "^16",
     "ts-node": "^10.8.0"
   }
