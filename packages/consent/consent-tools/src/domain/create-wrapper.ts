@@ -43,6 +43,14 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
       settings,
       options
     ): Promise<void> => {
+      // Prevent stale page context by handling initialPageview ourself.
+      // By calling page() here early, the current page context (url, etc) gets stored in the pre-init buffer.
+      // We then set initialPageView to false when we call the underlying analytics library, so page() doesn't get called twice.
+      if (options?.initialPageview) {
+        analyticsService.page()
+        options = { ...options, initialPageview: false }
+      }
+
       // do not load anything -- segment included
       if (await shouldDisableSegment?.()) {
         return

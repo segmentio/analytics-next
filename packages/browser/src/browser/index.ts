@@ -30,6 +30,7 @@ import {
   flushAddSourceMiddleware,
   flushSetAnonymousID,
   flushOn,
+  PreInitMethodCall,
 } from '../core/buffer'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
@@ -320,6 +321,11 @@ async function loadAnalytics(
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
 
+  if (options.initialPageview) {
+    // capture the page context early, so it's always up-to-date
+    preInitBuffer.push(new PreInitMethodCall('page', []))
+  }
+
   let legacySettings =
     settings.cdnSettings ??
     (await loadLegacySettings(settings.writeKey, settings.cdnURL))
@@ -373,10 +379,6 @@ async function loadAnalytics(
 
   analytics.initialized = true
   analytics.emit('initialize', settings, options)
-
-  if (options.initialPageview) {
-    analytics.page().catch(console.error)
-  }
 
   await flushFinalBuffer(analytics, preInitBuffer)
 
