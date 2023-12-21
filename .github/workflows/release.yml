@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        description: The new version to build and publish
+        required: true
+        default: 'patch'
+        options:
+          - major
+          - minor
+          - patch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        package:
+          - browser
+          - core
+          - node
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Set Git Identity
+        run: |
+          git config --global user.name "Customer.io"
+          git config --global user.email "win@customer.io"
+
+      - name: Install & Build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd packages/${{ matrix.package }}
+          npm version ${{ github.event.inputs.version }}
+          npm publish
