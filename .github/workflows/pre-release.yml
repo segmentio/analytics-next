@@ -1,0 +1,45 @@
+name: Pre-Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        package:
+          - core
+          - node
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: 'yarn'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@customerio'
+
+      - name: Set Git Identity
+        run: |
+          git config --global user.name "Customer.io"
+          git config --global user.email "win@customer.io"
+
+      - name: Install & Build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd packages/${{ matrix.package }}
+          npm version prerelease
+          npm publish
