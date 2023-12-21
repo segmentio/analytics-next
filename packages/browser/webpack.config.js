@@ -18,6 +18,7 @@ const plugins = [
   }),
   new CircularDependencyPlugin({
     failOnError: true,
+    exclude: /customerio-gist-web/,
   }),
 ]
 

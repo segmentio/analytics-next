@@ -26,6 +26,7 @@ import { popSnippetWindowBuffer } from '../core/buffer/snippet'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
+import { InAppPluginSettings } from '../plugins/in-app-plugin'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -207,6 +208,14 @@ async function registerPlugins(
     tsubMiddleware
   ).catch(() => [])
 
+  const inAppPlugin = options.integrations?.['Customer.io In-App Plugin'] as InAppPluginSettings
+    ? await import(
+        /* webpackChunkName: "inAppPlugin" */ '../plugins/in-app-plugin'
+    ).then((mod) => {
+      return mod.InAppPlugin(options.integrations?.['Customer.io In-App Plugin'] as InAppPluginSettings)
+    })
+    : undefined
+
   const toRegister = [
     validation,
     pageEnrichment,
@@ -217,6 +226,10 @@ async function registerPlugins(
 
   if (schemaFilter) {
     toRegister.push(schemaFilter)
+  }
+
+  if (inAppPlugin) {
+    toRegister.push(inAppPlugin)
   }
 
   const shouldIgnore =
