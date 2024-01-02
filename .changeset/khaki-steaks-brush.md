@@ -4,4 +4,4 @@
 '@segment/analytics-generic-utils': patch
 ---
 
-Add tslib
+Add tslib to resolve unsound dependency warning.
