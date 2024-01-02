@@ -41,7 +41,8 @@
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "1.1.0"
+    "@segment/analytics-consent-tools": "1.1.0",
+    "tslib": "^2.4.1"
   },
   "peerDependencies": {
     "@segment/analytics-next": ">=1.53.1"

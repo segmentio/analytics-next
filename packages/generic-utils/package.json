@@ -32,5 +32,8 @@
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "dependencies": {
+    "tslib": "^2.4.1"
+  }
 }
