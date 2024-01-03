@@ -45,5 +45,8 @@
     "directory": "packages/consent/consent-tools",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
   }
 }

@@ -3909,6 +3909,7 @@ __metadata:
     "@internal/config": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-next": "workspace:^"
+    tslib: ^2.4.1
   peerDependencies:
     "@segment/analytics-next": ">=1.53.1"
   peerDependenciesMeta:
@@ -3924,6 +3925,7 @@ __metadata:
     "@internal/config-webpack": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-consent-tools": 1.1.0
+    tslib: ^2.4.1
   peerDependencies:
     "@segment/analytics-next": ">=1.53.1"
   peerDependenciesMeta:
@@ -3946,6 +3948,8 @@ __metadata:
 "@segment/analytics-generic-utils@1.1.0, @segment/analytics-generic-utils@workspace:packages/generic-utils":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-generic-utils@workspace:packages/generic-utils"
+  dependencies:
+    tslib: ^2.4.1
   languageName: unknown
   linkType: soft
 
