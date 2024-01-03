@@ -13,6 +13,7 @@ export interface AnalyticsBrowserSettings {
 export interface InitOptions {
   updateCDNSettings?(cdnSettings: CDNSettings): CDNSettings
   disable?: boolean | ((cdnSettings: CDNSettings) => boolean)
+  initialPageview?: boolean
 }
 
 /**
@@ -32,6 +33,7 @@ export interface AnyAnalytics {
   addSourceMiddleware(...args: any[]): any
   on(event: 'initialize', callback: (cdnSettings: CDNSettings) => void): void
   track(event: string, properties?: unknown, ...args: any[]): void
+  page(): void
 
   /**
    * This interface is meant to be compatible with both the snippet (`analytics.load`)

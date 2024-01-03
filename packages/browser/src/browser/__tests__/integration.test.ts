@@ -300,21 +300,17 @@ describe('Initialization', () => {
       })
     })
     it('calls page if initialpageview is set', async () => {
-      jest.mock('../../core/analytics')
-      const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
-      Analytics.prototype.page = mockPage
-
+      const page = jest.spyOn(Analytics.prototype, 'page')
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
-
-      expect(mockPage).toHaveBeenCalled()
+      await sleep(0) // flushed in new task
+      expect(page).toHaveBeenCalledTimes(1)
     })
 
     it('does not call page if initialpageview is not set', async () => {
-      jest.mock('../../core/analytics')
-      const mockPage = jest.fn()
-      Analytics.prototype.page = mockPage
+      const page = jest.spyOn(Analytics.prototype, 'page')
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
-      expect(mockPage).not.toHaveBeenCalled()
+      await sleep(0) // flush happens async
+      expect(page).not.toHaveBeenCalled()
     })
 
     it('does not use a persisted queue when disableClientPersistence is true', async () => {

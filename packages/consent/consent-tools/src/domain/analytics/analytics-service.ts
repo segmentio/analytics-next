@@ -41,6 +41,10 @@ export class AnalyticsService {
     this.analytics.load = loadFn
   }
 
+  page(): void {
+    this.analytics.page()
+  }
+
   configureConsentStampingMiddleware({
     getCategories,
     pruneUnmappedCategories,

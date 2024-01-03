@@ -25,6 +25,7 @@ const mockGetCategories: jest.MockedFn<CreateWrapperSettings['getCategories']> =
   jest.fn().mockImplementation(() => ({ Advertising: true }))
 
 const analyticsLoadSpy: jest.MockedFn<AnyAnalytics['load']> = jest.fn()
+const analyticsPageSpy: jest.MockedFn<AnyAnalytics['page']> = jest.fn()
 const addSourceMiddlewareSpy = jest.fn()
 let analyticsOnSpy: jest.MockedFn<AnyAnalytics['on']>
 const analyticsTrackSpy: jest.MockedFn<AnyAnalytics['track']> = jest.fn()
@@ -55,6 +56,7 @@ beforeEach(() => {
   })
 
   class MockAnalytics implements AnyAnalytics {
+    page = analyticsPageSpy
     track = analyticsTrackSpy
     on = analyticsOnSpy
     load = analyticsLoadSpy
@@ -157,9 +159,7 @@ describe(createWrapper, () => {
         }
       )
 
-      it('should allow segment to be loaded normally (with all consent wrapper behavior disabled) via ctx.abort', async () => {
-        const mockCdnSettings = cdnSettingsBuilder.build()
-
+      it('should pass analytics.load args straight through to the analytics instance if ctx.abort() is called', async () => {
         wrapTestAnalytics({
           shouldLoadSegment: (ctx) => {
             ctx.abort({
@@ -168,16 +168,21 @@ describe(createWrapper, () => {
           },
         })
 
-        const loadArgs: [any, any] = [
+        const mockCdnSettings = cdnSettingsBuilder.build()
+        await analytics.load(
           {
             ...DEFAULT_LOAD_SETTINGS,
             cdnSettings: mockCdnSettings,
           },
-          {},
-        ]
-        await analytics.load(...loadArgs)
+          { foo: 'bar' } as any
+        )
         expect(analyticsLoadSpy).toBeCalled()
-        expect(getAnalyticsLoadLastCall().args).toEqual(loadArgs)
+        const { args } = getAnalyticsLoadLastCall()
+        expect(args[0]).toEqual({
+          ...DEFAULT_LOAD_SETTINGS,
+          cdnSettings: mockCdnSettings,
+        })
+        expect(args[1]).toEqual({ foo: 'bar' } as any)
       })
 
       it('should allow segment loading to be completely aborted via ctx.abort', async () => {
@@ -810,6 +815,56 @@ describe(createWrapper, () => {
           DEFAULT_LOAD_SETTINGS.cdnSettings
         )
       ).toBe(false)
+    })
+  })
+
+  describe('initialPageview', () => {
+    it('should send a page event if initialPageview is true', async () => {
+      wrapTestAnalytics()
+      await analytics.load(DEFAULT_LOAD_SETTINGS, { initialPageview: true })
+      expect(analyticsPageSpy).toBeCalledTimes(1)
+    })
+
+    it('should not send a page event if set to false', async () => {
+      wrapTestAnalytics()
+      await analytics.load(DEFAULT_LOAD_SETTINGS, { initialPageview: false })
+      expect(analyticsPageSpy).not.toBeCalled()
+    })
+
+    it('should not be called if set to undefined', async () => {
+      wrapTestAnalytics()
+      await analytics.load(DEFAULT_LOAD_SETTINGS, {
+        initialPageview: undefined,
+      })
+      expect(analyticsPageSpy).not.toBeCalled()
+    })
+
+    it('setting should always be set to false when forwarding to the underlying analytics instance', async () => {
+      wrapTestAnalytics()
+      await analytics.load(DEFAULT_LOAD_SETTINGS, { initialPageview: true })
+      const lastCall = getAnalyticsLoadLastCall()
+      // ensure initialPageview is always set to false so page doesn't get called twice
+      expect(lastCall.args[1].initialPageview).toBe(false)
+    })
+
+    it('should call page early, even if wrapper is aborted', async () => {
+      // shouldLoadSegment can take a while to load, so we want to capture page context early so info is not stale
+      wrapTestAnalytics({
+        shouldLoadSegment: (ctx) => ctx.abort({ loadSegmentNormally: true }),
+      })
+      await analytics.load(DEFAULT_LOAD_SETTINGS, { initialPageview: true })
+      expect(analyticsPageSpy).toBeCalled()
+
+      const lastCall = getAnalyticsLoadLastCall()
+      // ensure initialPageview is always set to false so analytics.page() doesn't get called twice
+      expect(lastCall.args[1].initialPageview).toBe(false)
+    })
+
+    it('should buffer a page event even if shouldDisableSegment returns true', async () => {
+      //  in order to capture page info as early as possible
+      wrapTestAnalytics({ shouldDisableSegment: () => true })
+      await analytics.load(DEFAULT_LOAD_SETTINGS, { initialPageview: true })
+      expect(analyticsPageSpy).toBeCalledTimes(1)
     })
   })
 })
