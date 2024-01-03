@@ -23,7 +23,7 @@
     "@types/node": "^16",
     "analytics-node": "^6.2.0",
     "autocannon": "^7.10.0",
-    "wrangler": "^3.11.0"
+    "wrangler": "^3.19.0"
   },
   "packageManager": "yarn@3.4.1"
 }
