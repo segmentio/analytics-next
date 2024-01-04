@@ -14,7 +14,7 @@ on:
           - patch
 
 jobs:
-  build:
+  npm:
     runs-on: ubuntu-latest
 
     strategy:
@@ -27,16 +27,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup node.js
+      - name: Setup node.js for NPM
         uses: actions/setup-node@v3
         with:
           node-version: 14
+          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Set Git Identity
-        run: |
-          git config --global user.name "Customer.io"
-          git config --global user.email "win@customer.io"
+          scope: '@customerio'
 
       - name: Install & Build
         run: |
@@ -51,8 +48,67 @@ jobs:
           npm version ${{ github.event.inputs.version }}
           npm publish
 
+  github:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        package:
+          - browser
+          - core
+          - node
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node.js for GitHub
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          cache: 'yarn'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@customerio'
+
+      - name: Install & Build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd packages/${{ matrix.package }}
+          npm version ${{ github.event.inputs.version }}
+          npm publish
+
+  commit:
+    runs-on: ubuntu-latest
+
+    needs: [npm, github]
+
+    strategy:
+      matrix:
+        package:
+          - browser
+          - core
+          - node
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Git Identity
+        run: |
+          git config --global user.name "Customer.io"
+          git config --global user.email "win@customer.io"
+
+      - name: Install
+        run: |
+          yarn install --frozen-lockfile
+
       - name: Commit version bump
         run: |
           cd packages/${{ matrix.package }}
+          npm version ${{ github.event.inputs.version }}
           git commit -am "Update version"
           git push
