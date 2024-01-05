@@ -19,7 +19,7 @@ const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
     {
       maxRetries: 3,
-      maxEventsInBatch: 1,
+      flushAt: 1,
       flushInterval: 1000,
       writeKey: '',
       httpClient: testClient,

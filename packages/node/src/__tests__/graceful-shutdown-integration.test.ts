@@ -22,7 +22,7 @@ describe('Ability for users to exit without losing events', () => {
   beforeEach(async () => {
     ajs = new Analytics({
       writeKey: 'abc123',
-      maxEventsInBatch: 1,
+      flushAt: 1,
       httpClient: testClient,
     })
   })
@@ -190,7 +190,7 @@ describe('Ability for users to exit without losing events', () => {
       const analytics = new Analytics({
         writeKey: 'foo',
         flushInterval: 10000,
-        maxEventsInBatch: 15,
+        flushAt: 15,
         httpClient: testClient,
       })
       _helpers.makeTrackCall(analytics)
@@ -221,7 +221,7 @@ describe('Ability for users to exit without losing events', () => {
       const analytics = new Analytics({
         writeKey: 'foo',
         flushInterval: 10000,
-        maxEventsInBatch: 15,
+        flushAt: 15,
         httpClient: testClient,
       })
       await analytics.register(_testPlugin)

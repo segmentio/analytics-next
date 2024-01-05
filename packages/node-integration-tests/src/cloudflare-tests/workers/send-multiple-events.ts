@@ -4,15 +4,12 @@ import { Analytics } from '@segment/analytics-node'
 export default {
   async fetch(request: Request, _env: {}, _ctx: ExecutionContext) {
     const url = new URL(request.url)
-    const maxEventsInBatch = parseInt(
-      url.searchParams.get('maxEventsInBatch') ?? '15',
-      10
-    )
+    const flushAt = parseInt(url.searchParams.get('flushAt') ?? '15', 10)
     const eventCount = parseInt(url.searchParams.get('eventCount') ?? '1', 10)
     const analytics = new Analytics({
       writeKey: '__TEST__',
       host: 'http://localhost:3000',
-      maxEventsInBatch,
+      flushAt,
     })
 
     for (let i = 0; i < eventCount; i++) {

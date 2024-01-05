@@ -346,7 +346,7 @@ describe('Client: requestTimeout', () => {
     jest.useRealTimers()
     const ajs = createTestAnalytics(
       {
-        maxEventsInBatch: 1,
+        flushAt: 1,
         httpRequestTimeout: 0,
       },
       { useRealHTTPClient: true }
