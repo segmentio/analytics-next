@@ -1,5 +1,11 @@
 # @segment/analytics-generic-utils
 
+## 1.1.1
+
+### Patch Changes
+
+- [#1020](https://github.com/segmentio/analytics-next/pull/1020) [`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd) Thanks [@silesky](https://github.com/silesky)! - Add tslib to resolve unsound dependency warning.
+
 ## 1.1.0
 
 ### Minor Changes
