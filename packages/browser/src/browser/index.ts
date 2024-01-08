@@ -380,13 +380,8 @@ async function loadAnalytics(
     await analytics.queryString(term).catch(console.error)
   }
 
-  analytics
-    .ready()
-    .then(() => {
-      analytics.initialized = true
-      analytics.emit('initialize', settings, options)
-    })
-    .catch(() => {})
+  analytics.initialized = true
+  analytics.emit('initialize', settings, options)
 
   await flushFinalBuffer(analytics, preInitBuffer)
 

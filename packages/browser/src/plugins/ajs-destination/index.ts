@@ -123,7 +123,9 @@ export class LegacyDestination implements DestinationPlugin {
   }
 
   ready(): Promise<unknown> {
-    return this.initializePromise.promise
+    return this.initializePromise.promise.then(
+      () => this.onReady ?? Promise.resolve()
+    )
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {

@@ -168,7 +168,7 @@ describe('Lazy destination loading', () => {
     expect(dest2Harness.trackSpy).toHaveBeenCalledTimes(2)
   })
 
-  it('emits initialize only when all destinations have loaded', async () => {
+  it('emits initialize regardless of whether all destinations have loaded', async () => {
     const dest1Harness = createTestPluginFactory('braze', 'destination')
     const dest2Harness = createTestPluginFactory('google', 'destination')
 
@@ -185,26 +185,6 @@ describe('Lazy destination loading', () => {
       plugins: [dest1Harness.factory, dest2Harness.factory],
     })
 
-    // let one destination load
-    dest1Harness.loadingGuard.resolve()
-    await dest1Harness.loadPromise
-
-    analytics.track('test event 1').catch(() => {})
-
-    // while events can flow with just one destination loaded...
-    await nextTickP()
-    await nextTickP()
-    expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
-
-    // ...initialize is still not emitted
-    expect(initializeEmitted).toBe(false)
-
-    // when the other destination is ready aswell...
-    dest2Harness.loadingGuard.resolve()
-    await dest2Harness.loadPromise
-
-    // ...now initialize event is emitted
-    await nextTickP()
     expect(initializeEmitted).toBe(true)
   })
 
@@ -227,10 +207,10 @@ describe('Lazy destination loading', () => {
 
     // one of the two destinations has failed, and is reported in the metrics as-such
     const errorMetrics = t.stats.metrics.filter(
-      (m) => m.metric === 'analytics_js.action_plugin.invoke.error'
+      (m) => m.metric === 'analytics_js.integration.invoke.error'
     )
 
     expect(errorMetrics).toHaveLength(1)
-    expect(errorMetrics[0].tags[1]).toBe('action_plugin_name:google')
+    expect(errorMetrics[0].tags[1]).toBe('integration_name:google')
   })
 })
