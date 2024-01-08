@@ -257,7 +257,7 @@ describe('Analytics in Cloudflare workers', () => {
       }
     )
     const response = await worker.fetch(
-      'http://localhost?maxEventsInBatch=2&eventCount=6'
+      'http://localhost?flushAt=2&eventCount=6'
     )
     await response.text()
     await worker.stop()

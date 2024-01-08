@@ -4,7 +4,7 @@ import { Context } from '../app/context'
 describe('Callback behavior', () => {
   it('should handle success', async () => {
     const ajs = createTestAnalytics({
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
     const ctx = await new Promise<Context>((resolve, reject) =>
       ajs.track(
@@ -25,7 +25,7 @@ describe('Callback behavior', () => {
   it('should handle errors', async () => {
     const ajs = createTestAnalytics(
       {
-        maxEventsInBatch: 1,
+        flushAt: 1,
       },
       { withError: true }
     )

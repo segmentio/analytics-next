@@ -20,7 +20,7 @@ const getLastRequest = () => makeReqSpy.mock.lastCall![0]
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
     {
-      maxEventsInBatch: 1,
+      flushAt: 1,
       httpClient: testClient,
       writeKey: '',
       flushInterval: 1000,
@@ -45,7 +45,7 @@ beforeEach(() => {
 it('supports multiple events in a batch', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
-    maxEventsInBatch: 3,
+    flushAt: 3,
   })
 
   // Create 3 events of mixed types to send.
@@ -71,7 +71,7 @@ it('supports multiple events in a batch', async () => {
 it('supports waiting a max amount of time before sending', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
-    maxEventsInBatch: 3,
+    flushAt: 3,
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -97,7 +97,7 @@ it('supports waiting a max amount of time before sending', async () => {
 it('sends as soon as batch fills up or max time is reached', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
-    maxEventsInBatch: 2,
+    flushAt: 2,
   })
 
   const context = new Context(eventFactory.alias('to', 'from'))
@@ -131,7 +131,7 @@ it('sends as soon as batch fills up or max time is reached', async () => {
 it('sends if batch will exceed max size in bytes when adding event', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
-    maxEventsInBatch: 20,
+    flushAt: 20,
     flushInterval: 100,
   })
 
@@ -185,7 +185,7 @@ describe('flushAfterClose', () => {
       )
 
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxEventsInBatch: 20,
+      flushAt: 20,
     })
 
     publisher.flushAfterClose(3)
@@ -199,7 +199,7 @@ describe('flushAfterClose', () => {
 
   it('continues to flush on each event if batch size is 1', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     publisher.flushAfterClose(3)
@@ -212,7 +212,7 @@ describe('flushAfterClose', () => {
 
   it('sends immediately once there are no pending items, even if pending events exceeds batch size', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxEventsInBatch: 3,
+      flushAt: 3,
     })
 
     publisher.flushAfterClose(5)
@@ -224,7 +224,7 @@ describe('flushAfterClose', () => {
 
   it('works if there are previous items in the batch', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxEventsInBatch: 7,
+      flushAt: 7,
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -237,7 +237,7 @@ describe('flushAfterClose', () => {
 
   it('works if there are previous items in the batch AND pending items > batch size', async () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
-      maxEventsInBatch: 7,
+      flushAt: 7,
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
@@ -256,7 +256,7 @@ describe('flushAfterClose', () => {
 describe('error handling', () => {
   it('excludes events that are too large', async () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     const context = new Context(
@@ -289,7 +289,7 @@ describe('error handling', () => {
     )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -320,7 +320,7 @@ describe('error handling', () => {
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
@@ -347,7 +347,7 @@ describe('error handling', () => {
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     const context = new Context(eventFactory.alias('my', 'from'))
@@ -374,7 +374,7 @@ describe('error handling', () => {
     makeReqSpy.mockRejectedValue(new Error('Connection Error'))
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 0,
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     const fn = jest.fn()
@@ -396,7 +396,7 @@ describe('error handling', () => {
 describe('http_request emitter event', () => {
   it('should emit an http_request object', async () => {
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxEventsInBatch: 1,
+      flushAt: 1,
     })
 
     makeReqSpy.mockReturnValueOnce(createSuccess())
