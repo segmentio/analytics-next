@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.62.1
+
+### Patch Changes
+
+- [#1009](https://github.com/segmentio/analytics-next/pull/1009) [`f476038`](https://github.com/segmentio/analytics-next/commit/f47603881b787cc81fa1da4496bdbde9eb325a0f) Thanks [@silesky](https://github.com/silesky)! - If initialPageview is true, capture page context as early as possible
+
+- Updated dependencies [[`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd)]:
+  - @segment/analytics-generic-utils@1.1.1
+  - @segment/analytics-core@1.4.1
+
 ## 1.62.0
 
 ### Minor Changes

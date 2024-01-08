@@ -1,5 +1,17 @@
 # @segment/analytics-node
 
+## 1.2.0
+
+### Minor Changes
+
+- [#1015](https://github.com/segmentio/analytics-next/pull/1015) [`8fbe1a0`](https://github.com/segmentio/analytics-next/commit/8fbe1a0d4cecff850c28b7da57f903c6df285231) Thanks [@silesky](https://github.com/silesky)! - Deprecate `maxEventsInBatch` in favor of our commonly used: `flushAt`. The purpose is to establish consistency between our SDKs, regardless of language.
+
+### Patch Changes
+
+- Updated dependencies [[`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd)]:
+  - @segment/analytics-generic-utils@1.1.1
+  - @segment/analytics-core@1.4.1
+
 ## 1.1.4
 
 ### Patch Changes

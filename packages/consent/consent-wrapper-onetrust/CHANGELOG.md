@@ -1,5 +1,18 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.4.0
+
+### Minor Changes
+
+- [#1009](https://github.com/segmentio/analytics-next/pull/1009) [`f476038`](https://github.com/segmentio/analytics-next/commit/f47603881b787cc81fa1da4496bdbde9eb325a0f) Thanks [@silesky](https://github.com/silesky)! - If initialPageview is true, call analytics.page() as early as possible to avoid stale page context.
+
+### Patch Changes
+
+- [#1020](https://github.com/segmentio/analytics-next/pull/1020) [`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd) Thanks [@silesky](https://github.com/silesky)! - Add tslib to resolve unsound dependency warning.
+
+- Updated dependencies [[`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd), [`f476038`](https://github.com/segmentio/analytics-next/commit/f47603881b787cc81fa1da4496bdbde9eb325a0f)]:
+  - @segment/analytics-consent-tools@1.2.0
+
 ## 0.3.3
 
 ### Patch Changes
