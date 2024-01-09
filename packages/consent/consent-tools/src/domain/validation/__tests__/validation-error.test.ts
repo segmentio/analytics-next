@@ -9,7 +9,7 @@ describe(ValidationError, () => {
     expect(err.name).toBe('ValidationError')
 
     expect(err.message).toMatchInlineSnapshot(
-      `"[Validation] foo (Received: \\"bar\\")"`
+      `"[Validation] foo (Received: "bar")"`
     )
   })
 })

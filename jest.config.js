@@ -13,7 +13,9 @@ module.exports = () =>
       '<rootDir>/packages/core-integration-tests',
       '<rootDir>/packages/node',
       '<rootDir>/packages/browser',
+      '<rootDir>/packages/generic-utils',
       '<rootDir>/packages/consent/consent-tools',
       '<rootDir>/packages/consent/consent-wrapper-onetrust',
+      '<rootDir>/scripts',
     ],
   })

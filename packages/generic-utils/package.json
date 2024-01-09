@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-generic-utils",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -32,5 +32,8 @@
     "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest"
   },
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "dependencies": {
+    "tslib": "^2.4.1"
+  }
 }

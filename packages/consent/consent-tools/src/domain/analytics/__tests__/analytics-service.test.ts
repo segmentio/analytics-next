@@ -21,8 +21,8 @@ describe(AnalyticsService, () => {
   describe('cdnSettings', () => {
     it('should be a promise', async () => {
       expect(analyticsMock.on).toBeCalledTimes(1)
-      expect(analyticsMock.on.mock.lastCall[0]).toBe('initialize')
-      analyticsMock.on.mock.lastCall[1]({ integrations: {} })
+      expect(analyticsMock.on.mock.lastCall![0]).toBe('initialize')
+      analyticsMock.on.mock.lastCall![1]({ integrations: {} })
 
       await expect(analyticsService['cdnSettings']).resolves.toEqual({
         integrations: {},
@@ -103,7 +103,7 @@ describe(AnalyticsService, () => {
           C0002: false,
         }),
       })
-      await analyticsMock.addSourceMiddleware.mock.lastCall[0]({
+      await analyticsMock.addSourceMiddleware.mock.lastCall![0]({
         payload,
         next: jest.fn(),
       })

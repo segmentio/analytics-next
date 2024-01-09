@@ -46,7 +46,7 @@ describe(getOneTrustGlobal, () => {
       .spyOn(console, 'error')
       .mockImplementationOnce(() => {})
     expect(getOneTrustGlobal()).toBeUndefined()
-    expect(consoleErrorSpy.mock.lastCall[0]).toMatch(/window.OneTrust/i)
+    expect(consoleErrorSpy.mock.lastCall![0]).toMatch(/window.OneTrust/i)
   })
 
   it('should not log an error if OneTrust just returns geolocationResponse', () => {

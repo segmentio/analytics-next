@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-tools",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -45,5 +45,8 @@
     "directory": "packages/consent/consent-tools",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
   }
 }

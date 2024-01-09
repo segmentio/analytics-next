@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@segment/analytics-node...",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",

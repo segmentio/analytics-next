@@ -24,4 +24,4 @@ jobs:
         run: |
           git config --global user.name "Segment Github"
           git config --global user.email "github-actions@segment.com"
-          yarn ts-node-script --files scripts/create-release-from-tags/run.ts
+          yarn scripts create-release-from-tags

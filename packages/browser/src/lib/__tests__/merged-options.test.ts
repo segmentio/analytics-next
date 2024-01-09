@@ -21,11 +21,11 @@ describe(mergedOptions, () => {
     )
 
     expect(merged).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": Object {
+      {
+        "Amplitude": {
           "apiKey": "🍌",
         },
-        "CustomerIO": Object {
+        "CustomerIO": {
           "ghost": "👻",
         },
       }
@@ -52,8 +52,8 @@ describe(mergedOptions, () => {
     )
 
     expect(merged).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": Object {
+      {
+        "Amplitude": {
           "apiKey": "🍌",
         },
       }
@@ -81,11 +81,11 @@ describe(mergedOptions, () => {
     )
 
     expect(merged).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": Object {
+      {
+        "Amplitude": {
           "apiKey": "🍌",
         },
-        "CustomerIO": Object {
+        "CustomerIO": {
           "ghost": "👻",
         },
       }
@@ -110,11 +110,11 @@ describe(mergedOptions, () => {
     }
 
     expect(mergedOptions(cdn, overrides)).toMatchInlineSnapshot(`
-      Object {
-        "Google Tag Manager": Object {
+      {
+        "Google Tag Manager": {
           "ghost": "👻",
         },
-        "Segment.io": Object {
+        "Segment.io": {
           "apiHost": "mgs.instacart.com/v2",
         },
       }

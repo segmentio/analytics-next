@@ -300,21 +300,17 @@ describe('Initialization', () => {
       })
     })
     it('calls page if initialpageview is set', async () => {
-      jest.mock('../../core/analytics')
-      const mockPage = jest.fn().mockImplementation(() => Promise.resolve())
-      Analytics.prototype.page = mockPage
-
+      const page = jest.spyOn(Analytics.prototype, 'page')
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: true })
-
-      expect(mockPage).toHaveBeenCalled()
+      await sleep(0) // flushed in new task
+      expect(page).toHaveBeenCalledTimes(1)
     })
 
     it('does not call page if initialpageview is not set', async () => {
-      jest.mock('../../core/analytics')
-      const mockPage = jest.fn()
-      Analytics.prototype.page = mockPage
+      const page = jest.spyOn(Analytics.prototype, 'page')
       await AnalyticsBrowser.load({ writeKey }, { initialPageview: false })
-      expect(mockPage).not.toHaveBeenCalled()
+      await sleep(0) // flush happens async
+      expect(page).not.toHaveBeenCalled()
     })
 
     it('does not use a persisted queue when disableClientPersistence is true', async () => {
@@ -589,7 +585,7 @@ describe('Dispatch', () => {
     })
 
     expect(boo.event.properties).toMatchInlineSnapshot(`
-      Object {
+      {
         "billingPlan": "free-99",
         "total": 25,
       }
@@ -610,7 +606,7 @@ describe('Dispatch', () => {
     const metrics = delivered.stats.metrics
 
     expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
-      Array [
+      [
         "message_dispatched",
         "plugin_time",
         "plugin_time",
@@ -1126,7 +1122,7 @@ describe('Options', () => {
         iso: '2020-10-10',
       })
 
-      const [integrationEvent] = integrationMock.mock.lastCall
+      const [integrationEvent] = integrationMock.mock.lastCall!
 
       expect(integrationEvent.properties()).toEqual({
         date: expect.any(Date),
@@ -1163,7 +1159,7 @@ describe('Options', () => {
         iso: '2020-10-10',
       })
 
-      const [integrationEvent] = integrationMock.mock.lastCall
+      const [integrationEvent] = integrationMock.mock.lastCall!
 
       expect(integrationEvent.properties()).toEqual({
         date: expect.any(Date),
@@ -1200,7 +1196,7 @@ describe('Options', () => {
         iso: '2020-10-10',
       })
 
-      const [integrationEvent] = integrationMock.mock.lastCall
+      const [integrationEvent] = integrationMock.mock.lastCall!
 
       expect(integrationEvent.properties()).toEqual({
         date: expect.any(Date),

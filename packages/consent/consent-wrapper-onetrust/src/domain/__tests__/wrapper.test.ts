@@ -18,16 +18,16 @@ const getConsentedGroupIdsSpy = jest
 const createWrapperSpyHelper = {
   _spy: jest.spyOn(ConsentTools, 'createWrapper'),
   get shouldLoadWrapper() {
-    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoadWrapper!
+    return createWrapperSpyHelper._spy.mock.lastCall![0].shouldLoadWrapper!
   },
   get shouldLoadSegment() {
-    return createWrapperSpyHelper._spy.mock.lastCall[0].shouldLoadSegment!
+    return createWrapperSpyHelper._spy.mock.lastCall![0].shouldLoadSegment!
   },
   get getCategories() {
-    return createWrapperSpyHelper._spy.mock.lastCall[0].getCategories!
+    return createWrapperSpyHelper._spy.mock.lastCall![0].getCategories!
   },
   get registerOnConsentChanged() {
-    return createWrapperSpyHelper._spy.mock.lastCall[0]
+    return createWrapperSpyHelper._spy.mock.lastCall![0]
       .registerOnConsentChanged!
   },
 }
@@ -149,7 +149,7 @@ describe('High level "integration" tests', () => {
       analyticsMock.track.mockImplementationOnce(() => {}) // ignore track event sent by consent changed
 
       const onConsentChangedArg =
-        OneTrustMockGlobal.OnConsentChanged.mock.lastCall[0]
+        OneTrustMockGlobal.OnConsentChanged.mock.lastCall![0]
       onConsentChangedArg(
         new CustomEvent('', {
           detail: [

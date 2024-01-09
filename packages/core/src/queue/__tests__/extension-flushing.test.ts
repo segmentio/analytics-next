@@ -192,32 +192,32 @@ describe('Plugin flushing', () => {
       .map((l) => ({ message: l.message, extras: l.extras }))
 
     expect(messages).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "extras": undefined,
           "message": "Dispatching",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "plugin": "Amplitude",
           },
           "message": "plugin",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "plugin": "FullStory",
           },
           "message": "plugin",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "error": [Error: Boom!],
             "plugin": "Amplitude",
           },
           "message": "plugin Error",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "type": "track",
           },
           "message": "Delivered",
@@ -257,32 +257,32 @@ describe('Plugin flushing', () => {
       .logs()
       .map((l) => ({ message: l.message, extras: l.extras }))
     expect(messages).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "extras": undefined,
           "message": "Dispatching",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "plugin": "after-failed",
           },
           "message": "plugin",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "plugin": "after",
           },
           "message": "plugin",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "error": [Error: Boom!],
             "plugin": "after-failed",
           },
           "message": "plugin Error",
         },
-        Object {
-          "extras": Object {
+        {
+          "extras": {
             "type": "track",
           },
           "message": "Delivered",

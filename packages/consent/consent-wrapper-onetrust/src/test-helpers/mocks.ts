@@ -16,6 +16,7 @@ export const OneTrustMockGlobal: jest.Mocked<OneTrustGlobal> = {
 }
 
 export const analyticsMock: jest.Mocked<AnyAnalytics> = {
+  page: jest.fn(),
   addSourceMiddleware: jest.fn(),
   load: jest.fn(),
   on: jest.fn(),
