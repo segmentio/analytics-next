@@ -29,6 +29,7 @@ import {
   isDisabledIntegration as shouldSkipIntegration,
   isInstallableIntegration,
 } from './utils'
+import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -158,18 +159,19 @@ export class LegacyDestination implements DestinationPlugin {
     })
 
     try {
-      ctx.stats.increment('analytics_js.integration.invoke', 1, [
-        `method:initialize`,
-        `integration_name:${this.name}`,
-      ])
-
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: 'initialize',
+        type: 'classic',
+      })
       this.integration.initialize()
     } catch (error) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
-        `method:initialize`,
-        `integration_name:${this.name}`,
-      ])
-
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: 'initialize',
+        type: 'classic',
+        didError: true,
+      })
       throw error
     }
   }
@@ -254,20 +256,23 @@ export class LegacyDestination implements DestinationPlugin {
       traverse: !this.disableAutoISOConversion,
     })
 
-    ctx.stats.increment('analytics_js.integration.invoke', 1, [
-      `method:${eventType}`,
-      `integration_name:${this.name}`,
-    ])
+    recordIntegrationMetric(ctx, {
+      integrationName: this.name,
+      methodName: eventType,
+      type: 'classic',
+    })
 
     try {
       if (this.integration) {
         await this.integration.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
-      ctx.stats.increment('analytics_js.integration.invoke.error', 1, [
-        `method:${eventType}`,
-        `integration_name:${this.name}`,
-      ])
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: eventType,
+        type: 'classic',
+        didError: true,
+      })
       throw err
     }
 

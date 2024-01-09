@@ -68,23 +68,23 @@ describe('Analytics in Cloudflare workers', () => {
     expect(batches).toMatchInlineSnapshot(
       batches.map(() => snapshotMatchers.getReqBody(1)),
       `
-      Array [
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+      [
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {},
+              "properties": {},
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
@@ -184,113 +184,113 @@ describe('Analytics in Cloudflare workers', () => {
     expect(batches).toMatchInlineSnapshot(
       batches.map(() => snapshotMatchers.getReqBody(6)),
       `
-      Array [
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+      [
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
               "previousId": "other-user",
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "alias",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "groupId": "some-group",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
-              "traits": Object {},
+              "traits": {},
               "type": "group",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
-              "traits": Object {
+              "traits": {
                 "favoriteColor": "Seattle Grey",
               },
               "type": "identify",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
               "name": "Test Page",
-              "properties": Object {},
+              "properties": {},
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "page",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {},
+              "properties": {},
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
               "name": "Test Screen",
-              "properties": Object {},
+              "properties": {},
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "screen",
               "userId": "some-user",
@@ -320,7 +320,7 @@ describe('Analytics in Cloudflare workers', () => {
       }
     )
     const response = await worker.fetch(
-      'http://localhost?maxEventsInBatch=2&eventCount=6'
+      'http://localhost?flushAt=2&eventCount=6'
     )
     await response.text()
     await worker.stop()
@@ -332,43 +332,43 @@ describe('Analytics in Cloudflare workers', () => {
     expect(batches).toMatchInlineSnapshot(
       batches.map(() => snapshotMatchers.getReqBody(2)),
       `
-      Array [
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+      [
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 0,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 1,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
@@ -379,42 +379,42 @@ describe('Analytics in Cloudflare workers', () => {
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
           "writeKey": "__TEST__",
         },
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 2,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 3,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
@@ -425,42 +425,42 @@ describe('Analytics in Cloudflare workers', () => {
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
           "writeKey": "__TEST__",
         },
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 4,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
             },
-            Object {
-              "_metadata": Object {
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {
+              "properties": {
                 "count": 5,
               },
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,

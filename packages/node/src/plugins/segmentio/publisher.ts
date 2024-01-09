@@ -23,7 +23,7 @@ export interface PublisherProps {
   host?: string
   path?: string
   flushInterval: number
-  maxEventsInBatch: number
+  flushAt: number
   maxRetries: number
   writeKey: string
   httpRequestTimeout?: number
@@ -40,7 +40,7 @@ export class Publisher {
   private _batch?: ContextBatch
 
   private _flushInterval: number
-  private _maxEventsInBatch: number
+  private _flushAt: number
   private _maxRetries: number
   private _url: string
   private _closeAndFlushPendingItemsCount?: number
@@ -55,7 +55,7 @@ export class Publisher {
       host,
       path,
       maxRetries,
-      maxEventsInBatch,
+      flushAt,
       flushInterval,
       writeKey,
       httpRequestTimeout,
@@ -67,7 +67,7 @@ export class Publisher {
   ) {
     this._emitter = emitter
     this._maxRetries = maxRetries
-    this._maxEventsInBatch = Math.max(maxEventsInBatch, 1)
+    this._flushAt = Math.max(flushAt, 1)
     this._flushInterval = flushInterval
     this._url = tryCreateFormattedUrl(
       host ?? 'https://api.segment.io',
@@ -89,7 +89,7 @@ export class Publisher {
 
   private createBatch(): ContextBatch {
     this.pendingFlushTimeout && clearTimeout(this.pendingFlushTimeout)
-    const batch = new ContextBatch(this._maxEventsInBatch)
+    const batch = new ContextBatch(this._flushAt)
     this._batch = batch
     this.pendingFlushTimeout = setTimeout(() => {
       if (batch === this._batch) {
@@ -168,7 +168,7 @@ export class Publisher {
     if (addStatus.success) {
       const isExpectingNoMoreItems =
         batch.length === this._closeAndFlushPendingItemsCount
-      const isFull = batch.length === this._maxEventsInBatch
+      const isFull = batch.length === this._flushAt
       if (isFull || isExpectingNoMoreItems) {
         this.send(batch).catch(noop)
         this.clearBatch()

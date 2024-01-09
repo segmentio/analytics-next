@@ -1,7 +1,8 @@
 import { uuid } from './uuid'
 import { HTTPClient, HTTPClientRequest, HTTPResponse } from './http-client'
 import { SignJWT, importPKCS8 } from 'jose'
-import { Emitter, backoff, sleep } from '@segment/analytics-core'
+import { backoff, sleep } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import type {
   AccessToken,
   OAuthSettings,

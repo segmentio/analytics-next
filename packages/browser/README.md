@@ -86,7 +86,7 @@ analytics
 [Self Hosting or Proxying Analytics.js documentation](
  https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/custom-proxy/#custom-cdn--api-proxy)
 
-## Usage in Common Frameworks / SPAs
+## Examples / Usage in Common Frameworks and SPAs
 
 ### Next.js
 - https://github.com/vercel/next.js/tree/canary/examples/with-segment-analytics
@@ -148,9 +148,9 @@ export default defineComponent({
 ## Support for Web Workers (Experimental)
  While this package does not support web workers out of the box, there are options:
 
-1. Run analytics.js in a web worker via [partytown.io](https://partytown.builder.io/). See [our partytown example](../../examples/with-next-js/pages/partytown). **Supports both cloud and device mode destinations, but not all device mode destinations may work.**
+1. Run analytics.js in a web worker via [partytown.io](https://partytown.builder.io/). See [our partytown example](../../playgrounds/next-playground/pages/partytown). **Supports both cloud and device mode destinations, but not all device mode destinations may work.**
 
-2. Try [@segment/analytics-node](../node) with `maxEventsInBatch: 1`, which should work in any runtime where `fetch` is available. **Warning: cloud destinations only!**
+2. Try [@segment/analytics-node](../node) with `flushAt: 1`, which should work in any runtime where `fetch` is available. **Warning: cloud destinations only!**
 
 
 

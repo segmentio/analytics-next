@@ -78,7 +78,7 @@ const { Analytics } = require('@segment/analytics-node');
 // since analytics has the potential to be stateful if there are any plugins added,
 // to be on the safe side, we should instantiate a new instance of analytics on every request (the cost of instantiation is low).
 const analytics = () => new Analytics({
-      maxEventsInBatch: 1,
+      flushAt: 1,
       writeKey: '<MY_WRITE_KEY>',
     })
     .on('error', console.error);
@@ -105,7 +105,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const analytics = new Analytics({
   writeKey: '<MY_WRITE_KEY>',
-  maxEventsInBatch: 1,
+  flushAt: 1,
 })
   .on('error', console.error)
 
@@ -132,7 +132,7 @@ export default {
     ctx: ExecutionContext
   ): Promise<Response> {
     const analytics = new Analytics({
-      maxEventsInBatch: 1,
+      flushAt: 1,
       writeKey: '<MY_WRITE_KEY>',
     }).on('error', console.error);
 

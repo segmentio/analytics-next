@@ -1,4 +1,4 @@
-import { Emitter } from '../'
+import { Emitter } from '../emitter'
 
 describe(Emitter, () => {
   it('emits events', () => {
@@ -70,5 +70,37 @@ describe(Emitter, () => {
     em.emit('test', 'phone')
 
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+
+  it('has a default max listeners of 10', () => {
+    const em = new Emitter()
+    expect(em.maxListeners).toBe(10)
+  })
+
+  it('should warn if possible memory leak', () => {
+    const fn = jest.fn()
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const em = new Emitter({ maxListeners: 3 })
+    em.on('test', fn)
+    em.on('test', fn)
+    em.on('test', fn)
+    expect(warnSpy).not.toHaveBeenCalled()
+    // call on 4th
+    em.on('test', fn)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    // do not call additional times
+    em.on('test', fn)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('has no warning if listener limit is set to 0', () => {
+    const fn = jest.fn()
+    const warnSpy = jest.spyOn(console, 'warn')
+    const em = new Emitter({ maxListeners: 0 })
+    expect(em.maxListeners).toBe(0)
+    for (let i = 0; i++; i < 20) {
+      em.on('test', fn)
+    }
+    expect(warnSpy).not.toHaveBeenCalled()
   })
 })

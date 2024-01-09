@@ -25,11 +25,18 @@ export function assertHTTPRequestOptions(
 ) {
   expect(url).toBe('https://api.segment.io/v1/batch')
   expect(method).toBe('POST')
-  expect(headers).toMatchInlineSnapshot(`
-    Object {
-      "Content-Type": "application/json",
-      "User-Agent": "analytics-node-next/latest",
-    }
-  `)
+  expect(headers).toEqual({
+    'Content-Type': 'application/json',
+    'User-Agent': 'analytics-node-next/latest',
+  })
+
   expect(JSON.parse(body).batch).toHaveLength(contexts.length)
+  let idx = 0
+  for (const context of contexts) {
+    expect(JSON.parse(body).batch[idx]).toEqual({
+      ...context.event,
+      ...httpClientOptionsBodyMatcher,
+    })
+    idx += 1
+  }
 }

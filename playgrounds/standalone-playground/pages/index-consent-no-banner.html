@@ -33,7 +33,7 @@
     data-domain-script="09b87b90-1b30-4d68-9610-9d2fe11234f3-test"></script>
   <script type="text/javascript">
     const wk = document.querySelector("input").value
-    wk && console.log('should be on the following url ->', `${window.location.origin + window.location.pathname}?writeKey=${wk}&otpreview=true&otgeo=za`)
+    console.log('should be on the following url ->', `${window.location.origin + window.location.pathname}?writeKey=${wk || '<writekey>'}&otpreview=true&otgeo=za`)
     function OptanonWrapper() {
       // debugging.
       if (!window.OnetrustActiveGroups.replaceAll(',', '')) {
@@ -106,10 +106,7 @@
               var t = document.createElement('script')
               t.type = 'text/javascript'
               t.async = !0
-              t.src =
-                'https://cdn.segment.com/analytics.js/v1/' +
-                writeKey +
-                '/analytics.min.js'
+              t.src = '/node_modules/@segment/analytics-next/dist/umd/standalone.js'
               var n = document.getElementsByTagName('script')[0]
               n.parentNode.insertBefore(t, n)
               analytics._loadOptions = e
@@ -147,7 +144,7 @@
 
   <script type="text/javascript">
     const displayConsentLogs = (str) => document.querySelector('#consent-changed').textContent = str
-    analytics.on('track', (name, properties, options) => {
+    window.analytics?.on('track', (name, properties, options) => {
       if (name.includes("Segment Consent")) {
         displayConsentLogs("Consent Changed Event Fired")
         setTimeout(() => displayConsentLogs(''), 3000)

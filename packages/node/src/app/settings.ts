@@ -20,7 +20,12 @@ export interface AnalyticsSettings {
    */
   maxRetries?: number
   /**
-   * The number of messages to enqueue before flushing. Default: 15
+   * The number of events to enqueue before flushing. Default: 15.
+   */
+  flushAt?: number
+  /**
+   * @deprecated
+   * The number of events to enqueue before flushing. This is deprecated in favor of `flushAt`. Default: 15.
    */
   maxEventsInBatch?: number
   /**

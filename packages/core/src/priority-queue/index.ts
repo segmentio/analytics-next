@@ -1,4 +1,4 @@
-import { Emitter } from '../emitter'
+import { Emitter } from '@segment/analytics-generic-utils'
 import { backoff } from './backoff'
 
 /**

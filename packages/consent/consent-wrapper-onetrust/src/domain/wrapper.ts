@@ -51,12 +51,12 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
-      : (onCategoriesChangedCb) => {
+      : (setCategories) => {
           getOneTrustGlobal()!.OnConsentChanged((event) => {
             const normalizedCategories = getNormalizedCategoriesFromGroupIds(
               event.detail
             )
-            onCategoriesChangedCb(normalizedCategories)
+            setCategories(normalizedCategories)
           })
         },
     integrationCategoryMappings: settings.integrationCategoryMappings,

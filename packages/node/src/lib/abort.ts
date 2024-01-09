@@ -1,7 +1,7 @@
 /**
  * use non-native event emitter for the benefit of non-node runtimes like CF workers.
  */
-import { Emitter } from '@segment/analytics-core'
+import { Emitter } from '@segment/analytics-generic-utils'
 import { detectRuntime } from './env'
 
 /**

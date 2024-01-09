@@ -16,7 +16,7 @@ jest.mock('../../callback', () => ({
 }))
 
 import { CoreEventQueue } from '../../queue/event-queue'
-import { Emitter } from '../../emitter'
+import { Emitter } from '@segment/analytics-generic-utils'
 import { dispatch, getDelay } from '../dispatch'
 import { CoreContext } from '../../context'
 import { TestCtx, TestEventQueue } from '../../../test-helpers'

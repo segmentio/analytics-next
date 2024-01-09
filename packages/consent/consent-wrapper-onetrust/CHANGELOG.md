@@ -1,5 +1,36 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.4.0
+
+### Minor Changes
+
+- [#1009](https://github.com/segmentio/analytics-next/pull/1009) [`f476038`](https://github.com/segmentio/analytics-next/commit/f47603881b787cc81fa1da4496bdbde9eb325a0f) Thanks [@silesky](https://github.com/silesky)! - If initialPageview is true, call analytics.page() as early as possible to avoid stale page context.
+
+### Patch Changes
+
+- [#1020](https://github.com/segmentio/analytics-next/pull/1020) [`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd) Thanks [@silesky](https://github.com/silesky)! - Add tslib to resolve unsound dependency warning.
+
+- Updated dependencies [[`7b93e7b`](https://github.com/segmentio/analytics-next/commit/7b93e7b50fa293aebaf6767a44bf7708b231d5cd), [`f476038`](https://github.com/segmentio/analytics-next/commit/f47603881b787cc81fa1da4496bdbde9eb325a0f)]:
+  - @segment/analytics-consent-tools@1.2.0
+
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [[`57be1ac`](https://github.com/segmentio/analytics-next/commit/57be1acd556a9779edbc5fd4d3f820fb50b65697), [`dcf279c`](https://github.com/segmentio/analytics-next/commit/dcf279c4591c84952c78022ddfbad945aab8cfde)]:
+  - @segment/analytics-consent-tools@1.1.0
+
+## 0.3.2
+
+### Patch Changes
+
+- [`4ca9f84`](https://github.com/segmentio/analytics-next/commit/4ca9f84106ba1f86953b6b8632bb49929416cb64) Thanks [@silesky](https://github.com/silesky)! - #987
+
+  Fix bug: if showAlertNotice is false and Segment has default categories, we want to immediately load Segment with any default categories.
+
+- Updated dependencies [[`930af49`](https://github.com/segmentio/analytics-next/commit/930af49b27f7c2973304c7ae76b67d264223e6f6), [`a361575`](https://github.com/segmentio/analytics-next/commit/a361575152f8313dfded3b0cc4b9912b4e2a41c3), [`008a019`](https://github.com/segmentio/analytics-next/commit/008a01927973340bd93cd0097e45c455d49baea5)]:
+  - @segment/analytics-consent-tools@1.0.0
+
 ## 0.3.1
 
 ### Patch Changes

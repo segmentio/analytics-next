@@ -1,11 +1,11 @@
 {
-  "name": "@example/standalone-playground",
+  "name": "@playground/standalone-playground",
   "private": true,
   "installConfig": {
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@example/standalone-playground...",
+    ".": "yarn run -T turbo run --filter=@playground/standalone-playground...",
     "start": "yarn http-server . -o /pages",
     "dev": "yarn concurrently 'yarn . build && yarn start' 'sleep 10 && yarn . watch'",
     "concurrently": "yarn run -T concurrently"

@@ -7,7 +7,6 @@ describe(createConsentStampingMiddleware, () => {
   const getCategories = jest.fn()
   const payload = {
     obj: {
-      type: 'track',
       context: new Context({ type: 'track' }),
     },
   }

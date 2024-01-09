@@ -144,17 +144,17 @@ describe('Backwards compatibility', () => {
     expect(next['identify']).toEqual(classic['identify'])
 
     expect(classic['page']).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "path": "/",
           "referrer": "",
           "search": "?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
           "title": "",
           "url": "http://localhost:4000/?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",
         },
-        Object {
-          "context": Object {
-            "page": Object {
+        {
+          "context": {
+            "page": {
               "path": "/",
               "referrer": "",
               "search": "?type=classic&wk=D8frB7upBChqDN9PMWksNvZYDaKJIYo6",

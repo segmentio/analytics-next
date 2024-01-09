@@ -111,10 +111,10 @@ describe('standalone bundle', () => {
     )
 
     expect(metrics).toMatchInlineSnapshot(`
-      Array [
-        Object {
+      [
+        {
           "metric": "analytics_js.invoke.error",
-          "tags": Array [
+          "tags": [
             "type:initialization",
             "message:Ohhh nooo",
             "name:Error",
@@ -124,7 +124,7 @@ describe('standalone bundle', () => {
       ]
     `)
     expect(errorMessages).toMatchInlineSnapshot(`
-      Array [
+      [
         "[analytics.js],Failed to load Analytics.js,Error: Ohhh nooo",
       ]
     `)

@@ -20,7 +20,8 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Run tests"
       - yarn constraints
-      - yarn run test:scripts
+      - yarn scripts test
+      - yarn scripts lint
       - yarn run test:check-dts
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
@@ -163,8 +164,8 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
 
-  - label: '[Examples] Lint + Test :hammer:'
-    key: examples
+  - label: '[Playgrounds] Lint + Test :hammer:'
+    key: playgrounds
     agents:
       queue: v1
     commands:
@@ -172,9 +173,9 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
-      - yarn turbo run --filter='./examples/*' build
+      - yarn turbo run --filter='./playgrounds/*' build
       - echo "+++ Run tests"
-      - yarn turbo run --filter='./examples/*' lint
+      - yarn turbo run --filter='./playgrounds/*' lint
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

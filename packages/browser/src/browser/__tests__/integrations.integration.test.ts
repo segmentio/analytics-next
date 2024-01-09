@@ -164,11 +164,11 @@ describe('Integrations', () => {
       await analytics.ready()
 
       expect(analytics.Integrations).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": [Function],
-        "Google-Analytics": [Function],
-      }
-    `)
+        {
+          "Amplitude": [Function],
+          "Google-Analytics": [Function],
+        }
+      `)
     })
 
     it('catches destinations with dots in their names', async () => {
@@ -205,12 +205,12 @@ describe('Integrations', () => {
       await analytics.ready()
 
       expect(analytics.Integrations).toMatchInlineSnapshot(`
-      Object {
-        "Amplitude": [Function],
-        "Customer.io": [Function],
-        "Google-Analytics": [Function],
-      }
-    `)
+        {
+          "Amplitude": [Function],
+          "Customer.io": [Function],
+          "Google-Analytics": [Function],
+        }
+      `)
     })
 
     it('uses directly provided classic integrations without fetching them from cdn', async () => {

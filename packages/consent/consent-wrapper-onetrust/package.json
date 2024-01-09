@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "keywords": [
     "segment",
     "analytics",
@@ -13,7 +13,7 @@
   "sideEffects": [
     "./dist/umd/analytics-onetrust.umd.js"
   ],
-  "jsdeliver": "./dist/umd/analytics-onetrust.umd.js",
+  "jsdelivr": "./dist/umd/analytics-onetrust.umd.js",
   "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
@@ -41,7 +41,8 @@
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "0.2.1"
+    "@segment/analytics-consent-tools": "1.2.0",
+    "tslib": "^2.4.1"
   },
   "peerDependencies": {
     "@segment/analytics-next": ">=1.53.1"

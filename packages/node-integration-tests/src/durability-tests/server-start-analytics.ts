@@ -5,7 +5,7 @@ import { trackEventSmall } from '../server/fixtures'
 const analytics = new Analytics({
   writeKey: 'foo',
   flushInterval: 1000,
-  maxEventsInBatch: 15,
+  flushAt: 15,
 })
 
 startServer({ onClose: analytics.closeAndFlush })

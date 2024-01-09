@@ -55,7 +55,7 @@ describe('tsub middleware', () => {
 
     expect(next).toHaveBeenCalled()
     expect(payload).toMatchInlineSnapshot(`
-      Object {
+      {
         "event": "Item Impression",
         "type": "track",
       }

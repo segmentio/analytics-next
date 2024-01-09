@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-tools",
-  "version": "0.2.1",
+  "version": "1.2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -9,10 +9,11 @@
     "dist/",
     "src/",
     "!**/__tests__/**",
-    "!*.tsbuildinfo"
+    "!*.tsbuildinfo",
+    "!**/test-helpers/**"
   ],
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/analytics-consent-tools",
+    ".": "yarn run -T turbo run --filter=@segment/analytics-consent-tools...",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
@@ -44,5 +45,8 @@
     "directory": "packages/consent/consent-tools",
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
   }
 }

@@ -2,13 +2,18 @@ import { getProcessEnv } from '../lib/get-process-env'
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 import { fetch } from '../lib/fetch'
-import { Analytics, AnalyticsSettings, InitOptions } from '../core/analytics'
+import {
+  Analytics,
+  AnalyticsSettings,
+  NullAnalytics,
+  InitOptions,
+} from '../core/analytics'
 import { Context } from '../core/context'
 import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { mergedOptions } from '../lib/merged-options'
-import { createDeferred } from '../lib/create-deferred'
+import { createDeferred } from '@segment/analytics-generic-utils'
 import { envEnrichment } from '../plugins/env-enrichment'
 import {
   PluginFactory,
@@ -25,6 +30,7 @@ import {
   flushAddSourceMiddleware,
   flushSetAnonymousID,
   flushOn,
+  PreInitMethodCall,
 } from '../core/buffer'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
@@ -85,11 +91,16 @@ export interface LegacySettings {
    */
   consentSettings?: {
     /**
-     * All unique consent categories.
+     * All unique consent categories for enabled destinations.
      * There can be categories in this array that are important for consent that are not included in any integration  (e.g. 2 cloud mode categories).
      * @example ["Analytics", "Advertising", "CAT001"]
      */
     allCategories: string[]
+
+    /**
+     * Whether or not there are any unmapped destinations for enabled destinations.
+     */
+    hasUnmappedDestinations: boolean
   }
 }
 
@@ -300,10 +311,20 @@ async function loadAnalytics(
   options: InitOptions = {},
   preInitBuffer: PreInitMethodCallBuffer
 ): Promise<[Analytics, Context]> {
+  // return no-op analytics instance if disabled
+  if (options.disable === true) {
+    return [new NullAnalytics(), Context.system()]
+  }
+
   if (options.globalAnalyticsKey)
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+
+  if (options.initialPageview) {
+    // capture the page context early, so it's always up-to-date
+    preInitBuffer.push(new PreInitMethodCall('page', []))
+  }
 
   let legacySettings =
     settings.cdnSettings ??
@@ -311,6 +332,14 @@ async function loadAnalytics(
 
   if (options.updateCDNSettings) {
     legacySettings = options.updateCDNSettings(legacySettings)
+  }
+
+  // if options.disable is a function, we allow user to disable analytics based on CDN Settings
+  if (typeof options.disable === 'function') {
+    const disabled = await options.disable(legacySettings)
+    if (disabled) {
+      return [new NullAnalytics(), Context.system()]
+    }
   }
 
   const retryQueue: boolean =
@@ -350,10 +379,6 @@ async function loadAnalytics(
 
   analytics.initialized = true
   analytics.emit('initialize', settings, options)
-
-  if (options.initialPageview) {
-    analytics.page().catch(console.error)
-  }
 
   await flushFinalBuffer(analytics, preInitBuffer)
 
