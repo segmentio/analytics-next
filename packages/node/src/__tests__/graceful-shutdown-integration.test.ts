@@ -355,10 +355,6 @@ describe('Ability for users to exit without losing events', () => {
       ajs.on('drained', () => {
         drainedCalls++
       })
-      let trackCallCount = 0
-      ajs.on('track', () => {
-        trackCallCount += 1
-      })
 
       _helpers.makeTrackCall()
 
