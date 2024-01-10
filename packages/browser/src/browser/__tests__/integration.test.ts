@@ -75,6 +75,16 @@ const googleAnalytics: Plugin = {
   type: 'destination',
 }
 
+const slowPlugin: Plugin = {
+  ...xt,
+  name: 'Slow Plugin',
+  type: 'destination',
+  track: async (ctx) => {
+    await sleep(3000)
+    return ctx
+  },
+}
+
 const enrichBilling: Plugin = {
   ...xt,
   name: 'Billing Enrichment',
@@ -574,6 +584,34 @@ describe('Dispatch', () => {
     expect(segmentSpy).toHaveBeenCalledWith(boo)
   })
 
+  it('dispatching to Segmentio not blocked by other destinations', async () => {
+    const [ajs] = await AnalyticsBrowser.load({
+      writeKey,
+      plugins: [slowPlugin],
+    })
+
+    const segmentio = ajs.queue.plugins.find((p) => p.name === 'Segment.io')
+    const segmentSpy = jest.spyOn(segmentio!, 'track')
+
+    await Promise.race([
+      ajs.track(
+        'Boo!',
+        {
+          total: 25,
+          userId: '👻',
+        },
+        {
+          integrations: {
+            All: true,
+          },
+        }
+      ),
+      sleep(100),
+    ])
+
+    expect(segmentSpy).toHaveBeenCalled()
+  })
+
   it('enriches events before dispatching', async () => {
     const [ajs] = await AnalyticsBrowser.load({
       writeKey,
@@ -611,8 +649,8 @@ describe('Dispatch', () => {
         "plugin_time",
         "plugin_time",
         "plugin_time",
-        "message_delivered",
         "plugin_time",
+        "message_delivered",
         "delivered",
       ]
     `)
