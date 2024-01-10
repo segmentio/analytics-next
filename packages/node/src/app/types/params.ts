@@ -76,3 +76,21 @@ export type TrackParams = {
   timestamp?: Timestamp
   integrations?: Integrations
 } & IdentityOptions
+
+export type FlushParams = {
+  /**
+   * Max time in milliseconds to wait until the resulting promise resolves.
+   */
+  timeout?: number
+  /**
+   * If true, will prevent new events from entering the pipeline. Default: false
+   */
+  close?: boolean
+}
+
+export type CloseAndFlushParams = {
+  /**
+   * Max time in milliseconds to wait until the resulting promise resolves.
+   */
+  timeout?: FlushParams['timeout']
+}

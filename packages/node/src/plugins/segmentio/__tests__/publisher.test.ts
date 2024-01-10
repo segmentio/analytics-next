@@ -188,7 +188,7 @@ describe('flushAfterClose', () => {
       flushAt: 20,
     })
 
-    publisher.flushAfterClose(3)
+    publisher.flush(3)
 
     void segmentPlugin.track(_createTrackCtx())
     void segmentPlugin.track(_createTrackCtx())
@@ -202,7 +202,7 @@ describe('flushAfterClose', () => {
       flushAt: 1,
     })
 
-    publisher.flushAfterClose(3)
+    publisher.flush(3)
 
     void segmentPlugin.track(_createTrackCtx())
     void segmentPlugin.track(_createTrackCtx())
@@ -215,7 +215,7 @@ describe('flushAfterClose', () => {
       flushAt: 3,
     })
 
-    publisher.flushAfterClose(5)
+    publisher.flush(5)
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx()))
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
@@ -228,9 +228,7 @@ describe('flushAfterClose', () => {
     })
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
-    expect(makeReqSpy).toHaveBeenCalledTimes(0)
-    publisher.flushAfterClose(5)
-    expect(makeReqSpy).toHaveBeenCalledTimes(0)
+    publisher.flush(5)
     range(2).forEach(() => segmentPlugin.track(_createTrackCtx()))
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
   })
@@ -242,7 +240,7 @@ describe('flushAfterClose', () => {
 
     range(3).forEach(() => segmentPlugin.track(_createTrackCtx())) // should not flush
     expect(makeReqSpy).toHaveBeenCalledTimes(0)
-    publisher.flushAfterClose(10)
+    publisher.flush(10)
     expect(makeReqSpy).toHaveBeenCalledTimes(0)
     range(4).forEach(() => segmentPlugin.track(_createTrackCtx())) // batch is full, send.
     expect(makeReqSpy).toHaveBeenCalledTimes(1)

@@ -13,6 +13,8 @@ import {
   TrackParams,
   Plugin,
   SegmentEvent,
+  FlushParams,
+  CloseAndFlushParams,
 } from './types'
 import { Context } from './context'
 import { NodeEventQueue } from './event-queue'
@@ -26,6 +28,8 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
   private readonly _publisher: ReturnType<
     typeof createConfiguredNodePlugin
   >['publisher']
+
+  private _isFlushing = false
 
   private readonly _queue: NodeEventQueue
 
@@ -78,18 +82,42 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    */
   public closeAndFlush({
     timeout = this._closeAndFlushDefaultTimeout,
-  }: {
-    /** Set a maximum time permitted to wait before resolving. */
-    timeout?: number
-  } = {}): Promise<void> {
-    this._publisher.flushAfterClose(this._pendingEvents)
-    this._isClosed = true
+  }: CloseAndFlushParams = {}): Promise<void> {
+    return this.flush({ timeout, close: true })
+  }
+
+  /**
+   * Call this method to flush all existing events..
+   * This method also waits for any event method-specific callbacks to be triggered,
+   * and any of their subsequent promises to be resolved/rejected.
+   */
+  public async flush({
+    timeout,
+    close = false,
+  }: FlushParams = {}): Promise<void> {
+    if (this._isFlushing) {
+      // if we're already flushing, then we don't need to do anything
+      console.warn(
+        'Overlapping flush calls detected. Please wait for the previous flush to finish before calling .flush again'
+      )
+      return
+    } else {
+      this._isFlushing = true
+    }
+    if (close) {
+      this._isClosed = true
+    }
+    this._publisher.flush(this._pendingEvents)
     const promise = new Promise<void>((resolve) => {
       if (!this._pendingEvents) {
         resolve()
       } else {
-        this.once('drained', () => resolve())
+        this.once('drained', () => {
+          resolve()
+        })
       }
+    }).finally(() => {
+      this._isFlushing = false
     })
     return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
   }
