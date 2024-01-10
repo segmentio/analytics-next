@@ -1,5 +1,13 @@
 # @segment/analytics-node
 
+## 1.3.0
+
+### Minor Changes
+
+- [#1010](https://github.com/segmentio/analytics-next/pull/1010) [`5f37f4f`](https://github.com/segmentio/analytics-next/commit/5f37f4f6ea15b2457e6edf11cc92ddbf0dd11736) Thanks [@silesky](https://github.com/silesky)! - Add analytics.flush({ timeout: ..., close: ... }) method
+
+* [#1008](https://github.com/segmentio/analytics-next/pull/1008) [`e57960e`](https://github.com/segmentio/analytics-next/commit/e57960e84f5ce5b214dde09928bee6e6bdba3a69) Thanks [@danieljackins](https://github.com/danieljackins)! - Change segmentio to destination type
+
 ## 1.2.0
 
 ### Minor Changes
