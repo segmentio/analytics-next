@@ -11,9 +11,7 @@ import {
 import { Context, ContextCancelation } from '../../core/context'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { pTimeout } from '@segment/analytics-core'
 import { createDeferred } from '../../lib/create-deferred'
-import { DEFAULT_DESTINATION_TIMEOUT } from '../../core/constants'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -34,7 +32,6 @@ export class ActionDestination implements DestinationPlugin {
   type: Plugin['type']
 
   alternativeNames: string[] = []
-  destinationTimeout: number
 
   private loadPromise = createDeferred<unknown>()
 
@@ -42,10 +39,9 @@ export class ActionDestination implements DestinationPlugin {
 
   action: Plugin
 
-  constructor(name: string, action: Plugin, destinationTimeout?: number) {
+  constructor(name: string, action: Plugin) {
     this.action = action
     this.name = name
-    this.destinationTimeout = destinationTimeout ?? DEFAULT_DESTINATION_TIMEOUT
     this.type = action.type
     this.alternativeNames.push(action.name)
   }
@@ -151,13 +147,8 @@ export class ActionDestination implements DestinationPlugin {
 
       const loadP = this.action.load(ctx, analytics)
 
-      const ret =
-        this.type === 'destination'
-          ? pTimeout(loadP, this.destinationTimeout)
-          : loadP
-
-      this.loadPromise.resolve(await ret)
-      return ret
+      this.loadPromise.resolve(await loadP)
+      return loadP
     } catch (error) {
       recordIntegrationMetric(ctx, {
         integrationName: this.action.name,
@@ -296,8 +287,7 @@ export async function remoteLoader(
           plugins.forEach((plugin) => {
             const wrapper = new ActionDestination(
               remotePlugin.creationName,
-              plugin,
-              options?.destinationTimeout
+              plugin
             )
 
             /** Make sure we only apply destination filters to actions of the "destination" type to avoid causing issues for hybrid destinations */

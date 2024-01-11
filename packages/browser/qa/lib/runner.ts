@@ -1,5 +1,4 @@
 import { Browser } from 'playwright'
-import { DEFAULT_DESTINATION_TIMEOUT } from '../../src/core/constants'
 import { JSONValue } from '../../src/core/events'
 import { getMetrics } from './benchmark'
 
@@ -97,8 +96,7 @@ export async function run(params: ComparisonParams) {
     await page.waitForLoadState('networkidle')
     await page.waitForFunction(
       `window.analytics.initialized === true`,
-      undefined,
-      { timeout: DEFAULT_DESTINATION_TIMEOUT + 1000 },
+      undefined
     )
 
     // This forces every timestamp to look exactly the same.

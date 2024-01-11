@@ -187,30 +187,4 @@ describe('Lazy destination loading', () => {
 
     expect(initializeEmitted).toBe(true)
   })
-
-  it('times out destinations that take too long to load', async () => {
-    const dest1Harness = createTestPluginFactory('braze', 'destination')
-    const dest2Harness = createTestPluginFactory('google', 'destination')
-
-    const analytics = new AnalyticsBrowser()
-
-    await analytics.load({
-      writeKey: 'abc',
-      plugins: [dest1Harness.factory, dest2Harness.factory],
-    })
-
-    // one destination loads properly
-    dest1Harness.loadingGuard.resolve()
-    await dest1Harness.loadPromise
-
-    const t = await analytics.track('test event 1')
-
-    // one of the two destinations has failed, and is reported in the metrics as-such
-    const errorMetrics = t.stats.metrics.filter(
-      (m) => m.metric === 'analytics_js.integration.invoke.error'
-    )
-
-    expect(errorMetrics).toHaveLength(1)
-    expect(errorMetrics[0].tags[1]).toBe('integration_name:google')
-  })
 })
