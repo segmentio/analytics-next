@@ -1,5 +1,13 @@
 # @segment/analytics-next
 
+## 1.63.0
+
+### Minor Changes
+
+- [#1008](https://github.com/segmentio/analytics-next/pull/1008) [`e57960e`](https://github.com/segmentio/analytics-next/commit/e57960e84f5ce5b214dde09928bee6e6bdba3a69) Thanks [@danieljackins](https://github.com/danieljackins)! - Change segmentio to destination type
+
+* [#1023](https://github.com/segmentio/analytics-next/pull/1023) [`b5b929e`](https://github.com/segmentio/analytics-next/commit/b5b929ea432198ae6aecb2b03ea2194972bcc029) Thanks [@silesky](https://github.com/silesky)! - Deprecate AnalyticsNode class (in favor of the standalone @segment/analytics-node)
+
 ## 1.62.1
 
 ### Patch Changes

@@ -6,6 +6,9 @@ import { Plugin } from '../core/plugin'
 import { EventQueue } from '../core/queue/event-queue'
 import { PriorityQueue } from '../lib/priority-queue'
 
+/**
+ * @deprecated Please use the standalone `@segment/analytics-node` package.
+ */
 export class AnalyticsNode {
   static async load(settings: {
     writeKey: string
