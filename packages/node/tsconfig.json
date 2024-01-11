@@ -3,8 +3,8 @@
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "module": "ESNext",
-    "target": "es2020", // node 14
+    "target": "es2022", // node 18
     "moduleResolution": "node",
-    "lib": ["es2020"] // TODO: https://www.npmjs.com/package/@tsconfig/node14
+    "lib": ["es2022"] // TODO: es2023 https://www.npmjs.com/package/@tsconfig/node18
   }
 }

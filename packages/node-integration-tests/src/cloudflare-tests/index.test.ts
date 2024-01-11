@@ -129,23 +129,23 @@ describe('Analytics in Cloudflare workers', () => {
     expect(batches).toMatchInlineSnapshot(
       batches.map(() => snapshotMatchers.getReqBody(1)),
       `
-      Array [
-        Object {
-          "batch": Array [
-            Object {
-              "_metadata": Object {
+      [
+        {
+          "batch": [
+            {
+              "_metadata": {
                 "jsRuntime": "cloudflare-worker",
               },
-              "context": Object {
-                "library": Object {
+              "context": {
+                "library": {
                   "name": "@segment/analytics-node",
                   "version": Any<String>,
                 },
               },
               "event": "some-event",
-              "integrations": Object {},
+              "integrations": {},
               "messageId": Any<String>,
-              "properties": Object {},
+              "properties": {},
               "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
               "type": "track",
               "userId": "some-user",
