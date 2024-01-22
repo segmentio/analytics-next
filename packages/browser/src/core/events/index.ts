@@ -261,7 +261,7 @@ export class EventFactory {
       context,
       integrations: allIntegrations,
       ...overrides,
-      messageId: 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid()),
+      messageId: 'ajs-next-' + md5.hash(JSON.stringify(event)) + uuid(),
     }
     addPageContext(newEvent, pageCtx)
 
