@@ -148,7 +148,7 @@ export default {
 ```
 
 ### OAuth 2
-In order to guarantee authorized communication between your server environment and Segment's Tracking API, you can enable OAuth 2 in your Segment workspace.  To support the non-interactive server environment, the OAuth workflow used is a signed client assertion JWT.  You will need a public and private key pair where the public key is uploaded to the segment dashboard and the private key is kept in your server environment to be used by this SDK. Your server will verify its identity by signing a token request and will receive a token that is used to to authorize all communication with the Segment Tracking API.
+In order to guarantee authorized communication between your server environment and Segment's Tracking API, you can [enable OAuth 2 in your Segment workspace](https://segment.com/docs/partners/enable-with-segment/).  To support the non-interactive server environment, the OAuth workflow used is a signed client assertion JWT.  You will need a public and private key pair where the public key is uploaded to the segment dashboard and the private key is kept in your server environment to be used by this SDK. Your server will verify its identity by signing a token request and will receive a token that is used to to authorize all communication with the Segment Tracking API.
 
 You will also need to provide the OAuth Application ID and the public key's ID, both of which are provided in the Segment dashboard.  You should ensure that you are implementing handling for Analytics SDK errors.  Good logging will help distinguish any configuration issues.
 
