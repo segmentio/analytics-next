@@ -60,10 +60,12 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
           typeof settings.httpClient === 'function'
             ? new FetchHTTPClient(settings.httpClient)
             : settings.httpClient ?? new FetchHTTPClient(),
+        oauthSettings: settings.oauthSettings,
       },
       this as NodeEmitter
     )
     this._publisher = publisher
+
     this.ready = this.register(plugin).then(() => undefined)
 
     this.emit('initialize', settings)

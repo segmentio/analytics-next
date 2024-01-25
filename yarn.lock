@@ -4022,6 +4022,7 @@ __metadata:
     "@types/node": ^16
     axios: ^1.6.0
     buffer: ^6.0.3
+    jose: ^5.1.0
     node-fetch: ^2.6.7
     tslib: ^2.4.1
   languageName: unknown
@@ -14881,6 +14882,13 @@ __metadata:
   version: 1.1.0
   resolution: "join-component@npm:1.1.0"
   checksum: b904c2f98549e4195022caca3a7dc837f9706c670ff333f3d617f2aed23bce2841322a999734683b6ab8e202568ad810c11ff79b58a64df66888153f04750239
+  languageName: node
+  linkType: hard
+
+"jose@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "jose@npm:5.1.0"
+  checksum: 62e907e953fd83f869cf4ce2e08359f5678bf99a6a4cc50faf7997b4694bc5cd32f43b79c3ff86f0e5385346b465a408166ccd1bf4237ae8c705ee82c733acc0
   languageName: node
   linkType: hard
 

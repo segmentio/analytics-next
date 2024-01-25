@@ -7,6 +7,8 @@ import {
   TestFetchClient,
 } from './test-helpers/create-test-analytics'
 
+const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+
 const writeKey = 'foo'
 jest.setTimeout(10000)
 const timestamp = new Date()
@@ -247,7 +249,9 @@ describe('track', () => {
     const track = resolveCtx(analytics, 'track')
     analytics.track({ event: 'hello', userId: 'foo' })
     await track
-    expect(makeReqSpy.mock.calls[0][0].data.sentAt).toBeInstanceOf(Date)
+    expect(JSON.parse(makeReqSpy.mock.calls[0][0].body).sentAt).toMatch(
+      isoDateRegEx
+    )
   })
   it('generates track events', async () => {
     const analytics = createTestAnalytics()

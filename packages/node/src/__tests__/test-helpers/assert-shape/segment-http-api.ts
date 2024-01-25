@@ -6,7 +6,9 @@ import { HTTPClientRequest } from '../../../lib/http-client'
  */
 export const httpClientOptionsBodyMatcher = {
   messageId: expect.stringMatching(/^node-next-\d*-\w*-\w*-\w*-\w*-\w*/),
-  timestamp: expect.any(Date),
+  timestamp: expect.stringMatching(
+    /^20\d{2}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d+Z/
+  ),
   _metadata: expect.any(Object),
   context: {
     library: {
@@ -18,21 +20,20 @@ export const httpClientOptionsBodyMatcher = {
 }
 
 export function assertHTTPRequestOptions(
-  { data, headers, method, url }: HTTPClientRequest,
+  { body, headers, method, url }: HTTPClientRequest,
   contexts: Context[]
 ) {
   expect(url).toBe('https://api.segment.io/v1/batch')
   expect(method).toBe('POST')
   expect(headers).toEqual({
-    Authorization: 'Basic Og==',
     'Content-Type': 'application/json',
     'User-Agent': 'analytics-node-next/latest',
   })
 
-  expect(data.batch).toHaveLength(contexts.length)
+  expect(JSON.parse(body).batch).toHaveLength(contexts.length)
   let idx = 0
   for (const context of contexts) {
-    expect(data.batch[idx]).toEqual({
+    expect(JSON.parse(body).batch[idx]).toEqual({
       ...context.event,
       ...httpClientOptionsBodyMatcher,
     })

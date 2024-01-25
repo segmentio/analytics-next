@@ -4,8 +4,9 @@ import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { createDeferred } from '@segment/analytics-generic-utils'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
-import { b64encode } from '../../lib/base-64-encode'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
+import { OAuthSettings } from '../../lib/types'
+import { TokenManager } from '../../lib/token-manager'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -28,6 +29,7 @@ export interface PublisherProps {
   httpRequestTimeout?: number
   disable?: boolean
   httpClient: HTTPClient
+  oauthSettings?: OAuthSettings
 }
 
 /**
@@ -40,13 +42,14 @@ export class Publisher {
   private _flushInterval: number
   private _flushAt: number
   private _maxRetries: number
-  private _auth: string
   private _url: string
   private _flushPendingItemsCount?: number
   private _httpRequestTimeout: number
   private _emitter: NodeEmitter
   private _disable: boolean
   private _httpClient: HTTPClient
+  private _writeKey: string
+  private _tokenManager: TokenManager | undefined
 
   constructor(
     {
@@ -59,6 +62,7 @@ export class Publisher {
       httpRequestTimeout,
       httpClient,
       disable,
+      oauthSettings,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -66,7 +70,6 @@ export class Publisher {
     this._maxRetries = maxRetries
     this._flushAt = Math.max(flushAt, 1)
     this._flushInterval = flushInterval
-    this._auth = b64encode(`${writeKey}:`)
     this._url = tryCreateFormattedUrl(
       host ?? 'https://api.segment.io',
       path ?? '/v1/batch'
@@ -74,6 +77,15 @@ export class Publisher {
     this._httpRequestTimeout = httpRequestTimeout ?? 10000
     this._disable = Boolean(disable)
     this._httpClient = httpClient
+    this._writeKey = writeKey
+
+    if (oauthSettings) {
+      this._tokenManager = new TokenManager({
+        ...oauthSettings,
+        httpClient: oauthSettings.httpClient ?? httpClient,
+        maxRetries: oauthSettings.maxRetries ?? maxRetries,
+      })
+    }
   }
 
   private createBatch(): ContextBatch {
@@ -99,7 +111,10 @@ export class Publisher {
 
   flush(pendingItemsCount: number): void {
     if (!pendingItemsCount) {
-      // if number of pending items is 0, there is nothing to flush
+      // if number of pending items is 0, there will never be anything else entering the batch, since the app is closed.
+      if (this._tokenManager) {
+        this._tokenManager.stopPoller()
+      }
       return
     }
 
@@ -112,7 +127,14 @@ export class Publisher {
     // Any mismatch is because some globally pending items are in plugins.
     const isExpectingNoMoreItems = this._batch.length === pendingItemsCount
     if (isExpectingNoMoreItems) {
-      this.send(this._batch).catch(noop)
+      this.send(this._batch)
+        .catch(noop)
+        .finally(() => {
+          // stop poller so program can exit ().
+          if (this._tokenManager) {
+            this._tokenManager.stopPoller()
+          }
+        })
       this.clearBatch()
     }
   }
@@ -199,20 +221,34 @@ export class Publisher {
           return batch.resolveEvents()
         }
 
+        let authString = undefined
+        if (this._tokenManager) {
+          const token = await this._tokenManager.getAccessToken()
+          if (token && token.access_token) {
+            authString = `Bearer ${token.access_token}`
+          }
+        }
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'User-Agent': 'analytics-node-next/latest',
+          ...(authString ? { Authorization: authString } : {}),
+        }
+
         const request: HTTPClientRequest = {
           url: this._url,
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Basic ${this._auth}`,
-            'User-Agent': 'analytics-node-next/latest',
-          },
-          data: { batch: events, sentAt: new Date() },
+          headers: headers,
+          body: JSON.stringify({
+            batch: events,
+            writeKey: this._writeKey,
+            sentAt: new Date(),
+          }),
           httpRequestTimeout: this._httpRequestTimeout,
         }
 
         this._emitter.emit('http_request', {
-          body: request.data,
+          body: request.body,
           method: request.method,
           url: request.url,
           headers: request.headers,
@@ -224,6 +260,17 @@ export class Publisher {
           // Successfully sent events, so exit!
           batch.resolveEvents()
           return
+        } else if (
+          this._tokenManager &&
+          (response.status === 400 ||
+            response.status === 401 ||
+            response.status === 403)
+        ) {
+          // Retry with a new OAuth token if we have OAuth data
+          this._tokenManager.clearToken()
+          failureReason = new Error(
+            `[${response.status}] ${response.statusText}`
+          )
         } else if (response.status === 400) {
           // https://segment.com/docs/connections/sources/catalog/libraries/server/http-api/#max-request-size
           // Request either malformed or size exceeded - don't retry.

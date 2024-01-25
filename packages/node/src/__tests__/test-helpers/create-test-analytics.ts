@@ -1,6 +1,9 @@
-import { Analytics } from '../../app/analytics-node'
-import { AnalyticsSettings } from '../../app/settings'
-import { FetchHTTPClient, HTTPFetchFn } from '../../lib/http-client'
+import {
+  Analytics,
+  AnalyticsSettings,
+  FetchHTTPClient,
+  HTTPFetchFn,
+} from '../../index'
 import { createError, createSuccess } from './factories'
 
 export const createTestAnalytics = (

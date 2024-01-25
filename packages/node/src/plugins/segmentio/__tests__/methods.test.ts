@@ -52,7 +52,7 @@ test('alias', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -81,7 +81,7 @@ test('group', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -109,7 +109,8 @@ test('identify', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
+
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
     ...httpClientOptionsBodyMatcher,
@@ -138,7 +139,7 @@ test('page', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -171,7 +172,7 @@ test('screen', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({
@@ -202,7 +203,7 @@ test('track', async () => {
   expect(makeReqSpy).toHaveBeenCalledTimes(1)
   validateMakeReqInputs(context)
 
-  const data = getLastRequest().data
+  const data = JSON.parse(getLastRequest().body)
 
   expect(data.batch).toHaveLength(1)
   expect(data.batch[0]).toEqual({

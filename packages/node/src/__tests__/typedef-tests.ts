@@ -110,7 +110,7 @@ export default {
         return axios({
           url: options.url,
           method: options.method,
-          data: options.data,
+          data: options.body,
           headers: options.headers,
           timeout: options.httpRequestTimeout,
         })

@@ -81,9 +81,6 @@ describe('Method Smoke Tests', () => {
       expect(pick(headers, 'authorization', 'user-agent', 'content-type'))
         .toMatchInlineSnapshot(`
         {
-          "authorization": [
-            "Basic Zm9vOg==",
-          ],
           "content-type": [
             "application/json",
           ],
@@ -157,6 +154,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -194,6 +192,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -225,6 +224,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -262,6 +262,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -292,6 +293,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )
@@ -329,6 +331,7 @@ describe('Method Smoke Tests', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "foo",
         }
       `
       )

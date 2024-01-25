@@ -91,6 +91,68 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
+        },
+      ]
+    `
+    )
+  })
+
+  it('can send an oauth event', async () => {
+    const batches: any[] = []
+    const oauths: any[] = []
+    mockSegmentServer.on('batch', (batch) => {
+      batches.push(batch)
+    })
+
+    mockSegmentServer.on('token', (oauth) => {
+      oauths.push(oauth)
+    })
+
+    const worker = await unstable_dev(
+      joinPath(__dirname, 'workers', 'send-oauth-event.ts'),
+      {
+        experimental: {
+          disableExperimentalWarning: true,
+        },
+        bundle: true,
+      }
+    )
+    const response = await worker.fetch('http://localhost')
+    await response.text()
+    await worker.stop()
+
+    console.log(batches)
+
+    expect(oauths[0]).toHaveLength(756)
+
+    expect(batches).toMatchInlineSnapshot(
+      batches.map(() => snapshotMatchers.getReqBody(1)),
+      `
+      [
+        {
+          "batch": [
+            {
+              "_metadata": {
+                "jsRuntime": "cloudflare-worker",
+              },
+              "context": {
+                "library": {
+                  "name": "@segment/analytics-node",
+                  "version": Any<String>,
+                },
+              },
+              "event": "some-event",
+              "integrations": {},
+              "messageId": Any<String>,
+              "properties": {},
+              "timestamp": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+              "type": "track",
+              "userId": "some-user",
+            },
+          ],
+          "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `
@@ -235,6 +297,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `
@@ -314,6 +377,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
         {
           "batch": [
@@ -359,6 +423,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
         {
           "batch": [
@@ -404,6 +469,7 @@ describe('Analytics in Cloudflare workers', () => {
             },
           ],
           "sentAt": StringMatching /\\^\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.\\\\d\\{3\\}Z\\$/,
+          "writeKey": "__TEST__",
         },
       ]
     `

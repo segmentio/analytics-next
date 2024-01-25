@@ -22,10 +22,22 @@ export interface HTTPFetchRequest {
 }
 
 /**
+ * This interface is meant to be compatible with the Headers interface.
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Headers
+ */
+export interface HTTPHeaders {
+  get: (key: string) => string | null
+  has: (key: string) => boolean
+  entries: () => IterableIterator<[string, any]>
+}
+
+/**
  * This interface is meant to very minimally conform to the Response interface.
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Response
  */
 export interface HTTPResponse {
+  headers?: Record<string, any> | HTTPHeaders
+  text?: () => Promise<string>
   status: number
   statusText: string
 }
@@ -49,10 +61,9 @@ export interface HTTPClientRequest {
    */
   headers: Record<string, string>
   /**
-   * JSON data to be sent with the request (will be stringified)
-   * @example { "batch": [ ... ]}
+   * Data to be sent with the request
    */
-  data: Record<string, any>
+  body: string
   /**
    * Specifies the timeout (in milliseconds) for an HTTP client to get an HTTP response from the server
    * @example 10000
@@ -84,7 +95,7 @@ export class FetchHTTPClient implements HTTPClient {
       url: options.url,
       method: options.method,
       headers: options.headers,
-      body: JSON.stringify(options.data),
+      body: options.body,
       signal: signal,
     }
 
