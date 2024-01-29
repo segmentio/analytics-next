@@ -28,14 +28,15 @@ test.describe('Segment with custom global key', () => {
   test('supports using a custom global key', async ({ page }) => {
     // Load analytics.js
     await page.goto('/standalone-custom-key.html')
-    await page.evaluate(() =>
-      (window as any).segment_analytics.load('fake-key')
-    )
+    await page.evaluate(() => {
+      ;(window as any).segment_analytics.track('track before load')
+      ;(window as any).segment_analytics.load('fake-key')
+    })
 
     const req = await page.waitForRequest('https://api.segment.io/v1/t')
 
-    // confirm that any events triggered from within snippet have been sent
-    expect(req.postDataJSON().event).toBe('track from snippet')
+    // confirm that any events triggered before load have been sent
+    expect(req.postDataJSON().event).toBe('track before load')
 
     const contextObj = await page.evaluate(() =>
       (window as any).segment_analytics.track('track after load')
