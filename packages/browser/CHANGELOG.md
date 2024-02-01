@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.64.0
+
+### Minor Changes
+
+- [#1032](https://github.com/segmentio/analytics-next/pull/1032) [`5c1511f`](https://github.com/segmentio/analytics-next/commit/5c1511fe1e1d1df94967623b29ec12ffe770aacf) Thanks [@zikaari](https://github.com/zikaari)! - Support loading analytics into a custom global variable when using snippet version 5.2.1 or later
+
 ## 1.63.0
 
 ### Minor Changes
