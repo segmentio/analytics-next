@@ -17,6 +17,51 @@ const testClient = new TestFetchClient()
 const makeReqSpy = jest.spyOn(testClient, 'makeRequest')
 const getLastRequest = () => makeReqSpy.mock.lastCall![0]
 
+class TestHeaders implements Headers {
+  private headers: Record<string, string>
+
+  constructor() {
+    this.headers = {}
+  }
+
+  append(name: string, value: string): void {
+    if (this.headers[name]) {
+      this.headers[name] += `, ${value}`
+    } else {
+      this.headers[name] = value
+    }
+  }
+
+  delete(name: string): void {
+    delete this.headers[name]
+  }
+
+  get(name: string): string | null {
+    return this.headers[name] || null
+  }
+
+  has(name: string): boolean {
+    return name in this.headers
+  }
+
+  set(name: string, value: string): void {
+    this.headers[name] = value
+  }
+
+  forEach(
+    callback: (value: string, name: string, parent: Headers) => void
+  ): void {
+    for (const name in this.headers) {
+      callback(this.headers[name], name, this)
+    }
+  }
+
+  getSetCookie(): string[] {
+    // Implement the getSetCookie method here
+    return []
+  }
+}
+
 const createTestNodePlugin = (props: Partial<PublisherProps> = {}) =>
   createConfiguredNodePlugin(
     {
@@ -304,6 +349,36 @@ describe('error handling', () => {
         "reason": [Error: [400] Bad Request],
       }
     `)
+  })
+
+  it('delays retrying 429 errors', async () => {
+    jest.useRealTimers()
+    const headers = new TestHeaders()
+    const resetTime = Date.now() + 350
+    headers.set('x-ratelimit-reset', resetTime.toString())
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 429,
+          statusText: 'Too Many Requests',
+          ...headers,
+        })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const context = new Context(eventFactory.alias('to', 'from'))
+    const pendingContext = segmentPlugin.alias(context)
+    validateMakeReqInputs(context)
+    expect(await pendingContext).toBe(context)
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    // Check that we've waited until roughly the reset time.
+    expect(Date.now()).toBeLessThanOrEqual(resetTime + 20)
+    expect(Date.now()).toBeGreaterThanOrEqual(resetTime - 20)
   })
 
   it.each([
