@@ -35,7 +35,7 @@ const settings: LegacySettings = {
     {
       // note that Fullstory name contains 'Actions'
       name: 'Fullstory (Actions)',
-      creationName: 'Fullstory (Actions)',
+      creationName: 'Fullstory',
       libraryName: 'fullstoryDestination',
       url: 'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
       settings: {
@@ -472,7 +472,7 @@ describe('schema filter', () => {
       expect(updateUserProfile.track).toHaveBeenCalled()
     })
 
-    it('covers different names between remote plugins and integrations', async () => {
+    it('works when current name differs from creation name', async () => {
       const filterXt = schemaFilter(
         {
           hi: {
