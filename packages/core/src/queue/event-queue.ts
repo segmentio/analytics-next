@@ -50,7 +50,7 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
-    if (plugin.type === 'destination') {
+    if (plugin.type === 'destination' && plugin.name !== 'Segment.io') {
       plugin.load(ctx, instance).catch((err) => {
         this.failedInitializations.push(plugin.name)
         this.emit('initialization_failure', plugin)
