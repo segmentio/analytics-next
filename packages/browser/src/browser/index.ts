@@ -353,7 +353,14 @@ async function loadAnalytics(
   const plugins = settings.plugins ?? []
 
   const classicIntegrations = settings.classicIntegrations ?? []
-  Stats.initRemoteMetrics(legacySettings.metrics)
+
+  if (options.metricsEndpoint && legacySettings.metrics) {
+    legacySettings.metrics.host = options.metricsEndpoint
+  }
+
+  Stats.initRemoteMetrics(
+    legacySettings.metrics ?? { host: options.metricsEndpoint }
+  )
 
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)
