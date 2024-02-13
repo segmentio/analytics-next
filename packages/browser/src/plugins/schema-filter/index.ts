@@ -24,7 +24,7 @@ function disabledActionDestinations(
   const disabledRemotePlugins: string[] = []
   ;(settings.remotePlugins ?? []).forEach((p: RemotePlugin) => {
     disabledIntegrations.forEach((int) => {
-      if (p.name.includes(int) || int.includes(p.name)) {
+      if (p.creationName == int) {
         disabledRemotePlugins.push(p.name)
       }
     })

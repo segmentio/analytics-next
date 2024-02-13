@@ -10,6 +10,8 @@ const settings: LegacySettings = {
     'Braze Web Mode (Actions)': {},
     // note that Fullstory's name here doesn't contain 'Actions'
     Fullstory: {},
+    'Google Analytics': {},
+    'Google Analytics 4 Web': {},
     'Segment.io': {},
   },
   remotePlugins: [
@@ -35,7 +37,7 @@ const settings: LegacySettings = {
     {
       // note that Fullstory name contains 'Actions'
       name: 'Fullstory (Actions)',
-      creationName: 'Fullstory (Actions)',
+      creationName: 'Fullstory',
       libraryName: 'fullstoryDestination',
       url: 'https://cdn.segment.com/next-integrations/actions/fullstory/35ea1d304f85f3306f48.js',
       settings: {
@@ -45,6 +47,19 @@ const settings: LegacySettings = {
           },
           {
             partnerAction: 'identifyUser',
+          },
+        ],
+      },
+    },
+    {
+      name: 'Google Analytics 4 Web',
+      creationName: 'Google Analytics 4 Web',
+      libraryName: 'google-analytics-4-webDestination',
+      url: 'https://cdn.segment.com/next-integrations/actions/google-analytics-4-web/bfab87631cbcb7d70964.js',
+      settings: {
+        subscriptions: [
+          {
+            partnerAction: 'Custom Event',
           },
         ],
       },
@@ -92,6 +107,11 @@ const fullstory: Plugin = {
   name: 'Fullstory (Actions) trackEvent',
 }
 
+const ga4: Plugin = {
+  ...trackEvent,
+  name: 'Google Analytics 4 Web Custom Event',
+}
+
 describe('schema filter', () => {
   let options: SegmentioSettings
   let filterXt: Plugin
@@ -113,6 +133,7 @@ describe('schema filter', () => {
     jest.spyOn(updateUserProfile, 'track')
     jest.spyOn(amplitude, 'track')
     jest.spyOn(fullstory, 'track')
+    jest.spyOn(ga4, 'track')
   })
 
   describe('plugins and destinations', () => {
@@ -472,7 +493,7 @@ describe('schema filter', () => {
       expect(updateUserProfile.track).toHaveBeenCalled()
     })
 
-    it('covers different names between remote plugins and integrations', async () => {
+    it('works when current name differs from creation name', async () => {
       const filterXt = schemaFilter(
         {
           hi: {
@@ -515,6 +536,26 @@ describe('schema filter', () => {
       expect(trackPurchase.track).toHaveBeenCalled()
       expect(updateUserProfile.track).toHaveBeenCalled()
       expect(fullstory.track).toHaveBeenCalled()
+    })
+
+    it('doesnt block destinations with similar names', async () => {
+      const filterXt = schemaFilter(
+        {
+          hi: {
+            enabled: true,
+            integrations: {
+              'Google Analytics': false,
+            },
+          },
+        },
+        settings
+      )
+
+      await ajs.register(segment, ga4, filterXt)
+
+      await ajs.track('hi')
+
+      expect(ga4.track).toHaveBeenCalled()
     })
   })
 })
