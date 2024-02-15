@@ -75,7 +75,7 @@ export class AnalyticsService {
    * ```ts
    * {
    * "type": "track",
-   *  "event": "Segment Consent Preference",
+   *  "event": "Segment Consent Preference Updated",
    *  "context": {
    *    "consent": {
    *      "categoryPreferences" : {
@@ -93,7 +93,7 @@ export class AnalyticsService {
       // not sure if there's a better way to handle this
       return console.error(e)
     }
-    const CONSENT_CHANGED_EVENT = 'Segment Consent Preference'
+    const CONSENT_CHANGED_EVENT = 'Segment Consent Preference Updated'
     this.analytics.track(CONSENT_CHANGED_EVENT, undefined, {
       consent: { categoryPreferences: categories },
     })

@@ -68,7 +68,7 @@ export interface CreateWrapperSettings {
   getCategories: GetCategoriesFunction
 
   /**
-   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
+   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference Updated" event to Segment when consent preferences change.
    *
    * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
    * @example
@@ -81,7 +81,7 @@ export interface CreateWrapperSettings {
    * /* event payload
    * {
    *  "type": "track",
-   *  "event": "Segment Consent Preference",
+   *  "event": "Segment Consent Preference Updated",
    *  "context": {
    *    "consent": {
    *      "version": 2,
