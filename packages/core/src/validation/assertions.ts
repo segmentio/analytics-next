@@ -55,9 +55,16 @@ export function assertTraits(event: CoreSegmentEvent): void {
   }
 }
 
+export function assertMessageId(event: CoreSegmentEvent): void {
+  if (!isString(event.messageId)) {
+    throw new ValidationError('.messageId', stringError)
+  }
+}
+
 export function validateEvent(event?: CoreSegmentEvent | null) {
   assertEventExists(event)
   assertEventType(event)
+  assertMessageId(event)
 
   if (event.type === 'track') {
     assertTrackEventName(event)

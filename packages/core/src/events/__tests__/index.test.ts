@@ -289,13 +289,13 @@ describe('Event Factory', () => {
     })
 
     test('accepts a timestamp', () => {
-      const timestamp = new Date()
-      const track = factory.track('Order Completed', shoes, {
+      const timestamp = new date()
+      const track = factory.track('order completed', shoes, {
         timestamp,
       })
 
-      expect(track.context).toEqual({})
-      expect(track.timestamp).toEqual(timestamp)
+      expect(track.context).toequal({})
+      expect(track.timestamp).toequal(timestamp)
     })
 
     test('accepts traits', () => {
@@ -349,6 +349,26 @@ describe('Event Factory', () => {
         foreignProp: '🇧🇷',
         innerProp: '👻',
       })
+    })
+
+    test('accepts a timestamp', () => {
+      const timestamp = new date()
+      const track = factory.track('order completed', shoes, {
+        timestamp,
+      })
+
+      expect(track.context).toequal({})
+      expect(track.timestamp).toequal(timestamp)
+    })
+
+    test('accepts a messageId', () => {
+      const messageId = "business-id-123"
+      const track = factory.track('order completed', shoes, {
+        messageId,
+      })
+
+      expect(track.context).toequal({})
+      expect(track.messageId).toequal(messageId)
     })
   })
 
