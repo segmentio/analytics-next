@@ -151,5 +151,27 @@ describe(validateEvent, () => {
         })
       ).toThrowError(/nil/i)
     })
+
+    test('should fail if messageId is _not_ string', () => {
+      expect(() =>
+        validateEvent({
+          ...baseEvent,
+          type: 'track',
+          properties: {},
+          userId: undefined,
+          anonymousId: 'foo',
+        })
+      ).not.toThrow()
+
+      expect(() =>
+        validateEvent({
+          ...baseEvent,
+          type: 'track',
+          properties: {},
+          userId: undefined,
+          anonymousId: 'foo',
+          messageId: 123 as any
+        })
+      ).toThrowError(/string/)
   })
 })

@@ -271,7 +271,7 @@ export class EventFactory {
 
     const evt: CoreSegmentEvent = {
       ...body,
-      messageId: (event.messageId) ? event.messageId : this.createMessageId(),
+      messageId: event.messageId || this.createMessageId(),
     }
 
     validateEvent(evt)
