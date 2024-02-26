@@ -96,7 +96,7 @@ describe('alias', () => {
     })
     const messageId = 'overridden'
     analytics.alias({ userId: 'foo', previousId: 'bar', messageId })
-    const ctx = await resolveCtx(analytics, 'group')
+    const ctx = await resolveCtx(analytics, 'alias')
     expect(ctx.event.messageId).toBe(messageId)
   })
 })
@@ -117,7 +117,6 @@ describe('group', () => {
     expect(ctx.event.userId).toEqual('foo')
     expect(ctx.event.anonymousId).toBe('bar')
     expect(ctx.event.timestamp).toEqual(timestamp)
-    expect(ctx.event.messageId).toEqual(expect.any(String))
     expect(ctx.event.messageId).toEqual(expect.any(String))
   })
 
