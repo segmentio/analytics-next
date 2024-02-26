@@ -87,7 +87,7 @@ export interface CoreExtraContext {
      * @example CA
      */
     region?: string
-    /**C
+    /**
      * @example 100
      */
     speed?: number
