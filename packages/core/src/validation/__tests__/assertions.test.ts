@@ -4,7 +4,9 @@ import { validateEvent } from '../assertions'
 const baseEvent: Partial<CoreSegmentEvent> = {
   userId: 'foo',
   event: 'Test Event',
+  messageId: 'foo',
 }
+
 describe(validateEvent, () => {
   test('should be capable of working with empty properties and traits', () => {
     expect(() => validateEvent(undefined)).toThrowError()
@@ -160,6 +162,7 @@ describe(validateEvent, () => {
           properties: {},
           userId: undefined,
           anonymousId: 'foo',
+          messageId: 'bar',
         })
       ).not.toThrow()
 
@@ -170,8 +173,9 @@ describe(validateEvent, () => {
           properties: {},
           userId: undefined,
           anonymousId: 'foo',
-          messageId: 123 as any
+          messageId: 123 as any,
         })
-      ).toThrowError(/string/)
+      ).toThrow(/messageId/)
+    })
   })
 })

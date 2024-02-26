@@ -289,13 +289,13 @@ describe('Event Factory', () => {
     })
 
     test('accepts a timestamp', () => {
-      const timestamp = new date()
+      const timestamp = new Date()
       const track = factory.track('order completed', shoes, {
         timestamp,
       })
 
-      expect(track.context).toequal({})
-      expect(track.timestamp).toequal(timestamp)
+      expect(track.context).toEqual({})
+      expect(track.timestamp).toEqual(timestamp)
     })
 
     test('accepts traits', () => {
@@ -351,24 +351,24 @@ describe('Event Factory', () => {
       })
     })
 
-    test('accepts a timestamp', () => {
-      const timestamp = new date()
-      const track = factory.track('order completed', shoes, {
-        timestamp,
-      })
-
-      expect(track.context).toequal({})
-      expect(track.timestamp).toequal(timestamp)
-    })
-
     test('accepts a messageId', () => {
-      const messageId = "business-id-123"
+      const messageId = 'business-id-123'
       const track = factory.track('order completed', shoes, {
         messageId,
       })
 
-      expect(track.context).toequal({})
-      expect(track.messageId).toequal(messageId)
+      expect(track.context).toEqual({})
+      expect(track.messageId).toEqual(messageId)
+    })
+    it('should ignore undefined options', () => {
+      const event = factory.track(
+        'Order Completed',
+        { ...shoes },
+        { timestamp: undefined, traits: { foo: 123 } }
+      )
+
+      expect(typeof event.timestamp).toBe('object')
+      expect(isDate(event.timestamp)).toBeTruthy()
     })
   })
 
@@ -399,16 +399,5 @@ describe('Event Factory', () => {
         context: {},
       })
     })
-  })
-
-  it('should ignore undefined options', () => {
-    const event = factory.track(
-      'Order Completed',
-      { ...shoes },
-      { timestamp: undefined, traits: { foo: 123 } }
-    )
-
-    expect(typeof event.timestamp).toBe('object')
-    expect(isDate(event.timestamp)).toBeTruthy()
   })
 })
