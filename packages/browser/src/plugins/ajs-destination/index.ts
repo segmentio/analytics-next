@@ -30,7 +30,7 @@ import {
   isInstallableIntegration,
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
-import { createDeferred } from '../../lib/create-deferred'
+import { createDeferred } from '@segment/analytics-generic-utils'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 

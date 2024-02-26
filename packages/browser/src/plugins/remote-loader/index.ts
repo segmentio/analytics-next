@@ -11,7 +11,7 @@ import {
 import { Context, ContextCancelation } from '../../core/context'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { createDeferred } from '../../lib/create-deferred'
+import { createDeferred } from '@segment/analytics-generic-utils'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */

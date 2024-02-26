@@ -4,7 +4,7 @@ import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
 import { createSuccess } from '../../test-helpers/factories'
-import { createDeferred } from '../../lib/create-deferred'
+import { createDeferred } from '@segment/analytics-generic-utils'
 import { PluginFactory } from '../../plugins/remote-loader'
 
 const nextTickP = () => new Promise((r) => setTimeout(r, 0))
