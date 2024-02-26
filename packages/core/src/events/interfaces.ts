@@ -35,7 +35,8 @@ export interface CoreOptions {
   traits?: Traits
   /**
    * Override the messageId. Under normal circumstances, this is not recommended -- but neccessary for deduping events.
-   * ATM, this option only _does_ anything in analytics-nod.
+   *
+   * **Currently, This option only works in `@segment/analytics-node`.**
    */
   messageId?: string
   // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
@@ -86,7 +87,7 @@ export interface CoreExtraContext {
      * @example CA
      */
     region?: string
-    /**
+    /**C
      * @example 100
      */
     speed?: number
