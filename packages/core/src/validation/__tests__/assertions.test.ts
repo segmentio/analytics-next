@@ -42,6 +42,7 @@ describe(validateEvent, () => {
   test('identify: traits should be an object', () => {
     expect(() =>
       validateEvent({
+        ...baseEvent,
         type: 'identify',
         traits: undefined,
       })

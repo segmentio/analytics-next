@@ -201,6 +201,7 @@ export class EventFactory {
       'userId',
       'anonymousId',
       'timestamp',
+      'messageId',
     ]
 
     delete options['integrations']
@@ -271,7 +272,7 @@ export class EventFactory {
 
     const evt: CoreSegmentEvent = {
       ...body,
-      messageId: event.messageId || this.createMessageId(),
+      messageId: options.messageId || this.createMessageId(),
     }
 
     validateEvent(evt)
