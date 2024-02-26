@@ -360,6 +360,7 @@ describe('Event Factory', () => {
       expect(track.context).toEqual({})
       expect(track.messageId).toEqual(messageId)
     })
+
     it('should ignore undefined options', () => {
       const event = factory.track(
         'Order Completed',
