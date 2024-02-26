@@ -290,7 +290,7 @@ describe('Event Factory', () => {
 
     test('accepts a timestamp', () => {
       const timestamp = new Date()
-      const track = factory.track('order completed', shoes, {
+      const track = factory.track('Order Completed', shoes, {
         timestamp,
       })
 
@@ -353,7 +353,7 @@ describe('Event Factory', () => {
 
     test('accepts a messageId', () => {
       const messageId = 'business-id-123'
-      const track = factory.track('order completed', shoes, {
+      const track = factory.track('Order Completed', shoes, {
         messageId,
       })
 
