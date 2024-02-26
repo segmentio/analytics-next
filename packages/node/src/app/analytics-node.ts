@@ -148,13 +148,21 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
    * @link https://segment.com/docs/connections/sources/catalog/libraries/server/node/#alias
    */
   alias(
-    { userId, previousId, context, timestamp, integrations }: AliasParams,
+    {
+      userId,
+      previousId,
+      context,
+      timestamp,
+      integrations,
+      messageId,
+    }: AliasParams,
     callback?: Callback
   ): void {
     const segmentEvent = this._eventFactory.alias(userId, previousId, {
       context,
       integrations,
       timestamp,
+      messageId,
     })
     this._dispatch(segmentEvent, callback)
   }
@@ -172,6 +180,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       traits = {},
       context,
       integrations,
+      messageId,
     }: GroupParams,
     callback?: Callback
   ): void {
@@ -181,6 +190,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       userId,
       timestamp,
       integrations,
+      messageId,
     })
 
     this._dispatch(segmentEvent, callback)
@@ -198,6 +208,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
+      messageId,
     }: IdentifyParams,
     callback?: Callback
   ): void {
@@ -207,6 +218,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       userId,
       timestamp,
       integrations,
+      messageId,
     })
     this._dispatch(segmentEvent, callback)
   }
@@ -225,6 +237,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
+      messageId,
     }: PageParams,
     callback?: Callback
   ): void {
@@ -232,7 +245,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category ?? null,
       name ?? null,
       properties,
-      { context, anonymousId, userId, timestamp, integrations }
+      { context, anonymousId, userId, timestamp, integrations, messageId }
     )
     this._dispatch(segmentEvent, callback)
   }
@@ -253,6 +266,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
+      messageId,
     }: PageParams,
     callback?: Callback
   ): void {
@@ -260,7 +274,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       category ?? null,
       name ?? null,
       properties,
-      { context, anonymousId, userId, timestamp, integrations }
+      { context, anonymousId, userId, timestamp, integrations, messageId }
     )
 
     this._dispatch(segmentEvent, callback)
@@ -279,6 +293,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       context,
       timestamp,
       integrations,
+      messageId,
     }: TrackParams,
     callback?: Callback
   ): void {
@@ -288,6 +303,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
       anonymousId,
       timestamp,
       integrations,
+      messageId,
     })
 
     this._dispatch(segmentEvent, callback)

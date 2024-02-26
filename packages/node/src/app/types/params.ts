@@ -30,6 +30,7 @@ export type AliasParams = {
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
+  messageId?: string
 }
 
 export type GroupParams = {
@@ -43,6 +44,7 @@ export type GroupParams = {
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
+  messageId?: string
 } & IdentityOptions
 
 export type IdentifyParams = {
@@ -55,6 +57,7 @@ export type IdentifyParams = {
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
+  messageId?: string
 } & IdentityOptions
 
 export type PageParams = {
@@ -67,6 +70,7 @@ export type PageParams = {
   timestamp?: Timestamp
   context?: ExtraContext
   integrations?: Integrations
+  messageId?: string
 } & IdentityOptions
 
 export type TrackParams = {
@@ -75,6 +79,7 @@ export type TrackParams = {
   context?: ExtraContext
   timestamp?: Timestamp
   integrations?: Integrations
+  messageId?: string
 } & IdentityOptions
 
 export type FlushParams = {
