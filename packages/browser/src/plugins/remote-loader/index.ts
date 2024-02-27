@@ -124,18 +124,17 @@ export class ActionDestination implements DestinationPlugin {
   }
 
   async ready(): Promise<boolean> {
-    const loadOutput = await this.loadPromise.promise
-    return !(loadOutput instanceof Error)
+    try {
+      await this.loadPromise.promise
+      return true
+    } catch {
+      return false
+    }
   }
 
   async load(ctx: Context, analytics: Analytics): Promise<unknown> {
     if (this.loadPromise.isSettled()) {
-      const prevLoad = await this.loadPromise.promise
-      if (prevLoad instanceof Error) {
-        throw prevLoad
-      } else {
-        return prevLoad
-      }
+      return this.loadPromise.promise
     }
 
     try {
@@ -157,7 +156,7 @@ export class ActionDestination implements DestinationPlugin {
         didError: true,
       })
 
-      this.loadPromise.resolve(error)
+      this.loadPromise.reject(error)
       throw error
     }
   }
