@@ -8,7 +8,6 @@ import {
   Traits,
   SegmentEvent,
 } from './interfaces'
-import md5 from 'spark-md5'
 import { addPageContext, PageContext } from '../page'
 
 export * from './interfaces'
@@ -261,7 +260,7 @@ export class EventFactory {
       context,
       integrations: allIntegrations,
       ...overrides,
-      messageId: 'ajs-next-' + md5.hash(JSON.stringify(event) + uuid()),
+      messageId: `ajs-next-${Date.now()}-${uuid()}`,
     }
     addPageContext(newEvent, pageCtx)
 
