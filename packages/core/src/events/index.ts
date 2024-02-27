@@ -19,6 +19,10 @@ interface EventFactorySettings {
   user?: User
 }
 
+/**
+ * This is currently only used by node.js, but the original idea was to have something that could be shared between browser and node.
+ * Unfortunately, there are some differences in the way the two environments handle events, so this is not currently shared.
+ */
 export class EventFactory {
   createMessageId: EventFactorySettings['createMessageId']
   user?: User
@@ -201,6 +205,7 @@ export class EventFactory {
       'userId',
       'anonymousId',
       'timestamp',
+      'messageId',
     ]
 
     delete options['integrations']
@@ -271,7 +276,7 @@ export class EventFactory {
 
     const evt: CoreSegmentEvent = {
       ...body,
-      messageId: this.createMessageId(),
+      messageId: options.messageId || this.createMessageId(),
     }
 
     validateEvent(evt)

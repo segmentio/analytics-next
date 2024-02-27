@@ -88,6 +88,16 @@ describe('alias', () => {
     expect(ctx.event.userId).toEqual('chris radek')
     expect(ctx.event.previousId).toEqual('chris')
     expect(ctx.event.timestamp).toEqual(timestamp)
+    expect(ctx.event.messageId).toEqual(expect.any(String))
+  })
+  it('allows messageId to be overridden', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const messageId = 'overridden'
+    analytics.alias({ userId: 'foo', previousId: 'bar', messageId })
+    const ctx = await resolveCtx(analytics, 'alias')
+    expect(ctx.event.messageId).toBe(messageId)
   })
 })
 
@@ -107,6 +117,7 @@ describe('group', () => {
     expect(ctx.event.userId).toEqual('foo')
     expect(ctx.event.anonymousId).toBe('bar')
     expect(ctx.event.timestamp).toEqual(timestamp)
+    expect(ctx.event.messageId).toEqual(expect.any(String))
   })
 
   it('invocations are isolated', async () => {
@@ -133,6 +144,16 @@ describe('group', () => {
     expect(ctx2.event.traits).toEqual({ bar: 'bar' })
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('me')
+  })
+
+  it('allows messageId to be overridden', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const messageId = 'overridden'
+    analytics.group({ groupId: 'foo', userId: 'sup', messageId })
+    const ctx = await resolveCtx(analytics, 'group')
+    expect(ctx.event.messageId).toBe(messageId)
   })
 })
 
@@ -181,6 +202,7 @@ describe('page', () => {
     expect(ctx1.event.userId).toBeUndefined()
     expect(ctx1.event.properties).toEqual({ category })
     expect(ctx1.event.timestamp).toEqual(timestamp)
+    expect(ctx1.event.messageId).toEqual(expect.any(String))
 
     analytics.page({ name, properties: { title: 'wip' }, userId: 'user-id' })
 
@@ -192,6 +214,7 @@ describe('page', () => {
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.properties).toEqual({ title: 'wip' })
     expect(ctx2.event.timestamp).toEqual(expect.any(Date))
+    expect(ctx2.event.messageId).toEqual(expect.any(String))
 
     analytics.page({ properties: { title: 'invisible' }, userId: 'user-id' })
     const ctx3 = await resolveCtx(analytics, 'page')
@@ -201,6 +224,17 @@ describe('page', () => {
     expect(ctx3.event.anonymousId).toBeUndefined()
     expect(ctx3.event.userId).toEqual('user-id')
     expect(ctx3.event.properties).toEqual({ title: 'invisible' })
+    expect(ctx3.event.messageId).toEqual(expect.any(String))
+  })
+
+  it('allows messageId to be overridden', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const messageId = 'overridden'
+    analytics.page({ name: 'foo', userId: 'sup', messageId })
+    const ctx = await resolveCtx(analytics, 'page')
+    expect(ctx.event.messageId).toBe(messageId)
   })
 })
 
@@ -224,6 +258,7 @@ describe('screen', () => {
     expect(ctx1.event.userId).toEqual('user-id')
     expect(ctx1.event.properties).toEqual({ title: 'wip' })
     expect(ctx1.event.timestamp).toEqual(timestamp)
+    expect(ctx1.event.messageId).toEqual(expect.any(String))
 
     analytics.screen({
       properties: { title: 'invisible' },
@@ -238,6 +273,16 @@ describe('screen', () => {
     expect(ctx2.event.userId).toEqual('user-id')
     expect(ctx2.event.properties).toEqual({ title: 'invisible' })
     expect(ctx2.event.timestamp).toEqual(expect.any(Date))
+    expect(ctx2.event.messageId).toEqual(expect.any(String))
+  })
+  it('allows messageId to be overridden', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const messageId = 'overridden'
+    analytics.screen({ name: 'foo', userId: 'sup', messageId })
+    const ctx = await resolveCtx(analytics, 'screen')
+    expect(ctx.event.messageId).toBe(messageId)
   })
 })
 
@@ -272,6 +317,7 @@ describe('track', () => {
     expect(ctx1.event.anonymousId).toEqual('unknown')
     expect(ctx1.event.userId).toEqual('known')
     expect(ctx1.event.timestamp).toEqual(timestamp)
+    expect(ctx1.event.messageId).toEqual(expect.any(String))
 
     analytics.track({
       event: eventName,
@@ -286,6 +332,17 @@ describe('track', () => {
     expect(ctx2.event.anonymousId).toBeUndefined()
     expect(ctx2.event.userId).toEqual('known')
     expect(ctx2.event.timestamp).toEqual(expect.any(Date))
+    expect(ctx2.event.messageId).toEqual(expect.any(String))
+  })
+
+  it('allows messageId to be overridden', async () => {
+    const analytics = createTestAnalytics({
+      httpClient: testClient,
+    })
+    const messageId = 'overridden'
+    analytics.track({ event: 'foo', userId: 'sup', messageId })
+    const ctx = await resolveCtx(analytics, 'track')
+    expect(ctx.event.messageId).toBe(messageId)
   })
 })
 
