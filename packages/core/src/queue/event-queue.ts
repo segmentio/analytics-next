@@ -60,6 +60,8 @@ export abstract class CoreEventQueue<
           plugin: plugin.name,
           error: err,
         })
+
+        this.plugins = this.plugins.filter((p) => p.name !== plugin.name)
       })
     } else {
       await plugin.load(ctx, instance)

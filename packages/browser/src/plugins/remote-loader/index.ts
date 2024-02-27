@@ -84,17 +84,17 @@ export class ActionDestination implements DestinationPlugin {
       }
 
       try {
-        recordIntegrationMetric(ctx, {
-          integrationName: this.action.name,
-          methodName,
-          type: 'action',
-        })
-
         if (!(await this.ready())) {
           throw new Error(
             'Something prevented the destination from getting ready'
           )
         }
+
+        recordIntegrationMetric(ctx, {
+          integrationName: this.action.name,
+          methodName,
+          type: 'action',
+        })
 
         await this.action[methodName]!(transformedContext)
       } catch (error) {
