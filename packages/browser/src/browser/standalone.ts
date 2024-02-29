@@ -83,28 +83,24 @@ if (globalAnalyticsKey) {
 }
 
 if (shouldPolyfill()) {
-  const loadScript = (url: string, onLoad: () => void) => {
-    const script = document.createElement('script')
-    script.setAttribute('src', url)
-    script.onload = onLoad
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () =>
-        document.body.appendChild(script)
-      )
-    } else {
-      document.body.appendChild(script)
-    }
-  }
   // load polyfills in order to get AJS to work with old browsers
-  loadScript(
-    'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js',
-    () =>
-      loadScript(
-        'https://cdn.jsdelivr.net/npm/promise.allsettled@1.0.7/implementation.min.js',
-        () => attempt(install)
-      )
+  const script = document.createElement('script')
+  script.setAttribute(
+    'src',
+    'https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js'
   )
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () =>
+      document.body.appendChild(script)
+    )
+  } else {
+    document.body.appendChild(script)
+  }
+
+  script.onload = function (): void {
+    attempt(install)
+  }
 } else {
   attempt(install)
 }

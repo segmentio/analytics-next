@@ -12,7 +12,9 @@ export const createDeferred = <T>() => {
 
   // we "fork" the original promise instead of directly attatching `finally` to
   // it as it interferes with natural flow of then and catch in the user code
-  Promise.allSettled([promise]).then(() => (settled = true), void 0)
+  Promise.all([promise])
+    .catch(() => {})
+    .finally(() => (settled = true))
 
   return {
     resolve,
