@@ -14,18 +14,51 @@ import { pickBy } from '../utils/pick'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
 import { validateEvent } from '../validation/assertions'
 
-interface EventFactorySettings {
+export type onEventCb = ({
+  type,
+  options,
+}: {
+  type: 'track' | 'identify' | 'page' | 'group' | 'alias' | 'screen'
+  options?: CoreOptions
+}) => void
+
+export type EventUpdater = (event: CoreSegmentEvent) => void
+export type EventValidator = (event: CoreSegmentEvent) => void
+
+export interface EventFactorySettings {
+  /**
+   * create a message ID
+   */
   createMessageId: () => string
+  /**
+   * Update / augment an event
+   */
+  updateEvent?: EventUpdater
+  /**
+   * callback whenever an event method is called
+   */
+  onEventMethodCall?: onEventCb
+  /**
+   * additional validation to run on each event
+   */
+  validateEvent?: EventValidator
 }
 
 /**
  * This is currently only used by node.js, but the original idea was to have something that could be shared between browser and node.
  * Unfortunately, there are some differences in the way the two environments handle events, so this is not currently shared.
  */
-export class EventFactory {
+export abstract class EventFactory {
   createMessageId: EventFactorySettings['createMessageId']
+  onEventMethodCall: onEventCb
+  updateEvent?: EventUpdater
+  validateEvent?: EventValidator
+
   constructor(settings: EventFactorySettings) {
     this.createMessageId = settings.createMessageId
+    this.onEventMethodCall = settings.onEventMethodCall || (() => {})
+    this.updateEvent = settings.updateEvent
+    this.validateEvent = settings.validateEvent
   }
 
   track(
@@ -34,6 +67,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ) {
+    this.onEventMethodCall({ type: 'track', options })
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -51,6 +85,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.onEventMethodCall({ type: 'page', options })
     const event: CoreSegmentEvent = {
       type: 'page',
       properties: { ...properties },
@@ -81,6 +116,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.onEventMethodCall({ type: 'screen', options })
     const event: CoreSegmentEvent = {
       type: 'screen',
       properties: { ...properties },
@@ -108,6 +144,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.onEventMethodCall({ type: 'identify', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify',
@@ -124,6 +161,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.onEventMethodCall({ type: 'group', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'group',
@@ -140,6 +178,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.onEventMethodCall({ type: 'alias', options })
     const base: CoreSegmentEvent = {
       userId: to,
       type: 'alias',
@@ -256,8 +295,9 @@ export class EventFactory {
       ...overrides,
       messageId: options.messageId || this.createMessageId(),
     }
-    // const finalEvent = (this.updateFinalEvent || ((id) => id))(evt)
+    this.updateEvent?.(evt)
     validateEvent(evt)
+    this.validateEvent?.(evt)
     return evt
   }
 }

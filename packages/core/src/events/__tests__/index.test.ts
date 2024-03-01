@@ -8,9 +8,15 @@ describe('Event Factory', () => {
   const shopper = { totalSpent: 100 }
 
   beforeEach(() => {
-    factory = new EventFactory({
-      createMessageId: () => 'foo',
-    })
+    class TestEventFactory extends EventFactory {
+      constructor() {
+        super({
+          createMessageId: () => 'foo',
+        })
+      }
+    }
+
+    factory = new TestEventFactory()
   })
 
   describe('alias', () => {
@@ -60,7 +66,9 @@ describe('Event Factory', () => {
 
   describe('page', () => {
     test('creates page events', () => {
-      const page = factory.page('category', 'name')
+      const page = factory.page('category', 'name', undefined, {
+        userId: 'foo',
+      })
       expect(page.traits).toBeUndefined()
       expect(page.type).toEqual('page')
       expect(page.event).toBeUndefined()
@@ -69,12 +77,12 @@ describe('Event Factory', () => {
     })
 
     it('accepts properties', () => {
-      const page = factory.page('category', 'name', shoes)
+      const page = factory.page('category', 'name', shoes, { userId: 'foo' })
       expect(page.properties).toEqual(shoes)
     })
 
     it('ignores category and page if not passed in', () => {
-      const page = factory.page(null, null)
+      const page = factory.page(null, null, undefined, { userId: 'foo' })
       expect(page.category).toBeUndefined()
       expect(page.name).toBeUndefined()
     })
@@ -106,7 +114,7 @@ describe('Event Factory', () => {
     })
 
     test('creates track events', () => {
-      const track = factory.track('Order Completed', shoes)
+      const track = factory.track('Order Completed', shoes, { userId: 'foo' })
       expect(track.event).toEqual('Order Completed')
       expect(track.properties).toEqual(shoes)
       expect(track.traits).toBeUndefined()
@@ -114,17 +122,18 @@ describe('Event Factory', () => {
     })
 
     test('adds a message id', () => {
-      const track = factory.track('Order Completed', shoes)
+      const track = factory.track('Order Completed', shoes, { userId: 'foo' })
       expect(typeof track.messageId).toBe('string')
     })
 
     test('adds a timestamp', () => {
-      const track = factory.track('Order Completed', shoes)
+      const track = factory.track('Order Completed', shoes, { userId: 'foo' })
       expect(track.timestamp).toBeInstanceOf(Date)
     })
 
     test('sets options in the context', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         opt1: true,
       })
       expect(track.context).toEqual({ opt1: true })
@@ -134,7 +143,9 @@ describe('Event Factory', () => {
       const track = factory.track(
         'Order Completed',
         shoes,
-        {},
+        {
+          userId: 'foo',
+        },
         {
           amplitude: false,
         }
@@ -148,6 +159,7 @@ describe('Event Factory', () => {
         'Order Completed',
         shoes,
         {
+          userId: 'foo',
           opt1: true,
           integrations: {
             amplitude: false,
@@ -170,6 +182,7 @@ describe('Event Factory', () => {
         'Order Completed',
         shoes,
         {
+          userId: 'foo',
           integrations: {
             Amplitude: {
               sessionId: 'session_123',
@@ -202,6 +215,7 @@ describe('Event Factory', () => {
 
     test('should move foreign options into `context`', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         opt1: true,
         opt2: '🥝',
         integrations: {
@@ -214,6 +228,7 @@ describe('Event Factory', () => {
 
     test('should not move known options into `context`', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         opt1: true,
         opt2: '🥝',
         integrations: {
@@ -238,6 +253,7 @@ describe('Event Factory', () => {
     test('accepts a timestamp', () => {
       const timestamp = new Date()
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         timestamp,
       })
 
@@ -247,6 +263,7 @@ describe('Event Factory', () => {
 
     test('accepts traits', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         traits: {
           cell: '📱',
         },
@@ -260,6 +277,7 @@ describe('Event Factory', () => {
 
     test('accepts a context object', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         context: {
           library: {
             name: 'ajs-next',
@@ -278,6 +296,7 @@ describe('Event Factory', () => {
 
     test('merges a context object', () => {
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         foreignProp: '🇧🇷',
         context: {
           innerProp: '👻',
@@ -301,6 +320,7 @@ describe('Event Factory', () => {
     test('accepts a messageId', () => {
       const messageId = 'business-id-123'
       const track = factory.track('Order Completed', shoes, {
+        userId: 'foo',
         messageId,
       })
 
@@ -312,7 +332,7 @@ describe('Event Factory', () => {
       const event = factory.track(
         'Order Completed',
         { ...shoes },
-        { timestamp: undefined, traits: { foo: 123 } }
+        { userId: 'foo', timestamp: undefined, traits: { foo: 123 } }
       )
 
       expect(typeof event.timestamp).toBe('object')

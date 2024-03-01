@@ -17,23 +17,15 @@ export class EventFactory extends CoreEventFactory {
   constructor(user: User) {
     super({
       createMessageId: () => `ajs-next-${Date.now()}-${uuid()}`,
+      onEventMethodCall: ({ options }) => {
+        this.maybeUpdateAnonId(options)
+      },
+      updateEvent: (event) => {
+        this.addIdentity(event)
+        return event
+      },
     })
     this.user = user
-  }
-
-  /**
-   * Hook that runs before all event creation methods.
-   */
-  private beforeAll(options: Options | undefined) {
-    this.maybeUpdateAnonId(options)
-  }
-
-  /**
-   * Hook that runs after all event creation methods, when the event is available.
-   */
-  private afterAll(ev: SegmentEvent, pageCtx: PageContext | undefined) {
-    addPageContext(ev, pageCtx)
-    this.addIdentity(ev)
   }
 
   /**
@@ -64,9 +56,8 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.track(event, properties, options, globalIntegrations)
-    this.afterAll(ev, pageCtx)
+    addPageContext(ev, pageCtx)
     return ev
   }
 
@@ -78,7 +69,6 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.page(
       category,
       page,
@@ -87,7 +77,6 @@ export class EventFactory extends CoreEventFactory {
       globalIntegrations
     )
     addPageContext(ev, pageCtx)
-    this.afterAll(ev, pageCtx)
     return ev
   }
 
@@ -99,7 +88,6 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.screen(
       category,
       screen,
@@ -107,7 +95,7 @@ export class EventFactory extends CoreEventFactory {
       options,
       globalIntegrations
     )
-    this.afterAll(ev, pageCtx)
+    addPageContext(ev, pageCtx)
     return ev
   }
 
@@ -118,9 +106,8 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.identify(userId, traits, options, globalIntegrations)
-    this.afterAll(ev, pageCtx)
+    addPageContext(ev, pageCtx)
     return ev
   }
 
@@ -131,9 +118,8 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.group(groupId, traits, options, globalIntegrations)
-    this.afterAll(ev, pageCtx)
+    addPageContext(ev, pageCtx)
     return ev
   }
 
@@ -144,9 +130,8 @@ export class EventFactory extends CoreEventFactory {
     globalIntegrations?: Integrations,
     pageCtx?: PageContext
   ): SegmentEvent {
-    this.beforeAll(options)
     const ev = super.alias(to, from, options, globalIntegrations)
-    this.afterAll(ev, pageCtx)
+    addPageContext(ev, pageCtx)
     return ev
   }
 }
