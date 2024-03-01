@@ -14,7 +14,7 @@ import { pickBy } from '../utils/pick'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
 import { validateEvent } from '../validation/assertions'
 
-export type onEventCb = ({
+export type onEventMethodCallCb = ({
   type,
   options,
 }: {
@@ -22,8 +22,8 @@ export type onEventCb = ({
   options?: CoreOptions
 }) => void
 
-export type EventUpdater = (event: CoreSegmentEvent) => void
-export type EventValidator = (event: CoreSegmentEvent) => void
+export type UpdateEventFn = (event: CoreSegmentEvent) => void
+export type ValidateEventFn = (event: CoreSegmentEvent) => void
 
 export interface EventFactorySettings {
   /**
@@ -33,15 +33,15 @@ export interface EventFactorySettings {
   /**
    * Update / augment an event
    */
-  updateEvent?: EventUpdater
+  updateEvent?: UpdateEventFn
   /**
    * callback whenever an event method is called
    */
-  onEventMethodCall?: onEventCb
+  onEventMethodCall?: onEventMethodCallCb
   /**
    * additional validation to run on each event
    */
-  validateEvent?: EventValidator
+  validateEvent?: ValidateEventFn
 }
 
 /**
@@ -50,9 +50,9 @@ export interface EventFactorySettings {
  */
 export abstract class EventFactory {
   createMessageId: EventFactorySettings['createMessageId']
-  onEventMethodCall: onEventCb
-  updateEvent?: EventUpdater
-  validateEvent?: EventValidator
+  onEventMethodCall: onEventMethodCallCb
+  updateEvent?: UpdateEventFn
+  validateEvent?: ValidateEventFn
 
   constructor(settings: EventFactorySettings) {
     this.createMessageId = settings.createMessageId
