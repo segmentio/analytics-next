@@ -76,6 +76,16 @@ describe('Event Factory', () => {
       expect(group.userId).toBe('bar')
       expect(group.anonymousId).toBe('foo')
     })
+
+    it('uses userId / anonymousId from the user class (if specified)', function () {
+      const user = new User()
+      user.anonymousId = () => '123'
+      user.id = () => 'abc'
+      factory = new EventFactory(user)
+      const group = factory.group('my_group_id')
+      expect(group.userId).toBe('abc')
+      expect(group.anonymousId).toBe('123')
+    })
   })
 
   describe('page', () => {
