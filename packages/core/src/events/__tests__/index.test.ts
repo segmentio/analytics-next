@@ -1,21 +1,14 @@
 import { EventFactory } from '..'
-import { User } from '../../user'
 import { CoreSegmentEvent } from '../..'
 import { isDate } from 'lodash'
 
 describe('Event Factory', () => {
   let factory: EventFactory
-  let user: User
   const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
 
   beforeEach(() => {
-    user = {
-      anonymousId: () => undefined,
-      id: () => 'foo',
-    }
     factory = new EventFactory({
-      user,
       createMessageId: () => 'foo',
     })
   })
@@ -46,7 +39,6 @@ describe('Event Factory', () => {
       expect(group.traits).toEqual({ coolkids: true })
       expect(group.type).toEqual('group')
       expect(group.event).toBeUndefined()
-      expect(group.userId).toBe('foo')
       expect(group.anonymousId).toBeUndefined()
     })
 
@@ -58,37 +50,6 @@ describe('Event Factory', () => {
     it('sets the groupId to the message', () => {
       const group = factory.group('coolKidsId', { coolkids: true })
       expect(group.groupId).toEqual('coolKidsId')
-    })
-
-    it('allows userId / anonymousId to be specified as an option', () => {
-      const group = factory.group('my_group_id', undefined, {
-        userId: 'bar',
-        anonymousId: 'foo',
-      })
-      expect(group.userId).toBe('bar')
-      expect(group.anonymousId).toBe('foo')
-    })
-
-    it('allows userId / anonymousId to be overridden', function () {
-      const group = factory.group('my_group_id', undefined, {
-        userId: 'bar',
-        anonymousId: 'foo',
-      })
-      expect(group.userId).toBe('bar')
-      expect(group.anonymousId).toBe('foo')
-    })
-
-    it('uses userId / anonymousId from the user class (if specified)', function () {
-      factory = new EventFactory({
-        createMessageId: () => 'foo',
-        user: {
-          id: () => 'abc',
-          anonymousId: () => '123',
-        },
-      })
-      const group = factory.group('my_group_id')
-      expect(group.userId).toBe('abc')
-      expect(group.anonymousId).toBe('123')
     })
 
     test('should be capable of working with empty traits', () => {
@@ -160,20 +121,6 @@ describe('Event Factory', () => {
     test('adds a timestamp', () => {
       const track = factory.track('Order Completed', shoes)
       expect(track.timestamp).toBeInstanceOf(Date)
-    })
-
-    test('sets an user id', () => {
-      user.id = () => '007'
-
-      const track = factory.track('Order Completed', shoes)
-      expect(track.userId).toEqual('007')
-    })
-
-    test('sets an anonymous id', () => {
-      user.anonymousId = () => 'foo'
-
-      const track = factory.track('Order Completed', shoes)
-      expect(track.anonymousId).toEqual(user.anonymousId())
     })
 
     test('sets options in the context', () => {

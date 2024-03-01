@@ -74,6 +74,4 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
   if (['group', 'identify'].includes(event.type)) {
     assertTraits(event)
   }
-
-  assertUserIdentity(event)
 }

@@ -1,6 +1,6 @@
 export * from './interfaces'
 import { dset } from 'dset'
-import { ID, User } from '../user'
+import { ID } from '../user'
 import {
   Integrations,
   EventProperties,
@@ -11,12 +11,11 @@ import {
   GroupTraits,
 } from './interfaces'
 import { pickBy } from '../utils/pick'
-import { validateEvent } from '../validation/assertions'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
+import { validateEvent } from '../validation/assertions'
 
 interface EventFactorySettings {
   createMessageId: () => string
-  user?: User
 }
 
 /**
@@ -25,10 +24,7 @@ interface EventFactorySettings {
  */
 export class EventFactory {
   createMessageId: EventFactorySettings['createMessageId']
-  user?: User
-
   constructor(settings: EventFactorySettings) {
-    this.user = settings.user
     this.createMessageId = settings.createMessageId
   }
 
@@ -168,25 +164,11 @@ export class EventFactory {
     })
   }
 
-  private baseEvent(): Partial<CoreSegmentEvent> {
-    const base: Partial<CoreSegmentEvent> = {
+  public baseEvent(): Partial<CoreSegmentEvent> {
+    return {
       integrations: {},
       options: {},
     }
-
-    if (!this.user) return base
-
-    const user = this.user
-
-    if (user.id()) {
-      base.userId = user.id()
-    }
-
-    if (user.anonymousId()) {
-      base.anonymousId = user.anonymousId()
-    }
-
-    return base
   }
 
   /**
@@ -266,19 +248,15 @@ export class EventFactory {
 
     const { options, ...rest } = event
 
-    const body = {
+    const evt: CoreSegmentEvent = {
       timestamp: new Date(),
       ...rest,
-      integrations: allIntegrations,
       context,
+      integrations: allIntegrations,
       ...overrides,
-    }
-
-    const evt: CoreSegmentEvent = {
-      ...body,
       messageId: options.messageId || this.createMessageId(),
     }
-
+    // const finalEvent = (this.updateFinalEvent || ((id) => id))(evt)
     validateEvent(evt)
     return evt
   }
