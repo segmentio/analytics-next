@@ -6,15 +6,15 @@ export const createDeferred = <T>() => {
   let reject!: (reason: any) => void
   let settled = false
   const promise = new Promise<T>((_resolve, _reject) => {
-    resolve = _resolve
-    reject = _reject
+    resolve = (...args) => {
+      settled = true
+      _resolve(...args)
+    }
+    reject = (...args) => {
+      settled = true
+      _reject(...args)
+    }
   })
-
-  // we "fork" the original promise instead of directly attatching `finally` to
-  // it as it interferes with natural flow of then and catch in the user code
-  Promise.all([promise])
-    .catch(() => {})
-    .finally(() => (settled = true))
 
   return {
     resolve,
