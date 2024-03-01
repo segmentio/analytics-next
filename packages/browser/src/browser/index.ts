@@ -22,7 +22,6 @@ import {
 } from '../plugins/remote-loader'
 import type { RoutingRule } from '../plugins/routing-middleware'
 import { segmentio, SegmentioSettings } from '../plugins/segmentio'
-import { validation } from '../plugins/validation'
 import {
   AnalyticsBuffered,
   PreInitMethodCallBuffer,
@@ -256,7 +255,6 @@ async function registerPlugins(
   ).catch(() => [])
 
   const toRegister = [
-    validation,
     envEnrichment,
     ...plugins,
     ...legacyDestinations,
