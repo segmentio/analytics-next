@@ -2,6 +2,7 @@
 '@segment/analytics-next': minor
 ---
 - Remove validation plugin
+- Remove `spark-md5` dependency
 - Update messageId algorithm to be consistent with node (analytics-next-[epoch time]-[uuid])
 - Share `EventFactory` between node and browser.
 - Browser Validation:
