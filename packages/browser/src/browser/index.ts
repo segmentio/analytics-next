@@ -188,7 +188,6 @@ async function registerPlugins(
   writeKey: string,
   legacySettings: LegacySettings,
   analytics: Analytics,
-  opts: InitOptions,
   options: InitOptions,
   pluginLikes: (Plugin | PluginFactory)[] = [],
   legacyIntegrationSources: ClassicIntegrationSource[]
@@ -222,7 +221,7 @@ async function registerPlugins(
             writeKey,
             legacySettings,
             analytics.integrations,
-            opts,
+            options,
             tsubMiddleware,
             legacyIntegrationSources
           )
@@ -237,11 +236,11 @@ async function registerPlugins(
     })
   }
 
-  const schemaFilter = opts.plan?.track
+  const schemaFilter = options.plan?.track
     ? await import(
         /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
       ).then((mod) => {
-        return mod.schemaFilter(opts.plan?.track, legacySettings)
+        return mod.schemaFilter(options.plan?.track, legacySettings)
       })
     : undefined
 
@@ -250,7 +249,7 @@ async function registerPlugins(
     legacySettings,
     analytics.integrations,
     mergedSettings,
-    options.obfuscate,
+    options,
     tsubMiddleware,
     pluginSources
   ).catch(() => [])
@@ -268,8 +267,9 @@ async function registerPlugins(
   }
 
   const shouldIgnoreSegmentio =
-    (opts.integrations?.All === false && !opts.integrations['Segment.io']) ||
-    (opts.integrations && opts.integrations['Segment.io'] === false)
+    (options.integrations?.All === false &&
+      !options.integrations['Segment.io']) ||
+    (options.integrations && options.integrations['Segment.io'] === false)
 
   if (!shouldIgnoreSegmentio) {
     toRegister.push(
@@ -345,8 +345,12 @@ async function loadAnalytics(
   const retryQueue: boolean =
     legacySettings.integrations['Segment.io']?.retryQueue ?? true
 
-  const opts: InitOptions = { retryQueue, ...options }
-  const analytics = new Analytics(settings, opts)
+  options = {
+    retryQueue,
+    ...options,
+  }
+
+  const analytics = new Analytics(settings, options)
 
   attachInspector(analytics)
 
@@ -362,7 +366,6 @@ async function loadAnalytics(
     settings.writeKey,
     legacySettings,
     analytics,
-    opts,
     options,
     plugins,
     classicIntegrations

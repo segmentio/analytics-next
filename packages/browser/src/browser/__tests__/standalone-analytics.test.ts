@@ -28,6 +28,7 @@ jest.mock('../../core/analytics', () => ({
     addSourceMiddleware,
     register,
     emit: jest.fn(),
+    ready: () => Promise.resolve(),
     on,
     queue: new EventQueue(new PersistedPriorityQueue(1, 'event-queue') as any),
     options,

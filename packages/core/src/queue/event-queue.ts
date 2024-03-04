@@ -16,6 +16,7 @@ export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   delivery_retry: [ctx: Ctx]
   delivery_failure: [ctx: Ctx, err: Ctx | Error | ContextCancelation]
   flush: [ctx: Ctx, delivered: boolean]
+  initialization_failure: [CorePlugin<Ctx>]
 }
 
 export abstract class CoreEventQueue<
@@ -49,25 +50,24 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
-    await Promise.resolve(plugin.load(ctx, instance))
-      .then(() => {
-        this.plugins.push(plugin)
+    if (plugin.type === 'destination' && plugin.name !== 'Segment.io') {
+      plugin.load(ctx, instance).catch((err) => {
+        this.failedInitializations.push(plugin.name)
+        this.emit('initialization_failure', plugin)
+        console.warn(plugin.name, err)
+
+        ctx.log('warn', 'Failed to load destination', {
+          plugin: plugin.name,
+          error: err,
+        })
+
+        this.plugins = this.plugins.filter((p) => p === plugin)
       })
-      .catch((err) => {
-        if (plugin.type === 'destination') {
-          this.failedInitializations.push(plugin.name)
-          console.warn(plugin.name, err)
+    } else {
+      await plugin.load(ctx, instance)
+    }
 
-          ctx.log('warn', 'Failed to load destination', {
-            plugin: plugin.name,
-            error: err,
-          })
-
-          return
-        }
-
-        throw err
-      })
+    this.plugins.push(plugin)
   }
 
   async deregister(
