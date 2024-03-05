@@ -8,7 +8,7 @@ export interface MetricsOptions {
   sampleRate?: number
   flushTimer?: number
   maxQueueSize?: number
-  protocol?: string
+  protocol?: 'http' | 'https'
 }
 
 /**
