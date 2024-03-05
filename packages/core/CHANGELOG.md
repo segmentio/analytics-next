@@ -1,5 +1,20 @@
 # @segment/analytics-core
 
+## 1.5.0
+
+### Minor Changes
+
+- [#945](https://github.com/segmentio/analytics-next/pull/945) [`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c) Thanks [@zikaari](https://github.com/zikaari)! - Load destinations lazily and start sending events as each becomes available instead of waiting for all to load first
+
+### Patch Changes
+
+- [#1043](https://github.com/segmentio/analytics-next/pull/1043) [`95fd2fd`](https://github.com/segmentio/analytics-next/commit/95fd2fd801da26505ddcead96ffaa83aa4364994) Thanks [@silesky](https://github.com/silesky)! - This ensures backward compatibility with analytics-node by modifying '@segment/analytics-core'. Specifically, the changes prevent the generation of a messageId if it is already set. This adjustment aligns with the behavior outlined in analytics-node's source code [here](https://github.com/segmentio/analytics-node/blob/master/index.js#L195-L201).
+
+  While this is a core release, only the node library is affected, as the browser has its own EventFactory atm.
+
+- Updated dependencies [[`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c)]:
+  - @segment/analytics-generic-utils@1.2.0
+
 ## 1.4.1
 
 ### Patch Changes

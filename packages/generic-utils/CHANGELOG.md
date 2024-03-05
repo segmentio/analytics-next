@@ -1,5 +1,11 @@
 # @segment/analytics-generic-utils
 
+## 1.2.0
+
+### Minor Changes
+
+- [#945](https://github.com/segmentio/analytics-next/pull/945) [`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c) Thanks [@zikaari](https://github.com/zikaari)! - Load destinations lazily and start sending events as each becomes available instead of waiting for all to load first
+
 ## 1.1.1
 
 ### Patch Changes
