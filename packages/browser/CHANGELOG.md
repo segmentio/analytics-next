@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.66.0
+
+### Minor Changes
+
+- [#1037](https://github.com/segmentio/analytics-next/pull/1037) [`e435279`](https://github.com/segmentio/analytics-next/commit/e4352792ed5e58a95009a28d83abb8cfea308a82) Thanks [@danieljackins](https://github.com/danieljackins)! - Allow custom metrics endpoint on load
+
 ## 1.65.0
 
 ### Minor Changes
