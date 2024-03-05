@@ -8,6 +8,7 @@ export interface MetricsOptions {
   sampleRate?: number
   flushTimer?: number
   maxQueueSize?: number
+  protocol?: string
 }
 
 /**
@@ -56,6 +57,7 @@ export class RemoteMetrics {
   private host: string
   private flushTimer: number
   private maxQueueSize: number
+  private protocol: string
 
   sampleRate: number
   queue: RemoteMetric[]
@@ -65,6 +67,7 @@ export class RemoteMetrics {
     this.sampleRate = options?.sampleRate ?? 1
     this.flushTimer = options?.flushTimer ?? 30 * 1000 /* 30s */
     this.maxQueueSize = options?.maxQueueSize ?? 20
+    this.protocol = options?.protocol ?? 'https'
 
     this.queue = []
 
@@ -130,7 +133,7 @@ export class RemoteMetrics {
     this.queue = []
 
     const headers = { 'Content-Type': 'text/plain' }
-    const url = `https://${this.host}/m`
+    const url = `${this.protocol}://${this.host}/m`
 
     return fetch(url, {
       headers,

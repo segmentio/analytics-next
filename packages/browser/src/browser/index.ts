@@ -354,13 +354,15 @@ async function loadAnalytics(
 
   const classicIntegrations = settings.classicIntegrations ?? []
 
-  if (options.metricsEndpoint && legacySettings.metrics) {
-    legacySettings.metrics.host = options.metricsEndpoint
-  }
+  const segmentLoadOptions = options.integrations?.['Segment.io'] as
+    | SegmentioSettings
+    | undefined
 
-  Stats.initRemoteMetrics(
-    legacySettings.metrics ?? { host: options.metricsEndpoint }
-  )
+  Stats.initRemoteMetrics({
+    ...legacySettings.metrics,
+    host: segmentLoadOptions?.apiHost ?? legacySettings.metrics?.host,
+    protocol: segmentLoadOptions?.protocol,
+  })
 
   // needs to be flushed before plugins are registered
   flushPreBuffer(analytics, preInitBuffer)

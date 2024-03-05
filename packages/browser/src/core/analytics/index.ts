@@ -107,10 +107,6 @@ export interface InitOptions {
   retryQueue?: boolean
   obfuscate?: boolean
   /**
-   * Allows you to change the metrics endpoint used
-   */
-  metricsEndpoint?: string
-  /**
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
    */

@@ -24,6 +24,7 @@ import {
   lowEntropyTestData,
 } from '../../test-helpers/fixtures/client-hints'
 import { getGlobalAnalytics, NullAnalytics } from '../..'
+import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -654,6 +655,43 @@ describe('Dispatch', () => {
         "delivered",
       ]
     `)
+  })
+
+  it('respects api and protocol overrides for metrics endpoint', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+        cdnSettings: {
+          integrations: {
+            'Segment.io': {
+              apiHost: 'cdnSettings.api.io',
+            },
+          },
+          metrics: {
+            flushTimer: 0,
+          },
+        },
+      },
+      {
+        integrations: {
+          'Segment.io': {
+            apiHost: 'new.api.io',
+            protocol: 'http',
+          },
+        },
+      }
+    )
+
+    const event = await ajs.track('foo')
+
+    recordIntegrationMetric(event, {
+      integrationName: 'foo',
+      methodName: 'bar',
+      type: 'action',
+    })
+
+    await sleep(10)
+    expect(fetchCalls[1].url).toBe('http://new.api.io/m')
   })
 })
 
