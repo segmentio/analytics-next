@@ -16,7 +16,7 @@ export interface OAuthSettings {
   keyId: string
   /**
    * The Authorization server.  Defaults to https://oauth2.segment.io
-   * If your TAPI endpoint is not https://api.segment.io you will need to set this value.
+   * If your TAPI endpoint is not https://api.s.dreamdata.io you will need to set this value.
    * e.g. https://oauth2.eu1.segmentapis.com/ for TAPI endpoint https://events.eu1.segmentapis.com/
    */
   authServer?: string

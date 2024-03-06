@@ -56,7 +56,7 @@ test.describe('Standalone tests', () => {
       await page.evaluate(() => window.analytics.load('fake-key'))
 
       const [request] = await Promise.all([
-        page.waitForRequest('https://api.segment.io/v1/t'),
+        page.waitForRequest('https://api.s.dreamdata.io/v1/t'),
         page.evaluate(() => window.analytics.track('test event')),
       ])
 
@@ -118,7 +118,7 @@ test.describe('Standalone tests', () => {
 
       // Allows Braze the first time user is identified.
       const [request1] = await Promise.all([
-        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.waitForRequest('https://api.s.dreamdata.io/v1/i'),
         page.evaluate(() => window.analytics.identify('testUser')),
       ])
 
@@ -130,7 +130,7 @@ test.describe('Standalone tests', () => {
 
       // Disallows Braze if the user is unchanged.
       const [request2] = await Promise.all([
-        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.waitForRequest('https://api.s.dreamdata.io/v1/i'),
         page.evaluate(() => window.analytics.identify('testUser')),
       ])
       expect(request2.postDataJSON().integrations).toEqual({
@@ -141,7 +141,7 @@ test.describe('Standalone tests', () => {
 
       // Allows Braze if the user has changed (traits).
       const [request3] = await Promise.all([
-        page.waitForRequest('https://api.segment.io/v1/i'),
+        page.waitForRequest('https://api.s.dreamdata.io/v1/i'),
         page.evaluate(() =>
           window.analytics.identify('testUser', {
             email: 'foo@foo.foo',

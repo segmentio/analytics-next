@@ -44,7 +44,7 @@ describe('Method Smoke Tests', () => {
   describe('Metadata', () => {
     const calls: any[] = []
     beforeEach(async () => {
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://api.s.dreamdata.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch', function (_body: any) {
           calls.push(_body)
           return true
@@ -70,7 +70,7 @@ describe('Method Smoke Tests', () => {
   describe('Headers', () => {
     test(`A request should have the expected headers`, async () => {
       let headers = null
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://api.s.dreamdata.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch')
         .reply(201, function () {
           headers = this.req.headers
@@ -97,7 +97,7 @@ describe('Method Smoke Tests', () => {
     let calls: any[]
     beforeEach(async () => {
       calls = []
-      scope = nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+      scope = nock('https://api.s.dreamdata.io') // using regex matching in nock changes the perf profile quite a bit
         .post('/v1/batch', function (_body: any) {
           calls.push(_body)
           return true
@@ -341,7 +341,7 @@ describe('Method Smoke Tests', () => {
 
 describe('Client: requestTimeout', () => {
   beforeEach(async () => {
-    nock('https://api.segment.io') // using regex matching in nock changes the perf profile quite a bit
+    nock('https://api.s.dreamdata.io') // using regex matching in nock changes the perf profile quite a bit
       .post('/v1/batch')
       .reply(201)
   })

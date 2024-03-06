@@ -12,8 +12,8 @@ export const createMockFetchImplementation = (
       return createSuccess({ ...cdnSettingsMinimal, ...cdnSettings })
     }
 
-    if (req?.method === 'post' && reqUrl.includes('api.segment.io')) {
-      // POST https://api.segment.io/v1/{event.type}
+    if (req?.method === 'post' && reqUrl.includes('api.s.dreamdata.io')) {
+      // POST https://api.s.dreamdata.io/v1/{event.type}
       return createSuccess({ success: true }, { status: 201 })
     }
 

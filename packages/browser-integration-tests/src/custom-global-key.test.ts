@@ -33,7 +33,7 @@ test.describe('Segment with custom global key', () => {
       ;(window as any).segment_analytics.load('fake-key')
     })
 
-    const req = await page.waitForRequest('https://api.segment.io/v1/t')
+    const req = await page.waitForRequest('https://api.s.dreamdata.io/v1/t')
 
     // confirm that any events triggered before load have been sent
     expect(req.postDataJSON().event).toBe('track before load')

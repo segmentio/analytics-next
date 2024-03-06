@@ -27,7 +27,7 @@ export class CDNSettingsBuilder {
           addBundledMetadata: true,
           maybeBundledConfigIds: {},
           versionSettings: { version: '4.4.7', componentTypes: ['browser'] },
-          apiHost: 'api.segment.io/v1',
+          apiHost: 'api.s.dreamdata.io/v1',
         },
       },
       plan: {
@@ -37,7 +37,7 @@ export class CDNSettingsBuilder {
       },
       middlewareSettings: {} as any,
       enabledMiddleware: {},
-      metrics: { sampleRate: 0.1, host: 'api.segment.io/v1' },
+      metrics: { sampleRate: 0.1, host: 'api.s.dreamdata.io/v1' },
       legacyVideoPluginsEnabled: false,
       remotePlugins: [],
     }

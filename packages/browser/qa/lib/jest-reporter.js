@@ -24,7 +24,7 @@ async function increment(metric, value = 0, tags = []) {
     userId: 'system',
   }
 
-  return fetch(`https://api.segment.io/v1/track`, {
+  return fetch(`https://api.s.dreamdata.io/v1/track`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

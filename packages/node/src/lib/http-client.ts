@@ -49,7 +49,7 @@ export interface HTTPResponse {
 export interface HTTPClientRequest {
   /**
    * URL to be used for the request
-   * @example 'https://api.segment.io/v1/batch'
+   * @example 'https://api.s.dreamdata.io/v1/batch'
    */
   url: string
   /**

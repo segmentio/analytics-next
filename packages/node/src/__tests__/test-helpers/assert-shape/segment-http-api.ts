@@ -23,7 +23,7 @@ export function assertHTTPRequestOptions(
   { body, headers, method, url }: HTTPClientRequest,
   contexts: Context[]
 ) {
-  expect(url).toBe('https://api.segment.io/v1/batch')
+  expect(url).toBe('https://api.s.dreamdata.io/v1/batch')
   expect(method).toBe('POST')
   expect(headers).toEqual({
     'Content-Type': 'application/json',

@@ -76,7 +76,7 @@ export async function run(params: ComparisonParams) {
         // bot
         call.url.includes('bat.bing') ||
         // there's no need to assert on metrics, especially as they're sampled
-        call.url.includes('api.segment.io/v1/m') ||
+        call.url.includes('api.s.dreamdata.io/v1/m') ||
         (request.method() === 'POST' && data === null)
       ) {
         return

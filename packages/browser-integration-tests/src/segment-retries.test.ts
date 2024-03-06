@@ -41,7 +41,7 @@ test.describe('Segment.io Retries', () => {
 
     // fail the 1st request
     await page.route(
-      'https://api.segment.io/v1/t',
+      'https://api.s.dreamdata.io/v1/t',
       (route) => {
         return route.abort('blockedbyclient')
       },
@@ -63,7 +63,7 @@ test.describe('Segment.io Retries', () => {
 
     // load analytics.js again and wait for a new request.
     const [request] = await Promise.all([
-      page.waitForRequest('https://api.segment.io/v1/t'),
+      page.waitForRequest('https://api.s.dreamdata.io/v1/t'),
       page.evaluate(() => window.analytics.load('fake-key')),
     ])
 
@@ -80,7 +80,7 @@ test.describe('Segment.io Retries', () => {
 
     // blackhole the request so that it stays in-flight when we reload the page
     await page.route(
-      'https://api.segment.io/v1/t',
+      'https://api.s.dreamdata.io/v1/t',
       async () => {
         // do nothing
       },
@@ -92,7 +92,7 @@ test.describe('Segment.io Retries', () => {
     // Detect when we've seen a track request initiated by the browser
     const requestSent = new Promise<Record<string, any>>((resolve) => {
       const onRequest: (req: Request) => void = (req) => {
-        if (req.url() === 'https://api.segment.io/v1/t') {
+        if (req.url() === 'https://api.s.dreamdata.io/v1/t') {
           page.off('request', onRequest)
           resolve(req.postDataJSON())
         }
@@ -111,7 +111,7 @@ test.describe('Segment.io Retries', () => {
 
     // load analytics.js again and wait for a new request.
     const [request] = await Promise.all([
-      page.waitForRequest('https://api.segment.io/v1/t'),
+      page.waitForRequest('https://api.s.dreamdata.io/v1/t'),
       page.evaluate(() => window.analytics.load('fake-key')),
     ])
 
@@ -128,7 +128,7 @@ test.describe('Segment.io Retries', () => {
 
     // fail the initial track request on first 2 page loads (2 different write keys)
     await page.route(
-      'https://api.segment.io/v1/t',
+      'https://api.s.dreamdata.io/v1/t',
       (route) => {
         return route.abort('blockedbyclient')
       },
@@ -183,7 +183,7 @@ test.describe('Segment.io Retries', () => {
 
     // Now load analytics with original write key (key1) to validate message is sent
     const [request] = await Promise.all([
-      page.waitForRequest('https://api.segment.io/v1/t'),
+      page.waitForRequest('https://api.s.dreamdata.io/v1/t'),
       page.evaluate(() => window.analytics.load('key1')),
     ])
 

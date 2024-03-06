@@ -1,1 +1,1 @@
-export const SEGMENT_API_HOST = 'api.segment.io/v1'
+export const SEGMENT_API_HOST = 'api.s.dreamdata.io/v1'
