@@ -203,7 +203,7 @@ export abstract class EventFactory {
     })
   }
 
-  public baseEvent(): Partial<CoreSegmentEvent> {
+  private baseEvent(): Partial<CoreSegmentEvent> {
     return {
       integrations: {},
       options: {},
