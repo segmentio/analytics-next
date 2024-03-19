@@ -5,7 +5,7 @@ import { LegacySettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
-import { DestinationPlugin, Plugin } from '../../core/plugin'
+import { InternalPluginWithAddMiddleware, Plugin } from '../../core/plugin'
 import { attempt } from '@segment/analytics-core'
 import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
@@ -65,12 +65,12 @@ async function flushQueue(
   return queue
 }
 
-export class LegacyDestination implements DestinationPlugin {
+export class LegacyDestination implements InternalPluginWithAddMiddleware {
   name: string
   version: string
   settings: JSONObject
   options: InitOptions = {}
-  type: Plugin['type'] = 'destination'
+  readonly type = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
 
   private _ready: boolean | undefined
@@ -226,7 +226,6 @@ export class LegacyDestination implements DestinationPlugin {
             type: 'Dropped by plan',
           })
         )
-        return ctx
       } else {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
@@ -242,7 +241,6 @@ export class LegacyDestination implements DestinationPlugin {
             type: 'Dropped by plan',
           })
         )
-        return ctx
       }
     }
 
