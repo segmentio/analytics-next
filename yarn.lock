@@ -822,7 +822,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@customerio/cdp-analytics-node@workspace:packages/node"
   dependencies:
-    "@customerio/cdp-analytics-core": 0.0.3
+    "@customerio/cdp-analytics-core": 0.0.4
     "@internal/config": 0.0.0
     "@types/node": ^14
     "@types/uuid": ^9
