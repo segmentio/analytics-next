@@ -42,6 +42,10 @@ export interface OneTrustGlobal {
 }
 
 export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
+  // window.OneTrust = {...} is used for user configuration e.g. 'Consent Rate Optimization'
+  // Also, if "show banner" is unchecked, window.OneTrust returns {geolocationResponse: {…}} before it actually returns the OneTrust object
+  // Thus, we are doing duck typing to see when this object is 'ready'
+  // function OptAnonWrapper()  is the idiomatic way to check if OneTrust is ready, but polling for this works
   const oneTrust = (window as any).OneTrust
   if (!oneTrust) return undefined
   if (
@@ -52,20 +56,6 @@ export const getOneTrustGlobal = (): OneTrustGlobal | undefined => {
   ) {
     return oneTrust
   }
-  // if "show banner" is unchecked, window.OneTrust returns {geolocationResponse: {…}} before it actually returns the OneTrust object
-  if ('geolocationResponse' in oneTrust) {
-    return undefined
-  }
-
-  console.error(
-    // OneTrust API has some gotchas -- since this function is often as a polling loop, not
-    // throwing an error since it's possible that some setup is happening behind the scenes and
-    // the OneTrust API is not available yet (e.g. see the geolocationResponse edge case).
-    new OneTrustApiValidationError(
-      'window.OneTrust is unexpected type',
-      oneTrust
-    ).message
-  )
 }
 
 export const getOneTrustActiveGroups = (): string | undefined => {
