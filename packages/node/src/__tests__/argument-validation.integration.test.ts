@@ -1,6 +1,9 @@
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
-describe('Validating events', () => {
-  it('should throw an error if userId / groupId is not defined', async () => {
+
+// This is a smoke test.
+// More detailed tests can be found in packages/core/src/validation/__tests__/assertions.test.ts
+describe('Argument validation', () => {
+  it('should throw an error if userId/anonId/groupId is not specified', async () => {
     const analytics = createTestAnalytics()
 
     expect(() =>
@@ -9,8 +12,6 @@ describe('Validating events', () => {
         anonymousId: undefined as any,
         userId: undefined as any,
       })
-    ).toThrowErrorMatchingInlineSnapshot(
-      `".userId/anonymousId/previousId/groupId is nil"`
-    )
+    ).toThrow(/userId/)
   })
 })
