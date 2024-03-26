@@ -68,15 +68,6 @@ describe('Event Factory', () => {
       expect(group.anonymousId).toBe('foo')
     })
 
-    it('allows userId / anonymousId to be overridden', function () {
-      const group = factory.group('my_group_id', undefined, {
-        userId: 'bar',
-        anonymousId: 'foo',
-      })
-      expect(group.userId).toBe('bar')
-      expect(group.anonymousId).toBe('foo')
-    })
-
     it('uses userId / anonymousId from the user class (if specified)', function () {
       const user = new User()
       user.anonymousId = () => '123'
