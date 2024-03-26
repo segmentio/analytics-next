@@ -1,5 +1,11 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 0.4.1
+
+### Patch Changes
+
+- [#1055](https://github.com/segmentio/analytics-next/pull/1055) [`632b87f`](https://github.com/segmentio/analytics-next/commit/632b87f376bed558d2d6327d7b130b3bc1d8dffa) Thanks [@silesky](https://github.com/silesky)! - Fix log pollution for OneTrust users
+
 ## 0.4.0
 
 ### Minor Changes
