@@ -23,7 +23,7 @@ export type onEventMethodCallCb = ({
 }) => void
 
 export type UpdateEventFn = (event: CoreSegmentEvent) => void
-export type ValidateEventFn = (event: CoreSegmentEvent) => void
+export type EventValidatorFn = (event: CoreSegmentEvent) => void
 
 export interface EventFactorySettings {
   /**
@@ -41,20 +41,20 @@ export interface EventFactorySettings {
   /**
    * additional validation to run on each event
    */
-  validateEvent?: ValidateEventFn
+  additionalValidator?: EventValidatorFn
 }
 
 export abstract class CoreEventFactory {
-  createMessageId: EventFactorySettings['createMessageId']
-  onEventMethodCall: onEventMethodCallCb
-  updateEvent?: UpdateEventFn
-  validateEvent?: ValidateEventFn
+  private createMessageId: EventFactorySettings['createMessageId']
+  private onEventMethodCall: onEventMethodCallCb
+  private updateEvent?: UpdateEventFn
+  private additionalValidator?: EventValidatorFn
 
   constructor(settings: EventFactorySettings) {
     this.createMessageId = settings.createMessageId
     this.onEventMethodCall = settings.onEventMethodCall || (() => {})
     this.updateEvent = settings.updateEvent
-    this.validateEvent = settings.validateEvent
+    this.additionalValidator = settings.additionalValidator
   }
 
   track(
@@ -293,7 +293,7 @@ export abstract class CoreEventFactory {
     }
     this.updateEvent?.(evt)
     validateEvent(evt)
-    this.validateEvent?.(evt)
+    this.additionalValidator?.(evt)
     return evt
   }
 }
