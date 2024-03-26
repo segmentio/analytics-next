@@ -1,4 +1,4 @@
-import { CoreEventFactory } from '@segment/analytics-core'
+import { assertUserIdentity, CoreEventFactory } from '@segment/analytics-core'
 import { createMessageId } from '../lib/get-message-id'
 import { SegmentEvent } from './types'
 
@@ -15,6 +15,11 @@ export interface NodeEventFactory {
 
 export class NodeEventFactory extends CoreEventFactory {
   constructor() {
-    super({ createMessageId })
+    super({
+      createMessageId,
+      validateEvent: (event) => {
+        assertUserIdentity(event)
+      },
+    })
   }
 }

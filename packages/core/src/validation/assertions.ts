@@ -6,6 +6,8 @@ const stringError = 'is not a string'
 const objError = 'is not an object'
 const nilError = 'is nil'
 
+// user identity check could hypothetically could be used in the browser event factory, but not 100% sure -- so this is node only for now
+// the way that the EventFactory is written (e.g. if user.id()) suggests that it is not neccessarily the case.
 export function assertUserIdentity(event: CoreSegmentEvent): void {
   const USER_FIELD_NAME = '.userId/anonymousId/previousId/groupId'
 
@@ -74,5 +76,4 @@ export function validateEvent(event?: CoreSegmentEvent | null) {
   if (['group', 'identify'].includes(event.type)) {
     assertTraits(event)
   }
-  assertUserIdentity(event)
 }
