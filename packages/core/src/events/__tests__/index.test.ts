@@ -1,14 +1,14 @@
-import { EventFactory } from '..'
+import { CoreEventFactory } from '..'
 import { CoreSegmentEvent } from '../..'
 import { isDate } from 'lodash'
 
 describe('Event Factory', () => {
-  let factory: EventFactory
+  let factory: CoreEventFactory
   const shoes = { product: 'shoes', total: '$35', category: 'category' }
   const shopper = { totalSpent: 100 }
 
   beforeEach(() => {
-    class TestEventFactory extends EventFactory {
+    class TestEventFactory extends CoreEventFactory {
       constructor() {
         super({
           createMessageId: () => 'foo',

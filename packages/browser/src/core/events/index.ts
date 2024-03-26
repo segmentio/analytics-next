@@ -8,7 +8,7 @@ import {
   SegmentEvent,
 } from './interfaces'
 import { addPageContext, PageContext } from '../page'
-import { EventFactory as CoreEventFactory } from '@segment/analytics-core'
+import { CoreEventFactory } from '@segment/analytics-core'
 
 export * from './interfaces'
 

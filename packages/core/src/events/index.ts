@@ -44,7 +44,7 @@ export interface EventFactorySettings {
   validateEvent?: ValidateEventFn
 }
 
-export abstract class EventFactory {
+export abstract class CoreEventFactory {
   createMessageId: EventFactorySettings['createMessageId']
   onEventMethodCall: onEventMethodCallCb
   updateEvent?: UpdateEventFn
