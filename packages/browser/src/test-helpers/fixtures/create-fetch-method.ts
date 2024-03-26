@@ -7,14 +7,20 @@ export const createMockFetchImplementation = (
 ) => {
   return (...[url, req]: Parameters<typeof fetch>) => {
     const reqUrl = url.toString()
-    if (!req || (req.method === 'get' && reqUrl.includes('cdn.segment.com'))) {
+    const reqMethod = req?.method?.toLowerCase()
+    if (!req || (reqMethod === 'get' && reqUrl.includes('cdn.segment.com'))) {
       // GET https://cdn.segment.com/v1/projects/{writeKey}
       return createSuccess({ ...cdnSettingsMinimal, ...cdnSettings })
     }
 
-    if (req?.method === 'post' && reqUrl.includes('api.segment.io')) {
+    if (reqMethod === 'post' && reqUrl.includes('api.segment.io')) {
       // POST https://api.segment.io/v1/{event.type}
       return createSuccess({ success: true }, { status: 201 })
+    }
+
+    if (reqMethod === 'post' && reqUrl.endsWith('/m')) {
+      // POST https://api.segment.io/m
+      return createSuccess({ success: true })
     }
 
     throw new Error(
