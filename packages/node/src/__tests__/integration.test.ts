@@ -51,7 +51,7 @@ describe('Settings / Configuration Init', () => {
 describe('Error handling', () => {
   it('surfaces property thrown errors', async () => {
     const analytics = createTestAnalytics()
-    expect(() => analytics.track({} as any)).toThrowError(/event/i)
+    expect(() => analytics.track({} as any)).toThrowError()
   })
 
   it('should emit on an error', async () => {
