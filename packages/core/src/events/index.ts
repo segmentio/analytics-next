@@ -249,7 +249,12 @@ export abstract class CoreEventFactory {
     return [context, eventOverrides]
   }
 
-  public normalize(event: CoreSegmentEvent): CoreSegmentEvent {
+  private validate(event: CoreSegmentEvent) {
+    validateEvent(event)
+    this.additionalValidator?.(event)
+  }
+
+  private normalize(event: CoreSegmentEvent): CoreSegmentEvent {
     const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
       (integrationNames, name) => {
         return {
@@ -292,8 +297,7 @@ export abstract class CoreEventFactory {
       messageId: options.messageId || this.createMessageId(),
     }
     this.updateEvent?.(evt)
-    validateEvent(evt)
-    this.additionalValidator?.(evt)
+    this.validate(evt)
     return evt
   }
 }
