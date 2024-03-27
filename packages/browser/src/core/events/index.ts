@@ -20,7 +20,7 @@ export class EventFactory extends CoreEventFactory {
       onEventMethodCall: ({ options }) => {
         this.maybeUpdateAnonId(options)
       },
-      updateEvent: (event) => {
+      onFinishedEvent: (event) => {
         this.addIdentity(event)
         return event
       },

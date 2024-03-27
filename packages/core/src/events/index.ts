@@ -14,7 +14,7 @@ import { pickBy } from '../utils/pick'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
 import { validateEvent } from '../validation/assertions'
 
-export type onEventMethodCallCb = ({
+export type EventMethodCallHook = ({
   type,
   options,
 }: {
@@ -22,8 +22,7 @@ export type onEventMethodCallCb = ({
   options?: CoreOptions
 }) => void
 
-export type UpdateEventFn = (event: CoreSegmentEvent) => void
-export type EventValidatorFn = (event: CoreSegmentEvent) => void
+export type EventHook = (event: CoreSegmentEvent) => void
 
 export interface EventFactorySettings {
   /**
@@ -31,34 +30,37 @@ export interface EventFactorySettings {
    */
   createMessageId: () => string
   /**
-   * Hook to universally update all events right before they are returned from the factory
+   * Hook to do something with an event right before they are returned from the factory.
+   * This includes event modification or additional validation.
    */
-  updateEvent?: UpdateEventFn
+  onFinishedEvent?: EventHook
   /**
    * Hook whenever an event method is called (track, page, etc.)
    * Can be used to update Options (or just listen)
    */
-  onEventMethodCall?: onEventMethodCallCb
-  /**
-   * Additional validation to run on each event
-   */
-  additionalValidator?: EventValidatorFn
+  onEventMethodCall?: EventMethodCallHook
+}
+
+/**
+ * Internal settings object that is used internally by the factory
+ */
+class InternalEventFactorySettings {
+  public createMessageId: EventFactorySettings['createMessageId']
+  public onEventMethodCall: EventMethodCallHook
+  public onFinishedEvent: EventHook
+
+  constructor(public settings: EventFactorySettings) {
+    this.createMessageId = settings.createMessageId
+    this.onEventMethodCall = settings.onEventMethodCall ?? (() => {})
+    this.onFinishedEvent = settings.onFinishedEvent ?? (() => {})
+  }
 }
 
 export abstract class CoreEventFactory {
-  private createMessageId: EventFactorySettings['createMessageId']
-  private onEventMethodCall: onEventMethodCallCb
-  private updateEvent?: UpdateEventFn
-  private validate: EventValidatorFn
+  private settings: InternalEventFactorySettings
 
   constructor(settings: EventFactorySettings) {
-    this.createMessageId = settings.createMessageId
-    this.onEventMethodCall = settings.onEventMethodCall || (() => {})
-    this.updateEvent = settings.updateEvent
-    this.validate = (event: CoreSegmentEvent) => {
-      validateEvent(event)
-      settings.additionalValidator?.(event)
-    }
+    this.settings = new InternalEventFactorySettings(settings)
   }
 
   track(
@@ -67,7 +69,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ) {
-    this.onEventMethodCall({ type: 'track', options })
+    this.settings.onEventMethodCall({ type: 'track', options })
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -85,7 +87,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
-    this.onEventMethodCall({ type: 'page', options })
+    this.settings.onEventMethodCall({ type: 'page', options })
     const event: CoreSegmentEvent = {
       type: 'page',
       properties: { ...properties },
@@ -116,7 +118,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
-    this.onEventMethodCall({ type: 'screen', options })
+    this.settings.onEventMethodCall({ type: 'screen', options })
     const event: CoreSegmentEvent = {
       type: 'screen',
       properties: { ...properties },
@@ -144,7 +146,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
-    this.onEventMethodCall({ type: 'identify', options })
+    this.settings.onEventMethodCall({ type: 'identify', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify',
@@ -161,7 +163,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
-    this.onEventMethodCall({ type: 'group', options })
+    this.settings.onEventMethodCall({ type: 'group', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'group',
@@ -178,7 +180,7 @@ export abstract class CoreEventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
-    this.onEventMethodCall({ type: 'alias', options })
+    this.settings.onEventMethodCall({ type: 'alias', options })
     const base: CoreSegmentEvent = {
       userId: to,
       type: 'alias',
@@ -293,11 +295,11 @@ export abstract class CoreEventFactory {
       context,
       integrations: allIntegrations,
       ...overrides,
-      messageId: options.messageId || this.createMessageId(),
+      messageId: options.messageId || this.settings.createMessageId(),
     }
 
-    this.updateEvent?.(evt)
-    this.validate(evt)
+    this.settings.onFinishedEvent(evt)
+    validateEvent(evt)
 
     return evt
   }

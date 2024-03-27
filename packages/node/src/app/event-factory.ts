@@ -17,7 +17,7 @@ export class NodeEventFactory extends CoreEventFactory {
   constructor() {
     super({
       createMessageId,
-      additionalValidator: (event) => {
+      onFinishedEvent: (event) => {
         assertUserIdentity(event)
       },
     })
