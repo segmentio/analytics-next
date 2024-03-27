@@ -27,19 +27,20 @@ export type EventValidatorFn = (event: CoreSegmentEvent) => void
 
 export interface EventFactorySettings {
   /**
-   * create a message ID
+   * Universal `messageId` builder for all events (these must be unique)
    */
   createMessageId: () => string
   /**
-   * Update / augment an event
+   * Hook to universally update all events right before they are returned from the factory
    */
   updateEvent?: UpdateEventFn
   /**
-   * callback whenever an event method is called
+   * Hook whenever an event method is called (track, page, etc.)
+   * Can be used to update Options (or just listen)
    */
   onEventMethodCall?: onEventMethodCallCb
   /**
-   * additional validation to run on each event
+   * Additional validation to run on each event
    */
   additionalValidator?: EventValidatorFn
 }
@@ -48,7 +49,7 @@ export abstract class CoreEventFactory {
   private createMessageId: EventFactorySettings['createMessageId']
   private onEventMethodCall: onEventMethodCallCb
   private updateEvent?: UpdateEventFn
-  private validate?: EventValidatorFn
+  private validate: EventValidatorFn
 
   constructor(settings: EventFactorySettings) {
     this.createMessageId = settings.createMessageId
