@@ -48,13 +48,16 @@ export abstract class CoreEventFactory {
   private createMessageId: EventFactorySettings['createMessageId']
   private onEventMethodCall: onEventMethodCallCb
   private updateEvent?: UpdateEventFn
-  private additionalValidator?: EventValidatorFn
+  private validate?: EventValidatorFn
 
   constructor(settings: EventFactorySettings) {
     this.createMessageId = settings.createMessageId
     this.onEventMethodCall = settings.onEventMethodCall || (() => {})
     this.updateEvent = settings.updateEvent
-    this.additionalValidator = settings.additionalValidator
+    this.validate = (event: CoreSegmentEvent) => {
+      validateEvent(event)
+      settings.additionalValidator?.(event)
+    }
   }
 
   track(
@@ -249,11 +252,6 @@ export abstract class CoreEventFactory {
     return [context, eventOverrides]
   }
 
-  private validate(event: CoreSegmentEvent) {
-    validateEvent(event)
-    this.additionalValidator?.(event)
-  }
-
   private normalize(event: CoreSegmentEvent): CoreSegmentEvent {
     const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
       (integrationNames, name) => {
@@ -296,8 +294,10 @@ export abstract class CoreEventFactory {
       ...overrides,
       messageId: options.messageId || this.createMessageId(),
     }
+
     this.updateEvent?.(evt)
     this.validate(evt)
+
     return evt
   }
 }
