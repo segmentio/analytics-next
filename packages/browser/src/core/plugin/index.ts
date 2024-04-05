@@ -5,8 +5,18 @@ import type { Context } from '../context'
 
 export interface Plugin extends CorePlugin<Context, Analytics> {}
 
-export interface DestinationPlugin extends Plugin {
+export interface InternalPluginWithAddMiddleware extends Plugin {
   addMiddleware: (...fns: DestinationMiddlewareFunction[]) => void
 }
 
-export type AnyBrowserPlugin = Plugin | DestinationPlugin
+export interface InternalDestinationPluginWithAddMiddleware
+  extends InternalPluginWithAddMiddleware {
+  type: 'destination'
+}
+
+export const isDestinationPluginWithAddMiddleware = (
+  plugin: Plugin
+): plugin is InternalDestinationPluginWithAddMiddleware => {
+  // FYI: segment's plugin does not currently have an 'addMiddleware' method
+  return 'addMiddleware' in plugin && plugin.type === 'destination'
+}

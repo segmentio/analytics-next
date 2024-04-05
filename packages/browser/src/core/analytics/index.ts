@@ -23,12 +23,11 @@ import {
   EventProperties,
   SegmentEvent,
 } from '../events'
-import type { Plugin } from '../plugin'
+import { isDestinationPluginWithAddMiddleware, Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
 import { Group, ID, User, UserOptions } from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-import type { LegacyDestination } from '../../plugins/ajs-destination'
 import type {
   LegacyIntegration,
   ClassicIntegrationSource,
@@ -520,13 +519,17 @@ export class Analytics
     integrationName: string,
     ...middlewares: DestinationMiddlewareFunction[]
   ): Promise<Analytics> {
-    const legacyDestinations = this.queue.plugins.filter(
-      (xt) => xt.name.toLowerCase() === integrationName.toLowerCase()
-    ) as LegacyDestination[]
+    this.queue.plugins
+      .filter(isDestinationPluginWithAddMiddleware)
+      .forEach((p) => {
+        if (
+          integrationName === '*' ||
+          p.name.toLowerCase() === integrationName.toLowerCase()
+        ) {
+          p.addMiddleware(...middlewares)
+        }
+      })
 
-    legacyDestinations.forEach((destination) => {
-      destination.addMiddleware(...middlewares)
-    })
     return Promise.resolve(this)
   }
 
