@@ -1,5 +1,20 @@
 # @segment/analytics-next
 
+## 1.67.0
+
+### Minor Changes
+
+- [#1053](https://github.com/segmentio/analytics-next/pull/1053) [`fd09fbc`](https://github.com/segmentio/analytics-next/commit/fd09fbcc943449eccbfe985dfed083b746bd2cab) Thanks [@silesky](https://github.com/silesky)! - Allow `*` in integration name field to apply middleware to all destinations plugins.
+  ```ts
+  addDestinationMiddleware('*', ({ ... }) => {
+   ...
+  })
+  ```
+
+### Patch Changes
+
+- [#1067](https://github.com/segmentio/analytics-next/pull/1067) [`e3f3bee`](https://github.com/segmentio/analytics-next/commit/e3f3bee5831abbe9b3005f77266f72ccda65f9e6) Thanks [@oscb](https://github.com/oscb)! - fix: fixes buffering for legacy destinations
+
 ## 1.66.0
 
 ### Minor Changes
