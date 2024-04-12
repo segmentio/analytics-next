@@ -11,10 +11,18 @@ import {
   getConsentedGroupIds,
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
-
+import { isOptInConsentModel } from './consent-model'
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
+  /**
+   * Override configured consent model
+   * - optIn = true (default) - load segment and all destinations without waiting for explicit consent.
+   * - optIn = false (strict/GDPR) - wait for explicit consent before loading segment
+   *
+   * By default, the value is determined by `OneTrust.GetDomainData().ConsentModel` which is set in the OneTrust UI.
+   */
+  optIn?: () => boolean
 }
 
 /**
@@ -32,9 +40,18 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
       await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
     },
     // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
-    shouldLoadSegment: async () => {
+    shouldLoadSegment: async (ctx) => {
+      const OneTrust = getOneTrustGlobal()!
+      const isOptIn =
+        settings.optIn ??
+        isOptInConsentModel(OneTrust.GetDomainData().ConsentModel.Name)
+
+      if (!isOptIn) {
+        return ctx.load({
+          optIn: false,
+        })
+      }
       await resolveWhen(() => {
-        const OneTrust = getOneTrustGlobal()!
         return (
           // if any groups at all are consented to
           Boolean(getConsentedGroupIds().length) &&
@@ -44,6 +61,7 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
             OneTrust.IsAlertBoxClosed())
         )
       }, 500)
+      return ctx.load({ optIn: true })
     },
     getCategories: () => {
       const results = getNormalizedCategoriesFromGroupData()

@@ -2,11 +2,15 @@ import type { Options } from '@wdio/types'
 
 const PORT = 4567
 
+const isCI = Boolean(process.env.CI)
+
 export const config: Options.Testrunner = {
   afterTest(test, _, { error, passed }) {
     console.log(
       [
-        `${passed ? '✅ Passed' : '❌ Failed'}! ${test.title}`,
+        `${passed ? '✅ Passed' : '❌ Failed'}! ${test.description ?? ''} : ${
+          test.title
+        }`,
         test.file,
         error ? error : '',
       ].join('\n')
@@ -21,11 +25,7 @@ export const config: Options.Testrunner = {
         folders: [
           {
             mount: '/',
-            path: './public',
-          },
-          {
-            mount: '/@segment',
-            path: './node_modules/@segment',
+            path: '.',
           },
         ],
       },
@@ -51,10 +51,14 @@ export const config: Options.Testrunner = {
   maxInstances: 10,
   capabilities: [
     {
-      maxInstances: 5,
+      maxInstances: 1,
       browserName: 'chrome',
       'goog:chromeOptions': {
-        args: process.env.CI ? ['headless', 'disable-gpu'] : [],
+        args: [
+          ...(isCI ? ['headless'] : []),
+          'disable-gpu',
+          'user-data-dir=/tmp',
+        ],
       },
       acceptInsecureCerts: true,
     },

@@ -21,9 +21,20 @@ type GroupInfoDto = {
 
 type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 
+export enum OtConsentModel {
+  optIn = 'opt-in',
+  optOut = 'opt-out',
+  custom = 'custom',
+  notice = 'notice',
+  implicit = 'implicit',
+}
+
 export interface OneTrustDomainData {
   ShowAlertNotice: boolean
   Groups: GroupInfoDto[]
+  ConsentModel: {
+    Name: OtConsentModel
+  }
 }
 /**
  * The data model used by the OneTrust lib

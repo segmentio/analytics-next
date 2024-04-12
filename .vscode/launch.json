@@ -48,7 +48,7 @@
       "internalConsoleOptions": "neverOpen",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
       "skipFiles": [
-        "<node_internals>/**"
+        "<node_internals>/**" 
       ]
     },
     {

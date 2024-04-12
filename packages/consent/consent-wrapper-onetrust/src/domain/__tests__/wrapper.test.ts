@@ -42,7 +42,6 @@ describe('High level "integration" tests', () => {
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
     getConsentedGroupIdsSpy.mockReset()
-    analyticsMock.on = jest.fn()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
@@ -60,14 +59,17 @@ describe('High level "integration" tests', () => {
     it('should load if alert box is closed and groups are defined', async () => {
       withOneTrust(analyticsMock)
 
-      const shouldLoadSegment = Promise.resolve(
-        createWrapperSpyHelper.shouldLoadSegment({} as any)
-      )
-      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce(domainDataMock)
+      OneTrustMockGlobal.GetDomainData.mockReturnValue(domainDataMock)
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
       getConsentedGroupIdsSpy.mockImplementation(() => [
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
+      const shouldLoadSegment = Promise.resolve(
+        createWrapperSpyHelper.shouldLoadSegment({
+          load: jest.fn(),
+          abort: jest.fn(),
+        } as any)
+      )
       checkResolveWhen()
       await expect(shouldLoadSegment).resolves.toBeUndefined()
     })
@@ -86,7 +88,7 @@ describe('High level "integration" tests', () => {
 
     it("should load regardless of AlertBox status if showAlertNotice is true (e.g. 'show banner is unchecked')", async () => {
       withOneTrust(analyticsMock)
-      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
+      OneTrustMockGlobal.GetDomainData.mockReturnValue({
         ...domainDataMock,
         ShowAlertNotice: false, // meaning, it's open
       })
@@ -94,7 +96,10 @@ describe('High level "integration" tests', () => {
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const shouldLoadSegment = Promise.resolve(
-        createWrapperSpyHelper.shouldLoadSegment({} as any)
+        createWrapperSpyHelper.shouldLoadSegment({
+          load: jest.fn(),
+          abort: jest.fn(),
+        } as any)
       )
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(false) // alert box is _never open
       checkResolveWhen()

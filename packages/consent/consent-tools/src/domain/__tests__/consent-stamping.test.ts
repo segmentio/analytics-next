@@ -1,8 +1,9 @@
 import { createConsentStampingMiddleware } from '../consent-stamping'
-import { Context, MiddlewareFunction } from '@segment/analytics-next'
+import { Context } from '@segment/analytics-next'
+import { SourceMiddlewareFunction } from '../../types'
 
 describe(createConsentStampingMiddleware, () => {
-  let middlewareFn: MiddlewareFunction
+  let middlewareFn: SourceMiddlewareFunction
   const nextFn = jest.fn()
   const getCategories = jest.fn()
   const payload = {

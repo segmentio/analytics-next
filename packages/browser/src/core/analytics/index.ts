@@ -64,14 +64,14 @@ const global: any = getGlobal()
 const _analytics = global?.analytics
 
 function createDefaultQueue(
-  name: string,
+  writeKey: string,
   retryQueue = false,
   disablePersistance = false
 ) {
   const maxAttempts = retryQueue ? 10 : 1
   const priorityQueue = disablePersistance
     ? new PriorityQueue(maxAttempts, [])
-    : new PersistedPriorityQueue(maxAttempts, name)
+    : new PersistedPriorityQueue(maxAttempts, `${writeKey}:event-queue`)
   return new EventQueue(priorityQueue)
 }
 
@@ -184,7 +184,7 @@ export class Analytics
     this.queue =
       queue ??
       createDefaultQueue(
-        `${settings.writeKey}:event-queue`,
+        settings.writeKey,
         options?.retryQueue,
         disablePersistance
       )

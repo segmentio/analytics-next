@@ -2,13 +2,16 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { initMockConsentManager } from '../helpers/mock-cmp'
 import { withMockCMP } from '../helpers/mock-cmp-wrapper'
 
-initMockConsentManager({ isOptIn: true })
+initMockConsentManager({
+  isOptIn: false,
+})
 
 const analytics = new AnalyticsBrowser()
 
-// for testing
+withMockCMP(analytics).load(
+  {
+    writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc',
+  },
+  { initialPageview: true }
+)
 ;(window as any).analytics = analytics
-
-withMockCMP(analytics).load({
-  writeKey: 'foo',
-})

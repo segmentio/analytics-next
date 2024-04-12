@@ -1,4 +1,4 @@
-import { LoadContext } from '../domain/load-cancellation'
+import { LoadContext } from '../domain/load-context'
 import type {
   Categories,
   IntegrationCategoryMappings,
@@ -35,8 +35,6 @@ export interface CreateWrapperSettings {
 
   /**
    * Wait until this function resolves/returns before loading analytics.
-   * This function should return a list of initial categories.
-   * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
    * @example
    * ```ts
    *   // Wrapper waits to load segment / get categories until this function returns / resolves
@@ -56,9 +54,7 @@ export interface CreateWrapperSettings {
    * },
    * ```
    **/
-  shouldLoadSegment?: (
-    ctx: LoadContext
-  ) => Categories | void | Promise<Categories | void>
+  shouldLoadSegment?: (ctx: LoadContext) => void | Promise<void>
 
   /**
    * Fetch the categories which stamp every event. Called each time a new Segment event is dispatched.
@@ -148,4 +144,9 @@ export interface CreateWrapperSettings {
    * ```
    */
   pruneUnmappedCategories?: boolean
+
+  /**
+   * Enable debug logging for the wrapper.
+   */
+  enableDebugLogging?: boolean
 }

@@ -1,37 +1,82 @@
+import { createDeferred } from '@segment/analytics-generic-utils'
 import {
   AnyAnalytics,
   Categories,
   CDNSettings,
   CreateWrapperSettings,
+  GetCategoriesFunction,
+  IntegrationCategoryMappings,
   MaybeInitializedAnalytics,
 } from '../../types'
+import { pipe } from '../../utils'
+import { addBlockingMiddleware } from '../blocking-middleware'
 import { createConsentStampingMiddleware } from '../consent-stamping'
-import { getPrunedCategories } from '../pruned-categories'
+import { parseAllCategories, getPrunedCategories } from '../pruned-categories'
 import { validateAnalyticsInstance, validateCategories } from '../validation'
+import { logger } from '../logger'
 
+export interface AnalyticsServiceOptions {
+  getCategories: GetCategoriesFunction
+  pruneUnmappedCategories?: boolean
+  integrationCategoryMappings?: IntegrationCategoryMappings
+  shouldEnableIntegration?: CreateWrapperSettings['shouldEnableIntegration']
+}
 /**
  * This class is a wrapper around the analytics.js library.
  */
 export class AnalyticsService {
-  cdnSettings: Promise<CDNSettings>
-  /**
-   * The original analytics.load fn
-   */
-  loadNormally: AnyAnalytics['load']
+  private options: AnalyticsServiceOptions
+
+  private cdnSettingsDeferred = createDeferred<CDNSettings>()
+
+  private ogAnalyticsLoad: AnyAnalytics['load']
 
   private get analytics() {
-    return getInitializedAnalytics(this._uninitializedAnalytics)
+    return getInitializedAnalytics(this.uninitializedAnalytics)
   }
 
-  private _uninitializedAnalytics: AnyAnalytics
+  private get cdnSettings(): Promise<CDNSettings> {
+    return this.cdnSettingsDeferred.promise
+  }
 
-  constructor(analytics: AnyAnalytics) {
+  private async getAllCategories(): Promise<string[]> {
+    const allCategories = this.options.integrationCategoryMappings
+      ? parseAllCategories(this.options.integrationCategoryMappings)
+      : (await this.cdnSettings).consentSettings?.allCategories
+
+    return allCategories ?? []
+  }
+
+  private uninitializedAnalytics: AnyAnalytics
+
+  constructor(analytics: AnyAnalytics, options: AnalyticsServiceOptions) {
     validateAnalyticsInstance(analytics)
-    this._uninitializedAnalytics = analytics
-    this.loadNormally = analytics.load.bind(this._uninitializedAnalytics)
-    this.cdnSettings = new Promise<CDNSettings>((resolve) =>
-      this.analytics.on('initialize', resolve)
-    )
+    this.options = options
+    this.uninitializedAnalytics = analytics
+
+    // store the raw analytics load instance, because we may replace it later
+    this.ogAnalyticsLoad = analytics.load.bind(this.uninitializedAnalytics)
+  }
+
+  /**
+   * The orignal analytics load function, but also stores the CDN settings on the instance.
+   */
+  load(
+    ...[settings, options]: Parameters<AnyAnalytics['load']>
+  ): ReturnType<AnyAnalytics['load']> {
+    return this.ogAnalyticsLoad(settings, {
+      ...options,
+      updateCDNSettings: pipe(
+        options?.updateCDNSettings || ((id) => id),
+        (cdnSettings) => {
+          logger.debug('CDN settings loaded', cdnSettings)
+          // extract the CDN settings from this call and store it on the instance.
+          // there is an 'initialize' event emitter, but it's called too late for our purposes.
+          this.cdnSettingsDeferred.resolve(cdnSettings)
+          return cdnSettings
+        }
+      ),
+    })
   }
 
   /**
@@ -45,29 +90,26 @@ export class AnalyticsService {
     this.analytics.page()
   }
 
-  configureConsentStampingMiddleware({
-    getCategories,
-    pruneUnmappedCategories,
-    integrationCategoryMappings,
-  }: Pick<
-    CreateWrapperSettings,
-    'getCategories' | 'pruneUnmappedCategories' | 'integrationCategoryMappings'
-  >): void {
+  configureBlockingMiddlewareForOptOut(): void {
+    addBlockingMiddleware(this.cdnSettings, this.analytics, {
+      integrationCategoryMappings: this.options.integrationCategoryMappings,
+      shouldEnableIntegration: this.options.shouldEnableIntegration,
+    })
+  }
+
+  configureConsentStampingMiddleware(): void {
+    const { getCategories, pruneUnmappedCategories } = this.options
     // normalize getCategories pruning is turned on or off
     const getCategoriesForConsentStamping = async (): Promise<Categories> => {
+      const categories = await getCategories()
       if (pruneUnmappedCategories) {
-        return getPrunedCategories(
-          getCategories,
-          await this.cdnSettings,
-          integrationCategoryMappings
-        )
-      } else {
-        return getCategories()
+        return getPrunedCategories(categories, await this.getAllCategories())
       }
+      return categories
     }
 
     const MW = createConsentStampingMiddleware(getCategoriesForConsentStamping)
-    return this.analytics.addSourceMiddleware(MW)
+    this.analytics.addSourceMiddleware(MW)
   }
 
   /**
