@@ -6,7 +6,7 @@ import {
   CDNSettings,
 } from '../types'
 import { validateCategories, validateSettings } from './validation'
-import { pipe } from '../utils'
+import { assertNever, pipe } from '../utils'
 import { normalizeShouldLoadSegment } from './load-context'
 import { AnalyticsService } from './analytics'
 import {
@@ -85,11 +85,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
       // if opt-out, we load as usual and then rely on the consent blocking middleware to block events
       // if opt-in, we remove all destinations that are not explicitly consented to so they never load in the first place
-      if (loadCtx.loadOptions.consentModel === 'opt-out') {
-        analyticsService.configureBlockingMiddlewareForOptOut()
-        analyticsService.load(settings, options)
-        return undefined
-      } else {
+      if (loadCtx.loadOptions.consentModel === 'opt-in') {
         const initialCategories = await getCategories()
         validateCategories(initialCategories)
 
@@ -109,6 +105,13 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
           disable: createDisableOption(initialCategories, options?.disable),
         })
         return undefined
+      } else if (loadCtx.loadOptions.consentModel === 'opt-out') {
+        analyticsService.configureBlockingMiddlewareForOptOut()
+        analyticsService.load(settings, options)
+        return undefined
+      } else {
+        // for typescript exhaustiveness
+        assertNever(loadCtx.loadOptions.consentModel)
       }
     }
 
