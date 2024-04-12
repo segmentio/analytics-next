@@ -5,6 +5,7 @@
 export { createWrapper } from './domain/create-wrapper'
 export { resolveWhen } from './utils'
 
+export type { ConsentModel } from './domain/load-context'
 export type {
   Wrapper,
   CreateWrapper,

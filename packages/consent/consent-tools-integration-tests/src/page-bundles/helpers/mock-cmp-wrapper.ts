@@ -11,11 +11,11 @@ export const withMockCMP = (analyticsInstance: any) =>
       window.MockCMP.onConsentChange(fn)
     },
     shouldLoadSegment: async (ctx) => {
-      if (!window.MockCMP.isOptIn) {
+      if (window.MockCMP.consentModel === 'opt-out') {
         // if opt out, load immediately
-        return ctx.load({ optIn: false })
+        return ctx.load({ consentModel: 'opt-out' })
       }
       await window.MockCMP.waitForAlertBoxClose()
-      ctx.load({ optIn: true })
+      ctx.load({ consentModel: 'opt-in' })
     },
   })(analyticsInstance)

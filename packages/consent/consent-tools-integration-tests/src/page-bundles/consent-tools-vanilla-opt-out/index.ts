@@ -3,7 +3,7 @@ import { initMockConsentManager } from '../helpers/mock-cmp'
 import { withMockCMP } from '../helpers/mock-cmp-wrapper'
 
 initMockConsentManager({
-  isOptIn: false,
+  consentModel: 'opt-out',
 })
 
 const analytics = new AnalyticsBrowser()

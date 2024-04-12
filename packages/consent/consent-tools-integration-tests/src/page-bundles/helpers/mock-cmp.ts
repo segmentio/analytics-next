@@ -16,13 +16,15 @@ type ConsentChangeFn = (categories: Record<string, boolean>) => void
  * Similar to OneTrust, TrustArc, etc.
  * sets a global `window.MockCMP` object that can be used to interact with the mock consent manager.
  */
-export const initMockConsentManager = (settings: { isOptIn: boolean }) => {
+export const initMockConsentManager = (settings: { consentModel: string }) => {
+  const isOptIn = settings.consentModel === 'opt-in'
   // if opt-in is true, all categories are set to true by default
   let categories = {
-    FooCategory1: settings.isOptIn,
-    FooCategory2: settings.isOptIn,
+    FooCategory1: isOptIn,
+    FooCategory2: isOptIn,
   }
-  console.log('initMockConsentManager', settings.isOptIn, categories)
+  console.log('initMockConsentManager', settings, categories)
+
   let onConsentChange = (_categories: Record<string, boolean>) =>
     undefined as void
 
@@ -50,8 +52,8 @@ export const initMockConsentManager = (settings: { isOptIn: boolean }) => {
     get isLoaded() {
       return loaded
     },
-    get isOptIn() {
-      return settings.isOptIn
+    get consentModel() {
+      return settings.consentModel
     },
     setCategories: (newCategories: Record<string, boolean>) => {
       categories = { ...categories, ...newCategories }

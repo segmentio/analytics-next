@@ -125,7 +125,7 @@ describe(createWrapper, () => {
         wrapTestAnalytics({
           shouldLoadSegment: (ctx) => {
             ctx.abort({ loadSegmentNormally: true })
-            ctx.load({ optIn: true })
+            ctx.load({ consentModel: 'opt-in' })
           },
         })
         await expect(() =>

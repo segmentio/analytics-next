@@ -102,7 +102,7 @@
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = writeKey
             window['SEGMENT_CONSENT_WRAPPER_DEBUG_MODE'] = true
-            withOneTrust(analytics, { optIn: () => false }).load()
+            withOneTrust(analytics, { consentModel: () => 'opt-in' }).load()
             analytics.page()
           }
       })()

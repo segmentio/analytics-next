@@ -2,10 +2,10 @@
  * Tests targeting @segment/analytics-consent-tools
  */
 
-import { ConsentToolsVanilla } from '../page-objects/consent-tools-vanilla'
+import { ConsentToolsVanillaOptOut } from '../page-objects/consent-tools-vanilla'
 import { expect } from 'expect'
 
-const page = new ConsentToolsVanilla({ optIn: false })
+const page = new ConsentToolsVanillaOptOut()
 
 afterEach(async () => {
   await page.cleanup()

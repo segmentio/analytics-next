@@ -24,8 +24,10 @@ export class LoadToken {
   constructor(public options: LoadOptions) {}
 }
 
+export type ConsentModel = 'opt-in' | 'opt-out'
+
 interface LoadOptions {
-  optIn: boolean
+  consentModel: ConsentModel
 }
 
 export class LoadContext {
@@ -38,7 +40,7 @@ export class LoadContext {
     /**
      * Opt-in consent
      */
-    optIn: true,
+    consentModel: 'opt-in',
   }
 
   /**

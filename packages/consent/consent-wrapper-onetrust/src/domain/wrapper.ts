@@ -11,18 +11,18 @@ import {
   getConsentedGroupIds,
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
-import { isOptInConsentModel } from './consent-model'
+import { coerceConsentModel } from './consent-model'
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
   /**
    * Override configured consent model
-   * - optIn = true (default) - load segment and all destinations without waiting for explicit consent.
-   * - optIn = false (strict/GDPR) - wait for explicit consent before loading segment
+   * - opt-in  (default) - load segment and all destinations without waiting for explicit consent.
+   * - opt-out (strict/GDPR) - wait for explicit consent before loading segment
    *
    * By default, the value is determined by `OneTrust.GetDomainData().ConsentModel` which is set in the OneTrust UI.
    */
-  optIn?: () => boolean
+  consentModel?: () => 'opt-in' | 'opt-out'
 }
 
 /**
@@ -42,13 +42,13 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
     shouldLoadSegment: async (ctx) => {
       const OneTrust = getOneTrustGlobal()!
-      const isOptIn =
-        settings.optIn ??
-        isOptInConsentModel(OneTrust.GetDomainData().ConsentModel.Name)
+      const consentModel =
+        settings.consentModel?.() ||
+        coerceConsentModel(OneTrust.GetDomainData().ConsentModel.Name)
 
-      if (!isOptIn) {
+      if (consentModel === 'opt-out') {
         return ctx.load({
-          optIn: false,
+          consentModel: 'opt-out',
         })
       }
       await resolveWhen(() => {
@@ -61,7 +61,7 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
             OneTrust.IsAlertBoxClosed())
         )
       }, 500)
-      return ctx.load({ optIn: true })
+      return ctx.load({ consentModel: 'opt-in' })
     },
     getCategories: () => {
       const results = getNormalizedCategoriesFromGroupData()

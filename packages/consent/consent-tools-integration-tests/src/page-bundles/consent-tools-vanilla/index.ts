@@ -2,7 +2,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { initMockConsentManager } from '../helpers/mock-cmp'
 import { withMockCMP } from '../helpers/mock-cmp-wrapper'
 
-initMockConsentManager({ isOptIn: true })
+initMockConsentManager({ consentModel: 'opt-in' })
 
 const analytics = new AnalyticsBrowser()
 
