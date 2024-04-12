@@ -14,6 +14,20 @@ afterEach(async () => {
 it('should send a track call after waiting for explicit consent', async () => {
   await page.load()
 
+  void browser.execute(() => {
+    return window.analytics.track('buffered')
+  })
+
+  try {
+    // we don't expect any tracking events to go through yet
+    await browser.waitUntil(() => page.getAllTrackingEvents().length, {
+      timeout: 7000,
+    })
+    throw new Error('Expected no track calls to be made')
+  } catch (err) {
+    // expected to fail
+  }
+
   await page.clickGiveConsent()
 
   await browser.waitUntil(() => page.getConsentChangedEvents().length, {
@@ -34,10 +48,25 @@ it('should send a track call after waiting for explicit consent', async () => {
 
   await browser.waitUntil(() => getHelloTrackEvents(), {
     timeout: 20000,
-    timeoutMsg: 'Expected a track call to be made',
+    timeoutMsg: 'Expected a hello track call to be made',
   })
 
   expect(getHelloTrackEvents()!.context?.consent).toEqual({
+    categoryPreferences: {
+      FooCategory1: true,
+      FooCategory2: true,
+    },
+  })
+
+  const getBufferTrackEvents = () =>
+    page.getAllTrackingEvents().find((el) => el.event === 'buffered')
+
+  await browser.waitUntil(() => getBufferTrackEvents(), {
+    timeout: 20000,
+    timeoutMsg: 'Expected a "BUFFER" track call to be made',
+  })
+
+  expect(getBufferTrackEvents()!.context?.consent).toEqual({
     categoryPreferences: {
       FooCategory1: true,
       FooCategory2: true,
