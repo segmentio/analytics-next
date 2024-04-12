@@ -192,7 +192,7 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
     return (
       // page events can't be buffered because of destinations that automatically add page views
       ctx.event.type !== 'page' &&
-      (isOffline() || this._ready === false || this._initialized === false)
+      (isOffline() || this._ready !== true || this._initialized !== true)
     )
   }
 
@@ -313,6 +313,11 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
+      if (isOffline() || this._ready !== true || this._initialized !== true) {
+        this.scheduleFlush()
+        return
+      }
+
       this.flushing = true
       this.buffer = await flushQueue(this, this.buffer)
       this.flushing = false
