@@ -54,10 +54,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: browser-actions/setup-chrome@v1
       - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
       - run: yarn install --immutable
+      - name: Turbo cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules/.cache/turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='consent-tools-integration-tests' test:int
