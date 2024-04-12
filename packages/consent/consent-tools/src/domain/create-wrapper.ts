@@ -85,7 +85,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
       // if opt-out, we load as usual and then rely on the consent blocking middleware to block events
       // if opt-in, we remove all destinations that are not explicitly consented to so they never load in the first place
-      if (loadCtx.loadOptions.consentModel === false) {
+      if (loadCtx.loadOptions.consentModel === 'opt-out') {
         analyticsService.configureBlockingMiddlewareForOptOut()
         analyticsService.load(settings, options)
         return undefined
