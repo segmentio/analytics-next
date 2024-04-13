@@ -129,6 +129,7 @@ export class AnalyticsService {
    * ```
    */
   consentChange(categories: Categories): void {
+    logger.debug('Consent change', categories)
     try {
       validateCategories(categories)
     } catch (e: unknown) {

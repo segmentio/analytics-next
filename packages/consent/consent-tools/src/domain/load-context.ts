@@ -50,7 +50,7 @@ export class LoadContext {
   load(options: LoadOptions) {
     this.isLoadCalled = true
     this.loadOptions = { ...this.loadOptions, ...options }
-    logger.debug('Load segment w/ consent', this.loadOptions)
+    logger.debug('ctx.load called', this.loadOptions)
   }
   /**
    * Abort the _consent-wrapped_ analytics.js initialization

@@ -101,10 +101,7 @@ export const initMockConsentManager = (settings: { consentModel: string }) => {
       document.body.removeChild(alertBox)
     },
     onConsentChange: (fn: ConsentChangeFn) => {
-      onConsentChange = (...args: Parameters<ConsentChangeFn>) => {
-        console.log('Consent Changed', args)
-        fn(...args)
-      }
+      onConsentChange = fn
     },
   }
   window.MockCMP = mockCMPPublicAPI

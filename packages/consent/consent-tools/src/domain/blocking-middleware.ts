@@ -33,12 +33,14 @@ export const addBlockingMiddleware = (
       eventCategoryPreferences,
       filterSettings
     )
-    logger.debug(`Device Mode: ${creationName}`, {
+
+    logger.debug(`Destination middleware called: ${creationName}`, {
       DROPPED: disabled,
+      categoryPreferences: eventCategoryPreferences,
       payload: payload.obj,
       filterSettings,
-      eventCategoryPreferences,
     })
+
     if (disabled) return null
 
     next(payload)
@@ -67,13 +69,15 @@ export const addBlockingMiddleware = (
       eventCategoryPreferences,
       consentSettings
     )
-    logger.debug('Source Middleware', {
+
+    logger.debug('Source middleware called', {
       DROPPED: disabled,
+      categoryPreferences: eventCategoryPreferences,
       payload: payload.obj,
       filterSettings,
       consentSettings,
-      eventCategoryPreferences,
     })
+
     if (disabled) return null
     next(payload)
   }
