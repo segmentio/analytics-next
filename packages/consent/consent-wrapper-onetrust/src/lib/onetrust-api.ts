@@ -24,7 +24,7 @@ type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 export enum OtConsentModel {
   optIn = 'opt-in',
   optOut = 'opt-out',
-  implicit = 'implicit',
+  implicit = 'implied consent',
 }
 
 export interface OneTrustDomainData {
