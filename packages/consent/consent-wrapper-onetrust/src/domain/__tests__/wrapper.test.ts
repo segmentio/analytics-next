@@ -149,7 +149,6 @@ describe('High level "integration" tests', () => {
       const shouldLoadSegment = Promise.resolve(
         createWrapperSpyHelper.shouldLoadSegment({
           load: jest.fn(),
-          abort: jest.fn(),
         } as any)
       )
       checkResolveWhen()
@@ -180,7 +179,6 @@ describe('High level "integration" tests', () => {
       const shouldLoadSegment = Promise.resolve(
         createWrapperSpyHelper.shouldLoadSegment({
           load: jest.fn(),
-          abort: jest.fn(),
         } as any)
       )
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(false) // alert box is _never open
