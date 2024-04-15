@@ -96,7 +96,7 @@ The wrapper has different behavior based on the consent-model returned by onetru
 
 - **default/other** - opt-out
 
-Default behavior can be _manually_ set by doing:
+This wrapper uses the `OneTrust.getDomainData()` API to get the consent model for a given geolocation. Default behavior can be overridden by doing:
 
 ```ts
 withOneTrust(analytics).load(..., { consentModel: () => 'opt-in' | 'opt-out' })
