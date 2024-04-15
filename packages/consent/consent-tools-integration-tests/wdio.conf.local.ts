@@ -2,15 +2,12 @@ import type { Options } from '@wdio/types'
 
 const PORT = 4567
 
-const isCI = Boolean(process.env.CI)
-
 export const config: Options.Testrunner = {
+  specFileRetries: 2,
   afterTest(test, _, { error, passed }) {
     console.log(
       [
-        `${passed ? '✅ Passed' : '❌ Failed'}! ${test.description ?? ''} : ${
-          test.title
-        }`,
+        `${passed ? '✅ Passed' : '❌ Failed'}! ${test.title}`,
         test.file,
         error ? error : '',
       ].join('\n')
@@ -51,14 +48,10 @@ export const config: Options.Testrunner = {
   maxInstances: 10,
   capabilities: [
     {
-      maxInstances: 1,
+      maxInstances: 5,
       browserName: 'chrome',
       'goog:chromeOptions': {
-        args: [
-          ...(isCI ? ['headless'] : []),
-          'disable-gpu',
-          'user-data-dir=/tmp',
-        ],
+        args: process.env.CI ? ['headless', 'disable-gpu'] : [],
       },
       acceptInsecureCerts: true,
     },
