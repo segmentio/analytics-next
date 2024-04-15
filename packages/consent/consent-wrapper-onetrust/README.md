@@ -88,8 +88,6 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 
 ### Consent Models
 
-The wrapper has different behavior based on the consent-model returned by onetrust consent-models:
-
 - **opt-in** - (strict, GDPR scenario) -- wait for explicit consent (i.e. alert box to be closed) before loading device mode destinations and initializing Segment. If consent is not given (no mapped categories are consented to), then Segment is not loaded.
 
 - **opt-out** - Load segment immediately and all destinations, based on default categories. For device mode destinations, any analytics.js-originated events (e.g analytics.track) will be filtered based on consent.
