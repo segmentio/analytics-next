@@ -10,10 +10,8 @@ export const coerceConsentModel = (model: OtConsentModel): ConsentModel => {
     case OtConsentModel.implicit:
       return 'opt-in'
     case OtConsentModel.optOut:
-    case OtConsentModel.custom:
-    case OtConsentModel.notice:
       return 'opt-out'
-    default:
+    default: // there are some others like 'custom' / 'notice' that should be treated as 'opt-out'
       return 'opt-out'
   }
 }

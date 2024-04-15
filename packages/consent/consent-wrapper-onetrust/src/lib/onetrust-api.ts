@@ -24,8 +24,6 @@ type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
 export enum OtConsentModel {
   optIn = 'opt-in',
   optOut = 'opt-out',
-  custom = 'custom',
-  notice = 'notice',
   implicit = 'implicit',
 }
 
