@@ -24,7 +24,6 @@ it('should not wait for consent before sending track call', async () => {
     page.getAllTrackingEvents().find((el) => el.event === 'hello')
 
   await browser.waitUntil(() => getHelloTrackEvent(), {
-    interval: 500,
     timeout: 20000,
     timeoutMsg: 'Expected a "hello" track call to be made',
   })
@@ -35,7 +34,6 @@ it('should not wait for consent before sending track call', async () => {
 
   await page.clickGiveConsent()
   await browser.waitUntil(() => page.getConsentChangedEvents().length, {
-    interval: 500,
     timeout: 20000,
     timeoutMsg: 'Expected a consent change call to be made',
   })
@@ -48,7 +46,6 @@ it('should not wait for consent before sending track call', async () => {
   const getSupTrackEvent = () =>
     page.getAllTrackingEvents().find((el) => el.event === 'sup')
   await browser.waitUntil(() => getSupTrackEvent(), {
-    interval: 500,
     timeout: 20000,
     timeoutMsg: 'Expected a "sup" track call to be made',
   })
