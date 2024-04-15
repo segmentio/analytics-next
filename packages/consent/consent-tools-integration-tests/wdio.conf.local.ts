@@ -51,7 +51,10 @@ export const config: Options.Testrunner = {
       maxInstances: 5,
       browserName: 'chrome',
       'goog:chromeOptions': {
-        args: process.env.CI ? ['headless', 'disable-gpu'] : [],
+        args: [
+          ...(process.env.CI ? ['headless', 'disable-gpu'] : []),
+          'user-data-dir=/tmp',
+        ],
       },
       acceptInsecureCerts: true,
     },
