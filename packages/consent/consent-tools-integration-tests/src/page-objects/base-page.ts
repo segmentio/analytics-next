@@ -18,7 +18,6 @@ export abstract class BasePage {
 
   async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
-    await browser.mockClearAll()
     await this.mockCDNSettingsEndpoint()
     await this.listenForSegmentTrackCalls()
     assert(baseURL)
