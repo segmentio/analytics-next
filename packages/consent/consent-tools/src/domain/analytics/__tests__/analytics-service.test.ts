@@ -16,8 +16,9 @@ describe(AnalyticsService, () => {
   })
 
   describe('getCategories validation', () => {
-    ;[() => null, () => Promise.resolve(null)].forEach((getCategoriesFn) => {
-      it(`should throw an error if getCategories returns an invalid value like ${getCategoriesFn.toString()} in addSourceMiddleware`, async () => {
+    it.each([[() => null], [() => Promise.resolve(null)]])(
+      'should throw an error if getCategories returns an invalid value: %p',
+      async (getCategoriesFn) => {
         analyticsService = new AnalyticsService(analyticsMock, {
           // @ts-ignore
           getCategories: getCategoriesFn,
@@ -46,8 +47,8 @@ describe(AnalyticsService, () => {
           })
         ).rejects.toThrowError(/Validation/)
         expect(nextFn).not.toHaveBeenCalled()
-      })
-    })
+      }
+    )
   })
 
   it('should throw an error if getCategories returns an invalid async value', async () => {

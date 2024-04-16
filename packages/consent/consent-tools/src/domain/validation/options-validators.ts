@@ -58,7 +58,12 @@ export function validateAnalyticsInstance(
   analytics: unknown
 ): asserts analytics is AnyAnalytics {
   assertIsObject(analytics, 'analytics')
-  if ('load' in analytics && 'addSourceMiddleware' in analytics) {
+  if (
+    'load' in analytics &&
+    'addSourceMiddleware' in analytics &&
+    'addDestinationMiddleware' in analytics &&
+    'track' in analytics
+  ) {
     return
   }
   throw new ValidationError('analytics is not an Analytics instance', analytics)
