@@ -17,10 +17,8 @@ export interface OneTrustSettings {
   disableConsentChangedEvent?: boolean
   /**
    * Override configured consent model
-   * - opt-in  (default) - load segment and all destinations without waiting for explicit consent.
-   * - opt-out (strict/GDPR) - wait for explicit consent before loading segment
-   *
-   * By default, the value is determined by `OneTrust.GetDomainData().ConsentModel` which is set in the OneTrust UI.
+   * - `opt-in` (strict/GDPR) - wait for explicit consent before loading segment and all destinations.
+   * - `opt-out`  (default) - load segment and all destinations without waiting for explicit consent.
    */
   consentModel?: () => 'opt-in' | 'opt-out'
   /**

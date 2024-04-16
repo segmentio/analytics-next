@@ -5,6 +5,7 @@ import {
   CDNSettings,
   CreateWrapperSettings,
   GetCategoriesFunction,
+  InitOptions,
   IntegrationCategoryMappings,
   MaybeInitializedAnalytics,
 } from '../../types'
@@ -15,6 +16,10 @@ import { getPrunedCategories } from '../pruned-categories'
 import { validateAnalyticsInstance, validateCategories } from '../validation'
 import { logger } from '../logger'
 import { parseAllCategories } from '../config-helpers'
+import {
+  filterDeviceModeDestinationsForOptIn,
+  segmentShouldBeDisabled,
+} from '../blocking-helpers'
 
 export interface AnalyticsServiceOptions {
   getCategories: GetCategoriesFunction
@@ -48,6 +53,12 @@ export class AnalyticsService {
     return allCategories ?? []
   }
 
+  private async getCategories(): Promise<Categories> {
+    const categories = await this.options.getCategories()
+    validateCategories(categories)
+    return categories
+  }
+
   private uninitializedAnalytics: AnyAnalytics
 
   constructor(analytics: AnyAnalytics, options: AnalyticsServiceOptions) {
@@ -57,6 +68,45 @@ export class AnalyticsService {
 
     // store the raw analytics load instance, because we may replace it later
     this.ogAnalyticsLoad = analytics.load.bind(this.uninitializedAnalytics)
+  }
+
+  /**
+   * Allow for gracefully passing a custom disable function (without clobbering the default behavior)
+   */
+  private createDisableOption = (
+    categories: Categories,
+    disable: InitOptions['disable']
+  ): NonNullable<InitOptions['disable']> => {
+    if (disable === true) {
+      return true
+    }
+    return (cdnSettings: CDNSettings) => {
+      return (
+        segmentShouldBeDisabled(categories, cdnSettings.consentSettings) ||
+        (typeof disable === 'function' ? disable(cdnSettings) : false)
+      )
+    }
+  }
+
+  async loadWithFilteredDeviceModeDestinations(
+    ...[settings, options]: Parameters<AnyAnalytics['load']>
+  ): Promise<ReturnType<AnyAnalytics['load']>> {
+    const initialCategories = await this.getCategories()
+
+    const _filterDeviceModeDestinationsForOptIn = (cdnSettings: CDNSettings) =>
+      filterDeviceModeDestinationsForOptIn(cdnSettings, initialCategories, {
+        shouldEnableIntegration: this.options.shouldEnableIntegration,
+        integrationCategoryMappings: this.options.integrationCategoryMappings,
+      })
+
+    return this.load(settings, {
+      ...options,
+      updateCDNSettings: pipe(
+        _filterDeviceModeDestinationsForOptIn,
+        options?.updateCDNSettings ?? ((id) => id)
+      ),
+      disable: this.createDisableOption(initialCategories, options?.disable),
+    })
   }
 
   /**
@@ -72,7 +122,6 @@ export class AnalyticsService {
         (cdnSettings) => {
           logger.debug('CDN settings loaded', cdnSettings)
           // extract the CDN settings from this call and store it on the instance.
-          // there is an 'initialize' event emitter, but it's called too late for our purposes.
           this.cdnSettingsDeferred.resolve(cdnSettings)
           return cdnSettings
         }

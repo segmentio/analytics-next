@@ -1,18 +1,8 @@
-import {
-  Categories,
-  CreateWrapper,
-  AnyAnalytics,
-  InitOptions,
-  CDNSettings,
-} from '../types'
-import { validateCategories, validateSettings } from './validation'
-import { assertNever, pipe } from '../utils'
+import { CreateWrapper, AnyAnalytics } from '../types'
+import { validateSettings } from './validation'
+import { assertNever } from '../utils'
 import { normalizeShouldLoadSegment } from './load-context'
 import { AnalyticsService } from './analytics'
-import {
-  filterDeviceModeDestinationsForOptIn,
-  segmentShouldBeDisabled,
-} from './blocking-helpers'
 import { logger } from './logger'
 
 export const createWrapper = <Analytics extends AnyAnalytics>(
@@ -34,6 +24,7 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
   return (analytics: Analytics) => {
     const analyticsService = new AnalyticsService(analytics, {
       integrationCategoryMappings,
+      shouldEnableIntegration,
       getCategories,
     })
 
@@ -86,20 +77,10 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
       // if opt-out, we load as usual and then rely on the consent blocking middleware to block events
       // if opt-in, we remove all destinations that are not explicitly consented to so they never load in the first place
       if (loadCtx.loadOptions.consentModel === 'opt-in') {
-        const initialCategories = await getCategories()
-        validateCategories(initialCategories)
-
-        analyticsService.load(settings, {
-          ...options,
-          updateCDNSettings: pipe((cdnSettings) => {
-            return filterDeviceModeDestinationsForOptIn(
-              cdnSettings,
-              initialCategories,
-              { integrationCategoryMappings, shouldEnableIntegration }
-            )
-          }, options?.updateCDNSettings || ((id) => id)),
-          disable: createDisableOption(initialCategories, options?.disable),
-        })
+        await analyticsService.loadWithFilteredDeviceModeDestinations(
+          settings,
+          options
+        )
         return undefined
       } else if (loadCtx.loadOptions.consentModel === 'opt-out') {
         analyticsService.configureBlockingMiddlewareForOptOut()
@@ -113,23 +94,5 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
 
     analyticsService.replaceLoadMethod(loadWithConsent)
     return analytics
-  }
-}
-
-/**
- * Allow for gracefully passing a custom disable function (without clobbering the default behavior)
- */
-const createDisableOption = (
-  initialCategories: Categories,
-  disable: InitOptions['disable']
-): NonNullable<InitOptions['disable']> => {
-  if (disable === true) {
-    return true
-  }
-  return (cdnSettings: CDNSettings) => {
-    return (
-      segmentShouldBeDisabled(initialCategories, cdnSettings.consentSettings) ||
-      (typeof disable === 'function' ? disable(cdnSettings) : false)
-    )
   }
 }
