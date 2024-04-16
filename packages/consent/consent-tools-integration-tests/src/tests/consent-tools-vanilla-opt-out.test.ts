@@ -13,6 +13,11 @@ afterEach(async () => {
 it('should not wait for consent before sending track call', async () => {
   await page.load()
 
+  await browser.waitUntil(() => page.fetchIntegrationReqs.length, {
+    timeout: 20000,
+    timeoutMsg: 'Expected integrations/destinations to be fetched',
+  })
+
   await browser.execute(() => {
     return window.analytics.track('hello')
   })
