@@ -78,6 +78,16 @@ export function InAppPlugin(
                 }
              }));
         });
+
+        Gist.events.on('eventDispatched', (gistEvent: any) => {
+            if(gistEvent.name == 'analytics:track') {
+                const trackEventName:string = gistEvent.payload?.event;
+                if(typeof trackEventName === 'undefined' || trackEventName == '') {
+                    return;
+                }
+                _analytics.track(trackEventName, gistEvent.payload?.properties, gistEvent.payload?.options);
+            }
+        });
     }
 
     async function page(ctx: Context): Promise<Context> {

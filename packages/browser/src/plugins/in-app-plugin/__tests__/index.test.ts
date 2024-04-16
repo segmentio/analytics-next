@@ -8,6 +8,7 @@ describe('Customer.io In-App Plugin', () => {
   let analytics: Analytics
   let gistMessageShown: Function
   let gistMessageAction: Function
+  let gistEventDispatched: Function
 
   beforeEach(async () => {
     if(typeof analytics !== 'undefined') {
@@ -27,6 +28,8 @@ describe('Customer.io In-App Plugin', () => {
           gistMessageShown = cb
         } else if(name === 'messageAction') {
           gistMessageAction = cb
+        } else if(name === 'eventDispatched') {
+          gistEventDispatched = cb
         }
       },
       off: jest.fn(),
@@ -128,4 +131,21 @@ describe('Customer.io In-App Plugin', () => {
     expect(spy).toHaveBeenCalledTimes(0)
   })
 
+  it('should trigger journeys event for analytics:track', async () => {
+    const spy = jest.spyOn(analytics, 'track')
+    gistEventDispatched({
+      name: 'analytics:track',
+      payload: {
+        event: 'test-event',
+        properties: {
+          attr1: 'val1',
+          attr2: 'val2',
+        },
+      },
+    })
+    expect(spy).toBeCalledWith('test-event', {
+      attr1: 'val1',
+      attr2: 'val2',
+    }, undefined)
+  })
 })
