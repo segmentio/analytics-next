@@ -15,12 +15,13 @@ describe(AnalyticsService, () => {
       )
     })
   })
-  // eslint-disable-next-line jest/valid-describe-callback
+
   describe('getCategories validation', () => {
-    ;[() => null, () => Promise.resolve(null)].forEach((getCategories) => {
-      it(`should throw an error if getCategories returns an invalid value like ${getCategories.toString()} in addSourceMiddleware`, async () => {
+    ;[() => null, () => Promise.resolve(null)].forEach((getCategoriesFn) => {
+      it(`should throw an error if getCategories returns an invalid value like ${getCategoriesFn.toString()} in addSourceMiddleware`, async () => {
         analyticsService = new AnalyticsService(analyticsMock, {
-          getCategories: () => null as any,
+          // @ts-ignore
+          getCategories: getCategoriesFn,
         })
         analyticsService.configureConsentStampingMiddleware()
         const addSourceMiddlewareSpy = jest.spyOn(
