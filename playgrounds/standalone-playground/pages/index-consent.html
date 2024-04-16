@@ -110,8 +110,7 @@
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = writeKey
-            window['SEGMENT_CONSENT_WRAPPER_DEBUG_MODE'] = true
-            withOneTrust(analytics).load()
+            withOneTrust(analytics, { enableDebugLogging: true }).load()
             analytics.page()
           }
       })()
