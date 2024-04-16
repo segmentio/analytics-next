@@ -17,14 +17,14 @@ describe(AnalyticsService, () => {
 
   describe('getCategories validation', () => {
     it.each([
-      { fn: () => null, label: 'sync' },
-      { fn: () => Promise.resolve(null), label: 'async' },
+      { getCategories: () => null, label: 'sync' },
+      { getCategories: () => Promise.resolve(null), label: 'async' },
     ])(
       'should throw an error in addSourceMiddleware if getCategories returns an invalid value: $label',
-      async ({ fn: getCategoriesFn }) => {
+      async ({ getCategories }) => {
         analyticsService = new AnalyticsService(analyticsMock, {
           // @ts-ignore
-          getCategories: getCategoriesFn,
+          getCategories,
         })
         analyticsService.configureConsentStampingMiddleware()
         const addSourceMiddlewareSpy = jest.spyOn(
