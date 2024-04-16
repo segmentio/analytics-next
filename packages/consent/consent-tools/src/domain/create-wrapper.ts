@@ -92,10 +92,6 @@ export const createWrapper = <Analytics extends AnyAnalytics>(
         analyticsService.load(settings, {
           ...options,
           updateCDNSettings: pipe((cdnSettings) => {
-            if (!cdnSettings.remotePlugins) {
-              return cdnSettings
-            }
-
             return filterDeviceModeDestinationsForOptIn(
               cdnSettings,
               initialCategories,

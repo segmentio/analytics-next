@@ -134,7 +134,7 @@ export interface CDNSettingsConsent {
 
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
-  remotePlugins?: CDNSettingsRemotePlugin[]
+  remotePlugins: CDNSettingsRemotePlugin[]
   consentSettings?: CDNSettingsConsent
 }
 

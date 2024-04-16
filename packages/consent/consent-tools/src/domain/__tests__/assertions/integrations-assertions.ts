@@ -18,7 +18,7 @@ export const assertIntegrationsContainOnly = (
   updatedCDNSettings: CDNSettings
 ) => {
   expect(updatedCDNSettings.remotePlugins).toEqual(
-    originalCDNSettings.remotePlugins?.filter((p) =>
+    originalCDNSettings.remotePlugins.filter((p) =>
       // enabled consent
       creationNames.includes(p.creationName)
     )
