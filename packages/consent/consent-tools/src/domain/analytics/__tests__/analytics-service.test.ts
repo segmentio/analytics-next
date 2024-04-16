@@ -1,7 +1,6 @@
 import { AnalyticsService, getInitializedAnalytics } from '../analytics-service'
 import { analyticsMock } from '../../../test-helpers/mocks'
 import { ValidationError } from '../../validation/validation-error'
-import { add } from 'lodash'
 import { Context } from '@segment/analytics-next'
 
 describe(AnalyticsService, () => {
