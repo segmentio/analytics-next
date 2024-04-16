@@ -33,7 +33,6 @@ describe(AnalyticsService, () => {
           middlewareFn({
             next: nextFn,
             payload: {
-              // @ts-ignore
               obj: {
                 context: {
                   ...new Context({ type: 'track' }),
