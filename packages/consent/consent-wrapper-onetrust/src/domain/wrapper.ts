@@ -12,6 +12,7 @@ import {
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
 import { coerceConsentModel } from './consent-model'
+
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
