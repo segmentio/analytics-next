@@ -11,7 +11,7 @@ import {
   segmentShouldBeDisabled,
 } from './blocking-helpers'
 import { logger } from './logger'
-import { parseAllCategories } from './pruned-categories'
+import { parseAllCategories } from './config-helpers'
 
 // Block all device mode destinations
 export const addBlockingMiddleware = (

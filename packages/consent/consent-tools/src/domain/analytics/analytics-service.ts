@@ -11,9 +11,10 @@ import {
 import { pipe } from '../../utils'
 import { addBlockingMiddleware } from '../blocking-middleware'
 import { createConsentStampingMiddleware } from '../consent-stamping'
-import { parseAllCategories, getPrunedCategories } from '../pruned-categories'
+import { getPrunedCategories } from '../pruned-categories'
 import { validateAnalyticsInstance, validateCategories } from '../validation'
 import { logger } from '../logger'
+import { parseAllCategories } from '../config-helpers'
 
 export interface AnalyticsServiceOptions {
   getCategories: GetCategoriesFunction

@@ -23,6 +23,10 @@ export interface OneTrustSettings {
    * By default, the value is determined by `OneTrust.GetDomainData().ConsentModel` which is set in the OneTrust UI.
    */
   consentModel?: () => 'opt-in' | 'opt-out'
+  /**
+   * Enable debug logging for OneTrust wrapper
+   */
+  enableDebugLogging?: boolean
 }
 
 /**
@@ -78,5 +82,6 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
           })
         },
     integrationCategoryMappings: settings.integrationCategoryMappings,
+    enableDebugLogging: settings.enableDebugLogging,
   })(analyticsInstance)
 }

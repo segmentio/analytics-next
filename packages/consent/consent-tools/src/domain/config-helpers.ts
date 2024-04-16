@@ -1,3 +1,6 @@
+import { IntegrationCategoryMappings } from '../types'
+import { uniq } from '../utils'
+
 /**
  * Parse list of categories from `cdnSettings.integration.myIntegration` object
  * @example
@@ -19,4 +22,12 @@ export const parseConsentCategories = (
   }
 
   return undefined
+}
+
+export const parseAllCategories = (
+  integrationCategoryMappings: IntegrationCategoryMappings
+) => {
+  return uniq(
+    Object.values(integrationCategoryMappings).reduce((p, n) => p.concat(n))
+  )
 }
