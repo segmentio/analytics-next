@@ -48,7 +48,7 @@ describe(AnalyticsService, () => {
             next: nextFn,
             payload,
           })
-        ).rejects.toThrowError(/Validation/)
+        ).rejects.toThrow(/Validation/)
         expect(nextFn).not.toHaveBeenCalled()
       }
     )
