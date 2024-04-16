@@ -20,7 +20,7 @@ describe(AnalyticsService, () => {
       { fn: () => null, label: 'sync' },
       { fn: () => Promise.resolve(null), label: 'async' },
     ])(
-      'should throw an error if getCategories returns an invalid value: $label',
+      'should throw an error in configureConsentStampingMiddleware if getCategories returns an invalid value: $label',
       async ({ fn: getCategoriesFn }) => {
         analyticsService = new AnalyticsService(analyticsMock, {
           // @ts-ignore
