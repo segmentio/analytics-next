@@ -47,7 +47,7 @@ export const addBlockingMiddleware = (
   }
   analyticsInstance.addDestinationMiddleware('*', blockDeviceMode)
 
-  // Block segment itsel (Segment.io isn't currently allowed in addDestinationMiddleware)
+  // Block segment itself (Segment.io isn't currently allowed in addDestinationMiddleware)
   const blockSegmentAndEverythingElse: SourceMiddlewareFunction = async ({
     payload,
     next,
