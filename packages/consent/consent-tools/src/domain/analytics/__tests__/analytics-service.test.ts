@@ -16,9 +16,12 @@ describe(AnalyticsService, () => {
   })
 
   describe('getCategories validation', () => {
-    it.each([[() => null], [() => Promise.resolve(null)]])(
-      'should throw an error if getCategories returns an invalid value: %p',
-      async (getCategoriesFn) => {
+    it.each([
+      { fn: () => null, label: 'sync' },
+      { fn: () => Promise.resolve(null), label: 'async' },
+    ])(
+      'should throw an error if getCategories returns an invalid value: $label',
+      async ({ fn: getCategoriesFn }) => {
         analyticsService = new AnalyticsService(analyticsMock, {
           // @ts-ignore
           getCategories: getCategoriesFn,
