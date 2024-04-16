@@ -1,11 +1,13 @@
 import { BasePage } from './base-page'
 
 export class ConsentToolsVanilla extends BasePage {
-  clickGiveConsent() {
-    return $('#give-consent').click()
+  async clickGiveConsent() {
+    const button = await $('#give-consent')
+    return button.click()
   }
-  clickDenyConsent() {
-    return $('#deny-consent').click()
+  async clickDenyConsent() {
+    const button = await $('#give-consent')
+    return button.click()
   }
 }
 
