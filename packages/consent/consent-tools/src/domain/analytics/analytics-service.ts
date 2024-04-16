@@ -148,10 +148,10 @@ export class AnalyticsService {
   }
 
   configureConsentStampingMiddleware(): void {
-    const { getCategories, pruneUnmappedCategories } = this.settings
+    const { pruneUnmappedCategories } = this.settings
     // normalize getCategories pruning is turned on or off
     const getCategoriesForConsentStamping = async (): Promise<Categories> => {
-      const categories = await getCategories()
+      const categories = await this.getCategories()
       if (pruneUnmappedCategories) {
         return getPrunedCategories(categories, await this.getAllCategories())
       }
