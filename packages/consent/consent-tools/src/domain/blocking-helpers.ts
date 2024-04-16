@@ -81,10 +81,6 @@ export const filterDeviceModeDestinationsForOptIn = (
   const { integrationCategoryMappings, shouldEnableIntegration } =
     filterSettings
 
-  if (!remotePlugins) {
-    return cdnSettings
-  }
-
   const cdnSettingsCopy: CDNSettings = {
     ...cdnSettings,
     remotePlugins: [...(remotePlugins || [])],
@@ -105,7 +101,7 @@ export const filterDeviceModeDestinationsForOptIn = (
   for (const creationName in integrations) {
     if (!_shouldEnableIntegrationHelper(creationName)) {
       logger.debug(`Disabled (opt-in): ${creationName}`)
-      cdnSettingsCopy.remotePlugins = remotePlugins.filter(
+      cdnSettingsCopy.remotePlugins = remotePlugins?.filter(
         (p) => p.creationName !== creationName
       )
       // remove disabled classic destinations and locally-installed action destinations
