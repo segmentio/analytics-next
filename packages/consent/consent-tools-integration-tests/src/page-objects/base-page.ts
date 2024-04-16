@@ -15,12 +15,12 @@ export abstract class BasePage {
   constructor(protected page: string) {}
 
   segmentTrackingApiReqs: Matches[] = []
+  integrationApiReqs: Matches[] = []
 
   async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
-    await this.mockCDNSettingsEndpoint()
-    await this.listenForSegmentTrackCalls()
     assert(baseURL)
+    await this.mockAPIs()
     await browser.url(baseURL + '/public/' + this.page)
     await waitUntilReady()
   }
@@ -47,10 +47,17 @@ export abstract class BasePage {
 
   async cleanup() {
     this.segmentTrackingApiReqs = []
+    this.integrationApiReqs = []
     await this.clearStorage()
   }
 
-  async listenForSegmentTrackCalls(): Promise<void> {
+  async mockAPIs() {
+    await this.mockSegmentTrackingAPI()
+    await this.mockCDNSettingsAPI()
+    await this.mockNextIntegrationsAPI()
+  }
+
+  private async mockSegmentTrackingAPI(): Promise<void> {
     const mock = await browser.mock('https://api.segment.io/v1/t', {
       method: 'post',
     })
@@ -62,24 +69,35 @@ export abstract class BasePage {
         body: JSON.stringify({ success: true }),
       })
     })
-    return
   }
 
-  /**
-   * Mock the CDN Settings endpoint so that this can run offline
+  private async mockNextIntegrationsAPI(): Promise<void> {
+    const mock = await browser.mock('**/next-integrations/**')
+    mock.respond((mock) => {
+      this.integrationApiReqs.push(mock)
+      return Promise.resolve({
+        statusCode: 200,
+        body: 'console.log("mocked next-integrations")',
+      })
+    })
+  }
+
+  /**   * Mock the CDN Settings endpoint so that this can run offline
    */
-  private async mockCDNSettingsEndpoint(): Promise<void> {
+  private async mockCDNSettingsAPI(): Promise<void> {
     const settings = new CDNSettingsBuilder({
       writeKey: 'something',
     })
       .addActionDestinationSettings(
         {
+          url: 'https://cdn.segment.com/next-integrations/actions/fullstory-plugins/foo.js',
           creationName: 'FullStory',
           consentSettings: {
             categories: ['FooCategory2'],
           },
         },
         {
+          url: 'https://cdn.segment.com/next-integrations/actions/amplitude-plugins/foo.js',
           creationName: 'Actions Amplitude',
           consentSettings: {
             categories: ['FooCategory1'],
