@@ -39,6 +39,11 @@ it('should send a track call after waiting for explicit consent', async () => {
   expect(consentChangeEvents.length).toBe(1)
   expect(consentChangeEvents[0].event).toEqual('Segment Consent Preference')
 
+  await browser.waitUntil(() => page.fetchIntegrationReqs.length, {
+    timeout: 20000,
+    timeoutMsg: 'Expected integrations/destinations to be fetched',
+  })
+
   await browser.execute(() => {
     return window.analytics.track('hello')
   })

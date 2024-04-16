@@ -15,7 +15,7 @@ export abstract class BasePage {
   constructor(protected page: string) {}
 
   segmentTrackingApiReqs: Matches[] = []
-  integrationApiReqs: Matches[] = []
+  fetchIntegrationReqs: Matches[] = []
 
   async load(): Promise<void> {
     const baseURL = browser.options.baseUrl
@@ -47,7 +47,7 @@ export abstract class BasePage {
 
   async cleanup() {
     this.segmentTrackingApiReqs = []
-    this.integrationApiReqs = []
+    this.fetchIntegrationReqs = []
     await this.clearStorage()
   }
 
@@ -74,10 +74,10 @@ export abstract class BasePage {
   private async mockNextIntegrationsAPI(): Promise<void> {
     const mock = await browser.mock('**/next-integrations/**')
     mock.respond((mock) => {
-      this.integrationApiReqs.push(mock)
+      this.fetchIntegrationReqs.push(mock)
       return Promise.resolve({
         statusCode: 200,
-        body: 'console.log("mocked next-integrations")',
+        body: 'console.log("mocking action and classic destinations")',
       })
     })
   }
