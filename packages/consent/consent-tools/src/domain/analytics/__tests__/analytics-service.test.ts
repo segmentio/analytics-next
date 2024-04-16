@@ -29,19 +29,20 @@ describe(AnalyticsService, () => {
         )
         const middlewareFn = addSourceMiddlewareSpy.mock.calls[0][0]
         const nextFn = jest.fn()
+        const payload = {
+          obj: {
+            context: {
+              ...new Context({ type: 'track' }),
+              consent: {
+                categoryPreferences: { C0001: true },
+              },
+            },
+          },
+        }
         await expect(() =>
           middlewareFn({
             next: nextFn,
-            payload: {
-              obj: {
-                context: {
-                  ...new Context({ type: 'track' }),
-                  consent: {
-                    categoryPreferences: { C0001: true },
-                  },
-                },
-              },
-            },
+            payload,
           })
         ).rejects.toThrowError(/Validation/)
         expect(nextFn).not.toHaveBeenCalled()
