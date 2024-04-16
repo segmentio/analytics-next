@@ -19,6 +19,6 @@ export class ConsentToolsVanillaOptOut extends ConsentToolsVanilla {
 
 export class ConsentToolsVanillaOptIn extends ConsentToolsVanilla {
   constructor() {
-    super('consent-tools-vanilla.html')
+    super('consent-tools-vanilla-opt-in.html')
   }
 }
