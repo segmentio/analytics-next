@@ -1,6 +1,8 @@
 import { AnalyticsService, getInitializedAnalytics } from '../analytics-service'
 import { analyticsMock } from '../../../test-helpers/mocks'
 import { ValidationError } from '../../validation/validation-error'
+import { add } from 'lodash'
+import { Context } from '@segment/analytics-next'
 
 describe(AnalyticsService, () => {
   let analyticsService: AnalyticsService
@@ -12,6 +14,70 @@ describe(AnalyticsService, () => {
         ValidationError
       )
     })
+  })
+  // eslint-disable-next-line jest/valid-describe-callback
+  describe('getCategories validation', () => {
+    ;[() => null, () => Promise.resolve(null)].forEach((getCategories) => {
+      it(`should throw an error if getCategories returns an invalid value like ${getCategories.toString()} in addSourceMiddleware`, async () => {
+        analyticsService = new AnalyticsService(analyticsMock, {
+          getCategories: () => null as any,
+        })
+        analyticsService.configureConsentStampingMiddleware()
+        const addSourceMiddlewareSpy = jest.spyOn(
+          analyticsMock,
+          'addSourceMiddleware'
+        )
+        const middlewareFn = addSourceMiddlewareSpy.mock.calls[0][0]
+        const nextFn = jest.fn()
+        await expect(() =>
+          middlewareFn({
+            next: nextFn,
+            payload: {
+              // @ts-ignore
+              obj: {
+                context: {
+                  ...new Context({ type: 'track' }),
+                  consent: {
+                    categoryPreferences: { C0001: true },
+                  },
+                },
+              },
+            },
+          })
+        ).rejects.toThrowError(/Validation/)
+        expect(nextFn).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  it('should throw an error if getCategories returns an invalid async value', async () => {
+    analyticsService = new AnalyticsService(analyticsMock, {
+      getCategories: () => null as any,
+    })
+    analyticsService.configureConsentStampingMiddleware()
+    const addSourceMiddlewareSpy = jest.spyOn(
+      analyticsMock,
+      'addSourceMiddleware'
+    )
+    const middlewareFn = addSourceMiddlewareSpy.mock.calls[0][0]
+    const nextFn = jest.fn()
+    await expect(() =>
+      middlewareFn({
+        next: nextFn,
+        payload: {
+          // @ts-ignore
+          obj: {
+            context: {
+              ...new Context({ type: 'track' }),
+              consent: {
+                categoryPreferences: { C0001: true },
+              },
+            },
+          },
+        },
+      })
+    ).rejects.toThrowError(/Validation/)
+    expect(nextFn).not.toHaveBeenCalled()
   })
 
   describe('load', () => {

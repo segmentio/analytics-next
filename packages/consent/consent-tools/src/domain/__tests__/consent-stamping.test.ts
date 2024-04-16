@@ -41,30 +41,4 @@ describe(createConsentStampingMiddleware, () => {
       Advertising: true,
     })
   })
-
-  it('should throw an error if getCategories returns an invalid value', async () => {
-    middlewareFn = createConsentStampingMiddleware(getCategories)
-    getCategories.mockReturnValue(null as any)
-    await expect(() =>
-      middlewareFn({
-        next: nextFn,
-        // @ts-ignore
-        payload,
-      })
-    ).rejects.toThrowError(/Validation/)
-    expect(nextFn).not.toHaveBeenCalled()
-  })
-
-  it('should throw an error if getCategories returns an invalid async value', async () => {
-    middlewareFn = createConsentStampingMiddleware(getCategories)
-    getCategories.mockResolvedValue(null as any)
-    await expect(() =>
-      middlewareFn({
-        next: nextFn,
-        // @ts-ignore
-        payload,
-      })
-    ).rejects.toThrowError(/Validation/)
-    expect(nextFn).not.toHaveBeenCalled()
-  })
 })
