@@ -17,10 +17,10 @@ describe(AnalyticsService, () => {
 
   describe('getCategories validation', () => {
     it.each([
-      { getCategories: () => null, label: 'sync' },
-      { getCategories: () => Promise.resolve(null), label: 'async' },
+      { test: 'sync', getCategories: () => null },
+      { test: 'async', getCategories: () => Promise.resolve(null) },
     ])(
-      'should throw an error in addSourceMiddleware if getCategories returns an invalid value: $label',
+      'should throw an error in addSourceMiddleware if getCategories returns an invalid value: $test',
       async ({ getCategories }) => {
         analyticsService = new AnalyticsService(analyticsMock, {
           // @ts-ignore
