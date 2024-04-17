@@ -11,10 +11,21 @@ import {
   getConsentedGroupIds,
   getOneTrustGlobal,
 } from '../lib/onetrust-api'
+import { coerceConsentModel } from './consent-model'
 
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
+  /**
+   * Override configured consent model
+   * - `opt-in` (strict/GDPR) - wait for explicit consent before loading segment and all destinations.
+   * - `opt-out`  (default) - load segment and all destinations without waiting for explicit consent.
+   */
+  consentModel?: () => 'opt-in' | 'opt-out'
+  /**
+   * Enable debug logging for OneTrust wrapper
+   */
+  enableDebugLogging?: boolean
 }
 
 /**
@@ -32,9 +43,18 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
       await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
     },
     // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
-    shouldLoadSegment: async () => {
+    shouldLoadSegment: async (ctx) => {
+      const OneTrust = getOneTrustGlobal()!
+      const consentModel =
+        settings.consentModel?.() ||
+        coerceConsentModel(OneTrust.GetDomainData().ConsentModel.Name)
+
+      if (consentModel === 'opt-out') {
+        return ctx.load({
+          consentModel: 'opt-out',
+        })
+      }
       await resolveWhen(() => {
-        const OneTrust = getOneTrustGlobal()!
         return (
           // if any groups at all are consented to
           Boolean(getConsentedGroupIds().length) &&
@@ -44,6 +64,7 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
             OneTrust.IsAlertBoxClosed())
         )
       }, 500)
+      return ctx.load({ consentModel: 'opt-in' })
     },
     getCategories: () => {
       const results = getNormalizedCategoriesFromGroupData()
@@ -60,5 +81,6 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
           })
         },
     integrationCategoryMappings: settings.integrationCategoryMappings,
+    enableDebugLogging: settings.enableDebugLogging,
   })(analyticsInstance)
 }

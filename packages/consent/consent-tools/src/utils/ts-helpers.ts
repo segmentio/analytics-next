@@ -22,3 +22,12 @@ type Compute<T> = { [K in keyof T]: T[K] } & {}
 export type OptionalField<T, K extends keyof T> = Compute<
   Omit<T, K> & Partial<Pick<T, K>>
 >
+
+/**
+ * Helper function for exhaustive checks of discriminated unions.
+ */
+export function assertNever(value: never): never {
+  throw new Error(
+    `Unhandled discriminated union member: ${JSON.stringify(value)}`
+  )
+}

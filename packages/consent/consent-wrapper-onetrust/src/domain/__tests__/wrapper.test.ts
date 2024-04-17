@@ -42,7 +42,6 @@ describe('High level "integration" tests', () => {
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
     getConsentedGroupIdsSpy.mockReset()
-    analyticsMock.on = jest.fn()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
@@ -57,17 +56,101 @@ describe('High level "integration" tests', () => {
   })
 
   describe('shouldLoadSegment', () => {
+    describe('consent model', () => {
+      it('should support opt-in', async () => {
+        withOneTrust(analyticsMock)
+
+        getConsentedGroupIdsSpy.mockImplementation(() => [
+          domainGroupMock.StrictlyNeccessary.CustomGroupId,
+        ])
+
+        OneTrustMockGlobal.GetDomainData.mockReturnValue({
+          ...domainDataMock,
+          ConsentModel: {
+            Name: OneTrustAPI.OtConsentModel.optIn,
+          },
+        })
+        OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
+
+        const load = jest.fn()
+        const shouldLoadSegP = createWrapperSpyHelper.shouldLoadSegment({
+          load,
+        } as any)
+        checkResolveWhen()
+        await shouldLoadSegP
+        expect(load).toHaveBeenCalledWith({ consentModel: 'opt-in' })
+      })
+
+      it('should not wait for alert box to be closed if opt-out', async () => {
+        withOneTrust(analyticsMock)
+
+        OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValue(false)
+
+        OneTrustMockGlobal.GetDomainData.mockReturnValue({
+          ...domainDataMock,
+          ConsentModel: {
+            Name: OneTrustAPI.OtConsentModel.optOut,
+          },
+        })
+        const load = jest.fn()
+        void createWrapperSpyHelper.shouldLoadSegment({
+          load,
+        } as any)
+        expect(load).toHaveBeenCalledWith({ consentModel: 'opt-out' })
+      })
+
+      it('should default to opt-out consent model if OneTrust.ConsentModel.Name is unrecognized', async () => {
+        withOneTrust(analyticsMock)
+
+        OneTrustMockGlobal.GetDomainData.mockReturnValue({
+          ...domainDataMock,
+          ConsentModel: {
+            Name: 'foo' as any,
+          },
+        })
+        OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
+
+        const load = jest.fn()
+        void createWrapperSpyHelper.shouldLoadSegment({
+          load,
+        } as any)
+        expect(load).toHaveBeenCalledWith({ consentModel: 'opt-out' })
+      })
+      it('should support a configuration that overrides the consent model', async () => {
+        withOneTrust(analyticsMock, { consentModel: () => 'opt-in' })
+        OneTrustMockGlobal.GetDomainData.mockReturnValue({
+          ...domainDataMock,
+          ConsentModel: {
+            Name: OneTrustAPI.OtConsentModel.optOut,
+          },
+        })
+        OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
+        getConsentedGroupIdsSpy.mockImplementation(() => [
+          domainGroupMock.StrictlyNeccessary.CustomGroupId,
+        ])
+        const load = jest.fn()
+        const shouldLoadSegP = createWrapperSpyHelper.shouldLoadSegment({
+          load,
+        } as any)
+        checkResolveWhen()
+        await shouldLoadSegP
+        expect(load).toHaveBeenCalledWith({ consentModel: 'opt-in' })
+      })
+    })
+
     it('should load if alert box is closed and groups are defined', async () => {
       withOneTrust(analyticsMock)
 
-      const shouldLoadSegment = Promise.resolve(
-        createWrapperSpyHelper.shouldLoadSegment({} as any)
-      )
-      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce(domainDataMock)
+      OneTrustMockGlobal.GetDomainData.mockReturnValue(domainDataMock)
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
       getConsentedGroupIdsSpy.mockImplementation(() => [
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
+      const shouldLoadSegment = Promise.resolve(
+        createWrapperSpyHelper.shouldLoadSegment({
+          load: jest.fn(),
+        } as any)
+      )
       checkResolveWhen()
       await expect(shouldLoadSegment).resolves.toBeUndefined()
     })
@@ -86,7 +169,7 @@ describe('High level "integration" tests', () => {
 
     it("should load regardless of AlertBox status if showAlertNotice is true (e.g. 'show banner is unchecked')", async () => {
       withOneTrust(analyticsMock)
-      OneTrustMockGlobal.GetDomainData.mockReturnValueOnce({
+      OneTrustMockGlobal.GetDomainData.mockReturnValue({
         ...domainDataMock,
         ShowAlertNotice: false, // meaning, it's open
       })
@@ -94,7 +177,9 @@ describe('High level "integration" tests', () => {
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const shouldLoadSegment = Promise.resolve(
-        createWrapperSpyHelper.shouldLoadSegment({} as any)
+        createWrapperSpyHelper.shouldLoadSegment({
+          load: jest.fn(),
+        } as any)
       )
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(false) // alert box is _never open
       checkResolveWhen()

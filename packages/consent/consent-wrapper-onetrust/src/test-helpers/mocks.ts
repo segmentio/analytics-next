@@ -1,5 +1,8 @@
-import { OneTrustDomainData, OneTrustGlobal } from '../lib/onetrust-api'
-import { addDebugMockImplementation } from './utils'
+import {
+  OneTrustDomainData,
+  OneTrustGlobal,
+  OtConsentModel,
+} from '../lib/onetrust-api'
 import type { AnyAnalytics } from '@segment/analytics-consent-tools'
 /**
  * This can be used to mock the OneTrust global object in individual tests
@@ -9,17 +12,12 @@ import type { AnyAnalytics } from '@segment/analytics-consent-tools'
  * jest.spyOn(OneTrustAPI, 'getOneTrustGlobal').mockImplementation(() => OneTrustMockGlobal)
  * ````
  */
-export const OneTrustMockGlobal: jest.Mocked<OneTrustGlobal> = {
-  GetDomainData: jest.fn(),
-  IsAlertBoxClosed: jest.fn(),
-  OnConsentChanged: jest.fn(),
-}
 
 export const analyticsMock: jest.Mocked<AnyAnalytics> = {
   page: jest.fn(),
   addSourceMiddleware: jest.fn(),
+  addDestinationMiddleware: jest.fn(),
   load: jest.fn(),
-  on: jest.fn(),
   track: jest.fn(),
 }
 
@@ -37,8 +35,14 @@ export const domainGroupMock = {
 
 export const domainDataMock: jest.Mocked<OneTrustDomainData> = {
   Groups: [domainGroupMock.StrictlyNeccessary],
+  ConsentModel: {
+    Name: OtConsentModel.optIn,
+  },
   ShowAlertNotice: true,
 }
 
-addDebugMockImplementation(OneTrustMockGlobal)
-addDebugMockImplementation(analyticsMock)
+export const OneTrustMockGlobal: jest.Mocked<OneTrustGlobal> = {
+  GetDomainData: jest.fn().mockReturnValue(domainDataMock),
+  IsAlertBoxClosed: jest.fn(),
+  OnConsentChanged: jest.fn(),
+}

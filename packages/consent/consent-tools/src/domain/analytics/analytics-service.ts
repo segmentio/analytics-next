@@ -1,37 +1,132 @@
+import { createDeferred } from '@segment/analytics-generic-utils'
 import {
   AnyAnalytics,
   Categories,
   CDNSettings,
   CreateWrapperSettings,
+  InitOptions,
   MaybeInitializedAnalytics,
 } from '../../types'
+import { pipe } from '../../utils'
+import { addBlockingMiddleware } from '../blocking-middleware'
 import { createConsentStampingMiddleware } from '../consent-stamping'
 import { getPrunedCategories } from '../pruned-categories'
 import { validateAnalyticsInstance, validateCategories } from '../validation'
+import { logger } from '../logger'
+import { parseAllCategories } from '../config-helpers'
+import {
+  filterDeviceModeDestinationsForOptIn,
+  segmentShouldBeDisabled,
+} from '../blocking-helpers'
+
+export type AnalyticsServiceSettings = Pick<
+  CreateWrapperSettings,
+  | 'getCategories'
+  | 'pruneUnmappedCategories'
+  | 'integrationCategoryMappings'
+  | 'shouldEnableIntegration'
+>
 
 /**
  * This class is a wrapper around the analytics.js library.
  */
 export class AnalyticsService {
-  cdnSettings: Promise<CDNSettings>
-  /**
-   * The original analytics.load fn
-   */
-  loadNormally: AnyAnalytics['load']
+  private settings: AnalyticsServiceSettings
+
+  private cdnSettingsDeferred = createDeferred<CDNSettings>()
+
+  private ogAnalyticsLoad: AnyAnalytics['load']
 
   private get analytics() {
-    return getInitializedAnalytics(this._uninitializedAnalytics)
+    return getInitializedAnalytics(this.uninitializedAnalytics)
   }
 
-  private _uninitializedAnalytics: AnyAnalytics
+  private get cdnSettings(): Promise<CDNSettings> {
+    return this.cdnSettingsDeferred.promise
+  }
 
-  constructor(analytics: AnyAnalytics) {
+  private async getAllCategories(): Promise<string[]> {
+    const allCategories = this.settings.integrationCategoryMappings
+      ? parseAllCategories(this.settings.integrationCategoryMappings)
+      : (await this.cdnSettings).consentSettings?.allCategories
+
+    return allCategories ?? []
+  }
+
+  private async getCategories(): Promise<Categories> {
+    const categories = await this.settings.getCategories()
+    validateCategories(categories)
+    return categories
+  }
+
+  private uninitializedAnalytics: AnyAnalytics
+
+  constructor(analytics: AnyAnalytics, options: AnalyticsServiceSettings) {
     validateAnalyticsInstance(analytics)
-    this._uninitializedAnalytics = analytics
-    this.loadNormally = analytics.load.bind(this._uninitializedAnalytics)
-    this.cdnSettings = new Promise<CDNSettings>((resolve) =>
-      this.analytics.on('initialize', resolve)
-    )
+    this.settings = options
+    this.uninitializedAnalytics = analytics
+
+    // store the raw analytics load instance, because we may replace it later
+    this.ogAnalyticsLoad = analytics.load.bind(this.uninitializedAnalytics)
+  }
+
+  /**
+   * Allow for gracefully passing a custom disable function (without clobbering the default behavior)
+   */
+  private createDisableOption = (
+    categories: Categories,
+    disable: InitOptions['disable']
+  ): NonNullable<InitOptions['disable']> => {
+    if (disable === true) {
+      return true
+    }
+    return (cdnSettings: CDNSettings) => {
+      return (
+        segmentShouldBeDisabled(categories, cdnSettings.consentSettings) ||
+        (typeof disable === 'function' ? disable(cdnSettings) : false)
+      )
+    }
+  }
+
+  async loadWithFilteredDeviceModeDestinations(
+    ...[settings, options]: Parameters<AnyAnalytics['load']>
+  ): Promise<ReturnType<AnyAnalytics['load']>> {
+    const initialCategories = await this.getCategories()
+
+    const _filterDeviceModeDestinationsForOptIn = (cdnSettings: CDNSettings) =>
+      filterDeviceModeDestinationsForOptIn(cdnSettings, initialCategories, {
+        shouldEnableIntegration: this.settings.shouldEnableIntegration,
+        integrationCategoryMappings: this.settings.integrationCategoryMappings,
+      })
+
+    return this.load(settings, {
+      ...options,
+      updateCDNSettings: pipe(
+        _filterDeviceModeDestinationsForOptIn,
+        options?.updateCDNSettings ?? ((id) => id)
+      ),
+      disable: this.createDisableOption(initialCategories, options?.disable),
+    })
+  }
+
+  /**
+   * The orignal analytics load function, but also stores the CDN settings on the instance.
+   */
+  load(
+    ...[settings, options]: Parameters<AnyAnalytics['load']>
+  ): ReturnType<AnyAnalytics['load']> {
+    return this.ogAnalyticsLoad(settings, {
+      ...options,
+      updateCDNSettings: pipe(
+        options?.updateCDNSettings || ((id) => id),
+        (cdnSettings) => {
+          logger.debug('CDN settings loaded', cdnSettings)
+          // extract the CDN settings from this call and store it on the instance.
+          this.cdnSettingsDeferred.resolve(cdnSettings)
+          return cdnSettings
+        }
+      ),
+    })
   }
 
   /**
@@ -45,29 +140,26 @@ export class AnalyticsService {
     this.analytics.page()
   }
 
-  configureConsentStampingMiddleware({
-    getCategories,
-    pruneUnmappedCategories,
-    integrationCategoryMappings,
-  }: Pick<
-    CreateWrapperSettings,
-    'getCategories' | 'pruneUnmappedCategories' | 'integrationCategoryMappings'
-  >): void {
+  configureBlockingMiddlewareForOptOut(): void {
+    addBlockingMiddleware(this.cdnSettings, this.analytics, {
+      integrationCategoryMappings: this.settings.integrationCategoryMappings,
+      shouldEnableIntegration: this.settings.shouldEnableIntegration,
+    })
+  }
+
+  configureConsentStampingMiddleware(): void {
+    const { pruneUnmappedCategories } = this.settings
     // normalize getCategories pruning is turned on or off
     const getCategoriesForConsentStamping = async (): Promise<Categories> => {
+      const categories = await this.getCategories()
       if (pruneUnmappedCategories) {
-        return getPrunedCategories(
-          getCategories,
-          await this.cdnSettings,
-          integrationCategoryMappings
-        )
-      } else {
-        return getCategories()
+        return getPrunedCategories(categories, await this.getAllCategories())
       }
+      return categories
     }
 
     const MW = createConsentStampingMiddleware(getCategoriesForConsentStamping)
-    return this.analytics.addSourceMiddleware(MW)
+    this.analytics.addSourceMiddleware(MW)
   }
 
   /**
@@ -87,6 +179,7 @@ export class AnalyticsService {
    * ```
    */
   consentChange(categories: Categories): void {
+    logger.debug('Consent change', categories)
     try {
       validateCategories(categories)
     } catch (e: unknown) {

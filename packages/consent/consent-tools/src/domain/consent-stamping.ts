@@ -1,21 +1,22 @@
-import { AnyAnalytics, Categories } from '../types'
-import { validateCategories } from './validation'
+import { Categories, SourceMiddlewareFunction } from '../types'
 
 type CreateConsentMw = (
   getCategories: () => Promise<Categories>
-) => AnyAnalytics['addSourceMiddleware']
+) => SourceMiddlewareFunction
 
 /**
  * Create analytics addSourceMiddleware fn that stamps each event
  */
-export const createConsentStampingMiddleware: CreateConsentMw =
-  (getCategories) =>
-  async ({ payload, next }) => {
-    const categories = await getCategories()
-    validateCategories(categories)
+export const createConsentStampingMiddleware: CreateConsentMw = (
+  getCategories
+) => {
+  const fn: SourceMiddlewareFunction = async ({ payload, next }) => {
     payload.obj.context.consent = {
       ...payload.obj.context.consent,
-      categoryPreferences: categories,
+      categoryPreferences: await getCategories(),
     }
+
     next(payload)
   }
+  return fn
+}

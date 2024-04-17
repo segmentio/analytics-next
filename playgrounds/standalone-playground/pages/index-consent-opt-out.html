@@ -28,8 +28,17 @@
   </script>
 
   <!-- OneTrust Vendor Script -->
-  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript"
-    data-domain-script="80ca7b5c-e72f-4bd0-972a-b74d052a0820-test"></script>
+  <script>
+      (function loadOt() {
+        const otKey = new URL(document.location).searchParams.get("otKey");
+        var t = document.createElement('script')
+        t.type = 'text/javascript'
+        t.src = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js'
+        t.setAttribute('data-domain-script', otKey || '09b87b90-1b30-4d68-9610-9d2fe11234f3-test')
+        var n = document.getElementsByTagName('script')[0]
+        n.parentNode.insertBefore(t, n)
+      })()
+  </script>
 
   <!-- OneTrust Wrapper -->
   <script
@@ -101,7 +110,7 @@
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = writeKey
-            withOneTrust(analytics).load()
+            withOneTrust(analytics, { consentModel: () => 'opt-out', enableDebugLogging: true }).load()
             analytics.page()
           }
       })()
