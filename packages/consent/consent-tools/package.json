@@ -27,7 +27,7 @@
     "jest": "yarn run -T jest"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   },
   "peerDependenciesMeta": {
     "@segment/analytics-next": {

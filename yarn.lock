@@ -3912,7 +3912,7 @@ __metadata:
     changeset: ^0.2.6
     tslib: ^2.4.1
   peerDependencies:
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   peerDependenciesMeta:
     "@segment/analytics-next":
       optional: true
