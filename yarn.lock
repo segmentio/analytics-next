@@ -3927,7 +3927,7 @@ __metadata:
     "@segment/analytics-consent-tools": 1.2.0
     tslib: ^2.4.1
   peerDependencies:
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   peerDependenciesMeta:
     "@segment/analytics-next":
       optional: true
