@@ -3909,7 +3909,6 @@ __metadata:
     "@internal/config": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-next": "workspace:^"
-    changeset: ^0.2.6
     tslib: ^2.4.1
   peerDependencies:
     "@segment/analytics-next": ">=1.67.0"
@@ -8749,16 +8748,6 @@ __metadata:
   version: 5.2.0
   resolution: "chalk@npm:5.2.0"
   checksum: 03d8060277de6cf2fd567dc25fcf770593eb5bb85f460ce443e49255a30ff1242edd0c90a06a03803b0466ff0687a939b41db1757bec987113e83de89a003caa
-  languageName: node
-  linkType: hard
-
-"changeset@npm:^0.2.6":
-  version: 0.2.6
-  resolution: "changeset@npm:0.2.6"
-  dependencies:
-    udc: ^1.0.0
-    underscore: ^1.8.3
-  checksum: bb916eff7dc8d281f91762a4e0d324cc3a527535263fd4d0345be9def20e1b112184c29e4312bec4de34814574b33c271ca5d759c4466acd5dc9b9f1733b434f
   languageName: node
   linkType: hard
 
@@ -21319,13 +21308,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"udc@npm:^1.0.0":
-  version: 1.0.1
-  resolution: "udc@npm:1.0.1"
-  checksum: 302b4bd08feab3f75683bcebfe0dde9eabdb2579400ef3feef09132169842ea83e64441e075b0523c91be3ba1f4668fbb8c7d6918e3032be56a967629c4e7db2
-  languageName: node
-  linkType: hard
-
 "unbox-primitive@npm:^1.0.2":
   version: 1.0.2
   resolution: "unbox-primitive@npm:1.0.2"
@@ -21345,13 +21327,6 @@ __metadata:
     buffer: ^5.2.1
     through: ^2.3.8
   checksum: 0e67c4a91f4fa0fc7b4045f8b914d3498c2fc2e8c39c359977708ec85ac6d6029840e97f508675fdbdf21fcb8d276ca502043406f3682b70f075e69aae626d1d
-  languageName: node
-  linkType: hard
-
-"underscore@npm:^1.8.3":
-  version: 1.13.6
-  resolution: "underscore@npm:1.13.6"
-  checksum: d5cedd14a9d0d91dd38c1ce6169e4455bb931f0aaf354108e47bd46d3f2da7464d49b2171a5cf786d61963204a42d01ea1332a903b7342ad428deaafaf70ec36
   languageName: node
   linkType: hard
 

@@ -47,7 +47,6 @@
     "url": "https://github.com/segmentio/analytics-next"
   },
   "dependencies": {
-    "changeset": "^0.2.6",
     "tslib": "^2.4.1"
   }
 }
