@@ -9,8 +9,8 @@ import {
   domainGroupMock,
 } from '../../test-helpers/mocks'
 
-const getConsentedGroupIdsSpy = jest
-  .spyOn(OneTrustAPI, 'getConsentedGroupIds')
+const getNormalizedActiveGroupIds = jest
+  .spyOn(OneTrustAPI, 'getNormalizedActiveGroupIds')
   .mockImplementationOnce(() => {
     throw new Error('not implemented')
   })
@@ -41,7 +41,7 @@ describe('High level "integration" tests', () => {
     jest
       .spyOn(OneTrustAPI, 'getOneTrustGlobal')
       .mockImplementation(() => OneTrustMockGlobal)
-    getConsentedGroupIdsSpy.mockReset()
+    getNormalizedActiveGroupIds.mockReset()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
@@ -60,7 +60,7 @@ describe('High level "integration" tests', () => {
       it('should support opt-in', async () => {
         withOneTrust(analyticsMock)
 
-        getConsentedGroupIdsSpy.mockImplementation(() => [
+        getNormalizedActiveGroupIds.mockImplementation(() => [
           domainGroupMock.StrictlyNeccessary.CustomGroupId,
         ])
 
@@ -125,7 +125,7 @@ describe('High level "integration" tests', () => {
           },
         })
         OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
-        getConsentedGroupIdsSpy.mockImplementation(() => [
+        getNormalizedActiveGroupIds.mockImplementation(() => [
           domainGroupMock.StrictlyNeccessary.CustomGroupId,
         ])
         const load = jest.fn()
@@ -143,7 +143,7 @@ describe('High level "integration" tests', () => {
 
       OneTrustMockGlobal.GetDomainData.mockReturnValue(domainDataMock)
       OneTrustMockGlobal.IsAlertBoxClosed.mockReturnValueOnce(true)
-      getConsentedGroupIdsSpy.mockImplementation(() => [
+      getNormalizedActiveGroupIds.mockImplementation(() => [
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const shouldLoadSegment = Promise.resolve(
@@ -157,7 +157,7 @@ describe('High level "integration" tests', () => {
 
     it('should not load at all if no groups are defined', async () => {
       withOneTrust(analyticsMock)
-      getConsentedGroupIdsSpy.mockImplementation(() => [])
+      getNormalizedActiveGroupIds.mockImplementation(() => [])
       const shouldLoadSegment = Promise.resolve(
         createWrapperSpyHelper.shouldLoadSegment({} as any)
       )
@@ -173,7 +173,7 @@ describe('High level "integration" tests', () => {
         ...domainDataMock,
         ShowAlertNotice: false, // meaning, it's open
       })
-      getConsentedGroupIdsSpy.mockImplementation(() => [
+      getNormalizedActiveGroupIds.mockImplementation(() => [
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const shouldLoadSegment = Promise.resolve(
@@ -198,7 +198,7 @@ describe('High level "integration" tests', () => {
           domainGroupMock.Targeting,
         ],
       })
-      getConsentedGroupIdsSpy.mockImplementation(() => [
+      getNormalizedActiveGroupIds.mockImplementation(() => [
         domainGroupMock.StrictlyNeccessary.CustomGroupId,
       ])
       const categories = createWrapperSpyHelper.getCategories()
