@@ -9,11 +9,10 @@ import {
   domainGroupMock,
 } from '../../test-helpers/mocks'
 
-const getNormalizedActiveGroupIds = jest
-  .spyOn(OneTrustAPI, 'getNormalizedActiveGroupIds')
-  .mockImplementationOnce(() => {
-    throw new Error('not implemented')
-  })
+const getNormalizedActiveGroupIds = jest.spyOn(
+  OneTrustAPI,
+  'getNormalizedActiveGroupIds'
+)
 
 const createWrapperSpyHelper = {
   _spy: jest.spyOn(ConsentTools, 'createWrapper'),
@@ -31,6 +30,11 @@ const createWrapperSpyHelper = {
       .registerOnConsentChanged!
   },
 }
+
+jest
+  .spyOn(OneTrustAPI, 'getOneTrustGlobal')
+  .mockImplementation(() => OneTrustMockGlobal)
+
 /**
  * These tests are not meant to be comprehensive, but they should cover the most important cases.
  * We should prefer unit tests for most functionality (see lib/__tests__)
@@ -38,10 +42,6 @@ const createWrapperSpyHelper = {
 describe('High level "integration" tests', () => {
   let checkResolveWhen = () => {}
   beforeEach(() => {
-    jest
-      .spyOn(OneTrustAPI, 'getOneTrustGlobal')
-      .mockImplementation(() => OneTrustMockGlobal)
-    getNormalizedActiveGroupIds.mockReset()
     Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
