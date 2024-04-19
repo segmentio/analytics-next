@@ -42,7 +42,6 @@ jest
 describe('High level "integration" tests', () => {
   let checkResolveWhen = () => {}
   beforeEach(() => {
-    Object.values(OneTrustMockGlobal).forEach((fn) => fn.mockReset())
     /**
      * Typically, resolveWhen triggers when a predicate is true. We can manually 'check' so we don't have to use timeouts.
      */
