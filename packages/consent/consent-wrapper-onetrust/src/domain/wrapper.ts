@@ -7,7 +7,7 @@ import {
 
 import {
   getNormalizedCategories,
-  getConsentedGroupIds,
+  getNormalizedActiveGroupIds,
   getOneTrustGlobal,
   coerceConsentModel,
 } from '../lib/onetrust-api'
@@ -55,7 +55,7 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
         await resolveWhen(() => {
           return (
             // if any groups at all are consented to
-            Boolean(getConsentedGroupIds().length) &&
+            Boolean(getNormalizedActiveGroupIds().length) &&
             // if show banner is unchecked in the UI
             (OneTrust.GetDomainData().ShowAlertNotice === false ||
               // if alert box is closed by end user

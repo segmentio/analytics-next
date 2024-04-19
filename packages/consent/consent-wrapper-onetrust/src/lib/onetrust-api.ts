@@ -3,7 +3,7 @@ import { OneTrustApiValidationError } from './validation'
 /**
  * @example ["C0001", "C0002"]
  */
-type ConsentGroupIds = string[]
+type ActiveGroupIds = string[]
 
 /**
  * @example
@@ -11,7 +11,7 @@ type ConsentGroupIds = string[]
  */
 const normalizeActiveGroupIds = (
   oneTrustActiveGroups: string
-): ConsentGroupIds => {
+): ActiveGroupIds => {
   return oneTrustActiveGroups.trim().split(',').filter(Boolean)
 }
 
@@ -19,7 +19,7 @@ type GroupInfoDto = {
   CustomGroupId: string
 }
 
-type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
+type OtConsentChangedEvent = CustomEvent<ActiveGroupIds>
 
 export enum OtConsentModel {
   optIn = 'opt-in',
@@ -79,13 +79,13 @@ export const getOneTrustActiveGroups = (): string | undefined => {
   return groups
 }
 
-export const getConsentedGroupIds = (
-  groups = getOneTrustActiveGroups()
-): ConsentGroupIds => {
-  if (!groups) {
+export const getNormalizedActiveGroupIds = (
+  oneTrustActiveGroups = getOneTrustActiveGroups()
+): ActiveGroupIds => {
+  if (!oneTrustActiveGroups) {
     return []
   }
-  return normalizeActiveGroupIds(groups || '')
+  return normalizeActiveGroupIds(oneTrustActiveGroups || '')
 }
 
 export type GroupInfo = {
@@ -106,12 +106,12 @@ export const getAllGroups = (): GroupInfo[] => {
 }
 
 export const getNormalizedCategories = (
-  groupIds = getConsentedGroupIds()
+  activeGroupIds = getNormalizedActiveGroupIds()
 ): Categories => {
   return getAllGroups().reduce<Categories>((acc, group) => {
     return {
       ...acc,
-      [group.groupId]: groupIds.includes(group.groupId),
+      [group.groupId]: activeGroupIds.includes(group.groupId),
     }
   }, {})
 }

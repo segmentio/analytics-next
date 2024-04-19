@@ -1,7 +1,7 @@
 import '../../test-helpers/onetrust-globals.d.ts'
 
 import {
-  getConsentedGroupIds,
+  getNormalizedActiveGroupIds,
   getGroupDataFromGroupIds,
   getOneTrustActiveGroups,
   getNormalizedCategories,
@@ -98,20 +98,26 @@ describe(getOneTrustActiveGroups, () => {
   })
 })
 
-describe(getConsentedGroupIds, () => {
+describe(getNormalizedActiveGroupIds, () => {
   it('should normalize groupIds', () => {
-    expect(getConsentedGroupIds(',C0001,')).toEqual(['C0001'])
-    expect(getConsentedGroupIds('C0001,C0004')).toEqual(['C0001', 'C0004'])
-    expect(getConsentedGroupIds(',C0001,C0004')).toEqual(['C0001', 'C0004'])
-    expect(getConsentedGroupIds(',')).toEqual([])
-    expect(getConsentedGroupIds('')).toEqual([])
-    expect(getConsentedGroupIds(',,')).toEqual([])
+    expect(getNormalizedActiveGroupIds(',C0001,')).toEqual(['C0001'])
+    expect(getNormalizedActiveGroupIds('C0001,C0004')).toEqual([
+      'C0001',
+      'C0004',
+    ])
+    expect(getNormalizedActiveGroupIds(',C0001,C0004')).toEqual([
+      'C0001',
+      'C0004',
+    ])
+    expect(getNormalizedActiveGroupIds(',')).toEqual([])
+    expect(getNormalizedActiveGroupIds('')).toEqual([])
+    expect(getNormalizedActiveGroupIds(',,')).toEqual([])
   })
 
   it('should return an empty array if no groups are defined', () => {
     // @ts-ignore
     window.OnetrustActiveGroups = undefined
-    expect(getConsentedGroupIds()).toEqual([])
+    expect(getNormalizedActiveGroupIds()).toEqual([])
   })
 })
 
