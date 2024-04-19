@@ -1,5 +1,11 @@
 # @segment/analytics-consent-tools
 
+## 2.0.0
+
+### Major Changes
+
+- [#1063](https://github.com/segmentio/analytics-next/pull/1063) [`8f7a74a`](https://github.com/segmentio/analytics-next/commit/8f7a74aa42687c0d0e7facc71a5dfe0855f89d19) Thanks [@silesky](https://github.com/silesky)! - Add opt-out consent-model support, and use opt-out by default
+
 ## 1.2.0
 
 ### Minor Changes
