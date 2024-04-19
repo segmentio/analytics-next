@@ -6,12 +6,11 @@ import {
 } from '@segment/analytics-consent-tools'
 
 import {
-  getNormalizedCategoriesFromGroupData,
-  getNormalizedCategoriesFromGroupIds,
+  getNormalizedCategories,
   getConsentedGroupIds,
   getOneTrustGlobal,
+  coerceConsentModel,
 } from '../lib/onetrust-api'
-import { coerceConsentModel } from './consent-model'
 
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
@@ -67,16 +66,14 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
       return ctx.load({ consentModel: 'opt-in' })
     },
     getCategories: () => {
-      const results = getNormalizedCategoriesFromGroupData()
+      const results = getNormalizedCategories()
       return results
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
       : (setCategories) => {
           getOneTrustGlobal()!.OnConsentChanged((event) => {
-            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-              event.detail
-            )
+            const normalizedCategories = getNormalizedCategories(event.detail)
             setCategories(normalizedCategories)
           })
         },

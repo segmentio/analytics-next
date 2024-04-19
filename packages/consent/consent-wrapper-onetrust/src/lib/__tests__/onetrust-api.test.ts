@@ -3,9 +3,8 @@ import '../../test-helpers/onetrust-globals.d.ts'
 import {
   getConsentedGroupIds,
   getGroupDataFromGroupIds,
-  getNormalizedCategoriesFromGroupData,
   getOneTrustActiveGroups,
-  getNormalizedCategoriesFromGroupIds,
+  getNormalizedCategories,
   getOneTrustGlobal,
   getAllGroups,
 } from '../onetrust-api'
@@ -74,17 +73,6 @@ describe(getAllGroups, () => {
   })
 })
 
-describe(getNormalizedCategoriesFromGroupData, () => {
-  it('should return a set of groups', () => {
-    expect(
-      getNormalizedCategoriesFromGroupData({
-        userSetConsentGroups: [{ groupId: 'C0003' }],
-        userDeniedConsentGroups: [{ groupId: 'C0001' }, { groupId: 'C0002' }],
-      })
-    ).toEqual({ C0003: true, C0001: false, C0002: false })
-  })
-})
-
 describe(getOneTrustActiveGroups, () => {
   it('should return the global string', () => {
     window.OnetrustActiveGroups = 'hello'
@@ -127,8 +115,8 @@ describe(getConsentedGroupIds, () => {
   })
 })
 
-describe(getGroupDataFromGroupIds, () => {
-  it('should partition groups into consent/deny', () => {
+describe(getNormalizedCategories, () => {
+  it('should set any groups that are not in active groups to false', () => {
     window.OnetrustActiveGroups = ',C0001,C0004'
     window.OneTrust = {
       ...OneTrustMockGlobal,
@@ -147,27 +135,18 @@ describe(getGroupDataFromGroupIds, () => {
         ],
       }),
     }
-    const data = getGroupDataFromGroupIds()
-
-    expect(data.userSetConsentGroups).toEqual([
+    const categories = getNormalizedCategories()
+    expect(categories).toMatchInlineSnapshot(`
       {
-        groupId: 'C0001',
-      },
-      {
-        groupId: 'C0004',
-      },
-    ])
-
-    expect(data.userDeniedConsentGroups).toEqual([
-      {
-        groupId: 'SOME_OTHER_GROUP',
-      },
-    ])
+        "C0001": true,
+        "C0004": true,
+        "SOME_OTHER_GROUP": false,
+      }
+    `)
   })
-})
 
-describe(getNormalizedCategoriesFromGroupIds, () => {
-  it('should get normalized categories', () => {
+  it('should ignore any groups that are not in domain data', () => {
+    window.OnetrustActiveGroups = ',C0001,C000X'
     window.OneTrust = {
       ...OneTrustMockGlobal,
       GetDomainData: () => ({
@@ -185,7 +164,38 @@ describe(getNormalizedCategoriesFromGroupIds, () => {
         ],
       }),
     }
-    const ids = getNormalizedCategoriesFromGroupIds(['C0001'])
-    expect(ids).toEqual({ C0001: true, C0004: false, SOME_OTHER_GROUP: false })
+    const categories = getNormalizedCategories()
+    expect(categories).toMatchInlineSnapshot(`
+      {
+        "C0001": true,
+        "C0004": false,
+        "SOME_OTHER_GROUP": false,
+      }
+    `)
+  })
+  it('should accept an argument', () => {
+    window.OneTrust = {
+      ...OneTrustMockGlobal,
+      GetDomainData: () => ({
+        ...domainDataMock,
+        Groups: [
+          {
+            CustomGroupId: 'C0001',
+          },
+          {
+            CustomGroupId: 'C0004',
+          },
+          {
+            CustomGroupId: 'SOME_OTHER_GROUP',
+          },
+        ],
+      }),
+    }
+    const categories = getNormalizedCategories(['C0001', 'C0004'])
+    expect(categories).toEqual({
+      C0001: true,
+      C0004: true,
+      SOME_OTHER_GROUP: false,
+    })
   })
 })
