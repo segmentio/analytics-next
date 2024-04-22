@@ -40,7 +40,7 @@ export abstract class BasePage {
   getConsentChangedEvents(): SegmentEvent[] {
     const reqBodies = this.getAllTrackingEvents()
     const consentEvents = reqBodies.filter(
-      (el) => el.event === 'Segment Consent Preference'
+      (el) => el.event === 'Segment Consent Preference Updated'
     )
     return consentEvents
   }

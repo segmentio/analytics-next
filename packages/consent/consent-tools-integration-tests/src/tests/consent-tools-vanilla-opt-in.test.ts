@@ -37,7 +37,9 @@ it('should send a track call after waiting for explicit consent', async () => {
 
   const consentChangeEvents = page.getConsentChangedEvents()
   expect(consentChangeEvents.length).toBe(1)
-  expect(consentChangeEvents[0].event).toEqual('Segment Consent Preference')
+  expect(consentChangeEvents[0].event).toEqual(
+    'Segment Consent Preference Updated'
+  )
 
   await browser.waitUntil(() => page.fetchIntegrationReqs.length, {
     timeout: 20000,
