@@ -3,4 +3,4 @@
 '@segment/analytics-consent-wrapper-onetrust': patch
 ---
 
-Refactor consent tools and onetrust
+Light consent tools and onetrust refactoring to reduce code footprint.
