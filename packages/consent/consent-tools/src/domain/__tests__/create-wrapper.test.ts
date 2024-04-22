@@ -554,7 +554,7 @@ describe(createWrapper, () => {
 
       // if OnConsentChanged callback is called with categories, it should send event
       expect(analyticsTrackSpy).toBeCalledWith(
-        'Segment Consent Preference',
+        'Segment Consent Preference Updated',
         undefined,
         { consent: { categoryPreferences: { C0001: true, C0002: false } } }
       )

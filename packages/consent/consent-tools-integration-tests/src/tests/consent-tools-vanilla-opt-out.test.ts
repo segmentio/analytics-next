@@ -44,7 +44,9 @@ it('should not wait for consent before sending track call', async () => {
   })
   consentChangeEvents = page.getConsentChangedEvents()
   expect(consentChangeEvents.length).toBe(1)
-  expect(consentChangeEvents[0].event).toEqual('Segment Consent Preference')
+  expect(consentChangeEvents[0].event).toEqual(
+    'Segment Consent Preference Updated'
+  )
   await browser.execute(() => {
     return window.analytics.track('sup')
   })

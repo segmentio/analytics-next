@@ -496,7 +496,7 @@ describe(AnalyticsService, () => {
       const mockCategories = { C0001: true, C0002: false }
       analyticsService.consentChange(mockCategories)
       expect(analyticsMock.track).toBeCalledWith(
-        'Segment Consent Preference',
+        'Segment Consent Preference Updated',
         undefined,
         { consent: { categoryPreferences: mockCategories } }
       )
