@@ -1,5 +1,14 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 1.0.1
+
+### Patch Changes
+
+- [#1071](https://github.com/segmentio/analytics-next/pull/1071) [`a102cbb`](https://github.com/segmentio/analytics-next/commit/a102cbb2569b39163410058b001f82209e0e509c) Thanks [@silesky](https://github.com/silesky)! - Light consent tools and onetrust refactoring to reduce code footprint.
+
+- Updated dependencies [[`a102cbb`](https://github.com/segmentio/analytics-next/commit/a102cbb2569b39163410058b001f82209e0e509c), [`712f592`](https://github.com/segmentio/analytics-next/commit/712f592fc93879698a79790c46f0eb9458473d31)]:
+  - @segment/analytics-consent-tools@2.0.1
+
 ## 1.0.0
 
 ### Major Changes
