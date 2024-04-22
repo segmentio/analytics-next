@@ -2,7 +2,6 @@ import '../../test-helpers/onetrust-globals.d.ts'
 
 import {
   getNormalizedActiveGroupIds,
-  getGroupDataFromGroupIds,
   getOneTrustActiveGroups,
   getNormalizedCategories,
   getOneTrustGlobal,
