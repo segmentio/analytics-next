@@ -6,12 +6,11 @@ import {
 } from '@segment/analytics-consent-tools'
 
 import {
-  getNormalizedCategoriesFromGroupData,
-  getNormalizedCategoriesFromGroupIds,
-  getConsentedGroupIds,
+  getNormalizedCategories,
+  getNormalizedActiveGroupIds,
   getOneTrustGlobal,
+  coerceConsentModel,
 } from '../lib/onetrust-api'
-import { coerceConsentModel } from './consent-model'
 
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
@@ -42,7 +41,6 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     shouldLoadWrapper: async () => {
       await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
     },
-    // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
     shouldLoadSegment: async (ctx) => {
       const OneTrust = getOneTrustGlobal()!
       const consentModel =
@@ -53,30 +51,29 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
         return ctx.load({
           consentModel: 'opt-out',
         })
+      } else {
+        await resolveWhen(() => {
+          return (
+            // if any groups at all are consented to
+            Boolean(getNormalizedActiveGroupIds().length) &&
+            // if show banner is unchecked in the UI
+            (OneTrust.GetDomainData().ShowAlertNotice === false ||
+              // if alert box is closed by end user
+              OneTrust.IsAlertBoxClosed())
+          )
+        }, 500)
+        return ctx.load({ consentModel: 'opt-in' })
       }
-      await resolveWhen(() => {
-        return (
-          // if any groups at all are consented to
-          Boolean(getConsentedGroupIds().length) &&
-          // if show banner is unchecked in the UI
-          (OneTrust.GetDomainData().ShowAlertNotice === false ||
-            // if alert box is closed by end user
-            OneTrust.IsAlertBoxClosed())
-        )
-      }, 500)
-      return ctx.load({ consentModel: 'opt-in' })
     },
     getCategories: () => {
-      const results = getNormalizedCategoriesFromGroupData()
+      const results = getNormalizedCategories()
       return results
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
       : (setCategories) => {
           getOneTrustGlobal()!.OnConsentChanged((event) => {
-            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-              event.detail
-            )
+            const normalizedCategories = getNormalizedCategories(event.detail)
             setCategories(normalizedCategories)
           })
         },

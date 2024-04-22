@@ -1,9 +1,9 @@
-import { Categories } from '@segment/analytics-consent-tools'
+import { Categories, ConsentModel } from '@segment/analytics-consent-tools'
 import { OneTrustApiValidationError } from './validation'
 /**
  * @example ["C0001", "C0002"]
  */
-type ConsentGroupIds = string[]
+type ActiveGroupIds = string[]
 
 /**
  * @example
@@ -11,7 +11,7 @@ type ConsentGroupIds = string[]
  */
 const normalizeActiveGroupIds = (
   oneTrustActiveGroups: string
-): ConsentGroupIds => {
+): ActiveGroupIds => {
   return oneTrustActiveGroups.trim().split(',').filter(Boolean)
 }
 
@@ -19,7 +19,7 @@ type GroupInfoDto = {
   CustomGroupId: string
 }
 
-type OtConsentChangedEvent = CustomEvent<ConsentGroupIds>
+type OtConsentChangedEvent = CustomEvent<ActiveGroupIds>
 
 export enum OtConsentModel {
   optIn = 'opt-in',
@@ -79,13 +79,13 @@ export const getOneTrustActiveGroups = (): string | undefined => {
   return groups
 }
 
-export const getConsentedGroupIds = (
-  groups = getOneTrustActiveGroups()
-): ConsentGroupIds => {
-  if (!groups) {
+export const getNormalizedActiveGroupIds = (
+  oneTrustActiveGroups = getOneTrustActiveGroups()
+): ActiveGroupIds => {
+  if (!oneTrustActiveGroups) {
     return []
   }
-  return normalizeActiveGroupIds(groups || '')
+  return normalizeActiveGroupIds(oneTrustActiveGroups || '')
 }
 
 export type GroupInfo = {
@@ -105,61 +105,28 @@ export const getAllGroups = (): GroupInfo[] => {
   return oneTrustGlobal.GetDomainData().Groups.map(normalizeGroupInfo)
 }
 
-type UserConsentGroupData = {
-  userSetConsentGroups: GroupInfo[]
-  userDeniedConsentGroups: GroupInfo[]
-}
-
-// derive the groupIds from the active groups
-export const getGroupDataFromGroupIds = (
-  userSetConsentGroupIds = getConsentedGroupIds()
-): UserConsentGroupData => {
-  // partition all groups into "consent" or "deny"
-  const userConsentGroupData = getAllGroups().reduce<UserConsentGroupData>(
-    (acc, group) => {
-      if (userSetConsentGroupIds.includes(group.groupId)) {
-        acc.userSetConsentGroups.push(group)
-      } else {
-        acc.userDeniedConsentGroups.push(group)
-      }
-      return acc
-    },
-    { userSetConsentGroups: [], userDeniedConsentGroups: [] }
-  )
-
-  return userConsentGroupData
-}
-
-export const getNormalizedCategoriesFromGroupData = (
-  groupData = getGroupDataFromGroupIds()
+export const getNormalizedCategories = (
+  activeGroupIds = getNormalizedActiveGroupIds()
 ): Categories => {
-  const { userSetConsentGroups, userDeniedConsentGroups } = groupData
-  const consentedCategories = userSetConsentGroups.reduce<Categories>(
-    (acc, c) => {
-      return {
-        ...acc,
-        [c.groupId]: true,
-      }
-    },
-    {}
-  )
-
-  const deniedCategories = userDeniedConsentGroups.reduce<Categories>(
-    (acc, c) => {
-      return {
-        ...acc,
-        [c.groupId]: false,
-      }
-    },
-    {}
-  )
-  return { ...consentedCategories, ...deniedCategories }
+  return getAllGroups().reduce<Categories>((acc, group) => {
+    return {
+      ...acc,
+      [group.groupId]: activeGroupIds.includes(group.groupId),
+    }
+  }, {})
 }
 
-export const getNormalizedCategoriesFromGroupIds = (
-  groupIds: ConsentGroupIds
-): Categories => {
-  return getNormalizedCategoriesFromGroupData(
-    getGroupDataFromGroupIds(groupIds)
-  )
+/**
+ *  We don't support all consent models, so we need to coerce them to the ones we do support.
+ */
+export const coerceConsentModel = (model: OtConsentModel): ConsentModel => {
+  switch (model) {
+    case OtConsentModel.optIn:
+    case OtConsentModel.implicit:
+      return 'opt-in'
+    case OtConsentModel.optOut:
+      return 'opt-out'
+    default: // there are some others like 'custom' / 'notice' that should be treated as 'opt-out'
+      return 'opt-out'
+  }
 }

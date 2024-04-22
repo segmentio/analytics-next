@@ -65,9 +65,7 @@ export class AnalyticsService {
     validateAnalyticsInstance(analytics)
     this.settings = options
     this.uninitializedAnalytics = analytics
-
-    // store the raw analytics load instance, because we may replace it later
-    this.ogAnalyticsLoad = analytics.load.bind(this.uninitializedAnalytics)
+    this.ogAnalyticsLoad = analytics.load.bind(analytics)
   }
 
   /**
