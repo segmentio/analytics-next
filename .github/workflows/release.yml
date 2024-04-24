@@ -87,15 +87,10 @@ jobs:
 
     needs: [npm, github]
 
-    strategy:
-      matrix:
-        package:
-          - browser
-          - core
-          - node
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set Git Identity
         run: |
@@ -106,9 +101,23 @@ jobs:
         run: |
           yarn install --frozen-lockfile
 
-      - name: Commit version bump
+      - name: Bump core
         run: |
-          cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
+          cd packages/core
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Bump browser
+        run: |
+          cd packages/browser
+          yarn version ${{ github.event.inputs.version }}
+          yarn run build-prep
+
+      - name: Bump node
+        run: |
+          cd packages/node
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Push changes
+        run: |
           git commit -am "Update version"
           git push
