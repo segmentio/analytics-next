@@ -100,13 +100,6 @@ This wrapper uses the `OneTrust.getDomainData()` API to get the consent model fo
 withOneTrust(analytics).load(..., { consentModel: () => 'opt-in' | 'opt-out' })
 ```
 
-## Other examples:
-
-> Note: Playgrounds are meant for experimentation / testing, and as such, may be a bit overly complicated.
-> We recommend you try to follcaow the documentation for best practice.
-
-- [Standalone playground](/playgrounds/standalone-playground/pages/index-consent.html)
-
 ## Environments
 
 ### Build Artifacts
