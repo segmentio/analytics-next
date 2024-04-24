@@ -1,5 +1,20 @@
 # @segment/analytics-next
 
+## 1.68.0
+
+### Minor Changes
+
+- [#1045](https://github.com/segmentio/analytics-next/pull/1045) [`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9) Thanks [@silesky](https://github.com/silesky)! - - Remove validation plugin
+  - Remove `spark-md5` dependency
+  - Update messageId algorithm to be consistent with node (analytics-next-[epoch time]-[uuid])
+  - Browser Validation:
+    - Throws errors in the EventFactory (not just in a plugin) if the event is invalid
+
+### Patch Changes
+
+- Updated dependencies [[`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9), [`1635e42`](https://github.com/segmentio/analytics-next/commit/1635e42ffae8fd8e8d18be94f47a22a802fecec8)]:
+  - @segment/analytics-core@1.5.1
+
 ## 1.67.0
 
 ### Minor Changes

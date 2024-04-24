@@ -1,5 +1,13 @@
 # @segment/analytics-core
 
+## 1.5.1
+
+### Patch Changes
+
+- [#1045](https://github.com/segmentio/analytics-next/pull/1045) [`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9) Thanks [@silesky](https://github.com/silesky)! - Share `EventFactory` between node and browser.
+
+* [#1076](https://github.com/segmentio/analytics-next/pull/1076) [`1635e42`](https://github.com/segmentio/analytics-next/commit/1635e42ffae8fd8e8d18be94f47a22a802fecec8) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes an issue introduced in v1.66.0 that caused analytics plugins to be removed from event processing if a destination threw an error while loading.
+
 ## 1.5.0
 
 ### Minor Changes
