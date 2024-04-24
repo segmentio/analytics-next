@@ -61,7 +61,8 @@ export abstract class CoreEventQueue<
           error: err,
         })
 
-        this.plugins = this.plugins.filter((p) => p === plugin)
+        // Filter out the failed plugin by excluding it from the list
+        this.plugins = this.plugins.filter((p) => p !== plugin)
       })
     } else {
       await plugin.load(ctx, instance)
