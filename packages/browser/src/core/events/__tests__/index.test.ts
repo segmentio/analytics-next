@@ -3,7 +3,6 @@ import { range, uniq } from 'lodash'
 import { EventFactory } from '..'
 import { getDefaultPageContext } from '../../page'
 import { User } from '../../user'
-import { SegmentEvent, Options } from '../interfaces'
 
 describe('Event Factory', () => {
   let user: User
@@ -58,6 +57,25 @@ describe('Event Factory', () => {
     it('sets the groupId to the message', () => {
       const group = factory.group('coolKidsId', { coolkids: true })
       expect(group.groupId).toEqual('coolKidsId')
+    })
+
+    it('allows userId / anonymousId to be specified as an option', () => {
+      const group = factory.group('my_group_id', undefined, {
+        userId: 'bar',
+        anonymousId: 'foo',
+      })
+      expect(group.userId).toBe('bar')
+      expect(group.anonymousId).toBe('foo')
+    })
+
+    it('uses userId / anonymousId from the user class (if specified)', function () {
+      const user = new User()
+      user.anonymousId = () => '123'
+      user.id = () => 'abc'
+      factory = new EventFactory(user)
+      const group = factory.group('my_group_id')
+      expect(group.userId).toBe('abc')
+      expect(group.anonymousId).toBe('123')
     })
   })
 
@@ -390,32 +408,6 @@ describe('Event Factory', () => {
         })
         expect(track.context?.anonymousId).toBe('foo')
         expect(track.anonymousId).toBe('foo')
-      })
-    })
-  })
-
-  describe('normalize', function () {
-    const msg: SegmentEvent = { type: 'track' }
-    const opts: Options = (msg.options = {})
-
-    describe('message', function () {
-      it('should merge original with normalized', function () {
-        msg.userId = 'user-id'
-        opts.integrations = { Segment: true }
-        const normalized = factory['normalize'](msg)
-
-        expect(normalized.messageId?.length).toBeGreaterThanOrEqual(41) // 'ajs-next-md5(content + [UUID])'
-        delete normalized.messageId
-
-        expect(normalized.timestamp).toBeInstanceOf(Date)
-        delete normalized.timestamp
-
-        expect(normalized).toStrictEqual({
-          integrations: { Segment: true },
-          type: 'track',
-          userId: 'user-id',
-          context: defaultContext,
-        })
       })
     })
   })

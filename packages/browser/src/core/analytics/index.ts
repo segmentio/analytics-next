@@ -582,7 +582,7 @@ export class Analytics
 
   normalize(msg: SegmentEvent): SegmentEvent {
     console.warn(deprecationWarning)
-    return this.eventFactory.normalize(msg)
+    return this.eventFactory['normalize'](msg)
   }
 
   get failedInitializations(): string[] {

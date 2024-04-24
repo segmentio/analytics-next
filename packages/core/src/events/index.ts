@@ -1,6 +1,6 @@
 export * from './interfaces'
 import { dset } from 'dset'
-import { ID, User } from '../user'
+import { ID } from '../user'
 import {
   Integrations,
   EventProperties,
@@ -11,25 +11,56 @@ import {
   GroupTraits,
 } from './interfaces'
 import { pickBy } from '../utils/pick'
-import { validateEvent } from '../validation/assertions'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
+import { validateEvent } from '../validation/assertions'
 
-interface EventFactorySettings {
+export type EventMethodCallHook = ({
+  type,
+  options,
+}: {
+  type: 'track' | 'identify' | 'page' | 'group' | 'alias' | 'screen'
+  options?: CoreOptions
+}) => void
+
+export type EventHook = (event: CoreSegmentEvent) => void
+
+export interface EventFactorySettings {
+  /**
+   * Universal `messageId` builder for all events (these must be unique)
+   */
   createMessageId: () => string
-  user?: User
+  /**
+   * Hook to do something with an event right before they are returned from the factory.
+   * This includes event modification or additional validation.
+   */
+  onFinishedEvent?: EventHook
+  /**
+   * Hook whenever an event method is called (track, page, etc.)
+   * Can be used to update Options (or just listen)
+   */
+  onEventMethodCall?: EventMethodCallHook
 }
 
 /**
- * This is currently only used by node.js, but the original idea was to have something that could be shared between browser and node.
- * Unfortunately, there are some differences in the way the two environments handle events, so this is not currently shared.
+ * Internal settings object that is used internally by the factory
  */
-export class EventFactory {
-  createMessageId: EventFactorySettings['createMessageId']
-  user?: User
+class InternalEventFactorySettings {
+  public createMessageId: EventFactorySettings['createMessageId']
+  public onEventMethodCall: EventMethodCallHook
+  public onFinishedEvent: EventHook
+
+  constructor(public settings: EventFactorySettings) {
+    this.createMessageId = settings.createMessageId
+    this.onEventMethodCall = settings.onEventMethodCall ?? (() => {})
+    this.onFinishedEvent = settings.onFinishedEvent ?? (() => {})
+  }
+}
+
+export abstract class CoreEventFactory {
+  private settings: InternalEventFactorySettings
 
   constructor(settings: EventFactorySettings) {
-    this.user = settings.user
-    this.createMessageId = settings.createMessageId
+    this.settings = new InternalEventFactorySettings(settings)
   }
 
   track(
@@ -38,6 +69,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ) {
+    this.settings.onEventMethodCall({ type: 'track', options })
     return this.normalize({
       ...this.baseEvent(),
       event,
@@ -55,6 +87,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.settings.onEventMethodCall({ type: 'page', options })
     const event: CoreSegmentEvent = {
       type: 'page',
       properties: { ...properties },
@@ -85,6 +118,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.settings.onEventMethodCall({ type: 'screen', options })
     const event: CoreSegmentEvent = {
       type: 'screen',
       properties: { ...properties },
@@ -112,6 +146,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.settings.onEventMethodCall({ type: 'identify', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'identify',
@@ -128,6 +163,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.settings.onEventMethodCall({ type: 'group', options })
     return this.normalize({
       ...this.baseEvent(),
       type: 'group',
@@ -144,6 +180,7 @@ export class EventFactory {
     options?: CoreOptions,
     globalIntegrations?: Integrations
   ): CoreSegmentEvent {
+    this.settings.onEventMethodCall({ type: 'alias', options })
     const base: CoreSegmentEvent = {
       userId: to,
       type: 'alias',
@@ -169,24 +206,10 @@ export class EventFactory {
   }
 
   private baseEvent(): Partial<CoreSegmentEvent> {
-    const base: Partial<CoreSegmentEvent> = {
+    return {
       integrations: {},
       options: {},
     }
-
-    if (!this.user) return base
-
-    const user = this.user
-
-    if (user.id()) {
-      base.userId = user.id()
-    }
-
-    if (user.anonymousId()) {
-      base.anonymousId = user.anonymousId()
-    }
-
-    return base
   }
 
   /**
@@ -232,7 +255,7 @@ export class EventFactory {
     return [context, eventOverrides]
   }
 
-  public normalize(event: CoreSegmentEvent): CoreSegmentEvent {
+  private normalize(event: CoreSegmentEvent): CoreSegmentEvent {
     const integrationBooleans = Object.keys(event.integrations ?? {}).reduce(
       (integrationNames, name) => {
         return {
@@ -266,20 +289,18 @@ export class EventFactory {
 
     const { options, ...rest } = event
 
-    const body = {
+    const evt: CoreSegmentEvent = {
       timestamp: new Date(),
       ...rest,
-      integrations: allIntegrations,
       context,
+      integrations: allIntegrations,
       ...overrides,
+      messageId: options.messageId || this.settings.createMessageId(),
     }
 
-    const evt: CoreSegmentEvent = {
-      ...body,
-      messageId: options.messageId || this.createMessageId(),
-    }
-
+    this.settings.onFinishedEvent(evt)
     validateEvent(evt)
+
     return evt
   }
 }
