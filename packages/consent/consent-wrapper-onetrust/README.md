@@ -1,7 +1,5 @@
 # @segment/analytics-consent-wrapper-onetrust
 
-### Try our Playground! [Next.js CodeSandbox](https://codesandbox.io/p/sandbox/focused-bhaskara-jysqr5) 🚀
-
 <img src="img/onetrust-popup.jpg" width="500" />
 
 # Quick Start
