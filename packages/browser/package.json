@@ -1,6 +1,6 @@
 {
   "name": "@customerio/cdp-analytics-browser",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/customerio/cdp-analytics-js",
@@ -47,7 +47,7 @@
     }
   ],
   "dependencies": {
-    "@customerio/cdp-analytics-core": "0.1.1",
+    "@customerio/cdp-analytics-core": "0.1.2",
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
