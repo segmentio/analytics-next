@@ -1048,6 +1048,63 @@ describe('timeout', () => {
     expect(analytics.settings.timeout).toEqual(50)
   })
 })
+describe('register', () => {
+  it('will not invoke any plugins that have initialization errors', async () => {
+    const analytics = AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const errorPlugin = new ActionDestination('Error Plugin', {
+      ...googleAnalytics,
+      load: () => Promise.reject('foo'),
+    })
+    const errorPluginSpy = jest.spyOn(errorPlugin, 'track')
+
+    const goodPlugin = new ActionDestination('Good Plugin', {
+      ...googleAnalytics,
+      load: () => Promise.resolve('foo'),
+    })
+    const goodPluginSpy = jest.spyOn(goodPlugin, 'track')
+
+    await analytics.register(goodPlugin, errorPlugin)
+    await errorPlugin.ready()
+    await goodPlugin.ready()
+
+    await analytics.track('foo')
+
+    expect(errorPluginSpy).not.toHaveBeenCalled()
+    expect(goodPluginSpy).toHaveBeenCalled()
+  })
+
+  it('will emit initialization errors', async () => {
+    const analytics = AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const errorPlugin = new ActionDestination('Error Plugin', {
+      ...googleAnalytics,
+      load: () => Promise.reject('foo'),
+    })
+
+    const goodPlugin = new ActionDestination('Good Plugin', {
+      ...googleAnalytics,
+      load: () => Promise.resolve('foo'),
+    })
+
+    await analytics
+    const errorPluginName = new Promise<string>((resolve) => {
+      analytics.instance?.queue.on('initialization_failure', (plugin) =>
+        resolve(plugin.name)
+      )
+    })
+
+    await analytics.register(goodPlugin, errorPlugin)
+    await errorPlugin.ready()
+    await goodPlugin.ready()
+
+    expect(await errorPluginName).toBe('Error Plugin')
+  })
+})
 
 describe('deregister', () => {
   beforeEach(async () => {
