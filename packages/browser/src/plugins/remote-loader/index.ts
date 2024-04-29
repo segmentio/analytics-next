@@ -109,6 +109,7 @@ export class ActionDestination implements InternalPluginWithAddMiddleware {
           type: 'action',
           didError: true,
         })
+        throw error
       }
 
       return ctx
