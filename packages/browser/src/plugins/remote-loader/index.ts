@@ -43,11 +43,14 @@ export class ActionDestination implements InternalPluginWithAddMiddleware {
 
   action: Plugin
 
-  constructor(name: string, action: Plugin) {
+  critical: boolean
+
+  constructor(name: string, action: Plugin, options?: { critical: boolean }) {
     this.action = action
     this.name = name
     this.type = action.type
     this.alternativeNames.push(action.name)
+    this.critical = options?.critical ?? true
   }
 
   addMiddleware(...fn: DestinationMiddlewareFunction[]): void {
@@ -162,7 +165,9 @@ export class ActionDestination implements InternalPluginWithAddMiddleware {
       })
 
       this.loadPromise.reject(error)
-      throw error
+      if (this.critical) {
+        throw error
+      }
     }
   }
 
@@ -291,7 +296,8 @@ export async function remoteLoader(
           plugins.forEach((plugin) => {
             const wrapper = new ActionDestination(
               remotePlugin.creationName,
-              plugin
+              plugin,
+              { critical: false }
             )
 
             if (routing.length && routingMiddleware) {
