@@ -50,6 +50,8 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
+    this.plugins.push(plugin)
+
     const handleLoadError = (err: any) => {
       if (plugin.critical) {
         throw err
@@ -74,8 +76,6 @@ export abstract class CoreEventQueue<
       // there is a gotcha: action destinations can have actions that are not of type 'destination', and we await on those
       await plugin.load(ctx, instance).catch(handleLoadError)
     }
-
-    this.plugins.push(plugin)
   }
 
   async deregister(
