@@ -53,12 +53,13 @@ describe('Registration', () => {
     expect(load).toHaveBeenCalledWith(ctx, ajs)
   })
 
-  test('fails if plugin cant be loaded', async () => {
+  test('fails if plugin cant be loaded AND is type critical', async () => {
     const eq = new EventQueue()
 
     const plugin: Plugin = {
       name: 'test',
       type: 'before',
+      critical: true,
       version: '0.1.0',
       load: () => Promise.reject(new Error('👻')),
       isLoaded: () => false,
