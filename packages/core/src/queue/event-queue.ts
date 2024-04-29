@@ -53,9 +53,6 @@ export abstract class CoreEventQueue<
     this.plugins.push(plugin)
 
     const handleLoadError = (err: any) => {
-      if (plugin.critical) {
-        throw err
-      }
       this.failedInitializations.push(plugin.name)
       this.emit('initialization_failure', plugin)
       console.warn(plugin.name, err)

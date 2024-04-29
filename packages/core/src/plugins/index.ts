@@ -20,10 +20,6 @@ export interface CorePlugin<
   alternativeNames?: string[]
   version: string
   type: PluginType
-  /**
-   * if critical is set to true, will throw an error / abort the entire pipeline if the load() method throws an error.
-   */
-  critical?: boolean
   isLoaded: () => boolean
   load: (ctx: Ctx, instance: Analytics) => Promise<unknown>
 

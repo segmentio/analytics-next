@@ -611,6 +611,7 @@ describe('Flushing', () => {
 
 describe('register', () => {
   it('only filters out failed destinations after loading', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(noop)
     const eq = new TestEventQueue()
     const goodDestinationPlugin = {
       ...testPlugin,

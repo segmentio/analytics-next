@@ -53,22 +53,19 @@ describe('Registration', () => {
     expect(load).toHaveBeenCalledWith(ctx, ajs)
   })
 
-  test('fails if plugin cant be loaded AND is type critical', async () => {
+  test('does not reject if a plugin cant be loaded', async () => {
     const eq = new EventQueue()
 
     const plugin: Plugin = {
       name: 'test',
       type: 'before',
-      critical: true,
       version: '0.1.0',
       load: () => Promise.reject(new Error('👻')),
       isLoaded: () => false,
     }
 
     const ctx = TestCtx.system()
-    await expect(
-      eq.register(ctx, plugin, ajs)
-    ).rejects.toThrowErrorMatchingInlineSnapshot(`"👻"`)
+    await expect(eq.register(ctx, plugin, ajs)).resolves.toBe(undefined)
   })
 
   test('allows for destinations to fail registration', async () => {
