@@ -176,7 +176,6 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
         didError: true,
       })
       this.initializePromise.resolve(false)
-      throw error
     }
   }
 
