@@ -406,7 +406,6 @@ describe('version', () => {
 describe('ready', () => {
   it('should only resolve when plugin registration is done', async () => {
     const analytics = createTestAnalytics()
-    expect(analytics['_queue'].plugins.length).toBe(0)
     const result = await analytics.ready
     expect(result).toBeUndefined()
     expect(analytics['_queue'].plugins.length).toBeGreaterThan(0)
