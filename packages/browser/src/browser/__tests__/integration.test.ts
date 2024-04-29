@@ -957,6 +957,32 @@ describe('addDestinationMiddleware', () => {
     )
   })
 
+  it('will still call track, even if load returns an error', async () => {
+    const analytics = AnalyticsBrowser.load({
+      writeKey,
+    })
+
+    const p1 = new ActionDestination('p1', {
+      ...googleAnalytics,
+      load: () => Promise.reject('foo'),
+    })
+    const p1Spy = jest.spyOn(p1, 'track')
+
+    const p2 = new ActionDestination('p2', {
+      ...googleAnalytics,
+      load: () => Promise.resolve('foo'),
+    })
+    const p2Spy = jest.spyOn(p2, 'track')
+
+    await analytics.register(p1, p2)
+    await p1.ready()
+    await p2.ready()
+
+    await analytics.track('foo')
+    expect(p1Spy).toHaveBeenCalled()
+    expect(p2Spy).toHaveBeenCalled()
+  })
+
   it('middleware is only applied to type: destination plugins', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
