@@ -77,6 +77,7 @@ export function schemaFilter(
 
   return {
     name: 'Schema Filter',
+    critical: true,
     version: '0.1.0',
     isLoaded: () => true,
     load: () => Promise.resolve(),

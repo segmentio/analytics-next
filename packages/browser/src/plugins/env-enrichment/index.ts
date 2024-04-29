@@ -135,6 +135,7 @@ class EnvironmentEnrichmentPlugin implements Plugin {
 
   name = 'Page Enrichment'
   type: PluginType = 'before'
+  critical = true
   version = '0.1.0'
   isLoaded = () => true
   load = async (_ctx: Context, instance: Analytics) => {

@@ -50,22 +50,29 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
-    if (plugin.type === 'destination' && plugin.name !== 'Segment.io') {
-      plugin.load(ctx, instance).catch((err) => {
-        this.failedInitializations.push(plugin.name)
-        this.emit('initialization_failure', plugin)
-        console.warn(plugin.name, err)
+    const handleLoadError = (err: any) => {
+      if (plugin.critical) {
+        throw err
+      }
+      this.failedInitializations.push(plugin.name)
+      this.emit('initialization_failure', plugin)
+      console.warn(plugin.name, err)
 
-        ctx.log('warn', 'Failed to load destination', {
-          plugin: plugin.name,
-          error: err,
-        })
-
-        // Filter out the failed plugin by excluding it from the list
-        this.plugins = this.plugins.filter((p) => p !== plugin)
+      ctx.log('warn', 'Failed to load destination', {
+        plugin: plugin.name,
+        error: err,
       })
+
+      // Filter out the failed plugin by excluding it from the list
+      this.plugins = this.plugins.filter((p) => p !== plugin)
+    }
+
+    if (plugin.type === 'destination' && plugin.name !== 'Segment.io') {
+      plugin.load(ctx, instance).catch(handleLoadError)
     } else {
-      await plugin.load(ctx, instance)
+      // for non-destinations plugins, we do need to wait for them to load
+      // there is a gotcha: action destinations can have actions that are not of type 'destination', and we await on those
+      await plugin.load(ctx, instance).catch(handleLoadError)
     }
 
     this.plugins.push(plugin)
