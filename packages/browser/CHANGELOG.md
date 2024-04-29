@@ -1,5 +1,16 @@
 # @segment/analytics-next
 
+## 1.69.0
+
+### Minor Changes
+
+- [#1080](https://github.com/segmentio/analytics-next/pull/1080) [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2) Thanks [@silesky](https://github.com/silesky)! - Addresses an issue where, if one of the non-destination actions fails to load/is blocked, the entire SDK fails to load. This is most notable in GA4, where, if GA was blocked, Segment initialization would fail.
+
+### Patch Changes
+
+- Updated dependencies [[`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2), [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2)]:
+  - @segment/analytics-core@1.6.0
+
 ## 1.68.0
 
 ### Minor Changes
