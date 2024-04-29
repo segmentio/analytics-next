@@ -74,7 +74,11 @@ export abstract class CoreEventQueue<
     } else {
       // for non-destinations plugins, we do need to wait for them to load
       // there is a gotcha: action destinations can have actions that are not of type 'destination', and we await on those
-      await plugin.load(ctx, instance).catch(handleLoadError)
+      try {
+        await plugin.load(ctx, instance)
+      } catch (err) {
+        handleLoadError(err)
+      }
     }
   }
 
