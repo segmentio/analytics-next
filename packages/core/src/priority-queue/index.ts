@@ -71,6 +71,29 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
     return true
   }
 
+  pushWithTimeout(item: Item, timeout: number): boolean {
+    if (this.getAttempts(item) === 0) {
+      return this.push(item)[0]
+    }
+
+    const attempt = this.updateAttempts(item)
+
+    if (attempt > this.maxAttempts || this.includes(item)) {
+      return false
+    }
+
+    setTimeout(() => {
+      this.queue.push(item)
+      // remove from future list
+      this.future = this.future.filter((f) => f.id !== item.id)
+      // Lets listeners know that a 'future' message is now available in the queue
+      this.emit(ON_REMOVE_FROM_FUTURE)
+    }, timeout)
+
+    this.future.push(item)
+    return true
+  }
+
   public getAttempts(item: Item): number {
     return this.seen[item.id] ?? 0
   }

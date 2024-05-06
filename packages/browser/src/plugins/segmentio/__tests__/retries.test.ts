@@ -8,10 +8,63 @@ import { scheduleFlush } from '../schedule-flush'
 import * as PPQ from '../../../lib/priority-queue/persisted'
 import * as PQ from '../../../lib/priority-queue'
 import { Context } from '../../../core/context'
+import { createError, createSuccess } from '../../../test-helpers/factories'
+import unfetch from 'unfetch'
 
 jest.mock('../schedule-flush')
 
 type QueueType = 'priority' | 'persisted'
+
+jest.mock('unfetch', () => {
+  return jest.fn()
+})
+
+test('retries on 500', async () => {
+  const fetched = jest
+    .mocked(unfetch)
+    .mockImplementation(() => createError({ status: 500 }))
+
+  const options = { apiKey: 'foo' }
+  const analytics = new Analytics(
+    { writeKey: options.apiKey },
+    {
+      retryQueue: true,
+    }
+  )
+
+  const ctx = await analytics.track('event')
+  expect(ctx.attempts).toBe(1)
+  expect(fetched).toHaveBeenCalledTimes(2)
+})
+
+test('delays retry on 429', async () => {
+  const headers = new Headers()
+  const resetTime = 0.35
+  headers.set('x-ratelimit-reset', resetTime.toString())
+  const fetched = jest
+    .mocked(unfetch)
+    .mockReturnValueOnce(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
+    .mockReturnValue(createSuccess({}))
+
+  const options = { apiKey: 'foo' }
+  const analytics = new Analytics(
+    { writeKey: options.apiKey },
+    {
+      retryQueue: true,
+    }
+  )
+
+  const ctx = await analytics.track('event')
+  expect(ctx.attempts).toBe(1)
+
+  expect(fetched).toHaveBeenCalledTimes(2)
+})
 
 describe('Segment.io retries', () => {
   let options: SegmentioSettings

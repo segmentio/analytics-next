@@ -4,6 +4,7 @@ jest.mock('unfetch', () => {
   return fetch
 })
 
+import { createError, createSuccess } from '../../../test-helpers/factories'
 import batch from '../batched-dispatcher'
 
 const fatEvent = {
@@ -52,6 +53,7 @@ describe('Batching', () => {
     jest.useFakeTimers({
       now: new Date('9 Jun 1993 00:00:00Z').getTime(),
     })
+    fetch.mockReturnValue(createSuccess({}))
   })
 
   afterEach(() => {
@@ -292,3 +294,22 @@ describe('Batching', () => {
     })
   })
 })
+// describe('on error', () => {
+//   it('retries on 500', async () => {
+//     fetch.mockReturnValueOnce(
+//       createError({
+//         status: 500,
+//       })
+//     )
+//   })
+//   it('retries on 429 after delay', async () => {
+//     fetch.mockReturnValueOnce(
+//       createError({
+//         status: 429,
+//         headers: {
+//           'x-ratelimit-reset': '123',
+//         },
+//       })
+//     )
+//   })
+// })

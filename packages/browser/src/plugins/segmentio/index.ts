@@ -7,6 +7,7 @@ import { Plugin } from '../../core/plugin'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
+import { RateLimitError } from './ratelimit-error'
 import batch, { BatchingDispatchConfig } from './batched-dispatcher'
 import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
@@ -112,8 +113,13 @@ export function segmentio(
         normalize(analytics, json, settings, integrations)
       )
       .then(() => ctx)
-      .catch(() => {
-        buffer.pushWithBackoff(ctx)
+      .catch((error) => {
+        if (error instanceof RateLimitError) {
+          const timeout = error.retryTimeout
+          buffer.pushWithTimeout(ctx, timeout)
+        } else {
+          buffer.pushWithBackoff(ctx)
+        }
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
         return ctx

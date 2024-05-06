@@ -1,6 +1,7 @@
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageChange } from '../../lib/on-page-change'
+import { RateLimitError } from './ratelimit-error'
 
 export type BatchingDispatchConfig = {
   size?: number
@@ -52,6 +53,7 @@ export default function batch(
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
+  let ratelimittimeout = 0
 
   function sendBatch(batch: object[]) {
     if (batch.length === 0) {
@@ -65,7 +67,7 @@ export default function batch(
       const { sentAt, ...newEvent } = event as SegmentEvent
       return newEvent
     })
-
+    console.log('sending batch', updatedBatch)
     return fetch(`https://${apiHost}/b`, {
       keepalive: pageUnloaded,
       headers: {
@@ -77,6 +79,20 @@ export default function batch(
         batch: updatedBatch,
         sentAt: new Date().toISOString(),
       }),
+    }).then((res) => {
+      if (res.status >= 500) {
+        throw new Error(`Bad response from server: ${res.status}`)
+      }
+      if (res.status == 429) {
+        const retryTimeoutStringSecs = res.headers.get('x-ratelimit-reset')
+        const retryTimeoutMS = retryTimeoutStringSecs
+          ? parseInt(retryTimeoutStringSecs) * 1000
+          : 0
+        throw new RateLimitError(
+          `Rate limit exceeded: ${res.status}`,
+          retryTimeoutMS
+        )
+      }
     })
   }
 
@@ -84,7 +100,15 @@ export default function batch(
     if (buffer.length) {
       const batch = buffer
       buffer = []
-      return sendBatch(batch)
+      return sendBatch(batch)?.catch((error) => {
+        if (error instanceof RateLimitError) {
+          ratelimittimeout = error.retryTimeout
+          buffer.push(batch)
+        } else {
+          buffer.push(batch)
+        }
+        scheduleFlush()
+      })
     }
   }
 
@@ -95,10 +119,14 @@ export default function batch(
       return
     }
 
-    schedule = setTimeout(() => {
-      schedule = undefined
-      flush().catch(console.error)
-    }, timeout)
+    schedule = setTimeout(
+      () => {
+        schedule = undefined
+        flush().catch(console.error)
+      },
+      ratelimittimeout ? ratelimittimeout : timeout
+    )
+    ratelimittimeout = 0
   }
 
   onPageChange((unloaded) => {
@@ -107,6 +135,7 @@ export default function batch(
     if (pageUnloaded && buffer.length) {
       const reqs = chunks(buffer).map(sendBatch)
       Promise.all(reqs).catch(console.error)
+      // can we handle a retry here?
     }
   })
 
