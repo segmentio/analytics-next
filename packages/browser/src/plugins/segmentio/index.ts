@@ -110,7 +110,7 @@ export function segmentio(
     return client
       .dispatch(
         `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations)
+        normalize(analytics, json, settings, integrations, ctx)
       )
       .then(() => ctx)
       .catch((error) => {
