@@ -19,51 +19,61 @@ jest.mock('unfetch', () => {
   return jest.fn()
 })
 
-test('retries on 500', async () => {
-  const fetched = jest
-    .mocked(unfetch)
-    .mockImplementation(() => createError({ status: 500 }))
+describe('Segment.io retries 500s and 429', () => {
+  let options: SegmentioSettings
+  let analytics: Analytics
+  let segment: Plugin
+  beforeEach(async () => {
+    jest.resetAllMocks()
+    jest.restoreAllMocks()
 
-  const options = { apiKey: 'foo' }
-  const analytics = new Analytics(
-    { writeKey: options.apiKey },
-    {
-      retryQueue: true,
-    }
-  )
+    // @ts-expect-error reassign import
+    isOffline = jest.fn().mockImplementation(() => true)
 
-  const ctx = await analytics.track('event')
-  expect(ctx.attempts).toBe(1)
-  expect(fetched).toHaveBeenCalledTimes(2)
-})
-
-test('delays retry on 429', async () => {
-  const headers = new Headers()
-  const resetTime = 0.35
-  headers.set('x-ratelimit-reset', resetTime.toString())
-  const fetched = jest
-    .mocked(unfetch)
-    .mockReturnValueOnce(
-      createError({
-        status: 429,
-        statusText: 'Too Many Requests',
-        ...headers,
-      })
+    options = { apiKey: 'foo' }
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      {
+        retryQueue: true,
+      }
     )
-    .mockReturnValue(createSuccess({}))
+    segment = await segmentio(analytics, options, {})
 
-  const options = { apiKey: 'foo' }
-  const analytics = new Analytics(
-    { writeKey: options.apiKey },
-    {
-      retryQueue: true,
-    }
-  )
+    await analytics.register(segment, envEnrichment)
+  })
 
-  const ctx = await analytics.track('event')
-  expect(ctx.attempts).toBe(1)
+  test('retries on 500', async () => {
+    const fetched = jest
+      .mocked(unfetch)
+      .mockImplementation(() => createError({ status: 500 }))
 
-  expect(fetched).toHaveBeenCalledTimes(2)
+    const ctx = await analytics.track('event')
+
+    expect(ctx.attempts).toBe(1)
+    expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
+    expect(fetched).toHaveBeenCalledTimes(2)
+  })
+
+  test('delays retry on 429', async () => {
+    const headers = new Headers()
+    const resetTime = 0.35
+    headers.set('x-ratelimit-reset', resetTime.toString())
+    const fetched = jest
+      .mocked(unfetch)
+      .mockReturnValueOnce(
+        createError({
+          status: 429,
+          statusText: 'Too Many Requests',
+          ...headers,
+        })
+      )
+      .mockReturnValue(createSuccess({}))
+
+    const ctx = await analytics.track('event')
+    expect(ctx.attempts).toBe(1)
+
+    expect(fetched).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('Segment.io retries', () => {
