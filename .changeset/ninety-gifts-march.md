@@ -1,4 +1,4 @@
 ---
-'@segment/analytics-next': patch
+'@segment/analytics-next': minor
 ---
-Internal refactor to change name `legacySettings` -> `cdnSettings`, in order to make things less confusing. This should not have any runtime effects.
+Refactor to change interface name from `legacySettings` -> `cdnSettings`, in order to clarify code.
