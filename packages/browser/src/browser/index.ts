@@ -36,14 +36,14 @@ import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 
-export interface LegacyIntegrationConfiguration {
+export interface RemoteIntegrationConfig {
   /* @deprecated - This does not indicate browser types anymore */
   type?: string
 
   versionSettings?: {
     version?: string
     override?: string
-    componentTypes?: Array<'browser' | 'android' | 'ios' | 'server'>
+    componentTypes?: ('browser' | 'android' | 'ios' | 'server')[]
   }
 
   bundlingStatus?: string
@@ -67,9 +67,12 @@ export interface LegacyIntegrationConfiguration {
   [key: string]: any
 }
 
+/**
+ * The remote settings object, typically fetched
+ */
 export interface CDNSettings {
   integrations: {
-    [name: string]: LegacyIntegrationConfiguration
+    [creationName: string]: RemoteIntegrationConfig
   }
 
   middlewareSettings?: {
