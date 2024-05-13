@@ -2,10 +2,10 @@ import { Plugin } from '../../../core/plugin'
 import { Analytics } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
-import { LegacySettings } from '../../../browser'
+import { CDNSettings } from '../../../browser'
 import { segmentio, SegmentioSettings } from '../../segmentio'
 
-const settings: LegacySettings = {
+const settings: CDNSettings = {
   integrations: {
     'Braze Web Mode (Actions)': {},
     // note that Fullstory's name here doesn't contain 'Actions'

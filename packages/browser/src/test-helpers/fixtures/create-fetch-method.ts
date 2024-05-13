@@ -1,9 +1,9 @@
-import { LegacySettings } from '../..'
+import { CDNSettings } from '../..'
 import { createSuccess } from '../factories'
 import { cdnSettingsMinimal } from './cdn-settings'
 
 export const createMockFetchImplementation = (
-  cdnSettings: Partial<LegacySettings> = cdnSettingsMinimal
+  cdnSettings: Partial<CDNSettings> = cdnSettingsMinimal
 ) => {
   return (...[url, req]: Parameters<typeof fetch>) => {
     const reqUrl = url.toString()

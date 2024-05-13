@@ -41,7 +41,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 import { HighEntropyHint } from '../../lib/client-hints/interfaces'
-import type { LegacySettings } from '../../browser'
+import type { CDNSettings } from '../../browser'
 import {
   CookieOptions,
   MemoryStorage,
@@ -109,7 +109,7 @@ export interface InitOptions {
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
    */
-  updateCDNSettings?: (settings: LegacySettings) => LegacySettings
+  updateCDNSettings?: (settings: CDNSettings) => CDNSettings
   /**
    * Disables or sets constraints on processing of query string parameters
    */
@@ -143,9 +143,7 @@ export interface InitOptions {
    * disable: (cdnSettings) => cdnSettings.foo === 'bar'
    * ```
    */
-  disable?:
-    | boolean
-    | ((cdnSettings: LegacySettings) => boolean | Promise<boolean>)
+  disable?: boolean | ((cdnSettings: CDNSettings) => boolean | Promise<boolean>)
 }
 
 /* analytics-classic stubs */
