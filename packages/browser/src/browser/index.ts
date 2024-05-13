@@ -46,7 +46,11 @@ export interface RemoteIntegrationConfig {
     componentTypes?: ('browser' | 'android' | 'ios' | 'server')[]
   }
 
-  bundlingStatus?: string
+  /**
+   * We know if an integration is device mode if it has `bundlingStatus: 'bundled'` and the `browser` componentType in `versionSettings`.
+   * History: The term 'bundle' is left over from before action destinations, when a device mode destinations were 'bundled' in a custom bundle for every analytics.js source.
+   */
+  bundlingStatus?: 'bundled' | 'unbundled'
 
   /**
    * Consent settings for the integration
@@ -54,7 +58,7 @@ export interface RemoteIntegrationConfig {
   consentSettings?: {
     /**
      * Consent categories for the integration
-     * @example ["Analytics", "Advertising", "CAT001"]
+     * @example ["CAT001", "CAT002"]
      */
     categories: string[]
   }
