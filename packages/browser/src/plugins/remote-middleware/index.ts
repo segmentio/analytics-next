@@ -1,4 +1,4 @@
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
 import { loadScript } from '../../lib/load-script'
@@ -7,7 +7,7 @@ import { MiddlewareFunction } from '../middleware'
 
 export async function remoteMiddlewares(
   ctx: Context,
-  settings: LegacySettings,
+  settings: CDNSettings,
   obfuscate?: boolean
 ): Promise<MiddlewareFunction[]> {
   if (isServer()) {

@@ -1,4 +1,4 @@
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { Context } from '../../core/context'
 import { PlanEvent, TrackPlan } from '../../core/events/interfaces'
 import { Plugin } from '../../core/plugin'
@@ -7,7 +7,7 @@ import { RemotePlugin } from '../remote-loader'
 
 function disabledActionDestinations(
   plan: PlanEvent | undefined,
-  settings: LegacySettings
+  settings: CDNSettings
 ): { [destination: string]: string[] } {
   if (!plan || !Object.keys(plan)) {
     return {}
@@ -46,7 +46,7 @@ function disabledActionDestinations(
 
 export function schemaFilter(
   track: TrackPlan | undefined,
-  settings: LegacySettings
+  settings: CDNSettings
 ): Plugin {
   function filter(ctx: Context): Context {
     const plan = track

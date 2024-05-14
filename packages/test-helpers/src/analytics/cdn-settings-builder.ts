@@ -1,5 +1,5 @@
-import type { LegacySettings } from '@segment/analytics-next'
-type RemotePlugin = NonNullable<LegacySettings['remotePlugins']>[0]
+import type { CDNSettings } from '@segment/analytics-next'
+type RemotePlugin = NonNullable<CDNSettings['remotePlugins']>[0]
 
 export type DestinationSettingsBuilderConfig = Partial<RemotePlugin> & {
   creationName: string
@@ -11,13 +11,13 @@ export type DestinationSettingsBuilderConfig = Partial<RemotePlugin> & {
 }
 
 export class CDNSettingsBuilder {
-  private settings: LegacySettings
+  private settings: CDNSettings
   constructor({
     writeKey,
     baseCDNSettings,
   }: {
     writeKey?: string
-    baseCDNSettings?: LegacySettings
+    baseCDNSettings?: CDNSettings
   } = {}) {
     const settings = baseCDNSettings || {
       integrations: {

@@ -2,7 +2,7 @@ import braze from '@segment/analytics-browser-actions-braze'
 
 import * as loader from '../../../lib/load-script'
 import { ActionDestination, PluginFactory, remoteLoader } from '..'
-import { AnalyticsBrowser, LegacySettings } from '../../../browser'
+import { AnalyticsBrowser, CDNSettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { tsubMiddleware } from '../../routing-middleware'
@@ -520,7 +520,7 @@ describe('Remote Loader', () => {
   })
 
   it('accepts settings overrides from merged integrations', async () => {
-    const cdnSettings: LegacySettings = {
+    const cdnSettings: CDNSettings = {
       integrations: {
         remotePlugin: {
           name: 'Charlie Brown',
@@ -785,7 +785,7 @@ describe('Remote Loader', () => {
       track: (ctx: Context) => ctx,
     }
 
-    const cdnSettings: LegacySettings = {
+    const cdnSettings: CDNSettings = {
       integrations: {},
       middlewareSettings: {
         routingRules: [
@@ -856,7 +856,7 @@ describe('Remote Loader', () => {
       track: (ctx: Context) => ctx,
     }
 
-    const cdnSettings: LegacySettings = {
+    const cdnSettings: CDNSettings = {
       integrations: {},
       middlewareSettings: {
         routingRules: [
@@ -923,7 +923,7 @@ describe('Remote Loader', () => {
       },
     }
 
-    const cdnSettings: LegacySettings = {
+    const cdnSettings: CDNSettings = {
       integrations: {},
       remotePlugins: [
         {

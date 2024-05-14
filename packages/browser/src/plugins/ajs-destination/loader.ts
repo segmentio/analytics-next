@@ -1,5 +1,5 @@
 import { Analytics } from '../../core/analytics'
-import { LegacyIntegrationConfiguration } from '../../browser'
+import { RemoteIntegrationSettings } from '../../browser'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
@@ -119,11 +119,11 @@ export async function unloadIntegration(
 }
 
 export function resolveVersion(
-  settings?: LegacyIntegrationConfiguration
+  integrationConfig?: RemoteIntegrationSettings
 ): string {
   return (
-    settings?.versionSettings?.override ??
-    settings?.versionSettings?.version ??
+    integrationConfig?.versionSettings?.override ??
+    integrationConfig?.versionSettings?.version ??
     'latest'
   )
 }

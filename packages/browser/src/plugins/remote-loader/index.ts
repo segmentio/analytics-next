@@ -1,5 +1,5 @@
 import type { Integrations } from '../../core/events/interfaces'
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin, InternalPluginWithAddMiddleware } from '../../core/plugin'
 import { loadScript } from '../../lib/load-script'
@@ -254,7 +254,7 @@ async function loadPluginFactory(
 }
 
 export async function remoteLoader(
-  settings: LegacySettings,
+  settings: CDNSettings,
   userIntegrations: Integrations,
   mergedIntegrations: Record<string, JSONObject>,
   options?: InitOptions,

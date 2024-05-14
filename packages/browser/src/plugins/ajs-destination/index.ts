@@ -1,7 +1,7 @@
 import { Integrations, JSONObject } from '../../core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
@@ -331,7 +331,7 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
 
 export function ajsDestinations(
   writeKey: string,
-  settings: LegacySettings,
+  settings: CDNSettings,
   globalIntegrations: Integrations = {},
   options: InitOptions = {},
   routingMiddleware?: DestinationMiddlewareFunction,
