@@ -72,7 +72,8 @@ export interface RemoteIntegrationSettings {
 }
 
 /**
- * The remote settings object, typically fetched
+ * The remote settings object for a source, typically fetched from the Segment CDN.
+ * Warning: this is an *unstable* object.
  */
 export interface CDNSettings {
   integrations: {
