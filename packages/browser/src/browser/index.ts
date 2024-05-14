@@ -36,7 +36,7 @@ import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 
-export interface RemoteIntegrationConfig {
+export interface RemoteIntegrationSettings {
   /* @deprecated - This does not indicate browser types anymore */
   type?: string
 
@@ -76,7 +76,7 @@ export interface RemoteIntegrationConfig {
  */
 export interface CDNSettings {
   integrations: {
-    [creationName: string]: RemoteIntegrationConfig
+    [creationName: string]: RemoteIntegrationSettings
   }
 
   middlewareSettings?: {

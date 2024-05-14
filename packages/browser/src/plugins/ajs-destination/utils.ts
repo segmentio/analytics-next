@@ -1,9 +1,9 @@
 import { Integrations } from '@segment/analytics-core'
-import { RemoteIntegrationConfig } from '../..'
+import { RemoteIntegrationSettings } from '../..'
 
 export const isInstallableIntegration = (
   name: string,
-  integrationSettings: RemoteIntegrationConfig
+  integrationSettings: RemoteIntegrationSettings
 ) => {
   const { type, bundlingStatus, versionSettings } = integrationSettings
   // We use `!== 'unbundled'` (versus `=== 'bundled'`) to be inclusive of
