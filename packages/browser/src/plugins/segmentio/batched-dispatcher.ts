@@ -103,6 +103,7 @@ export default function batch(
       const batch = buffer
       buffer = []
       return sendBatch(batch)?.catch((error) => {
+        console.error('Error sending batch', error)
         if (attempt < (config?.retryattempts ?? 10)) {
           if (error.name == 'RateLimitError') {
             ratelimittimeout = error.retryTimeout

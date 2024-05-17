@@ -46,7 +46,7 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
     return accepted
   }
 
-  pushWithBackoff(item: Item): boolean {
+  pushWithBackoff(item: Item, minTimeout = 0): boolean {
     if (this.getAttempts(item) === 0) {
       return this.push(item)[0]
     }
@@ -57,29 +57,9 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
       return false
     }
 
-    const timeout = backoff({ attempt: attempt - 1 })
-
-    setTimeout(() => {
-      this.queue.push(item)
-      // remove from future list
-      this.future = this.future.filter((f) => f.id !== item.id)
-      // Lets listeners know that a 'future' message is now available in the queue
-      this.emit(ON_REMOVE_FROM_FUTURE)
-    }, timeout)
-
-    this.future.push(item)
-    return true
-  }
-
-  pushWithTimeout(item: Item, timeout: number): boolean {
-    if (this.getAttempts(item) === 0) {
-      return this.push(item)[0]
-    }
-
-    const attempt = this.updateAttempts(item)
-
-    if (attempt > this.maxAttempts || this.includes(item)) {
-      return false
+    let timeout = backoff({ attempt: attempt - 1 })
+    if (timeout < minTimeout) {
+      timeout = minTimeout
     }
 
     setTimeout(() => {

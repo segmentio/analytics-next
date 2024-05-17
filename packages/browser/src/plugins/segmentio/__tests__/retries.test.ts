@@ -51,14 +51,14 @@ describe('Segment.io retries 500s and 429', () => {
 
   test('delays retry on 429', async () => {
     const headers = new Headers()
-    const resetTime = 0.35
+    const resetTime = 1
     headers.set('x-ratelimit-reset', resetTime.toString())
     fetch
       .mockReturnValueOnce(
         createError({
           status: 429,
           statusText: 'Too Many Requests',
-          ...headers,
+          headers: headers,
         })
       )
       .mockReturnValue(createSuccess({}))

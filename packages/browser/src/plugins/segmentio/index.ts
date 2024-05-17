@@ -7,7 +7,6 @@ import { Plugin } from '../../core/plugin'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
-import { RateLimitError } from './ratelimit-error'
 import batch, { BatchingDispatchConfig } from './batched-dispatcher'
 import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
 import { normalize } from './normalize'
@@ -114,9 +113,10 @@ export function segmentio(
       )
       .then(() => ctx)
       .catch((error) => {
-        if (error instanceof RateLimitError) {
+        console.error('Error sending event', error)
+        if (error.name == 'RateLimitError') {
           const timeout = error.retryTimeout
-          buffer.pushWithTimeout(ctx, timeout)
+          buffer.pushWithBackoff(ctx, timeout)
         } else {
           buffer.pushWithBackoff(ctx)
         }

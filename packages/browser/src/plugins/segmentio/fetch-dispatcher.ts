@@ -22,7 +22,7 @@ export default function (config?: StandardDispatcherConfig): {
         throw new Error(`Bad response from server: ${res.status}`)
       }
       if (res.status == 429) {
-        const retryTimeoutStringSecs = res.headers.get('x-ratelimit-reset')
+        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
         const retryTimeoutMS = retryTimeoutStringSecs
           ? parseInt(retryTimeoutStringSecs) * 1000
           : 5000
