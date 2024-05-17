@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-tools",
-  "version": "1.2.0",
+  "version": "2.0.1",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -27,7 +27,7 @@
     "jest": "yarn run -T jest"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   },
   "peerDependenciesMeta": {
     "@segment/analytics-next": {

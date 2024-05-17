@@ -1,9 +1,24 @@
 import { BasePage } from './base-page'
 
-class ConsentToolsVanilla extends BasePage {
-  constructor() {
-    super('consent-tools-vanilla.html')
+export class ConsentToolsVanilla extends BasePage {
+  async clickGiveConsent() {
+    const button = await $('#give-consent')
+    return button.click()
+  }
+  async clickDenyConsent() {
+    const button = await $('#give-consent')
+    return button.click()
   }
 }
 
-export default new ConsentToolsVanilla()
+export class ConsentToolsVanillaOptOut extends ConsentToolsVanilla {
+  constructor() {
+    super('consent-tools-vanilla-opt-out.html')
+  }
+}
+
+export class ConsentToolsVanillaOptIn extends ConsentToolsVanilla {
+  constructor() {
+    super('consent-tools-vanilla-opt-in.html')
+  }
+}

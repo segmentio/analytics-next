@@ -1,9 +1,9 @@
 import { Integrations } from '@segment/analytics-core'
-import { LegacyIntegrationConfiguration } from '../..'
+import { RemoteIntegrationSettings } from '../..'
 
 export const isInstallableIntegration = (
   name: string,
-  integrationSettings: LegacyIntegrationConfiguration
+  integrationSettings: RemoteIntegrationSettings
 ) => {
   const { type, bundlingStatus, versionSettings } = integrationSettings
   // We use `!== 'unbundled'` (versus `=== 'bundled'`) to be inclusive of

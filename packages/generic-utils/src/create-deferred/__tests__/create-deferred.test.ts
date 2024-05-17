@@ -36,4 +36,19 @@ describe(createDeferred, () => {
     expect(isRejected).toBe(true)
     expect(isRejectedVal).toBe('foo')
   })
+
+  test('isSettled return true on either reject or resolve', async () => {
+    const deferred1 = createDeferred<string>()
+    const deferred2 = createDeferred<string>()
+
+    expect(deferred1.isSettled()).toBe(false)
+    expect(deferred2.isSettled()).toBe(false)
+
+    deferred1.resolve('foo')
+    expect(deferred1.isSettled()).toBe(true)
+
+    deferred2.promise.catch(() => {})
+    deferred2.reject('foo')
+    expect(deferred2.isSettled()).toBe(true)
+  })
 })

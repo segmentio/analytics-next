@@ -1,10 +1,89 @@
 import { CoreSegmentEvent } from '../../events'
-import { validateEvent } from '../assertions'
+import { assertUserIdentity, validateEvent } from '../assertions'
 
 const baseEvent: Partial<CoreSegmentEvent> = {
   userId: 'foo',
   event: 'Test Event',
+  messageId: 'foo',
 }
+
+describe(assertUserIdentity, () => {
+  test('should pass if either a userID/anonymousID/previousID/groupID are defined', () => {
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 'foo',
+      })
+    ).not.toThrow()
+
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'identify',
+        traits: {},
+        userId: 'foo',
+        anonymousId: undefined,
+      })
+    ).not.toThrow()
+
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'alias',
+        previousId: 'foo',
+        userId: undefined,
+        anonymousId: undefined,
+      })
+    ).not.toThrow()
+
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'group',
+        traits: {},
+        groupId: 'foo',
+      })
+    ).not.toThrow()
+  })
+
+  test('should fail if ID is _not_ string', () => {
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 123 as any,
+      })
+    ).toThrowError(/string/)
+
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 123 as any,
+      })
+    ).toThrowError(/string/)
+  })
+
+  test('should handle null as well as undefined', () => {
+    expect(() =>
+      assertUserIdentity({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: null,
+      })
+    ).toThrowError(/nil/i)
+  })
+})
+
 describe(validateEvent, () => {
   test('should be capable of working with empty properties and traits', () => {
     expect(() => validateEvent(undefined)).toThrowError()
@@ -40,6 +119,7 @@ describe(validateEvent, () => {
   test('identify: traits should be an object', () => {
     expect(() =>
       validateEvent({
+        ...baseEvent,
         type: 'identify',
         traits: undefined,
       })
@@ -76,80 +156,27 @@ describe(validateEvent, () => {
     ).not.toThrow()
   })
 
-  describe('User Validation', () => {
-    test('should pass if either a userID/anonymousID/previousID/groupID are defined', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 'foo',
-        })
-      ).not.toThrow()
+  test('should fail if messageId is _not_ string', () => {
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 'foo',
+        messageId: 'bar',
+      })
+    ).not.toThrow()
 
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'identify',
-          traits: {},
-          userId: 'foo',
-          anonymousId: undefined,
-        })
-      ).not.toThrow()
-
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'alias',
-          previousId: 'foo',
-          userId: undefined,
-          anonymousId: undefined,
-        })
-      ).not.toThrow()
-
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'group',
-          traits: {},
-          groupId: 'foo',
-        })
-      ).not.toThrow()
-    })
-
-    test('should fail if ID is _not_ string', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 123 as any,
-        })
-      ).toThrowError(/string/)
-
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: 123 as any,
-        })
-      ).toThrowError(/string/)
-    })
-
-    test('should handle null as well as undefined', () => {
-      expect(() =>
-        validateEvent({
-          ...baseEvent,
-          type: 'track',
-          properties: {},
-          userId: undefined,
-          anonymousId: null,
-        })
-      ).toThrowError(/nil/i)
-    })
+    expect(() =>
+      validateEvent({
+        ...baseEvent,
+        type: 'track',
+        properties: {},
+        userId: undefined,
+        anonymousId: 'foo',
+        messageId: 123 as any,
+      })
+    ).toThrow(/messageId/)
   })
 })

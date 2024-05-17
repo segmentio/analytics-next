@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-consent-wrapper-onetrust",
-  "version": "0.4.0",
+  "version": "1.0.1",
   "keywords": [
     "segment",
     "analytics",
@@ -41,11 +41,11 @@
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
-    "@segment/analytics-consent-tools": "1.2.0",
+    "@segment/analytics-consent-tools": "2.0.1",
     "tslib": "^2.4.1"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   },
   "peerDependenciesMeta": {
     "@segment/analytics-next": {

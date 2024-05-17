@@ -1,3 +1,7 @@
+## 🎉 Flagship 🎉
+This library is one of Segment’s most popular Flagship libraries. It is actively maintained by Segment, benefitting from new feature releases and ongoing support.
+
+
 <div style="display:flex;margin-bottom:5px">
   <span style="margin: 0 5px 5px">
     <a href="https://buildkite.com/segment/analytics-next">

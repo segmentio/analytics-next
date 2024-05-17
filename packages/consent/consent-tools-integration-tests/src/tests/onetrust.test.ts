@@ -12,22 +12,29 @@ declare global {
 }
 
 afterEach(async () => {
-  await page.clearStorage()
+  await page.cleanup()
 })
 
 it('should send a consent changed event when user clicks accept on popup', async () => {
   await page.load()
 
-  const { getConsentChangedCallCount } = await page.detectConsentChanged()
-
   await browser.pause(1000)
-  await expect(getConsentChangedCallCount()).resolves.toBe(0)
+  await expect(page.getConsentChangedEvents().length).toBe(0)
 
   // make a consent selection in the OneTrust popup
   await page.clickAcceptButtonAndClosePopup()
 
   // 1 consent changed event should now be sent
   await browser.waitUntil(
-    async () => (await getConsentChangedCallCount()) === 1
+    () => {
+      return page.getConsentChangedEvents().length === 1
+    },
+    {
+      interval: 100,
+      timeout: 30000,
+      timeoutMsg: `Expected 1 consent changed event to be sent, got: ${
+        page.getConsentChangedEvents().length
+      }`,
+    }
   )
 })

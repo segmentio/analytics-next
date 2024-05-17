@@ -1,11 +1,6 @@
 import type { CoreAnalytics } from '../analytics'
 import type { CoreContext } from '../context'
 
-interface CorePluginConfig {
-  options: any
-  priority: 'critical' | 'non-critical' // whether AJS should expect this plugin to be loaded before starting event delivery
-}
-
 export type PluginType =
   | 'before'
   | 'after'
@@ -26,11 +21,7 @@ export interface CorePlugin<
   version: string
   type: PluginType
   isLoaded: () => boolean
-  load: (
-    ctx: Ctx,
-    instance: Analytics,
-    config?: CorePluginConfig
-  ) => Promise<unknown>
+  load: (ctx: Ctx, instance: Analytics) => Promise<unknown>
 
   unload?: (ctx: Ctx, instance: Analytics) => Promise<unknown> | unknown
   ready?: () => Promise<unknown>

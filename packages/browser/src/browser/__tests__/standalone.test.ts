@@ -1,12 +1,12 @@
 import jsdom, { JSDOM } from 'jsdom'
 import unfetch from 'unfetch'
-import { LegacySettings } from '..'
+import { CDNSettings } from '..'
 import { pWhile } from '../../lib/p-while'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import * as Factory from '../../test-helpers/factories'
 import { getGlobalAnalytics } from '../..'
 
-const cdnResponse: LegacySettings = {
+const cdnResponse: CDNSettings = {
   integrations: {
     Zapier: {
       type: 'server',

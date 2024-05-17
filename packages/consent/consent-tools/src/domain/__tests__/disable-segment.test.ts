@@ -1,5 +1,5 @@
 import { CDNSettingsConsent } from '../../types'
-import { segmentShouldBeDisabled } from '../disable-segment'
+import { segmentShouldBeDisabled } from '../blocking-helpers'
 
 describe('segmentShouldBeDisabled', () => {
   it('should be disabled if user has only consented to irrelevant categories: multiple', () => {

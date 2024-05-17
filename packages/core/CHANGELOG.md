@@ -1,5 +1,36 @@
 # @segment/analytics-core
 
+## 1.6.0
+
+### Minor Changes
+
+- [#1080](https://github.com/segmentio/analytics-next/pull/1080) [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2) Thanks [@silesky](https://github.com/silesky)! - Do not throw errors in .register() method.
+
+* [#1080](https://github.com/segmentio/analytics-next/pull/1080) [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2) Thanks [@silesky](https://github.com/silesky)! - Addresses an issue where, if one of the non-destination actions fails to load/is blocked, the entire SDK fails to load. This is most notable in GA4, where, if GA was blocked, Segment initialization would fail.
+
+## 1.5.1
+
+### Patch Changes
+
+- [#1045](https://github.com/segmentio/analytics-next/pull/1045) [`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9) Thanks [@silesky](https://github.com/silesky)! - Share `EventFactory` between node and browser.
+
+* [#1076](https://github.com/segmentio/analytics-next/pull/1076) [`1635e42`](https://github.com/segmentio/analytics-next/commit/1635e42ffae8fd8e8d18be94f47a22a802fecec8) Thanks [@chrisradek](https://github.com/chrisradek)! - Fixes an issue introduced in v1.66.0 that caused analytics plugins to be removed from event processing if a destination threw an error while loading.
+
+## 1.5.0
+
+### Minor Changes
+
+- [#945](https://github.com/segmentio/analytics-next/pull/945) [`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c) Thanks [@zikaari](https://github.com/zikaari)! - Load destinations lazily and start sending events as each becomes available instead of waiting for all to load first
+
+### Patch Changes
+
+- [#1043](https://github.com/segmentio/analytics-next/pull/1043) [`95fd2fd`](https://github.com/segmentio/analytics-next/commit/95fd2fd801da26505ddcead96ffaa83aa4364994) Thanks [@silesky](https://github.com/silesky)! - This ensures backward compatibility with analytics-node by modifying '@segment/analytics-core'. Specifically, the changes prevent the generation of a messageId if it is already set. This adjustment aligns with the behavior outlined in analytics-node's source code [here](https://github.com/segmentio/analytics-node/blob/master/index.js#L195-L201).
+
+  While this is a core release, only the node library is affected, as the browser has its own EventFactory atm.
+
+- Updated dependencies [[`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c)]:
+  - @segment/analytics-generic-utils@1.2.0
+
 ## 1.4.1
 
 ### Patch Changes

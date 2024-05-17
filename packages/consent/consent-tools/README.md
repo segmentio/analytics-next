@@ -12,18 +12,25 @@ export const withCMP = createWrapper({
     await resolveWhen(() => window.CMP !== undefined, 500)
   },
 
-  // Wrapper waits to load segment / get categories until this function returns / resolves
+  // Allow for control over wrapper + analytics initialization.
+  // Delay any calls to analytics.load() until this function returns / resolves.
   shouldLoadSegment: async (ctx) => {
-    await resolveWhen(
-      () => !window.CMP.popUpVisible(),
-      500
-    )
-
+    /*
     // Optional -- for granular control of initialization
     if (noConsentNeeded) {
       ctx.abort({ loadSegmentNormally: true })
     } else if (allTrackingDisabled) {
       ctx.abort({ loadSegmentNormally: false })
+    }
+    */
+    if (window.CMP.ConsentModel === 'opt-out') {
+      return ctx.load({ consentModel: 'opt-out' })
+    } else {
+      await resolveWhen(
+        () => !window.CMP.popUpVisible() && window.CMP.categories.length,
+        500
+      )
+      return ctx.load({ consentModel: 'opt-in' })
     }
   },
 
@@ -38,6 +45,17 @@ export const withCMP = createWrapper({
   },
 })
 ```
+
+### Settings / Configuration
+
+See: [settings.ts](src/types/settings.ts)
+
+### Consent Models
+
+The wrapper has different behavior based on the consent-model:
+
+- **opt-in** - (strict, GDPR scenario) -- Unconsented device mode destinations are removed
+- **opt-out** - Device mode destinations are loaded, but with blocking middleware
 
 ## Wrapper Usage API
 
@@ -56,6 +74,7 @@ withCMP(analytics).load({
 ```
 
 ## Snippet users (window.analytics)
+
 ### Note: This assumes a project that can consume the library via es6 imports, using a like Webpack.
 
 1. Delete the `analytics.load()` line from the snippet

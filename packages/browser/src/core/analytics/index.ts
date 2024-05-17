@@ -23,12 +23,11 @@ import {
   EventProperties,
   SegmentEvent,
 } from '../events'
-import type { Plugin } from '../plugin'
+import { isDestinationPluginWithAddMiddleware, Plugin } from '../plugin'
 import { EventQueue } from '../queue/event-queue'
 import { Group, ID, User, UserOptions } from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-import type { LegacyDestination } from '../../plugins/ajs-destination'
 import type {
   LegacyIntegration,
   ClassicIntegrationSource,
@@ -42,7 +41,7 @@ import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
 import { HighEntropyHint } from '../../lib/client-hints/interfaces'
-import type { LegacySettings } from '../../browser'
+import type { CDNSettings } from '../../browser'
 import {
   CookieOptions,
   MemoryStorage,
@@ -110,7 +109,7 @@ export interface InitOptions {
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
    */
-  updateCDNSettings?: (settings: LegacySettings) => LegacySettings
+  updateCDNSettings?: (settings: CDNSettings) => CDNSettings
   /**
    * Disables or sets constraints on processing of query string parameters
    */
@@ -144,9 +143,7 @@ export interface InitOptions {
    * disable: (cdnSettings) => cdnSettings.foo === 'bar'
    * ```
    */
-  disable?:
-    | boolean
-    | ((cdnSettings: LegacySettings) => boolean | Promise<boolean>)
+  disable?: boolean | ((cdnSettings: CDNSettings) => boolean | Promise<boolean>)
 }
 
 /* analytics-classic stubs */
@@ -520,13 +517,17 @@ export class Analytics
     integrationName: string,
     ...middlewares: DestinationMiddlewareFunction[]
   ): Promise<Analytics> {
-    const legacyDestinations = this.queue.plugins.filter(
-      (xt) => xt.name.toLowerCase() === integrationName.toLowerCase()
-    ) as LegacyDestination[]
+    this.queue.plugins
+      .filter(isDestinationPluginWithAddMiddleware)
+      .forEach((p) => {
+        if (
+          integrationName === '*' ||
+          p.name.toLowerCase() === integrationName.toLowerCase()
+        ) {
+          p.addMiddleware(...middlewares)
+        }
+      })
 
-    legacyDestinations.forEach((destination) => {
-      destination.addMiddleware(...middlewares)
-    })
     return Promise.resolve(this)
   }
 
@@ -579,7 +580,7 @@ export class Analytics
 
   normalize(msg: SegmentEvent): SegmentEvent {
     console.warn(deprecationWarning)
-    return this.eventFactory.normalize(msg)
+    return this.eventFactory['normalize'](msg)
   }
 
   get failedInitializations(): string[] {
