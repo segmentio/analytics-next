@@ -6,6 +6,7 @@ import { RateLimitError } from './ratelimit-error'
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
+  retryattempts?: number
 }
 
 const MAX_PAYLOAD_SIZE = 500
@@ -84,10 +85,11 @@ export default function batch(
         throw new Error(`Bad response from server: ${res.status}`)
       }
       if (res.status == 429) {
-        const retryTimeoutStringSecs = res.headers.get('x-ratelimit-reset')
-        const retryTimeoutMS = retryTimeoutStringSecs
-          ? parseInt(retryTimeoutStringSecs) * 1000
-          : 0
+        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
+        const retryTimeoutMS =
+          retryTimeoutStringSecs != null
+            ? parseInt(retryTimeoutStringSecs) * 1000
+            : timeout
         throw new RateLimitError(
           `Rate limit exceeded: ${res.status}`,
           retryTimeoutMS
@@ -96,25 +98,25 @@ export default function batch(
     })
   }
 
-  async function flush(): Promise<unknown> {
+  async function flush(attempt = 1): Promise<unknown> {
     if (buffer.length) {
       const batch = buffer
       buffer = []
       return sendBatch(batch)?.catch((error) => {
-        if (error instanceof RateLimitError) {
-          ratelimittimeout = error.retryTimeout
+        if (attempt < (config?.retryattempts ?? 10)) {
+          if (error.name == 'RateLimitError') {
+            ratelimittimeout = error.retryTimeout
+          }
           buffer.push(batch)
-        } else {
-          buffer.push(batch)
+          scheduleFlush(attempt + 1)
         }
-        scheduleFlush()
       })
     }
   }
 
   let schedule: NodeJS.Timeout | undefined
 
-  function scheduleFlush(): void {
+  function scheduleFlush(attempt = 1): void {
     if (schedule) {
       return
     }
@@ -122,7 +124,7 @@ export default function batch(
     schedule = setTimeout(
       () => {
         schedule = undefined
-        flush().catch(console.error)
+        flush(attempt).catch(console.error)
       },
       ratelimittimeout ? ratelimittimeout : timeout
     )

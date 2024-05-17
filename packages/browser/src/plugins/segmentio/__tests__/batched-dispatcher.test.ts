@@ -294,22 +294,3 @@ describe('Batching', () => {
     })
   })
 })
-// describe('on error', () => {
-//   it('retries on 500', async () => {
-//     fetch.mockReturnValueOnce(
-//       createError({
-//         status: 500,
-//       })
-//     )
-//   })
-//   it('retries on 429 after delay', async () => {
-//     fetch.mockReturnValueOnce(
-//       createError({
-//         status: 429,
-//         headers: {
-//           'x-ratelimit-reset': '123',
-//         },
-//       })
-//     )
-//   })
-// })

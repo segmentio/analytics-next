@@ -25,7 +25,7 @@ export default function (config?: StandardDispatcherConfig): {
         const retryTimeoutStringSecs = res.headers.get('x-ratelimit-reset')
         const retryTimeoutMS = retryTimeoutStringSecs
           ? parseInt(retryTimeoutStringSecs) * 1000
-          : 0
+          : 5000
         throw new RateLimitError(
           `Rate limit exceeded: ${res.status}`,
           retryTimeoutMS

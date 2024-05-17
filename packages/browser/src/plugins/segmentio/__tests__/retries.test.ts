@@ -19,7 +19,7 @@ jest.mock('../schedule-flush')
 
 type QueueType = 'priority' | 'persisted'
 
-describe.skip('Segment.io retries 500s and 429', () => {
+describe('Segment.io retries 500s and 429', () => {
   let options: SegmentioSettings
   let analytics: Analytics
   let segment: Plugin
@@ -45,7 +45,8 @@ describe.skip('Segment.io retries 500s and 429', () => {
 
     expect(ctx.attempts).toBe(1)
     expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
-    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(scheduleFlush).toHaveBeenCalled()
   })
 
   test('delays retry on 429', async () => {
@@ -64,8 +65,79 @@ describe.skip('Segment.io retries 500s and 429', () => {
 
     const ctx = await analytics.track('event')
     expect(ctx.attempts).toBe(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(scheduleFlush).toHaveBeenCalled()
+  })
+})
 
+describe('Batches retry 500s and 429', () => {
+  let options: SegmentioSettings
+  let analytics: Analytics
+  let segment: Plugin
+  beforeEach(async () => {
+    jest.resetAllMocks()
+    jest.restoreAllMocks()
+
+    options = {
+      apiKey: 'foo',
+      deliveryStrategy: {
+        strategy: 'batching',
+        // timeout is set very low to get consistent behavior out of scheduleflush
+        config: { size: 3, timeout: 1, retryattempts: 3 },
+      },
+    }
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      {
+        retryQueue: true,
+      }
+    )
+    segment = await segmentio(analytics, options, {})
+    await analytics.register(segment, envEnrichment)
+  })
+
+  test('retries on 500', async () => {
+    fetch
+      .mockReturnValueOnce(() => createError({ status: 500 }))
+      .mockReturnValue(createSuccess({}))
+
+    const ctx1 = await analytics.track('event1')
+    const ctx2 = await analytics.track('event2')
+    // wait a bit for retries - timeout is only 1 ms
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    expect(ctx1.attempts).toBe(1)
+    expect(analytics.queue.queue.getAttempts(ctx1)).toBe(1)
     expect(fetch).toHaveBeenCalledTimes(2)
+  })
+
+  test('delays retry on 429', async () => {
+    const headers = new Headers()
+    const resetTime = 1
+    headers.set('x-ratelimit-reset', resetTime.toString())
+    fetch.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        headers: headers,
+      })
+    )
+
+    const ctx1 = await analytics.track('event1')
+    const ctx2 = await analytics.track('event2')
+
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    expect(ctx1.attempts).toBe(1)
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    expect(fetch).toHaveBeenCalledTimes(2)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    expect(fetch).toHaveBeenCalledTimes(3)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    expect(fetch).toHaveBeenCalledTimes(3) // capped at 3 retries
   })
 })
 
