@@ -6,7 +6,7 @@ import { RateLimitError } from './ratelimit-error'
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
-  retryattempts?: number
+  retryAttempts?: number
 }
 
 const MAX_PAYLOAD_SIZE = 500
@@ -68,7 +68,7 @@ export default function batch(
       const { sentAt, ...newEvent } = event as SegmentEvent
       return newEvent
     })
-    console.log('sending batch', updatedBatch)
+
     return fetch(`https://${apiHost}/b`, {
       keepalive: pageUnloaded,
       headers: {
@@ -84,7 +84,7 @@ export default function batch(
       if (res.status >= 500) {
         throw new Error(`Bad response from server: ${res.status}`)
       }
-      if (res.status == 429) {
+      if (res.status === 429) {
         const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
         const retryTimeoutMS =
           retryTimeoutStringSecs != null
@@ -104,8 +104,8 @@ export default function batch(
       buffer = []
       return sendBatch(batch)?.catch((error) => {
         console.error('Error sending batch', error)
-        if (attempt < (config?.retryattempts ?? 10)) {
-          if (error.name == 'RateLimitError') {
+        if (attempt < (config?.retryAttempts ?? 10)) {
+          if (error.name === 'RateLimitError') {
             ratelimittimeout = error.retryTimeout
           }
           buffer.push(batch)
@@ -138,7 +138,6 @@ export default function batch(
     if (pageUnloaded && buffer.length) {
       const reqs = chunks(buffer).map(sendBatch)
       Promise.all(reqs).catch(console.error)
-      // can we handle a retry here?
     }
   })
 

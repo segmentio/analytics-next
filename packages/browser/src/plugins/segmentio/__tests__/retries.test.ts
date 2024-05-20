@@ -83,7 +83,7 @@ describe('Batches retry 500s and 429', () => {
       deliveryStrategy: {
         strategy: 'batching',
         // timeout is set very low to get consistent behavior out of scheduleflush
-        config: { size: 3, timeout: 1, retryattempts: 3 },
+        config: { size: 3, timeout: 1, retryAttempts: 3 },
       },
     }
     analytics = new Analytics(

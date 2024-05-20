@@ -11,7 +11,6 @@ export default function (config?: StandardDispatcherConfig): {
   dispatch: Dispatcher
 } {
   function dispatch(url: string, body: object): Promise<unknown> {
-    console.log('dispatching', url, body)
     return fetch(url, {
       keepalive: config?.keepalive,
       headers: { 'Content-Type': 'text/plain' },
@@ -21,7 +20,7 @@ export default function (config?: StandardDispatcherConfig): {
       if (res.status >= 500) {
         throw new Error(`Bad response from server: ${res.status}`)
       }
-      if (res.status == 429) {
+      if (res.status === 429) {
         const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
         const retryTimeoutMS = retryTimeoutStringSecs
           ? parseInt(retryTimeoutStringSecs) * 1000
