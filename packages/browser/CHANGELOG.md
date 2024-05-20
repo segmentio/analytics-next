@@ -1,5 +1,72 @@
 # @segment/analytics-next
 
+## 1.69.0
+
+### Minor Changes
+
+- [#1080](https://github.com/segmentio/analytics-next/pull/1080) [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2) Thanks [@silesky](https://github.com/silesky)! - Addresses an issue where, if one of the non-destination actions fails to load/is blocked, the entire SDK fails to load. This is most notable in GA4, where, if GA was blocked, Segment initialization would fail.
+
+### Patch Changes
+
+- Updated dependencies [[`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2), [`e884b61`](https://github.com/segmentio/analytics-next/commit/e884b6119db4ddbc557577539aa91b95481776a2)]:
+  - @segment/analytics-core@1.6.0
+
+## 1.68.0
+
+### Minor Changes
+
+- [#1045](https://github.com/segmentio/analytics-next/pull/1045) [`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9) Thanks [@silesky](https://github.com/silesky)! - - Remove validation plugin
+  - Remove `spark-md5` dependency
+  - Update messageId algorithm to be consistent with node (analytics-next-[epoch time]-[uuid])
+  - Browser Validation:
+    - Throws errors in the EventFactory (not just in a plugin) if the event is invalid
+
+### Patch Changes
+
+- Updated dependencies [[`3c37def`](https://github.com/segmentio/analytics-next/commit/3c37def422f82073e7e33d2d7c7c26c4637afdc9), [`1635e42`](https://github.com/segmentio/analytics-next/commit/1635e42ffae8fd8e8d18be94f47a22a802fecec8)]:
+  - @segment/analytics-core@1.5.1
+
+## 1.67.0
+
+### Minor Changes
+
+- [#1053](https://github.com/segmentio/analytics-next/pull/1053) [`fd09fbc`](https://github.com/segmentio/analytics-next/commit/fd09fbcc943449eccbfe985dfed083b746bd2cab) Thanks [@silesky](https://github.com/silesky)! - Allow `*` in integration name field to apply middleware to all destinations plugins.
+  ```ts
+  addDestinationMiddleware('*', ({ ... }) => {
+   ...
+  })
+  ```
+
+### Patch Changes
+
+- [#1067](https://github.com/segmentio/analytics-next/pull/1067) [`e3f3bee`](https://github.com/segmentio/analytics-next/commit/e3f3bee5831abbe9b3005f77266f72ccda65f9e6) Thanks [@oscb](https://github.com/oscb)! - fix: fixes buffering for legacy destinations
+
+## 1.66.0
+
+### Minor Changes
+
+- [#1037](https://github.com/segmentio/analytics-next/pull/1037) [`e435279`](https://github.com/segmentio/analytics-next/commit/e4352792ed5e58a95009a28d83abb8cfea308a82) Thanks [@danieljackins](https://github.com/danieljackins)! - Allow custom metrics endpoint on load
+
+## 1.65.0
+
+### Minor Changes
+
+- [#945](https://github.com/segmentio/analytics-next/pull/945) [`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c) Thanks [@zikaari](https://github.com/zikaari)! - Load destinations lazily and start sending events as each becomes available instead of waiting for all to load first
+
+### Patch Changes
+
+- [#1036](https://github.com/segmentio/analytics-next/pull/1036) [`f65c131`](https://github.com/segmentio/analytics-next/commit/f65c131a62f979b6629b086b3eb9cd9b3ffefe31) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix schema-filter bug
+
+- Updated dependencies [[`95fd2fd`](https://github.com/segmentio/analytics-next/commit/95fd2fd801da26505ddcead96ffaa83aa4364994), [`d212633`](https://github.com/segmentio/analytics-next/commit/d21263369d5980f4f57b13795524dbc345a02e5c)]:
+  - @segment/analytics-core@1.5.0
+  - @segment/analytics-generic-utils@1.2.0
+
+## 1.64.0
+
+### Minor Changes
+
+- [#1032](https://github.com/segmentio/analytics-next/pull/1032) [`5c1511f`](https://github.com/segmentio/analytics-next/commit/5c1511fe1e1d1df94967623b29ec12ffe770aacf) Thanks [@zikaari](https://github.com/zikaari)! - Support loading analytics into a custom global variable when using snippet version 5.2.1 or later
+
 ## 1.63.0
 
 ### Minor Changes

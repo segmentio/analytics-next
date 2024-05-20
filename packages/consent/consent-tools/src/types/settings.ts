@@ -1,4 +1,4 @@
-import { LoadContext } from '../domain/load-cancellation'
+import { LoadContext } from '../domain/load-context'
 import type {
   Categories,
   IntegrationCategoryMappings,
@@ -35,8 +35,6 @@ export interface CreateWrapperSettings {
 
   /**
    * Wait until this function resolves/returns before loading analytics.
-   * This function should return a list of initial categories.
-   * If this function returns `undefined`, `getCategories()` function will be called to get initial categories.
    * @example
    * ```ts
    *   // Wrapper waits to load segment / get categories until this function returns / resolves
@@ -56,9 +54,7 @@ export interface CreateWrapperSettings {
    * },
    * ```
    **/
-  shouldLoadSegment?: (
-    ctx: LoadContext
-  ) => Categories | void | Promise<Categories | void>
+  shouldLoadSegment?: (ctx: LoadContext) => void | Promise<void>
 
   /**
    * Fetch the categories which stamp every event. Called each time a new Segment event is dispatched.
@@ -68,7 +64,7 @@ export interface CreateWrapperSettings {
   getCategories: GetCategoriesFunction
 
   /**
-   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference" event to Segment when consent preferences change.
+   * Function to register a listener for consent changes to programatically send a "Segment Consent Preference Updated" event to Segment when consent preferences change.
    *
    * #### Note: The callback requires the categories to be in the shape of { "C0001": true, "C0002": false }, so some normalization may be needed.
    * @example
@@ -81,7 +77,7 @@ export interface CreateWrapperSettings {
    * /* event payload
    * {
    *  "type": "track",
-   *  "event": "Segment Consent Preference",
+   *  "event": "Segment Consent Preference Updated",
    *  "context": {
    *    "consent": {
    *      "version": 2,
@@ -148,4 +144,9 @@ export interface CreateWrapperSettings {
    * ```
    */
   pruneUnmappedCategories?: boolean
+
+  /**
+   * Enable debug logging for the wrapper.
+   */
+  enableDebugLogging?: boolean
 }

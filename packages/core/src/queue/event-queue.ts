@@ -16,6 +16,7 @@ export type EventQueueEmitterContract<Ctx extends CoreContext> = {
   delivery_retry: [ctx: Ctx]
   delivery_failure: [ctx: Ctx, err: Ctx | Error | ContextCancelation]
   flush: [ctx: Ctx, delivered: boolean]
+  initialization_failure: [CorePlugin<Ctx>]
 }
 
 export abstract class CoreEventQueue<
@@ -49,25 +50,34 @@ export abstract class CoreEventQueue<
     plugin: Plugin,
     instance: CoreAnalytics
   ): Promise<void> {
-    await Promise.resolve(plugin.load(ctx, instance))
-      .then(() => {
-        this.plugins.push(plugin)
+    this.plugins.push(plugin)
+
+    const handleLoadError = (err: any) => {
+      this.failedInitializations.push(plugin.name)
+      this.emit('initialization_failure', plugin)
+      console.warn(plugin.name, err)
+
+      ctx.log('warn', 'Failed to load destination', {
+        plugin: plugin.name,
+        error: err,
       })
-      .catch((err) => {
-        if (plugin.type === 'destination') {
-          this.failedInitializations.push(plugin.name)
-          console.warn(plugin.name, err)
 
-          ctx.log('warn', 'Failed to load destination', {
-            plugin: plugin.name,
-            error: err,
-          })
+      // Filter out the failed plugin by excluding it from the list
+      this.plugins = this.plugins.filter((p) => p !== plugin)
+    }
 
-          return
-        }
-
-        throw err
-      })
+    if (plugin.type === 'destination' && plugin.name !== 'Segment.io') {
+      plugin.load(ctx, instance).catch(handleLoadError)
+    } else {
+      // for non-destinations plugins, we do need to wait for them to load
+      // reminder: action destinations can require plugins that are not of type "destination".
+      // For example, GA4 loads a type 'before' plugins and addition to a type 'destination' plugin
+      try {
+        await plugin.load(ctx, instance)
+      } catch (err) {
+        handleLoadError(err)
+      }
+    }
   }
 
   async deregister(

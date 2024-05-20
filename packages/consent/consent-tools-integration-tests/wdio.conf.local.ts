@@ -3,6 +3,7 @@ import type { Options } from '@wdio/types'
 const PORT = 4567
 
 export const config: Options.Testrunner = {
+  specFileRetries: 2,
   afterTest(test, _, { error, passed }) {
     console.log(
       [
@@ -21,11 +22,7 @@ export const config: Options.Testrunner = {
         folders: [
           {
             mount: '/',
-            path: './public',
-          },
-          {
-            mount: '/@segment',
-            path: './node_modules/@segment',
+            path: '.',
           },
         ],
       },
@@ -54,7 +51,10 @@ export const config: Options.Testrunner = {
       maxInstances: 5,
       browserName: 'chrome',
       'goog:chromeOptions': {
-        args: process.env.CI ? ['headless', 'disable-gpu'] : [],
+        args: [
+          ...(process.env.CI ? ['headless', 'disable-gpu'] : []),
+          'user-data-dir=/tmp',
+        ],
       },
       acceptInsecureCerts: true,
     },

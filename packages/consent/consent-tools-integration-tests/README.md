@@ -18,3 +18,12 @@ Why is this using wd.io instead of playwright?
 ```
 yarn . test:int
 ```
+
+### Debugging Tips:
+- Webdriver.io has the handy `browser.debug()` command.
+
+- You can serve the static pages by themselves (without webdriver.io) with the following:
+```
+yarn webpack -w &
+npx live-server .
+```

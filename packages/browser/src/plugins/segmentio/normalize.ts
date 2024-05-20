@@ -1,5 +1,5 @@
 import { Analytics } from '../../core/analytics'
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
 import { Context } from '../../core/context'
@@ -8,7 +8,7 @@ export function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
   settings?: SegmentioSettings,
-  integrations?: LegacySettings['integrations'],
+  integrations?: CDNSettings['integrations'],
   ctx?: Context
 ): object {
   const user = analytics.user()

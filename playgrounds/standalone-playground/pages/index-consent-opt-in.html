@@ -27,22 +27,19 @@
     })
   </script>
 
-
   <!-- OneTrust Vendor Script -->
-  <script src="https://cdn.cookielaw.org/scripttemplates/otSDKStub.js" type="text/javascript"
-    data-domain-script="09b87b90-1b30-4d68-9610-9d2fe11234f3-test"></script>
-  <script type="text/javascript">
-    const wk = document.querySelector("input").value
-    console.log('should be on the following url ->', `${window.location.origin + window.location.pathname}?writeKey=${wk || '<writekey>'}&otpreview=true&otgeo=za`)
-    function OptanonWrapper() {
-      // debugging.
-      if (!window.OnetrustActiveGroups.replaceAll(',', '')) {
-        window.OnetrustActiveGroups = ',CAT0001' // very hacky, simulates at least one group if none exist
-      }
-      console.log('ShowAlertNotice: should be false (initially) ->', window.OneTrust.GetDomainData().ShowAlertNotice)
-      console.log('OneTrust.testLog() ->', window.OneTrust.testLog())
-    }
+  <script>
+      (function loadOt() {
+        const otKey = new URL(document.location).searchParams.get("otKey");
+        var t = document.createElement('script')
+        t.type = 'text/javascript'
+        t.src = 'https://cdn.cookielaw.org/scripttemplates/otSDKStub.js'
+        t.setAttribute('data-domain-script', otKey || '09b87b90-1b30-4d68-9610-9d2fe11234f3-test')
+        var n = document.getElementsByTagName('script')[0]
+        n.parentNode.insertBefore(t, n)
+      })()
   </script>
+
   <!-- OneTrust Wrapper -->
   <script
     src="/node_modules/@segment/analytics-consent-wrapper-onetrust/dist/umd/analytics-onetrust.umd.development.js">
@@ -113,7 +110,7 @@
             }
             analytics.SNIPPET_VERSION = '4.13.1'
             analytics._writeKey = writeKey
-            withOneTrust(analytics).load()
+            withOneTrust(analytics, { enableDebugLogging: true }).load()
             analytics.page()
           }
       })()
@@ -144,7 +141,7 @@
 
   <script type="text/javascript">
     const displayConsentLogs = (str) => document.querySelector('#consent-changed').textContent = str
-    window.analytics?.on('track', (name, properties, options) => {
+    analytics.on('track', (name, properties, options) => {
       if (name.includes("Segment Consent")) {
         displayConsentLogs("Consent Changed Event Fired")
         setTimeout(() => displayConsentLogs(''), 3000)

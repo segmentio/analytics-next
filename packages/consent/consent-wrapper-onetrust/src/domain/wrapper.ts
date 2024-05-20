@@ -6,15 +6,25 @@ import {
 } from '@segment/analytics-consent-tools'
 
 import {
-  getNormalizedCategoriesFromGroupData,
-  getNormalizedCategoriesFromGroupIds,
-  getConsentedGroupIds,
+  getNormalizedCategories,
+  getNormalizedActiveGroupIds,
   getOneTrustGlobal,
+  coerceConsentModel,
 } from '../lib/onetrust-api'
 
 export interface OneTrustSettings {
   integrationCategoryMappings?: CreateWrapperSettings['integrationCategoryMappings']
   disableConsentChangedEvent?: boolean
+  /**
+   * Override configured consent model
+   * - `opt-in` (strict/GDPR) - wait for explicit consent before loading segment and all destinations.
+   * - `opt-out`  (default) - load segment and all destinations without waiting for explicit consent.
+   */
+  consentModel?: () => 'opt-in' | 'opt-out'
+  /**
+   * Enable debug logging for OneTrust wrapper
+   */
+  enableDebugLogging?: boolean
 }
 
 /**
@@ -31,34 +41,43 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
     shouldLoadWrapper: async () => {
       await resolveWhen(() => getOneTrustGlobal() !== undefined, 500)
     },
-    // wait for AlertBox to be closed before segment can be loaded. If no consented groups, do not load Segment.
-    shouldLoadSegment: async () => {
-      await resolveWhen(() => {
-        const OneTrust = getOneTrustGlobal()!
-        return (
-          // if any groups at all are consented to
-          Boolean(getConsentedGroupIds().length) &&
-          // if show banner is unchecked in the UI
-          (OneTrust.GetDomainData().ShowAlertNotice === false ||
-            // if alert box is closed by end user
-            OneTrust.IsAlertBoxClosed())
-        )
-      }, 500)
+    shouldLoadSegment: async (ctx) => {
+      const OneTrust = getOneTrustGlobal()!
+      const consentModel =
+        settings.consentModel?.() ||
+        coerceConsentModel(OneTrust.GetDomainData().ConsentModel.Name)
+
+      if (consentModel === 'opt-out') {
+        return ctx.load({
+          consentModel: 'opt-out',
+        })
+      } else {
+        await resolveWhen(() => {
+          return (
+            // if any groups at all are consented to
+            Boolean(getNormalizedActiveGroupIds().length) &&
+            // if show banner is unchecked in the UI
+            (OneTrust.GetDomainData().ShowAlertNotice === false ||
+              // if alert box is closed by end user
+              OneTrust.IsAlertBoxClosed())
+          )
+        }, 500)
+        return ctx.load({ consentModel: 'opt-in' })
+      }
     },
     getCategories: () => {
-      const results = getNormalizedCategoriesFromGroupData()
+      const results = getNormalizedCategories()
       return results
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
       : (setCategories) => {
           getOneTrustGlobal()!.OnConsentChanged((event) => {
-            const normalizedCategories = getNormalizedCategoriesFromGroupIds(
-              event.detail
-            )
+            const normalizedCategories = getNormalizedCategories(event.detail)
             setCategories(normalizedCategories)
           })
         },
     integrationCategoryMappings: settings.integrationCategoryMappings,
+    enableDebugLogging: settings.enableDebugLogging,
   })(analyticsInstance)
 }

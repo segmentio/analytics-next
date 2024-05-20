@@ -3,7 +3,7 @@ import jsdom from 'jsdom'
 import unfetch from 'unfetch'
 import { ajsDestinations, LegacyDestination } from '..'
 import { Analytics } from '../../../core/analytics'
-import { LegacySettings } from '../../../browser'
+import { CDNSettings } from '../../../browser'
 import { Context } from '../../../core/context'
 import { Plan } from '../../../core/events'
 import { tsubMiddleware } from '../../routing-middleware'
@@ -11,7 +11,7 @@ import { AMPLITUDE_WRITEKEY } from '../../../test-helpers/test-writekeys'
 import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
 import * as Factory from '../../../test-helpers/factories'
 
-const cdnResponse: LegacySettings = {
+const cdnResponse: CDNSettings = {
   integrations: {
     Zapier: {
       type: 'server',

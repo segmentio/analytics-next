@@ -1,6 +1,6 @@
 import { Facade } from '@segment/facade'
 import { Analytics } from '../../core/analytics'
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { isOffline } from '../../core/connection'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
@@ -53,7 +53,7 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
 export function segmentio(
   analytics: Analytics,
   settings?: SegmentioSettings,
-  integrations?: LegacySettings['integrations']
+  integrations?: CDNSettings['integrations']
 ): Plugin {
   // Attach `pagehide` before buffer is created so that inflight events are added
   // to the buffer before the buffer persists events in its own `pagehide` handler.

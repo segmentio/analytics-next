@@ -33,6 +33,12 @@ export interface CoreOptions {
   anonymousId?: string
   userId?: string
   traits?: Traits
+  /**
+   * Override the messageId. Under normal circumstances, this is not recommended -- but neccessary for deduping events.
+   *
+   * **Currently, This option only works in `@segment/analytics-node`.**
+   */
+  messageId?: string
   // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)
   [key: string]: any
 }

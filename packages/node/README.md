@@ -10,11 +10,11 @@ https://www.npmjs.com/package/@segment/analytics-node
 
 
 ## Runtime Support
-- Node.js >= 14
+- Node.js >= 18
 - AWS Lambda
 - Cloudflare Workers
 - Vercel Edge Functions
-- Web Workers (experimental)
+- Web Workers / Browser (no device mode destination support)
 
 ## Quick Start
 ### Install library

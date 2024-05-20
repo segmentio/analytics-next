@@ -3733,7 +3733,7 @@ __metadata:
     react: ^18.0.0
     react-dom: ^18.0.0
     typescript: ^4.7.0
-    vite: ^2.9.16
+    vite: ^2.9.17
   languageName: unknown
   linkType: soft
 
@@ -3902,7 +3902,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-consent-tools@1.2.0, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
+"@segment/analytics-consent-tools@2.0.1, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-tools@workspace:packages/consent/consent-tools"
   dependencies:
@@ -3911,7 +3911,7 @@ __metadata:
     "@segment/analytics-next": "workspace:^"
     tslib: ^2.4.1
   peerDependencies:
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   peerDependenciesMeta:
     "@segment/analytics-next":
       optional: true
@@ -3924,10 +3924,10 @@ __metadata:
   dependencies:
     "@internal/config-webpack": "workspace:^"
     "@internal/test-helpers": "workspace:^"
-    "@segment/analytics-consent-tools": 1.2.0
+    "@segment/analytics-consent-tools": 2.0.1
     tslib: ^2.4.1
   peerDependencies:
-    "@segment/analytics-next": ">=1.53.1"
+    "@segment/analytics-next": ">=1.67.0"
   peerDependenciesMeta:
     "@segment/analytics-next":
       optional: true
@@ -3939,13 +3939,13 @@ __metadata:
   resolution: "@segment/analytics-core@workspace:packages/core"
   dependencies:
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-generic-utils": 1.1.1
+    "@segment/analytics-generic-utils": 1.2.0
     dset: ^3.1.2
     tslib: ^2.4.1
   languageName: unknown
   linkType: soft
 
-"@segment/analytics-generic-utils@1.1.1, @segment/analytics-generic-utils@workspace:packages/generic-utils":
+"@segment/analytics-generic-utils@1.2.0, @segment/analytics-generic-utils@workspace:packages/generic-utils":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-generic-utils@workspace:packages/generic-utils"
   dependencies:
@@ -3960,8 +3960,8 @@ __metadata:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-browser-actions-braze": ^1.3.0
-    "@segment/analytics-core": 1.4.1
-    "@segment/analytics-generic-utils": 1.1.1
+    "@segment/analytics-core": 1.6.0
+    "@segment/analytics-generic-utils": 1.2.0
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
@@ -3977,7 +3977,6 @@ __metadata:
     "@types/mime": ^2.0.3
     "@types/node": ^16
     "@types/serve-handler": ^6.1.0
-    "@types/spark-md5": ^3.0.2
     aws-sdk: ^2.814.0
     circular-dependency-plugin: ^5.2.2
     compression-webpack-plugin: ^8.0.1
@@ -3999,7 +3998,6 @@ __metadata:
     playwright: ^1.28.1
     serve-handler: ^6.1.3
     size-limit: ^7.0.8
-    spark-md5: ^3.0.1
     terser-webpack-plugin: ^5.1.4
     ts-loader: ^9.1.1
     ts-node: ^10.8.0
@@ -4017,8 +4015,8 @@ __metadata:
   dependencies:
     "@internal/config": 0.0.0
     "@lukeed/uuid": ^2.0.0
-    "@segment/analytics-core": 1.4.1
-    "@segment/analytics-generic-utils": 1.1.1
+    "@segment/analytics-core": 1.6.0
+    "@segment/analytics-generic-utils": 1.2.0
     "@types/node": ^16
     axios: ^1.6.0
     buffer: ^6.0.3
@@ -6096,13 +6094,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: b9bbb2b5c5ead2fb884bb019f61a014e37410bddd295de28184e1b2e71ee6b04120c5ba7b9954617f0bdf962c13d06249ce65004490889c747c80d3f628ea842
-  languageName: node
-  linkType: hard
-
-"@types/spark-md5@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@types/spark-md5@npm:3.0.2"
-  checksum: daa98b1adbda0c0ba6996dbaf2472cb09d72a828d01c114f67dbab1e7f0ffc23268680c64978a88db46ee1948282d01b0ea0ecd5cfdbac0c6c4eb9c9de76a12a
   languageName: node
   linkType: hard
 
@@ -12071,12 +12062,12 @@ __metadata:
   linkType: hard
 
 "follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.14.7, follow-redirects@npm:^1.14.9, follow-redirects@npm:^1.15.0":
-  version: 1.15.4
-  resolution: "follow-redirects@npm:1.15.4"
+  version: 1.15.6
+  resolution: "follow-redirects@npm:1.15.6"
   peerDependenciesMeta:
     debug:
       optional: true
-  checksum: e178d1deff8b23d5d24ec3f7a94cde6e47d74d0dc649c35fc9857041267c12ec5d44650a0c5597ef83056ada9ea6ca0c30e7c4f97dbf07d035086be9e6a5b7b6
+  checksum: a62c378dfc8c00f60b9c80cab158ba54e99ba0239a5dd7c81245e5a5b39d10f0c35e249c3379eae719ff0285fff88c365dd446fab19dee771f1d76252df1bbf5
   languageName: node
   linkType: hard
 
@@ -13494,17 +13485,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ip@npm:^1.1.5":
-  version: 1.1.5
-  resolution: "ip@npm:1.1.5"
-  checksum: 30133981f082a060a32644f6a7746e9ba7ac9e2bc07ecc8bbdda3ee8ca9bec1190724c390e45a1ee7695e7edfd2a8f7dda2c104ec5f7ac5068c00648504c7e5a
-  languageName: node
-  linkType: hard
-
-"ip@npm:^1.1.8":
-  version: 1.1.8
-  resolution: "ip@npm:1.1.8"
-  checksum: a2ade53eb339fb0cbe9e69a44caab10d6e3784662285eb5d2677117ee4facc33a64679051c35e0dfdb1a3983a51ce2f5d2cb36446d52e10d01881789b76e28fb
+"ip@npm:^1.1.5, ip@npm:^1.1.8":
+  version: 1.1.9
+  resolution: "ip@npm:1.1.9"
+  checksum: b6d91fd45a856e3bd6d4f601ea0619d90f3517638f6918ebd079f959a8a6308568d8db5ef4fdf037e0d9cfdcf264f46833dfeea81ca31309cf0a7eb4b1307b84
   languageName: node
   linkType: hard
 
@@ -19915,13 +19899,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"spark-md5@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "spark-md5@npm:3.0.1"
-  checksum: 613a7f4e20929b832406ef2ed925d696d4d004455360b07ba1a829975fc12a005d745db370cb261ecc827c3dedf3b431a9337f4bab1f1954df776f41a05aaabe
-  languageName: node
-  linkType: hard
-
 "spawn-command@npm:^0.0.2-1":
   version: 0.0.2-1
   resolution: "spawn-command@npm:0.0.2-1"
@@ -21338,11 +21315,11 @@ __metadata:
   linkType: hard
 
 "undici@npm:^5.22.1":
-  version: 5.25.4
-  resolution: "undici@npm:5.25.4"
+  version: 5.28.3
+  resolution: "undici@npm:5.28.3"
   dependencies:
     "@fastify/busboy": ^2.0.0
-  checksum: 654da161687de893127a685be61a19cb5bae42f4595c316ebf633929d871ac3bcd33edcb74156cea90655dfcd100bfe9b53a4f4749d52fc6ad2232f49a6ca8ab
+  checksum: fa1e65aff896c5e2ee23637b632e306f9e3a2b32a3dc0b23ea71e5555ad350bcc25713aea894b3dccc0b7dc2c5e92a5a58435ebc2033b731a5524506f573dfd2
   languageName: node
   linkType: hard
 
@@ -21649,9 +21626,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^2.9.16":
-  version: 2.9.16
-  resolution: "vite@npm:2.9.16"
+"vite@npm:^2.9.17":
+  version: 2.9.17
+  resolution: "vite@npm:2.9.17"
   dependencies:
     esbuild: ^0.14.27
     fsevents: ~2.3.2
@@ -21674,7 +21651,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: b09d899861d9266ce67bf123f4b3c9adf46bd6f9dad186237e69e08b5862d7fb38984e8503abe622f6396b1b5b6f182617292ce71e9237e1ac3c0a771d611b5a
+  checksum: a9c3e15d0191984d0a297aed8e4309c9264c3e4dc095c54f8f28fd3abe00c45d893187f253bbb91db5dea7dc35bbcde2902b04114077d6805789b339f978193c
   languageName: node
   linkType: hard
 

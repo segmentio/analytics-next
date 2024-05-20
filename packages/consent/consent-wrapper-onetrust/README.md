@@ -1,16 +1,13 @@
 # @segment/analytics-consent-wrapper-onetrust
 
-### Try our Playground! [Next.js CodeSandbox](https://codesandbox.io/p/sandbox/focused-bhaskara-jysqr5) 🚀
-
 <img src="img/onetrust-popup.jpg" width="500" />
 
 # Quick Start
 
 ## Configure OneTrust + Segment
 
-
-
 ### Requirements
+
 Ensure that consent is enabled and that you have registered your integration-to-category mappings in Segment, which you can do through the Segment UI.
 
 Note: "categories" are called "groups" in OneTrust.
@@ -21,9 +18,10 @@ If you don't see a "Consent Management" option like the one below, please contac
 
 - Debugging hints: this library expects the [OneTrust Banner SDK](https://community.cookiepro.com/s/article/UUID-d8291f61-aa31-813a-ef16-3f6dec73d643?language=en_US) to be available in order interact with OneTrust. This library derives the group IDs that are active for the current user from the `window.OneTrustActiveGroups` object provided by the OneTrust SDK. [Read this for more information [community.cookiepro.com]](https://community.cookiepro.com/s/article/UUID-66bcaaf1-c7ca-5f32-6760-c75a1337c226?language=en_US).
 
-
 ## For snippet users
+
 ### Add OneTrust snippet and integration to your page
+
 ```html
 <head>
   <!-- OneTrust Cookies Consent Notice start for example.com -->
@@ -34,7 +32,7 @@ If you don't see a "Consent Management" option like the one below, please contac
     data-domain-script="0000-0000-000-0000"
   ></script>
   <script type="text/javascript">
-    function OptanonWrapper() { }
+    function OptanonWrapper() {}
   </script>
 
   <!-- Add Segment's OneTrust Consent Wrapper -->
@@ -54,6 +52,7 @@ If you don't see a "Consent Management" option like the one below, please contac
 ```
 
 #### ⚠️ Reminder: _you must modify_ `analytics.load('....')` from the original Segment snippet. See markup comment in example above.
+
 ## For `npm` library users
 
 1. Ensure that OneTrust Snippet is loaded. [See example above.](#add-onetrust-snippet-and-integration-to-your-page)
@@ -83,12 +82,21 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 
 ```
 
-## Other examples:
+## Settings
 
-> Note: Playgrounds are meant for experimentation / testing, and as such, may be a bit overly complicated.
-> We recommend you try to follcaow the documentation for best practice.
+### Consent Models
 
-- [Standalone playground](/playgrounds/standalone-playground/pages/index-consent.html)
+- **opt-in** - (strict, GDPR scenario) -- wait for explicit consent (i.e. alert box to be closed) before loading device mode destinations and initializing Segment. If consent is not given (no mapped categories are consented to), then Segment is not loaded.
+
+- **opt-out** - Load segment immediately and all destinations, based on default categories. For device mode destinations, any analytics.js-originated events (e.g analytics.track) will be filtered based on consent.
+
+- **default/other** - opt-out
+
+This wrapper uses the `OneTrust.getDomainData()` API to get the consent model for a given geolocation. Default behavior can be overridden by doing:
+
+```ts
+withOneTrust(analytics).load(..., { consentModel: () => 'opt-in' | 'opt-out' })
+```
 
 ## Environments
 

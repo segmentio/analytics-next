@@ -60,8 +60,9 @@ export function validateAnalyticsInstance(
   assertIsObject(analytics, 'analytics')
   if (
     'load' in analytics &&
-    'on' in analytics &&
-    'addSourceMiddleware' in analytics
+    'addSourceMiddleware' in analytics &&
+    'addDestinationMiddleware' in analytics &&
+    'track' in analytics
   ) {
     return
   }

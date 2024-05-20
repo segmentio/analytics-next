@@ -4,7 +4,7 @@ import { CoreAnalytics } from '../../analytics'
 import { pWhile } from '../../utils/p-while'
 import * as timer from '../../priority-queue/backoff'
 import { ContextCancelation } from '../../context'
-import { CorePlugin } from '../../plugins'
+import { CorePlugin, PluginType } from '../../plugins'
 import { pTimeout } from '../../callback'
 import { TestCtx, TestEventQueue } from '../../../test-helpers'
 
@@ -606,6 +606,33 @@ describe('Flushing', () => {
       expect(amplitude.track).toHaveBeenCalled()
       expect(segmentio.track).toHaveBeenCalled()
     })
+  })
+})
+
+describe('register', () => {
+  it('only filters out failed destinations after loading', async () => {
+    jest.spyOn(console, 'warn').mockImplementation(noop)
+    const eq = new TestEventQueue()
+    const goodDestinationPlugin = {
+      ...testPlugin,
+      name: 'good destination',
+      type: 'destination' as PluginType,
+    }
+    const failingPlugin = {
+      ...testPlugin,
+      name: 'failing',
+      type: 'destination' as PluginType,
+
+      load: () => Promise.reject(new Error('I was born to throw')),
+    }
+
+    const plugins = [testPlugin, goodDestinationPlugin, failingPlugin]
+    const promises = plugins.map((p) => eq.register(TestCtx.system(), p, ajs))
+    await Promise.all(promises)
+
+    expect(eq.plugins.length).toBe(2)
+    expect(eq.plugins).toContain(testPlugin)
+    expect(eq.plugins).toContain(goodDestinationPlugin)
   })
 })
 

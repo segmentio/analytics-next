@@ -8,7 +8,7 @@ describe('Initialization', () => {
       writeKey,
     })
 
-    expect(analytics.queue.plugins.length).toBe(2)
+    expect(analytics.queue.plugins.length).toBe(1)
 
     const ajsNodeXt = analytics.queue.plugins.find(
       (xt) => xt.name === 'analytics-node-next'

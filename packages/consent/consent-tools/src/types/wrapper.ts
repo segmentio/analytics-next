@@ -25,13 +25,68 @@ export type MaybeInitializedAnalytics = {
   initialized?: boolean
 } & OptionalField<AnyAnalytics, 'load'>
 
+export interface SegmentEventStub {
+  context: {
+    consent?: {
+      /**
+       * @example { "CAT001": true }
+       */
+      categoryPreferences: {
+        [category: string]: boolean
+      }
+    }
+  }
+}
+/**
+ * Note: we aren't importing from @segment/analytics-next in src code, because we don't want
+ * to introduce a doependency on the analytics-next package, which would trigger errors for customers if they have skipLibCheck set to false (which is default).
+ * @example { "Amplitude (Actions)":  { .... }}
+ */
+export interface SegmentIntegrations {
+  [creationName: string]: any
+}
+export interface SourceMiddlewareParams {
+  payload: {
+    obj: SegmentEventStub
+  }
+  integrations?: SegmentIntegrations
+  next: (payload: SourceMiddlewareParams['payload'] | null) => void
+}
+
+export type SourceMiddlewareFunction = (
+  middleware: SourceMiddlewareParams
+) => null | void | Promise<void | null>
+
+export interface DestinationMiddlewareParams {
+  payload: SourceMiddlewareParams['payload']
+  next: SourceMiddlewareParams['next']
+  /**
+   * integration name
+   * @example "Amplitude (Actions)"
+   */
+  integration: string
+}
+
+export type DestinationMiddlewareFunction = (
+  middleware: DestinationMiddlewareParams
+) => null | void | Promise<void | null>
+
 /**
  * This interface is a stub of the actual Segment analytics instance.
  * Either `AnalyticsSnippet` _or_ `AnalyticsBrowser`.
  */
 export interface AnyAnalytics {
-  addSourceMiddleware(...args: any[]): any
-  on(event: 'initialize', callback: (cdnSettings: CDNSettings) => void): void
+  // Yes, the typing is strange (any | this resolves to 'any' -- ditto Function | any).
+  // This is to documenting the strict type in the type signature, rather than use it.
+  // internally, we can have stronger typing, but we don't want false positive TS errors in the public API
+  // Again, we don't want to introduce a non-dev dependency on analytics-next
+  addDestinationMiddleware(
+    integrationName: string,
+    middleware: Function | DestinationMiddlewareFunction
+  ): any | this
+  addSourceMiddleware(
+    middleware: Function | SourceMiddlewareFunction
+  ): any | this
   track(event: string, properties?: unknown, ...args: any[]): void
   page(): void
 

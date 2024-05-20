@@ -1,11 +1,11 @@
 import { Integrations, JSONObject } from '../../core/events'
 import { Alias, Facade, Group, Identify, Page, Track } from '@segment/facade'
 import { Analytics, InitOptions } from '../../core/analytics'
-import { LegacySettings } from '../../browser'
+import { CDNSettings } from '../../browser'
 import { isOffline, isOnline } from '../../core/connection'
 import { Context, ContextCancelation } from '../../core/context'
 import { isServer } from '../../core/environment'
-import { DestinationPlugin, Plugin } from '../../core/plugin'
+import { InternalPluginWithAddMiddleware, Plugin } from '../../core/plugin'
 import { attempt } from '@segment/analytics-core'
 import { isPlanEventEnabled } from '../../lib/is-plan-event-enabled'
 import { mergedOptions } from '../../lib/merged-options'
@@ -30,6 +30,7 @@ import {
   isInstallableIntegration,
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
+import { createDeferred } from '@segment/analytics-generic-utils'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -64,18 +65,18 @@ async function flushQueue(
   return queue
 }
 
-export class LegacyDestination implements DestinationPlugin {
+export class LegacyDestination implements InternalPluginWithAddMiddleware {
   name: string
   version: string
   settings: JSONObject
   options: InitOptions = {}
-  type: Plugin['type'] = 'destination'
+  readonly type = 'destination'
   middleware: DestinationMiddlewareFunction[] = []
 
-  private _ready = false
-  private _initialized = false
+  private _ready: boolean | undefined
+  private _initialized: boolean | undefined
   private onReady: Promise<unknown> | undefined
-  private onInitialize: Promise<unknown> | undefined
+  private initializePromise = createDeferred<boolean>()
   private disableAutoISOConversion: boolean
 
   integrationSource?: ClassicIntegrationSource
@@ -104,6 +105,11 @@ export class LegacyDestination implements DestinationPlugin {
       delete this.settings['type']
     }
 
+    this.initializePromise.promise.then(
+      (isInitialized) => (this._initialized = isInitialized),
+      () => {}
+    )
+
     this.options = options
     this.buffer = options.disableClientPersistence
       ? new PriorityQueue(4, [])
@@ -113,11 +119,13 @@ export class LegacyDestination implements DestinationPlugin {
   }
 
   isLoaded(): boolean {
-    return this._ready
+    return !!this._ready
   }
 
   ready(): Promise<unknown> {
-    return this.onReady ?? Promise.resolve()
+    return this.initializePromise.promise.then(
+      () => this.onReady ?? Promise.resolve()
+    )
   }
 
   async load(ctx: Context, analyticsInstance: Analytics): Promise<void> {
@@ -149,13 +157,8 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration!.once('ready', onReadyFn)
     })
 
-    this.onInitialize = new Promise((resolve) => {
-      const onInit = (): void => {
-        this._initialized = true
-        resolve(true)
-      }
-
-      this.integration!.on('initialize', onInit)
+    this.integration!.on('initialize', () => {
+      this.initializePromise.resolve(true)
     })
 
     try {
@@ -172,6 +175,7 @@ export class LegacyDestination implements DestinationPlugin {
         type: 'classic',
         didError: true,
       })
+      this.initializePromise.resolve(false)
       throw error
     }
   }
@@ -188,7 +192,7 @@ export class LegacyDestination implements DestinationPlugin {
     return (
       // page events can't be buffered because of destinations that automatically add page views
       ctx.event.type !== 'page' &&
-      (isOffline() || this._ready === false || this._initialized === false)
+      (isOffline() || this._ready !== true || this._initialized !== true)
     )
   }
 
@@ -222,7 +226,6 @@ export class LegacyDestination implements DestinationPlugin {
             type: 'Dropped by plan',
           })
         )
-        return ctx
       } else {
         ctx.updateEvent('integrations', {
           ...ctx.event.integrations,
@@ -238,7 +241,6 @@ export class LegacyDestination implements DestinationPlugin {
             type: 'Dropped by plan',
           })
         )
-        return ctx
       }
     }
 
@@ -264,7 +266,7 @@ export class LegacyDestination implements DestinationPlugin {
 
     try {
       if (this.integration) {
-        await this.integration.invoke.call(this.integration, eventType, event)
+        await this.integration!.invoke.call(this.integration, eventType, event)
       }
     } catch (err) {
       recordIntegrationMetric(ctx, {
@@ -288,9 +290,8 @@ export class LegacyDestination implements DestinationPlugin {
       this.integration.initialize()
     }
 
-    return this.onInitialize!.then(() => {
-      return this.send(ctx, Page as ClassType<Page>, 'page')
-    })
+    await this.initializePromise.promise
+    return this.send(ctx, Page as ClassType<Page>, 'page')
   }
 
   async identify(ctx: Context): Promise<Context> {
@@ -312,6 +313,11 @@ export class LegacyDestination implements DestinationPlugin {
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setTimeout(async () => {
+      if (isOffline() || this._ready !== true || this._initialized !== true) {
+        this.scheduleFlush()
+        return
+      }
+
       this.flushing = true
       this.buffer = await flushQueue(this, this.buffer)
       this.flushing = false
@@ -325,7 +331,7 @@ export class LegacyDestination implements DestinationPlugin {
 
 export function ajsDestinations(
   writeKey: string,
-  settings: LegacySettings,
+  settings: CDNSettings,
   globalIntegrations: Integrations = {},
   options: InitOptions = {},
   routingMiddleware?: DestinationMiddlewareFunction,
