@@ -101,13 +101,13 @@ describe('Batches retry 500s and 429', () => {
       .mockReturnValueOnce(() => createError({ status: 500 }))
       .mockReturnValue(createSuccess({}))
 
-    const ctx1 = await analytics.track('event1')
-    const ctx2 = await analytics.track('event2')
+    await analytics.track('event1')
+    const ctx = await analytics.track('event2')
     // wait a bit for retries - timeout is only 1 ms
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    expect(ctx1.attempts).toBe(1)
-    expect(analytics.queue.queue.getAttempts(ctx1)).toBe(1)
+    expect(ctx.attempts).toBe(1)
+    expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
     expect(fetch).toHaveBeenCalledTimes(2)
   })
 
@@ -123,12 +123,12 @@ describe('Batches retry 500s and 429', () => {
       })
     )
 
-    const ctx1 = await analytics.track('event1')
-    const ctx2 = await analytics.track('event2')
+    await analytics.track('event1')
+    const ctx = await analytics.track('event2')
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    expect(ctx1.attempts).toBe(1)
+    expect(ctx.attempts).toBe(1)
     expect(fetch).toHaveBeenCalledTimes(1)
 
     expect(fetch).toHaveBeenCalledTimes(1)

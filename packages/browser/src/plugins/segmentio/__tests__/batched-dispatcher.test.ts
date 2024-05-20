@@ -4,7 +4,7 @@ jest.mock('unfetch', () => {
   return fetch
 })
 
-import { createError, createSuccess } from '../../../test-helpers/factories'
+import { createSuccess } from '../../../test-helpers/factories'
 import batch from '../batched-dispatcher'
 
 const fatEvent = {
