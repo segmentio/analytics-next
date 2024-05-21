@@ -4,8 +4,6 @@ export {
   AnalyticsBrowserSettings,
   CDNSettings,
   RemoteIntegrationSettings,
-  // Unclear why this is in the public API, but @cradek said that he saw a customer using this
-  loadLegacySettings,
 } from './browser'
 export * from './node'
 

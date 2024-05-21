@@ -82,7 +82,7 @@ export class AnalyticsInstanceSettings {
   readonly cdnSettings: CDNSettings
 
   /**
-   * Auto-track specific timeout setting for legacy purposes.
+   * Auto-track specific timeout setting   for legacy purposes.
    */
   timeout = 300
 

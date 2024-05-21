@@ -128,7 +128,7 @@ export interface AnalyticsBrowserSettings {
   classicIntegrations?: ClassicIntegrationSource[]
 }
 
-export function loadLegacySettings(
+export function loadCDNSettings(
   writeKey: string,
   cdnURL?: string
 ): Promise<CDNSettings> {
@@ -336,7 +336,7 @@ async function loadAnalytics(
 
   let cdnSettings =
     settings.cdnSettings ??
-    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+    (await loadCDNSettings(settings.writeKey, settings.cdnURL))
 
   if (options.updateCDNSettings) {
     cdnSettings = options.updateCDNSettings(cdnSettings)

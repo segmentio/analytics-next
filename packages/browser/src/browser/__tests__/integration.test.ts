@@ -10,8 +10,8 @@ import { JSDOM } from 'jsdom'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-// @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser, loadLegacySettings } from '..'
+// @ts-ignore loadCDNSettings mocked dependency is accused as unused
+import { AnalyticsBrowser, loadCDNSettings } from '..'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../core/connection'
 import * as SegmentPlugin from '../../plugins/segmentio'
@@ -1217,7 +1217,7 @@ describe('retries', () => {
 
   beforeEach(async () => {
     // @ts-ignore ignore reassining function
-    loadLegacySettings = jest.fn().mockReturnValue(
+    loadCDNSettings = jest.fn().mockReturnValue(
       Promise.resolve({
         integrations: { 'Segment.io': { retryQueue: false } },
       })
