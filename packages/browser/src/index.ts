@@ -1,5 +1,12 @@
-export * from './core/analytics'
-export * from './browser'
+export { Analytics, AnalyticsSettings, InitOptions } from './core/analytics'
+export {
+  AnalyticsBrowser,
+  AnalyticsBrowserSettings,
+  CDNSettings,
+  RemoteIntegrationSettings,
+  // Unclear why this is in the public API, but @cradek said that he saw a customer using this
+  loadLegacySettings,
+} from './browser'
 export * from './node'
 
 export * from './core/context'
