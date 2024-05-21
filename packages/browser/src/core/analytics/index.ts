@@ -84,8 +84,7 @@ export class AnalyticsInstanceSettings {
   /**
    * The timeout for the analytics request in milliseconds
    */
-  // this is an odd setting --
-  //  it's only used in autotrack? Not sure what the history is, or why it's publicly exposed.
+  // this is an odd setting --  it's only used in auto-track.ts, but has an entire method around it.
   timeout = 300
 
   constructor(settings: AnalyticsSettings) {
