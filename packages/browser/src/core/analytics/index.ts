@@ -80,12 +80,13 @@ export class AnalyticsInstanceSettings {
    * This is an unstable API, it may change in the future without warning.
    */
   readonly cdnSettings: CDNSettings
+
   /**
    * The timeout for the analytics request in milliseconds
    */
   // this is an odd setting --
   //  it's only used in autotrack? Not sure what the history is, or why it's publicly exposed.
-  readonly timeout = 300
+  timeout = 300
 
   constructor(settings: AnalyticsSettings) {
     this.writeKey = settings.writeKey
