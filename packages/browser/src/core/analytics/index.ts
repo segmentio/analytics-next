@@ -82,9 +82,8 @@ export class AnalyticsInstanceSettings {
   readonly cdnSettings: CDNSettings
 
   /**
-   * The timeout for the analytics request in milliseconds
+   * Auto-track specific timeout setting for legacy purposes.
    */
-  // this is an odd setting --  it's only used in auto-track.ts, but has an entire method around it.
   timeout = 300
 
   constructor(settings: AnalyticsSettings) {
