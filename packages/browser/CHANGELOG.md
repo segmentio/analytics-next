@@ -1,5 +1,14 @@
 # @segment/analytics-next
 
+## 1.70.0
+
+### Minor Changes
+
+- [#1088](https://github.com/segmentio/analytics-next/pull/1088) [`2299e9a`](https://github.com/segmentio/analytics-next/commit/2299e9a7a83f421f0bbf7fac03abc9c030296cac) Thanks [@silesky](https://github.com/silesky)! - Refactor to change interface name from `legacySettings` -> `cdnSettings`, in order to clarify code.
+
+* [#1090](https://github.com/segmentio/analytics-next/pull/1090) [`b611746`](https://github.com/segmentio/analytics-next/commit/b611746e23c1fab7321bb4d100f236813ffb416c) Thanks [@silesky](https://github.com/silesky)! - - Add public settings API
+  - Do not expose loadLegacySettings / loadCDNSettings (private API)
+
 ## 1.69.0
 
 ### Minor Changes
