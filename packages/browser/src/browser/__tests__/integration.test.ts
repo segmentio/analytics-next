@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import { cdnSettingsKitchenSink } from '../../test-helpers/fixtures/cdn-settings'
+import {
+  cdnSettingsKitchenSink,
+  cdnSettingsMinimal,
+} from '../../test-helpers/fixtures/cdn-settings'
 import { createMockFetchImplementation } from '../../test-helpers/fixtures/create-fetch-method'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
@@ -7,8 +10,8 @@ import { JSDOM } from 'jsdom'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-// @ts-ignore loadLegacySettings mocked dependency is accused as unused
-import { AnalyticsBrowser, loadLegacySettings } from '..'
+// @ts-ignore loadCDNSettings mocked dependency is accused as unused
+import { AnalyticsBrowser, loadCDNSettings } from '..'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../core/connection'
 import * as SegmentPlugin from '../../plugins/segmentio'
@@ -23,7 +26,8 @@ import {
   highEntropyTestData,
   lowEntropyTestData,
 } from '../../test-helpers/fixtures/client-hints'
-import { getGlobalAnalytics, NullAnalytics } from '../..'
+import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
+import { NullAnalytics } from '../../core/analytics'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
@@ -1030,24 +1034,47 @@ describe('use', () => {
   })
 })
 
-describe('timeout', () => {
-  it('has a default timeout value', async () => {
+describe('public settings api', () => {
+  it('has expected settings', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      cdnSettings: cdnSettingsMinimal,
+    })
+
+    expect(analytics.settings).toEqual({
+      writeKey,
+      cdnSettings: cdnSettingsMinimal,
+      timeout: 300,
+    })
+  })
+
+  it('should have a writeKey', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
-    //@ts-ignore
-    expect(analytics.settings.timeout).toEqual(300)
+
+    expect(analytics.settings.writeKey).toBe(writeKey)
+  })
+
+  it('should have cdn settings', async () => {
+    const [analytics] = await AnalyticsBrowser.load({
+      writeKey,
+      cdnSettings: cdnSettingsMinimal,
+    })
+
+    expect(analytics.settings.cdnSettings).toEqual(cdnSettingsMinimal)
   })
 
   it('can set a timeout value', async () => {
     const [analytics] = await AnalyticsBrowser.load({
       writeKey,
     })
+    expect(analytics.settings.timeout).toEqual(300)
     analytics.timeout(50)
-    //@ts-ignore
     expect(analytics.settings.timeout).toEqual(50)
   })
 })
+
 describe('register', () => {
   it('will not invoke any plugins that have initialization errors', async () => {
     const analytics = AnalyticsBrowser.load({
@@ -1190,7 +1217,7 @@ describe('retries', () => {
 
   beforeEach(async () => {
     // @ts-ignore ignore reassining function
-    loadLegacySettings = jest.fn().mockReturnValue(
+    loadCDNSettings = jest.fn().mockReturnValue(
       Promise.resolve({
         integrations: { 'Segment.io': { retryQueue: false } },
       })

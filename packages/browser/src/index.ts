@@ -1,5 +1,10 @@
-export * from './core/analytics'
-export * from './browser'
+export { Analytics, AnalyticsSettings, InitOptions } from './core/analytics'
+export {
+  AnalyticsBrowser,
+  AnalyticsBrowserSettings,
+  CDNSettings,
+  RemoteIntegrationSettings,
+} from './browser'
 export * from './node'
 
 export * from './core/context'
