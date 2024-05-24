@@ -31,3 +31,5 @@ export function assertNever(value: never): never {
     `Unhandled discriminated union member: ${JSON.stringify(value)}`
   )
 }
+
+export type EmptyObject = Record<string, never>

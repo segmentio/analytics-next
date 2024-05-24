@@ -3,20 +3,25 @@
  * Otherwise, we would introduce typescript errors for library consumers (unless they do skipLibCheck: true).
  */
 
-export type EdgeFunctionSettings =
-  | {
-      version: number
-      downloadURL: string
-    }
-  | {}
+export type EdgeFnCDNSettings = {
+  version: number
+  downloadURL: string
+}
 
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
-  edgeFunction?: EdgeFunctionSettings
+  edgeFunction?: EdgeFnCDNSettings | { [key: string]: never }
 }
 
 export interface SegmentEventStub {
-  context: {}
+  type: string
+  context: {
+    __eventOrigin?: {
+      type: 'Signal'
+    }
+    [key: string]: unknown
+  }
+  [key: string]: unknown
 }
 
 export interface SourceMiddlewareParams {
@@ -41,10 +46,19 @@ export interface DestinationMiddlewareParams {
 }
 
 export interface AnyAnalytics {
+  settings: {
+    cdnSettings: CDNSettings
+    writeKey: string
+  }
   addSourceMiddleware(
     middleware: Function | SourceMiddlewareFunction
   ): any | this
   track(event: string, properties?: unknown, ...args: any[]): void
+  identify(...args: any[]): void
+  page(...args: any[]): void
+  group(...args: any[]): void
+  alias(...args: any[]): void
+  screen(...args: any[]): void
 }
 
 /**
