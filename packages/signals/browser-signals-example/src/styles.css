@@ -1,0 +1,25 @@
+main {
+  padding: 5%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+label {
+  margin-bottom: 10px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+}
+
+button {
+  padding: 10px;
+  cursor: pointer;
+}
