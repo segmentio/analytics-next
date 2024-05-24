@@ -16,7 +16,12 @@ export interface CDNSettings {
 }
 
 export interface SegmentEventStub {
-  context: {}
+  context: {
+    __eventOrigin?: {
+      type: 'Signal'
+    }
+  }
+  [key: string]: unknown
 }
 
 export interface SourceMiddlewareParams {
@@ -41,10 +46,19 @@ export interface DestinationMiddlewareParams {
 }
 
 export interface AnyAnalytics {
+  settings: {
+    cdnSettings: CDNSettings
+    writeKey: string
+  }
   addSourceMiddleware(
     middleware: Function | SourceMiddlewareFunction
   ): any | this
   track(event: string, properties?: unknown, ...args: any[]): void
+  identify(...args: any[]): void
+  page(...args: any[]): void
+  group(...args: any[]): void
+  alias(...args: any[]): void
+  screen(...args: any[]): void
 }
 
 /**

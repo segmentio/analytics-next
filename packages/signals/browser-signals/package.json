@@ -37,7 +37,10 @@
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
-    "tslib": "^2.4.1"
+    "@segment/analytics-generic-utils": "1.2.0",
+    "idb": "^8.0.0",
+    "tslib": "^2.4.1",
+    "workerboxjs": "^6.1.1"
   },
   "peerDependencies": {
     "@segment/analytics-next": ">=1.70.0"
@@ -50,6 +53,7 @@
   "packageManager": "yarn@3.4.1",
   "devDependencies": {
     "@internal/config-webpack": "workspace:^",
-    "@internal/test-helpers": "workspace:^"
+    "@internal/test-helpers": "workspace:^",
+    "fake-indexeddb": "^6.0.0"
   }
 }
