@@ -117,6 +117,7 @@ export interface CoreExtraContext {
      * @example https://segment.com/academy/
      */
     url?: string
+    [key: string] : string
   }
 
   /**
