@@ -47,37 +47,39 @@ class AnalyticsRuntime {
     return options
   }
 
-  track(...args: any[]) {
+  // these methods need to be bound to the instance, rather than the prototype, in order to serialize correctly in the sandbox.
+  track = (...args: any[]) => {
     // @ts-ignore
     const [eventName, props, options, cb] = resolveArguments(...args)
 
     this.calls.track.push([eventName, props, this.stamp(options), cb])
   }
 
-  identify(...args: any[]) {
+  identify = (...args: any[]) => {
     // @ts-ignore
     const [id, traits, options, cb] = resolveUserArguments(...args)
     this.stamp(options)
     this.calls.identify.push([id, traits, this.stamp(options), cb])
   }
-  alias(...args: any[]) {
+  alias = (...args: any[]) => {
     const [userId, previousId, options, cb] = resolveAliasArguments(
       // @ts-ignore
       ...args
     )
     this.calls.alias.push([userId, previousId, this.stamp(options), cb])
   }
-  group(...args: any[]) {
+  group = (...args: any[]) => {
     // @ts-ignore
     const [id, traits, options, cb] = resolveUserArguments(...args)
     this.calls.group.push([id, traits, this.stamp(options), cb])
   }
-  page(...args: any[]) {
+  page = (...args: any[]) => {
     const [category, name, props, options, cb] = resolvePageArguments(...args)
     this.stamp(options)
     this.calls.page.push([category, name, props, this.stamp(options), cb])
   }
-  screen(...args: any[]) {
+
+  screen = (...args: any[]) => {
     const [category, name, props, options, cb] = resolvePageArguments(...args)
     this.stamp(options)
     this.calls.screen.push([category, name, props, this.stamp(options), cb])
@@ -86,13 +88,13 @@ class AnalyticsRuntime {
 
 type SandboxSettings = {} & EdgeFnSettings
 
-type EdgeFnSettings =
+export type EdgeFnSettings =
   | {
-      edgeFn: string
+      edgeFnOverride: string
       edgeFnDownloadUrl?: string
     }
   | {
-      edgeFn?: string
+      edgeFnOverride?: string
       edgeFnDownloadUrl: string
     }
 
@@ -122,9 +124,13 @@ export class Sandbox {
   jsSandbox: CodeSandbox
 
   constructor(settings: SandboxSettings) {
-    this.edgeFn = settings.edgeFnDownloadUrl
-      ? fetch(settings.edgeFnDownloadUrl).then((res) => res.text())
-      : Promise.resolve(settings.edgeFn!)
+    console.log(settings)
+    if (!settings.edgeFnDownloadUrl && !settings.edgeFnOverride) {
+      throw new Error('edgeFnDownloadUrl or edgeFnOverride is required')
+    }
+    this.edgeFn = settings.edgeFnOverride
+      ? Promise.resolve(settings.edgeFnOverride)
+      : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
     this.jsSandbox = new JavascriptSandbox()
   }
 
@@ -136,12 +142,13 @@ export class Sandbox {
     const scope = {
       Signals: new SignalsRuntime(signals),
       analytics,
-      processSignal: await this.edgeFn,
     }
-    await this.jsSandbox.run(
+    logger.debug('processing signal', { signal, scope, signals })
+    const code = [
+      `globalThis.processSignal = ${await this.edgeFn};`,
       'processSignal(' + JSON.stringify(signal) + ');',
-      scope
-    )
+    ].join('\n')
+    await this.jsSandbox.run(code, scope)
     const calls = analytics.getCalls()
     logger.debug('analytics calls', analytics.getCalls())
     return calls

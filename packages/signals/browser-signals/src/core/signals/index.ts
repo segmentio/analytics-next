@@ -28,7 +28,7 @@ interface SignalsSettings {
   /**
    * Custom SignalStorage implementation. Typically used for testing.
    */
-  edgeFn?: string
+  edgeFnOverride?: string
 }
 
 interface ISignals {
@@ -48,10 +48,10 @@ export class Signals implements ISignals {
   /**
    * String representation of the edge function.
    */
-  private edgeFn?: string
+  private edgeFnOverride?: string
 
   constructor(settings: SignalsSettings = {}) {
-    this.edgeFn = settings.edgeFn
+    this.edgeFnOverride = settings.edgeFnOverride
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient()
 
@@ -75,8 +75,9 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
+
     const processor = new SignalEventProcessor(analytics, {
-      edgeFn: this.edgeFn,
+      edgeFnOverride: this.edgeFnOverride,
     })
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())

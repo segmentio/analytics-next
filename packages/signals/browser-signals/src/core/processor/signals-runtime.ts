@@ -4,7 +4,7 @@ import { Signal } from '../../types/signals'
 // This can't get indexdb, it needs to have all the signals in memory.
 export class SignalsRuntime {
   // @ts-ignore
-  constructor(private _signals: Signal[]) {}
+  constructor(_signals: Signal[]) {}
   find(..._args: any[]) {
     throw new Error('nope')
   }

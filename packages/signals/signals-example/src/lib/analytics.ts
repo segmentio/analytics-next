@@ -5,8 +5,16 @@ export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {
   throw new Error('No writekey provided.')
 }
-
-const signalsPlugin = new SignalsPlugin({ enableDebugLogging: true })
+const signal = `
+ function processSignal(signal) {
+  analytics.track('some signal')
+  return signal
+  }
+  `
+const signalsPlugin = new SignalsPlugin({
+  enableDebugLogging: true,
+  edgeFnOverride: signal,
+})
 
 void analytics
   .load({ writeKey: process.env.WRITEKEY!, plugins: [signalsPlugin] })

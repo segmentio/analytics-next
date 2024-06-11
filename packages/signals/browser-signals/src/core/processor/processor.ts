@@ -1,42 +1,67 @@
 import { logger } from '../../lib/logger'
 import { AnyAnalytics, CDNSettings, Signal } from '../../types'
-import { Sandbox } from './sandbox'
+import { MethodName, Sandbox } from './sandbox'
 
-const parseDownloadURL = (cdnSettings: CDNSettings) => {
+const parseDownloadURL = (cdnSettings: CDNSettings): string | undefined => {
   if (
-    !cdnSettings.edgeFunction ||
-    !('downloadURL' in cdnSettings.edgeFunction)
+    cdnSettings.edgeFunction &&
+    'downloadURL' in cdnSettings.edgeFunction &&
+    typeof cdnSettings.edgeFunction.downloadURL === 'string'
   ) {
-    throw new Error('Edge function settings are not defined')
-  } else {
     return cdnSettings.edgeFunction.downloadURL
+  } else {
+    return undefined
   }
 }
 
-interface SignalEventProcessorSettings {
-  edgeFn?: string
+const createSignalsEventProcessorInternalSettings = (
+  settings: SignalEventProcessorSettingsConfig,
+  analytics: AnyAnalytics
+) => {
+  const edgeFnDownloadUrl = settings.edgeFnOverride
+    ? undefined
+    : parseDownloadURL(analytics.settings.cdnSettings)
+
+  console.log(settings.edgeFnOverride)
+  return {
+    edgeFnDownloadUrl: edgeFnDownloadUrl,
+    edgeFnOverride: settings.edgeFnOverride,
+  }
+}
+
+interface SignalEventProcessorSettingsConfig {
+  edgeFnOverride?: string
 }
 export class SignalEventProcessor {
   private sandbox: Sandbox
   private analytics: AnyAnalytics
+  private settings: ReturnType<
+    typeof createSignalsEventProcessorInternalSettings
+  >
   constructor(
     analytics: AnyAnalytics,
-    settings: SignalEventProcessorSettings = {}
+    settings: SignalEventProcessorSettingsConfig = {}
   ) {
     this.analytics = analytics
+    this.settings = createSignalsEventProcessorInternalSettings(
+      settings,
+      analytics
+    )
     this.sandbox = new Sandbox({
-      edgeFnDownloadUrl: parseDownloadURL(analytics.settings.cdnSettings),
-      edgeFn: settings.edgeFn,
+      edgeFnDownloadUrl: this.settings.edgeFnDownloadUrl!,
+      edgeFnOverride: this.settings.edgeFnOverride,
     })
   }
   async process(signal: Signal, signals: Signal[]) {
-    const events = await this.sandbox.process(signal, signals)
-    logger.debug('procsessed events.', events)
-
-    Object.keys(events).forEach((eventName) => {
-      // @ts-ignore
-      this.analytics[eventName](...events[eventName])
-    })
+    const bufferedEventMethods = await this.sandbox.process(signal, signals)
+    logger.debug('processed events.', { args: bufferedEventMethods })
+    for (const methodName in bufferedEventMethods) {
+      const name = methodName as MethodName
+      const eventsCollection = bufferedEventMethods[name]
+      eventsCollection.forEach((args) => {
+        this.analytics[name].apply(this.analytics[name], args)
+      })
+    }
   }
 }
 //    class SignalsEventProcessor {

@@ -9,6 +9,8 @@ interface SignalsPluginSettings {
    * Max number of signals in the default signal store
    */
   maxBufferSize?: number
+
+  edgeFnOverride?: string
 }
 
 export class SignalsPlugin implements Plugin {
@@ -20,9 +22,11 @@ export class SignalsPlugin implements Plugin {
     if (settings.enableDebugLogging) {
       logger.enableDebugLogging()
     }
+    logger.debug('SignalsPlugin initializing', { settings })
     // subscribe and store signals that may occur before analyics is fully initialized
     this.signals = new Signals({
       maxBufferSize: settings.maxBufferSize,
+      edgeFnOverride: settings.edgeFnOverride,
     })
   }
 
