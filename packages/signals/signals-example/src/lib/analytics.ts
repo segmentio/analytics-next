@@ -8,7 +8,8 @@ if (!process.env.WRITEKEY) {
 const signal = `
  function processSignal(signal) {
     if (signal.type === 'interaction') {
-      analytics.track(signal.data.eventType + ' (' + signal.type + ')', signal.data)
+      const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
+      analytics.track(eventName, signal.data)
     }
   }
   `

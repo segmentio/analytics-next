@@ -120,6 +120,14 @@ class JavascriptSandbox implements CodeSandbox {
 }
 
 export class Sandbox {
+  /**
+   * Should look like:
+   * ```js
+   * function processSignal(signal) {
+   * ...
+   * }
+   * ```
+   */
   edgeFn: Promise<string>
   jsSandbox: CodeSandbox
 
@@ -144,8 +152,14 @@ export class Sandbox {
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
+    const processSignalFn = await this.edgeFn
+    if (!processSignalFn.includes('processSignal')) {
+      throw new Error(
+        'edge function must contain a function named processSignal.'
+      )
+    }
     const code = [
-      `globalThis.processSignal = ${await this.edgeFn};`,
+      processSignalFn,
       'processSignal(' + JSON.stringify(signal) + ');',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
