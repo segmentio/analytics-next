@@ -1,7 +1,9 @@
 # Signals Example
 
 ### Instructions
-1. `yarn install`
-2. Rename: `.env.example` -> `.env`
-3. Set `WRITEKEY=XXX` in `.env`
-4. `yarn dev`
+- `cd packages/signals/signal-example`
+- `yarn install` 
+- `yarn . build`
+- Rename: `.env.example` -> `.env` (set `WRITEKEY=XXX` in `.env`)
+- `yarn dev`
+- If you make a change on another package that is not showing up, you can run `yarn . build` to rebuild all of the example's dependencies.
