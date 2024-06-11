@@ -1,7 +1,6 @@
 import { logger } from '../../lib/logger'
 import { AnyAnalytics, CDNSettings, Signal } from '../../types'
-import { SignalBuffer } from '../buffer'
-import { Sandbox, SignalsRuntime } from './sandbox'
+import { Sandbox } from './sandbox'
 
 const parseDownloadURL = (cdnSettings: CDNSettings) => {
   if (
