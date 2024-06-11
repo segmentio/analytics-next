@@ -7,8 +7,9 @@ if (!process.env.WRITEKEY) {
 }
 const signal = `
  function processSignal(signal) {
-  analytics.track('some signal')
-  return signal
+    if (signal.type === 'interaction') {
+      analytics.track(signal.data.eventType + ' (' + signal.type + ')', signal.data)
+    }
   }
   `
 const signalsPlugin = new SignalsPlugin({
