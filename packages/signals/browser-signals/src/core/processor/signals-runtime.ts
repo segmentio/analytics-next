@@ -5,10 +5,10 @@ import { Signal } from '../../types/signals'
 export class SignalsRuntime {
   // @ts-ignore
   constructor(_signals: Signal[]) {}
-  find(..._args: any[]) {
+  find = (..._args: any[]) => {
     throw new Error('nope')
   }
-  getNextIndex(..._args: any[]) {
+  getNextIndex = (..._args: any[]) => {
     throw new Error('nope')
   }
 }
