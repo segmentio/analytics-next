@@ -13,7 +13,7 @@ import {
 import { AnyAnalytics } from '../../types'
 import { registerGenerator } from '../signal-generators/register'
 import { AnalyticsService } from '../analytics-service'
-import { SignalEventProcessor } from '../processor/processor'
+// import { SignalEventProcessor } from '../processor/processor'
 
 interface SignalsSettings {
   /**
@@ -48,10 +48,10 @@ export class Signals implements ISignals {
   /**
    * String representation of the edge function.
    */
-  private edgeFn?: string
+  // private edgeFn?: string
 
   constructor(settings: SignalsSettings = {}) {
-    this.edgeFn = settings.edgeFn
+    // this.edgeFn = settings.edgeFn
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient()
 
@@ -75,12 +75,12 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
-    const processor = new SignalEventProcessor(analytics, {
-      edgeFn: this.edgeFn,
-    })
-    this.signalEmitter.subscribe(async (signal) => {
-      void processor.process(signal, await this.buffer.getAll())
-    })
+    // const processor = new SignalEventProcessor(analytics, {
+    //   edgeFn: this.edgeFn,
+    // })
+    // this.signalEmitter.subscribe(async (signal) => {
+    //   void processor.process(signal, await this.buffer.getAll())
+    // })
     await this.registerGenerator([
       analyticsService.createSegmentInstrumentationEventGenerator(),
     ])
