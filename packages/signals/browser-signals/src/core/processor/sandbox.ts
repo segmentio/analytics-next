@@ -132,7 +132,6 @@ export class Sandbox {
   jsSandbox: CodeSandbox
 
   constructor(settings: SandboxSettings) {
-    console.log(settings)
     if (!settings.edgeFnDownloadUrl && !settings.edgeFnOverride) {
       throw new Error('edgeFnDownloadUrl or edgeFnOverride is required')
     }
