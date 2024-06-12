@@ -1,6 +1,40 @@
 import { logger } from '../../lib/logger'
 import { AnyAnalytics, CDNSettings, Signal } from '../../types'
-import { MethodName, Sandbox } from './sandbox'
+import { MethodName, Sandbox, SandboxSettingsConfig } from './sandbox'
+
+interface SignalEventProcessorSettingsConfig {
+  edgeFnOverride?: string
+}
+export class SignalEventProcessor {
+  private sandbox: Sandbox
+  private analytics: AnyAnalytics
+  constructor(
+    analytics: AnyAnalytics,
+    settings: SignalEventProcessorSettingsConfig = {}
+  ) {
+    this.analytics = analytics
+    this.sandbox = new Sandbox(createSandboxSettings(settings, analytics))
+  }
+  async process(signal: Signal, signals: Signal[]) {
+    const analyticsMethodCalls = await this.sandbox.process(signal, signals)
+    logger.debug('New signal processed. Analytics method calls:', {
+      methodArgs: analyticsMethodCalls,
+    })
+
+    for (const methodName in analyticsMethodCalls) {
+      const name = methodName as MethodName
+      const eventsCollection = analyticsMethodCalls[name]
+      eventsCollection.forEach((args) => {
+        // @ts-ignore
+        this.analytics[name](...args)
+      })
+    }
+  }
+
+  cleanup() {
+    return this.sandbox.jsSandbox.destroy()
+  }
+}
 
 const parseDownloadURL = (cdnSettings: CDNSettings): string | undefined => {
   if (
@@ -14,97 +48,19 @@ const parseDownloadURL = (cdnSettings: CDNSettings): string | undefined => {
   }
 }
 
-const createSignalsEventProcessorInternalSettings = (
+const createSandboxSettings = (
   settings: SignalEventProcessorSettingsConfig,
   analytics: AnyAnalytics
-) => {
+): SandboxSettingsConfig => {
   const edgeFnDownloadUrl = settings.edgeFnOverride
     ? undefined
     : parseDownloadURL(analytics.settings.cdnSettings)
 
-  console.log(settings.edgeFnOverride)
+  if (!edgeFnDownloadUrl && !settings.edgeFnOverride) {
+    throw new Error('one of: edgeFnDownloadUrl or edgeFnOverride is required')
+  }
   return {
-    edgeFnDownloadUrl: edgeFnDownloadUrl,
+    edgeFnDownloadUrl: edgeFnDownloadUrl!, // Config is a union type, so we need to assert that it's not undefined
     edgeFnOverride: settings.edgeFnOverride,
   }
 }
-
-interface SignalEventProcessorSettingsConfig {
-  edgeFnOverride?: string
-}
-export class SignalEventProcessor {
-  private sandbox: Sandbox
-  private analytics: AnyAnalytics
-  private settings: ReturnType<
-    typeof createSignalsEventProcessorInternalSettings
-  >
-  constructor(
-    analytics: AnyAnalytics,
-    settings: SignalEventProcessorSettingsConfig = {}
-  ) {
-    this.analytics = analytics
-    this.settings = createSignalsEventProcessorInternalSettings(
-      settings,
-      analytics
-    )
-    this.sandbox = new Sandbox({
-      edgeFnDownloadUrl: this.settings.edgeFnDownloadUrl!,
-      edgeFnOverride: this.settings.edgeFnOverride,
-    })
-  }
-  async process(signal: Signal, signals: Signal[]) {
-    const bufferedEventMethods = await this.sandbox.process(signal, signals)
-    logger.debug('processed events.', { args: bufferedEventMethods })
-    for (const methodName in bufferedEventMethods) {
-      const name = methodName as MethodName
-      const eventsCollection = bufferedEventMethods[name]
-      eventsCollection.forEach((args) => {
-        this.analytics[name].apply(this.analytics[name], args)
-      })
-    }
-  }
-}
-//    class SignalsEventProcessor {
-//     private sandbox: Sandbox
-//     private signalsRuntime: SignalsRuntime
-//     constructor(public analyticsInstance: Analytics) {
-//         this.sandbox = new Sandbox(analyticsInstance.cdnSettings.edgeFn)
-//         this.signalsRuntime = new SignalsRuntime(new SignalBuffer())
-//     }
-
-//     process(signal: Signal) {
-//         // todo: think about loop protection
-//         const events = await this.sandbox.process(signal)
-//         // proxy arguments to real analytics instance
-//         Object.keys(events).forEach((eventName) => this.analyticsInstance[eventName](events[eventName]))
-//     }
-
-//     cleanup() {
-//       this.sandbox.destroy()
-// }
-// }
-
-//      class Sandbox {
-//     	edgeFn: Promise<string>
-//     	jsSandbox = createWorkerBox()
-//        signalsRuntime: Signals
-
-//        constructor(edgeFnDownloadURL: URL, signals: Signals) {
-//           this.edgeFn = fetch(edgeFnDownloadURL).then(res => res.text())
-//        }
-
-//     async process(signal: Signal): SegmentEvents => {
-//         const scope = {
-//             Signals: this.signalsRuntime,
-//             analytics: new AnalyticsStub(),
-//             processSignal: await edgeFn,
-//         }
-
-//         await this.sandbox.run("processSignal(" + JSON.stringify(signal) + ");", scope)
-//         return analyticsStub.events
-//     }
-
-//     cleanup() {
-//         return this.jsSandbox.destroy()
-//     }
-// }

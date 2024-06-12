@@ -17,13 +17,17 @@ export type MethodName =
   | 'alias'
   | 'screen'
   | 'group'
-export type BufferedSegmentEvents = Record<MethodName, any[]>
+
+/**
+ * Buffer of any analytics calls made during the processing of a signal
+ */
+export type AnalyticsMethodCalls = Record<MethodName, any[]>
 
 /**
  * Proxy around the analytics client
  */
 class AnalyticsRuntime {
-  private calls: BufferedSegmentEvents = {
+  private calls: AnalyticsMethodCalls = {
     page: [],
     identify: [],
     track: [],
@@ -32,7 +36,7 @@ class AnalyticsRuntime {
     group: [],
   }
 
-  getCalls(): BufferedSegmentEvents {
+  getCalls(): AnalyticsMethodCalls {
     return this.calls
   }
 
@@ -86,18 +90,6 @@ class AnalyticsRuntime {
   }
 }
 
-type SandboxSettings = {} & EdgeFnSettings
-
-export type EdgeFnSettings =
-  | {
-      edgeFnOverride: string
-      edgeFnDownloadUrl?: string
-    }
-  | {
-      edgeFnOverride?: string
-      edgeFnDownloadUrl: string
-    }
-
 interface CodeSandbox {
   run: (fn: string, scope: Record<string, any>) => Promise<any>
   destroy: () => Promise<void>
@@ -119,7 +111,19 @@ class JavascriptSandbox implements CodeSandbox {
   }
 }
 
-export class Sandbox {
+export type EdgeFnSettings =
+  | {
+      edgeFnOverride: string
+      edgeFnDownloadUrl?: string
+    }
+  | {
+      edgeFnOverride?: string
+      edgeFnDownloadUrl: string
+    }
+
+export type SandboxSettingsConfig = {} & EdgeFnSettings
+
+class SandboxSettings {
   /**
    * Should look like:
    * ```js
@@ -129,29 +133,49 @@ export class Sandbox {
    * ```
    */
   edgeFn: Promise<string>
-  jsSandbox: CodeSandbox
-
-  constructor(settings: SandboxSettings) {
+  constructor(settings: SandboxSettingsConfig) {
     if (!settings.edgeFnDownloadUrl && !settings.edgeFnOverride) {
       throw new Error('edgeFnDownloadUrl or edgeFnOverride is required')
     }
-    this.edgeFn = settings.edgeFnOverride
-      ? Promise.resolve(settings.edgeFnOverride)
-      : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
+    this.edgeFn = (
+      settings.edgeFnOverride
+        ? Promise.resolve(settings.edgeFnOverride)
+        : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
+    ).then((processSignalFn) => {
+      this.validateEdgeFn(processSignalFn)
+      return processSignalFn
+    })
+  }
+
+  private validateEdgeFn(processSignalFn: string): void {
+    if (!processSignalFn.includes('processSignal')) {
+      throw new Error(
+        'edge function must contain a function named processSignal.'
+      )
+    }
+  }
+}
+
+export class Sandbox {
+  settings: SandboxSettings
+  jsSandbox: CodeSandbox
+
+  constructor(settings: SandboxSettingsConfig) {
+    this.settings = new SandboxSettings(settings)
     this.jsSandbox = new JavascriptSandbox()
   }
 
   async process(
     signal: Signal,
     signals: Signal[]
-  ): Promise<BufferedSegmentEvents> {
+  ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
     const scope = {
       Signals: new SignalsRuntime(signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
-    const processSignalFn = await this.edgeFn
+    const processSignalFn = await this.settings.edgeFn
     if (!processSignalFn.includes('processSignal')) {
       throw new Error(
         'edge function must contain a function named processSignal.'
@@ -167,28 +191,3 @@ export class Sandbox {
     return calls
   }
 }
-
-//      class Sandbox {
-//     	edgeFn: Promise<string>
-//     	jsSandbox = createWorkerBox()
-//        signalsRuntime: Signals
-
-//        constructor(edgeFnDownloadURL: URL, signals: Signals) {
-//           this.edgeFn = fetch(edgeFnDownloadURL).then(res => res.text())
-//        }
-
-//     async process(signal: Signal): SegmentEvents => {
-//         const scope = {
-//             Signals: this.signalsRuntime,
-//             analytics: new AnalyticsStub(),
-//             processSignal: await edgeFn,
-//         }
-
-//         await this.sandbox.run("processSignal(" + JSON.stringify(signal) + ");", scope)
-//         return analyticsStub.events
-//     }
-
-//     cleanup() {
-//         return this.jsSandbox.destroy()
-//     }
-// }
