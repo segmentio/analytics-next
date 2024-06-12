@@ -15,22 +15,22 @@ const parseLabels = (
 
 const parseElement = (el: HTMLElement) => {
   const base = {
-    classList: [...el.classList],
-    id: el.id,
-    tagName: el.tagName,
-    title: el.title,
-    nodeName: el.nodeName,
-    nodeValue: el.nodeValue,
-    nodeType: el.nodeType,
+    // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: [...el.attributes].map((attr) => ({
       name: attr.name,
       value: attr.value,
     })),
-    // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
-    type: (el as HTMLInputElement).type,
-    name: (el as HTMLInputElement).name,
-    value: (el as HTMLInputElement).value,
+    classList: [...el.classList],
+    id: el.id,
     labels: parseLabels((el as HTMLInputElement).labels),
+    name: (el as HTMLInputElement).name,
+    nodeName: el.nodeName,
+    nodeType: el.nodeType,
+    nodeValue: el.nodeValue,
+    tagName: el.tagName,
+    title: el.title,
+    type: (el as HTMLInputElement).type,
+    value: (el as HTMLInputElement).value,
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -55,12 +55,12 @@ const parseElement = (el: HTMLElement) => {
       duration: el.duration,
       ended: el.ended,
       muted: el.muted,
+      pause: el.pause,
       paused: el.paused,
+      play: el.play,
       playbackRate: el.playbackRate,
       readyState: el.readyState,
       src: el.src,
-      play: el.play,
-      pause: el.pause,
       volume: el.volume,
     }
   } else if (el instanceof HTMLButtonElement) {
