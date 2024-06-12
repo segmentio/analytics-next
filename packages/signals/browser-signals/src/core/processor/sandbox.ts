@@ -175,12 +175,13 @@ export class Sandbox {
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
-    const processSignalFn = await this.settings.edgeFn
+    const edgeFn = await this.settings.edgeFn
     const code = [
-      processSignalFn,
+      edgeFn,
       'processSignal(' + JSON.stringify(signal) + ');',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
+
     const calls = analytics.getCalls()
     logger.debug('analytics calls', analytics.getCalls())
     return calls
