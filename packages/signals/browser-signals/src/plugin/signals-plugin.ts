@@ -1,16 +1,16 @@
 import type { Plugin } from '@segment/analytics-next'
 import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
-import { AnyAnalytics } from '../types'
+import { AnyAnalytics, ProcessSignal } from '../types'
 
-interface SignalsPluginSettings {
+export interface SignalsPluginSettings {
   enableDebugLogging?: boolean
   /**
    * Max number of signals in the default signal store
    */
   maxBufferSize?: number
 
-  edgeFnOverride?: string
+  edgeFnOverride?: string | ProcessSignal
 }
 
 export class SignalsPlugin implements Plugin {
@@ -26,7 +26,10 @@ export class SignalsPlugin implements Plugin {
     // subscribe and store signals that may occur before analytics is fully initialized
     this.signals = new Signals({
       maxBufferSize: settings.maxBufferSize,
-      edgeFnOverride: settings.edgeFnOverride,
+      edgeFnOverride:
+        typeof settings.edgeFnOverride === 'function'
+          ? settings.edgeFnOverride.toString()
+          : settings.edgeFnOverride,
     })
   }
 
@@ -36,7 +39,12 @@ export class SignalsPlugin implements Plugin {
 
   // this is the only required method in the analytics.js Plugin API
   public async load(_ctx: unknown, analytics: AnyAnalytics) {
-    return this.signals.start(analytics)
+    try {
+      await this.signals.start(analytics)
+      logger.debug('SignalsPlugin loaded')
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   stop() {

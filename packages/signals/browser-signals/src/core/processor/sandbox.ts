@@ -7,7 +7,7 @@ import {
 import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
 
-import { Signal } from '../../types'
+import { AnalyticsRuntimePublicApi, Signal } from '../../types'
 import { SignalsRuntime } from './signals-runtime'
 
 export type MethodName =
@@ -26,7 +26,7 @@ export type AnalyticsMethodCalls = Record<MethodName, any[]>
 /**
  * Proxy around the analytics client
  */
-class AnalyticsRuntime {
+class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
   private calls: AnalyticsMethodCalls = {
     page: [],
     identify: [],
@@ -137,22 +137,14 @@ class SandboxSettings {
     if (!settings.edgeFnDownloadUrl && !settings.edgeFnOverride) {
       throw new Error('edgeFnDownloadUrl or edgeFnOverride is required')
     }
-    this.edgeFn = (
+    const normalizedEdgeFn = (
       settings.edgeFnOverride
         ? Promise.resolve(settings.edgeFnOverride)
         : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
-    ).then((processSignalFn) => {
-      this.validateEdgeFn(processSignalFn)
-      return processSignalFn
+    ).then((str) => {
+      return `globalThis.processSignal = ${str}`
     })
-  }
-
-  private validateEdgeFn(processSignalFn: string): void {
-    if (!processSignalFn.includes('processSignal')) {
-      throw new Error(
-        'edge function must contain a function named processSignal.'
-      )
-    }
+    this.edgeFn = normalizedEdgeFn
   }
 }
 
@@ -170,15 +162,15 @@ export class Sandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
+    const edgeFn = await this.settings.edgeFn
     const scope = {
       Signals: new SignalsRuntime(signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
-    const edgeFn = await this.settings.edgeFn
     const code = [
       edgeFn,
-      'processSignal(' + JSON.stringify(signal) + ');',
+      'processSignal(' + JSON.stringify(signal) + ', { analytics, Signals });',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 
