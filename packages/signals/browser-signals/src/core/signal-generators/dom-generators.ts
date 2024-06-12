@@ -47,9 +47,18 @@ const parseElement = (el: HTMLElement) => {
       ...base,
       checked: el.checked,
     }
-  } else if (el instanceof HTMLAudioElement) {
+  } else if (el instanceof HTMLMediaElement) {
     return {
       ...base,
+      currentSrc: el.currentSrc,
+      currentTime: el.currentTime,
+      duration: el.duration,
+      ended: el.ended,
+      muted: el.muted,
+      paused: el.paused,
+      playbackRate: el.playbackRate,
+      readyState: el.readyState,
+      src: el.src,
       play: el.play,
       pause: el.pause,
       volume: el.volume,
