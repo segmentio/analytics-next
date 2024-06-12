@@ -23,7 +23,7 @@ export class SignalsPlugin implements Plugin {
       logger.enableDebugLogging()
     }
     logger.debug('SignalsPlugin initializing', { settings })
-    // subscribe and store signals that may occur before analyics is fully initialized
+    // subscribe and store signals that may occur before analytics is fully initialized
     this.signals = new Signals({
       maxBufferSize: settings.maxBufferSize,
       edgeFnOverride: settings.edgeFnOverride,
