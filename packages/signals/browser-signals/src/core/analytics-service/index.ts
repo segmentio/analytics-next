@@ -26,14 +26,14 @@ export class AnalyticsService {
           const isEventFromSignalEdgeFunction =
             event.context.__eventOrigin?.type === 'Signal'
 
-          if (isEventFromSignalEdgeFunction) {
-            return next(payload)
-          } else {
+          if (!isEventFromSignalEdgeFunction) {
             signalEmitter.emit({
               type: 'instrumentation',
               data: event,
             })
           }
+
+          return next(payload)
         })
         return () => {
           disable = true

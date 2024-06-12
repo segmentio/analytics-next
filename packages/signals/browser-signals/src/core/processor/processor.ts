@@ -7,13 +7,13 @@ interface SignalEventProcessorSettingsConfig {
 }
 export class SignalEventProcessor {
   private sandbox: Sandbox
-  private analytics: AnyAnalytics
+  private hostAnalytics: AnyAnalytics
   constructor(
-    analytics: AnyAnalytics,
+    hostAnalytics: AnyAnalytics,
     settings: SignalEventProcessorSettingsConfig = {}
   ) {
-    this.analytics = analytics
-    this.sandbox = new Sandbox(createSandboxSettings(settings, analytics))
+    this.hostAnalytics = hostAnalytics
+    this.sandbox = new Sandbox(createSandboxSettings(settings, hostAnalytics))
   }
   async process(signal: Signal, signals: Signal[]) {
     const analyticsMethodCalls = await this.sandbox.process(signal, signals)
@@ -26,7 +26,7 @@ export class SignalEventProcessor {
       const eventsCollection = analyticsMethodCalls[name]
       eventsCollection.forEach((args) => {
         // @ts-ignore
-        this.analytics[name](...args)
+        this.hostAnalytics[name](...args)
       })
     }
   }
