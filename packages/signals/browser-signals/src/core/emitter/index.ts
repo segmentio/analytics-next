@@ -8,13 +8,6 @@ export interface EmitSignal {
 
 export class SignalEmitter implements EmitSignal {
   private emitter = new Emitter<{ add: [Signal] }>()
-  static init = false
-  constructor() {
-    if (SignalEmitter.init) {
-      throw new Error('SignalEmitter is a singleton')
-    }
-    SignalEmitter.init = true
-  }
 
   emit(signal: Signal) {
     logger.debug('new signal emitted', signal)
