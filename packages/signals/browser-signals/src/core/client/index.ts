@@ -71,7 +71,9 @@ export class SignalsIngestClient {
     } else {
       const { data, type } = signal
       logger.debug('Sending signal', {
-        ...(data.eventType ? { eventType: data.eventType } : {}),
+        ...(type !== 'instrumentation' && data.eventType
+          ? { eventType: data.eventType }
+          : {}),
         type,
         data,
       })
