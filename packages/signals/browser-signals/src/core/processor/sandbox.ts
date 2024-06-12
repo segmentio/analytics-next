@@ -176,11 +176,6 @@ export class Sandbox {
     }
     logger.debug('processing signal', { signal, scope, signals })
     const processSignalFn = await this.settings.edgeFn
-    if (!processSignalFn.includes('processSignal')) {
-      throw new Error(
-        'edge function must contain a function named processSignal.'
-      )
-    }
     const code = [
       processSignalFn,
       'processSignal(' + JSON.stringify(signal) + ');',
