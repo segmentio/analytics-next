@@ -29,7 +29,9 @@ export class AnalyticsService {
           if (!isEventFromSignalEdgeFunction) {
             signalEmitter.emit({
               type: 'instrumentation',
-              data: event,
+              data: {
+                rawEvent: event,
+              },
             })
           }
 

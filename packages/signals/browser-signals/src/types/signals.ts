@@ -38,7 +38,7 @@ interface NavigationData {
 export type NavigationSignal = AppSignal<'navigation', NavigationData>
 
 interface InstrumentationData {
-  [key: string]: unknown
+  rawEvent: unknown
 }
 export type InstrumentationSignal = AppSignal<
   'instrumentation',
