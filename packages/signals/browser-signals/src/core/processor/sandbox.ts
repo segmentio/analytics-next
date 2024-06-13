@@ -113,11 +113,11 @@ class JavascriptSandbox implements CodeSandbox {
 
 export type EdgeFnSettings =
   | {
-      edgeFnOverride: string
+      processSignal: string
       edgeFnDownloadUrl?: string
     }
   | {
-      edgeFnOverride?: string
+      processSignal?: string
       edgeFnDownloadUrl: string
     }
 
@@ -134,12 +134,12 @@ class SandboxSettings {
    */
   edgeFn: Promise<string>
   constructor(settings: SandboxSettingsConfig) {
-    if (!settings.edgeFnDownloadUrl && !settings.edgeFnOverride) {
-      throw new Error('edgeFnDownloadUrl or edgeFnOverride is required')
+    if (!settings.edgeFnDownloadUrl && !settings.processSignal) {
+      throw new Error('edgeFnDownloadUrl or processSignal is required')
     }
     const normalizedEdgeFn = (
-      settings.edgeFnOverride
-        ? Promise.resolve(settings.edgeFnOverride)
+      settings.processSignal
+        ? Promise.resolve(settings.processSignal)
         : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
     ).then((str) => {
       return `globalThis.processSignal = ${str}`

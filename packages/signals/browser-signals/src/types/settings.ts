@@ -7,5 +7,5 @@ export interface SignalsPluginSettings {
    */
   maxBufferSize?: number
 
-  edgeFnOverride?: string | ProcessSignal
+  processSignal?: string | ProcessSignal
 }

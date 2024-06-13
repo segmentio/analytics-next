@@ -10,7 +10,7 @@ export interface SignalsPluginSettings {
    */
   maxBufferSize?: number
 
-  edgeFnOverride?: string | ProcessSignal
+  processSignal?: string | ProcessSignal
 }
 
 export class SignalsPlugin implements Plugin {
@@ -26,10 +26,10 @@ export class SignalsPlugin implements Plugin {
     // subscribe and store signals that may occur before analytics is fully initialized
     this.signals = new Signals({
       maxBufferSize: settings.maxBufferSize,
-      edgeFnOverride:
-        typeof settings.edgeFnOverride === 'function'
-          ? settings.edgeFnOverride.toString()
-          : settings.edgeFnOverride,
+      processSignal:
+        typeof settings.processSignal === 'function'
+          ? settings.processSignal.toString()
+          : settings.processSignal,
     })
   }
 

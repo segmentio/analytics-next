@@ -3,7 +3,7 @@ import { AnyAnalytics, CDNSettings, Signal } from '../../types'
 import { MethodName, Sandbox, SandboxSettingsConfig } from './sandbox'
 
 interface SignalEventProcessorSettingsConfig {
-  edgeFnOverride?: string
+  processSignal?: string
 }
 export class SignalEventProcessor {
   private sandbox: Sandbox
@@ -52,15 +52,15 @@ const createSandboxSettings = (
   settings: SignalEventProcessorSettingsConfig,
   analytics: AnyAnalytics
 ): SandboxSettingsConfig => {
-  const edgeFnDownloadUrl = settings.edgeFnOverride
+  const edgeFnDownloadUrl = settings.processSignal
     ? undefined
     : parseDownloadURL(analytics.settings.cdnSettings)
 
-  if (!edgeFnDownloadUrl && !settings.edgeFnOverride) {
-    throw new Error('one of: edgeFnDownloadUrl or edgeFnOverride is required')
+  if (!edgeFnDownloadUrl && !settings.processSignal) {
+    throw new Error('one of: edgeFnDownloadUrl or processSignal is required')
   }
   return {
     edgeFnDownloadUrl: edgeFnDownloadUrl!, // Config is a union type, so we need to assert that it's not undefined
-    edgeFnOverride: settings.edgeFnOverride,
+    processSignal: settings.processSignal,
   }
 }

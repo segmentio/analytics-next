@@ -9,7 +9,7 @@ if (!process.env.WRITEKEY) {
   throw new Error('No writekey provided.')
 }
 
-const signal: ProcessSignal = (signal, { analytics }) => {
+const processSignal: ProcessSignal = (signal, { analytics }) => {
   if (signal.type === 'interaction') {
     const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
     analytics.track(eventName, signal.data)
@@ -18,7 +18,7 @@ const signal: ProcessSignal = (signal, { analytics }) => {
 
 const signalsPlugin = new SignalsPlugin({
   enableDebugLogging: true,
-  edgeFnOverride: signal,
+  processSignal: processSignal,
 })
 
 export const loadAnalytics = () =>
