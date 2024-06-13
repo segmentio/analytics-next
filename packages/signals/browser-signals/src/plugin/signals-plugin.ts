@@ -1,31 +1,14 @@
 import type { Plugin } from '@segment/analytics-next'
 import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
-import { AnyAnalytics, ProcessSignal } from '../types'
-
-export interface SignalsPluginSettings {
-  /**
-   * Max number of signals in the default signal store
-   */
-  maxBufferSize?: number
-
-  /**
-   * Override the default signal processing function from the edge function. If this is set, the edge function will not be used.
-   */
-  processSignal?: string | ProcessSignal
-
-  /**
-   * Add console debug logging
-   */
-  enableDebugLogging?: boolean
-}
+import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 
 export class SignalsPlugin implements Plugin {
   readonly type = 'utility'
   readonly name = 'SignalsPlugin'
   readonly version = '0.0.0'
   private signals: Signals
-  constructor(settings: SignalsPluginSettings = {}) {
+  constructor(settings: SignalsPluginSettingsConfig = {}) {
     if (settings.enableDebugLogging) {
       logger.enableDebugLogging()
     }
