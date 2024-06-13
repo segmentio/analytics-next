@@ -26,7 +26,7 @@ interface SignalsSettings {
    */
   signalStorage?: SignalPersistentStorage
   /**
-   * Custom SignalStorage implementation. Typically used for testing.
+   * Override the default signal processing function from the edge function. If this is set, the edge function will not be used.
    */
   processSignal?: string
 }
