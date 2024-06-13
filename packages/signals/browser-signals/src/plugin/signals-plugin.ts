@@ -4,13 +4,20 @@ import { logger } from '../lib/logger'
 import { AnyAnalytics, ProcessSignal } from '../types'
 
 export interface SignalsPluginSettings {
-  enableDebugLogging?: boolean
   /**
    * Max number of signals in the default signal store
    */
   maxBufferSize?: number
 
+  /**
+   * Override the default signal processing function from the edge function. If this is set, the edge function will not be used.
+   */
   processSignal?: string | ProcessSignal
+
+  /**
+   * Add console debug logging
+   */
+  enableDebugLogging?: boolean
 }
 
 export class SignalsPlugin implements Plugin {
