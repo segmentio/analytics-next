@@ -18,7 +18,7 @@ const processSignal: ProcessSignal = (signal, { analytics }) => {
 const isStage = process.env.STAGE === 'true'
 
 const signalsPlugin = new SignalsPlugin({
-  ...(isStage ? { apiHost: 'api.signals.build/v1' } : {}),
+  ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
   enableDebugLogging: true,
   processSignal: processSignal,
 })
