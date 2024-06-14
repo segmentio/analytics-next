@@ -164,7 +164,7 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const edgeFn = await this.settings.edgeFn
     const scope = {
-      Signals: new SignalsRuntime(signals),
+      Signals: new SignalsRuntime(signal, signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })

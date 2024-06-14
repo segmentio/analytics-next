@@ -29,6 +29,12 @@ interface SignalsSettings {
    * Override the default signal processing function from the edge function. If this is set, the edge function will not be used.
    */
   processSignal?: string
+
+  /**
+   * Override host of the signals API, for a custom proxy
+   * Should proxy to signals.segment.io/v1
+   */
+  apiHost?: string
 }
 
 interface ISignals {
@@ -53,7 +59,7 @@ export class Signals implements ISignals {
   constructor(settings: SignalsSettings = {}) {
     this.processSignal = settings.processSignal
     this.signalEmitter = new SignalEmitter()
-    this.signalsClient = new SignalsIngestClient()
+    this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
 
     void this.registerGenerator(domGenerators)
 

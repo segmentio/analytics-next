@@ -15,8 +15,10 @@ const processSignal: ProcessSignal = (signal, { analytics }) => {
     analytics.track(eventName, signal.data)
   }
 }
+const isStage = process.env.STAGE === 'true'
 
 const signalsPlugin = new SignalsPlugin({
+  ...(isStage ? { apiHost: 'api.signals.build/v1' } : {}),
   enableDebugLogging: true,
   processSignal: processSignal,
 })
@@ -24,8 +26,23 @@ const signalsPlugin = new SignalsPlugin({
 export const loadAnalytics = () =>
   analytics
     .load(
-      { writeKey: process.env.WRITEKEY!, plugins: [signalsPlugin] },
-      { initialPageview: true }
+      {
+        writeKey: process.env.WRITEKEY!,
+        plugins: [signalsPlugin],
+        ...(isStage ? { cdnURL: 'https://cdn.segment.build' } : {}),
+      },
+      {
+        initialPageview: true,
+        ...(isStage
+          ? {
+              integrations: {
+                'Segment.io': {
+                  apiHost: 'api.segment.build/v1',
+                },
+              },
+            }
+          : {}),
+      }
     )
     .then(() => {
       console.log(`Analytics loaded with WRITEKEY=${process.env.WRITEKEY}`)

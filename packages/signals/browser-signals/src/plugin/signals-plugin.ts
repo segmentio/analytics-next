@@ -15,6 +15,7 @@ export class SignalsPlugin implements Plugin {
     logger.debug('SignalsPlugin initializing', { settings })
     // subscribe and store signals that may occur before analytics is fully initialized
     this.signals = new Signals({
+      apiHost: settings.apiHost,
       maxBufferSize: settings.maxBufferSize,
       processSignal:
         typeof settings.processSignal === 'function'

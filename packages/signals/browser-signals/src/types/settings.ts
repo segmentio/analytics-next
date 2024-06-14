@@ -15,4 +15,6 @@ export interface SignalsPluginSettingsConfig {
    * Add console debug logging
    */
   enableDebugLogging?: boolean
+
+  apiHost?: string
 }

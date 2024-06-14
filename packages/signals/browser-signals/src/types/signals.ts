@@ -52,12 +52,3 @@ export type Signal =
   | InteractionSignal
   | NavigationSignal
   | InstrumentationSignal
-
-/**
- * Signal sent to the server
- */
-export type RawSignal = Signal & {
-  anonymousId: string
-  timestamp: string
-  index: number
-}
