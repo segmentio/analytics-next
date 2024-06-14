@@ -19,15 +19,20 @@ describe(SignalsIngestClient, () => {
     const ctx = await client.send({
       type: 'instrumentation',
       data: {
-        foo: 'bar',
+        rawEvent: {
+          foo: 'bar',
+        },
       },
     })
 
     expect(ctx!.event.type).toEqual('track')
     expect(ctx!.event.properties).toEqual({
       type: 'instrumentation',
+      index: 0,
       data: {
-        foo: 'bar',
+        rawEvent: {
+          foo: 'bar',
+        },
       },
     })
   })
