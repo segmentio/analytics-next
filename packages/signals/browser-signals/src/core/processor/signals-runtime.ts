@@ -10,23 +10,17 @@ export class SignalsRuntime {
     this.buffer = prevSignals
   }
 
-  filter = (
-    predicate: (signal: Signal, index: number, arr: Signal[]) => boolean
-  ): Signal[] => {
-    return this.buffer.filter(predicate)
+  filter = (...args: Parameters<Array<Signal>['filter']>): Signal[] => {
+    return this.buffer.filter(...args)
   }
 
   find = (
-    /**
-     * Signal to start searching from
-     * Does this include the current signal, or not?
-     */
     fromSignal: Signal,
     signalType: SignalType,
     predicate: (signal: Signal) => boolean
   ): Signal | undefined => {
     return this.buffer
-      .slice(this.buffer.indexOf(fromSignal) + 1)
+      .slice(this.buffer.indexOf(fromSignal))
       .filter((el) => el.type === signalType)
       .find((signal) => predicate(signal))
   }
