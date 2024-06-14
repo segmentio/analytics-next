@@ -27,6 +27,12 @@ export class SignalsIngestClient {
 
   private settings: SignalsIngestSettings
   private analytics: Analytics | undefined
+
+  /**
+   * This matters to sort the signals in the UI if the timestamp conflict (which can happen very very rarely)
+   */
+  private index = 0
+
   constructor(settings: SignalsIngestSettingsConfig = {}) {
     this.settings = new SignalsIngestSettings(settings)
     this.buffer = []
@@ -78,6 +84,7 @@ export class SignalsIngestClient {
         data,
       })
       return this.analytics!.track(MAGIC_EVENT_NAME, {
+        index: this.index++,
         type,
         data,
       })
