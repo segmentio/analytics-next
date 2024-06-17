@@ -16,6 +16,7 @@ export interface CDNSettings {
 }
 
 export interface SegmentEventStub {
+  type: string
   context: {
     __eventOrigin?: {
       type: 'Signal'
