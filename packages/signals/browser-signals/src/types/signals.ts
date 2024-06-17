@@ -5,7 +5,7 @@ export interface AppSignal<T extends SignalType, Data> {
   data: Data
 }
 
-type InteractionData = ClickData | SubmitData | ChangeData
+export type InteractionData = ClickData | SubmitData | ChangeData
 
 interface SerializedTarget {
   // nodeName: Node['nodeName']
@@ -52,3 +52,30 @@ export type Signal =
   | InteractionSignal
   | NavigationSignal
   | InstrumentationSignal
+
+interface SegmentEvent {
+  type: string // e.g 'track'
+  [key: string]: any
+}
+/**
+ * Factories
+ */
+export const createInstrumentationSignal = (
+  rawEvent: SegmentEvent
+): InstrumentationSignal => {
+  return {
+    type: 'instrumentation',
+    data: {
+      rawEvent: rawEvent,
+    },
+  }
+}
+
+export const createInteractionSignal = (
+  data: InteractionData
+): InteractionSignal => {
+  return {
+    type: 'interaction',
+    data,
+  }
+}

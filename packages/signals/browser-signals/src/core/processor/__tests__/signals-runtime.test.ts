@@ -1,21 +1,10 @@
-import { InstrumentationSignal, InteractionSignal } from '../../../types'
+import {
+  InstrumentationSignal,
+  InteractionSignal,
+  createInstrumentationSignal,
+  createInteractionSignal,
+} from '../../../types'
 import { SignalsRuntime } from '../signals-runtime'
-
-const createInstrumentationSignal = (rawEvent: any): InstrumentationSignal => {
-  return {
-    type: 'instrumentation',
-    data: {
-      rawEvent,
-    },
-  }
-}
-
-const createInteractionSignal = (data: any): InteractionSignal => {
-  return {
-    type: 'interaction',
-    data,
-  }
-}
 
 describe('SignalsRuntime', () => {
   let signalsRuntime: SignalsRuntime
@@ -24,8 +13,8 @@ describe('SignalsRuntime', () => {
   let signal3: InteractionSignal
 
   beforeEach(() => {
-    signal1 = createInstrumentationSignal({ eventName: 'click' })
-    signal2 = createInteractionSignal({ eventType: 'submit' })
+    signal1 = createInstrumentationSignal({ type: 'track' })
+    signal2 = createInteractionSignal({ eventType: 'submit', submitter: {} })
     signal3 = createInteractionSignal({ eventType: 'change' })
     signalsRuntime = new SignalsRuntime(signal1, [signal1, signal2, signal3])
   })

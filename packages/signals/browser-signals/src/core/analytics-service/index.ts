@@ -1,4 +1,4 @@
-import { AnyAnalytics } from '../../types'
+import { AnyAnalytics, createInstrumentationSignal } from '../../types'
 import { SignalGenerator } from '../signal-generators/types'
 
 /**
@@ -27,12 +27,7 @@ export class AnalyticsService {
             event.context.__eventOrigin?.type === 'Signal'
 
           if (!isEventFromSignalEdgeFunction) {
-            signalEmitter.emit({
-              type: 'instrumentation',
-              data: {
-                rawEvent: event,
-              },
-            })
+            signalEmitter.emit(createInstrumentationSignal(event))
           }
 
           return next(payload)

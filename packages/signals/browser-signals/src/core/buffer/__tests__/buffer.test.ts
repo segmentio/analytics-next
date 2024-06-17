@@ -1,4 +1,4 @@
-import { createMockSignal } from '../../../test-helpers/fixtures/signal'
+import { createInteractionSignal } from '../../../types'
 import { getSignalBuffer, SignalBuffer } from '../index'
 
 describe(getSignalBuffer, () => {
@@ -14,7 +14,10 @@ describe(getSignalBuffer, () => {
     expect(buffer).toBeTruthy()
   })
   it('should add and clear', async () => {
-    const mockSignal = createMockSignal()
+    const mockSignal = createInteractionSignal({
+      eventType: 'submit',
+      submitter: {},
+    })
     await buffer.add(mockSignal)
     await expect(buffer.getAll()).resolves.toEqual([mockSignal])
     await buffer.clear()
