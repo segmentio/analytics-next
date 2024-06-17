@@ -45,6 +45,11 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
+export type SignalOfType<T extends SignalType> = T extends 'interaction'
+  ? InteractionSignal
+  : T extends 'navigation'
+  ? NavigationSignal
+  : InstrumentationSignal
 /**
  * Internal signal type
  */
