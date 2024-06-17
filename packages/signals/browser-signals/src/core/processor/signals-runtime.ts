@@ -17,7 +17,7 @@ export class SignalsRuntime {
   find = <T extends SignalType>(
     fromSignal: Signal,
     signalType: T,
-    predicate: (signal: SignalOfType<T>) => boolean
+    predicate?: (signal: SignalOfType<T>) => boolean
   ): SignalOfType<T> | undefined => {
     const _isSignalOfType = (signal: Signal): signal is SignalOfType<T> =>
       signal.type === signalType
@@ -25,6 +25,6 @@ export class SignalsRuntime {
     return this.buffer
       .slice(this.buffer.indexOf(fromSignal) + 1)
       .filter(_isSignalOfType)
-      .find((signal) => predicate(signal))
+      .find((signal) => (predicate ? predicate(signal) : () => true))
   }
 }

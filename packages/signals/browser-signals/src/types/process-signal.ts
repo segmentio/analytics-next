@@ -17,7 +17,7 @@ export interface ProcessSignal {
     signal: Signal,
     {
       analytics,
-      signals,
-    }: { analytics: AnalyticsRuntimePublicApi; signals: SignalsRuntime }
+      Signals,
+    }: { analytics: AnalyticsRuntimePublicApi; Signals: SignalsRuntime }
   ): void
 }

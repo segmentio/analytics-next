@@ -38,6 +38,11 @@ describe('SignalsRuntime', () => {
       )
       expect(result).toEqual(signal3)
     })
+
+    it('should return the first match if predicate is not provided', () => {
+      const result = signalsRuntime.find(signal1, 'interaction')
+      expect(result).toEqual(signal2)
+    })
   })
 
   describe('filter', () => {
