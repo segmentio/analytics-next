@@ -20,32 +20,23 @@ describe('SignalsRuntime', () => {
   })
 
   describe('find', () => {
-    it('should find adjacent signal based on the provided function', () => {
+    it('should find following signal based on the provided function', () => {
       const result = signalsRuntime.find(signal2, 'interaction', () => true)
       expect(result).toEqual(signal3)
     })
 
-    it('should only find adjacent signal based on the provided function', () => {
+    it('should return undefined if there are no following signals that match the query', () => {
       const result = signalsRuntime.find(signal1, 'instrumentation', () => true)
       expect(result).toEqual(undefined)
     })
 
-    it('should filter', () => {
+    it('should filter based on predicate', () => {
       const result = signalsRuntime.find(
         signal1,
         'interaction',
         (signal) => signal.data.eventType === 'change'
       )
       expect(result).toEqual(signal3)
-    })
-
-    it('should return undefined if no signal matches the provided function', () => {
-      const result = signalsRuntime.find(
-        signal1,
-        'instrumentation',
-        (signal) => signal.type === ('nonexistent' as any)
-      )
-      expect(result).toBeUndefined()
     })
   })
 
