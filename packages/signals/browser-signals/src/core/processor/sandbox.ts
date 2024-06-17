@@ -7,7 +7,11 @@ import {
 import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
 
-import { AnalyticsRuntimePublicApi, Signal } from '../../types'
+import {
+  AnalyticsRuntimePublicApi,
+  ProcessSignalScope,
+  Signal,
+} from '../../types'
 import { SignalsRuntime } from './signals-runtime'
 
 export type MethodName =
@@ -164,13 +168,15 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const edgeFn = await this.settings.edgeFn
     const scope = {
-      Signals: new SignalsRuntime(signal, signals),
+      signals: new SignalsRuntime(signal, signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
       edgeFn,
-      'processSignal(' + JSON.stringify(signal) + ', { analytics, Signals });',
+      'try { processSignal(' +
+        JSON.stringify(signal) +
+        ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 

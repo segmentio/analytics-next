@@ -2,7 +2,6 @@
 
 import { Signal, SignalType, SignalOfType } from '../../types'
 
-// This can't get indexdb, it needs to have all the signals in memory.
 export class SignalsRuntime {
   buffer: Signal[]
   // @ts-ignore
@@ -21,10 +20,25 @@ export class SignalsRuntime {
   ): SignalOfType<T> | undefined => {
     const _isSignalOfType = (signal: Signal): signal is SignalOfType<T> =>
       signal.type === signalType
-
     return this.buffer
       .slice(this.buffer.indexOf(fromSignal) + 1)
       .filter(_isSignalOfType)
       .find((signal) => (predicate ? predicate(signal) : () => true))
   }
+}
+
+type PromisifyFunction<Fn> = Fn extends (...args: any[]) => infer T
+  ? (...args: Parameters<Fn>) => Promise<T>
+  : never
+
+/**
+ * workerbox hack
+ */
+export type SignalsRuntimePublicApi = {
+  filter: PromisifyFunction<SignalsRuntime['filter']>
+  find: <T extends SignalType>(
+    fromSignal: Signal,
+    signalType: T,
+    predicate?: (signal: SignalOfType<T>) => boolean
+  ) => Promise<SignalOfType<T> | undefined>
 }

@@ -49,7 +49,9 @@ export type SignalOfType<T extends SignalType> = T extends 'interaction'
   ? InteractionSignal
   : T extends 'navigation'
   ? NavigationSignal
-  : InstrumentationSignal
+  : T extends 'instrumentation'
+  ? InstrumentationSignal
+  : never
 /**
  * Internal signal type
  */

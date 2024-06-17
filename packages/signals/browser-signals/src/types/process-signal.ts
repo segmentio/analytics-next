@@ -1,4 +1,4 @@
-import { SignalsRuntime } from '../core/processor/signals-runtime'
+import { SignalsRuntimePublicApi } from '../core/processor/signals-runtime'
 import { Signal } from './signals'
 
 /**
@@ -12,12 +12,11 @@ export interface AnalyticsRuntimePublicApi {
   page: (...args: any[]) => void
   screen: (...args: any[]) => void
 }
+
+export type ProcessSignalScope = {
+  analytics: AnalyticsRuntimePublicApi
+  signals: SignalsRuntimePublicApi
+}
 export interface ProcessSignal {
-  (
-    signal: Signal,
-    {
-      analytics,
-      Signals,
-    }: { analytics: AnalyticsRuntimePublicApi; Signals: SignalsRuntime }
-  ): void
+  (signal: Signal, ctx: ProcessSignalScope): void
 }

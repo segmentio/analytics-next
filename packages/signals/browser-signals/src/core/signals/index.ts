@@ -69,6 +69,10 @@ export class Signals implements ISignals {
     })
 
     this.signalEmitter.subscribe((signal) => {
+      void this.buffer.add(signal)
+    })
+
+    this.signalEmitter.subscribe((signal) => {
       void this.signalsClient.send(signal)
     })
   }
