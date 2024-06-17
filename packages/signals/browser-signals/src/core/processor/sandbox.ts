@@ -12,7 +12,7 @@ import {
   ProcessSignalScope,
   Signal,
 } from '../../types'
-import { SignalsRuntime } from './signals-runtime'
+import { createSignalsRuntime, SignalsRuntime } from './signals-runtime'
 
 export type MethodName =
   | 'page'
@@ -168,7 +168,7 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const edgeFn = await this.settings.edgeFn
     const scope = {
-      signals: new SignalsRuntime(signal, signals),
+      signals: createSignalsRuntime(signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
