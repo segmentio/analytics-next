@@ -7,12 +7,8 @@ import {
 import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
 
-import {
-  AnalyticsRuntimePublicApi,
-  ProcessSignalScope,
-  Signal,
-} from '../../types'
-import { createSignalsRuntime, SignalsRuntime } from './signals-runtime'
+import { AnalyticsRuntimePublicApi, Signal } from '../../types'
+import { createSignalsRuntime } from './signals-runtime'
 
 export type MethodName =
   | 'page'
@@ -105,8 +101,12 @@ class JavascriptSandbox implements CodeSandbox {
     this.workerbox = createWorkerBox('')
   }
   async run(fn: string, scope: Record<string, any>) {
-    const wb = await this.workerbox
-    await wb.run(fn, scope)
+    try {
+      const wb = await this.workerbox
+      await wb.run(fn, scope)
+    } catch (err) {
+      console.error('Error running js sandbox', err)
+    }
   }
 
   async destroy(): Promise<void> {
@@ -168,12 +168,13 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const edgeFn = await this.settings.edgeFn
     const scope = {
-      signals: createSignalsRuntime(signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
       edgeFn,
+      `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
+      `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',

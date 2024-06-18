@@ -77,9 +77,12 @@ export class SignalStore implements SignalPersistentStorage {
     this.signalCount++
   }
 
+  /**
+   * Get list of signals from the store, with the newest signals first.
+   */
   async getAll(): Promise<Signal[]> {
     const store = await this.getStore()
-    return store.getAll(SignalStore.STORE_NAME)
+    return (await store.getAll(SignalStore.STORE_NAME)).reverse()
   }
 
   async clear() {

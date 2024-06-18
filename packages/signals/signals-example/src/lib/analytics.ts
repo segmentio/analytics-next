@@ -1,24 +1,31 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
-import { SignalsPlugin } from '@segment/analytics-browser-signals'
+import {
+  SignalsPlugin,
+  ProcessSignal,
+} from '@segment/analytics-browser-signals'
 
 export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {
   throw new Error('No writekey provideasync d.')
 }
 
-const processSignal = `async function processSignal(signal, { analytics, signals }) {
+const processSignal: ProcessSignal = (signal, { analytics, signals }) => {
   if (signal.type === 'interaction') {
     const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
     analytics.track(eventName, signal.data)
   } else if (signal.type === 'instrumentation') {
-    console.log('instrumentation signal', signals)
-    const found = await signals.find(signal, 'interaction')
+    const found = signals.find(
+      signal,
+      'interaction',
+      (s) => s.data.eventType === 'change'
+    )
     if (found) {
-      console.log('used the buffer!', found.data)
-      analytics.track('used the buffer!', found.data)
+      console.log('found in the buffer!', found.data)
+      analytics.track('found in the buffer!', found.data)
     }
   }
-}`
+}
+
 const isStage = process.env.STAGE === 'true'
 
 const signalsPlugin = new SignalsPlugin({
@@ -26,6 +33,7 @@ const signalsPlugin = new SignalsPlugin({
   enableDebugLogging: true,
   processSignal: processSignal,
 })
+
 export const loadAnalytics = () =>
   analytics
     .load(
