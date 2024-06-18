@@ -136,7 +136,7 @@ class SandboxSettings {
    * }
    * ```
    */
-  edgeFn: Promise<string>
+  processSignal: Promise<string>
   constructor(settings: SandboxSettingsConfig) {
     if (!settings.edgeFnDownloadUrl && !settings.processSignal) {
       throw new Error('edgeFnDownloadUrl or processSignal is required')
@@ -148,7 +148,7 @@ class SandboxSettings {
     ).then((str) => {
       return `globalThis.processSignal = ${str}`
     })
-    this.edgeFn = normalizedEdgeFn
+    this.processSignal = normalizedEdgeFn
   }
 }
 
@@ -166,7 +166,7 @@ export class Sandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
-    const edgeFn = await this.settings.edgeFn
+    const edgeFn = await this.settings.processSignal
     const scope = {
       analytics,
     }
