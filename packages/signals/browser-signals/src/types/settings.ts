@@ -16,5 +16,9 @@ export interface SignalsPluginSettingsConfig {
    */
   enableDebugLogging?: boolean
 
+  /**
+   * Override signals API host
+   * @default signals.segment.io/v1
+   */
   apiHost?: string
 }
