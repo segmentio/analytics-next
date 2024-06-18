@@ -182,7 +182,7 @@ export class Sandbox {
     await this.jsSandbox.run(code, scope)
 
     const calls = analytics.getCalls()
-    logger.debug('analytics calls', analytics.getCalls())
+    logger.debug('analytics calls', calls)
     return calls
   }
 }
