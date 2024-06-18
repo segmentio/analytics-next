@@ -4,7 +4,7 @@ import {
   createInstrumentationSignal,
   createInteractionSignal,
 } from '../../../types'
-import { SignalsRuntime } from '../signals-runtime'
+import { createSignalsRuntime, SignalsRuntime } from '../signals-runtime'
 
 describe('SignalsRuntime', () => {
   let signalsRuntime: SignalsRuntime
@@ -16,7 +16,7 @@ describe('SignalsRuntime', () => {
     signal1 = createInstrumentationSignal({ type: 'track' })
     signal2 = createInteractionSignal({ eventType: 'submit', submitter: {} })
     signal3 = createInteractionSignal({ eventType: 'change' })
-    signalsRuntime = new SignalsRuntime(signal1, [signal1, signal2, signal3])
+    signalsRuntime = createSignalsRuntime([signal1, signal2, signal3])
   })
 
   describe('find', () => {
