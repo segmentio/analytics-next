@@ -166,7 +166,10 @@ export class Sandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
-    logger.debug('processing signal', { signal, signals })
+    const scope = {
+      analytics,
+    }
+    logger.debug('processing signal', { signal, scope, signals })
     const code = [
       await this.settings.processSignal,
       `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
@@ -175,7 +178,7 @@ export class Sandbox {
         JSON.stringify(signal) +
         ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
-    await this.jsSandbox.run(code, { analytics })
+    await this.jsSandbox.run(code, scope)
 
     const calls = analytics.getCalls()
     logger.debug('analytics calls', calls)
