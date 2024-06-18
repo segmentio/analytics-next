@@ -2989,6 +2989,49 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/signals-example@workspace:packages/signals/signals-example":
+  version: 0.0.0-use.local
+  resolution: "@internal/signals-example@workspace:packages/signals/signals-example"
+  dependencies:
+    "@babel/core": ^7.22.11
+    "@babel/preset-env": ^7.22.10
+    "@babel/preset-react": ^7.24.6
+    "@babel/preset-typescript": ^7.22.11
+    "@segment/analytics-browser-signals": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+    "@types/react": ^17.0.37
+    "@types/react-dom": ^17
+    babel-loader: ^8.0.0
+    css-loader: ^7.1.2
+    dotenv-webpack: ^8.1.0
+    html-webpack-plugin: ^5.6.0
+    react: ^17.0.2
+    react-dom: ^17.0.2
+    style-loader: ^4.0.0
+    typescript: ^4.7.0
+    webpack: ^5.76.0
+    webpack-cli: ^4.8.0
+    webpack-dev-server: ^4.15.1
+  languageName: unknown
+  linkType: soft
+
+"@internal/signals-integration-tests@workspace:packages/signals/signals-integration-tests":
+  version: 0.0.0-use.local
+  resolution: "@internal/signals-integration-tests@workspace:packages/signals/signals-integration-tests"
+  dependencies:
+    "@internal/config": "workspace:^"
+    "@internal/test-helpers": "workspace:^"
+    "@playwright/test": ^1.28.1
+    "@segment/analytics-browser-signals": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+    globby: ^11.0.2
+    http-server: 14.1.1
+    tslib: ^2.4.1
+    webpack: ^5.76.0
+    webpack-cli: ^4.8.0
+  languageName: unknown
+  linkType: soft
+
 "@internal/test-helpers@workspace:^, @internal/test-helpers@workspace:packages/test-helpers":
   version: 0.0.0-use.local
   resolution: "@internal/test-helpers@workspace:packages/test-helpers"
@@ -4314,32 +4357,6 @@ __metadata:
   checksum: 8c4aacc903fb717619b69ca7eecf8d4a7b928661b0e835c9cd98f1b858a85ce62c348369ad9a52cb2df8df02578c0525a73fce4c69a42ac414d9554cc6be7117
   languageName: node
   linkType: hard
-
-"@segment/signals-example@workspace:packages/signals/signals-example":
-  version: 0.0.0-use.local
-  resolution: "@segment/signals-example@workspace:packages/signals/signals-example"
-  dependencies:
-    "@babel/core": ^7.22.11
-    "@babel/preset-env": ^7.22.10
-    "@babel/preset-react": ^7.24.6
-    "@babel/preset-typescript": ^7.22.11
-    "@segment/analytics-browser-signals": "workspace:^"
-    "@segment/analytics-next": "workspace:^"
-    "@types/react": ^17.0.37
-    "@types/react-dom": ^17
-    babel-loader: ^8.0.0
-    css-loader: ^7.1.2
-    dotenv-webpack: ^8.1.0
-    html-webpack-plugin: ^5.6.0
-    react: ^17.0.2
-    react-dom: ^17.0.2
-    style-loader: ^4.0.0
-    typescript: ^4.7.0
-    webpack: ^5.76.0
-    webpack-cli: ^4.8.0
-    webpack-dev-server: ^4.15.1
-  languageName: unknown
-  linkType: soft
 
 "@segment/top-domain@npm:^3.0.0":
   version: 3.0.1
