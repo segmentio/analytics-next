@@ -6,7 +6,7 @@ import {
 
 export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {
-  throw new Error('No writekey provideasync d.')
+  throw new Error('No writekey provided.')
 }
 
 const processSignal: ProcessSignal = (signal, { analytics, signals }) => {
