@@ -166,13 +166,12 @@ export class Sandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
-    const edgeFn = await this.settings.processSignal
     const scope = {
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
-      edgeFn,
+      await this.settings.processSignal,
       `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
       `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
       'try { processSignal(' +
