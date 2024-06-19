@@ -6,8 +6,10 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
+    ".": "yarn run -T turbo run --filter=@internal/signals-integration-tests...",
     "build": "webpack",
     "test": "playwright test",
+    "watch": "webpack -w",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "concurrently": "yarn run -T concurrently",
     "watch:test": "yarn test --watch",
