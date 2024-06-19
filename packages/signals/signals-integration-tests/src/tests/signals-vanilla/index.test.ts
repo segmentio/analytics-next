@@ -66,23 +66,6 @@ test('instrumentation signals get sent', async ({ page }) => {
     'https://signals.segment.io/v1/*'
   )
 
-  let analyticsRequest!: Request
-  await page.route('https://api.segment.io/v1/*', (route, request) => {
-    analyticsRequest = request
-    console.log(JSON.stringify(request.postDataJSON(), null, 2))
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
-  const analyticsResponse = page.waitForResponse('https://api.segment.io/v1/*')
-
   await page.evaluate(() => {
     void window.analytics.track('foo')
   })
@@ -107,11 +90,27 @@ test('instrumentation signals get sent', async ({ page }) => {
   expect(rawEvent.timestamp).toEqual(expect.stringMatching(isoDateRegEx))
 
   // get analytics (tracking API response)
-  await analyticsResponse
+  let analyticsRequest!: Request
+  await page.route('https://api.segment.io/v1/*', (route, request) => {
+    analyticsRequest = request
+    console.log(JSON.stringify(request.postDataJSON(), null, 2))
+    if (request.method().toLowerCase() !== 'post') {
+      throw new Error(`Unexpected method: ${request.method()}`)
+    }
+    return route.fulfill({
+      contentType: 'application/json',
+      status: 201,
+      body: JSON.stringify({
+        success: true,
+      }),
+    })
+  })
+  await page.click('button')
+  await page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 })
   req = analyticsRequest.postDataJSON()
 
   isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
   JSON.stringify(req, null, 2)
-  expect(req.batch).toHaveLength(1)
+  expect(req.event).toBe('foo')
 })
