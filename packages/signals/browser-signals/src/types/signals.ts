@@ -33,6 +33,8 @@ type ChangeData = {
 export type InteractionSignal = AppSignal<'interaction', InteractionData>
 
 interface NavigationData {
+  url: string
+  hash: string
   [key: string]: unknown
 }
 export type NavigationSignal = AppSignal<'navigation', NavigationData>
@@ -83,6 +85,15 @@ export const createInteractionSignal = (
 ): InteractionSignal => {
   return {
     type: 'interaction',
+    data,
+  }
+}
+
+export const createNavigationSignal = (
+  data: NavigationData
+): NavigationSignal => {
+  return {
+    type: 'navigation',
     data,
   }
 }

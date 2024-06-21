@@ -15,5 +15,5 @@ export interface SignalGenerator {
 
 export interface SignalGeneratorClass {
   id?: string
-  new (): SignalGenerator
+  new (emitter: SignalEmitter): SignalGenerator
 }

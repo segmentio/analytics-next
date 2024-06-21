@@ -11,7 +11,7 @@ export const registerGenerator = async (
     logger.debug('Registering generator:', gen.id || (gen as any).name)
     if (isClass(gen)) {
       // Check if Gen is a function and has a constructor
-      return new gen().register(emitter)
+      return new gen(emitter).register(emitter)
     } else {
       return gen.register(emitter)
     }

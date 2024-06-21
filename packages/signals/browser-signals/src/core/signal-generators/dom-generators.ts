@@ -1,3 +1,4 @@
+import { createInteractionSignal, createNavigationSignal } from '../../types'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
 
@@ -75,13 +76,12 @@ export class ClickSignalsGenerator implements SignalGenerator {
   register(emitter: SignalEmitter) {
     const handleClick = (ev: MouseEvent) => {
       const target = (ev.target as HTMLElement) ?? {}
-      emitter.emit({
-        type: 'interaction',
-        data: {
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'click',
           target: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('click', handleClick, true)
     return () => document.removeEventListener('click', handleClick)
@@ -93,13 +93,12 @@ export class FormSubmitGenerator implements SignalGenerator {
   register(emitter: SignalEmitter) {
     const handleSubmit = (ev: SubmitEvent) => {
       const target = ev.submitter!
-      emitter.emit({
-        type: 'interaction',
-        data: {
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'submit',
           submitter: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('submit', handleSubmit, true)
     return () => document.removeEventListener('submit', handleSubmit)
@@ -109,18 +108,77 @@ export class FormSubmitGenerator implements SignalGenerator {
 export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
   register(emitter: SignalEmitter) {
-    const handleChange = (event: Event) => {
-      const target = event.target as HTMLElement
-      emitter.emit({
-        type: 'interaction',
-        data: {
+    const handleChange = (ev: Event) => {
+      const target = ev.target as HTMLElement
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'change',
           target: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('change', handleChange, true)
     return () => document.removeEventListener('change', handleChange)
+  }
+}
+
+export class OnNavigationEventGenerator implements SignalGenerator {
+  id = 'navigation'
+  reloaded = false
+
+  register(emitter: SignalEmitter): () => void {
+    // page is loaded
+    const loadHandler = () => {
+      emitter.emit(
+        createNavigationSignal({
+          eventType: 'load',
+          ...this.createCommonFields(),
+        })
+      )
+    }
+
+    // hash is changed -- hash navigation
+    const hashChangeHandler = (_ev: HashChangeEvent) => {
+      emitter.emit(
+        createNavigationSignal({
+          eventType: 'hashchange',
+          oldURL: _ev.oldURL,
+          newURL: _ev.newURL,
+          ...this.createCommonFields(),
+        })
+      )
+    }
+
+    // back or forward button is clicked -- history navigation
+    const popStateHandler = (_ev: PopStateEvent) => {
+      emitter.emit(
+        createNavigationSignal({
+          eventType: 'popstate',
+          ...this.createCommonFields(),
+        })
+      )
+    }
+
+    window.addEventListener('load', () => loadHandler)
+    window.addEventListener('hashchange', hashChangeHandler)
+    window.addEventListener('popstate', popStateHandler)
+
+    return () => {
+      window.removeEventListener('load', loadHandler)
+      window.removeEventListener('hashchange', hashChangeHandler)
+      window.removeEventListener('popstate', popStateHandler)
+    }
+  }
+
+  private createCommonFields() {
+    return {
+      // these fields are named after those from the page call, rather than a DOM api.
+      url: location.href,
+      path: location.pathname,
+      hash: location.hash,
+      search: location.search,
+      title: document.title,
+    }
   }
 }
 
@@ -128,4 +186,5 @@ export const domGenerators = [
   ClickSignalsGenerator,
   FormSubmitGenerator,
   OnChangeGenerator,
+  OnNavigationEventGenerator,
 ]

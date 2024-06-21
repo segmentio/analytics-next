@@ -112,5 +112,25 @@ test('instrumentation signals get sent', async ({ page }) => {
   isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
   JSON.stringify(req, null, 2)
-  expect(req.event).toBe('foo')
+  expect(req.event).toBe('click [interaction]')
+  expect(req.properties.eventType).toBe('click')
+  expect(req.properties.target).toMatchObject({
+    attributes: [
+      {
+        name: 'id',
+        value: 'some-button',
+      },
+    ],
+    classList: [],
+    id: 'some-button',
+    labels: [],
+    name: '',
+    nodeName: 'BUTTON',
+    nodeType: 1,
+    nodeValue: null,
+    tagName: 'BUTTON',
+    title: '',
+    type: 'submit',
+    value: '',
+  })
 })
