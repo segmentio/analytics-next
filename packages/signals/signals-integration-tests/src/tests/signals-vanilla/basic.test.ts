@@ -2,6 +2,7 @@ import { test, expect, Request } from '@playwright/test'
 import * as path from 'path'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { promiseTimeout } from '@internal/test-helpers'
+import type { SegmentEvent } from '@segment/analytics-next'
 
 const filePath = path.resolve(__dirname, 'index.html')
 
@@ -45,7 +46,7 @@ test('analytics loads correctly', async ({ page }) => {
   await promiseTimeout(p, 2000, 'analytics.on("page") did not resolve')
 })
 
-test('instrumentation signals get sent', async ({ page }) => {
+test('signals can trigger events', async ({ page }) => {
   await page.goto(`file://${filePath}`)
   let signalReq!: Request
   await page.route('https://signals.segment.io/v1/*', (route, request) => {
@@ -76,13 +77,16 @@ test('instrumentation signals get sent', async ({ page }) => {
 
   let isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
-  expect(req.batch).toHaveLength(1)
-  const batchItem = req.batch[0]
-  expect(batchItem.event).toBe('Segment Signal Generated')
-  expect(batchItem.type).toBe('track')
-  expect(batchItem.properties.index).toBe(0)
-  expect(batchItem.properties.type).toBe('instrumentation')
-  const rawEvent = batchItem.properties.data.rawEvent
+  const instrumentationEvents = req.batch.filter(
+    (el: SegmentEvent) => el.properties!.type === 'instrumentation'
+  )
+  expect(instrumentationEvents).toHaveLength(1)
+  const ev = instrumentationEvents[0]
+  expect(ev.event).toBe('Segment Signal Generated')
+  expect(ev.type).toBe('track')
+  expect(typeof ev.properties.index).toBe('number')
+  expect(ev.properties.type).toBe('instrumentation')
+  const rawEvent = ev.properties.data.rawEvent
   console.log(JSON.stringify(rawEvent, null, 2))
   expect(rawEvent.type).toBe('track')
   expect(rawEvent.event).toBe('foo')
@@ -111,9 +115,10 @@ test('instrumentation signals get sent', async ({ page }) => {
 
   isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
-  JSON.stringify(req, null, 2)
   expect(req.event).toBe('click [interaction]')
   expect(req.properties.eventType).toBe('click')
+  expect(req.context.__eventOrigin).toEqual({ type: 'Signal' })
+
   expect(req.properties.target).toMatchObject({
     attributes: [
       {

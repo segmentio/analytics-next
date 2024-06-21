@@ -11,7 +11,7 @@ export class URLChangeObservable {
   }
 
   private pollURLChange() {
-    let prevUrl = ''
+    let prevUrl = window.location.href
     setInterval(() => {
       const currentUrl = window.location.href
       if (currentUrl != prevUrl) {
