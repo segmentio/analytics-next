@@ -4,16 +4,16 @@ import { Emitter } from '@segment/analytics-generic-utils'
  * this seems hacky, but if using react router (or other SPAs), popstate will not always fire on navigation
  * Otherwise, we could use popstate / hashchange events
  */
-export class URLChangeEmitter extends Emitter {
+export class URLChangeEmitter {
+  private emitter = new Emitter()
   urlChanged?: (url: string) => void
   constructor() {
-    super()
     const pollInterval = 500
     let prevUrl = ''
     setInterval(() => {
       const currentUrl = window.location.href
       if (currentUrl != prevUrl) {
-        this.emit('change', currentUrl)
+        this.emitter.emit('change', currentUrl)
         prevUrl = currentUrl
       }
     }, pollInterval)
@@ -21,10 +21,10 @@ export class URLChangeEmitter extends Emitter {
 
   subscribe(urlChanged: (url: string) => void) {
     this.urlChanged = urlChanged
-    this.on('change', this.urlChanged)
+    this.emitter.on('change', this.urlChanged)
   }
 
   unsubscribe() {
-    this.off('change', this.urlChanged!)
+    this.emitter.off('change', this.urlChanged!)
   }
 }

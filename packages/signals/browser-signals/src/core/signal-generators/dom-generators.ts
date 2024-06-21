@@ -125,12 +125,24 @@ export class OnChangeGenerator implements SignalGenerator {
 
 export class OnNavigationEventGenerator implements SignalGenerator {
   id = 'navigation'
-  reloaded = false
 
   register(emitter: SignalEmitter): () => void {
+    // emit navigation signal on page load
+    emitter.emit(
+      createNavigationSignal({
+        action: 'pageLoad',
+        ...this.createCommonFields(),
+      })
+    )
+
     const urlChangeEmitter = new URLChangeEmitter()
     urlChangeEmitter.subscribe(() =>
-      emitter.emit(createNavigationSignal(this.createCommonFields()))
+      emitter.emit({
+        ...createNavigationSignal({
+          action: 'urlChange',
+          ...this.createCommonFields(),
+        }),
+      })
     )
 
     return () => {

@@ -33,6 +33,7 @@ type ChangeData = {
 export type InteractionSignal = AppSignal<'interaction', InteractionData>
 
 interface NavigationData {
+  action: 'pageLoad' | 'urlChange'
   url: string
   hash: string
   [key: string]: unknown
