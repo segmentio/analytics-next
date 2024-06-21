@@ -1,3 +1,4 @@
+import { URLChangeEmitter } from '../../lib/detect-url-change'
 import { createInteractionSignal, createNavigationSignal } from '../../types'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
@@ -127,46 +128,13 @@ export class OnNavigationEventGenerator implements SignalGenerator {
   reloaded = false
 
   register(emitter: SignalEmitter): () => void {
-    // page is loaded
-    const loadHandler = () => {
-      emitter.emit(
-        createNavigationSignal({
-          eventType: 'load',
-          ...this.createCommonFields(),
-        })
-      )
-    }
-    // we don't listen to 'onload', because it generally gets called before segment is loaded
-    loadHandler()
-
-    // hash is changed -- hash navigation
-    const hashChangeHandler = (_ev: HashChangeEvent) => {
-      emitter.emit(
-        createNavigationSignal({
-          eventType: 'hashchange',
-          oldURL: _ev.oldURL,
-          newURL: _ev.newURL,
-          ...this.createCommonFields(),
-        })
-      )
-    }
-
-    // back or forward button is clicked -- history navigation
-    const popStateHandler = (_ev: PopStateEvent) => {
-      emitter.emit(
-        createNavigationSignal({
-          eventType: 'popstate',
-          ...this.createCommonFields(),
-        })
-      )
-    }
-
-    window.addEventListener('hashchange', hashChangeHandler)
-    window.addEventListener('popstate', popStateHandler)
+    const urlChangeEmitter = new URLChangeEmitter()
+    urlChangeEmitter.subscribe(() =>
+      emitter.emit(createNavigationSignal(this.createCommonFields()))
+    )
 
     return () => {
-      window.removeEventListener('hashchange', hashChangeHandler)
-      window.removeEventListener('popstate', popStateHandler)
+      urlChangeEmitter.unsubscribe()
     }
   }
 
