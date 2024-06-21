@@ -136,6 +136,8 @@ export class OnNavigationEventGenerator implements SignalGenerator {
         })
       )
     }
+    // we don't listen to 'onload', because it generally gets called before segment is loaded
+    loadHandler()
 
     // hash is changed -- hash navigation
     const hashChangeHandler = (_ev: HashChangeEvent) => {
@@ -159,12 +161,10 @@ export class OnNavigationEventGenerator implements SignalGenerator {
       )
     }
 
-    window.addEventListener('load', () => loadHandler)
     window.addEventListener('hashchange', hashChangeHandler)
     window.addEventListener('popstate', popStateHandler)
 
     return () => {
-      window.removeEventListener('load', loadHandler)
       window.removeEventListener('hashchange', hashChangeHandler)
       window.removeEventListener('popstate', popStateHandler)
     }
