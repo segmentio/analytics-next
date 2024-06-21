@@ -1,4 +1,4 @@
-import { URLChangeEmitter } from '../../lib/detect-url-change'
+import { URLChangeObservable } from '../../lib/detect-url-change'
 import { createInteractionSignal, createNavigationSignal } from '../../types'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
@@ -136,8 +136,8 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     )
 
     // emit a navigation signal whenever the URL has changed
-    const urlChangeEmitter = new URLChangeEmitter()
-    urlChangeEmitter.subscribe(() =>
+    const urlChange = new URLChangeObservable()
+    urlChange.subscribe(() =>
       emitter.emit(
         createNavigationSignal({
           action: 'urlChange',
@@ -147,7 +147,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     )
 
     return () => {
-      urlChangeEmitter.unsubscribe()
+      urlChange.unsubscribe()
     }
   }
 
