@@ -135,14 +135,15 @@ export class OnNavigationEventGenerator implements SignalGenerator {
       })
     )
 
+    // emit a navigation signal whenever the URL has changed
     const urlChangeEmitter = new URLChangeEmitter()
     urlChangeEmitter.subscribe(() =>
-      emitter.emit({
-        ...createNavigationSignal({
+      emitter.emit(
+        createNavigationSignal({
           action: 'urlChange',
           ...this.createCommonFields(),
-        }),
-      })
+        })
+      )
     )
 
     return () => {

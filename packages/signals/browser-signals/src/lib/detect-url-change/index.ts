@@ -6,9 +6,13 @@ import { Emitter } from '@segment/analytics-generic-utils'
  */
 export class URLChangeEmitter {
   private emitter = new Emitter()
+  private pollInterval = 500
   urlChanged?: (url: string) => void
   constructor() {
-    const pollInterval = 500
+    this.pollURLChange()
+  }
+
+  private pollURLChange() {
     let prevUrl = ''
     setInterval(() => {
       const currentUrl = window.location.href
@@ -16,10 +20,10 @@ export class URLChangeEmitter {
         this.emitter.emit('change', currentUrl)
         prevUrl = currentUrl
       }
-    }, pollInterval)
+    }, this.pollInterval)
   }
 
-  subscribe(urlChanged: (url: string) => void) {
+  subscribe(urlChanged: (newURL: string) => void) {
     this.urlChanged = urlChanged
     this.emitter.on('change', this.urlChanged)
   }
