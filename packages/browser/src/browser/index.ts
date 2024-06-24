@@ -107,7 +107,7 @@ export interface CDNSettings {
   /**
    * Settings for the signals trigger function
    */
-  edgeFunction:
+  edgeFunction?:
     | {
         downloadURL: string
         version: number
