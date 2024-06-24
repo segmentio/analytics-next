@@ -44,6 +44,7 @@ const parseDownloadURL = (cdnSettings: CDNSettings): string | undefined => {
   ) {
     return cdnSettings.edgeFunction.downloadURL
   } else {
+    console.warn('Edge function download URL not found in CDN settings')
     return undefined
   }
 }

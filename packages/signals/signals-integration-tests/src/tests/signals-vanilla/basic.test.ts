@@ -3,6 +3,7 @@ import * as path from 'path'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { promiseTimeout } from '@internal/test-helpers'
 import type { SegmentEvent } from '@segment/analytics-next'
+import { edgeFn } from '../../fixtures/signals-edge-fn-response'
 
 const filePath = path.resolve(__dirname, 'index.html')
 
@@ -11,33 +12,41 @@ test.beforeEach(async ({ context }) => {
     'https://cdn.segment.com/v1/projects/*/settings',
     (route, request) => {
       if (request.method().toLowerCase() !== 'get') {
-        return route.continue()
+        throw new Error('expect to be a GET request')
       }
 
+      const cdnSettings = new CDNSettingsBuilder({
+        writeKey: '<SOME_WRITE_KEY>',
+        baseCDNSettings: {
+          edgeFunction: {
+            downloadUrl:
+              'https://cdn.edgefn.segment.com/MY-WRITEKEY/125eb487-795a-467a-968e-2bf7385fce20.js',
+            version: 1,
+          },
+        },
+      }).build()
+      console.log(cdnSettings)
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(
-          new CDNSettingsBuilder({
-            writeKey: '<SOME_WRITE_KEY>',
-            baseCDNSettings: {
-              integrations: {
-                'Segment.io': {},
-              },
-              edgeFunction: {
-                downloadUrl:
-                  'https://cdn.edgefn.segment.com/MY-WRITEKEY/125eb487-795a-467a-968e-2bf7385fce20.js',
-                version: 1,
-              },
-            },
-          }).build()
-        ),
+        body: JSON.stringify(cdnSettings),
       })
     }
   )
+
+  await context.route('https://cdn.edgefn.segment.com/**', (route, request) => {
+    if (request.method().toLowerCase() !== 'get') {
+      throw new Error('expect to be a GET request')
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: 'text/plain',
+      body: edgeFn,
+    })
+  })
 })
 
 test('analytics loads correctly', async ({ page }) => {
@@ -63,7 +72,6 @@ test('signals can trigger events', async ({ page }) => {
   let signalReq!: Request
   await page.route('https://signals.segment.io/v1/*', (route, request) => {
     signalReq = request
-    console.log(JSON.stringify(request.postDataJSON(), null, 2))
     if (request.method().toLowerCase() !== 'post') {
       throw new Error(`Unexpected method: ${request.method()}`)
     }
@@ -75,19 +83,16 @@ test('signals can trigger events', async ({ page }) => {
       }),
     })
   })
-  const signalsResponse = page.waitForResponse(
-    'https://signals.segment.io/v1/*'
-  )
+  await Promise.all([
+    page.waitForResponse('https://signals.segment.io/v1/*'),
+    page.evaluate(() => {
+      void window.analytics.track('foo')
+    }),
+  ])
 
-  await page.evaluate(() => {
-    void window.analytics.track('foo')
-  })
-
-  // get signals response
-  await signalsResponse
   let req = signalReq.postDataJSON()
 
-  let isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+  const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
   const instrumentationEvents = req.batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'instrumentation'
@@ -108,7 +113,6 @@ test('signals can trigger events', async ({ page }) => {
   let analyticsRequest!: Request
   await page.route('https://api.segment.io/v1/*', (route, request) => {
     analyticsRequest = request
-    console.log(JSON.stringify(request.postDataJSON(), null, 2))
     if (request.method().toLowerCase() !== 'post') {
       throw new Error(`Unexpected method: ${request.method()}`)
     }
@@ -120,10 +124,13 @@ test('signals can trigger events', async ({ page }) => {
       }),
     })
   })
-  await page.click('button')
-  await page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 })
+
+  await Promise.all([
+    page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 }),
+    page.click('button'),
+  ])
+
   req = analyticsRequest.postDataJSON()
-  isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
 
   expect(req).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',

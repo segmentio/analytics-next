@@ -12,7 +12,10 @@ if (!process.env.WRITEKEY) {
   throw new Error('No writekey provided.')
 }
 
-const processSignal: ProcessSignal = (signal, { analytics, signals }) => {
+const processSignalExample: ProcessSignal = (
+  signal,
+  { analytics, signals }
+) => {
   if (signal.type === 'interaction') {
     const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
     analytics.track(eventName, signal.data)
@@ -34,7 +37,7 @@ const isStage = process.env.STAGE === 'true'
 const signalsPlugin = new SignalsPlugin({
   ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
   enableDebugLogging: true,
-  processSignal: processSignal,
+  // processSignal: processSignalExample,
 })
 
 export const loadAnalytics = () =>

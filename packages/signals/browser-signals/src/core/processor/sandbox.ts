@@ -105,7 +105,7 @@ class JavascriptSandbox implements CodeSandbox {
       const wb = await this.workerbox
       await wb.run(fn, scope)
     } catch (err) {
-      console.error('Error running js sandbox', err)
+      console.error('Error running js sandbox', err, { fn })
     }
   }
 
@@ -141,13 +141,11 @@ class SandboxSettings {
     if (!settings.edgeFnDownloadUrl && !settings.processSignal) {
       throw new Error('edgeFnDownloadUrl or processSignal is required')
     }
-    const normalizedEdgeFn = (
-      settings.processSignal
-        ? Promise.resolve(settings.processSignal)
-        : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
-    ).then((str) => {
-      return `globalThis.processSignal = ${str}`
-    })
+    const normalizedEdgeFn = settings.processSignal
+      ? Promise.resolve(settings.processSignal).then(
+          (str) => `globalThis.processSignal = ${str}`
+        )
+      : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
     this.processSignal = normalizedEdgeFn
   }
 }
