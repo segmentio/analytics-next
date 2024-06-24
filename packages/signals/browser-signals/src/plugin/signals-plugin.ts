@@ -8,9 +8,8 @@ export type OnSignalCb = (signal: Signal) => void
 
 interface SignalsAugmentedFunctionality {
   stop(): void
-
   /**
-   * Subscribe to signals
+   * Listen to signals
    */
   onSignal: (fn: OnSignalCb) => void
 
