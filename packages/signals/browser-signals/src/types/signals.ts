@@ -1,4 +1,8 @@
-export type SignalType = 'navigation' | 'interaction' | 'instrumentation'
+export type SignalType =
+  | 'navigation'
+  | 'interaction'
+  | 'instrumentation'
+  | 'network'
 
 export interface AppSignal<T extends SignalType, Data> {
   type: T
@@ -44,6 +48,11 @@ export type InstrumentationSignal = AppSignal<
   'instrumentation',
   InstrumentationData
 >
+
+interface NetworkData {
+  [key: string]: unknown
+}
+export type NetworkSignal = AppSignal<'network', NetworkData>
 
 /**
  * Internal signal type

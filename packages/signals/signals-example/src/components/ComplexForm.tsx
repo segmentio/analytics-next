@@ -6,6 +6,25 @@ const ComplexForm = () => {
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
+    const formData = {
+      inputField,
+      selectField,
+    }
+    console.log('Submitting form:', JSON.stringify(formData))
+    fetch('/parrot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    })
+      .then(async (response) => response.json())
+      .then((data) => {
+        console.log('Form submitted successfully:', data)
+      })
+      .catch((error) => {
+        console.error('Error submitting form:', error)
+      })
     console.log({ inputField, selectField })
   }
 

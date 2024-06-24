@@ -6,6 +6,7 @@ import {
 } from '../buffer'
 import { SignalEmitter } from '../emitter'
 import { domGenerators } from '../signal-generators/dom-generators'
+import { NetworkGenerator } from '../signal-generators/network'
 import {
   SignalGenerator,
   SignalGeneratorClass,
@@ -62,6 +63,7 @@ export class Signals implements ISignals {
     this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
 
     void this.registerGenerator(domGenerators)
+    void this.registerGenerator([NetworkGenerator])
 
     this.buffer = getSignalBuffer({
       signalStorage: settings.signalStorage,
