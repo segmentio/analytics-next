@@ -1,3 +1,6 @@
+// This is a fully client-side implementation example, so this file will never be run in a node environment
+// You only want to instantiate SignalsPlugin in a browser context, otherwise you'll get an error.
+
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import {
   SignalsPlugin,

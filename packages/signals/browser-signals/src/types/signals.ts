@@ -1,4 +1,8 @@
-export type SignalType = 'navigation' | 'interaction' | 'instrumentation'
+export type SignalType =
+  | 'navigation'
+  | 'interaction'
+  | 'instrumentation'
+  | 'userDefined'
 
 export interface AppSignal<T extends SignalType, Data> {
   type: T
@@ -48,12 +52,20 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
+export interface UserDefinedSignalData {
+  [key: string]: any
+}
+
+export type UserDefinedSignal = AppSignal<'userDefined', UserDefinedSignalData>
+
 export type SignalOfType<T extends SignalType> = T extends 'interaction'
   ? InteractionSignal
   : T extends 'navigation'
   ? NavigationSignal
   : T extends 'instrumentation'
   ? InstrumentationSignal
+  : T extends 'userDefined'
+  ? UserDefinedSignal
   : never
 /**
  * Internal signal type
@@ -62,6 +74,7 @@ export type Signal =
   | InteractionSignal
   | NavigationSignal
   | InstrumentationSignal
+  | UserDefinedSignal
 
 interface SegmentEvent {
   type: string // e.g 'track'
@@ -95,6 +108,15 @@ export const createNavigationSignal = (
 ): NavigationSignal => {
   return {
     type: 'navigation',
+    data,
+  }
+}
+
+export const createUserDefinedSignal = (
+  data: UserDefinedSignalData
+): UserDefinedSignal => {
+  return {
+    type: 'userDefined',
     data,
   }
 }
