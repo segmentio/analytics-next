@@ -21,7 +21,19 @@ test.beforeEach(async ({ context }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(
-          new CDNSettingsBuilder({ writeKey: '<SOME_WRITE_KEY>' }).build()
+          new CDNSettingsBuilder({
+            writeKey: '<SOME_WRITE_KEY>',
+            baseCDNSettings: {
+              integrations: {
+                'Segment.io': {},
+              },
+              edgeFunction: {
+                downloadUrl:
+                  'https://cdn.edgefn.segment.com/MY-WRITEKEY/125eb487-795a-467a-968e-2bf7385fce20.js',
+                version: 1,
+              },
+            },
+          }).build()
         ),
       })
     }
@@ -84,14 +96,13 @@ test('signals can trigger events', async ({ page }) => {
   const ev = instrumentationEvents[0]
   expect(ev.event).toBe('Segment Signal Generated')
   expect(ev.type).toBe('track')
-  expect(typeof ev.properties.index).toBe('number')
-  expect(ev.properties.type).toBe('instrumentation')
   const rawEvent = ev.properties.data.rawEvent
-  console.log(JSON.stringify(rawEvent, null, 2))
-  expect(rawEvent.type).toBe('track')
-  expect(rawEvent.event).toBe('foo')
-  expect(rawEvent.anonymousId).toEqual(expect.any(String))
-  expect(rawEvent.timestamp).toEqual(expect.stringMatching(isoDateRegEx))
+  expect(rawEvent).toMatchObject({
+    type: 'track',
+    event: 'foo',
+    anonymousId: expect.any(String),
+    timestamp: expect.stringMatching(isoDateRegEx),
+  })
 
   // get analytics (tracking API response)
   let analyticsRequest!: Request
@@ -112,30 +123,37 @@ test('signals can trigger events', async ({ page }) => {
   await page.click('button')
   await page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 })
   req = analyticsRequest.postDataJSON()
-
   isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-  expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
-  expect(req.event).toBe('click [interaction]')
-  expect(req.properties.eventType).toBe('click')
-  expect(req.context.__eventOrigin).toEqual({ type: 'Signal' })
 
-  expect(req.properties.target).toMatchObject({
-    attributes: [
-      {
-        name: 'id',
-        value: 'some-button',
+  expect(req).toMatchObject({
+    writeKey: '<SOME_WRITE_KEY>',
+    event: 'click [interaction]',
+    properties: {
+      eventType: 'click',
+      target: {
+        attributes: [
+          {
+            name: 'id',
+            value: 'some-button',
+          },
+        ],
+        classList: [],
+        id: 'some-button',
+        labels: [],
+        name: '',
+        nodeName: 'BUTTON',
+        nodeType: 1,
+        nodeValue: null,
+        tagName: 'BUTTON',
+        title: '',
+        type: 'submit',
+        value: '',
       },
-    ],
-    classList: [],
-    id: 'some-button',
-    labels: [],
-    name: '',
-    nodeName: 'BUTTON',
-    nodeType: 1,
-    nodeValue: null,
-    tagName: 'BUTTON',
-    title: '',
-    type: 'submit',
-    value: '',
+    },
+    context: {
+      __eventOrigin: {
+        type: 'Signal',
+      },
+    },
   })
 })

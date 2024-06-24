@@ -30,9 +30,7 @@ test.beforeEach(async ({ context }) => {
 test('navigation signals get sent', async ({ page }) => {
   const pageURL = `file://${filePath}`
   await page.goto(pageURL)
-  const signalsResponse = page.waitForResponse(
-    'https://signals.segment.io/v1/*'
-  )
+
   let signalReq!: Request
   await page.route('https://signals.segment.io/v1/*', (route, request) => {
     signalReq = request
@@ -47,6 +45,11 @@ test('navigation signals get sent', async ({ page }) => {
       }),
     })
   })
+
+  const signalsResponse = page.waitForResponse(
+    'https://signals.segment.io/v1/*'
+  )
+
   // test URL change detection
   {
     await page.evaluate(() => {

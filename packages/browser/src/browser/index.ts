@@ -104,6 +104,15 @@ export interface CDNSettings {
      */
     hasUnmappedDestinations: boolean
   }
+  /**
+   * Settings for the signals trigger function
+   */
+  edgeFunction:
+    | {
+        downloadUrl: string
+        version: number
+      }
+    | {}
 }
 
 export interface AnalyticsBrowserSettings {
