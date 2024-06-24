@@ -109,7 +109,7 @@ export interface CDNSettings {
    */
   edgeFunction:
     | {
-        downloadUrl: string
+        downloadURL: string
         version: number
       }
     | {}

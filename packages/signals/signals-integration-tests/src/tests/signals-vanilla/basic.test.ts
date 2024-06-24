@@ -3,7 +3,6 @@ import * as path from 'path'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { promiseTimeout } from '@internal/test-helpers'
 import type { SegmentEvent } from '@segment/analytics-next'
-import { edgeFn } from '../../fixtures/signals-edge-fn-response'
 
 const filePath = path.resolve(__dirname, 'index.html')
 
@@ -19,13 +18,11 @@ test.beforeEach(async ({ context }) => {
         writeKey: '<SOME_WRITE_KEY>',
         baseCDNSettings: {
           edgeFunction: {
-            downloadUrl:
-              'https://cdn.edgefn.segment.com/MY-WRITEKEY/125eb487-795a-467a-968e-2bf7385fce20.js',
+            downloadURL: 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
             version: 1,
           },
         },
       }).build()
-      console.log(cdnSettings)
       return route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -41,15 +38,23 @@ test.beforeEach(async ({ context }) => {
     if (request.method().toLowerCase() !== 'get') {
       throw new Error('expect to be a GET request')
     }
+    const processSignalFn = `
+    // this is a process signal function
+    const processSignal = (signal) => {
+      if (signal.type === 'interaction') {
+        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
+        analytics.track(eventName, signal.data)
+      }
+  }`
     return route.fulfill({
       status: 200,
       contentType: 'text/plain',
-      body: edgeFn,
+      body: processSignalFn,
     })
   })
 })
 
-test('analytics loads correctly', async ({ page }) => {
+test('analytics loads', async ({ page }) => {
   await page.goto(`file://${filePath}`)
 
   // Perform actions and assertions
@@ -67,7 +72,7 @@ test('analytics loads correctly', async ({ page }) => {
   await promiseTimeout(p, 2000, 'analytics.on("page") did not resolve')
 })
 
-test('signals can trigger events', async ({ page }) => {
+test('signals can fire analytics events', async ({ page }) => {
   await page.goto(`file://${filePath}`)
   let signalReq!: Request
   await page.route('https://signals.segment.io/v1/*', (route, request) => {
@@ -85,6 +90,9 @@ test('signals can trigger events', async ({ page }) => {
   })
   await Promise.all([
     page.waitForResponse('https://signals.segment.io/v1/*'),
+    page.waitForResponse('https://cdn.edgefn.segment.com/**', {
+      timeout: 10000,
+    }),
     page.evaluate(() => {
       void window.analytics.track('foo')
     }),
@@ -163,4 +171,55 @@ test('signals can trigger events', async ({ page }) => {
       },
     },
   })
+})
+
+test('navigation signals get sent', async ({ page }) => {
+  const pageURL = `file://${filePath}`
+  await page.goto(pageURL)
+
+  let signalReq!: Request
+  await page.route('https://signals.segment.io/v1/*', (route, request) => {
+    signalReq = request
+    if (request.method().toLowerCase() !== 'post') {
+      throw new Error(`Unexpected method: ${request.method()}`)
+    }
+    return route.fulfill({
+      contentType: 'application/json',
+      status: 201,
+      body: JSON.stringify({
+        success: true,
+      }),
+    })
+  })
+
+  const signalsResponse = page.waitForResponse(
+    'https://signals.segment.io/v1/*'
+  )
+
+  // test URL change detection
+  {
+    await page.evaluate(() => {
+      window.location.hash = '#foo'
+    })
+    await signalsResponse
+    const req = signalReq.postDataJSON()
+
+    const navigationEvents = req.batch.filter(
+      (el: SegmentEvent) => el.properties!.type === 'navigation'
+    )
+    expect(navigationEvents).toHaveLength(1)
+    const ev = navigationEvents[0]
+    expect(ev.properties).toMatchObject({
+      index: expect.any(Number),
+      type: 'navigation',
+      data: {
+        action: 'urlChange',
+        url: pageURL + '#foo',
+        path: expect.any(String),
+        hash: '#foo',
+        search: '',
+        title: '',
+      },
+    })
+  }
 })
