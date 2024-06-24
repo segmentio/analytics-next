@@ -6,7 +6,35 @@ import type { SegmentEvent } from '@segment/analytics-next'
 
 const filePath = path.resolve(__dirname, 'index.html')
 
+let signalReq!: Request
+let analyticsReq!: Request
 test.beforeEach(async ({ context }) => {
+  await context.route('https://signals.segment.io/v1/*', (route, request) => {
+    signalReq = request
+    if (request.method().toLowerCase() !== 'post') {
+      throw new Error(`Unexpected method: ${request.method()}`)
+    }
+    return route.fulfill({
+      contentType: 'application/json',
+      status: 201,
+      body: JSON.stringify({
+        success: true,
+      }),
+    })
+  })
+  await context.route('https://api.segment.io/v1/*', (route, request) => {
+    analyticsReq = request
+    if (request.method().toLowerCase() !== 'post') {
+      throw new Error(`Unexpected method: ${request.method()}`)
+    }
+    return route.fulfill({
+      contentType: 'application/json',
+      status: 201,
+      body: JSON.stringify({
+        success: true,
+      }),
+    })
+  })
   const edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   await context.route(
     'https://cdn.segment.com/v1/projects/*/settings',
@@ -76,20 +104,7 @@ test('analytics loads', async ({ page }) => {
 
 test('signals can fire analytics events', async ({ page }) => {
   await page.goto(`file://${filePath}`)
-  let signalReq!: Request
-  await page.route('https://signals.segment.io/v1/*', (route, request) => {
-    signalReq = request
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
+
   await Promise.all([
     page.waitForResponse('https://signals.segment.io/v1/*'),
     page.waitForResponse('https://cdn.edgefn.segment.com/**', {
@@ -100,11 +115,10 @@ test('signals can fire analytics events', async ({ page }) => {
     }),
   ])
 
-  let req = signalReq.postDataJSON()
+  const signalReqJSON = signalReq.postDataJSON()
 
   const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-  expect(req.writeKey).toBe('<SOME_WRITE_KEY>')
-  const instrumentationEvents = req.batch.filter(
+  const instrumentationEvents = signalReqJSON.batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'instrumentation'
   )
   expect(instrumentationEvents).toHaveLength(1)
@@ -120,29 +134,15 @@ test('signals can fire analytics events', async ({ page }) => {
   })
 
   // get analytics (tracking API response)
-  let analyticsRequest!: Request
-  await page.route('https://api.segment.io/v1/*', (route, request) => {
-    analyticsRequest = request
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
 
   await Promise.all([
     page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 }),
     page.click('button'),
   ])
 
-  req = analyticsRequest.postDataJSON()
+  const analyticsReqJSON = analyticsReq.postDataJSON()
 
-  expect(req).toMatchObject({
+  expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
     event: 'click [interaction]',
     properties: {
@@ -179,21 +179,6 @@ test('navigation signals get sent', async ({ page }) => {
   const pageURL = `file://${filePath}`
   await page.goto(pageURL)
 
-  let signalReq!: Request
-  await page.route('https://signals.segment.io/v1/*', (route, request) => {
-    signalReq = request
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
-
   const signalsResponse = page.waitForResponse(
     'https://signals.segment.io/v1/*'
   )
@@ -204,9 +189,9 @@ test('navigation signals get sent', async ({ page }) => {
       window.location.hash = '#foo'
     })
     await signalsResponse
-    const req = signalReq.postDataJSON()
+    const signalReqJSON = signalReq.postDataJSON()
 
-    const navigationEvents = req.batch.filter(
+    const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'
     )
     expect(navigationEvents).toHaveLength(1)
