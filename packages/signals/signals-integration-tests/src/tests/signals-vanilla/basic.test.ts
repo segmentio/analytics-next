@@ -7,6 +7,7 @@ import type { SegmentEvent } from '@segment/analytics-next'
 const filePath = path.resolve(__dirname, 'index.html')
 
 test.beforeEach(async ({ context }) => {
+  const edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   await context.route(
     'https://cdn.segment.com/v1/projects/*/settings',
     (route, request) => {
@@ -18,7 +19,7 @@ test.beforeEach(async ({ context }) => {
         writeKey: '<SOME_WRITE_KEY>',
         baseCDNSettings: {
           edgeFunction: {
-            downloadURL: 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
+            downloadURL: edgeFnDownloadURL,
             version: 1,
           },
         },
@@ -34,10 +35,11 @@ test.beforeEach(async ({ context }) => {
     }
   )
 
-  await context.route('https://cdn.edgefn.segment.com/**', (route, request) => {
+  await context.route(edgeFnDownloadURL, (route, request) => {
     if (request.method().toLowerCase() !== 'get') {
       throw new Error('expect to be a GET request')
     }
+
     const processSignalFn = `
     // this is a process signal function
     const processSignal = (signal) => {
