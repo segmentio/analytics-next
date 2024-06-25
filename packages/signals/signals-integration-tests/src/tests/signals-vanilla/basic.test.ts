@@ -3,13 +3,15 @@ import * as path from 'path'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { promiseTimeout } from '@internal/test-helpers'
 import type { SegmentEvent } from '@segment/analytics-next'
+import { logConsole } from '../../helpers/log-console'
 
 const filePath = path.resolve(__dirname, 'index.html')
 
 let signalReq!: Request
 let analyticsReq!: Request
-test.beforeEach(async ({ context }) => {
-  await context.route('https://signals.segment.io/v1/*', (route, request) => {
+test.beforeEach(async ({ page }) => {
+  logConsole(page)
+  await page.route('https://signals.segment.io/v1/*', (route, request) => {
     signalReq = request
     if (request.method().toLowerCase() !== 'post') {
       throw new Error(`Unexpected method: ${request.method()}`)
@@ -22,7 +24,7 @@ test.beforeEach(async ({ context }) => {
       }),
     })
   })
-  await context.route('https://api.segment.io/v1/*', (route, request) => {
+  await page.route('https://api.segment.io/v1/*', (route, request) => {
     analyticsReq = request
     if (request.method().toLowerCase() !== 'post') {
       throw new Error(`Unexpected method: ${request.method()}`)
@@ -36,7 +38,7 @@ test.beforeEach(async ({ context }) => {
     })
   })
   const edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
-  await context.route(
+  await page.route(
     'https://cdn.segment.com/v1/projects/*/settings',
     (route, request) => {
       if (request.method().toLowerCase() !== 'get') {
@@ -63,7 +65,7 @@ test.beforeEach(async ({ context }) => {
     }
   )
 
-  await context.route(edgeFnDownloadURL, (route, request) => {
+  await page.route(edgeFnDownloadURL, (route, request) => {
     if (request.method().toLowerCase() !== 'get') {
       throw new Error('expect to be a GET request')
     }

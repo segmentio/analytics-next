@@ -36,6 +36,12 @@ interface SignalsSettings {
    * Should proxy to signals.segment.io/v1
    */
   apiHost?: string
+
+  /**
+   * Override host of the edge function, for a custom proxy
+   * should proxy to 'cdn.edgefn.segment.com'
+   */
+  functionHost?: string
 }
 
 interface ISignals {
@@ -62,6 +68,7 @@ export class Signals implements ISignals {
   private signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
+  private functionHost?: string
   /**
    * String representation of the edge function.
    */
@@ -86,6 +93,8 @@ export class Signals implements ISignals {
       void this.buffer.add(signal)
     })
 
+    this.functionHost = settings.functionHost
+
     this.signalEmitter.subscribe((signal) => {
       void this.signalsClient.send(signal)
     })
@@ -102,7 +111,9 @@ export class Signals implements ISignals {
 
     const processor = new SignalEventProcessor(analytics, {
       processSignal: this.processSignal,
+      functionHost: this.functionHost,
     })
+
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())
     })

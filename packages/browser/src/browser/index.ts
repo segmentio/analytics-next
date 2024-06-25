@@ -105,11 +105,19 @@ export interface CDNSettings {
     hasUnmappedDestinations: boolean
   }
   /**
-   * Settings for the signals trigger function
+   * Settings for edge function. Used for signals.
    */
-  edgeFunction?:
-    | {
+  edgeFunction?: // this is technically non-nullable according to ajs-renderer atm, but making it optional because it's strange API choice, and we might want to change it.
+  | {
+        /**
+         * The URL of the edge function (.js file).
+         * @example 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
+         */
         downloadURL: string
+        /**
+         * The version of the edge function
+         * @example 1
+         */
         version: number
       }
     | {}

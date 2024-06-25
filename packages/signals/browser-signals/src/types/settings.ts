@@ -21,4 +21,9 @@ export interface SignalsPluginSettingsConfig {
    * @default signals.segment.io/v1
    */
   apiHost?: string
+
+  /**
+   * Override edge function host
+   */
+  functionHost?: string
 }

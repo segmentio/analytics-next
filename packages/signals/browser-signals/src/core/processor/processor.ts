@@ -1,9 +1,11 @@
 import { logger } from '../../lib/logger'
+import { replaceBaseUrl } from '../../lib/replace-base-url'
 import { AnyAnalytics, CDNSettings, Signal } from '../../types'
 import { MethodName, Sandbox, SandboxSettingsConfig } from './sandbox'
 
 interface SignalEventProcessorSettingsConfig {
   processSignal?: string
+  functionHost?: string
 }
 export class SignalEventProcessor {
   private sandbox: Sandbox
@@ -60,8 +62,13 @@ const createSandboxSettings = (
   if (!edgeFnDownloadUrl && !settings.processSignal) {
     throw new Error('one of: edgeFnDownloadUrl or processSignal is required')
   }
+
+  const edgeFnDownloadURL =
+    settings.functionHost && edgeFnDownloadUrl
+      ? replaceBaseUrl(edgeFnDownloadUrl, `https://${settings.functionHost}`)
+      : edgeFnDownloadUrl
   return {
-    edgeFnDownloadUrl: edgeFnDownloadUrl!, // Config is a union type, so we need to assert that it's not undefined
+    edgeFnDownloadUrl: edgeFnDownloadURL!,
     processSignal: settings.processSignal,
   }
 }
