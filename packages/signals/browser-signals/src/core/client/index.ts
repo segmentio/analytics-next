@@ -14,6 +14,28 @@ class SignalsIngestSettings {
 
 const MAGIC_EVENT_NAME = 'Segment Signal Generated'
 
+function redact(text: string) {
+  return text.replace(/[a-zA-Z]/g, 'X').replace(/[0-9]/g, '9')
+}
+
+function redactJsonValues(data: any, depth = 0): any {
+  if (typeof data === 'object') {
+    if (Array.isArray(data)) {
+      return data.map((item) => redactJsonValues(item, depth + 1))
+    } else {
+      const redactedData: any = {}
+      for (const key in data) {
+        redactedData[key] = redactJsonValues(data[key], depth + 1)
+      }
+      return redactedData
+    }
+  } else if (typeof data === 'string' && depth >= 2) {
+    return redact(data)
+  } else {
+    return data
+  }
+}
+
 export interface SignalsIngestSettingsConfig {
   apiHost?: string
   flushAt?: number
@@ -76,17 +98,18 @@ export class SignalsIngestClient {
       this.buffer.push(signal)
     } else {
       const { data, type } = signal
+      const redacted = redactJsonValues(data)
       logger.debug('Sending signal', {
         ...(type !== 'instrumentation' && data.eventType
           ? { eventType: data.eventType }
           : {}),
         type,
-        data,
+        data: redacted,
       })
       return this.analytics!.track(MAGIC_EVENT_NAME, {
         index: this.index++,
         type,
-        data,
+        data: redacted,
       })
     }
   }
