@@ -21,6 +21,7 @@ export interface SegmentEventStub {
     __eventOrigin?: {
       type: 'Signal'
     }
+    [key: string]: unknown
   }
   [key: string]: unknown
 }
