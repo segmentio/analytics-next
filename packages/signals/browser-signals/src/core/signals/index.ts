@@ -14,7 +14,6 @@ import { AnyAnalytics, Signal } from '../../types'
 import { registerGenerator } from '../signal-generators/register'
 import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
-import { Emitter } from '@segment/analytics-generic-utils'
 
 interface SignalsSettings {
   /**
@@ -57,15 +56,9 @@ export type SignalsPublicEmitterContract = {
   signal: [Signal]
 }
 
-/**
- * This is available to consumers
- */
-export class SignalsPublicEmitter extends Emitter<SignalsPublicEmitterContract> {}
-
 export class Signals implements ISignals {
-  public emitter: SignalsPublicEmitter = new SignalsPublicEmitter()
   private buffer: SignalBuffer
-  private signalEmitter: SignalEmitter
+  public signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
   private functionHost?: string
@@ -77,9 +70,6 @@ export class Signals implements ISignals {
   constructor(settings: SignalsSettings = {}) {
     this.processSignal = settings.processSignal
     this.signalEmitter = new SignalEmitter()
-    this.signalEmitter.subscribe((signal) => {
-      this.emitter.emit('signal', signal)
-    })
     this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
 
     void this.registerGenerator(domGenerators)

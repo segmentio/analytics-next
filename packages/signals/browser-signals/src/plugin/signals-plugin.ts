@@ -23,7 +23,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   readonly type = 'utility'
   readonly name = 'SignalsPlugin'
   readonly version = '0.0.0'
-  private signals: Signals
+  public signals: Signals
 
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
@@ -62,10 +62,11 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   }
 
   onSignal(cb: (signal: Signal) => void) {
-    this.signals.emitter.on('signal', cb)
+    this.signals.signalEmitter.subscribe(cb)
   }
 
   addSignal(signal: Signal) {
-    this.signals.emitter.emit('signal', signal)
+    console.log(this.signals)
+    this.signals.signalEmitter.emit(signal)
   }
 }
