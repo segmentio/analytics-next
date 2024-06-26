@@ -20,6 +20,9 @@ export class BasePage {
     this.url = url
   }
 
+  /**
+   * load and setup routes
+   */
   async load(page: Page) {
     this.page = page
     await this.setupMockedRoutes()
