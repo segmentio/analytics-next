@@ -1,94 +1,15 @@
-import { test, expect, Request } from '@playwright/test'
-import * as path from 'path'
-import { CDNSettingsBuilder } from '@internal/test-helpers'
+import { test, expect } from '@playwright/test'
 import { promiseTimeout } from '@internal/test-helpers'
 import type { SegmentEvent } from '@segment/analytics-next'
-import { logConsole } from '../../helpers/log-console'
+import { IndexPage } from './page-object'
 
-const filePath = path.resolve(__dirname, 'index.html')
+const indexPage = new IndexPage()
 
-let signalReq!: Request
-let analyticsReq!: Request
 test.beforeEach(async ({ page }) => {
-  logConsole(page)
-  await page.route('https://signals.segment.io/v1/*', (route, request) => {
-    signalReq = request
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
-  await page.route('https://api.segment.io/v1/*', (route, request) => {
-    analyticsReq = request
-    if (request.method().toLowerCase() !== 'post') {
-      throw new Error(`Unexpected method: ${request.method()}`)
-    }
-    return route.fulfill({
-      contentType: 'application/json',
-      status: 201,
-      body: JSON.stringify({
-        success: true,
-      }),
-    })
-  })
-  const edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
-  await page.route(
-    'https://cdn.segment.com/v1/projects/*/settings',
-    (route, request) => {
-      if (request.method().toLowerCase() !== 'get') {
-        throw new Error('expect to be a GET request')
-      }
-
-      const cdnSettings = new CDNSettingsBuilder({
-        writeKey: '<SOME_WRITE_KEY>',
-        baseCDNSettings: {
-          edgeFunction: {
-            downloadURL: edgeFnDownloadURL,
-            version: 1,
-          },
-        },
-      }).build()
-      return route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cdnSettings),
-      })
-    }
-  )
-
-  await page.route(edgeFnDownloadURL, (route, request) => {
-    if (request.method().toLowerCase() !== 'get') {
-      throw new Error('expect to be a GET request')
-    }
-
-    const processSignalFn = `
-    // this is a process signal function
-    const processSignal = (signal) => {
-      if (signal.type === 'interaction') {
-        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
-        analytics.track(eventName, signal.data)
-      }
-  }`
-    return route.fulfill({
-      status: 200,
-      contentType: 'text/plain',
-      body: processSignalFn,
-    })
-  })
+  await indexPage.load(page)
 })
 
 test('analytics loads', async ({ page }) => {
-  await page.goto(`file://${filePath}`)
-
   // Perform actions and assertions
   const analytics = await page.evaluate(() => {
     return window.analytics
@@ -105,8 +26,6 @@ test('analytics loads', async ({ page }) => {
 })
 
 test('signals can fire analytics events', async ({ page }) => {
-  await page.goto(`file://${filePath}`)
-
   await Promise.all([
     page.waitForResponse('https://signals.segment.io/v1/*'),
     page.waitForResponse('https://cdn.edgefn.segment.com/**', {
@@ -117,7 +36,7 @@ test('signals can fire analytics events', async ({ page }) => {
     }),
   ])
 
-  const signalReqJSON = signalReq.postDataJSON()
+  const signalReqJSON = indexPage.signalReq.postDataJSON()
 
   const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   const instrumentationEvents = signalReqJSON.batch.filter(
@@ -142,7 +61,7 @@ test('signals can fire analytics events', async ({ page }) => {
     page.click('button'),
   ])
 
-  const analyticsReqJSON = analyticsReq.postDataJSON()
+  const analyticsReqJSON = indexPage.analyticsReq.postDataJSON()
 
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
@@ -178,9 +97,6 @@ test('signals can fire analytics events', async ({ page }) => {
 })
 
 test('navigation signals get sent', async ({ page }) => {
-  const pageURL = `file://${filePath}`
-  await page.goto(pageURL)
-
   const signalsResponse = page.waitForResponse(
     'https://signals.segment.io/v1/*'
   )
@@ -191,7 +107,7 @@ test('navigation signals get sent', async ({ page }) => {
       window.location.hash = '#foo'
     })
     await signalsResponse
-    const signalReqJSON = signalReq.postDataJSON()
+    const signalReqJSON = indexPage.signalReq.postDataJSON()
 
     const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'
@@ -203,7 +119,7 @@ test('navigation signals get sent', async ({ page }) => {
       type: 'navigation',
       data: {
         action: 'urlChange',
-        url: pageURL + '#foo',
+        url: indexPage.url + '#foo',
         path: expect.any(String),
         hash: '#foo',
         search: '',
