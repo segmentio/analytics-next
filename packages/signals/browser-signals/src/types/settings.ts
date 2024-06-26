@@ -13,6 +13,7 @@ export interface SignalsPluginSettingsConfig {
 
   /**
    * Add console debug logging
+   * @default false
    */
   enableDebugLogging?: boolean
 
@@ -24,6 +25,7 @@ export interface SignalsPluginSettingsConfig {
 
   /**
    * Override edge function host
+   * @default cdn.edgefn.segment.com
    */
   functionHost?: string
 }
