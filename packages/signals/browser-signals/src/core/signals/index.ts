@@ -68,11 +68,10 @@ export class Signals implements ISignals {
   private processSignal?: string
 
   constructor(settings: SignalsSettings = {}) {
+    this.functionHost = settings.functionHost
     this.processSignal = settings.processSignal
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
-
-    void this.registerGenerator(domGenerators)
 
     this.buffer = getSignalBuffer({
       signalStorage: settings.signalStorage,
@@ -80,14 +79,11 @@ export class Signals implements ISignals {
     })
 
     this.signalEmitter.subscribe((signal) => {
+      void this.signalsClient.send(signal)
       void this.buffer.add(signal)
     })
 
-    this.functionHost = settings.functionHost
-
-    this.signalEmitter.subscribe((signal) => {
-      void this.signalsClient.send(signal)
-    })
+    void this.registerGenerator(domGenerators)
   }
 
   /**

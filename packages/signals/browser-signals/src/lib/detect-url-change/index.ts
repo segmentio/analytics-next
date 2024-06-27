@@ -15,7 +15,7 @@ export class URLChangeObservable {
     setInterval(() => {
       const currentUrl = window.location.href
       if (currentUrl != prevUrl) {
-        this.emitter.emit('change', currentUrl)
+        this.emitter.emit('change', prevUrl)
         prevUrl = currentUrl
       }
     }, this.pollInterval)

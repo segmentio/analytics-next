@@ -97,16 +97,35 @@ test('signals can fire analytics events', async ({ page }) => {
 })
 
 test('navigation signals get sent', async ({ page }) => {
-  const signalsResponse = page.waitForResponse(
-    'https://signals.segment.io/v1/*'
-  )
+  {
+    // on page load, a navigation signal should be sent
+    await page.waitForResponse('https://signals.segment.io/v1/*')
+    const signalReqJSON = indexPage.signalReq.postDataJSON()
+    const navigationEvents = signalReqJSON.batch.filter(
+      (el: SegmentEvent) => el.properties!.type === 'navigation'
+    )
+    expect(navigationEvents).toHaveLength(1)
+    const ev = navigationEvents[0]
+    expect(ev.properties).toMatchObject({
+      index: 1,
+      type: 'navigation',
+      data: {
+        action: 'pageLoad',
+        url: indexPage.url,
+        path: expect.any(String),
+        hash: '',
+        search: '',
+        title: '',
+      },
+    })
+  }
 
-  // test URL change detection
+  // navigate to a new hash
   {
     await page.evaluate(() => {
       window.location.hash = '#foo'
     })
-    await signalsResponse
+    await page.waitForResponse('https://signals.segment.io/v1/*')
     const signalReqJSON = indexPage.signalReq.postDataJSON()
 
     const navigationEvents = signalReqJSON.batch.filter(
@@ -120,6 +139,7 @@ test('navigation signals get sent', async ({ page }) => {
       data: {
         action: 'urlChange',
         url: indexPage.url + '#foo',
+        prevUrl: indexPage.url,
         path: expect.any(String),
         hash: '#foo',
         search: '',

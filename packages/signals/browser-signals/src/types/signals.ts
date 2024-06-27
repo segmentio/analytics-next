@@ -36,12 +36,22 @@ type ChangeData = {
 
 export type InteractionSignal = AppSignal<'interaction', InteractionData>
 
-interface NavigationData {
-  action: 'pageLoad' | 'urlChange'
+interface BaseNavigationData<ActionType extends string> {
+  action: ActionType
   url: string
   hash: string
-  [key: string]: unknown
 }
+
+export interface URLChangeNavigationData
+  extends BaseNavigationData<'urlChange'> {
+  prevUrl: string
+}
+
+export interface PageChangeNavigationData
+  extends BaseNavigationData<'pageLoad'> {}
+
+export type NavigationData = URLChangeNavigationData | PageChangeNavigationData
+
 export type NavigationSignal = AppSignal<'navigation', NavigationData>
 
 interface InstrumentationData {
