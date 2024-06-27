@@ -30,9 +30,11 @@ export class BasePage {
   }
 
   private async setupMockedRoutes() {
-    await this.mockSignalRequests()
-    await this.mockCDNSegmentSettings()
-    await this.mockAnalyticsRequests()
+    await Promise.all([
+      this.mockSignalRequests(),
+      this.mockCDNSegmentSettings(),
+      await this.mockAnalyticsRequests(),
+    ])
   }
 
   async mockAnalyticsRequests() {
