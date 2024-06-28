@@ -9,6 +9,7 @@ import createWorkerBox from 'workerboxjs'
 
 import { AnalyticsRuntimePublicApi, Signal } from '../../types'
 import { createSignalsRuntime } from './signals-runtime'
+import { replaceBaseUrl } from '../../lib/replace-base-url'
 
 export type MethodName =
   | 'page'
@@ -115,19 +116,14 @@ class JavascriptSandbox implements CodeSandbox {
   }
 }
 
-export type EdgeFnSettings =
-  | {
-      processSignal: string
-      edgeFnDownloadUrl?: string
-    }
-  | {
-      processSignal?: string
-      edgeFnDownloadUrl: string
-    }
+export type SandboxSettingsConfig = {
+  functionHost: string | undefined
+  processSignal: string | undefined
+  edgeFnDownloadUrl: string | undefined
+  edgeFnFetchClient?: typeof fetch
+}
 
-export type SandboxSettingsConfig = {} & EdgeFnSettings
-
-class SandboxSettings {
+export class SandboxSettings {
   /**
    * Should look like:
    * ```js
@@ -138,14 +134,26 @@ class SandboxSettings {
    */
   processSignal: Promise<string>
   constructor(settings: SandboxSettingsConfig) {
-    if (!settings.edgeFnDownloadUrl && !settings.processSignal) {
+    const normalizedDownloadURL =
+      settings.functionHost && settings.edgeFnDownloadUrl
+        ? replaceBaseUrl(
+            settings.edgeFnDownloadUrl,
+            `https://${settings.functionHost}`
+          )
+        : settings.edgeFnDownloadUrl
+
+    if (!normalizedDownloadURL && !settings.processSignal) {
       throw new Error('edgeFnDownloadUrl or processSignal is required')
     }
+
+    const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
+
     const normalizedEdgeFn = settings.processSignal
       ? Promise.resolve(settings.processSignal).then(
           (str) => `globalThis.processSignal = ${str}`
         )
-      : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
+      : fetch(normalizedDownloadURL!).then((res) => res.text())
+
     this.processSignal = normalizedEdgeFn
   }
 }
@@ -154,8 +162,8 @@ export class Sandbox {
   settings: SandboxSettings
   jsSandbox: CodeSandbox
 
-  constructor(settings: SandboxSettingsConfig) {
-    this.settings = new SandboxSettings(settings)
+  constructor(settings: SandboxSettings) {
+    this.settings = settings
     this.jsSandbox = new JavascriptSandbox()
   }
 

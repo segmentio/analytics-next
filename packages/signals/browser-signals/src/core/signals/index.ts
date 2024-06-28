@@ -14,6 +14,7 @@ import { AnyAnalytics, Signal } from '../../types'
 import { registerGenerator } from '../signal-generators/register'
 import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
+import { Sandbox, SandboxSettings } from '../processor/sandbox'
 
 interface SignalsSettings {
   /**
@@ -62,30 +63,66 @@ export type SignalsPublicEmitterContract = {
   signal: [Signal]
 }
 
+/**
+ * Internal settings for the signals class.
+ * This allows us to add settings which can be dynamically set by the user, if needed
+ */
+class SignalGlobalSettings {
+  sandboxSettings: {
+    functionHost: string | undefined
+    processSignal: string | undefined
+    edgeFnDownloadUrl: string | undefined
+  }
+  signalBufferSettings: {
+    signalStorage?: SignalPersistentStorage
+    maxBufferSize?: number
+  }
+  ingestClientSettings: {
+    apiHost?: string
+    flushAt?: number
+  }
+
+  setEdgeFnDownloadUrl(url: string) {
+    this.sandboxSettings.edgeFnDownloadUrl = url
+  }
+
+  constructor(signalSettings: SignalsSettings) {
+    if (signalSettings.maxBufferSize && signalSettings.signalStorage) {
+      throw new Error(
+        'maxBufferSize and signalStorage cannot be defined at the same time'
+      )
+    }
+
+    this.signalBufferSettings = {
+      signalStorage: signalSettings.signalStorage,
+      maxBufferSize: signalSettings.maxBufferSize,
+    }
+    this.ingestClientSettings = {
+      apiHost: signalSettings.apiHost,
+      flushAt: signalSettings.flushAt,
+    }
+    this.sandboxSettings = {
+      functionHost: signalSettings.functionHost,
+      processSignal: signalSettings.processSignal,
+      edgeFnDownloadUrl: undefined,
+    }
+  }
+}
+
 export class Signals implements ISignals {
   private buffer: SignalBuffer
   public signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
-  private functionHost?: string
-  /**
-   * String representation of the edge function.
-   */
-  private processSignal?: string
-
+  private globalSettings: SignalGlobalSettings
   constructor(settings: SignalsSettings = {}) {
-    this.functionHost = settings.functionHost
-    this.processSignal = settings.processSignal
+    this.globalSettings = new SignalGlobalSettings(settings)
     this.signalEmitter = new SignalEmitter()
-    this.signalsClient = new SignalsIngestClient({
-      apiHost: settings.apiHost,
-      flushAt: settings.flushAt,
-    })
+    this.signalsClient = new SignalsIngestClient(
+      this.globalSettings.ingestClientSettings
+    )
 
-    this.buffer = getSignalBuffer({
-      signalStorage: settings.signalStorage,
-      maxBufferSize: settings.maxBufferSize,
-    })
+    this.buffer = getSignalBuffer(this.globalSettings.signalBufferSettings)
 
     this.signalEmitter.subscribe((signal) => {
       void this.signalsClient.send(signal)
@@ -104,17 +141,25 @@ export class Signals implements ISignals {
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
 
-    const processor = new SignalEventProcessor(analyticsService, {
-      processSignal: this.processSignal,
-      functionHost: this.functionHost,
-    })
+    const downloadURL = analyticsService.edgeFnSettings?.downloadURL
+    if (downloadURL) {
+      this.globalSettings.setEdgeFnDownloadUrl(downloadURL)
+    }
+
+    const sandbox = new Sandbox(
+      new SandboxSettings(this.globalSettings.sandboxSettings)
+    )
+
+    const processor = new SignalEventProcessor(analyticsService, sandbox)
 
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())
     })
+
     await this.registerGenerator([
       analyticsService.createSegmentInstrumentationEventGenerator(),
     ])
+
     await this.signalsClient.init({ writeKey: analyticsService.writeKey })
   }
 

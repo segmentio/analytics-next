@@ -1,27 +1,14 @@
 import { logger } from '../../lib/logger'
-import { replaceBaseUrl } from '../../lib/replace-base-url'
 import { Signal } from '../../types'
 import { AnalyticsService } from '../analytics-service'
-import { MethodName, Sandbox, SandboxSettingsConfig } from './sandbox'
+import { MethodName, Sandbox } from './sandbox'
 
-interface SignalEventProcessorSettingsConfig {
-  processSignal?: string
-  functionHost?: string
-}
 export class SignalEventProcessor {
   private sandbox: Sandbox
   private analyticsService: AnalyticsService
-  constructor(
-    analyticsService: AnalyticsService,
-    settings: SignalEventProcessorSettingsConfig = {}
-  ) {
+  constructor(analyticsService: AnalyticsService, sandbox: Sandbox) {
     this.analyticsService = analyticsService
-    this.sandbox = new Sandbox(
-      createSandboxSettings({
-        ...settings,
-        edgeFnDownloadURL: analyticsService.edgeFnSettings?.downloadURL,
-      })
-    )
+    this.sandbox = sandbox
   }
 
   async process(signal: Signal, signals: Signal[]) {
@@ -42,27 +29,5 @@ export class SignalEventProcessor {
 
   cleanup() {
     return this.sandbox.jsSandbox.destroy()
-  }
-}
-
-const createSandboxSettings = (settings: {
-  processSignal?: string
-  functionHost?: string
-  edgeFnDownloadURL?: string
-}): SandboxSettingsConfig => {
-  if (!settings.edgeFnDownloadURL && !settings.processSignal) {
-    throw new Error('one of: edgeFnDownloadUrl or processSignal is required')
-  }
-
-  const normalizedEdgeFn =
-    settings.functionHost && settings.edgeFnDownloadURL
-      ? replaceBaseUrl(
-          settings.edgeFnDownloadURL,
-          `https://${settings.functionHost}`
-        )
-      : settings.edgeFnDownloadURL
-  return {
-    edgeFnDownloadUrl: normalizedEdgeFn!,
-    processSignal: settings.processSignal,
   }
 }
