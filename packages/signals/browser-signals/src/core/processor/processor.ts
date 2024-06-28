@@ -1,6 +1,7 @@
 import { logger } from '../../lib/logger'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import { AnyAnalytics, CDNSettings, Signal } from '../../types'
+import { Signal } from '../../types'
+import { AnalyticsService } from '../analytics-service'
 import { MethodName, Sandbox, SandboxSettingsConfig } from './sandbox'
 
 interface SignalEventProcessorSettingsConfig {
@@ -9,14 +10,20 @@ interface SignalEventProcessorSettingsConfig {
 }
 export class SignalEventProcessor {
   private sandbox: Sandbox
-  private hostAnalytics: AnyAnalytics
+  private analyticsService: AnalyticsService
   constructor(
-    hostAnalytics: AnyAnalytics,
+    analyticsService: AnalyticsService,
     settings: SignalEventProcessorSettingsConfig = {}
   ) {
-    this.hostAnalytics = hostAnalytics
-    this.sandbox = new Sandbox(createSandboxSettings(settings, hostAnalytics))
+    this.analyticsService = analyticsService
+    this.sandbox = new Sandbox(
+      createSandboxSettings({
+        ...settings,
+        edgeFnDownloadURL: analyticsService.edgeFnSettings?.downloadURL,
+      })
+    )
   }
+
   async process(signal: Signal, signals: Signal[]) {
     const analyticsMethodCalls = await this.sandbox.process(signal, signals)
     logger.debug('New signal processed. Analytics method calls:', {
@@ -28,7 +35,7 @@ export class SignalEventProcessor {
       const eventsCollection = analyticsMethodCalls[name]
       eventsCollection.forEach((args) => {
         // @ts-ignore
-        this.hostAnalytics[name](...args)
+        this.analyticsService.instance[name](...args)
       })
     }
   }
@@ -38,37 +45,24 @@ export class SignalEventProcessor {
   }
 }
 
-const parseDownloadURL = (cdnSettings: CDNSettings): string | undefined => {
-  if (
-    cdnSettings.edgeFunction &&
-    'downloadURL' in cdnSettings.edgeFunction &&
-    typeof cdnSettings.edgeFunction.downloadURL === 'string'
-  ) {
-    return cdnSettings.edgeFunction.downloadURL
-  } else {
-    console.warn('Edge function download URL not found in CDN settings')
-    return undefined
-  }
-}
-
-const createSandboxSettings = (
-  settings: SignalEventProcessorSettingsConfig,
-  analytics: AnyAnalytics
-): SandboxSettingsConfig => {
-  const edgeFnDownloadUrl = settings.processSignal
-    ? undefined
-    : parseDownloadURL(analytics.settings.cdnSettings)
-
-  if (!edgeFnDownloadUrl && !settings.processSignal) {
+const createSandboxSettings = (settings: {
+  processSignal?: string
+  functionHost?: string
+  edgeFnDownloadURL?: string
+}): SandboxSettingsConfig => {
+  if (!settings.edgeFnDownloadURL && !settings.processSignal) {
     throw new Error('one of: edgeFnDownloadUrl or processSignal is required')
   }
 
-  const edgeFnDownloadURL =
-    settings.functionHost && edgeFnDownloadUrl
-      ? replaceBaseUrl(edgeFnDownloadUrl, `https://${settings.functionHost}`)
-      : edgeFnDownloadUrl
+  const normalizedEdgeFn =
+    settings.functionHost && settings.edgeFnDownloadURL
+      ? replaceBaseUrl(
+          settings.edgeFnDownloadURL,
+          `https://${settings.functionHost}`
+        )
+      : settings.edgeFnDownloadURL
   return {
-    edgeFnDownloadUrl: edgeFnDownloadURL!,
+    edgeFnDownloadUrl: normalizedEdgeFn!,
     processSignal: settings.processSignal,
   }
 }

@@ -1,13 +1,15 @@
-import { AnyAnalytics } from '../../types'
+import { AnyAnalytics, EdgeFnCDNSettings } from '../../types'
+
+const edgeFnSettings: EdgeFnCDNSettings = {
+  downloadURL: 'https://foo.com',
+  version: 1,
+}
 
 export const analyticsMock: jest.Mocked<AnyAnalytics> = {
   settings: {
     writeKey: 'test',
     cdnSettings: {
-      edgeFunction: {
-        url: 'https://foo.com',
-        version: '1.0.0',
-      },
+      edgeFunction: edgeFnSettings,
       integrations: {},
     },
   },

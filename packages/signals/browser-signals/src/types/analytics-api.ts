@@ -3,16 +3,14 @@
  * Otherwise, we would introduce typescript errors for library consumers (unless they do skipLibCheck: true).
  */
 
-export type EdgeFunctionSettings =
-  | {
-      version: number
-      downloadURL: string
-    }
-  | {}
+export type EdgeFnCDNSettings = {
+  version: number
+  downloadURL: string
+}
 
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
-  edgeFunction?: EdgeFunctionSettings
+  edgeFunction?: EdgeFnCDNSettings | {}
 }
 
 export interface SegmentEventStub {

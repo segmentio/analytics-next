@@ -104,7 +104,7 @@ export class Signals implements ISignals {
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
 
-    const processor = new SignalEventProcessor(analytics, {
+    const processor = new SignalEventProcessor(analyticsService, {
       processSignal: this.processSignal,
       functionHost: this.functionHost,
     })
