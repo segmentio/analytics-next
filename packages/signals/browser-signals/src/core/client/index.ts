@@ -79,11 +79,9 @@ export class SignalsIngestClient {
       const { data, type } = signal
       const redacted = redactJsonValues(data, 2)
       logger.debug('Sending signal', {
-        ...(type !== 'instrumentation' && data.eventType
-          ? { eventType: data.eventType }
-          : {}),
+        ...('eventType' in data ? { eventType: data.eventType } : {}),
         type,
-        data: redacted,
+        data,
       })
       return this.analytics!.track(MAGIC_EVENT_NAME, {
         index: this.index++,

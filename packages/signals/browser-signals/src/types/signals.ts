@@ -49,9 +49,21 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
-interface NetworkData {
-  [key: string]: unknown
+type NetworkRequestData = {
+  action: 'Request'
+  url: RequestInfo | URL
+  method: string
+  data: {}
 }
+
+type NetworkResponseData = {
+  action: 'Response'
+  url: string
+  data: {}
+}
+
+export type NetworkData = NetworkRequestData | NetworkResponseData
+
 export type NetworkSignal = AppSignal<'network', NetworkData>
 
 /**

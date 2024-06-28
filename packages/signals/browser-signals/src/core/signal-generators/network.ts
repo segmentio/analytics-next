@@ -3,7 +3,7 @@ import { SignalGenerator } from './types'
 let origFetch: typeof window.fetch
 
 export function addFetchInterceptor(
-  onRequest: (rs: any) => void,
+  onRequest: (rs: Parameters<typeof window.fetch>) => void,
   onResponse: (rs: Response) => void
 ) {
   console.debug('Adding fetch interceptor')
@@ -34,9 +34,7 @@ const containsJSONContent = (headers: HeadersInit | undefined): boolean => {
   }
   const normalizedHeaders = normalizeHeaders(headers)
   return (
-    normalizedHeaders.get('content-type')?.includes('application/json') ||
-    normalizedHeaders.get('Content-Type')?.includes('application/json') ||
-    false
+    normalizedHeaders.get('content-type')?.includes('application/json') || false
   )
 }
 
@@ -65,7 +63,7 @@ export class NetworkGenerator implements SignalGenerator {
         data: {
           action: 'Request',
           url: url,
-          method: rq.method,
+          method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
         },
       })

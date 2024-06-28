@@ -18,7 +18,7 @@ const ComplexForm = () => {
       },
       body: JSON.stringify(formData),
     })
-      .then(async (response) => response.json())
+      .then((response) => response.json())
       .then((data) => {
         console.log('Form submitted successfully:', data)
       })

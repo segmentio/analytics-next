@@ -62,8 +62,7 @@ export class Signals implements ISignals {
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
 
-    void this.registerGenerator(domGenerators)
-    void this.registerGenerator([NetworkGenerator])
+    void this.registerGenerator([...domGenerators, NetworkGenerator])
 
     this.buffer = getSignalBuffer({
       signalStorage: settings.signalStorage,
