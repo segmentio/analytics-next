@@ -31,7 +31,7 @@ describe(SignalsIngestClient, () => {
       index: 0,
       data: {
         rawEvent: {
-          foo: 'bar',
+          foo: 'XXX',
         },
       },
     })
