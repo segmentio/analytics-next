@@ -68,22 +68,22 @@ export type SignalsPublicEmitterContract = {
  * This allows us to add settings which can be dynamically set by the user, if needed
  */
 class SignalGlobalSettings {
-  sandboxSettings: {
+  sandbox: {
     functionHost: string | undefined
     processSignal: string | undefined
     edgeFnDownloadUrl: string | undefined
   }
-  signalBufferSettings: {
+  signalBuffer: {
     signalStorage?: SignalPersistentStorage
     maxBufferSize?: number
   }
-  ingestClientSettings: {
+  ingestClient: {
     apiHost?: string
     flushAt?: number
   }
 
   setEdgeFnDownloadUrl(url: string) {
-    this.sandboxSettings.edgeFnDownloadUrl = url
+    this.sandbox.edgeFnDownloadUrl = url
   }
 
   constructor(signalSettings: SignalsSettings) {
@@ -93,15 +93,15 @@ class SignalGlobalSettings {
       )
     }
 
-    this.signalBufferSettings = {
+    this.signalBuffer = {
       signalStorage: signalSettings.signalStorage,
       maxBufferSize: signalSettings.maxBufferSize,
     }
-    this.ingestClientSettings = {
+    this.ingestClient = {
       apiHost: signalSettings.apiHost,
       flushAt: signalSettings.flushAt,
     }
-    this.sandboxSettings = {
+    this.sandbox = {
       functionHost: signalSettings.functionHost,
       processSignal: signalSettings.processSignal,
       edgeFnDownloadUrl: undefined,
@@ -119,10 +119,10 @@ export class Signals implements ISignals {
     this.globalSettings = new SignalGlobalSettings(settings)
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient(
-      this.globalSettings.ingestClientSettings
+      this.globalSettings.ingestClient
     )
 
-    this.buffer = getSignalBuffer(this.globalSettings.signalBufferSettings)
+    this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
 
     this.signalEmitter.subscribe((signal) => {
       void this.signalsClient.send(signal)
@@ -147,7 +147,7 @@ export class Signals implements ISignals {
     }
 
     const sandbox = new Sandbox(
-      new SandboxSettings(this.globalSettings.sandboxSettings)
+      new SandboxSettings(this.globalSettings.sandbox)
     )
 
     const processor = new SignalEventProcessor(analyticsService, sandbox)
