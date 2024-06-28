@@ -115,8 +115,8 @@ export class Signals implements ISignals {
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
   private globalSettings: SignalGlobalSettings
-  constructor(settings: SignalsSettings = {}) {
-    this.globalSettings = new SignalGlobalSettings(settings)
+  constructor(settingsConfig: SignalsSettings = {}) {
+    this.globalSettings = new SignalGlobalSettings(settingsConfig)
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
