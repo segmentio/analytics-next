@@ -8,7 +8,10 @@ test.beforeEach(async ({ page }) => {
   await indexPage.load(page)
 })
 
-test('instrumentation signals fire', async () => {
+test('instrumentation signals work', async () => {
+  /**
+   * Make an analytics.page() call, see if it gets sent to the signals endpoint
+   */
   await Promise.all([
     indexPage.makeAnalyticsPageCall(),
     indexPage.waitForSignalsApiFlush(),
@@ -32,40 +35,61 @@ test('instrumentation signals fire', async () => {
   })
 })
 
-test('interaction signals fire', async ({ page }) => {
+test('interaction signals work', async ({ page }) => {
+  /**
+   * Make a button click, see if it:
+   * - creates an interaction signal that sends to the signals endpoint
+   * - creates an analytics event that sends to the tracking endpoint
+   */
   await Promise.all([
     page.click('button'),
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
 
+  const signalsReqJSON = indexPage.signalsApiReq.postDataJSON()
+  const interactionSignals = signalsReqJSON.batch.filter(
+    (el: SegmentEvent) => el.properties!.type === 'interaction'
+  )
+  expect(interactionSignals).toHaveLength(1)
+  const data = {
+    eventType: 'click',
+    target: {
+      attributes: [
+        {
+          name: 'id',
+          value: 'some-button',
+        },
+      ],
+      classList: [],
+      id: 'some-button',
+      labels: [],
+      name: '',
+      nodeName: 'BUTTON',
+      nodeType: 1,
+      nodeValue: null,
+      tagName: 'BUTTON',
+      title: '',
+      type: 'submit',
+      value: '',
+    },
+  }
+
+  expect(interactionSignals[0]).toMatchObject({
+    event: 'Segment Signal Generated',
+    type: 'track',
+    properties: {
+      type: 'interaction',
+      data,
+    },
+  })
+
   const analyticsReqJSON = indexPage.trackingApiReq.postDataJSON()
 
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
     event: 'click [interaction]',
-    properties: {
-      eventType: 'click',
-      target: {
-        attributes: [
-          {
-            name: 'id',
-            value: 'some-button',
-          },
-        ],
-        classList: [],
-        id: 'some-button',
-        labels: [],
-        name: '',
-        nodeName: 'BUTTON',
-        nodeType: 1,
-        nodeValue: null,
-        tagName: 'BUTTON',
-        title: '',
-        type: 'submit',
-        value: '',
-      },
-    },
+    properties: data,
     context: {
       __eventOrigin: {
         type: 'Signal',
@@ -74,7 +98,13 @@ test('interaction signals fire', async ({ page }) => {
   })
 })
 
-test('navigation signals fire', async ({ page }) => {
+test('navigation signals get sent to the signals api', async ({ page }) => {
+  /**
+   * Load a page and then click, see if it:
+   * - creates a navigation signal that sends to the signals endpoint
+   * Click a link, see if it
+   * - creates a navigation signal that sends to the signals endpoint
+   */
   {
     // on page load, a navigation signal should be sent
     await indexPage.waitForSignalsApiFlush()
