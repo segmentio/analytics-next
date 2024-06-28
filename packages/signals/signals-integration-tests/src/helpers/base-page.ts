@@ -7,16 +7,10 @@ export class BasePage {
   public trackingApiReq!: Request
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
-  public edgeFn = `
-    // this is a process signal function
-    const processSignal = (signal) => {
-      if (signal.type === 'interaction') {
-        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
-        analytics.track(eventName, signal.data)
-      }
-  }`
+  public edgeFn: string
 
-  constructor(url: string) {
+  constructor(url: string, edgeFn: string) {
+    this.edgeFn = edgeFn
     this.url = url
   }
 

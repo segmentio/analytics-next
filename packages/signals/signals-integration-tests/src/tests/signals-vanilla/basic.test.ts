@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
   await indexPage.load(page)
 })
 
-test('instrumentation signals work', async () => {
+test('instrumentation signals', async () => {
   /**
    * Make an analytics.page() call, see if it gets sent to the signals endpoint
    */
@@ -35,7 +35,7 @@ test('instrumentation signals work', async () => {
   })
 })
 
-test('interaction signals work', async ({ page }) => {
+test('interaction signals', async ({ page }) => {
   /**
    * Make a button click, see if it:
    * - creates an interaction signal that sends to the signals endpoint
@@ -98,7 +98,7 @@ test('interaction signals work', async ({ page }) => {
   })
 })
 
-test('navigation signals get sent to the signals api', async ({ page }) => {
+test('navigation signals', async ({ page }) => {
   /**
    * Load a page and then click, see if it:
    * - creates a navigation signal that sends to the signals endpoint
