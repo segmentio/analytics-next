@@ -64,8 +64,9 @@ export type SignalsPublicEmitterContract = {
 }
 
 /**
- * Internal settings for the signals class.
- * This allows us to add settings which can be dynamically set by the user, if needed
+ * Global settings for the application
+ * In the future this pattern may allows us to add settings which can be dynamically set by the user.
+ * Currently, this is just a way to pass settings to the different parts of the application.
  */
 class SignalGlobalSettings {
   sandbox: {
