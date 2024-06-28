@@ -1,3 +1,4 @@
+import { logger } from '../../lib/logger'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
 let origFetch: typeof window.fetch
@@ -6,7 +7,7 @@ export function addFetchInterceptor(
   onRequest: (rs: Parameters<typeof window.fetch>) => void,
   onResponse: (rs: Response) => void
 ) {
-  console.debug('Adding fetch interceptor')
+  logger.debug('Adding fetch interceptor')
   origFetch = window.fetch
   window.fetch = async (...args) => {
     try {
@@ -89,7 +90,7 @@ export class NetworkGenerator implements SignalGenerator {
     }
     addFetchInterceptor(handleRequest, handleResponse)
     return () => {
-      console.debug('Removing fetch interceptor')
+      logger.debug('Removing fetch interceptor')
       window.fetch = origFetch
     }
   }
