@@ -2,9 +2,9 @@ import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Request } from '@playwright/test'
 
 export class BasePage {
-  private page!: Page
-  public signalReq!: Request
-  public analyticsReq!: Request
+  protected page!: Page
+  public signalsApiReq!: Request
+  public trackingApiReq!: Request
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   public edgeFn = `
@@ -27,19 +27,24 @@ export class BasePage {
     this.page = page
     await this.setupMockedRoutes()
     await this.page.goto(this.url)
+    // expect analytics to be loaded
+    await Promise.all([
+      this.waitForCDNSettingsResponse(),
+      this.waitForEdgeFunctionResponse(),
+    ])
   }
 
   private async setupMockedRoutes() {
     await Promise.all([
-      this.mockSignalRequests(),
-      this.mockCDNSegmentSettings(),
-      await this.mockAnalyticsRequests(),
+      this.mockSignalsApi(),
+      this.mockCDNSettings(),
+      await this.mockTrackingApi(),
     ])
   }
 
-  async mockAnalyticsRequests() {
+  async mockTrackingApi() {
     await this.page.route('https://api.segment.io/v1/*', (route, request) => {
-      this.analyticsReq = request
+      this.trackingApiReq = request
       if (request.method().toLowerCase() !== 'post') {
         throw new Error(`Unexpected method: ${request.method()}`)
       }
@@ -53,11 +58,15 @@ export class BasePage {
     })
   }
 
-  async mockSignalRequests() {
+  waitForTrackingApiFlush() {
+    return this.page.waitForResponse('https://api.segment.io/v1/*')
+  }
+
+  async mockSignalsApi() {
     await this.page.route(
       'https://signals.segment.io/v1/*',
       (route, request) => {
-        this.signalReq = request
+        this.signalsApiReq = request
         if (request.method().toLowerCase() !== 'post') {
           throw new Error(`Unexpected method: ${request.method()}`)
         }
@@ -72,7 +81,11 @@ export class BasePage {
     )
   }
 
-  async mockCDNSegmentSettings() {
+  waitForSignalsApiFlush() {
+    return this.page.waitForResponse('https://signals.segment.io/v1/*')
+  }
+
+  async mockCDNSettings() {
     await this.page.route(
       'https://cdn.segment.com/v1/projects/*/settings',
       (route, request) => {
@@ -114,6 +127,18 @@ export class BasePage {
         body: this.edgeFn,
       })
     })
+  }
+
+  waitForEdgeFunctionResponse() {
+    return this.page.waitForResponse(
+      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`
+    )
+  }
+
+  waitForCDNSettingsResponse() {
+    return this.page.waitForResponse(
+      'https://cdn.segment.com/v1/projects/*/settings'
+    )
   }
 
   // Additional mock methods can be added here

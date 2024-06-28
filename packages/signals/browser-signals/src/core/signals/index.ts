@@ -41,6 +41,12 @@ interface SignalsSettings {
    * should proxy to 'cdn.edgefn.segment.com'
    */
   functionHost?: string
+
+  /**
+   * How many signals to flush at once when sending to the signals API
+   * @default 3
+   */
+  flushAt?: number
 }
 
 interface ISignals {
@@ -71,7 +77,10 @@ export class Signals implements ISignals {
     this.functionHost = settings.functionHost
     this.processSignal = settings.processSignal
     this.signalEmitter = new SignalEmitter()
-    this.signalsClient = new SignalsIngestClient({ apiHost: settings.apiHost })
+    this.signalsClient = new SignalsIngestClient({
+      apiHost: settings.apiHost,
+      flushAt: settings.flushAt,
+    })
 
     this.buffer = getSignalBuffer({
       signalStorage: settings.signalStorage,

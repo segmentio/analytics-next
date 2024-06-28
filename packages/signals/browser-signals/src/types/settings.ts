@@ -28,4 +28,10 @@ export interface SignalsPluginSettingsConfig {
    * @default cdn.edgefn.segment.com
    */
   functionHost?: string
+
+  /**
+   * How many signals to flush at once when sending to the signals API
+   * @default 3
+   */
+  flushAt?: number
 }

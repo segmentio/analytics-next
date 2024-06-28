@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { promiseTimeout } from '@internal/test-helpers'
 import type { SegmentEvent } from '@segment/analytics-next'
 import { IndexPage } from './page-object'
 
@@ -9,34 +8,13 @@ test.beforeEach(async ({ page }) => {
   await indexPage.load(page)
 })
 
-test('analytics loads', async ({ page }) => {
-  // Perform actions and assertions
-  const analytics = await page.evaluate(() => {
-    return window.analytics
-  })
-
-  const p = (await page.evaluate(() => {
-    void window.analytics.page()
-    return new Promise((resolve) => window.analytics.on('page', resolve))
-  })) as Promise<any>
-
-  expect(analytics).toBeDefined()
-
-  await promiseTimeout(p, 2000, 'analytics.on("page") did not resolve')
-})
-
-test('signals can fire analytics events', async ({ page }) => {
+test('instrumentation signals fire', async () => {
   await Promise.all([
-    page.waitForResponse('https://signals.segment.io/v1/*'),
-    page.waitForResponse('https://cdn.edgefn.segment.com/**', {
-      timeout: 10000,
-    }),
-    page.evaluate(() => {
-      void window.analytics.track('foo')
-    }),
+    indexPage.makeAnalyticsPageCall(),
+    indexPage.waitForSignalsApiFlush(),
   ])
 
-  const signalReqJSON = indexPage.signalReq.postDataJSON()
+  const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
 
   const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   const instrumentationEvents = signalReqJSON.batch.filter(
@@ -48,20 +26,20 @@ test('signals can fire analytics events', async ({ page }) => {
   expect(ev.type).toBe('track')
   const rawEvent = ev.properties.data.rawEvent
   expect(rawEvent).toMatchObject({
-    type: 'track',
-    event: 'foo',
+    type: 'page',
     anonymousId: expect.any(String),
     timestamp: expect.stringMatching(isoDateRegEx),
   })
+})
 
-  // get analytics (tracking API response)
-
+test('interaction signals fire', async ({ page }) => {
   await Promise.all([
-    page.waitForResponse('https://api.segment.io/v1/*', { timeout: 10000 }),
     page.click('button'),
+    indexPage.waitForSignalsApiFlush(),
+    indexPage.waitForTrackingApiFlush(),
   ])
 
-  const analyticsReqJSON = indexPage.analyticsReq.postDataJSON()
+  const analyticsReqJSON = indexPage.trackingApiReq.postDataJSON()
 
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
@@ -96,18 +74,17 @@ test('signals can fire analytics events', async ({ page }) => {
   })
 })
 
-test('navigation signals get sent', async ({ page }) => {
+test('navigation signals fire', async ({ page }) => {
   {
     // on page load, a navigation signal should be sent
-    await page.waitForResponse('https://signals.segment.io/v1/*')
-    const signalReqJSON = indexPage.signalReq.postDataJSON()
+    await indexPage.waitForSignalsApiFlush()
+    const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
     const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'
     )
     expect(navigationEvents).toHaveLength(1)
     const ev = navigationEvents[0]
     expect(ev.properties).toMatchObject({
-      index: 1,
       type: 'navigation',
       data: {
         action: 'pageLoad',
@@ -125,8 +102,8 @@ test('navigation signals get sent', async ({ page }) => {
     await page.evaluate(() => {
       window.location.hash = '#foo'
     })
-    await page.waitForResponse('https://signals.segment.io/v1/*')
-    const signalReqJSON = indexPage.signalReq.postDataJSON()
+    await indexPage.waitForSignalsApiFlush()
+    const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
 
     const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'

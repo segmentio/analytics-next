@@ -1,16 +1,18 @@
-export function promiseTimeout(
-  promise: Promise<void>,
+export function promiseTimeout<T>(
+  promise: Promise<T>,
   timeout: number,
   errorMsg?: string
-) {
-  let timeoutId: ReturnType<typeof setTimeout>
-  const timeoutPromise = new Promise((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new Error(errorMsg ?? 'Promise timed out'))
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(Error(errorMsg ?? 'Promise timed out'))
     }, timeout)
-  })
 
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timeoutId)
+    promise
+      .then((val) => {
+        clearTimeout(timeoutId)
+        return resolve(val)
+      })
+      .catch(reject)
   })
 }

@@ -33,6 +33,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     logger.debug('SignalsPlugin initializing', { settings })
     // subscribe and store signals that may occur before analytics is fully initialized
     this.signals = new Signals({
+      flushAt: settings.flushAt,
       functionHost: settings.functionHost,
       apiHost: settings.apiHost,
       maxBufferSize: settings.maxBufferSize,
