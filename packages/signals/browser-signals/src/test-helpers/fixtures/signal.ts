@@ -1,10 +1,10 @@
-import { Signal } from '../../types'
+import { InteractionSignal } from '../../types'
 
-export const createMockSignal = (): Signal => {
+export const createMockSignal = (): InteractionSignal => {
   return {
-    type: 'instrumentation',
+    type: 'interaction',
     data: {
-      eventName: 'click',
+      eventType: 'click',
       target: {} as any,
     },
   }

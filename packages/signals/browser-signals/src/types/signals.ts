@@ -61,3 +61,4 @@ export type Signal =
   | InteractionSignal
   | NavigationSignal
   | InstrumentationSignal
+  | NetworkSignal
