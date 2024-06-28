@@ -16,7 +16,7 @@ import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
 import { Sandbox, SandboxSettings } from '../processor/sandbox'
 
-interface SignalsSettings {
+interface SignalsSettingsConfig {
   /**
    * Size of the default signal buffer.
    * If signalStorage is defined, this setting is ignored.
@@ -87,24 +87,24 @@ class SignalGlobalSettings {
     this.sandbox.edgeFnDownloadURL = url
   }
 
-  constructor(signalSettings: SignalsSettings) {
-    if (signalSettings.maxBufferSize && signalSettings.signalStorage) {
+  constructor(settings: SignalsSettingsConfig) {
+    if (settings.maxBufferSize && settings.signalStorage) {
       throw new Error(
         'maxBufferSize and signalStorage cannot be defined at the same time'
       )
     }
 
     this.signalBuffer = {
-      signalStorage: signalSettings.signalStorage,
-      maxBufferSize: signalSettings.maxBufferSize,
+      signalStorage: settings.signalStorage,
+      maxBufferSize: settings.maxBufferSize,
     }
     this.ingestClient = {
-      apiHost: signalSettings.apiHost,
-      flushAt: signalSettings.flushAt,
+      apiHost: settings.apiHost,
+      flushAt: settings.flushAt,
     }
     this.sandbox = {
-      functionHost: signalSettings.functionHost,
-      processSignal: signalSettings.processSignal,
+      functionHost: settings.functionHost,
+      processSignal: settings.processSignal,
       edgeFnDownloadURL: undefined,
     }
   }
@@ -116,7 +116,7 @@ export class Signals implements ISignals {
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
   private globalSettings: SignalGlobalSettings
-  constructor(settingsConfig: SignalsSettings = {}) {
+  constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient(
