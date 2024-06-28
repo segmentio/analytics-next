@@ -71,7 +71,7 @@ class SignalGlobalSettings {
   sandbox: {
     functionHost: string | undefined
     processSignal: string | undefined
-    edgeFnDownloadUrl: string | undefined
+    edgeFnDownloadURL: string | undefined
   }
   signalBuffer: {
     signalStorage?: SignalPersistentStorage
@@ -83,7 +83,7 @@ class SignalGlobalSettings {
   }
 
   setEdgeFnDownloadUrl(url: string) {
-    this.sandbox.edgeFnDownloadUrl = url
+    this.sandbox.edgeFnDownloadURL = url
   }
 
   constructor(signalSettings: SignalsSettings) {
@@ -104,7 +104,7 @@ class SignalGlobalSettings {
     this.sandbox = {
       functionHost: signalSettings.functionHost,
       processSignal: signalSettings.processSignal,
-      edgeFnDownloadUrl: undefined,
+      edgeFnDownloadURL: undefined,
     }
   }
 }

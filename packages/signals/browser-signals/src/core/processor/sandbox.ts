@@ -119,7 +119,7 @@ class JavascriptSandbox implements CodeSandbox {
 export type SandboxSettingsConfig = {
   functionHost: string | undefined
   processSignal: string | undefined
-  edgeFnDownloadUrl: string | undefined
+  edgeFnDownloadURL: string | undefined
   edgeFnFetchClient?: typeof fetch
 }
 
@@ -135,12 +135,12 @@ export class SandboxSettings {
   processSignal: Promise<string>
   constructor(settings: SandboxSettingsConfig) {
     const normalizedDownloadURL =
-      settings.functionHost && settings.edgeFnDownloadUrl
+      settings.functionHost && settings.edgeFnDownloadURL
         ? replaceBaseUrl(
-            settings.edgeFnDownloadUrl,
+            settings.edgeFnDownloadURL,
             `https://${settings.functionHost}`
           )
-        : settings.edgeFnDownloadUrl
+        : settings.edgeFnDownloadURL
 
     if (!normalizedDownloadURL && !settings.processSignal) {
       throw new Error('edgeFnDownloadUrl or processSignal is required')
