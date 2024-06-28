@@ -6,7 +6,7 @@ export function addFetchInterceptor(
   onRequest: (rs: any) => void,
   onResponse: (rs: Response) => void
 ) {
-  console.log('Adding fetch interceptor')
+  console.debug('Adding fetch interceptor')
   origFetch = window.fetch
   window.fetch = async (...args) => {
     try {
@@ -28,6 +28,18 @@ const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
 
+const containsJSONContent = (headers: HeadersInit | undefined): boolean => {
+  if (!headers) {
+    return false
+  }
+  const normalizedHeaders = normalizeHeaders(headers)
+  return (
+    normalizedHeaders.get('content-type')?.includes('application/json') ||
+    normalizedHeaders.get('Content-Type')?.includes('application/json') ||
+    false
+  )
+}
+
 export class NetworkGenerator implements SignalGenerator {
   id = 'network'
   register(emitter: SignalEmitter) {
@@ -44,12 +56,7 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
 
-      if (rq.headers) {
-        const headers = normalizeHeaders(rq.headers)
-        if (!headers.get('Content-Type')?.includes('application/json')) {
-          return
-        }
-      } else {
+      if (!containsJSONContent(rq.headers)) {
         return
       }
 
@@ -64,7 +71,7 @@ export class NetworkGenerator implements SignalGenerator {
       })
     }
     const handleResponse = async (rs: Response) => {
-      if (!rs.headers.get('Content-Type')?.includes('application/json')) {
+      if (!containsJSONContent(rs.headers)) {
         return
       }
       const url = rs.url
@@ -84,7 +91,7 @@ export class NetworkGenerator implements SignalGenerator {
     }
     addFetchInterceptor(handleRequest, handleResponse)
     return () => {
-      console.log('Removing fetch interceptor')
+      console.debug('Removing fetch interceptor')
       window.fetch = origFetch
     }
   }

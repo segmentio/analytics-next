@@ -1,25 +1,10 @@
 function redact(value: any, maxLength = 8) {
-  console.log(typeof value)
   if (typeof value === 'boolean') {
     return 'true/false'
   }
   if (typeof value === 'number') {
     return Number(value.toString().replace(/[0-9]/g, '9'))
   }
-  console.log(
-    value,
-    value.toString(),
-    value.toString().substring(0, maxLength || 99999),
-    value
-      .toString()
-      .substring(0, maxLength || 99999)
-      .replace(/[a-zA-Z]/g, 'X'),
-    value
-      .toString()
-      .substring(0, maxLength || 99999)
-      .replace(/[a-zA-Z]/g, 'X')
-      .replace(/[0-9]/g, '9')
-  )
   return value
     .toString()
     .substring(0, maxLength || 99999)
@@ -50,7 +35,6 @@ export function redactJsonValues(
     }
   } else if (redactAfterDepth <= 0) {
     const ret = redact(data, valueMaxLength)
-    console.log(`Redacted ${data} to ${ret}`)
     return ret
   } else {
     return data

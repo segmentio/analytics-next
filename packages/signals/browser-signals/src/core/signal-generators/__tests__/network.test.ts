@@ -54,8 +54,6 @@ describe('NetworkGenerator', () => {
 
     await sleep(100)
     const [first, second] = mockEmitter.emit.mock.calls
-    console.log(first)
-    console.log(second)
 
     expect(first).toEqual([
       {
