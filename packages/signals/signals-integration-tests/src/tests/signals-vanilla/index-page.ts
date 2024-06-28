@@ -1,4 +1,4 @@
-import { BasePage } from '../../helpers/base-page'
+import { BasePage } from '../../helpers/base-page-object'
 import path from 'path'
 import { promiseTimeout } from '@internal/test-helpers'
 

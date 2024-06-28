@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import type { SegmentEvent } from '@segment/analytics-next'
-import { IndexPage } from './page-object'
+import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
 
