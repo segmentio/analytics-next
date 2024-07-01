@@ -6,6 +6,7 @@ import {
 } from '../buffer'
 import { SignalEmitter } from '../emitter'
 import { domGenerators } from '../signal-generators/dom-generators'
+import { NetworkGenerator } from '../signal-generators/network'
 import {
   SignalGenerator,
   SignalGeneratorClass,
@@ -130,7 +131,7 @@ export class Signals implements ISignals {
       void this.buffer.add(signal)
     })
 
-    void this.registerGenerator(domGenerators)
+    void this.registerGenerator([...domGenerators, NetworkGenerator])
   }
 
   /**

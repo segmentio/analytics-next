@@ -1,6 +1,7 @@
 import { Analytics, segmentio } from '@segment/analytics-next'
 import { logger } from '../../lib/logger'
 import { Signal } from '../../types'
+import { redactJsonValues } from './redact'
 
 class SignalsIngestSettings {
   flushAt: number
@@ -76,6 +77,7 @@ export class SignalsIngestClient {
       this.buffer.push(signal)
     } else {
       const { data, type } = signal
+      const redacted = redactJsonValues(data, 2)
       logger.debug('Sending signal', {
         ...('eventType' in data ? { eventType: data.eventType } : {}),
         type,
@@ -84,7 +86,7 @@ export class SignalsIngestClient {
       return this.analytics!.track(MAGIC_EVENT_NAME, {
         index: this.index++,
         type,
-        data,
+        data: redacted,
       })
     }
   }

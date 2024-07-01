@@ -2,6 +2,7 @@ export type SignalType =
   | 'navigation'
   | 'interaction'
   | 'instrumentation'
+  | 'network'
   | 'userDefined'
 
 export interface AppSignal<T extends SignalType, Data> {
@@ -62,6 +63,23 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
+type NetworkRequestData = {
+  action: 'Request'
+  url: string
+  method: string
+  data: { [key: string]: unknown }
+}
+
+type NetworkResponseData = {
+  action: 'Response'
+  url: string
+  data: { [key: string]: unknown }
+}
+
+export type NetworkData = NetworkRequestData | NetworkResponseData
+
+export type NetworkSignal = AppSignal<'network', NetworkData>
+
 export interface UserDefinedSignalData {
   [key: string]: any
 }
@@ -84,6 +102,7 @@ export type Signal =
   | InteractionSignal
   | NavigationSignal
   | InstrumentationSignal
+  | NetworkSignal
   | UserDefinedSignal
 
 interface SegmentEvent {
