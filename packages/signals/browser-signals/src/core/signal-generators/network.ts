@@ -25,6 +25,15 @@ export function addFetchInterceptor(
   }
 }
 
+const matchHostname = (url: string): boolean => {
+  const rIsAbs = new RegExp('^(?:[a-z+]+:)?//', 'i')
+  if (!rIsAbs.test(url)) {
+    // Relative URL will go to this host
+    return true
+  }
+  return new URL(url).hostname?.includes(window.location.hostname) || false
+}
+
 const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
@@ -46,12 +55,8 @@ export class NetworkGenerator implements SignalGenerator {
       if (!rq || !rq.body) {
         return
       }
-      const rIsAbs = new RegExp('^(?:[a-z+]+:)?//', 'i')
-      if (
-        !url ||
-        (rIsAbs.test(url.toString()) &&
-          !url.toString().includes(window.location.hostname))
-      ) {
+      const sUrl = url?.toString()
+      if (!url || !matchHostname(sUrl)) {
         return
       }
 
@@ -63,7 +68,7 @@ export class NetworkGenerator implements SignalGenerator {
         type: 'network',
         data: {
           action: 'Request',
-          url: url,
+          url: sUrl,
           method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
         },
@@ -74,7 +79,7 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
       const url = rs.url
-      if (!url || !new URL(url).hostname.includes(window.location.hostname)) {
+      if (!url || !matchHostname(url)) {
         return
       }
 
