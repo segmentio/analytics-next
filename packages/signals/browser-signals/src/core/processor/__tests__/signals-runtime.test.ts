@@ -1,21 +1,10 @@
-import { InstrumentationSignal, InteractionSignal } from '../../../types'
-import { SignalsRuntime } from '../signals-runtime'
-
-const createInstrumentationSignal = (rawEvent: any): InstrumentationSignal => {
-  return {
-    type: 'instrumentation',
-    data: {
-      rawEvent,
-    },
-  }
-}
-
-const createInteractionSignal = (data: any): InteractionSignal => {
-  return {
-    type: 'interaction',
-    data,
-  }
-}
+import {
+  InstrumentationSignal,
+  InteractionSignal,
+  createInstrumentationSignal,
+  createInteractionSignal,
+} from '../../../types'
+import { createSignalsRuntime, SignalsRuntime } from '../signals-runtime'
 
 describe('SignalsRuntime', () => {
   let signalsRuntime: SignalsRuntime
@@ -24,29 +13,35 @@ describe('SignalsRuntime', () => {
   let signal3: InteractionSignal
 
   beforeEach(() => {
-    signal1 = createInstrumentationSignal({ eventName: 'click' })
-    signal2 = createInteractionSignal({ eventType: 'submit' })
+    signal1 = createInstrumentationSignal({ type: 'track' })
+    signal2 = createInteractionSignal({ eventType: 'submit', submitter: {} })
     signal3 = createInteractionSignal({ eventType: 'change' })
-    signalsRuntime = new SignalsRuntime(signal1, [signal1, signal2, signal3])
+    signalsRuntime = createSignalsRuntime([signal1, signal2, signal3])
   })
 
   describe('find', () => {
-    it('should find a signal based on the provided function', () => {
-      const result = signalsRuntime.find(
-        signal1,
-        'instrumentation',
-        (signal) => signal.type === 'instrumentation'
-      )
-      expect(result).toEqual(signal1)
+    it('should find following signal based on the provided function', () => {
+      const result = signalsRuntime.find(signal2, 'interaction', () => true)
+      expect(result).toEqual(signal3)
     })
 
-    it('should return undefined if no signal matches the provided function', () => {
+    it('should return undefined if there are no following signals that match the query', () => {
+      const result = signalsRuntime.find(signal1, 'instrumentation', () => true)
+      expect(result).toEqual(undefined)
+    })
+
+    it('should filter based on predicate', () => {
       const result = signalsRuntime.find(
         signal1,
-        'instrumentation',
-        (signal) => signal.type === ('nonexistent' as any)
+        'interaction',
+        (signal) => signal.data.eventType === 'change'
       )
-      expect(result).toBeUndefined()
+      expect(result).toEqual(signal3)
+    })
+
+    it('should return the first match if predicate is not provided', () => {
+      const result = signalsRuntime.find(signal1, 'interaction')
+      expect(result).toEqual(signal2)
     })
   })
 

@@ -1,3 +1,6 @@
+// This is a fully client-side implementation example, so this file will never be run in a node environment
+// You only want to instantiate SignalsPlugin in a browser context, otherwise you'll get an error.
+
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import {
   SignalsPlugin,
@@ -9,18 +12,32 @@ if (!process.env.WRITEKEY) {
   throw new Error('No writekey provided.')
 }
 
-const processSignal: ProcessSignal = (signal, { analytics }) => {
+const processSignalExample: ProcessSignal = (
+  signal,
+  { analytics, signals }
+) => {
   if (signal.type === 'interaction') {
     const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
     analytics.track(eventName, signal.data)
+  } else if (signal.type === 'instrumentation') {
+    const found = signals.find(
+      signal,
+      'interaction',
+      (s) => s.data.eventType === 'change'
+    )
+    if (found) {
+      console.log('found in the buffer!', found.data)
+      analytics.track('found in the buffer!', found.data)
+    }
   }
 }
+
 const isStage = process.env.STAGE === 'true'
 
 const signalsPlugin = new SignalsPlugin({
   ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
   enableDebugLogging: true,
-  processSignal: processSignal,
+  // processSignal: processSignalExample,
 })
 
 export const loadAnalytics = () =>

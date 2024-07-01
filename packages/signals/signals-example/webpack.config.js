@@ -56,5 +56,6 @@ module.exports = {
         res.json(req.body)
       })
     },
+    historyApiFallback: true,
   },
 }

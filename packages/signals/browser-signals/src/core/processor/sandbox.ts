@@ -8,7 +8,8 @@ import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
 
 import { AnalyticsRuntimePublicApi, Signal } from '../../types'
-import { SignalsRuntime } from './signals-runtime'
+import { createSignalsRuntime } from './signals-runtime'
+import { replaceBaseUrl } from '../../lib/replace-base-url'
 
 export type MethodName =
   | 'page'
@@ -101,8 +102,12 @@ class JavascriptSandbox implements CodeSandbox {
     this.workerbox = createWorkerBox('')
   }
   async run(fn: string, scope: Record<string, any>) {
-    const wb = await this.workerbox
-    await wb.run(fn, scope)
+    try {
+      const wb = await this.workerbox
+      await wb.run(fn, scope)
+    } catch (err) {
+      console.error('Error running js sandbox', err, { fn })
+    }
   }
 
   async destroy(): Promise<void> {
@@ -111,19 +116,14 @@ class JavascriptSandbox implements CodeSandbox {
   }
 }
 
-export type EdgeFnSettings =
-  | {
-      processSignal: string
-      edgeFnDownloadUrl?: string
-    }
-  | {
-      processSignal?: string
-      edgeFnDownloadUrl: string
-    }
+export type SandboxSettingsConfig = {
+  functionHost: string | undefined
+  processSignal: string | undefined
+  edgeFnDownloadURL: string | undefined
+  edgeFnFetchClient?: typeof fetch
+}
 
-export type SandboxSettingsConfig = {} & EdgeFnSettings
-
-class SandboxSettings {
+export class SandboxSettings {
   /**
    * Should look like:
    * ```js
@@ -132,19 +132,29 @@ class SandboxSettings {
    * }
    * ```
    */
-  edgeFn: Promise<string>
+  processSignal: Promise<string>
   constructor(settings: SandboxSettingsConfig) {
-    if (!settings.edgeFnDownloadUrl && !settings.processSignal) {
+    const normalizedDownloadURL =
+      settings.functionHost && settings.edgeFnDownloadURL
+        ? replaceBaseUrl(
+            settings.edgeFnDownloadURL,
+            `https://${settings.functionHost}`
+          )
+        : settings.edgeFnDownloadURL
+
+    if (!normalizedDownloadURL && !settings.processSignal) {
       throw new Error('edgeFnDownloadUrl or processSignal is required')
     }
-    const normalizedEdgeFn = (
-      settings.processSignal
-        ? Promise.resolve(settings.processSignal)
-        : fetch(settings.edgeFnDownloadUrl!).then((res) => res.text())
-    ).then((str) => {
-      return `globalThis.processSignal = ${str}`
-    })
-    this.edgeFn = normalizedEdgeFn
+
+    const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
+
+    const normalizedEdgeFn = settings.processSignal
+      ? Promise.resolve(settings.processSignal).then(
+          (str) => `globalThis.processSignal = ${str}`
+        )
+      : fetch(normalizedDownloadURL!).then((res) => res.text())
+
+    this.processSignal = normalizedEdgeFn
   }
 }
 
@@ -152,8 +162,8 @@ export class Sandbox {
   settings: SandboxSettings
   jsSandbox: CodeSandbox
 
-  constructor(settings: SandboxSettingsConfig) {
-    this.settings = new SandboxSettings(settings)
+  constructor(settings: SandboxSettings) {
+    this.settings = settings
     this.jsSandbox = new JavascriptSandbox()
   }
 
@@ -162,20 +172,22 @@ export class Sandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
     const analytics = new AnalyticsRuntime()
-    const edgeFn = await this.settings.edgeFn
     const scope = {
-      Signals: new SignalsRuntime(signal, signals),
       analytics,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
-      edgeFn,
-      'processSignal(' + JSON.stringify(signal) + ', { analytics, Signals });',
+      await this.settings.processSignal,
+      `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
+      `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
+      'try { processSignal(' +
+        JSON.stringify(signal) +
+        ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 
     const calls = analytics.getCalls()
-    logger.debug('analytics calls', analytics.getCalls())
+    logger.debug('analytics calls', calls)
     return calls
   }
 }

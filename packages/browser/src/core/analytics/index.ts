@@ -88,7 +88,10 @@ export class AnalyticsInstanceSettings {
 
   constructor(settings: AnalyticsSettings) {
     this.writeKey = settings.writeKey
-    this.cdnSettings = settings.cdnSettings ?? { integrations: {} }
+    this.cdnSettings = settings.cdnSettings ?? {
+      integrations: {},
+      edgeFunction: {},
+    }
   }
 }
 

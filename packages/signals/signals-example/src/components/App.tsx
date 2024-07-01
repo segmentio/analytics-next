@@ -1,20 +1,26 @@
 import '../lib/analytics'
 import React, { useEffect } from 'react'
-import ComplexForm from './ComplexForm'
-import { analytics, loadAnalytics } from '../lib/analytics'
+import { loadAnalytics } from '../lib/analytics'
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom'
+import { HomePage } from '../pages/Home'
+import { OtherPage } from '../pages/Other'
 
 const App: React.FC = () => {
   useEffect(() => {
     void loadAnalytics()
   }, [])
+
   return (
-    <main>
-      <h1>Hello, React with TypeScript!</h1>
-      <ComplexForm />
-      <button onClick={() => analytics.track('manual track call')}>
-        Send Manual Track Call
-      </button>
-    </main>
+    <Router>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/other">Other</Link>
+      </nav>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/other" element={<OtherPage />} />
+      </Routes>
+    </Router>
   )
 }
 

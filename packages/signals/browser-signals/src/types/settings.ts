@@ -13,8 +13,25 @@ export interface SignalsPluginSettingsConfig {
 
   /**
    * Add console debug logging
+   * @default false
    */
   enableDebugLogging?: boolean
 
+  /**
+   * Override signals API host
+   * @default signals.segment.io/v1
+   */
   apiHost?: string
+
+  /**
+   * Override edge function host
+   * @default cdn.edgefn.segment.com
+   */
+  functionHost?: string
+
+  /**
+   * How many signals to flush at once when sending to the signals API
+   * @default 3
+   */
+  flushAt?: number
 }

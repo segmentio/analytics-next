@@ -1,5 +1,6 @@
 main {
-  padding: 5%;
+  width: 960px;
+  margin: auto;
 }
 
 form {
@@ -13,7 +14,8 @@ label {
   margin-bottom: 10px;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
@@ -22,4 +24,19 @@ input, select {
 button {
   padding: 10px;
   cursor: pointer;
+}
+nav {
+  background-color: #f8f9fa;
+  padding: 10px 0;
+  margin-bottom: px;
+}
+
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+nav a:hover {
+  color: #007bff;
 }

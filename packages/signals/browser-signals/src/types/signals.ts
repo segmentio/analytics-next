@@ -3,13 +3,14 @@ export type SignalType =
   | 'interaction'
   | 'instrumentation'
   | 'network'
+  | 'userDefined'
 
 export interface AppSignal<T extends SignalType, Data> {
   type: T
   data: Data
 }
 
-type InteractionData = ClickData | SubmitData | ChangeData
+export type InteractionData = ClickData | SubmitData | ChangeData
 
 interface SerializedTarget {
   // nodeName: Node['nodeName']
@@ -36,9 +37,22 @@ type ChangeData = {
 
 export type InteractionSignal = AppSignal<'interaction', InteractionData>
 
-interface NavigationData {
-  [key: string]: unknown
+interface BaseNavigationData<ActionType extends string> {
+  action: ActionType
+  url: string
+  hash: string
 }
+
+export interface URLChangeNavigationData
+  extends BaseNavigationData<'urlChange'> {
+  prevUrl: string
+}
+
+export interface PageChangeNavigationData
+  extends BaseNavigationData<'pageLoad'> {}
+
+export type NavigationData = URLChangeNavigationData | PageChangeNavigationData
+
 export type NavigationSignal = AppSignal<'navigation', NavigationData>
 
 interface InstrumentationData {
@@ -66,6 +80,21 @@ export type NetworkData = NetworkRequestData | NetworkResponseData
 
 export type NetworkSignal = AppSignal<'network', NetworkData>
 
+export interface UserDefinedSignalData {
+  [key: string]: any
+}
+
+export type UserDefinedSignal = AppSignal<'userDefined', UserDefinedSignalData>
+
+export type SignalOfType<T extends SignalType> = T extends 'interaction'
+  ? InteractionSignal
+  : T extends 'navigation'
+  ? NavigationSignal
+  : T extends 'instrumentation'
+  ? InstrumentationSignal
+  : T extends 'userDefined'
+  ? UserDefinedSignal
+  : never
 /**
  * Internal signal type
  */
@@ -74,3 +103,49 @@ export type Signal =
   | NavigationSignal
   | InstrumentationSignal
   | NetworkSignal
+  | UserDefinedSignal
+
+interface SegmentEvent {
+  type: string // e.g 'track'
+  [key: string]: any
+}
+/**
+ * Factories
+ */
+export const createInstrumentationSignal = (
+  rawEvent: SegmentEvent
+): InstrumentationSignal => {
+  return {
+    type: 'instrumentation',
+    data: {
+      rawEvent: rawEvent,
+    },
+  }
+}
+
+export const createInteractionSignal = (
+  data: InteractionData
+): InteractionSignal => {
+  return {
+    type: 'interaction',
+    data,
+  }
+}
+
+export const createNavigationSignal = (
+  data: NavigationData
+): NavigationSignal => {
+  return {
+    type: 'navigation',
+    data,
+  }
+}
+
+export const createUserDefinedSignal = (
+  data: UserDefinedSignalData
+): UserDefinedSignal => {
+  return {
+    type: 'userDefined',
+    data,
+  }
+}

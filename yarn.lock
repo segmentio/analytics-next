@@ -2989,6 +2989,50 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/signals-example@workspace:packages/signals/signals-example":
+  version: 0.0.0-use.local
+  resolution: "@internal/signals-example@workspace:packages/signals/signals-example"
+  dependencies:
+    "@babel/core": ^7.22.11
+    "@babel/preset-env": ^7.22.10
+    "@babel/preset-react": ^7.24.6
+    "@babel/preset-typescript": ^7.22.11
+    "@segment/analytics-browser-signals": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+    "@types/react": ^18.0.0
+    "@types/react-dom": ^18
+    babel-loader: ^8.0.0
+    css-loader: ^7.1.2
+    dotenv-webpack: ^8.1.0
+    html-webpack-plugin: ^5.6.0
+    react: ^18.0.0
+    react-dom: ^18.0.0
+    react-router-dom: ^6.23.1
+    style-loader: ^4.0.0
+    typescript: ^4.7.0
+    webpack: ^5.76.0
+    webpack-cli: ^4.8.0
+    webpack-dev-server: ^4.15.1
+  languageName: unknown
+  linkType: soft
+
+"@internal/signals-integration-tests@workspace:packages/signals/signals-integration-tests":
+  version: 0.0.0-use.local
+  resolution: "@internal/signals-integration-tests@workspace:packages/signals/signals-integration-tests"
+  dependencies:
+    "@internal/config": "workspace:^"
+    "@internal/test-helpers": "workspace:^"
+    "@playwright/test": ^1.28.1
+    "@segment/analytics-browser-signals": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
+    globby: ^11.0.2
+    http-server: 14.1.1
+    tslib: ^2.4.1
+    webpack: ^5.76.0
+    webpack-cli: ^4.8.0
+  languageName: unknown
+  linkType: soft
+
 "@internal/test-helpers@workspace:^, @internal/test-helpers@workspace:packages/test-helpers":
   version: 0.0.0-use.local
   resolution: "@internal/test-helpers@workspace:packages/test-helpers"
@@ -3860,8 +3904,8 @@ __metadata:
   resolution: "@playground/with-vite@workspace:playgrounds/with-vite"
   dependencies:
     "@segment/analytics-next": "workspace:^"
-    "@types/react": ^18.0.0
-    "@types/react-dom": ^18.0.0
+    "@types/react": ^18
+    "@types/react-dom": ^18
     "@vitejs/plugin-react": ^1.3.0
     react: ^18.0.0
     react-dom: ^18.0.0
@@ -3962,6 +4006,13 @@ __metadata:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
   checksum: 3771237de1e82a453cfff7b5f0ca0dcc370a2838be8ecbfe172c26dec2e94dc2354a8b3061deaff7e633e418fc1b70ce3d10d770603f12dc477fe03f2ada7059
+  languageName: node
+  linkType: hard
+
+"@remix-run/router@npm:1.16.1":
+  version: 1.16.1
+  resolution: "@remix-run/router@npm:1.16.1"
+  checksum: 69068815832b30d2a5c063ac1c75365c45cf5b484dab65e1b3129fdbb3c2a7b866401733f766e550dbca1eaf0b84bc772a9c55310f4dd21eb53e62eb1b4625d0
   languageName: node
   linkType: hard
 
@@ -4314,32 +4365,6 @@ __metadata:
   checksum: 8c4aacc903fb717619b69ca7eecf8d4a7b928661b0e835c9cd98f1b858a85ce62c348369ad9a52cb2df8df02578c0525a73fce4c69a42ac414d9554cc6be7117
   languageName: node
   linkType: hard
-
-"@segment/signals-example@workspace:packages/signals/signals-example":
-  version: 0.0.0-use.local
-  resolution: "@segment/signals-example@workspace:packages/signals/signals-example"
-  dependencies:
-    "@babel/core": ^7.22.11
-    "@babel/preset-env": ^7.22.10
-    "@babel/preset-react": ^7.24.6
-    "@babel/preset-typescript": ^7.22.11
-    "@segment/analytics-browser-signals": "workspace:^"
-    "@segment/analytics-next": "workspace:^"
-    "@types/react": ^17.0.37
-    "@types/react-dom": ^17
-    babel-loader: ^8.0.0
-    css-loader: ^7.1.2
-    dotenv-webpack: ^8.1.0
-    html-webpack-plugin: ^5.6.0
-    react: ^17.0.2
-    react-dom: ^17.0.2
-    style-loader: ^4.0.0
-    typescript: ^4.7.0
-    webpack: ^5.76.0
-    webpack-cli: ^4.8.0
-    webpack-dev-server: ^4.15.1
-  languageName: unknown
-  linkType: soft
 
 "@segment/top-domain@npm:^3.0.0":
   version: 3.0.1
@@ -6150,21 +6175,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:^17":
-  version: 17.0.25
-  resolution: "@types/react-dom@npm:17.0.25"
-  dependencies:
-    "@types/react": ^17
-  checksum: d1e582682478e0848c8d54ea3e89d02047bac6d916266b85ce63731b06987575919653ea7159d98fda47ade3362b8c4d5796831549564b83088e7aa9ce8b60ed
-  languageName: node
-  linkType: hard
-
-"@types/react-dom@npm:^18.0.0":
-  version: 18.2.17
-  resolution: "@types/react-dom@npm:18.2.17"
+"@types/react-dom@npm:^18":
+  version: 18.3.0
+  resolution: "@types/react-dom@npm:18.3.0"
   dependencies:
     "@types/react": "*"
-  checksum: 7a4e704ed4be6e0c3ccd8a22ff69386fe548304bf4db090513f42e059ff4c65f7a427790320051524d6578a2e4c9667bb7a80a4c989b72361c019fbe851d9385
+  checksum: a0cd9b1b815a6abd2a367a9eabdd8df8dd8f13f95897b2f9e1359ea3ac6619f957c1432ece004af7d95e2a7caddbba19faa045f831f32d6263483fc5404a7596
   languageName: node
   linkType: hard
 
@@ -6179,17 +6195,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^17":
-  version: 17.0.80
-  resolution: "@types/react@npm:17.0.80"
-  dependencies:
-    "@types/prop-types": "*"
-    "@types/scheduler": ^0.16
-    csstype: ^3.0.2
-  checksum: 1c27bfc42305d77ef0da55f8f6d4c4a3471aa02b294fcf29ea0f2cfb0bf02892e5a0a3bc7559fa4a5ba50697b2e31076cb5aa5987f69cfc2e880f6426edb8bdf
-  languageName: node
-  linkType: hard
-
 "@types/react@npm:^17.0.37":
   version: 17.0.71
   resolution: "@types/react@npm:17.0.71"
@@ -6198,6 +6203,16 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: c72dbebdced882fa39de867b0179ed91259331172458d69250ff30fdb3c61e3d1f3373dacca3771c3de4b19162fd65758179252b17961729213496a016b918d7
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18":
+  version: 18.3.3
+  resolution: "@types/react@npm:18.3.3"
+  dependencies:
+    "@types/prop-types": "*"
+    csstype: ^3.0.2
+  checksum: c63d6a78163244e2022b01ef79b0baec4fe4da3475dc4a90bb8accefad35ef0c43560fd0312e5974f92a0f1108aa4d669ac72d73d66396aa060ea03b5d2e3873
   languageName: node
   linkType: hard
 
@@ -6217,7 +6232,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/scheduler@npm:*, @types/scheduler@npm:^0.16":
+"@types/scheduler@npm:*":
   version: 0.16.8
   resolution: "@types/scheduler@npm:0.16.8"
   checksum: 6c091b096daa490093bf30dd7947cd28e5b2cd612ec93448432b33f724b162587fed9309a0acc104d97b69b1d49a0f3fc755a62282054d62975d53d7fd13472d
@@ -18950,6 +18965,30 @@ __metadata:
   version: 0.13.0
   resolution: "react-refresh@npm:0.13.0"
   checksum: 1cf2b87ed99e1d388aa3923078bc30cd3ce43ee86e8936944e961d3643c6e85da41ebed6a0996e8bdad75a0d2ce3b7e10638b45018231380d4a174f63a451f75
+  languageName: node
+  linkType: hard
+
+"react-router-dom@npm:^6.23.1":
+  version: 6.23.1
+  resolution: "react-router-dom@npm:6.23.1"
+  dependencies:
+    "@remix-run/router": 1.16.1
+    react-router: 6.23.1
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: e87b5cf85019496f499286d466a4ad9cf5efe729f1420502fc5d16093d525462803253538418ea5b0da7ab5671a16caefee67848b373008e567629c2d667dc44
+  languageName: node
+  linkType: hard
+
+"react-router@npm:6.23.1":
+  version: 6.23.1
+  resolution: "react-router@npm:6.23.1"
+  dependencies:
+    "@remix-run/router": 1.16.1
+  peerDependencies:
+    react: ">=16.8"
+  checksum: d5d43ccb908a95d2b7345f2a13315c38bf094e25bcf97d5a6c3f353b1ea88602de15726c3570cd7f07c53b19a3519af2b6739bf6929ec355012795611d739cff
   languageName: node
   linkType: hard
 

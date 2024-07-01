@@ -1,5 +1,5 @@
 {
-  "name": "@segment/signals-example",
+  "name": "@internal/signals-example",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -10,16 +10,17 @@
   "dependencies": {
     "@segment/analytics-browser-signals": "workspace:^",
     "@segment/analytics-next": "workspace:^",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.23.1"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
     "@babel/preset-env": "^7.22.10",
     "@babel/preset-react": "^7.24.6",
     "@babel/preset-typescript": "^7.22.11",
-    "@types/react": "^17.0.37",
-    "@types/react-dom": "^17",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18",
     "babel-loader": "^8.0.0",
     "css-loader": "^7.1.2",
     "dotenv-webpack": "^8.1.0",

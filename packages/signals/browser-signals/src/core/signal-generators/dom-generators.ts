@@ -1,3 +1,5 @@
+import { URLChangeObservable } from '../../lib/detect-url-change'
+import { createInteractionSignal, createNavigationSignal } from '../../types'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
 
@@ -75,13 +77,12 @@ export class ClickSignalsGenerator implements SignalGenerator {
   register(emitter: SignalEmitter) {
     const handleClick = (ev: MouseEvent) => {
       const target = (ev.target as HTMLElement) ?? {}
-      emitter.emit({
-        type: 'interaction',
-        data: {
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'click',
           target: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('click', handleClick, true)
     return () => document.removeEventListener('click', handleClick)
@@ -93,13 +94,12 @@ export class FormSubmitGenerator implements SignalGenerator {
   register(emitter: SignalEmitter) {
     const handleSubmit = (ev: SubmitEvent) => {
       const target = ev.submitter!
-      emitter.emit({
-        type: 'interaction',
-        data: {
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'submit',
           submitter: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('submit', handleSubmit, true)
     return () => document.removeEventListener('submit', handleSubmit)
@@ -109,18 +109,58 @@ export class FormSubmitGenerator implements SignalGenerator {
 export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
   register(emitter: SignalEmitter) {
-    const handleChange = (event: Event) => {
-      const target = event.target as HTMLElement
-      emitter.emit({
-        type: 'interaction',
-        data: {
+    const handleChange = (ev: Event) => {
+      const target = ev.target as HTMLElement
+      emitter.emit(
+        createInteractionSignal({
           eventType: 'change',
           target: parseElement(target),
-        },
-      })
+        })
+      )
     }
     document.addEventListener('change', handleChange, true)
     return () => document.removeEventListener('change', handleChange)
+  }
+}
+
+export class OnNavigationEventGenerator implements SignalGenerator {
+  id = 'navigation'
+
+  register(emitter: SignalEmitter): () => void {
+    // emit navigation signal on page load
+    emitter.emit(
+      createNavigationSignal({
+        action: 'pageLoad',
+        ...this.createCommonFields(),
+      })
+    )
+
+    // emit a navigation signal whenever the URL has changed
+    const urlChange = new URLChangeObservable()
+    urlChange.subscribe((prevUrl) =>
+      emitter.emit(
+        createNavigationSignal({
+          action: 'urlChange',
+          prevUrl,
+          ...this.createCommonFields(),
+        })
+      )
+    )
+
+    return () => {
+      urlChange.unsubscribe()
+    }
+  }
+
+  private createCommonFields() {
+    return {
+      // these fields are named after those from the page call, rather than a DOM api.
+      url: location.href,
+      path: location.pathname,
+      hash: location.hash,
+      search: location.search,
+      title: document.title,
+    }
   }
 }
 
@@ -128,4 +168,5 @@ export const domGenerators = [
   ClickSignalsGenerator,
   FormSubmitGenerator,
   OnChangeGenerator,
+  OnNavigationEventGenerator,
 ]

@@ -1,114 +1,35 @@
 // could be the buffered signals object?
 
-import { Signal, SignalType } from '../../types'
+import { Signal, SignalType, SignalOfType } from '../../types'
 
-// This can't get indexdb, it needs to have all the signals in memory.
-export class SignalsRuntime {
-  buffer: Signal[]
-  // @ts-ignore
-  constructor(currentSignal: Signal, prevSignals: Signal[]) {
-    this.buffer = prevSignals
+export type SignalsRuntime = ReturnType<typeof createSignalsRuntime>
+
+// This needs to use the function keyword so that it can be stringified and run in a sandbox
+/**
+ *
+ * @param signals - List of signals, with the most recent signals first (LIFO).
+ */
+export function createSignalsRuntime(signals: Signal[]) {
+  const prevSignals = signals
+  function filter(...args: Parameters<Array<Signal>['filter']>): Signal[] {
+    return prevSignals.filter(...args)
   }
 
-  filter = (...args: Parameters<Array<Signal>['filter']>): Signal[] => {
-    return this.buffer.filter(...args)
-  }
-
-  find = (
+  function find<T extends SignalType>(
     fromSignal: Signal,
-    signalType: SignalType,
-    predicate: (signal: Signal) => boolean
-  ): Signal | undefined => {
-    return this.buffer
-      .slice(this.buffer.indexOf(fromSignal))
-      .filter((el) => el.type === signalType)
-      .find((signal) => predicate(signal))
+    signalType: T,
+    predicate?: (signal: SignalOfType<T>) => boolean
+  ): SignalOfType<T> | undefined {
+    const _isSignalOfType = (signal: Signal): signal is SignalOfType<T> =>
+      signal.type === signalType
+    return signals
+      .slice(signals.indexOf(fromSignal) + 1)
+      .filter(_isSignalOfType)
+      .find((signal) => (predicate ? predicate(signal) : () => true))
+  }
+
+  return {
+    filter,
+    find,
   }
 }
-
-// const signal = {
-//   type: 'instrumentation',
-//   data: { eventName: 'click', target: {} as any },
-// } as any
-
-// const signal2 = { ...signal, data: { eventName: 'submit' } }
-// const signal3 = { ...signal, data: { eventName: 'click' } }
-
-// const f = new SignalsRuntime(signal, [signal, signal2, signal3])
-
-// console.log(
-//   f.find(signal, 'instrumentation', (signal, idx) => {
-//     return signal.data.eventName === 'click'
-//   })
-// )
-// // // Raw Signal Definitions ---------------------------------
-// class Signals {
-//         constructor() {
-//             this.signalBuffer = []
-//             this.signalCounter = 0
-//             this.maxBufferSize = 1000
-//         }
-
-//         add(signal) {
-//             if (this.signalCounter < 0) {
-//                 // we've rolled over?  start back at zero.
-//                 this.signalCounter = 0
-//             }
-//             if (signal.index == -1) {
-//                 signal.index = getNextIndex()
-//             }
-//             this.signalBuffer.unshift(signal)
-//             // R-E-S-P-E-C-T that's what this maxBufferSize means to me
-//             if (this.signalBuffer.length > this.maxBufferSize) {
-//                 this.signalBuffer.pop()
-//             }
-//         }
-
-//         getNextIndex() {
-//             let index = this.signalCounter
-//             this.signalCounter += 1
-//             return index
-//         }
-
-//         find(fromSignal, signalType, predicate) {
-//             var fromIndex = 0
-//             if (fromSignal != null) {
-//                 this.signalBuffer.find((signal, index) => {
-//                     if (fromSignal === signal) {
-//                         fromIndex = index
-//                     }
-//                 })
-//             }
-
-//             for (let i = fromIndex; i < this.signalBuffer.length; i++) {
-//                 let s = this.signalBuffer[i]
-//                 if ((s.type === signalType) || (signalType == undefined)) {
-//                     if (predicate != null) {
-//                         try {
-//                             if (predicate(s)) {
-//                                 return s
-//                             }
-//                         } catch (e) {
-//                         }
-//                     } else {
-//                         return s
-//                     }
-//                 }
-//             }
-
-//             return null
-//         }
-
-//         findAndApply(fromSignal, signalType, searchPredicate, applyPredicate) {
-//             let result = this.find(fromSignal, signalType, searchPredicate)
-//             if (result) {
-//                 applyPredicate(result)
-//             }
-//             return result
-//         }
-//     }
-
-//     let signals = new Signals();
-
-//     """
-//     }

@@ -12,12 +12,11 @@ export interface AnalyticsRuntimePublicApi {
   page: (...args: any[]) => void
   screen: (...args: any[]) => void
 }
+
+export type ProcessSignalScope = {
+  analytics: AnalyticsRuntimePublicApi
+  signals: SignalsRuntime
+}
 export interface ProcessSignal {
-  (
-    signal: Signal,
-    {
-      analytics,
-      signals,
-    }: { analytics: AnalyticsRuntimePublicApi; signals: SignalsRuntime }
-  ): void
+  (signal: Signal, ctx: ProcessSignalScope): void
 }
