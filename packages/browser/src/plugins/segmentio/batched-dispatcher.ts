@@ -9,6 +9,7 @@ export type BatchingDispatchConfig = {
 }
 
 const MAX_PAYLOAD_SIZE = 500
+const MAX_KEEPALIVE_SIZE = 64
 
 function kilobytes(buffer: unknown): number {
   const size = encodeURI(JSON.stringify(buffer)).split(/%..|./).length - 1
@@ -25,12 +26,12 @@ function approachingTrackingAPILimit(buffer: unknown): boolean {
 }
 
 /**
- * Checks if payload is over the limit for keepalive
+ * Checks if payload is over or approaching the limit for keepalive
  * requests. If keepalive is enabled we want to avoid
  * going over this to prevent data loss.
  */
 function passedKeepaliveLimit(buffer: unknown): boolean {
-  return kilobytes(buffer) >= 64
+  return kilobytes(buffer) >= MAX_KEEPALIVE_SIZE - 10
 }
 
 function chunks(batch: object[]): Array<object[]> {
