@@ -5,6 +5,7 @@ import { onPageChange } from '../../lib/on-page-change'
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
+  keepalive?: boolean
 }
 
 const MAX_PAYLOAD_SIZE = 500
@@ -21,6 +22,15 @@ function kilobytes(buffer: unknown): number {
  */
 function approachingTrackingAPILimit(buffer: unknown): boolean {
   return kilobytes(buffer) >= MAX_PAYLOAD_SIZE - 50
+}
+
+/**
+ * Checks if payload is over the limit for keepalive
+ * requests. If keepalive is enabled we want to avoid
+ * going over this to prevent data loss.
+ */
+function passedKeepaliveLimit(buffer: unknown): boolean {
+  return kilobytes(buffer) >= 64
 }
 
 function chunks(batch: object[]): Array<object[]> {
@@ -67,7 +77,7 @@ export default function batch(
     })
 
     return fetch(`https://${apiHost}/b`, {
-      keepalive: pageUnloaded,
+      keepalive: config?.keepalive || pageUnloaded,
       headers: {
         'Content-Type': 'text/plain',
       },
@@ -114,7 +124,9 @@ export default function batch(
     buffer.push(body)
 
     const bufferOverflow =
-      buffer.length >= limit || approachingTrackingAPILimit(buffer)
+      buffer.length >= limit ||
+      approachingTrackingAPILimit(buffer) ||
+      (config?.keepalive && passedKeepaliveLimit(buffer))
 
     return bufferOverflow || pageUnloaded ? flush() : scheduleFlush()
   }
