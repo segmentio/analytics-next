@@ -1,15 +1,14 @@
 function obfuscate(value: any) {
-  console.log(value, typeof value)
   if (value === null || typeof value === 'undefined') {
-    return '__null'
+    return null
   }
   if (typeof value === 'boolean') {
-    return '__boolean'
+    return false
   }
   if (typeof value === 'number') {
-    return '__number'
+    return 999
   }
-  return '__string'
+  return 'XXXXX'
 }
 
 export function obfuscateJsonValues(data: any, obfuscateAfterDepth = 0): any {
