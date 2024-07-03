@@ -37,7 +37,13 @@ export interface SignalsPluginSettingsConfig {
 
   /**
    * How many signals to flush at once when sending to the signals API
-   * @default 3
+   * @default 5
    */
   flushAt?: number
+
+  /**
+   * How many ms to wait before flushing signals to the API
+   * @default 2000
+   */
+  flushInterval?: number
 }

@@ -31,10 +31,11 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
       logger.enableDebugLogging()
     }
     logger.debug('SignalsPlugin initializing', { settings })
-    // subscribe and store signals that may occur before analytics is fully initialized
+
     this.signals = new Signals({
       disableSignalRedaction: settings.disableSignalsRedaction,
       flushAt: settings.flushAt,
+      flushInterval: settings.flushInterval,
       functionHost: settings.functionHost,
       apiHost: settings.apiHost,
       maxBufferSize: settings.maxBufferSize,
@@ -49,7 +50,6 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     return true
   }
 
-  // this is the only required method in the analytics.js Plugin API
   public async load(_ctx: unknown, analytics: AnyAnalytics) {
     try {
       await this.signals.start(analytics)

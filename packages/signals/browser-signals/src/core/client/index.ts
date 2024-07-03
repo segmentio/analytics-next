@@ -5,14 +5,14 @@ import { redactJsonValues } from './redact'
 
 export class SignalsIngestSettings {
   flushAt: number
+  flushInterval: number
   apiHost: string
-  flushTimeout: number
   shouldDisableSignalRedaction: () => boolean
   writeKey?: string
   constructor(settings: SignalsIngestSettingsConfig) {
     this.flushAt = settings.flushAt ?? 5
     this.apiHost = settings.apiHost ?? 'signals.segment.io/v1'
-    this.flushTimeout = settings.flushTimeout ?? 1000
+    this.flushInterval = settings.flushInterval ?? 2000
     this.shouldDisableSignalRedaction =
       settings.shouldDisableSignalRedaction ?? (() => false)
   }
@@ -21,7 +21,7 @@ export class SignalsIngestSettings {
 export interface SignalsIngestSettingsConfig {
   apiHost?: string
   flushAt?: number
-  flushTimeout?: number
+  flushInterval?: number
   shouldDisableSignalRedaction?: () => boolean
 }
 /**
@@ -55,6 +55,7 @@ export class SignalsIngestClient {
         deliveryStrategy: {
           config: {
             size: this.settings.flushAt,
+            timeout: this.settings.flushInterval,
           },
           strategy: 'batching',
         },

@@ -5,40 +5,13 @@ import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
 
 export interface SignalsSettingsConfig {
-  /**
-   * Size of the default signal buffer.
-   * If signalStorage is defined, this setting is ignored.
-   */
   maxBufferSize?: number
-  /**
-   * Custom signal storage implementation.
-   */
   signalStorage?: SignalPersistentStorage
-  /**
-   * Override the default signal processing function from the edge function. If this is set, the edge function will not be used.
-   */
   processSignal?: string
-
-  /**
-   * Override host of the signals API, for a custom proxy
-   * Should proxy to signals.segment.io/v1
-   */
   apiHost?: string
-
-  /**
-   * Override host of the edge function, for a custom proxy
-   * should proxy to 'cdn.edgefn.segment.com'
-   */
   functionHost?: string
-
-  /**
-   * How many signals to flush at once when sending to the signals API
-   * @default 3
-   */
   flushAt?: number
-  /**
-   * Disable signal redaction
-   */
+  flushInterval?: number
   disableSignalRedaction?: boolean
 }
 
@@ -72,6 +45,7 @@ export class SignalGlobalSettings {
     this.ingestClient = {
       apiHost: settings.apiHost,
       flushAt: settings.flushAt,
+      flushInterval: settings.flushInterval,
       shouldDisableSignalRedaction: this.redaction.getDisableSignalRedaction,
     }
     this.sandbox = {
