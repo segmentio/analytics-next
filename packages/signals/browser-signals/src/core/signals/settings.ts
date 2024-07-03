@@ -1,4 +1,4 @@
-import { parseDebugModeQueryString } from '../../lib/debug-mode'
+import { parseDebugModeQueryString } from '../debug-mode'
 import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
 import { SignalsIngestSettingsConfig } from '../client'
