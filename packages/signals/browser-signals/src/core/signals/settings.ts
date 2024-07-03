@@ -88,7 +88,7 @@ class SignalRedactionSettings {
         window.sessionStorage.removeItem(SignalRedactionSettings.redactionKey)
       }
     } catch (e) {
-      logger.debug('Error reading redaction in storage', e)
+      logger.debug('Storage error', e)
     }
   }
 
@@ -104,7 +104,7 @@ class SignalRedactionSettings {
         return true
       }
     } catch (e) {
-      logger.debug('Error setting redaction', e)
+      logger.debug('Storage error', e)
     }
     return false
   }
