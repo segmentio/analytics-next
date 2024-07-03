@@ -63,7 +63,6 @@ test('interaction signals', async ({ page }) => {
       labels: [],
       name: '',
       nodeName: 'BUTTON',
-      nodeType: 1,
       nodeValue: null,
       tagName: 'BUTTON',
       title: '',
