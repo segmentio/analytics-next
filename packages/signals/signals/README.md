@@ -30,23 +30,29 @@ analytics.load({
 
 ```
 
+### Debugging
+- Removing obfuscation / redaction of data by adding a magic **query string**:
+```
+https://my-website.com?segment_signals_debug=true
+```
+
 ### Playground / Development / Testing
 See the [signals example repo](../signals-example).
 
-## Supported Signal Signal Types
+## Signal Types
 
-### Interaction
+### `interaction`
 Interaction signals emit in response to a user interaction
 
-### Instrumentation
+### `instrumentation`
 Instrumentation signals emit whenever a Segment event is emitted.
 
-### Navigation
+### `navigation`
 Instrumentation signals emit whenever the URL changes.
 
 > Note: you can also rely on the initial analytics.page() call, which you can access as an Instrumentation signal.
 
-### Network
+### `network`
 Network signals emit when an HTTP Request is made, or an HTTP Response is received. To emit a network signal, the network activity must have the following requirements:
 - Initiated using the `fetch` API
 - First party domain (e.g if on `foo.com`, then `foo.com/api/products`, but not `bar.com/api/products`)
