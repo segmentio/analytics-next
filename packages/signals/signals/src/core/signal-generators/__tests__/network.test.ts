@@ -21,8 +21,6 @@ describe(matchHostname, () => {
   beforeEach(() => {
     setLocation('example.com')
   })
-  it('should not match external routes', () => {})
-
   it('should only match first party domains', () => {
     expect(matchHostname('https://www.example.com')).toBe(true)
     expect(matchHostname('https://www.example.com/api/foo')).toBe(true)
