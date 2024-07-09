@@ -12,20 +12,20 @@ on:
           - major
           - minor
           - patch
+      dry-run:
+        type: boolean
+        description: Whether to perform a dry run or not
+        required: true
+        default: true
 
 jobs:
   npm:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        package:
-          - browser
-          - core
-          - node
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup node.js for NPM
         uses: actions/setup-node@v3
@@ -35,31 +35,59 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: '@customerio'
 
-      - name: Install & Build
+      - name: Install
         run: |
           yarn install --frozen-lockfile
+
+      - name: Bump core
+        run: |
+          cd packages/core
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Bump browser
+        run: |
+          cd packages/browser
+          yarn version ${{ github.event.inputs.version }}
+          yarn run build-prep
+
+      - name: Bump node
+        run: |
+          cd packages/node
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Build
+        run: |
           yarn build
 
-      - name: Publish
+      - name: Publish (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
-          npm publish
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish --dry-run
+            popd
+          done
+
+      - name: Publish
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish
+            popd
+          done
 
   github:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        package:
-          - browser
-          - core
-          - node
-
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Setup node.js for GitHub
         uses: actions/setup-node@v3
@@ -69,18 +97,51 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@customerio'
 
-      - name: Install & Build
+      - name: Install
         run: |
           yarn install --frozen-lockfile
+
+      - name: Bump core
+        run: |
+          cd packages/core
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Bump browser
+        run: |
+          cd packages/browser
+          yarn version ${{ github.event.inputs.version }}
+          yarn run build-prep
+
+      - name: Bump node
+        run: |
+          cd packages/node
+          yarn version ${{ github.event.inputs.version }}
+
+      - name: Build
+        run: |
           yarn build
 
-      - name: Publish
+      - name: Publish (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          npm version ${{ github.event.inputs.version }}
-          npm publish
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish --dry-run
+            popd
+          done
+
+      - name: Publish
+        if: ${{ github.event.inputs.dry-run == 'false' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for package in core browser node; do
+            pushd packages/$package
+            npm publish
+            popd
+          done
 
   commit:
     runs-on: ubuntu-latest
@@ -117,7 +178,14 @@ jobs:
           cd packages/node
           yarn version ${{ github.event.inputs.version }}
 
+      - name: Show commit (dry-run)
+        if: ${{ github.event.inputs.dry-run == 'true' }}
+        run: |
+          git commit -am "Update version"
+          git show
+
       - name: Push changes
+        if: ${{ github.event.inputs.dry-run == 'false' }}
         run: |
           git commit -am "Update version"
           git push
