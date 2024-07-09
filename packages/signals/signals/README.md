@@ -1,12 +1,39 @@
 #  @segment/analytics-signals 
 
 
-### Settings / Configuration
+## Settings / Configuration
 
 See: [settings.ts](src/types/settings.ts)
 
+## Quick start
+### Installation
+```bash
+# npm
+npm install @segment/analytics-signals
+# yarn
+yarn add @segment/analytics-signals
+# pnpm
+pnpm install @segment/analytics-signals
+```
 
-## Signal Types
+```ts
+// analytics.js/ts
+import { AnalyticsBrowser } from '@segment/analytics-next'
+import { SignalsPlugin } from '@segment/analytics-signals'
+
+const analytics = new AnalyticsBrowser()
+analytics.register(new SignalsPlugin())
+
+analytics.load({
+  writeKey: writeKey: '<YOUR_WRITE_KEY>'
+})
+
+```
+
+### Playground / Development / Testing
+See the [signals example repo](../signals-example).
+
+## Supported Signal Signal Types
 
 ### Interaction
 Interaction signals emit in response to a user interaction
