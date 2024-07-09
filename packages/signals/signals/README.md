@@ -8,10 +8,6 @@ See: [settings.ts](src/types/settings.ts)
 
 ## Signal Types
 
-### Network
-
-
-
 ### Interaction
 Interaction signals emit in response to a user interaction
 
