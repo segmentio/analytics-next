@@ -22,7 +22,8 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin } from '@segment/analytics-signals'
 
 const analytics = new AnalyticsBrowser()
-analytics.register(new SignalsPlugin())
+const signalsPlugin = new SignalsPlugin()
+analytics.register(signalsPlugin)
 
 analytics.load({
   writeKey: '<YOUR_WRITE_KEY>'
@@ -40,6 +41,23 @@ https://my-website.com?segment_signals_debug=true
 You can *turn off debugging* by doing:
 ```
 https://my-website.com?segment_signals_debug=false
+```
+
+### Advanced
+
+#### Listening to signals
+```ts
+const signalsPlugin = new SignalsPlugin()
+signalsPlugin.onSignal((signal) => console.log(signal))
+```
+
+### Emitting Signals
+```ts
+const signalsPlugin = new SignalsPlugin()
+signalsPlugin.addSignal({
+  type: 'userDefined',
+  data: { foo: 'bar' }
+})
 ```
 
 ### Playground / Development / Testing

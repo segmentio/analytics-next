@@ -11,12 +11,12 @@ interface SignalsAugmentedFunctionality {
   /**
    * Listen to signals
    */
-  onSignal: (fn: OnSignalCb) => void
+  onSignal: (fn: OnSignalCb) => this
 
   /**
    * Emit/add a custom signal
    */
-  addSignal(data: Signal): void
+  addSignal(data: Signal): this
 }
 
 export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
@@ -65,9 +65,11 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
 
   onSignal(cb: (signal: Signal) => void) {
     this.signals.signalEmitter.subscribe(cb)
+    return this
   }
 
   addSignal(signal: Signal) {
     this.signals.signalEmitter.emit(signal)
+    return this
   }
 }
