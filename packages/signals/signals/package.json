@@ -1,15 +1,20 @@
 {
-  "name": "@segment/analytics-browser-signals",
+  "name": "@segment/analytics-signals",
   "version": "0.0.1",
   "main": "./dist/cjs/index.js",
-  "private": true,
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/signals/signals",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  },
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
-    "./dist/umd/analytics-browser-signals.umd.js"
+    "./dist/umd/analytics-signals.umd.js"
   ],
-  "jsdelivr": "./dist/umd/analytics-browser-signals.umd.js",
-  "unpkg": "./dist/umd/analytics-browser-signals.umd.js",
+  "jsdelivr": "./dist/umd/analytics-signals.umd.js",
+  "unpkg": "./dist/umd/analytics-signals.umd.js",
   "files": [
     "LICENSE",
     "dist/",
@@ -19,7 +24,7 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/analytics-browser-signals...",
+    ".": "yarn run -T turbo run --filter=@segment/analytics-signals...",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
@@ -43,7 +48,7 @@
     "workerboxjs": "^6.1.1"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.70.0"
+    "@segment/analytics-next": ">1.70.0"
   },
   "peerDependenciesMeta": {
     "@segment/analytics-next": {

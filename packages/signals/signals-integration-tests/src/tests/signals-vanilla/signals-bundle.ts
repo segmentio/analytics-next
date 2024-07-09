@@ -1,5 +1,5 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
-import { SignalsPlugin } from '@segment/analytics-browser-signals'
+import { SignalsPlugin } from '@segment/analytics-signals'
 
 const analytics = new AnalyticsBrowser()
 ;(window as any).analytics = analytics

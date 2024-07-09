@@ -8,8 +8,8 @@
     "build": "webpack"
   },
   "dependencies": {
-    "@segment/analytics-browser-signals": "workspace:^",
     "@segment/analytics-next": "workspace:^",
+    "@segment/analytics-signals": "workspace:^",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.23.1"

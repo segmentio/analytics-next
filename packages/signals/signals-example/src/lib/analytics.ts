@@ -5,7 +5,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import {
   SignalsPlugin,
   ProcessSignal,
-} from '@segment/analytics-browser-signals'
+} from '@segment/analytics-signals'
 
 export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {

@@ -7,7 +7,7 @@ const isProd = process.env.NODE_ENV === 'production'
  */
 module.exports = merge(common, {
   entry: {
-    'analytics-browser-signals.umd': {
+    'analytics-signals.umd': {
       import: path.resolve(__dirname, 'src/index.umd.ts'),
       library: {
         name: 'AnalyticsBrowserSignals',

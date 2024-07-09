@@ -2997,8 +2997,8 @@ __metadata:
     "@babel/preset-env": ^7.22.10
     "@babel/preset-react": ^7.24.6
     "@babel/preset-typescript": ^7.22.11
-    "@segment/analytics-browser-signals": "workspace:^"
     "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-signals": "workspace:^"
     "@types/react": ^18.0.0
     "@types/react-dom": ^18
     babel-loader: ^8.0.0
@@ -3023,8 +3023,8 @@ __metadata:
     "@internal/config": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@playwright/test": ^1.28.1
-    "@segment/analytics-browser-signals": "workspace:^"
     "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-signals": "workspace:^"
     globby: ^11.0.2
     http-server: 14.1.1
     tslib: ^2.4.1
@@ -4086,25 +4086,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-browser-signals@workspace:^, @segment/analytics-browser-signals@workspace:packages/signals/browser-signals":
-  version: 0.0.0-use.local
-  resolution: "@segment/analytics-browser-signals@workspace:packages/signals/browser-signals"
-  dependencies:
-    "@internal/config-webpack": "workspace:^"
-    "@internal/test-helpers": "workspace:^"
-    "@segment/analytics-generic-utils": 1.2.0
-    fake-indexeddb: ^6.0.0
-    idb: ^8.0.0
-    tslib: ^2.4.1
-    workerboxjs: ^6.1.1
-  peerDependencies:
-    "@segment/analytics-next": ">=1.70.0"
-  peerDependenciesMeta:
-    "@segment/analytics-next":
-      optional: true
-  languageName: unknown
-  linkType: soft
-
 "@segment/analytics-consent-tools@2.0.1, @segment/analytics-consent-tools@workspace:^, @segment/analytics-consent-tools@workspace:packages/consent/consent-tools":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-consent-tools@workspace:packages/consent/consent-tools"
@@ -4226,6 +4207,25 @@ __metadata:
     jose: ^5.1.0
     node-fetch: ^2.6.7
     tslib: ^2.4.1
+  languageName: unknown
+  linkType: soft
+
+"@segment/analytics-signals@workspace:^, @segment/analytics-signals@workspace:packages/signals/signals":
+  version: 0.0.0-use.local
+  resolution: "@segment/analytics-signals@workspace:packages/signals/signals"
+  dependencies:
+    "@internal/config-webpack": "workspace:^"
+    "@internal/test-helpers": "workspace:^"
+    "@segment/analytics-generic-utils": 1.2.0
+    fake-indexeddb: ^6.0.0
+    idb: ^8.0.0
+    tslib: ^2.4.1
+    workerboxjs: ^6.1.1
+  peerDependencies:
+    "@segment/analytics-next": ">1.70.0"
+  peerDependenciesMeta:
+    "@segment/analytics-next":
+      optional: true
   languageName: unknown
   linkType: soft
 
