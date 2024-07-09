@@ -31,9 +31,9 @@ analytics.load({
 ```
 
 ### Debugging
-- Values sent to the signals API are redacted by default.
-
-To disable redaction, add a magic query string:
+#### Enable debug mode
+Values sent to the signals API are redacted by default.
+This adds a local storage key.  To disable redaction, add a magic query string:
 ```
 https://my-website.com?segment_signals_debug=true
 ```
