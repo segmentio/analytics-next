@@ -25,7 +25,7 @@ const analytics = new AnalyticsBrowser()
 analytics.register(new SignalsPlugin())
 
 analytics.load({
-  writeKey: writeKey: '<YOUR_WRITE_KEY>'
+  writeKey: '<YOUR_WRITE_KEY>'
 })
 
 ```
