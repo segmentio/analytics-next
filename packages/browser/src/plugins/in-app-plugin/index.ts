@@ -2,7 +2,7 @@ import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 
-import { InAppEvents, SemanticEvents, newEvent, allEvents, gistToCIO } from './events'
+import { InAppEvents, JourneysEvents, newEvent, allEvents, gistToCIO, AnonymousContentType } from './events'
 import Gist from 'customerio-gist-web'
 
 export { InAppEvents }
@@ -13,6 +13,8 @@ export type InAppPluginSettings = {
 
     _env: string | undefined
     _logging: boolean | undefined
+
+    anonymousInApp: boolean | false
 }
 
 export function InAppPlugin(
@@ -47,36 +49,65 @@ export function InAppPlugin(
         Gist.events.on('messageShown', (message: any) => {
             const deliveryId:string = message?.properties?.gist?.campaignId;
             if (typeof deliveryId != 'undefined' && deliveryId != '') {
-                _analytics.track(SemanticEvents.JourneyMetric, {
+                _analytics.track(JourneysEvents.Metric, {
                     'deliveryId': deliveryId,
-                    'metric': SemanticEvents.Opened,
+                    'metric': JourneysEvents.Opened,
+                });
+                return;
+            }
+            const broadcastId:Number = message?.properties?.gist?.broadcast?.broadcastIdInt;
+            if (broadcastId) {
+                const templateId = message?.properties?.gist?.broadcast?.templateId;
+                _analytics.track(JourneysEvents.Content, {
+                    'actionType': JourneysEvents.ViewedContent,
+                    'contentId': broadcastId,
+                    'templateId': templateId,
+                    'contentType': AnonymousContentType,
                 });
             }
         });
 
         Gist.events.on('messageAction', (params: any) => {
+            if (params.action == 'gist://close') {
+                return;
+            }
             const deliveryId:string = params?.message?.properties?.gist?.campaignId;
-            if (params.action != 'gist://close' && typeof deliveryId != 'undefined' && deliveryId != '') {
-                _analytics.track(SemanticEvents.JourneyMetric, {
+            if (typeof deliveryId != 'undefined' && deliveryId != '') {
+                _analytics.track(JourneysEvents.Metric, {
                     'deliveryId': deliveryId,
-                    'metric': SemanticEvents.Clicked,
+                    'metric': JourneysEvents.Clicked,
+                    'actionName': params.name,
+                    'actionValue': params.action,
+                });
+                if (settings.events) {
+                    _eventTarget.dispatchEvent(newEvent(InAppEvents.MessageAction, {
+                        messageId: params.message.messageId,
+                        deliveryId: deliveryId,
+                        action: params.action,
+                        name: params.name,
+                        actionName: params.name,
+                        actionValue: params.action,
+                        message:{
+                            dismiss: function() {
+                                Gist.dismissMessage(params?.message?.instanceId);
+                            }
+                        }
+                    }));
+                }
+                return;
+            }
+            const broadcastId:Number = params?.message?.properties?.gist?.broadcast?.broadcastIdInt;
+            if (broadcastId) {
+                const templateId:Number = params?.message?.properties?.gist?.broadcast?.templateId;
+                _analytics.track(JourneysEvents.Content, {
+                    'actionType': JourneysEvents.ClickedContent,
+                    'contentId': broadcastId,
+                    'templateId': templateId,
+                    'contentType': AnonymousContentType,
                     'actionName': params.name,
                     'actionValue': params.action,
                 });
             }
-            settings.events && _eventTarget.dispatchEvent(newEvent(InAppEvents.MessageAction, {
-                messageId: params.message.messageId,
-                deliveryId: deliveryId,
-                action: params.action,
-                name: params.name,
-                actionName: params.name,
-                actionValue: params.action,
-                message:{
-                    dismiss: function() {
-                        Gist.dismissMessage(params?.message?.instanceId);
-                    }
-                }
-             }));
         });
 
         Gist.events.on('eventDispatched', (gistEvent: any) => {
@@ -137,6 +168,7 @@ export function InAppPlugin(
                 siteId: settings.siteId, 
                 env: settings._env? settings._env : "prod",
                 logging: settings._logging,
+                useAnonymousSession: settings.anonymousInApp,
             });
             _gistLoaded = true;
 

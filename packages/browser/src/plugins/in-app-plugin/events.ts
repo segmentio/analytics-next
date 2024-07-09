@@ -7,11 +7,16 @@ export enum InAppEvents {
 
 export const allEvents:string[] = Object.values(InAppEvents);
 
-export enum SemanticEvents {
-    JourneyMetric = 'Report Delivery Event',
+export enum JourneysEvents {
+    Metric = 'Report Delivery Event',
+    Content = 'Report Content Event',
     Opened = 'opened',
     Clicked = 'clicked',
+    ViewedContent = 'viewed_content',
+    ClickedContent = 'clicked_content'
 }
+
+export const AnonymousContentType = 'iab'
 
 export function newEvent(type:string, detail:any): CustomEvent {
     return new CustomEvent(type, { detail })

@@ -148,4 +148,75 @@ describe('Customer.io In-App Plugin', () => {
       attr2: 'val2',
     }, undefined)
   })
+
+  describe('Anonymous', () => {
+    it('should trigger content event for open', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistMessageShown({
+        properties: {
+          gist: {
+            broadcast: {
+              broadcastIdInt: 10,
+              templateId: 20,
+            }
+          },
+        },
+      })
+      expect(spy).toBeCalledWith('Report Content Event', {
+        actionType: 'viewed_content',
+        contentId: 10,
+        templateId: 20,
+        contentType: 'iab',
+      })
+    })
+
+    it('should trigger content event for non-dismiss click', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistMessageAction({
+        message: {
+          properties: {
+            messageId: 'a-test-in-app',
+            gist: {
+              broadcast: {
+                broadcastIdInt: 10,
+                templateId: 20,
+              }
+            },
+          },
+        },
+        action: 'action value',
+        name: 'action name',
+      })
+      expect(spy).toBeCalledWith('Report Content Event', {
+        actionType: 'clicked_content',
+        contentId: 10,
+        templateId: 20,
+        contentType: 'iab',
+        actionName: 'action name',
+        actionValue: 'action value',
+      })
+    })
+
+    it('should not trigger content event for dismiss click', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistMessageAction({
+        message: {
+          properties: {
+            messageId: 'a-test-in-app',
+            gist: {
+              broadcast: {
+                broadcastIdInt: 10,
+                templateId: 20,
+              }
+            },
+          },
+        },
+        action: 'gist://close',
+        name: 'action name',
+      })
+      expect(spy).toHaveBeenCalledTimes(0)
+    })
+
+  })
+
 })
