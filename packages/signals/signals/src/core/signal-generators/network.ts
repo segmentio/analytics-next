@@ -26,13 +26,13 @@ export function addFetchInterceptor(
   }
 }
 
-const matchHostname = (url: string): boolean => {
+export const matchHostname = (url: string): boolean => {
   const rIsAbs = new RegExp('^(?:[a-z+]+:)?//', 'i')
   if (!rIsAbs.test(url)) {
     // Relative URL will go to this host
     return true
   }
-  return new URL(url).hostname?.includes(window.location.hostname) || false
+  return new URL(url).hostname.includes(window.location.hostname)
 }
 
 const normalizeHeaders = (headers: HeadersInit): Headers => {

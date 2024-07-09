@@ -9,4 +9,5 @@ export type {
   ProcessSignal,
   AnalyticsRuntimePublicApi,
   SignalsPluginSettingsConfig,
+  Signal,
 } from './types'

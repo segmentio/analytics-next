@@ -1,7 +1,47 @@
-import { addFetchInterceptor, NetworkGenerator } from '../network'
+import {
+  addFetchInterceptor,
+  matchHostname,
+  NetworkGenerator,
+} from '../network'
 import { SignalEmitter } from '../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@segment/analytics-core'
+
+const setLocation = (hostname: string) => {
+  Object.defineProperty(window, 'location', {
+    value: {
+      ...window.location,
+      hostname: hostname,
+    },
+    writable: true, // possibility to override
+  })
+}
+
+describe('matchHostname', () => {
+  beforeEach(() => {
+    setLocation('example.com')
+  })
+  it('should not match external routes', () => {})
+
+  it('should only match first party domains', () => {
+    expect(matchHostname('https://www.example.com')).toBe(true)
+    expect(matchHostname('https://www.example.com/api/foo')).toBe(true)
+    expect(matchHostname('https://www.foo.com')).toBe(false)
+    expect(
+      matchHostname('https://cdn.segment.com/v1/projects/1234/versions/1')
+    ).toBe(false)
+  })
+
+  it('should work with subdomains', () => {
+    setLocation('api.example.com')
+    expect(matchHostname('https://api.example.com/foo')).toBe(true)
+    expect(matchHostname('https://foo.com/foo')).toBe(false)
+  })
+
+  it('should always allow relative domains', () => {
+    expect(matchHostname('/foo/bar')).toBe(true)
+  })
+})
 
 describe('addFetchInterceptor', () => {
   let origFetch: typeof window.fetch
