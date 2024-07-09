@@ -137,7 +137,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn turbo run --filter='./packages/signals/*' build
       - echo "+++ Run Lint"

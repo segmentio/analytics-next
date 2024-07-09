@@ -17,9 +17,9 @@ export class CDNSettingsBuilder {
     baseCDNSettings,
   }: {
     writeKey?: string
-    baseCDNSettings?: CDNSettings
+    baseCDNSettings?: Partial<CDNSettings>
   } = {}) {
-    const settings = baseCDNSettings || {
+    const settings: CDNSettings = {
       integrations: {
         'Segment.io': {
           apiKey: writeKey,
@@ -28,6 +28,7 @@ export class CDNSettingsBuilder {
           maybeBundledConfigIds: {},
           versionSettings: { version: '4.4.7', componentTypes: ['browser'] },
           apiHost: 'api.segment.io/v1',
+          ...baseCDNSettings?.integrations?.['Segment.io'],
         },
       },
       plan: {
@@ -40,6 +41,8 @@ export class CDNSettingsBuilder {
       metrics: { sampleRate: 0.1, host: 'api.segment.io/v1' },
       legacyVideoPluginsEnabled: false,
       remotePlugins: [],
+      edgeFunction: {},
+      ...baseCDNSettings,
     }
     this.settings = settings
   }

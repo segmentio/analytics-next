@@ -17,3 +17,9 @@ export type { MiddlewareFunction } from './plugins/middleware'
 export { getGlobalAnalytics } from './lib/global-analytics-helper'
 export { UniversalStorage, Store, StorageObject } from './core/storage'
 export { segmentio } from './plugins/segmentio'
+export {
+  resolveAliasArguments,
+  resolveArguments,
+  resolvePageArguments,
+  resolveUserArguments,
+} from './core/arguments-resolver'
