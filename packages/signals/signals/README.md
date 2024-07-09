@@ -31,9 +31,15 @@ analytics.load({
 ```
 
 ### Debugging
-- Removing obfuscation / redaction of data by adding a magic **query string**:
+- Values sent to the signals API are redacted by default.
+
+To disable redaction, add a magic query string:
 ```
 https://my-website.com?segment_signals_debug=true
+```
+You can *turn off debugging* by doing:
+```
+https://my-website.com?segment_signals_debug=false
 ```
 
 ### Playground / Development / Testing
