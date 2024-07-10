@@ -44,9 +44,7 @@ const containsJSONContent = (headers: HeadersInit | undefined): boolean => {
     return false
   }
   const normalizedHeaders = normalizeHeaders(headers)
-  return (
-    normalizedHeaders.get('content-type')?.includes('application/json') || false
-  )
+  return normalizedHeaders.get('content-type') === 'application/json'
 }
 
 export class NetworkGenerator implements SignalGenerator {
