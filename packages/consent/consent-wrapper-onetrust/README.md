@@ -95,7 +95,8 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 This wrapper uses the `OneTrust.getDomainData()` API to get the consent model for a given geolocation. Default behavior can be overridden by doing:
 
 ```ts
-withOneTrust(analytics).load(..., { consentModel: () => 'opt-in' | 'opt-out' })
+withOneTrust(analytics, { consentModel: () => 'opt-in' | 'opt-out' })
+  .load({ writeKey: '<MY_WRITE_KEY>' })
 ```
 
 ## Environments
