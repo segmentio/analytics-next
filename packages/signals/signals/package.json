@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-signals",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "main": "./dist/cjs/index.js",
   "license": "MIT",
   "repository": {
