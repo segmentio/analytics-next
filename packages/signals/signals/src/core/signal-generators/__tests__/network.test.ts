@@ -2,7 +2,7 @@ import {
   addFetchInterceptor,
   matchHostname,
   NetworkGenerator,
-} from '../network'
+} from '../network-gen'
 import { SignalEmitter } from '../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@segment/analytics-core'
