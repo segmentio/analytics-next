@@ -1,9 +1,73 @@
-import { addFetchInterceptor, NetworkGenerator } from '../network'
+import {
+  addFetchInterceptor,
+  matchHostname,
+  NetworkGenerator,
+  containsJSONContent,
+} from '../network-gen'
 import { SignalEmitter } from '../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@segment/analytics-core'
 
-describe('addFetchInterceptor', () => {
+describe(containsJSONContent, () => {
+  it('should return true if headers contain application/json', () => {
+    const headers = new Headers({ 'content-type': 'application/json' })
+    expect(containsJSONContent(headers)).toBe(true)
+  })
+  it('should be case insensitive', () => {
+    expect(containsJSONContent([['Content-Type', 'application/json']])).toBe(
+      true
+    )
+    expect(
+      containsJSONContent(new Headers({ 'Content-Type': 'application/json' }))
+    ).toBe(true)
+  })
+
+  it('should return false if headers do not contain application/json', () => {
+    const headers = new Headers({ 'content-type': 'text/html' })
+    expect(containsJSONContent(headers)).toBe(false)
+    expect(containsJSONContent(new Headers())).toBe(false)
+    expect(containsJSONContent(undefined)).toBe(false)
+  })
+})
+
+describe(matchHostname, () => {
+  const setHostname = (hostname: string) => {
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...window.location,
+        hostname: hostname,
+      },
+      writable: true,
+    })
+  }
+
+  beforeEach(() => {
+    setHostname('example.com')
+  })
+  it('should only match first party domains', () => {
+    expect(matchHostname('https://www.example.com')).toBe(true)
+    expect(matchHostname('https://www.example.com/api/foo')).toBe(true)
+    expect(matchHostname('https://www.foo.com')).toBe(false)
+    expect(
+      matchHostname('https://cdn.segment.com/v1/projects/1234/versions/1')
+    ).toBe(false)
+  })
+
+  it('should work with subdomains', () => {
+    setHostname('api.example.com')
+    expect(matchHostname('https://api.example.com/foo')).toBe(true)
+    expect(matchHostname('https://foo.com/foo')).toBe(false)
+    expect(matchHostname('https://example.com/foo')).toBe(false)
+  })
+
+  it('should always allow relative domains', () => {
+    expect(matchHostname('/foo/bar')).toBe(true)
+    expect(matchHostname('foo/bar')).toBe(true)
+    expect(matchHostname('foo')).toBe(true)
+  })
+})
+
+describe(addFetchInterceptor, () => {
   let origFetch: typeof window.fetch
 
   beforeEach(() => {
@@ -32,7 +96,7 @@ describe('addFetchInterceptor', () => {
   })
 })
 
-describe('NetworkGenerator', () => {
+describe(NetworkGenerator, () => {
   it('should register and emit signals on fetch requests and responses', async () => {
     const mockResponse = new Response(JSON.stringify({ data: 'test' }), {
       headers: { 'content-type': 'application/json' },

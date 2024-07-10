@@ -1,8 +1,8 @@
 import { SignalsIngestClient } from '../client'
 import { getSignalBuffer, SignalBuffer } from '../buffer'
 import { SignalEmitter } from '../emitter'
-import { domGenerators } from '../signal-generators/dom-generators'
-import { NetworkGenerator } from '../signal-generators/network'
+import { domGenerators } from '../signal-generators/dom-gen'
+import { NetworkGenerator } from '../signal-generators/network-gen'
 import {
   SignalGenerator,
   SignalGeneratorClass,

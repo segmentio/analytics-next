@@ -26,27 +26,27 @@ export function addFetchInterceptor(
   }
 }
 
-const matchHostname = (url: string): boolean => {
+export const matchHostname = (url: string): boolean => {
   const rIsAbs = new RegExp('^(?:[a-z+]+:)?//', 'i')
   if (!rIsAbs.test(url)) {
     // Relative URL will go to this host
     return true
   }
-  return new URL(url).hostname?.includes(window.location.hostname) || false
+  return new URL(url).hostname.includes(window.location.hostname)
 }
 
 const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
 
-const containsJSONContent = (headers: HeadersInit | undefined): boolean => {
+export const containsJSONContent = (
+  headers: HeadersInit | undefined
+): boolean => {
   if (!headers) {
     return false
   }
   const normalizedHeaders = normalizeHeaders(headers)
-  return (
-    normalizedHeaders.get('content-type')?.includes('application/json') || false
-  )
+  return normalizedHeaders.get('content-type') === 'application/json'
 }
 
 export class NetworkGenerator implements SignalGenerator {

@@ -1,6 +1,5 @@
 {
   "name": "@internal/signals-example",
-  "version": "0.0.1",
   "private": true,
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/signals-example...",
