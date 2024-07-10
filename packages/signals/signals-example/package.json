@@ -2,7 +2,7 @@
   "name": "@internal/signals-example",
   "private": true,
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/signals-example...",
+    ".": "yarn run -T turbo run --filter=@internal/signals-example...",
     "dev": "webpack serve",
     "build": "webpack"
   },
