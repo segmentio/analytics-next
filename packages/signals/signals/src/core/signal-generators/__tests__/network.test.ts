@@ -31,7 +31,7 @@ describe(containsJSONContent, () => {
 })
 
 describe(matchHostname, () => {
-  const setLocation = (hostname: string) => {
+  const setHostname = (hostname: string) => {
     Object.defineProperty(window, 'location', {
       value: {
         ...window.location,
@@ -42,7 +42,7 @@ describe(matchHostname, () => {
   }
 
   beforeEach(() => {
-    setLocation('example.com')
+    setHostname('example.com')
   })
   it('should only match first party domains', () => {
     expect(matchHostname('https://www.example.com')).toBe(true)
@@ -54,7 +54,7 @@ describe(matchHostname, () => {
   })
 
   it('should work with subdomains', () => {
-    setLocation('api.example.com')
+    setHostname('api.example.com')
     expect(matchHostname('https://api.example.com/foo')).toBe(true)
     expect(matchHostname('https://foo.com/foo')).toBe(false)
     expect(matchHostname('https://example.com/foo')).toBe(false)
