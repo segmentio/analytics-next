@@ -39,7 +39,9 @@ const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
 
-const containsJSONContent = (headers: HeadersInit | undefined): boolean => {
+export const containsJSONContent = (
+  headers: HeadersInit | undefined
+): boolean => {
   if (!headers) {
     return false
   }

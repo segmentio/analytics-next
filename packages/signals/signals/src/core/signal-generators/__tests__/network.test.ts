@@ -2,10 +2,33 @@ import {
   addFetchInterceptor,
   matchHostname,
   NetworkGenerator,
+  containsJSONContent,
 } from '../network-gen'
 import { SignalEmitter } from '../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@segment/analytics-core'
+
+describe(containsJSONContent, () => {
+  it('should return true if headers contain application/json', () => {
+    const headers = new Headers({ 'content-type': 'application/json' })
+    expect(containsJSONContent(headers)).toBe(true)
+  })
+  it('should be case insensitive', () => {
+    expect(containsJSONContent([['Content-Type', 'application/json']])).toBe(
+      true
+    )
+    expect(
+      containsJSONContent(new Headers({ 'Content-Type': 'application/json' }))
+    ).toBe(true)
+  })
+
+  it('should return false if headers do not contain application/json', () => {
+    const headers = new Headers({ 'content-type': 'text/html' })
+    expect(containsJSONContent(headers)).toBe(false)
+    expect(containsJSONContent(new Headers())).toBe(false)
+    expect(containsJSONContent(undefined)).toBe(false)
+  })
+})
 
 describe(matchHostname, () => {
   const setLocation = (hostname: string) => {
