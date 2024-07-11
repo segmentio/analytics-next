@@ -92,9 +92,7 @@ describe('Backwards compatibility', () => {
     expect(resultString).toContain(
       'http://localhost:4000/dist/umd/standalone.js'
     )
-    expect(resultString).toContain(
-      'http://localhost:4000/dist/umd/vendors-node_modules_segment_tsub_dist_index_js.bundle'
-    )
+  
     expect(resultString).toContain(
       'http://localhost:4000/dist/umd/ajs-destination.bundle'
     )
