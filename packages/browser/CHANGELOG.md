@@ -1,5 +1,17 @@
 # @segment/analytics-next
 
+## 1.71.0
+
+### Minor Changes
+
+- [#1101](https://github.com/segmentio/analytics-next/pull/1101) [`aee18d2`](https://github.com/segmentio/analytics-next/commit/aee18d222ddfb2273399987fabf92b54876f5e88) Thanks [@silesky](https://github.com/silesky)! - Export segment plugin and arg resolvers
+
+* [#1100](https://github.com/segmentio/analytics-next/pull/1100) [`e60f625`](https://github.com/segmentio/analytics-next/commit/e60f6252687d977b76b09ca9b756c790d341111a) Thanks [@danieljackins](https://github.com/danieljackins)! - Flush large keepalive requests
+
+### Patch Changes
+
+- [#1101](https://github.com/segmentio/analytics-next/pull/1101) [`aee18d2`](https://github.com/segmentio/analytics-next/commit/aee18d222ddfb2273399987fabf92b54876f5e88) Thanks [@silesky](https://github.com/silesky)! - Add edgeFunction to CDNSettings type
+
 ## 1.70.0
 
 ### Minor Changes
