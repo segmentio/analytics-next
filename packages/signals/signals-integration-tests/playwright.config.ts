@@ -6,6 +6,11 @@ import path from 'path'
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
+  webServer: {
+    command: 'yarn run server',
+    url: 'http://127.0.0.1:3000',
+    reuseExistingServer: !process.env.CI,
+  },
   testDir: './src',
   globalSetup: path.resolve(__dirname, 'playwright.global-setup.ts'),
   /* Maximum time one test can run for. */
