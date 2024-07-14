@@ -15,8 +15,8 @@ test('network signals', async () => {
   await indexPage.mockRandomJSONApi()
   await indexPage.makeFetchCallToRandomJSONApi()
   await indexPage.waitForSignalsApiFlush()
-  const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
-  const networkEvents = (signalReqJSON.batch as SegmentEvent[]).filter(
+  const batch = indexPage.signalsApiReq.postDataJSON().batch as SegmentEvent[]
+  const networkEvents = batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'network'
   )
   const requests = networkEvents.filter(
