@@ -14,6 +14,7 @@ export class IndexPage extends BasePage {
   constructor() {
     super(`/signals-vanilla/index.html`, edgeFn)
   }
+
   async makeAnalyticsPageCall(): Promise<unknown> {
     const p = this.page.evaluate(() => {
       void window.analytics.page()
