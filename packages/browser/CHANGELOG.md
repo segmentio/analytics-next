@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.72.0
+
+### Minor Changes
+
+- [#1107](https://github.com/segmentio/analytics-next/pull/1107) [`91e72ba`](https://github.com/segmentio/analytics-next/commit/91e72ba302fc45b4adb7aaeeb0a1f4ce3582dda6) Thanks [@silesky](https://github.com/silesky)! - Vendor tsub.js 2.0.0
+
 ## 1.71.0
 
 ### Minor Changes
