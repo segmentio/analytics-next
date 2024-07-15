@@ -8,6 +8,30 @@ test.beforeEach(async ({ page }) => {
   await indexPage.load(page)
 })
 
+test('network signals', async () => {
+  /**
+   * Make a fetch call, see if it gets sent to the signals endpoint
+   */
+  await indexPage.mockRandomJSONApi()
+  await indexPage.makeFetchCallToRandomJSONApi()
+  await indexPage.waitForSignalsApiFlush()
+  const batch = indexPage.signalsApiReq.postDataJSON().batch as SegmentEvent[]
+  const networkEvents = batch.filter(
+    (el: SegmentEvent) => el.properties!.type === 'network'
+  )
+  const requests = networkEvents.filter(
+    (el) => el.properties!.data.action === 'Request'
+  )
+  expect(requests).toHaveLength(1)
+  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+
+  const responses = networkEvents.filter(
+    (el) => el.properties!.data.action === 'Response'
+  )
+  expect(responses).toHaveLength(1)
+  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+})
+
 test('instrumentation signals', async () => {
   /**
    * Make an analytics.page() call, see if it gets sent to the signals endpoint

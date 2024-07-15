@@ -9,9 +9,9 @@ export class BasePage {
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   public edgeFn: string
 
-  constructor(url: string, edgeFn: string) {
+  constructor(path: string, edgeFn: string) {
     this.edgeFn = edgeFn
-    this.url = url
+    this.url = 'http://localhost:3000/src/tests' + path
   }
 
   /**
@@ -29,10 +29,14 @@ export class BasePage {
   }
 
   private async setupMockedRoutes() {
+    // clear any existing saved requests
+    this.signalsApiReq = undefined as any as Request
+    this.trackingApiReq = undefined as any as Request
+
     await Promise.all([
       this.mockSignalsApi(),
+      this.mockTrackingApi(),
       this.mockCDNSettings(),
-      await this.mockTrackingApi(),
     ])
   }
 
