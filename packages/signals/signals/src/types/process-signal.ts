@@ -39,4 +39,8 @@ export const AnalyticsEnums = {
     Group: 'group',
     Alias: 'alias',
   }),
+  NavigationAction: Object.freeze({
+    URLChange: 'urlChange',
+    PageLoad: 'pageLoad',
+  }),
 }
