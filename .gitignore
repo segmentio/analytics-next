@@ -15,6 +15,7 @@
 
 node_modules
 dist
+dist.*
 package-lock.json
 .DS_Store
 *.log
