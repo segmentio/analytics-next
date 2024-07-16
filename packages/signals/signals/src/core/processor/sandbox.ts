@@ -185,7 +185,7 @@ export class Sandbox {
       `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
-        ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
+        ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 
