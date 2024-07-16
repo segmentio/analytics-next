@@ -4,7 +4,7 @@ import { promiseTimeout } from '@internal/test-helpers'
 const edgeFn = `
     // this is a process signal function
     const processSignal = (signal) => {
-      if (signal.type === SignalType.Interaction) {
+      if (signal.type === 'interaction') {
         const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
         analytics.track(eventName, signal.data)
       }
