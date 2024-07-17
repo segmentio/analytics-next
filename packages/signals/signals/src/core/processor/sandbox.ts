@@ -149,7 +149,9 @@ export class SandboxSettings {
       this.processSignal = Promise.resolve(
         `globalThis.processSignal = function processSignal() {}`
       )
-      console.warn('edgeFnDownloadURL or processSignal must be defined')
+      console.warn(
+        `No processSignal function found. Have you written a processSignal function on app.segment.com?`
+      )
       return
     }
 
