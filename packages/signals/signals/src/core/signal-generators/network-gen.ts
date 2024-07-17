@@ -1,6 +1,7 @@
 import { logger } from '../../lib/logger'
 import { createNetworkSignal } from '../../types'
 import { SignalEmitter } from '../emitter'
+import { normalizeUrl } from './normalize-url'
 import { SignalGenerator } from './types'
 let origFetch: typeof window.fetch
 
@@ -68,7 +69,7 @@ export class NetworkGenerator implements SignalGenerator {
       emitter.emit(
         createNetworkSignal({
           action: 'Request',
-          url: sUrl,
+          url: normalizeUrl(sUrl),
           method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
         })
