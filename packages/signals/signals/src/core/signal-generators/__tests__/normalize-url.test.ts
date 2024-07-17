@@ -3,8 +3,7 @@ import { normalizeUrl } from '../normalize-url'
 
 describe('normalizeUrl', () => {
   beforeEach(() => {
-    setLocation({ hostname: 'www.currentsite.com' })
-    setLocation({ protocol: 'https:' })
+    setLocation({ hostname: 'www.currentsite.com', protocol: 'https:' })
   })
 
   it('should return the same URL if it starts with http', () => {
