@@ -1,18 +1,9 @@
 import { BasePage } from '../../helpers/base-page-object'
 import { promiseTimeout } from '@internal/test-helpers'
 
-const edgeFn = `
-    // this is a process signal function
-    const processSignal = (signal) => {
-      if (signal.type === 'interaction') {
-        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
-        analytics.track(eventName, signal.data)
-      }
-  }`
-
 export class IndexPage extends BasePage {
   constructor() {
-    super(`/signals-vanilla/index.html`, edgeFn)
+    super(`/signals-vanilla/index.html`)
   }
 
   async makeAnalyticsPageCall(): Promise<unknown> {
@@ -24,7 +15,7 @@ export class IndexPage extends BasePage {
   }
 
   async mockRandomJSONApi() {
-    await this.page.route('http://localhost:3000/api/foo', (route) => {
+    await this.page.route('http://localhost:5432/api/foo', (route) => {
       return route.fulfill({
         contentType: 'application/json',
         status: 200,
@@ -37,7 +28,7 @@ export class IndexPage extends BasePage {
 
   async makeFetchCallToRandomJSONApi(): Promise<void> {
     return this.page.evaluate(() => {
-      return fetch('http://localhost:3000/api/foo', {
+      return fetch('http://localhost:5432/api/foo', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,5 +38,9 @@ export class IndexPage extends BasePage {
         .then(console.log)
         .catch(console.error)
     })
+  }
+
+  async clickButton() {
+    return this.page.click('#some-button')
   }
 }

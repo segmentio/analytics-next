@@ -1,24 +1,32 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Request } from '@playwright/test'
+import { logConsole } from './log-console'
+import { SegmentEvent } from '@segment/analytics-next'
 
 export class BasePage {
   protected page!: Page
-  public signalsApiReq!: Request
-  public trackingApiReq!: Request
+  public lastSignalsApiReq!: Request
+  public signalsApiReqs: SegmentEvent[] = []
+  public lastTrackingApiReq!: Request
+  public trackingApiReqs: SegmentEvent[] = []
+
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
-  public edgeFn: string
+  public edgeFn!: string
 
-  constructor(path: string, edgeFn: string) {
-    this.edgeFn = edgeFn
-    this.url = 'http://localhost:3000/src/tests' + path
+  constructor(path: string) {
+    this.url = 'http://localhost:5432/src/tests' + path
   }
 
   /**
    * load and setup routes
+   * @param page
+   * @param edgeFn - edge function to be loaded
    */
-  async load(page: Page) {
+  async load(page: Page, edgeFn: string) {
+    logConsole(page)
     this.page = page
+    this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     await this.page.goto(this.url)
     // expect analytics to be loaded
@@ -30,8 +38,10 @@ export class BasePage {
 
   private async setupMockedRoutes() {
     // clear any existing saved requests
-    this.signalsApiReq = undefined as any as Request
-    this.trackingApiReq = undefined as any as Request
+    this.signalsApiReqs = []
+    this.trackingApiReqs = []
+    this.lastSignalsApiReq = undefined as any as Request
+    this.lastTrackingApiReq = undefined as any as Request
 
     await Promise.all([
       this.mockSignalsApi(),
@@ -42,7 +52,13 @@ export class BasePage {
 
   async mockTrackingApi() {
     await this.page.route('https://api.segment.io/v1/*', (route, request) => {
-      this.trackingApiReq = request
+      this.lastTrackingApiReq = request
+      this.trackingApiReqs.push(request.postDataJSON())
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      require('fs').writeFileSync(
+        'tracking-api-req.json',
+        JSON.stringify(this.trackingApiReqs, null, 2)
+      )
       if (request.method().toLowerCase() !== 'post') {
         throw new Error(`Unexpected method: ${request.method()}`)
       }
@@ -56,15 +72,16 @@ export class BasePage {
     })
   }
 
-  waitForTrackingApiFlush() {
-    return this.page.waitForResponse('https://api.segment.io/v1/*')
+  waitForTrackingApiFlush(timeout = 5000) {
+    return this.page.waitForResponse('https://api.segment.io/v1/*', { timeout })
   }
 
   async mockSignalsApi() {
     await this.page.route(
       'https://signals.segment.io/v1/*',
       (route, request) => {
-        this.signalsApiReq = request
+        this.lastSignalsApiReq = request
+        this.signalsApiReqs.push(request.postDataJSON())
         if (request.method().toLowerCase() !== 'post') {
           throw new Error(`Unexpected method: ${request.method()}`)
         }
@@ -79,8 +96,10 @@ export class BasePage {
     )
   }
 
-  waitForSignalsApiFlush() {
-    return this.page.waitForResponse('https://signals.segment.io/v1/*')
+  waitForSignalsApiFlush(timeout = 5000) {
+    return this.page.waitForResponse('https://signals.segment.io/v1/*', {
+      timeout,
+    })
   }
 
   async mockCDNSettings() {
