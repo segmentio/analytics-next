@@ -7,6 +7,7 @@ import {
 import { SignalEmitter } from '../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@segment/analytics-core'
+import { setLocation } from '../../../test-helpers/set-location'
 
 describe(containsJSONContent, () => {
   it('should return true if headers contain application/json', () => {
@@ -31,18 +32,8 @@ describe(containsJSONContent, () => {
 })
 
 describe(matchHostname, () => {
-  const setHostname = (hostname: string) => {
-    Object.defineProperty(window, 'location', {
-      value: {
-        ...window.location,
-        hostname: hostname,
-      },
-      writable: true,
-    })
-  }
-
   beforeEach(() => {
-    setHostname('example.com')
+    setLocation({ hostname: 'example.com' })
   })
   it('should only match first party domains', () => {
     expect(matchHostname('https://www.example.com')).toBe(true)
@@ -54,7 +45,7 @@ describe(matchHostname, () => {
   })
 
   it('should work with subdomains', () => {
-    setHostname('api.example.com')
+    setLocation({ hostname: 'api.example.com' })
     expect(matchHostname('https://api.example.com/foo')).toBe(true)
     expect(matchHostname('https://foo.com/foo')).toBe(false)
     expect(matchHostname('https://example.com/foo')).toBe(false)
