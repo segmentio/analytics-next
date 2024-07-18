@@ -50,7 +50,11 @@ const defaults = {
   },
 }
 
-export class User {
+export interface WithId {
+  id(id?: ID): ID
+}
+
+export class User implements WithId {
   static defaults = defaults
 
   private idKey: string

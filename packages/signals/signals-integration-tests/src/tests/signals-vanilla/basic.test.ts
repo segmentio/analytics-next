@@ -4,8 +4,17 @@ import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
 
+const basicEdgeFn = `
+    // this is a process signal function
+    const processSignal = (signal) => {
+      if (signal.type === 'interaction') {
+        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
+        analytics.track(eventName, signal.data)
+      }
+  }`
+
 test.beforeEach(async ({ page }) => {
-  await indexPage.load(page)
+  await indexPage.load(page, basicEdgeFn)
 })
 
 test('network signals', async () => {
@@ -15,7 +24,8 @@ test('network signals', async () => {
   await indexPage.mockRandomJSONApi()
   await indexPage.makeFetchCallToRandomJSONApi()
   await indexPage.waitForSignalsApiFlush()
-  const batch = indexPage.signalsApiReq.postDataJSON().batch as SegmentEvent[]
+  const batch = indexPage.lastSignalsApiReq.postDataJSON()
+    .batch as SegmentEvent[]
   const networkEvents = batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'network'
   )
@@ -41,7 +51,7 @@ test('instrumentation signals', async () => {
     indexPage.waitForSignalsApiFlush(),
   ])
 
-  const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
+  const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
 
   const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   const instrumentationEvents = signalReqJSON.batch.filter(
@@ -59,19 +69,19 @@ test('instrumentation signals', async () => {
   })
 })
 
-test('interaction signals', async ({ page }) => {
+test('interaction signals', async () => {
   /**
    * Make a button click, see if it:
    * - creates an interaction signal that sends to the signals endpoint
    * - creates an analytics event that sends to the tracking endpoint
    */
   await Promise.all([
-    page.click('button'),
+    indexPage.clickButton(),
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
 
-  const signalsReqJSON = indexPage.signalsApiReq.postDataJSON()
+  const signalsReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
   const interactionSignals = signalsReqJSON.batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'interaction'
   )
@@ -104,7 +114,7 @@ test('interaction signals', async ({ page }) => {
     },
   })
 
-  const analyticsReqJSON = indexPage.trackingApiReq.postDataJSON()
+  const analyticsReqJSON = indexPage.lastTrackingApiReq.postDataJSON()
 
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
@@ -128,7 +138,7 @@ test('navigation signals', async ({ page }) => {
   {
     // on page load, a navigation signal should be sent
     await indexPage.waitForSignalsApiFlush()
-    const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
+    const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
     const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'
     )
@@ -153,7 +163,7 @@ test('navigation signals', async ({ page }) => {
       window.location.hash = '#foo'
     })
     await indexPage.waitForSignalsApiFlush()
-    const signalReqJSON = indexPage.signalsApiReq.postDataJSON()
+    const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
 
     const navigationEvents = signalReqJSON.batch.filter(
       (el: SegmentEvent) => el.properties!.type === 'navigation'

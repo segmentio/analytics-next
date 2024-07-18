@@ -1,12 +1,6 @@
-import {
-  resolveAliasArguments,
-  resolveArguments,
-  resolvePageArguments,
-  resolveUserArguments,
-} from '@segment/analytics-next'
 import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
-
+import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
 import { createSignalsRuntime } from './signals-runtime'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
@@ -44,7 +38,7 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
   /**
    * Stamp the context with the event origin to prevent infinite signal-event loops.
    */
-  stamp(options: Record<string, any>): Record<string, any> {
+  private stamp(options: Record<string, any>): Record<string, any> {
     if (!options) {
       options = {}
     }
@@ -54,40 +48,70 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
 
   // these methods need to be bound to the instance, rather than the prototype, in order to serialize correctly in the sandbox.
   track = (...args: any[]) => {
-    // @ts-ignore
-    const [eventName, props, options, cb] = resolveArguments(...args)
-
-    this.calls.track.push([eventName, props, this.stamp(options), cb])
+    try {
+      // @ts-ignore
+      const [eventName, props, options, cb] = resolvers.resolveArguments(
+        // @ts-ignore
+        ...args
+      )
+      this.calls.track.push([eventName, props, this.stamp(options), cb])
+    } catch (err) {
+      // wrapping all methods in a try/catch because throwing an error won't cause the error to surface inside of workerboxjs
+      console.error(err)
+    }
   }
 
   identify = (...args: any[]) => {
-    // @ts-ignore
-    const [id, traits, options, cb] = resolveUserArguments(...args)
-    this.stamp(options)
-    this.calls.identify.push([id, traits, this.stamp(options), cb])
-  }
-  alias = (...args: any[]) => {
-    const [userId, previousId, options, cb] = resolveAliasArguments(
+    try {
       // @ts-ignore
-      ...args
-    )
-    this.calls.alias.push([userId, previousId, this.stamp(options), cb])
+      const [id, traits, options, cb] = resolvers.resolveUserArguments(...args)
+      this.calls.identify.push([id, traits, this.stamp(options), cb])
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  alias = (...args: any[]) => {
+    try {
+      const [userId, previousId, options, cb] = resolvers.resolveAliasArguments(
+        // @ts-ignore
+        ...args
+      )
+      this.calls.alias.push([userId, previousId, this.stamp(options), cb])
+    } catch (err) {
+      console.error(err)
+    }
   }
   group = (...args: any[]) => {
-    // @ts-ignore
-    const [id, traits, options, cb] = resolveUserArguments(...args)
-    this.calls.group.push([id, traits, this.stamp(options), cb])
+    try {
+      // @ts-ignore
+      const [id, traits, options, cb] = resolvers.resolveUserArguments(...args)
+      this.calls.group.push([id, traits, this.stamp(options), cb])
+    } catch (err) {
+      console.error(err)
+    }
   }
+
   page = (...args: any[]) => {
-    const [category, name, props, options, cb] = resolvePageArguments(...args)
-    this.stamp(options)
-    this.calls.page.push([category, name, props, this.stamp(options), cb])
+    try {
+      const [category, name, props, options, cb] =
+        resolvers.resolvePageArguments(...args)
+      this.stamp(options)
+      this.calls.page.push([category, name, props, this.stamp(options), cb])
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   screen = (...args: any[]) => {
-    const [category, name, props, options, cb] = resolvePageArguments(...args)
-    this.stamp(options)
-    this.calls.screen.push([category, name, props, this.stamp(options), cb])
+    try {
+      const [category, name, props, options, cb] =
+        resolvers.resolvePageArguments(...args)
+      this.stamp(options)
+      this.calls.screen.push([category, name, props, this.stamp(options), cb])
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 

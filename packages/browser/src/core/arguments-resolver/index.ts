@@ -15,7 +15,7 @@ import {
   GroupTraits,
   UserTraits,
 } from '../events'
-import { ID, User } from '../user'
+import { ID, WithId } from '../user'
 
 /**
  * Helper for the track method
@@ -107,7 +107,7 @@ export function resolvePageArguments(
 /**
  * Helper for group, identify methods
  */
-export const resolveUserArguments = <T extends Traits, U extends User>(
+export const resolveUserArguments = <T extends Traits, U extends WithId>(
   user: U
 ): ResolveUser<T> => {
   return (...args): ReturnType<ResolveUser<T>> => {

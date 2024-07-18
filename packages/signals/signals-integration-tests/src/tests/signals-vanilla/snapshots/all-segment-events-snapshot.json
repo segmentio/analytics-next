@@ -1,0 +1,220 @@
+[
+  {
+    "timestamp": "2024-07-18T20:09:12.978Z",
+    "integrations": {},
+    "type": "page",
+    "properties": {
+      "path": "/src/tests/signals-vanilla/index.html",
+      "referrer": "",
+      "search": "",
+      "title": "Some Title",
+      "url": "http://my-home.com",
+      "category": "Retail Page",
+      "name": "Home"
+    },
+    "category": "Retail Page",
+    "name": "Home",
+    "context": {
+      "__eventOrigin": {
+        "type": "Signal"
+      },
+      "page": {
+        "path": "/src/tests/signals-vanilla/index.html",
+        "referrer": "",
+        "search": "",
+        "title": "Some Title",
+        "url": "http://my-home.com"
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.29 Safari/537.36",
+      "userAgentData": {
+        "brands": [],
+        "mobile": false,
+        "platform": ""
+      },
+      "locale": "en-US",
+      "library": {
+        "name": "analytics.js",
+        "version": "npm:next-1.72.0"
+      },
+      "timezone": "America/Chicago"
+    },
+    "messageId": "ajs-next-1721333352978-accbdb69-78a4-4357-bd87-e172b42aa3ae",
+    "anonymousId": "1fb4b6f9-accb-4b69-b8a4-e357fd87e172",
+    "writeKey": "<SOME_WRITE_KEY>",
+    "userId": "john",
+    "sentAt": "2024-07-18T20:09:13.005Z",
+    "_metadata": {
+      "bundled": ["Segment.io"],
+      "unbundled": [],
+      "bundledIds": []
+    }
+  },
+  {
+    "timestamp": "2024-07-18T20:09:12.982Z",
+    "integrations": {},
+    "type": "identify",
+    "userId": "john",
+    "traits": {
+      "found": true
+    },
+    "context": {
+      "__eventOrigin": {
+        "type": "Signal"
+      },
+      "page": {
+        "path": "/src/tests/signals-vanilla/index.html",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost:5432/src/tests/signals-vanilla/index.html"
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.29 Safari/537.36",
+      "userAgentData": {
+        "brands": [],
+        "mobile": false,
+        "platform": ""
+      },
+      "locale": "en-US",
+      "library": {
+        "name": "analytics.js",
+        "version": "npm:next-1.72.0"
+      },
+      "timezone": "America/Chicago"
+    },
+    "messageId": "ajs-next-1721333352982-db6978a4-e357-4d87-a172-b42aa3aebd8c",
+    "anonymousId": "1fb4b6f9-accb-4b69-b8a4-e357fd87e172",
+    "writeKey": "<SOME_WRITE_KEY>",
+    "sentAt": "2024-07-18T20:09:13.006Z",
+    "_metadata": {
+      "bundled": ["Segment.io"],
+      "unbundled": [],
+      "bundledIds": []
+    }
+  },
+  {
+    "timestamp": "2024-07-18T20:09:12.983Z",
+    "integrations": {},
+    "event": "a track call",
+    "type": "track",
+    "properties": {
+      "foo": "bar"
+    },
+    "context": {
+      "__eventOrigin": {
+        "type": "Signal"
+      },
+      "page": {
+        "path": "/src/tests/signals-vanilla/index.html",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost:5432/src/tests/signals-vanilla/index.html"
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.29 Safari/537.36",
+      "userAgentData": {
+        "brands": [],
+        "mobile": false,
+        "platform": ""
+      },
+      "locale": "en-US",
+      "library": {
+        "name": "analytics.js",
+        "version": "npm:next-1.72.0"
+      },
+      "timezone": "America/Chicago"
+    },
+    "messageId": "ajs-next-1721333352983-78a4e357-fd87-4172-b42a-a3aebd8c8994",
+    "userId": "john",
+    "anonymousId": "1fb4b6f9-accb-4b69-b8a4-e357fd87e172",
+    "writeKey": "<SOME_WRITE_KEY>",
+    "sentAt": "2024-07-18T20:09:13.006Z",
+    "_metadata": {
+      "bundled": ["Segment.io"],
+      "unbundled": [],
+      "bundledIds": []
+    }
+  },
+  {
+    "timestamp": "2024-07-18T20:09:12.983Z",
+    "integrations": {},
+    "userId": "john",
+    "type": "alias",
+    "previousId": "johnsmith",
+    "context": {
+      "__eventOrigin": {
+        "type": "Signal"
+      },
+      "page": {
+        "path": "/src/tests/signals-vanilla/index.html",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost:5432/src/tests/signals-vanilla/index.html"
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.29 Safari/537.36",
+      "userAgentData": {
+        "brands": [],
+        "mobile": false,
+        "platform": ""
+      },
+      "locale": "en-US",
+      "library": {
+        "name": "analytics.js",
+        "version": "npm:next-1.72.0"
+      },
+      "timezone": "America/Chicago"
+    },
+    "messageId": "ajs-next-1721333352983-e357fd87-e172-442a-a3ae-bd8c89946a1a",
+    "anonymousId": "1fb4b6f9-accb-4b69-b8a4-e357fd87e172",
+    "writeKey": "<SOME_WRITE_KEY>",
+    "sentAt": "2024-07-18T20:09:13.007Z",
+    "_metadata": {
+      "bundled": ["Segment.io"],
+      "unbundled": [],
+      "bundledIds": []
+    }
+  },
+  {
+    "timestamp": "2024-07-18T20:09:12.984Z",
+    "integrations": {},
+    "type": "group",
+    "traits": {
+      "hello": "world"
+    },
+    "groupId": "foo",
+    "context": {
+      "__eventOrigin": {
+        "type": "Signal"
+      },
+      "page": {
+        "path": "/src/tests/signals-vanilla/index.html",
+        "referrer": "",
+        "search": "",
+        "title": "",
+        "url": "http://localhost:5432/src/tests/signals-vanilla/index.html"
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.5359.29 Safari/537.36",
+      "userAgentData": {
+        "brands": [],
+        "mobile": false,
+        "platform": ""
+      },
+      "locale": "en-US",
+      "library": {
+        "name": "analytics.js",
+        "version": "npm:next-1.72.0"
+      },
+      "timezone": "America/Chicago"
+    },
+    "messageId": "ajs-next-1721333352984-fd87e172-b42a-43ae-bd8c-89946a1a7091",
+    "userId": "john",
+    "anonymousId": "1fb4b6f9-accb-4b69-b8a4-e357fd87e172",
+    "writeKey": "<SOME_WRITE_KEY>",
+    "sentAt": "2024-07-18T20:09:13.007Z",
+    "_metadata": {
+      "bundled": ["Segment.io"],
+      "unbundled": [],
+      "bundledIds": []
+    }
+  }
+]
