@@ -54,11 +54,6 @@ export class BasePage {
     await this.page.route('https://api.segment.io/v1/*', (route, request) => {
       this.lastTrackingApiReq = request
       this.trackingApiReqs.push(request.postDataJSON())
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      require('fs').writeFileSync(
-        'tracking-api-req.json',
-        JSON.stringify(this.trackingApiReqs, null, 2)
-      )
       if (request.method().toLowerCase() !== 'post') {
         throw new Error(`Unexpected method: ${request.method()}`)
       }
