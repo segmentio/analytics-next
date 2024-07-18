@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.72.1
+
+### Patch Changes
+
+- [#1115](https://github.com/segmentio/analytics-next/pull/1115) [`73ac593`](https://github.com/segmentio/analytics-next/commit/73ac593226159423b2f63cac190eebd347bbb75a) Thanks [@silesky](https://github.com/silesky)! - Update argument resolver to user interface rather than full User
+
 ## 1.72.0
 
 ### Minor Changes
