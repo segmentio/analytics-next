@@ -145,7 +145,14 @@ export class SandboxSettings {
         : settings.edgeFnDownloadURL
 
     if (!edgeFnDownloadURLNormalized && !settings.processSignal) {
-      throw new Error('edgeFnDownloadURL or processSignal must be defined')
+      // user may be onboarding and not have written a signal -- so do a noop so we can collect signals
+      this.processSignal = Promise.resolve(
+        `globalThis.processSignal = function processSignal() {}`
+      )
+      console.warn(
+        `No processSignal function found. Have you written a processSignal function on app.segment.com?`
+      )
+      return
     }
 
     const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
