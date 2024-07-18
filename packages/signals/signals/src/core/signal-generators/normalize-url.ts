@@ -6,10 +6,10 @@ export const normalizeUrl = (urlOrPath: string): string => {
     return urlOrPath
   }
   if (urlOrPath.startsWith('/')) {
-    return window.location.hostname + urlOrPath
+    return window.location.origin + urlOrPath
   }
   if (urlOrPath.includes('.')) {
     return `${location.protocol}//${urlOrPath}`
   }
-  return window.location.hostname + '/' + urlOrPath
+  return window.location.origin + '/' + urlOrPath
 }

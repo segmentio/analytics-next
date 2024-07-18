@@ -3,7 +3,7 @@ import { normalizeUrl } from '../normalize-url'
 
 describe('normalizeUrl', () => {
   beforeEach(() => {
-    setLocation({ hostname: 'www.currentsite.com', protocol: 'https:' })
+    setLocation({ origin: 'https://www.currentsite.com', protocol: 'https:' })
   })
 
   it('should return the same URL if it starts with http', () => {
@@ -18,17 +18,17 @@ describe('normalizeUrl', () => {
 
   it('should prepend hostname to path starting with /', () => {
     const url = '/foo/bar'
-    expect(normalizeUrl(url)).toBe('www.currentsite.com/foo/bar')
+    expect(normalizeUrl(url)).toBe('https://www.currentsite.com/foo/bar')
   })
 
   it('should prepend hostname and / to path not starting with /', () => {
     const url = 'foo/bar'
-    expect(normalizeUrl(url)).toBe('www.currentsite.com/foo/bar')
+    expect(normalizeUrl(url)).toBe('https://www.currentsite.com/foo/bar')
   })
 
   it('should prepend hostname and / to a single word path', () => {
     const url = 'foo'
-    expect(normalizeUrl(url)).toBe('www.currentsite.com/foo')
+    expect(normalizeUrl(url)).toBe('https://www.currentsite.com/foo')
   })
 
   it('should use the current protocol of the page if none is provided', () => {
