@@ -49,7 +49,7 @@ test('Segment events', async ({ page }) => {
   await Promise.all([
     indexPage.clickButton(),
     indexPage.waitForSignalsApiFlush(),
-    indexPage.waitForTrackingApiFlush(5000),
+    indexPage.waitForTrackingApiFlush(),
   ])
 
   const trackingApiReqs = indexPage.trackingApiReqs.map(normalizeSnapshotEvent)
