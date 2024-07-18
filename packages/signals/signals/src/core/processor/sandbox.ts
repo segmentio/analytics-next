@@ -7,7 +7,7 @@ import {
 import { logger } from '../../lib/logger'
 import createWorkerBox from 'workerboxjs'
 
-import { AnalyticsRuntimePublicApi, Signal } from '../../types'
+import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
 import { createSignalsRuntime } from './signals-runtime'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
 
@@ -183,6 +183,7 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
+      ...AnalyticsEnums,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
@@ -191,7 +192,7 @@ export class Sandbox {
       `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
-        ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
+        ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 
