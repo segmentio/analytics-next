@@ -29,6 +29,7 @@ export type SignalsPublicEmitterContract = {
 
 export class Signals implements ISignals {
   private buffer: SignalBuffer
+  private preStartBuffer: Signal[] = []
   public signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
@@ -47,7 +48,26 @@ export class Signals implements ISignals {
       void this.buffer.add(signal)
     })
 
+    this.signalEmitter.subscribe(this.addToPreStartBuffer)
+
     void this.registerGenerator([...domGenerators, NetworkGenerator])
+  }
+
+  private addToPreStartBuffer = (signal: Signal) => {
+    this.preStartBuffer.push(signal)
+  }
+
+  /**
+   * Flush/process any signals that were emitted before the start method was called.
+   */
+  private flushPreStartBuffer = async (processor: SignalEventProcessor) => {
+    this.signalEmitter.unsubscribe(this.addToPreStartBuffer)
+    while (this.preStartBuffer.length > 0) {
+      void processor.process(
+        this.preStartBuffer.shift() as Signal,
+        await this.buffer.getAll()
+      )
+    }
   }
 
   /**
@@ -71,6 +91,8 @@ export class Signals implements ISignals {
       analyticsService.instance,
       sandbox
     )
+
+    void this.flushPreStartBuffer(processor)
 
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())

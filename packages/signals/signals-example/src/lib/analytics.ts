@@ -2,10 +2,7 @@
 // You only want to instantiate SignalsPlugin in a browser context, otherwise you'll get an error.
 
 import { AnalyticsBrowser } from '@segment/analytics-next'
-import {
-  SignalsPlugin,
-  ProcessSignal,
-} from '@segment/analytics-signals'
+import { SignalsPlugin, ProcessSignal } from '@segment/analytics-signals'
 
 export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {
@@ -49,7 +46,6 @@ export const loadAnalytics = () =>
         ...(isStage ? { cdnURL: 'https://cdn.segment.build' } : {}),
       },
       {
-        initialPageview: true,
         ...(isStage
           ? {
               integrations: {
