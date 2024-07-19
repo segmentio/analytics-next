@@ -14,6 +14,25 @@ export class IndexPage extends BasePage {
     return promiseTimeout(p, 2000, 'analytics.on("page") did not resolve')
   }
 
+  async makeAnalyticsTrackCall(): Promise<unknown> {
+    const p = this.page.evaluate(() => {
+      void window.analytics.track('some event')
+      return new Promise((resolve) => window.analytics.on('track', resolve))
+    })
+    return promiseTimeout(p, 2000, 'analytics.on("track") did not resolve')
+  }
+
+  addUserDefinedSignal() {
+    return this.page.evaluate(() => {
+      window.signalsPlugin.addSignal({
+        type: 'userDefined',
+        data: {
+          foo: 'bar',
+        },
+      })
+    })
+  }
+
   async mockRandomJSONApi() {
     await this.page.route('http://localhost:5432/api/foo', (route) => {
       return route.fulfill({

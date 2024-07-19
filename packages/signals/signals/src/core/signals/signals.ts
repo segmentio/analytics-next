@@ -13,6 +13,7 @@ import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
 import { Sandbox, SandboxSettings } from '../processor/sandbox'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
+import { logger } from '../../lib/logger'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -60,14 +61,16 @@ export class Signals implements ISignals {
   /**
    * Flush/process any signals that were emitted before the start method was called.
    */
-  private flushPreStartBuffer = async (processor: SignalEventProcessor) => {
+  private flushPreStartBuffer = (processor: SignalEventProcessor) => {
+    logger.debug(
+      `Flushing ${this.preStartBuffer.length} events in pre-start buffer`,
+      this.preStartBuffer
+    )
     this.signalEmitter.unsubscribe(this.addToPreStartBuffer)
-    while (this.preStartBuffer.length > 0) {
-      void processor.process(
-        this.preStartBuffer.shift() as Signal,
-        await this.buffer.getAll()
-      )
-    }
+    this.preStartBuffer.forEach(async (signal) => {
+      void processor.process(signal, await this.buffer.getAll())
+    })
+    this.preStartBuffer = []
   }
 
   /**

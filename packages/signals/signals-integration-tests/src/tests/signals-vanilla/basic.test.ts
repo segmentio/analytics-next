@@ -15,6 +15,7 @@ const basicEdgeFn = `
 
 test.beforeEach(async ({ page }) => {
   await indexPage.load(page, basicEdgeFn)
+  await indexPage.waitForAnalyticsInit()
 })
 
 test('network signals', async () => {

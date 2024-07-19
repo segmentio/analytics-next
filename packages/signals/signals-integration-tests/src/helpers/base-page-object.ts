@@ -29,8 +29,14 @@ export class BasePage {
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     await this.page.goto(this.url)
-    // expect analytics to be loaded
-    await Promise.all([
+  }
+
+  /**
+   *  Wait for analytics and signals to be initialized
+   * Signals can be captured before this, so it's useful to have this method
+   */
+  async waitForAnalyticsInit() {
+    return Promise.all([
       this.waitForCDNSettingsResponse(),
       this.waitForEdgeFunctionResponse(),
     ])

@@ -8,6 +8,8 @@ const signalsPlugin = new SignalsPlugin({
   disableSignalsRedaction: true,
 })
 
+;(window as any).signalsPlugin = signalsPlugin
+
 analytics.load({
   writeKey: '<SOME_WRITE_KEY>',
   plugins: [signalsPlugin],

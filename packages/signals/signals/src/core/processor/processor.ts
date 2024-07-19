@@ -12,14 +12,12 @@ export class SignalEventProcessor {
 
   async process(signal: Signal, signals: Signal[]) {
     const analyticsMethodCalls = await this.sandbox.process(signal, signals)
-    logger.debug('New signal processed. Analytics method calls:', {
-      methodArgs: analyticsMethodCalls,
-    })
 
     for (const methodName in analyticsMethodCalls) {
       const name = methodName as MethodName
       const eventsCollection = analyticsMethodCalls[name]
       eventsCollection.forEach((args) => {
+        logger.debug(`analytics.${name}(...) called with args`, args)
         // @ts-ignore
         this.analytics[name](...args)
       })
