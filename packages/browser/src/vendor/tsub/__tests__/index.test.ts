@@ -2,7 +2,7 @@
 import { transform, matches, Store } from '../tsub'
 /**
  * These were taken from the tsub library. https://github.com/segmentio/tsub-js/blob/master/src/__tests__/index.test.ts
- * Tests exist as a smoke test to ensure that the bundling does not introduce any regressions.
+ * Tests exist as a smoke test to ensure that the vendoring/bundling does not introduce any regressions.
  * Not meant to be comprehensive.
  *
  */
