@@ -1,4 +1,18 @@
-function redact(value: unknown) {
+import { Signal } from '../../types'
+
+export const redactSignalData = (signalArg: Signal): Signal => {
+  const signal = structuredClone(signalArg)
+  if (signal.type === 'interaction') {
+    if ('target' in signal.data && 'value' in signal.data.target) {
+      signal.data.target.value = redactJsonValues(signal.data.target.value)
+    }
+  } else if (signal.type === 'network') {
+    signal.data = redactJsonValues(signal.data, 2)
+  }
+  return signal
+}
+
+function redactPrimitive(value: unknown) {
   const type = typeof value
   if (type === 'boolean') {
     return true
@@ -31,7 +45,7 @@ export function redactJsonValues(data: unknown, redactAfterDepth = 0): any {
       return redactedData
     }
   } else if (redactAfterDepth <= 0) {
-    const ret = redact(data)
+    const ret = redactPrimitive(data)
     return ret
   } else {
     return data

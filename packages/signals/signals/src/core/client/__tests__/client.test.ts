@@ -14,7 +14,7 @@ describe(SignalsIngestClient, () => {
     await client.init({ writeKey: 'test' })
   })
 
-  it('makes a track call via the analytics api', async () => {
+  it('makes an instrumentation track call via the analytics api', async () => {
     expect(client).toBeTruthy()
     const ctx = await client.send({
       type: 'instrumentation',
@@ -31,9 +31,36 @@ describe(SignalsIngestClient, () => {
       index: 0,
       data: {
         rawEvent: {
-          foo: 'XXX',
+          foo: 'bar',
         },
       },
     })
+  })
+  it('makes a network track call via the analytics api', async () => {
+    expect(client).toBeTruthy()
+    const ctx = await client.send({
+      type: 'network',
+      data: {
+        action: 'Request',
+        data: {
+          hello: 'how are you',
+        },
+        method: 'post',
+        url: 'http://foo.com',
+      },
+    })
+
+    expect(ctx!.event.type).toEqual('track')
+    expect(ctx!.event.properties!.type).toBe('network')
+    expect(ctx!.event.properties!.data).toMatchInlineSnapshot(`
+      {
+        "action": "Request",
+        "data": {
+          "hello": "XXX",
+        },
+        "method": "post",
+        "url": "http://foo.com",
+      }
+    `)
   })
 })
