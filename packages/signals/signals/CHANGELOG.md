@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 0.1.1
+
+### Patch Changes
+
+- [#1116](https://github.com/segmentio/analytics-next/pull/1116) [`0fdf170`](https://github.com/segmentio/analytics-next/commit/0fdf1704af80c168113733beac3ef4eedeab6d2b) Thanks [@silesky](https://github.com/silesky)! - Process signals that occur before analytics init
+
 ## 0.1.0
 
 ### Minor Changes
