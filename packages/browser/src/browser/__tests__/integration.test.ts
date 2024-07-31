@@ -1091,6 +1091,8 @@ describe('register', () => {
       ...googleAnalytics,
       load: () => Promise.resolve('foo'),
     })
+
+    await analytics
     const goodPluginSpy = jest.spyOn(goodPlugin, 'track')
 
     await analytics.register(goodPlugin, errorPlugin)
