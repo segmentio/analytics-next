@@ -132,6 +132,31 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('sends requests if the size of events exceeds keepalive limits', async () => {
+    const { dispatch } = batch(`https://api.segment.io`, {
+      size: 600,
+      keepalive: true,
+    })
+
+    // fatEvent is about ~1kb in size
+    for (let i = 0; i < 250; i++) {
+      await dispatch(`https://api.segment.io/v1/t`, {
+        event: 'small event',
+      })
+    }
+    expect(fetch).not.toHaveBeenCalled()
+
+    for (let i = 0; i < 65; i++) {
+      await dispatch(`https://api.segment.io/v1/t`, {
+        event: 'fat event',
+        properties: fatEvent,
+      })
+    }
+
+    // still called, even though our batch limit is 600 events
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
   it('sends requests when the timeout expires', async () => {
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 100,

@@ -15,6 +15,7 @@
 
 node_modules
 dist
+dist.*
 package-lock.json
 .DS_Store
 *.log
@@ -34,3 +35,4 @@ reports/*
 playwright-report/
 playwright/.cache/
 tmp.tsconfig.json
+.env

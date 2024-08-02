@@ -1,5 +1,38 @@
 # @segment/analytics-next
 
+## 1.72.1
+
+### Patch Changes
+
+- [#1115](https://github.com/segmentio/analytics-next/pull/1115) [`73ac593`](https://github.com/segmentio/analytics-next/commit/73ac593226159423b2f63cac190eebd347bbb75a) Thanks [@silesky](https://github.com/silesky)! - Update argument resolver to user interface rather than full User
+
+## 1.72.0
+
+### Minor Changes
+
+- [#1107](https://github.com/segmentio/analytics-next/pull/1107) [`91e72ba`](https://github.com/segmentio/analytics-next/commit/91e72ba302fc45b4adb7aaeeb0a1f4ce3582dda6) Thanks [@silesky](https://github.com/silesky)! - Vendor tsub.js 2.0.0
+
+## 1.71.0
+
+### Minor Changes
+
+- [#1101](https://github.com/segmentio/analytics-next/pull/1101) [`aee18d2`](https://github.com/segmentio/analytics-next/commit/aee18d222ddfb2273399987fabf92b54876f5e88) Thanks [@silesky](https://github.com/silesky)! - Export segment plugin and arg resolvers
+
+* [#1100](https://github.com/segmentio/analytics-next/pull/1100) [`e60f625`](https://github.com/segmentio/analytics-next/commit/e60f6252687d977b76b09ca9b756c790d341111a) Thanks [@danieljackins](https://github.com/danieljackins)! - Flush large keepalive requests
+
+### Patch Changes
+
+- [#1101](https://github.com/segmentio/analytics-next/pull/1101) [`aee18d2`](https://github.com/segmentio/analytics-next/commit/aee18d222ddfb2273399987fabf92b54876f5e88) Thanks [@silesky](https://github.com/silesky)! - Add edgeFunction to CDNSettings type
+
+## 1.70.0
+
+### Minor Changes
+
+- [#1088](https://github.com/segmentio/analytics-next/pull/1088) [`2299e9a`](https://github.com/segmentio/analytics-next/commit/2299e9a7a83f421f0bbf7fac03abc9c030296cac) Thanks [@silesky](https://github.com/silesky)! - Refactor to change interface name from `legacySettings` -> `cdnSettings`, in order to clarify code.
+
+* [#1090](https://github.com/segmentio/analytics-next/pull/1090) [`b611746`](https://github.com/segmentio/analytics-next/commit/b611746e23c1fab7321bb4d100f236813ffb416c) Thanks [@silesky](https://github.com/silesky)! - - Add public settings API
+  - Do not expose loadLegacySettings / loadCDNSettings (private API)
+
 ## 1.69.0
 
 ### Minor Changes

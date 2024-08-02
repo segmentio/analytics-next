@@ -2,12 +2,7 @@ import { getProcessEnv } from '../lib/get-process-env'
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 
 import { fetch } from '../lib/fetch'
-import {
-  Analytics,
-  AnalyticsSettings,
-  NullAnalytics,
-  InitOptions,
-} from '../core/analytics'
+import { Analytics, NullAnalytics, InitOptions } from '../core/analytics'
 import { Context } from '../core/context'
 import { Plan } from '../core/events'
 import { Plugin } from '../core/plugin'
@@ -109,9 +104,27 @@ export interface CDNSettings {
      */
     hasUnmappedDestinations: boolean
   }
+  /**
+   * Settings for edge function. Used for signals.
+   */
+  edgeFunction?: // this is technically non-nullable according to ajs-renderer atm, but making it optional because it's strange API choice, and we might want to change it.
+  | {
+        /**
+         * The URL of the edge function (.js file).
+         * @example 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
+         */
+        downloadURL: string
+        /**
+         * The version of the edge function
+         * @example 1
+         */
+        version: number
+      }
+    | {}
 }
 
-export interface AnalyticsBrowserSettings extends AnalyticsSettings {
+export interface AnalyticsBrowserSettings {
+  writeKey: string
   /**
    * The settings for the Segment Source.
    * If provided, `AnalyticsBrowser` will not fetch remote settings
@@ -122,9 +135,17 @@ export interface AnalyticsBrowserSettings extends AnalyticsSettings {
    * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
    */
   cdnURL?: string
+  /**
+   * Plugins or npm-installed action destinations
+   */
+  plugins?: (Plugin | PluginFactory)[]
+  /**
+   * npm-installed classic destinations
+   */
+  classicIntegrations?: ClassicIntegrationSource[]
 }
 
-export function loadLegacySettings(
+export function loadCDNSettings(
   writeKey: string,
   cdnURL?: string
 ): Promise<CDNSettings> {
@@ -330,31 +351,31 @@ async function loadAnalytics(
     preInitBuffer.push(new PreInitMethodCall('page', []))
   }
 
-  let legacySettings =
+  let cdnSettings =
     settings.cdnSettings ??
-    (await loadLegacySettings(settings.writeKey, settings.cdnURL))
+    (await loadCDNSettings(settings.writeKey, settings.cdnURL))
 
   if (options.updateCDNSettings) {
-    legacySettings = options.updateCDNSettings(legacySettings)
+    cdnSettings = options.updateCDNSettings(cdnSettings)
   }
 
   // if options.disable is a function, we allow user to disable analytics based on CDN Settings
   if (typeof options.disable === 'function') {
-    const disabled = await options.disable(legacySettings)
+    const disabled = await options.disable(cdnSettings)
     if (disabled) {
       return [new NullAnalytics(), Context.system()]
     }
   }
 
   const retryQueue: boolean =
-    legacySettings.integrations['Segment.io']?.retryQueue ?? true
+    cdnSettings.integrations['Segment.io']?.retryQueue ?? true
 
   options = {
     retryQueue,
     ...options,
   }
 
-  const analytics = new Analytics(settings, options)
+  const analytics = new Analytics({ ...settings, cdnSettings }, options)
 
   attachInspector(analytics)
 
@@ -367,8 +388,8 @@ async function loadAnalytics(
     | undefined
 
   Stats.initRemoteMetrics({
-    ...legacySettings.metrics,
-    host: segmentLoadOptions?.apiHost ?? legacySettings.metrics?.host,
+    ...cdnSettings.metrics,
+    host: segmentLoadOptions?.apiHost ?? cdnSettings.metrics?.host,
     protocol: segmentLoadOptions?.protocol,
   })
 
@@ -377,7 +398,7 @@ async function loadAnalytics(
 
   const ctx = await registerPlugins(
     settings.writeKey,
-    legacySettings,
+    cdnSettings,
     analytics,
     options,
     plugins,

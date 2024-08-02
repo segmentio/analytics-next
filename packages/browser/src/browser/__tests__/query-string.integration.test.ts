@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../../core/analytics'
-// @ts-ignore loadLegacySettings mocked dependency is accused as unused
+// @ts-ignore loadCDNSettings mocked dependency is accused as unused
 import { AnalyticsBrowser } from '..'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { TEST_WRITEKEY } from '../../test-helpers/test-writekeys'

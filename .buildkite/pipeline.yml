@@ -130,6 +130,23 @@ steps:
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+
+  - label: '[Signals] Lint + Test'
+    agents:
+      queue: v1
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - HUSKY=0 yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn turbo run --filter='./packages/signals/*' build
+      - echo "+++ Run Lint"
+      - yarn turbo run --filter='./packages/signals/*' lint
+      - echo "+++ Run Tests"
+      - yarn turbo run --filter='./packages/signals/*' test
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
 
   - label: ':thisisfine: [Browser] Destinations QA / E2E'

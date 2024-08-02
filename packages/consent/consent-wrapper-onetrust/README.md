@@ -95,7 +95,8 @@ withOneTrust(analytics).load({ writeKey: '<MY_WRITE_KEY'> })
 This wrapper uses the `OneTrust.getDomainData()` API to get the consent model for a given geolocation. Default behavior can be overridden by doing:
 
 ```ts
-withOneTrust(analytics).load(..., { consentModel: () => 'opt-in' | 'opt-out' })
+withOneTrust(analytics, { consentModel: () => 'opt-in' | 'opt-out' })
+  .load({ writeKey: '<MY_WRITE_KEY>' })
 ```
 
 ## Environments
@@ -118,10 +119,4 @@ In order to get full ie11 support, you are expected to bring your own polyfills.
 
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.7.0/polyfill.min.js"></script>
-```
-
-or
-
-```html
-<script src="https://polyfill.io/v3/polyfill.min.js?features=es5,es2015,es2016,es2017,es2018,es2019,es2020&flags=gated"></script>
 ```

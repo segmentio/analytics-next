@@ -28,10 +28,7 @@ import { EventQueue } from '../queue/event-queue'
 import { Group, ID, User, UserOptions } from '../user'
 import autoBind from '../../lib/bind-all'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
-import type {
-  LegacyIntegration,
-  ClassicIntegrationSource,
-} from '../../plugins/ajs-destination/types'
+import type { LegacyIntegration } from '../../plugins/ajs-destination/types'
 import type {
   DestinationMiddlewareFunction,
   MiddlewareFunction,
@@ -52,7 +49,6 @@ import {
   initializeStorages,
   isArrayOfStoreType,
 } from '../storage'
-import { PluginFactory } from '../../plugins/remote-loader'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 import { popPageContext } from '../buffer'
 
@@ -75,11 +71,36 @@ function createDefaultQueue(
   return new EventQueue(priorityQueue)
 }
 
+/**
+ * The public settings that are set on the analytics instance
+ */
+export class AnalyticsInstanceSettings {
+  readonly writeKey: string
+  /**
+   * This is an unstable API, it may change in the future without warning.
+   */
+  readonly cdnSettings: CDNSettings
+
+  /**
+   * Auto-track specific timeout setting   for legacy purposes.
+   */
+  timeout = 300
+
+  constructor(settings: AnalyticsSettings) {
+    this.writeKey = settings.writeKey
+    this.cdnSettings = settings.cdnSettings ?? {
+      integrations: {},
+      edgeFunction: {},
+    }
+  }
+}
+
+/**
+ * The settings that are used to configure the analytics instance
+ */
 export interface AnalyticsSettings {
   writeKey: string
-  timeout?: number
-  plugins?: (Plugin | PluginFactory)[]
-  classicIntegrations?: ClassicIntegrationSource[]
+  cdnSettings?: CDNSettings
 }
 
 export interface InitOptions {
@@ -155,7 +176,7 @@ export class Analytics
   extends Emitter
   implements AnalyticsCore, AnalyticsClassic
 {
-  protected settings: AnalyticsSettings
+  settings: AnalyticsInstanceSettings
   private _user: User
   private _group: Group
   private eventFactory: EventFactory
@@ -177,8 +198,7 @@ export class Analytics
     super()
     const cookieOptions = options?.cookie
     const disablePersistance = options?.disableClientPersistence ?? false
-    this.settings = settings
-    this.settings.timeout = this.settings.timeout ?? 300
+    this.settings = new AnalyticsInstanceSettings(settings)
     this.queue =
       queue ??
       createDefaultQueue(

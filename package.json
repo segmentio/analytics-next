@@ -6,6 +6,7 @@
     "playgrounds/*",
     "packages/*",
     "packages/consent/*",
+    "packages/signals/*",
     "scripts"
   ],
   "engines": {
