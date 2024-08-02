@@ -1,10 +1,12 @@
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageChange } from '../../lib/on-page-change'
+import { RateLimitError } from './ratelimit-error'
 
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
+  retryAttempts?: number
   keepalive?: boolean
 }
 
@@ -63,6 +65,7 @@ export default function batch(
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
+  let ratelimittimeout = 0
 
   function sendBatch(batch: object[]) {
     if (batch.length === 0) {
@@ -88,28 +91,56 @@ export default function batch(
         batch: updatedBatch,
         sentAt: new Date().toISOString(),
       }),
+    }).then((res) => {
+      if (res.status >= 500) {
+        throw new Error(`Bad response from server: ${res.status}`)
+      }
+      if (res.status === 429) {
+        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
+        const retryTimeoutMS =
+          retryTimeoutStringSecs != null
+            ? parseInt(retryTimeoutStringSecs) * 1000
+            : timeout
+        throw new RateLimitError(
+          `Rate limit exceeded: ${res.status}`,
+          retryTimeoutMS
+        )
+      }
     })
   }
 
-  async function flush(): Promise<unknown> {
+  async function flush(attempt = 1): Promise<unknown> {
     if (buffer.length) {
       const batch = buffer
       buffer = []
-      return sendBatch(batch)
+      return sendBatch(batch)?.catch((error) => {
+        console.error('Error sending batch', error)
+        if (attempt < (config?.retryAttempts ?? 10)) {
+          if (error.name === 'RateLimitError') {
+            ratelimittimeout = error.retryTimeout
+          }
+          buffer.push(batch)
+          scheduleFlush(attempt + 1)
+        }
+      })
     }
   }
 
   let schedule: NodeJS.Timeout | undefined
 
-  function scheduleFlush(): void {
+  function scheduleFlush(attempt = 1): void {
     if (schedule) {
       return
     }
 
-    schedule = setTimeout(() => {
-      schedule = undefined
-      flush().catch(console.error)
-    }, timeout)
+    schedule = setTimeout(
+      () => {
+        schedule = undefined
+        flush(attempt).catch(console.error)
+      },
+      ratelimittimeout ? ratelimittimeout : timeout
+    )
+    ratelimittimeout = 0
   }
 
   onPageChange((unloaded) => {

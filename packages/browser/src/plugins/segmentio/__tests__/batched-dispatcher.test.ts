@@ -4,6 +4,7 @@ jest.mock('unfetch', () => {
   return fetch
 })
 
+import { createSuccess } from '../../../test-helpers/factories'
 import batch from '../batched-dispatcher'
 
 const fatEvent = {
@@ -52,6 +53,7 @@ describe('Batching', () => {
     jest.useFakeTimers({
       now: new Date('9 Jun 1993 00:00:00Z').getTime(),
     })
+    fetch.mockReturnValue(createSuccess({}))
   })
 
   afterEach(() => {
