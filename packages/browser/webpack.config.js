@@ -12,10 +12,10 @@ const ASSET_PATH = process.env.ASSET_PATH
   ? process.env.ASSET_PATH
   : !isProd
   ? '/dist/umd/'
-  : undefined
+  : ''
 
 const envPluginConfig = {
-  ASSET_PATH: ASSET_PATH || '',
+  ASSET_PATH: ASSET_PATH,
   IS_WEBPACK_BUILD: true,
 }
 
