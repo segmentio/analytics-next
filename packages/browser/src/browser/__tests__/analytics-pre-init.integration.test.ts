@@ -7,6 +7,7 @@ import { sleep } from '../../lib/sleep'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { User } from '../../core/user'
 import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
+import { setVersionType } from '../../lib/version-type'
 
 jest.mock('unfetch')
 
@@ -235,6 +236,9 @@ describe('Pre-initialization', () => {
   })
 
   describe('Snippet / standalone', () => {
+    beforeAll(() => {
+      setVersionType('web')
+    })
     test('If a snippet user sends multiple events, all of those event gets flushed', async () => {
       const onTrackCb = jest.fn()
       const onTrack = ['on', 'track', onTrackCb]
