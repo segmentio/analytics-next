@@ -6,19 +6,12 @@ import {
 import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
-import { createSuccess } from '../../test-helpers/factories'
 import { createDeferred } from '@segment/analytics-generic-utils'
 import { PluginFactory } from '../../plugins/remote-loader'
 
 const nextTickP = () => new Promise((r) => setTimeout(r, 0))
 
 jest.mock('unfetch')
-
-const mockFetchSettingsSuccessResponse = () => {
-  return jest
-    .mocked(unfetch)
-    .mockImplementation(() => createSuccess({ integrations: {} }))
-}
 
 beforeEach(() => {
   document.head.innerHTML = `
@@ -29,7 +22,9 @@ describe('Lazy initialization', () => {
   let trackSpy: jest.SpiedFunction<Analytics['track']>
   let fetched: jest.MockedFn<typeof unfetch>
   beforeEach(() => {
-    fetched = mockFetchSettingsSuccessResponse()
+    fetched = jest
+      .mocked(unfetch)
+      .mockImplementation(createMockFetchImplementation())
     trackSpy = jest.spyOn(Analytics.prototype, 'track')
   })
 
@@ -94,28 +89,20 @@ const createTestPluginFactory = (name: string, type: PluginType) => {
 
 describe('Lazy destination loading', () => {
   beforeEach(() => {
-    jest.mock('unfetch')
     jest.mocked(unfetch).mockImplementation(
       createMockFetchImplementation({
         integrations: {
-          'Segment.io': {},
           braze: {},
           google: {},
         },
         remotePlugins: [
           {
             name: 'braze',
-            creationName: 'braze',
-            settings: {},
-            url: 'https://cdn.segment.com/plugins/braze/v1.js',
             libraryName: 'braze',
           },
           {
             name: 'google',
             libraryName: 'google',
-            creationName: 'google',
-            settings: {},
-            url: 'https://cdn.segment.com/plugins/google/v1.js',
           },
         ],
       })
@@ -126,29 +113,36 @@ describe('Lazy destination loading', () => {
 
   describe('critical plugins (plugins that block the event pipeline)', () => {
     test('pipeline _will_ wait for *enrichment* plugins to load', async () => {
-      const analytics = new AnalyticsBrowser()
       const testEnrichmentHarness = createTestPluginFactory(
         'enrichIt',
         'enrichment'
       )
-
       const dest1Harness = createTestPluginFactory('braze', 'destination')
+      const dest2Harness = createTestPluginFactory('google', 'destination')
+
+      const analytics = new AnalyticsBrowser()
+
       const testEnrichmentPlugin = testEnrichmentHarness.factory(
         null
       ) as CorePlugin
 
-      analytics.track('test event 1').catch(() => {})
       analytics.register(testEnrichmentPlugin).catch(() => {})
-      analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
-      await dest1Harness.loadingGuard.resolve()
+      analytics.track('test event 1').catch(() => {})
 
-      await sleep(100)
+      const analyticsLoaded = analytics.load({
+        writeKey: 'abc',
+        plugins: [dest1Harness.factory, dest2Harness.factory],
+      })
+      dest1Harness.loadingGuard.resolve()
+
       expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
       expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
 
       // now we'll let the enrichment plugin load
-      await testEnrichmentHarness.loadingGuard.resolve()
-      await sleep(100)
+      testEnrichmentHarness.loadingGuard.resolve()
+
+      await analyticsLoaded
+      await sleep(200)
       expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
       expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
     })
@@ -168,7 +162,7 @@ describe('Lazy destination loading', () => {
       analytics.track('test event 1').catch(() => {})
       analytics.register(testEnrichmentPlugin).catch(() => {})
       analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
-      await dest1Harness.loadingGuard.resolve()
+      dest1Harness.loadingGuard.resolve()
 
       await sleep(50)
       expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
@@ -183,7 +177,7 @@ describe('Lazy destination loading', () => {
   })
 
   describe('non-critical plugins (plugins that do not block the event pipeline)', () => {
-    it('destination loading does not block the event pipeline', async () => {
+    it('destination loading does not block the event pipeline, but enrichment plugins do', async () => {
       const testEnrichmentHarness = createTestPluginFactory(
         'enrichIt',
         'enrichment'
@@ -197,17 +191,16 @@ describe('Lazy destination loading', () => {
         null
       ) as CorePlugin
 
-      void analytics.register(testEnrichmentPlugin)
+      analytics.register(testEnrichmentPlugin).catch(() => {})
 
-      analytics.load({
+      const p = analytics.load({
         writeKey: 'abc',
         plugins: [dest1Harness.factory, dest2Harness.factory],
       })
 
+      // we won't hold enrichment plugin from loading since they are not lazy loaded
       testEnrichmentHarness.loadingGuard.resolve()
-
-      await sleep(50)
-
+      await p
       // and we'll also let one destination load so we can assert some behaviours
       dest1Harness.loadingGuard.resolve()
 

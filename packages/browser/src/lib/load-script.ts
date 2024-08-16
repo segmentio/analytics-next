@@ -50,6 +50,7 @@ export function loadScript(
     script.onerror = (): void => {
       script.onerror = script.onload = null
       script.setAttribute('status', 'error')
+      console.error(`Failed to load ${src}`)
       reject(new Error(`Failed to load ${src}`))
     }
 

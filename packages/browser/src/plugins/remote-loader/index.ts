@@ -225,31 +225,36 @@ async function loadPluginFactory(
   remotePlugin: RemotePlugin,
   obfuscate?: boolean
 ): Promise<void | PluginFactory> {
-  const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
-  const cdn = getCDN()
+  try {
+    const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
+    const cdn = getCDN()
 
-  if (obfuscate) {
-    const urlSplit = remotePlugin.url.split('/')
-    const name = urlSplit[urlSplit.length - 2]
-    const obfuscatedURL = remotePlugin.url.replace(
-      name,
-      btoa(name).replace(/=/g, '')
-    )
-    try {
-      await loadScript(obfuscatedURL.replace(defaultCdn, cdn))
-    } catch (error) {
-      // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
-      // We should use the unobfuscated version as a fallback.
+    if (obfuscate) {
+      const urlSplit = remotePlugin.url.split('/')
+      const name = urlSplit[urlSplit.length - 2]
+      const obfuscatedURL = remotePlugin.url.replace(
+        name,
+        btoa(name).replace(/=/g, '')
+      )
+      try {
+        await loadScript(obfuscatedURL.replace(defaultCdn, cdn))
+      } catch (error) {
+        // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
+        // We should use the unobfuscated version as a fallback.
+        await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
+      }
+    } else {
       await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
     }
-  } else {
-    await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
-  }
 
-  // @ts-expect-error
-  if (typeof window[remotePlugin.libraryName] === 'function') {
     // @ts-expect-error
-    return window[remotePlugin.libraryName] as PluginFactory
+    if (typeof window[remotePlugin.libraryName] === 'function') {
+      // @ts-expect-error
+      return window[remotePlugin.libraryName] as PluginFactory
+    }
+  } catch (err) {
+    console.error('Failed to create PluginFactory', remotePlugin)
+    throw err
   }
 }
 
