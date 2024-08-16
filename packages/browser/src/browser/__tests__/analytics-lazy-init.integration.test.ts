@@ -1,5 +1,8 @@
 import { CorePlugin, PluginType, sleep } from '@segment/analytics-core'
-import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
+import {
+  createMockFetchImplementation,
+  getBufferedPageCtxFixture,
+} from '../../test-helpers/fixtures'
 import unfetch from 'unfetch'
 import { AnalyticsBrowser } from '..'
 import { Analytics } from '../../core/analytics'
@@ -16,6 +19,11 @@ const mockFetchSettingsSuccessResponse = () => {
     .mocked(unfetch)
     .mockImplementation(() => createSuccess({ integrations: {} }))
 }
+
+beforeEach(() => {
+  document.head.innerHTML = `
+        <script id="initial"></script>`.trim()
+})
 
 describe('Lazy initialization', () => {
   let trackSpy: jest.SpiedFunction<Analytics['track']>
@@ -56,7 +64,10 @@ describe('Lazy initialization', () => {
 const createTestPluginFactory = (name: string, type: PluginType) => {
   const lock = createDeferred<void>()
   const load = createDeferred<void>()
-  const trackSpy = jest.fn()
+  const trackSpy = jest.fn().mockImplementation((ctx) => {
+    ctx.event.context!.ran = true
+    return ctx
+  })
 
   const factory: PluginFactory = () => {
     return {
@@ -84,17 +95,27 @@ const createTestPluginFactory = (name: string, type: PluginType) => {
 describe('Lazy destination loading', () => {
   beforeEach(() => {
     jest.mock('unfetch')
-    jest.mocked(unfetch).mockImplementation(() =>
-      createSuccess({
-        integrations: {},
+    jest.mocked(unfetch).mockImplementation(
+      createMockFetchImplementation({
+        integrations: {
+          'Segment.io': {},
+          braze: {},
+          google: {},
+        },
         remotePlugins: [
           {
             name: 'braze',
+            creationName: 'braze',
+            settings: {},
+            url: 'https://cdn.segment.com/plugins/braze/v1.js',
             libraryName: 'braze',
           },
           {
             name: 'google',
             libraryName: 'google',
+            creationName: 'google',
+            settings: {},
+            url: 'https://cdn.segment.com/plugins/google/v1.js',
           },
         ],
       })
@@ -103,71 +124,139 @@ describe('Lazy destination loading', () => {
 
   afterAll(() => jest.resetAllMocks())
 
-  it('loads destinations in the background', async () => {
-    const testEnrichmentHarness = createTestPluginFactory(
-      'enrichIt',
-      'enrichment'
-    )
-    const dest1Harness = createTestPluginFactory('braze', 'destination')
-    const dest2Harness = createTestPluginFactory('google', 'destination')
+  describe('critical plugins (plugins that block the event pipeline)', () => {
+    test('pipeline _will_ wait for *enrichment* plugins to load', async () => {
+      const analytics = new AnalyticsBrowser()
+      const testEnrichmentHarness = createTestPluginFactory(
+        'enrichIt',
+        'enrichment'
+      )
 
-    const analytics = new AnalyticsBrowser()
+      const dest1Harness = createTestPluginFactory('braze', 'destination')
+      const testEnrichmentPlugin = testEnrichmentHarness.factory(
+        null
+      ) as CorePlugin
 
-    const testEnrichmentPlugin = testEnrichmentHarness.factory(
-      null
-    ) as CorePlugin
+      analytics.track('test event 1').catch(() => {})
+      analytics.register(testEnrichmentPlugin).catch(() => {})
+      analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
+      await dest1Harness.loadingGuard.resolve()
 
-    analytics.register(testEnrichmentPlugin).catch(() => {})
+      await sleep(100)
+      expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
+      expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
 
-    await analytics.load({
-      writeKey: 'abc',
-      plugins: [dest1Harness.factory, dest2Harness.factory],
+      // now we'll let the enrichment plugin load
+      await testEnrichmentHarness.loadingGuard.resolve()
+      await sleep(100)
+      expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
+      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
     })
 
-    // we won't hold enrichment plugin from loading since they are not lazy loaded
-    testEnrichmentHarness.loadingGuard.resolve()
-    // and we'll also let one destination load so we can assert some behaviours
-    dest1Harness.loadingGuard.resolve()
+    test('pipeline _will_ wait for *before* plugins to load', async () => {
+      const analytics = new AnalyticsBrowser()
+      const testEnrichmentHarness = createTestPluginFactory(
+        'enrichIt',
+        'before'
+      )
 
-    await testEnrichmentHarness.loadPromise
-    await dest1Harness.loadPromise
+      const dest1Harness = createTestPluginFactory('braze', 'destination')
+      const testEnrichmentPlugin = testEnrichmentHarness.factory(
+        null
+      ) as CorePlugin
 
-    analytics.track('test event 1').catch(() => {})
+      analytics.track('test event 1').catch(() => {})
+      analytics.register(testEnrichmentPlugin).catch(() => {})
+      analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
+      await dest1Harness.loadingGuard.resolve()
 
-    // even though there's one destination that still hasn't loaded, the next assertions
-    // prove that the event pipeline is flowing regardless
+      await sleep(0)
+      expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
+      expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
 
-    await nextTickP()
-    expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
-
-    await nextTickP()
-    expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
-
-    // now we'll send another event
-
-    analytics.track('test event 2').catch(() => {})
-
-    // even though there's one destination that still hasn't loaded, the next assertions
-    // prove that the event pipeline is flowing regardless
-
-    await nextTickP()
-    expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(2)
-
-    await nextTickP()
-    expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(2)
-
-    // this whole time the other destination was not engaged with at all
-    expect(dest2Harness.trackSpy).not.toHaveBeenCalled()
-
-    // now "after some time" the other destination will load
-    dest2Harness.loadingGuard.resolve()
-    await dest2Harness.loadPromise
-
-    // and now that it is "online" - the previous events that it missed will be handed over
-    await nextTickP()
-    expect(dest2Harness.trackSpy).toHaveBeenCalledTimes(2)
+      // now we'll let the enrichment plugin load
+      await testEnrichmentHarness.loadingGuard.resolve()
+      await sleep(0)
+      expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
+      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
+    })
   })
 
+  describe.only('non-critical plugins (plugins that do not block the event pipeline)', () => {
+    it('destination loading does not block the event pipeline', async () => {
+      const testEnrichmentHarness = createTestPluginFactory(
+        'enrichIt',
+        'enrichment'
+      )
+      const dest1Harness = createTestPluginFactory('braze', 'destination')
+      const dest2Harness = createTestPluginFactory('google', 'destination')
+
+      const analytics = new AnalyticsBrowser()
+
+      const testEnrichmentPlugin = testEnrichmentHarness.factory(
+        null
+      ) as CorePlugin
+
+      void analytics.register(testEnrichmentPlugin)
+
+      analytics.load({
+        writeKey: 'abc',
+        plugins: [dest1Harness.factory, dest2Harness.factory],
+      })
+
+      testEnrichmentHarness.loadingGuard.resolve()
+
+      await sleep(0)
+
+      // and we'll also let one destination load so we can assert some behaviours
+      dest1Harness.loadingGuard.resolve()
+
+      await testEnrichmentHarness.loadPromise
+      await dest1Harness.loadPromise
+
+      analytics.track('test event 1').catch(() => {})
+
+      // even though there's one destination that still hasn't loaded, the next assertions
+      // prove that the event pipeline is flowing regardless
+
+      await nextTickP()
+      expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
+
+      await nextTickP()
+      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
+      expect(dest1Harness.trackSpy.mock.calls[0][0].event.context.ran).toBe(
+        true
+      )
+
+      // now we'll send another event
+
+      analytics.track('test event 2').catch(() => {})
+
+      // even though there's one destination that still hasn't loaded, the next assertions
+      // prove that the event pipeline is flowing regardless
+
+      await nextTickP()
+      expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(2)
+
+      await nextTickP()
+      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(2)
+
+      // this whole time the other destination was not engaged with at all
+      expect(dest2Harness.trackSpy).not.toHaveBeenCalled()
+
+      // now "after some time" the other destination will load
+      dest2Harness.loadingGuard.resolve()
+      await dest2Harness.loadPromise
+
+      // and now that it is "online" - the previous events that it missed will be handed over
+      await nextTickP()
+      expect(dest2Harness.trackSpy).toHaveBeenCalledTimes(2)
+
+      // should not add any other script tags
+      expect(document.querySelectorAll('script').length).toBe(1)
+      expect(document.getElementsByTagName('script')[0].id).toBe('initial')
+    })
+  })
   it('emits initialize regardless of whether all destinations have loaded', async () => {
     const dest1Harness = createTestPluginFactory('braze', 'destination')
     const dest2Harness = createTestPluginFactory('google', 'destination')
