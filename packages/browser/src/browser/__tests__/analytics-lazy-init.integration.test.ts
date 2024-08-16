@@ -170,19 +170,19 @@ describe('Lazy destination loading', () => {
       analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
       await dest1Harness.loadingGuard.resolve()
 
-      await sleep(0)
+      await sleep(50)
       expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
       expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
 
       // now we'll let the enrichment plugin load
       await testEnrichmentHarness.loadingGuard.resolve()
-      await sleep(0)
+      await sleep(50)
       expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
       expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe.only('non-critical plugins (plugins that do not block the event pipeline)', () => {
+  describe('non-critical plugins (plugins that do not block the event pipeline)', () => {
     it('destination loading does not block the event pipeline', async () => {
       const testEnrichmentHarness = createTestPluginFactory(
         'enrichIt',
@@ -206,7 +206,7 @@ describe('Lazy destination loading', () => {
 
       testEnrichmentHarness.loadingGuard.resolve()
 
-      await sleep(0)
+      await sleep(50)
 
       // and we'll also let one destination load so we can assert some behaviours
       dest1Harness.loadingGuard.resolve()
