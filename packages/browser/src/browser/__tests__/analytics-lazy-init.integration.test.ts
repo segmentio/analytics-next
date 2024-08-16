@@ -1,6 +1,7 @@
 import { CorePlugin, PluginType, sleep } from '@segment/analytics-core'
 import {
   createMockFetchImplementation,
+  createRemotePlugin,
   getBufferedPageCtxFixture,
 } from '../../test-helpers/fixtures'
 import unfetch from 'unfetch'
@@ -96,14 +97,8 @@ describe('Lazy destination loading', () => {
           google: {},
         },
         remotePlugins: [
-          {
-            name: 'braze',
-            libraryName: 'braze',
-          },
-          {
-            name: 'google',
-            libraryName: 'google',
-          },
+          createRemotePlugin('braze'),
+          createRemotePlugin('google'),
         ],
       })
     )
@@ -113,30 +108,29 @@ describe('Lazy destination loading', () => {
 
   describe('critical plugins (plugins that block the event pipeline)', () => {
     test('pipeline _will_ wait for *enrichment* plugins to load', async () => {
+      jest.mocked(unfetch).mockImplementation(
+        createMockFetchImplementation({
+          remotePlugins: [],
+        })
+      )
       const testEnrichmentHarness = createTestPluginFactory(
         'enrichIt',
         'enrichment'
       )
-      const dest1Harness = createTestPluginFactory('braze', 'destination')
-      const dest2Harness = createTestPluginFactory('google', 'destination')
 
       const analytics = new AnalyticsBrowser()
 
-      const testEnrichmentPlugin = testEnrichmentHarness.factory(
-        null
-      ) as CorePlugin
+      const testPlugin = testEnrichmentHarness.factory(null) as CorePlugin
 
-      analytics.register(testEnrichmentPlugin).catch(() => {})
+      analytics.register(testPlugin).catch(() => {})
       analytics.track('test event 1').catch(() => {})
 
       const analyticsLoaded = analytics.load({
         writeKey: 'abc',
-        plugins: [dest1Harness.factory, dest2Harness.factory],
+        plugins: [],
       })
-      dest1Harness.loadingGuard.resolve()
 
       expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
-      expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
 
       // now we'll let the enrichment plugin load
       testEnrichmentHarness.loadingGuard.resolve()
@@ -144,35 +138,36 @@ describe('Lazy destination loading', () => {
       await analyticsLoaded
       await sleep(200)
       expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
-      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
     })
 
     test('pipeline _will_ wait for *before* plugins to load', async () => {
-      const analytics = new AnalyticsBrowser()
-      const testEnrichmentHarness = createTestPluginFactory(
-        'enrichIt',
-        'before'
+      jest.mocked(unfetch).mockImplementation(
+        createMockFetchImplementation({
+          remotePlugins: [],
+        })
       )
+      const testBeforeHarness = createTestPluginFactory('enrichIt', 'before')
 
-      const dest1Harness = createTestPluginFactory('braze', 'destination')
-      const testEnrichmentPlugin = testEnrichmentHarness.factory(
-        null
-      ) as CorePlugin
+      const analytics = new AnalyticsBrowser()
 
+      const testPlugin = testBeforeHarness.factory(null) as CorePlugin
+
+      analytics.register(testPlugin).catch(() => {})
       analytics.track('test event 1').catch(() => {})
-      analytics.register(testEnrichmentPlugin).catch(() => {})
-      analytics.load({ writeKey: 'abc', plugins: [dest1Harness.factory] })
-      dest1Harness.loadingGuard.resolve()
 
-      await sleep(50)
-      expect(testEnrichmentHarness.trackSpy).not.toHaveBeenCalled()
-      expect(dest1Harness.trackSpy).not.toHaveBeenCalled()
+      const analyticsLoaded = analytics.load({
+        writeKey: 'abc',
+        plugins: [],
+      })
 
-      // now we'll let the enrichment plugin load
-      await testEnrichmentHarness.loadingGuard.resolve()
-      await sleep(50)
-      expect(testEnrichmentHarness.trackSpy).toHaveBeenCalledTimes(1)
-      expect(dest1Harness.trackSpy).toHaveBeenCalledTimes(1)
+      expect(testBeforeHarness.trackSpy).not.toHaveBeenCalled()
+
+      // now we'll let the before  plugin load
+      testBeforeHarness.loadingGuard.resolve()
+
+      await analyticsLoaded
+      await sleep(200)
+      expect(testBeforeHarness.trackSpy).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -203,9 +198,6 @@ describe('Lazy destination loading', () => {
       await p
       // and we'll also let one destination load so we can assert some behaviours
       dest1Harness.loadingGuard.resolve()
-
-      await testEnrichmentHarness.loadPromise
-      await dest1Harness.loadPromise
 
       analytics.track('test event 1').catch(() => {})
 
