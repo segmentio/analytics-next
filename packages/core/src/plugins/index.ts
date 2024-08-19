@@ -17,13 +17,10 @@ export interface CorePlugin<
   Analytics extends CoreAnalytics = any
 > {
   name: string
-  // An action destination plugin name used to be the concatenation of the current destination name, and the specific action (like 'amplitude actions sessionId'
-  // Which meant customers had to set that individual action to false to disable it before.
-  // Then with the destination filter route, we created a new wrapper around actions to make it easy to disable based on the creationName
-  // that's when we added creationName to the objects in remotePlugin. However, to preserve backwards compatibility,
-  // we still needed to support disabling based on the concatenation since customers were doing that in the wild - those are stored in ‘alternativeNames’
-  // so we can filter based on checking both name fields.
+
+  // This is only used for disabling plugins. An action destination plugin name used to be the concatenation of the current destination name, and the specific action (like 'Braze Web Mode (Actions) updateUserProfile'. Which meant customers had to set that individual action to false to disable it before. Then with the destination filter route, we created a new wrapper around actions to make it easy to disable based on the creationName, which is when we added creationName to the objects in remotePlugin. However, to preserve backwards compatibility, we still needed to support disabling based on the concatenation since customers were doing that in the wild, so we can filter based on checking both name fields.
   /**
+   * A concatenation of the current destination name and the specific action. This field is only relevant for destination plugins.
    * @example ['Braze Web Mode (Actions) updateUserProfile'] // (and the plugin name would be "Braze Web Mode (Actions)"")
    */
   alternativeNames?: string[]
