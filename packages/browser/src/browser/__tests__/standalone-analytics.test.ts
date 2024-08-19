@@ -10,6 +10,7 @@ import * as Factory from '../../test-helpers/factories'
 import { EventQueue } from '../../core/queue/event-queue'
 import { AnalyticsStandalone } from '../standalone-interface'
 import { getBufferedPageCtxFixture } from '../../test-helpers/fixtures'
+import { setVersionType } from '../../lib/version-type'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -45,6 +46,7 @@ describe('standalone bundle', () => {
   const segmentDotCom = `foo`
 
   beforeEach(async () => {
+    setVersionType('web')
     ;(window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>

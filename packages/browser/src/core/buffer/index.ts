@@ -11,6 +11,7 @@ import {
   createPageContext,
   PageContext,
 } from '../page'
+import { getVersionType } from '../../lib/version-type'
 
 /**
  * The names of any AnalyticsBrowser methods that also exist on Analytics
@@ -220,6 +221,11 @@ export class PreInitMethodCallBuffer {
    * This removes existing buffered calls from the window object.
    */
   private _pushSnippetWindowBuffer(): void {
+    // if this is the npm version, we don't want to read from the window object.
+    // This avoids namespace conflicts if there is a seperate analytics library on the page.
+    if (getVersionType() === 'npm') {
+      return undefined
+    }
     const wa = getGlobalAnalytics()
     if (!Array.isArray(wa)) return undefined
     const buffered: SnippetBuffer = wa.splice(0, wa.length)

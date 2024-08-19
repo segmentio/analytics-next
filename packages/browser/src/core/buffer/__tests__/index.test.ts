@@ -12,9 +12,11 @@ import { sleep } from '../../../lib/sleep'
 import { User } from '../../user'
 import { getBufferedPageCtxFixture } from '../../../test-helpers/fixtures'
 import * as GlobalAnalytics from '../../../lib/global-analytics-helper'
+import { setVersionType } from '../../../lib/version-type'
 
 describe(PreInitMethodCallBuffer, () => {
   beforeEach(() => {
+    setVersionType('npm')
     GlobalAnalytics.setGlobalAnalytics(undefined as any)
   })
 
@@ -28,6 +30,7 @@ describe(PreInitMethodCallBuffer, () => {
     })
 
     it('should also read from global analytics buffer', () => {
+      setVersionType('web')
       const call1 = new PreInitMethodCall('identify', ['foo'], jest.fn())
       ;(window as any).analytics = [['track', 'snippet']]
 
@@ -75,6 +78,7 @@ describe(PreInitMethodCallBuffer, () => {
       expect(buffer.getCalls('group')).toEqual([call3])
     })
     it('should read from Snippet Buffer', () => {
+      setVersionType('web')
       const call1 = new PreInitMethodCall('identify', ['foo'], jest.fn())
       GlobalAnalytics.setGlobalAnalytics([['identify', 'snippet']] as any)
 
@@ -92,6 +96,7 @@ describe(PreInitMethodCallBuffer, () => {
   })
   describe('clear()', () => {
     it('should clear calls', () => {
+      setVersionType('web')
       const call1 = new PreInitMethodCall('identify', [], jest.fn())
       const call2 = new PreInitMethodCall('identify', [], jest.fn())
       const call3 = new PreInitMethodCall('group', [], jest.fn())
@@ -105,6 +110,7 @@ describe(PreInitMethodCallBuffer, () => {
 
   describe('Snippet buffer (method calls)', () => {
     it('should be read from the global analytics instance', () => {
+      setVersionType('web')
       const getGlobalAnalyticsSpy = jest.spyOn(
         GlobalAnalytics,
         'getGlobalAnalytics'
