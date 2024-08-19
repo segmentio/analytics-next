@@ -5,6 +5,9 @@ function findScript(src: string): HTMLScriptElement | undefined {
   return scripts.find((s) => s.src === src)
 }
 
+/**
+ * Load a script from a URL and append it to the document.
+ */
 export function loadScript(
   src: string,
   attributes?: Record<string, string>
@@ -50,8 +53,15 @@ export function loadScript(
       reject(new Error(`Failed to load ${src}`))
     }
 
-    const tag = window.document.getElementsByTagName('script')[0]
-    tag.parentElement?.insertBefore(script, tag)
+    const firstExistingScript = window.document.querySelector('script')
+    if (!firstExistingScript) {
+      window.document.head.appendChild(script)
+    } else {
+      firstExistingScript.parentElement?.insertBefore(
+        script,
+        firstExistingScript
+      )
+    }
   })
 }
 

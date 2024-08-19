@@ -55,7 +55,7 @@ const flushSyncAnalyticsCalls = (
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): void => {
-  buffer.getCalls(name).forEach((c) => {
+  buffer.getAndRemove(name).forEach((c) => {
     // While the underlying methods are synchronous, the callAnalyticsMethod returns a promise,
     // which normalizes success and error states between async and non-async methods, with no perf penalty.
     callAnalyticsMethod(analytics, c).catch(console.error)
@@ -66,7 +66,19 @@ export const flushAddSourceMiddleware = async (
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ) => {
-  for (const c of buffer.getCalls('addSourceMiddleware')) {
+  for (const c of buffer.getAndRemove('addSourceMiddleware')) {
+    await callAnalyticsMethod(analytics, c).catch(console.error)
+  }
+}
+
+/**
+ *  Flush register plugin
+ */
+export const flushRegister = async (
+  analytics: Analytics,
+  buffer: PreInitMethodCallBuffer
+) => {
+  for (const c of buffer.getAndRemove('register')) {
     await callAnalyticsMethod(analytics, c).catch(console.error)
   }
 }
@@ -82,10 +94,13 @@ export const flushAnalyticsCallsInNewTask = (
   analytics: Analytics,
   buffer: PreInitMethodCallBuffer
 ): void => {
-  buffer.toArray().forEach((m) => {
-    setTimeout(() => {
-      callAnalyticsMethod(analytics, m).catch(console.error)
-    }, 0)
+  ;(Object.keys(buffer.calls) as (keyof typeof buffer.calls)[]).forEach((m) => {
+    buffer.getAndRemove(m).forEach((c) => {
+      // No one remembers why this event loop optimization is/was neccessary. Lost to history.
+      setTimeout(() => {
+        callAnalyticsMethod(analytics, c).catch(console.error)
+      }, 0)
+    })
   })
 }
 
@@ -160,13 +175,13 @@ export class PreInitMethodCallBuffer {
   private _callMap: MethodCallMap = {}
 
   constructor(...calls: PreInitMethodCall[]) {
-    this.push(...calls)
+    this.add(...calls)
   }
 
   /**
    * Pull any buffered method calls from the window object, and use them to hydrate the instance buffer.
    */
-  private get calls() {
+  public get calls() {
     this._pushSnippetWindowBuffer()
     return this._callMap
   }
@@ -175,11 +190,22 @@ export class PreInitMethodCallBuffer {
     this._callMap = calls
   }
 
-  getCalls<T extends PreInitMethodName>(methodName: T): PreInitMethodCall<T>[] {
+  get<T extends PreInitMethodName>(methodName: T): PreInitMethodCall<T>[] {
     return (this.calls[methodName] ?? []) as PreInitMethodCall<T>[]
   }
 
-  push(...calls: PreInitMethodCall[]): void {
+  /**
+   * Get all buffered method calls for a given method name, and clear them from the buffer.
+   */
+  getAndRemove<T extends PreInitMethodName>(
+    methodName: T
+  ): PreInitMethodCall<T>[] {
+    const calls = this.get(methodName)
+    this.calls[methodName] = []
+    return calls
+  }
+
+  add(...calls: PreInitMethodCall[]): void {
     calls.forEach((call) => {
       const eventsExpectingPageContext: PreInitMethodName[] = [
         'track',
@@ -232,7 +258,7 @@ export class PreInitMethodCallBuffer {
     const calls = buffered.map(
       ([methodName, ...args]) => new PreInitMethodCall(methodName, args)
     )
-    this.push(...calls)
+    this.add(...calls)
   }
 }
 
@@ -351,7 +377,7 @@ export class AnalyticsBuffered
         return Promise.resolve(result)
       }
       return new Promise((resolve, reject) => {
-        this._preInitBuffer.push(
+        this._preInitBuffer.add(
           new PreInitMethodCall(methodName, args, resolve as any, reject)
         )
       })
@@ -368,7 +394,7 @@ export class AnalyticsBuffered
         void (this.instance[methodName] as Function)(...args)
         return this
       } else {
-        this._preInitBuffer.push(new PreInitMethodCall(methodName, args))
+        this._preInitBuffer.add(new PreInitMethodCall(methodName, args))
       }
 
       return this

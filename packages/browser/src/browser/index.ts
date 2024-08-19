@@ -25,6 +25,7 @@ import {
   flushSetAnonymousID,
   flushOn,
   PreInitMethodCall,
+  flushRegister,
 } from '../core/buffer'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
@@ -208,8 +209,6 @@ async function flushFinalBuffer(
   // analytics calls during async function calls.
   await flushAddSourceMiddleware(analytics, buffer)
   flushAnalyticsCallsInNewTask(analytics, buffer)
-  // Clear buffer, just in case analytics is loaded twice; we don't want to fire events off again.
-  buffer.clear()
 }
 
 async function registerPlugins(
@@ -218,9 +217,11 @@ async function registerPlugins(
   analytics: Analytics,
   options: InitOptions,
   pluginLikes: (Plugin | PluginFactory)[] = [],
-  legacyIntegrationSources: ClassicIntegrationSource[]
+  legacyIntegrationSources: ClassicIntegrationSource[],
+  preInitBuffer: PreInitMethodCallBuffer
 ): Promise<Context> {
-  const plugins = pluginLikes?.filter(
+  flushPreBuffer(analytics, preInitBuffer)
+  const pluginsFromSettings = pluginLikes?.filter(
     (pluginLike) => typeof pluginLike === 'object'
   ) as Plugin[]
 
@@ -280,15 +281,10 @@ async function registerPlugins(
     pluginSources
   ).catch(() => [])
 
-  const toRegister = [
-    envEnrichment,
-    ...plugins,
-    ...legacyDestinations,
-    ...remotePlugins,
-  ]
+  const basePlugins = [envEnrichment, ...legacyDestinations, ...remotePlugins]
 
   if (schemaFilter) {
-    toRegister.push(schemaFilter)
+    basePlugins.push(schemaFilter)
   }
 
   const shouldIgnoreSegmentio =
@@ -297,7 +293,7 @@ async function registerPlugins(
     (options.integrations && options.integrations['Segment.io'] === false)
 
   if (!shouldIgnoreSegmentio) {
-    toRegister.push(
+    basePlugins.push(
       await segmentio(
         analytics,
         mergedSettings['Segment.io'] as SegmentioSettings,
@@ -306,7 +302,15 @@ async function registerPlugins(
     )
   }
 
-  const ctx = await analytics.register(...toRegister)
+  // order is important here, (for example, if there are multiple enrichment plugins, the last registered plugin will have access to the last context.)
+  const ctx = await analytics.register(
+    // register 'core' plugins and those via destinations
+    ...basePlugins,
+    // register user-defined plugins passed into AnalyticsBrowser.load({ plugins: [plugin1, plugin2] }) -- relevant to npm-only
+    ...pluginsFromSettings
+  )
+  // register user-defined plugins registered via analytics.register()
+  await flushRegister(analytics, preInitBuffer)
 
   if (
     Object.entries(cdnSettings.enabledMiddleware ?? {}).some(
@@ -348,7 +352,7 @@ async function loadAnalytics(
 
   if (options.initialPageview) {
     // capture the page context early, so it's always up-to-date
-    preInitBuffer.push(new PreInitMethodCall('page', []))
+    preInitBuffer.add(new PreInitMethodCall('page', []))
   }
 
   let cdnSettings =
@@ -393,16 +397,14 @@ async function loadAnalytics(
     protocol: segmentLoadOptions?.protocol,
   })
 
-  // needs to be flushed before plugins are registered
-  flushPreBuffer(analytics, preInitBuffer)
-
   const ctx = await registerPlugins(
     settings.writeKey,
     cdnSettings,
     analytics,
     options,
     plugins,
-    classicIntegrations
+    classicIntegrations,
+    preInitBuffer
   )
 
   const search = window.location.search ?? ''
