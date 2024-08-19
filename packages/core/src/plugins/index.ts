@@ -18,7 +18,7 @@ export interface CorePlugin<
 > {
   name: string
   alternativeNames?: string[]
-  version: string
+  version?: string
   type: PluginType
   isLoaded: () => boolean
   load: (ctx: Ctx, instance: Analytics) => Promise<unknown>
