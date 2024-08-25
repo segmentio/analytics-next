@@ -234,7 +234,6 @@ export const lowercase: Plugin = {
   type: 'before',
   version: '1.0.0',
 
-  isLoaded: () => true,
   load: () => Promise.resolve(),
 
   track: (ctx) => {

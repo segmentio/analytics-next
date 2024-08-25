@@ -5,7 +5,7 @@ import { ON_REMOVE_FROM_FUTURE, PriorityQueue } from '../priority-queue'
 import { CoreContext, ContextCancelation } from '../context'
 import { Emitter } from '@segment/analytics-generic-utils'
 import { Integrations, JSONObject } from '../events/interfaces'
-import { CorePlugin } from '../plugins'
+import { CorePlugin, createCorePlugin, PluginRegistration } from '../plugins'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
 
@@ -47,9 +47,10 @@ export abstract class CoreEventQueue<
 
   async register(
     ctx: Ctx,
-    plugin: Plugin,
+    pluginApi: PluginRegistration<Ctx>,
     instance: CoreAnalytics
   ): Promise<void> {
+    const plugin = createCorePlugin(pluginApi) as Plugin
     this.plugins.push(plugin)
 
     const handleLoadError = (err: any) => {

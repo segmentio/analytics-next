@@ -13,7 +13,7 @@ import {
 import type { FormArgs, LinkArgs } from '../auto-track'
 import { isOffline } from '../connection'
 import { Context } from '../context'
-import { dispatch } from '@segment/analytics-core'
+import { dispatch, PublicPlugin } from '@segment/analytics-core'
 import { Emitter } from '@segment/analytics-generic-utils'
 import {
   Callback,
@@ -450,7 +450,7 @@ export class Analytics
     return autotrack.form.call(this, ...args)
   }
 
-  async register(...plugins: Plugin[]): Promise<Context> {
+  async register(...plugins: PublicPlugin[]): Promise<Context> {
     const ctx = Context.system()
 
     const registrations = plugins.map((xt) =>

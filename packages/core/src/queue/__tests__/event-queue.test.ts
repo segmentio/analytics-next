@@ -631,8 +631,10 @@ describe('register', () => {
     await Promise.all(promises)
 
     expect(eq.plugins.length).toBe(2)
-    expect(eq.plugins).toContain(testPlugin)
-    expect(eq.plugins).toContain(goodDestinationPlugin)
+    expect(JSON.stringify(eq.plugins)).toContain(JSON.stringify(testPlugin))
+    expect(JSON.stringify(eq.plugins)).toContain(
+      JSON.stringify(goodDestinationPlugin)
+    )
   })
 })
 
@@ -647,7 +649,7 @@ describe('deregister', () => {
 
     await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(eq.plugins.length).toBe(1)
-    expect(eq.plugins[0]).toBe(testPlugin)
+    expect(JSON.stringify(eq.plugins[0])).toBe(JSON.stringify(testPlugin))
   })
 
   it('invokes plugin.unload', async () => {
@@ -661,7 +663,7 @@ describe('deregister', () => {
     await eq.deregister(TestCtx.system(), toBeRemoved, ajs)
     expect(toBeRemoved.unload).toHaveBeenCalled()
     expect(eq.plugins.length).toBe(1)
-    expect(eq.plugins[0]).toBe(testPlugin)
+    expect(JSON.stringify(eq.plugins[0])).toBe(JSON.stringify(testPlugin))
   })
 })
 
