@@ -68,7 +68,7 @@ export class NetworkGenerator implements SignalGenerator {
 
       emitter.emit(
         createNetworkSignal({
-          action: 'Request',
+          action: 'request',
           url: normalizeUrl(sUrl),
           method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
@@ -87,7 +87,7 @@ export class NetworkGenerator implements SignalGenerator {
       const data = await rs.json()
       emitter.emit(
         createNetworkSignal({
-          action: 'Response',
+          action: 'response',
           url: url,
           data: data,
         })

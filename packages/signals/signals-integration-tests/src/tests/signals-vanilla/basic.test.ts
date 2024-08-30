@@ -31,13 +31,13 @@ test('network signals', async () => {
     (el: SegmentEvent) => el.properties!.type === 'network'
   )
   const requests = networkEvents.filter(
-    (el) => el.properties!.data.action === 'Request'
+    (el) => el.properties!.data.action === 'request'
   )
   expect(requests).toHaveLength(1)
   expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
 
   const responses = networkEvents.filter(
-    (el) => el.properties!.data.action === 'Response'
+    (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
   expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })

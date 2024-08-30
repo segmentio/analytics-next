@@ -114,7 +114,7 @@ describe(NetworkGenerator, () => {
       {
         type: 'network',
         data: {
-          action: 'Request',
+          action: 'request',
           url: `http://${window.location.hostname}/test`,
           method: 'POST',
           data: { key: 'value' },
@@ -126,7 +126,7 @@ describe(NetworkGenerator, () => {
       {
         type: 'network',
         data: {
-          action: 'Response',
+          action: 'response',
           url: `http://${window.location.hostname}/test`,
           data: { data: 'test' },
         },
