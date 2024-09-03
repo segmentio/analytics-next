@@ -17,7 +17,7 @@ module.exports = merge(common, {
     'analytics-onetrust': {
       import: path.resolve(__dirname, 'src/index.ts'),
       library: {
-        name: 'AnalyticsOneTrust',
+        // no name, attach everything exported to global scope
         type: 'window',
       },
     },
