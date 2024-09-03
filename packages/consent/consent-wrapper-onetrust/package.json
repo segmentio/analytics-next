@@ -12,10 +12,10 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
     "./dist/umd/analytics-onetrust.umd.js",
-    "./dist/umd/analytics-onetrust.js"
+    "./dist/umd/analytics-onetrust.global.js"
   ],
-  "jsdelivr": "./dist/umd/analytics-onetrust.js",
-  "unpkg": "./dist/umd/analytics-onetrust.js",
+  "jsdelivr": "./dist/umd/analytics-onetrust.umd.js",
+  "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
     "dist/",
@@ -27,6 +27,7 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/analytics-consent-wrapper-onetrust...",
     "test": "yarn jest",
+    "bundle-build-test": "yarn webpack && yarn test ./bundle-build-tests/*",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsc -p tsconfig.build.json",
@@ -62,6 +63,8 @@
   },
   "devDependencies": {
     "@internal/config-webpack": "workspace:^",
-    "@internal/test-helpers": "workspace:^"
+    "@internal/test-helpers": "workspace:^",
+    "@types/jsdom": "^16.2.14",
+    "jsdom": "^19.0.0"
   }
 }
