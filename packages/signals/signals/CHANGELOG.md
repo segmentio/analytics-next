@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.0.0
+
+### Major Changes
+
+- [#1132](https://github.com/segmentio/analytics-next/pull/1132) [`17432de`](https://github.com/segmentio/analytics-next/commit/17432de7b09d543c29f12c48ea61edf73aa7f4a1) Thanks [@silesky](https://github.com/silesky)! - Update signal request/response to lowercase.
+
 ## 0.1.1
 
 ### Patch Changes

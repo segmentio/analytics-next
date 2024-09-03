@@ -1,5 +1,11 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1133](https://github.com/segmentio/analytics-next/pull/1133) [`3abc609`](https://github.com/segmentio/analytics-next/commit/3abc6090c3bf1c7cf4947c181555c5893bc8626d) Thanks [@silesky](https://github.com/silesky)! - Add RequireJS support (analytics-onetrust.js)
+
 ## 1.0.1
 
 ### Patch Changes
