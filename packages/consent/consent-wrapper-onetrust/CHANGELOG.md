@@ -1,5 +1,11 @@
 # @segment/analytics-consent-wrapper-onetrust
 
+## 1.1.1
+
+### Patch Changes
+
+- [#1136](https://github.com/segmentio/analytics-next/pull/1136) [`a648fdb`](https://github.com/segmentio/analytics-next/commit/a648fdbfa8efec04f5f0ba5205639e2c3a442068) Thanks [@silesky](https://github.com/silesky)! - Fix consent namespace issue
+
 ## 1.1.0
 
 ### Minor Changes
