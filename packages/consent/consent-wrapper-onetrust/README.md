@@ -36,7 +36,7 @@ If you don't see a "Consent Management" option like the one below, please contac
   </script>
 
   <!-- Add Segment's OneTrust Consent Wrapper -->
-  <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-consent-wrapper-onetrust@latest/dist/umd/analytics-onetrust.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-consent-wrapper-onetrust@latest/dist/umd/analytics-onetrust.umd.js"></script>
 
   <!--
     Add / Modify Segment Analytics Snippet

@@ -12,10 +12,10 @@
   "types": "./dist/types/index.d.ts",
   "sideEffects": [
     "./dist/umd/analytics-onetrust.umd.js",
-    "./dist/umd/analytics-onetrust.js"
+    "./dist/umd/analytics-onetrust.global.js"
   ],
-  "jsdelivr": "./dist/umd/analytics-onetrust.js",
-  "unpkg": "./dist/umd/analytics-onetrust.js",
+  "jsdelivr": "./dist/umd/analytics-onetrust.umd.js",
+  "unpkg": "./dist/umd/analytics-onetrust.umd.js",
   "files": [
     "LICENSE",
     "dist/",
