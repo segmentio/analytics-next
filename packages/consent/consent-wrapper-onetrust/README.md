@@ -103,11 +103,14 @@ withOneTrust(analytics, { consentModel: () => 'opt-in' | 'opt-out' })
 
 ### Build Artifacts
 
-- We build three versions of the library:
+- We build the following versions of the library
 
-1. `cjs` (CommonJS modules) - for npm library users
-2. `esm` (es6 modules) - for npm library users
-3. `umd` (bundle) - for snippet users (typically)
+| Format | Description | Path |
+|--------|-------------|------|
+| `cjs` (CommonJS modules) | For npm library users | `/dist/cjs` |
+| `esm` (ES6 modules) | For npm library users | `/dist/esm` |
+| `window` (window bundle) | This is the least amount of code. When you load this bundle via script tag, it simply exposes `window.withOneTrust` | `/dist/umd/analytics-onetrust.js` |
+| `umd` (umd bundle) | For more unusual cases, when a UMD bundle is required | `/dist/umd/analytics-onetrust.umd.js` |
 
 ### Browser Support
 
