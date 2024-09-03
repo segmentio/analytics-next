@@ -27,6 +27,7 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/analytics-consent-wrapper-onetrust...",
     "test": "yarn jest",
+    "bundle-build-test": "yarn webpack && yarn test ./bundle-build-tests/*",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsc -p tsconfig.build.json",
