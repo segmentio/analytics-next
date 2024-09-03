@@ -63,6 +63,8 @@
   },
   "devDependencies": {
     "@internal/config-webpack": "workspace:^",
-    "@internal/test-helpers": "workspace:^"
+    "@internal/test-helpers": "workspace:^",
+    "@types/jsdom": "^16.2.14",
+    "jsdom": "^19.0.0"
   }
 }

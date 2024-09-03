@@ -4109,6 +4109,8 @@ __metadata:
     "@internal/config-webpack": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-consent-tools": 2.0.1
+    "@types/jsdom": ^16.2.14
+    jsdom: ^19.0.0
     tslib: ^2.4.1
   peerDependencies:
     "@segment/analytics-next": ">=1.67.0"
