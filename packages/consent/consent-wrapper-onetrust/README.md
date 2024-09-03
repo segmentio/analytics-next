@@ -107,16 +107,16 @@ withOneTrust(analytics, { consentModel: () => 'opt-in' | 'opt-out' })
 
 | Format | Description | Path |
 |--------|-------------|------|
-| `cjs` (CommonJS modules) | For npm library users | `/dist/cjs` |
-| `esm` (ES6 modules) | For npm library users | `/dist/esm` |
-| `window` (window bundle) | This is the least amount of code. When you load this bundle via script tag, it simply exposes `window.withOneTrust` | `/dist/umd/analytics-onetrust.js` |
-| `umd` (umd bundle) | For more unusual cases, when a UMD bundle is required | `/dist/umd/analytics-onetrust.umd.js` |
+| `cjs` (CommonJS modules) | For npm library users | `/dist/cjs/index.js` |
+| `esm` (ES6 modules) | For npm library users | `/dist/esm/index.js` |
+| `global` (window bundle) | This is the least amount of code. When you load this bundle via script tag, it simply exposes `window.withOneTrust` | `/dist/umd/analytics-onetrust.global.js` |
+| `umd` (umd bundle) | When a UMD bundle is required | `/dist/umd/analytics-onetrust.umd.js` |
 
 ### Browser Support
 
 - `cjs/esm` - Support modern JS syntax (ES2020). These are our npm library users, so we expect them to transpile this module themselves using something like babel/webpack if they need extra legacy browser support.
 
-- `umd` - Support back to IE11, but **do not** polyfill . See our docs on [supported browsers](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/supported-browsers).
+- `umd/global` - Support back to IE11, but **do not** polyfill . See our docs on [supported browsers](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/supported-browsers).
 
 In order to get full ie11 support, you are expected to bring your own polyfills. e.g. adding the following to your script tag:
 
