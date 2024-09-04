@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outFile": "./dist/types/bundle.d.ts",
+    "rootDir": "./dist/types",
+    "skipLibCheck": true
+  },
+  "include": ["./dist/types/**/*.d.ts"]
+}
