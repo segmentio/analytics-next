@@ -89,7 +89,7 @@ export function showDebugModal() {
 
   if (message) {
     message.innerHTML = `
-      <div>This page is in debug mode</div>
+      <div>[Segment.io] This page is in signals debug mode</div>
       <ul>
         <li>Anonymous ID: <b id="seg-env-info-anon-id">${info.anonymousId}</b></li>
         <li>User ID: <b id="seg-env-info-user-id">${info.userId}</b></li>
