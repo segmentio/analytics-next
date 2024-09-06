@@ -48,13 +48,22 @@ describe(matchHostname, () => {
     setLocation({ hostname: 'api.example.com' })
     expect(matchHostname('https://api.example.com/foo')).toBe(true)
     expect(matchHostname('https://foo.com/foo')).toBe(false)
-    expect(matchHostname('https://example.com/foo')).toBe(false)
+    expect(matchHostname('https://example.com/foo')).toBe(true)
   })
 
   it('should always allow relative domains', () => {
     expect(matchHostname('/foo/bar')).toBe(true)
     expect(matchHostname('foo/bar')).toBe(true)
     expect(matchHostname('foo')).toBe(true)
+  })
+
+  it('should handle www differences', () => {
+    setLocation({ hostname: 'foo.previews.console.stage.twilio.com' })
+    expect(
+      matchHostname(
+        'https://www.stage.twilio.com/console/billing/api/v3/add-funds'
+      )
+    ).toBe(true)
   })
 })
 
