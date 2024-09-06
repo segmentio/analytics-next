@@ -56,6 +56,15 @@ describe(matchHostname, () => {
     expect(matchHostname('foo/bar')).toBe(true)
     expect(matchHostname('foo')).toBe(true)
   })
+
+  it('should match the hostname', () => {
+    setLocation({ hostname: '11637.previews.console.stage.twilio.com' })
+    expect(
+      matchHostname(
+        'https://www.stage.twilio.com/console/billing/api/v3/add-funds'
+      )
+    ).toBe(true)
+  })
 })
 
 describe(addFetchInterceptor, () => {

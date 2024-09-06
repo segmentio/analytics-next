@@ -33,7 +33,10 @@ export const matchHostname = (url: string): boolean => {
     // Relative URL will go to this host
     return true
   }
-  return new URL(url).hostname.includes(window.location.hostname)
+
+  const cleanURL = new URL(url).hostname.replace('www.', '')
+  const currentURL = window.location.hostname.replace('www.', '')
+  return cleanURL.includes(currentURL) || currentURL.includes(cleanURL)
 }
 
 const normalizeHeaders = (headers: HeadersInit): Headers => {
