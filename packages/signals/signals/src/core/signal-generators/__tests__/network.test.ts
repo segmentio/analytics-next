@@ -48,7 +48,7 @@ describe(matchHostname, () => {
     setLocation({ hostname: 'api.example.com' })
     expect(matchHostname('https://api.example.com/foo')).toBe(true)
     expect(matchHostname('https://foo.com/foo')).toBe(false)
-    expect(matchHostname('https://example.com/foo')).toBe(false)
+    expect(matchHostname('https://example.com/foo')).toBe(true)
   })
 
   it('should always allow relative domains', () => {
