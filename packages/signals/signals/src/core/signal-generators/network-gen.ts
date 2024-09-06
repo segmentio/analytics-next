@@ -34,9 +34,9 @@ export const matchHostname = (url: string): boolean => {
     return true
   }
 
-  const cleanURL = new URL(url).hostname.replace('www.', '')
-  const currentURL = window.location.hostname.replace('www.', '')
-  return cleanURL.includes(currentURL) || currentURL.includes(cleanURL)
+  const clean = new URL(url).hostname.replace('www.', '')
+  const current = window.location.hostname.replace('www.', '')
+  return clean.includes(current) || current.includes(clean)
 }
 
 const normalizeHeaders = (headers: HeadersInit): Headers => {
