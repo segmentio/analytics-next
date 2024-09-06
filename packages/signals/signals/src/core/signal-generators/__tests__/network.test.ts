@@ -57,8 +57,8 @@ describe(matchHostname, () => {
     expect(matchHostname('foo')).toBe(true)
   })
 
-  it('should match the hostname', () => {
-    setLocation({ hostname: '11637.previews.console.stage.twilio.com' })
+  it('should handle www differences', () => {
+    setLocation({ hostname: 'foo.previews.console.stage.twilio.com' })
     expect(
       matchHostname(
         'https://www.stage.twilio.com/console/billing/api/v3/add-funds'
