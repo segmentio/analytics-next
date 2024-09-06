@@ -1,6 +1,6 @@
-const safeGetStorageItem = (key: string) => {
+const safeGetStorageItem = (key: string): string | null => {
   try {
-    return window.localStorage.getItem(key)
+    return JSON.parse(window.localStorage.getItem(key) ?? '') || null
   } catch (e) {
     return null
   }
@@ -8,13 +8,13 @@ const safeGetStorageItem = (key: string) => {
 // todo: This should be derived from the analytics instance
 
 type UserInfo = {
-  anonymousId: string
-  userId: string
+  anonymousId: string | null
+  userId: string | null
 }
 
 const getUserInfo = (): UserInfo => {
-  const anonymousId = safeGetStorageItem('ajs_anonymous_id') || ''
-  const userId = safeGetStorageItem('ajs_user_id') || ''
+  const anonymousId = safeGetStorageItem('ajs_anonymous_id')
+  const userId = safeGetStorageItem('ajs_user_id')
   return {
     anonymousId: anonymousId,
     userId: userId,
@@ -85,14 +85,13 @@ export function showDebugModal() {
   const message = iframeDoc.getElementById('message')
   const closeButton = iframeDoc.getElementById('close-button')
 
-  const info = getUserInfo()
-
+  let currentUser = getUserInfo()
   if (message) {
     message.innerHTML = `
       <div>[Segment.io] This page is in signals debug mode</div>
       <ul>
-        <li>Anonymous ID: <b id="seg-env-info-anon-id">${info.anonymousId}</b></li>
-        <li>User ID: <b id="seg-env-info-user-id">${info.userId}</b></li>
+        <li>Anonymous ID: <b id="seg-env-info-anon-id">${currentUser.anonymousId}</b></li>
+        <li>User ID: <b id="seg-env-info-user-id">${currentUser.userId}</b></li>
       </ul>
     `
   }
@@ -100,14 +99,21 @@ export function showDebugModal() {
   const updateUserInfo = (info: UserInfo) => {
     const anonIdElem = iframeDoc.getElementById('seg-env-info-anon-id')
     const userIdElem = iframeDoc.getElementById('seg-env-info-user-id')
-    if (anonIdElem) anonIdElem.textContent = info.anonymousId
-    if (userIdElem) userIdElem.textContent = info.userId
+    if (anonIdElem) anonIdElem.innerText = `${info.anonymousId}`
+    if (userIdElem) userIdElem.innerText = `${info.userId}`
   }
 
-  // check to see if user
+  // check to see if user info has changed -- if it has, update the modal
   setInterval(() => {
-    updateUserInfo(getUserInfo())
-  }, 500)
+    const newUser = getUserInfo()
+    if (
+      currentUser.anonymousId !== newUser.anonymousId ||
+      currentUser.userId !== newUser.userId
+    ) {
+      updateUserInfo(newUser)
+      currentUser = newUser
+    }
+  }, 1000)
 
   if (closeButton) {
     closeButton.onclick = function () {
