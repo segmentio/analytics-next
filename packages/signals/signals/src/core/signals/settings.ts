@@ -1,4 +1,4 @@
-import { parseDebugModeQueryString } from '../debug-mode'
+import { parseDebugModeQueryString, showDebugModal } from '../debug-mode'
 import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
 import { SignalsIngestSettingsConfig } from '../client'
@@ -79,6 +79,7 @@ class SignalRedactionSettings {
   setDisableSignalRedaction(shouldDisable: boolean) {
     try {
       if (shouldDisable) {
+        showDebugModal()
         window.sessionStorage.setItem(
           SignalRedactionSettings.redactionKey,
           'true'
