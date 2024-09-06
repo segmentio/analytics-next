@@ -61,8 +61,7 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
       const sUrl = url?.toString()
-      if (!url) {
-        //|| !matchHostname(sUrl)) {
+      if (!url || !matchHostname(sUrl)) {
         return
       }
 
