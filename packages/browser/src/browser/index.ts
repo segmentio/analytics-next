@@ -417,7 +417,7 @@ async function loadAnalytics(
   }
 
   analytics.initialized = true
-  analytics.emit('initialize', settings, options)
+  analytics.emit('initialize', settings, options, analytics)
 
   await flushFinalBuffer(analytics, preInitBuffer)
 
