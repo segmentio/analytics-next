@@ -2,4 +2,4 @@
 '@segment/analytics-next': minor
 ---
 
-Add analytics itself as argument to on('initialize'
+Allow snippet users to access the inner analytics instance on 'initialize'
