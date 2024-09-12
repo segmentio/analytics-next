@@ -1,4 +1,3 @@
-import { event } from 'jquery'
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageChange } from '../../lib/on-page-change'
