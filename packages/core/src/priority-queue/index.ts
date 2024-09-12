@@ -47,7 +47,8 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
   }
 
   pushWithBackoff(item: Item, minTimeout = 0): boolean {
-    if (this.getAttempts(item) === 0) {
+    // One immediate retry unless we have a minimum timeout (e.g. for rate limiting)
+    if (minTimeout == 0 && this.getAttempts(item) === 0) {
       return this.push(item)[0]
     }
 
@@ -58,7 +59,7 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
     }
 
     let timeout = backoff({ attempt: attempt - 1 })
-    if (timeout < minTimeout) {
+    if (minTimeout > 0 && timeout < minTimeout) {
       timeout = minTimeout
     }
 

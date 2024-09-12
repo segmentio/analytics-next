@@ -28,13 +28,13 @@ export function normalize(
   }
 
   if (ctx != null) {
-    const retryCount = analytics.queue.queue.getAttempts(ctx)
-    if (retryCount > 1) {
+    if (ctx.attempts > 1) {
       json._metadata = {
         ...json._metadata,
-        retryCount,
+        retryCount: ctx.attempts,
       }
     }
+    ctx.attempts++
   }
 
   const bundled: string[] = []

@@ -1,12 +1,15 @@
+import { event } from 'jquery'
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageChange } from '../../lib/on-page-change'
+import { SegmentFacade } from '../../lib/to-facade'
 import { RateLimitError } from './ratelimit-error'
+import { Context } from '../../core/context'
 
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
-  retryAttempts?: number
+  maxRetries?: number
   keepalive?: boolean
 }
 
@@ -65,7 +68,7 @@ export default function batch(
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
-  let ratelimittimeout = 0
+  let rateLimitTimeout = 0
 
   function sendBatch(batch: object[]) {
     if (batch.length === 0) {
@@ -98,7 +101,7 @@ export default function batch(
       if (res.status === 429) {
         const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
         const retryTimeoutMS =
-          retryTimeoutStringSecs != null
+          typeof retryTimeoutStringSecs == 'string'
             ? parseInt(retryTimeoutStringSecs) * 1000
             : timeout
         throw new RateLimitError(
@@ -114,12 +117,22 @@ export default function batch(
       const batch = buffer
       buffer = []
       return sendBatch(batch)?.catch((error) => {
-        console.error('Error sending batch', error)
-        if (attempt < (config?.retryAttempts ?? 10)) {
+        const ctx = Context.system()
+        ctx.log('error', 'Error sending batch', error)
+        if (attempt <= (config?.maxRetries ?? 10)) {
           if (error.name === 'RateLimitError') {
-            ratelimittimeout = error.retryTimeout
+            rateLimitTimeout = error.retryTimeout
           }
-          buffer.push(batch)
+          buffer.push(...batch)
+          buffer.map((event) => {
+            if ('_metadata' in event) {
+              const segmentEvent = event as ReturnType<SegmentFacade['json']>
+              segmentEvent._metadata = {
+                ...segmentEvent._metadata,
+                retryCount: attempt,
+              }
+            }
+          })
           scheduleFlush(attempt + 1)
         }
       })
@@ -138,9 +151,9 @@ export default function batch(
         schedule = undefined
         flush(attempt).catch(console.error)
       },
-      ratelimittimeout ? ratelimittimeout : timeout
+      rateLimitTimeout ? rateLimitTimeout : timeout
     )
-    ratelimittimeout = 0
+    rateLimitTimeout = 0
   }
 
   onPageChange((unloaded) => {

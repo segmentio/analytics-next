@@ -15,7 +15,7 @@ import * as PQ from '../../../lib/priority-queue'
 import { Context } from '../../../core/context'
 import { createError, createSuccess } from '../../../test-helpers/factories'
 
-jest.mock('../schedule-flush')
+//jest.mock('../schedule-flush')
 
 type QueueType = 'priority' | 'persisted'
 
@@ -24,6 +24,7 @@ describe('Segment.io retries 500s and 429', () => {
   let analytics: Analytics
   let segment: Plugin
   beforeEach(async () => {
+    jest.useRealTimers()
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
@@ -39,20 +40,25 @@ describe('Segment.io retries 500s and 429', () => {
   })
 
   test('retries on 500', async () => {
-    fetch.mockImplementation(() => createError({ status: 500 }))
-
+    jest.useFakeTimers({ advanceTimers: true })
+    fetch.mockReturnValue(createError({ status: 500 }))
+    // .mockReturnValue(createSuccess({}))
     const ctx = await analytics.track('event')
+    jest.runAllTimers()
+    jest.runAllTimers()
+    jest.runAllTimers()
 
-    expect(ctx.attempts).toBe(1)
+    expect(ctx.attempts).toBe(3)
     expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
-    expect(fetch).toHaveBeenCalledTimes(1)
-    expect(scheduleFlush).toHaveBeenCalled()
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(fetch.mock.lastCall[1].body).toContain('"retryCount":2')
   })
 
   test('delays retry on 429', async () => {
     const headers = new Headers()
     const resetTime = 1
     headers.set('x-ratelimit-reset', resetTime.toString())
+    jest.useFakeTimers({ advanceTimers: true })
     fetch
       .mockReturnValueOnce(
         createError({
@@ -64,9 +70,11 @@ describe('Segment.io retries 500s and 429', () => {
       .mockReturnValue(createSuccess({}))
 
     const ctx = await analytics.track('event')
-    expect(ctx.attempts).toBe(1)
-    expect(fetch).toHaveBeenCalledTimes(1)
-    expect(scheduleFlush).toHaveBeenCalled()
+
+    jest.runAllTimers()
+
+    expect(ctx.attempts).toBe(3)
+    expect(fetch).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -75,6 +83,7 @@ describe('Batches retry 500s and 429', () => {
   let analytics: Analytics
   let segment: Plugin
   beforeEach(async () => {
+    jest.useRealTimers()
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
@@ -83,7 +92,7 @@ describe('Batches retry 500s and 429', () => {
       deliveryStrategy: {
         strategy: 'batching',
         // timeout is set very low to get consistent behavior out of scheduleflush
-        config: { size: 3, timeout: 1, retryAttempts: 3 },
+        config: { size: 3, timeout: 1, maxRetries: 2 },
       },
     }
     analytics = new Analytics(
@@ -98,7 +107,7 @@ describe('Batches retry 500s and 429', () => {
 
   test('retries on 500', async () => {
     fetch
-      .mockReturnValueOnce(() => createError({ status: 500 }))
+      .mockReturnValueOnce(createError({ status: 500 }))
       .mockReturnValue(createSuccess({}))
 
     await analytics.track('event1')
@@ -106,7 +115,7 @@ describe('Batches retry 500s and 429', () => {
     // wait a bit for retries - timeout is only 1 ms
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    expect(ctx.attempts).toBe(1)
+    expect(ctx.attempts).toBe(2)
     expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
     expect(fetch).toHaveBeenCalledTimes(2)
   })
@@ -128,16 +137,16 @@ describe('Batches retry 500s and 429', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    expect(ctx.attempts).toBe(1)
-    expect(fetch).toHaveBeenCalledTimes(1)
-
+    expect(ctx.attempts).toBe(2)
     expect(fetch).toHaveBeenCalledTimes(1)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     expect(fetch).toHaveBeenCalledTimes(2)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     expect(fetch).toHaveBeenCalledTimes(3)
     await new Promise((resolve) => setTimeout(resolve, 1000))
-    expect(fetch).toHaveBeenCalledTimes(3) // capped at 3 retries
+    expect(fetch).toHaveBeenCalledTimes(3) // capped at 2 retries (+ intial attempt)
+    // Check the metadata about retry count
+    expect(fetch.mock.lastCall[1].body).toContain('"retryCount":2')
   })
 })
 
@@ -151,6 +160,7 @@ describe('Segment.io retries', () => {
   ;[false, true].forEach((persistenceIsDisabled) => {
     describe(`disableClientPersistence: ${persistenceIsDisabled}`, () => {
       beforeEach(async () => {
+        jest.useRealTimers()
         jest.resetAllMocks()
         jest.restoreAllMocks()
 
@@ -186,7 +196,6 @@ describe('Segment.io retries', () => {
         }
 
         segment = await segmentio(analytics, options, {})
-
         await analytics.register(segment, envEnrichment)
       })
 

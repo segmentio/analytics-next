@@ -113,7 +113,7 @@ export function segmentio(
       )
       .then(() => ctx)
       .catch((error) => {
-        console.error('Error sending event', error)
+        ctx.log('error', 'Error sending event', error)
         if (error.name === 'RateLimitError') {
           const timeout = error.retryTimeout
           buffer.pushWithBackoff(ctx, timeout)
