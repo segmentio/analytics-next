@@ -64,14 +64,14 @@ export type InstrumentationSignal = AppSignal<
 >
 
 type NetworkRequestData = {
-  action: 'Request'
+  action: 'request'
   url: string
   method: string
   data: { [key: string]: unknown }
 }
 
 type NetworkResponseData = {
-  action: 'Response'
+  action: 'response'
   url: string
   data: { [key: string]: unknown }
 }

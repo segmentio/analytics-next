@@ -14,6 +14,12 @@ module.exports = merge(common, {
         type: 'umd',
       },
     },
+    'analytics-onetrust.global': {
+      import: path.resolve(__dirname, 'src/index.ts'),
+      library: {
+        type: 'window',
+      },
+    },
   },
   output: {
     filename: isProd ? '[name].js' : '[name].development.js',

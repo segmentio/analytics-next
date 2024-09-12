@@ -33,7 +33,10 @@ export const matchHostname = (url: string): boolean => {
     // Relative URL will go to this host
     return true
   }
-  return new URL(url).hostname.includes(window.location.hostname)
+
+  const clean = new URL(url).hostname.replace('www.', '')
+  const current = window.location.hostname.replace('www.', '')
+  return clean.includes(current) || current.includes(clean)
 }
 
 const normalizeHeaders = (headers: HeadersInit): Headers => {
@@ -68,7 +71,7 @@ export class NetworkGenerator implements SignalGenerator {
 
       emitter.emit(
         createNetworkSignal({
-          action: 'Request',
+          action: 'request',
           url: normalizeUrl(sUrl),
           method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
@@ -87,7 +90,7 @@ export class NetworkGenerator implements SignalGenerator {
       const data = await rs.json()
       emitter.emit(
         createNetworkSignal({
-          action: 'Response',
+          action: 'response',
           url: url,
           data: data,
         })

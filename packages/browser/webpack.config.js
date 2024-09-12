@@ -7,15 +7,26 @@ const BundleAnalyzerPlugin =
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
-const ASSET_PATH = isProd
-  ? 'https://cdn.segment.com/analytics-next/bundles/'
-  : '/dist/umd/'
+
+const ASSET_PATH = process.env.ASSET_PATH
+  ? process.env.ASSET_PATH
+  : !isProd
+  ? '/dist/umd/'
+  : ''
+
+const envPluginConfig = {
+  ASSET_PATH: ASSET_PATH,
+  IS_WEBPACK_BUILD: true,
+}
+
+console.log('Running Webpack Build', {
+  NODE_ENV: process.env.NODE_ENV,
+  'Webpack Environment Plugin': envPluginConfig,
+})
 
 const plugins = [
   new CompressionPlugin({}),
-  new webpack.EnvironmentPlugin({
-    ASSET_PATH,
-  }),
+  new webpack.EnvironmentPlugin(envPluginConfig),
   new CircularDependencyPlugin({
     failOnError: true,
   }),

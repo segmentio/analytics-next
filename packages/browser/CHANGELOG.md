@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.72.2
+
+### Patch Changes
+
+- [#1125](https://github.com/segmentio/analytics-next/pull/1125) [`7aed96e`](https://github.com/segmentio/analytics-next/commit/7aed96eac40a83bd392daa91838ed1f46e2dc9fd) Thanks [@silesky](https://github.com/silesky)! - Update init to allow for asset path overriding and fix debugging experience
+
+* [#1121](https://github.com/segmentio/analytics-next/pull/1121) [`d98dcd2`](https://github.com/segmentio/analytics-next/commit/d98dcd2f16aa8a8940e72fde0ba75d7974fe45fa) Thanks [@silesky](https://github.com/silesky)! - Fix enrichment plugins not waiting for .load to resolve when plugin is registered manually
+
+- [#1127](https://github.com/segmentio/analytics-next/pull/1127) [`6bfaa3e`](https://github.com/segmentio/analytics-next/commit/6bfaa3e9d9ca767f54bb8185744e94be08ce9bc8) Thanks [@silesky](https://github.com/silesky)! - If npm version, do not read buffered events from window.analytics
+
 ## 1.72.1
 
 ### Patch Changes
