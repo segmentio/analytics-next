@@ -51,7 +51,7 @@ describe('Segment.io retries 500s and 429', () => {
     expect(fetch.mock.lastCall[1].body).toContain('"retryCount":')
   })
 
-  test.only('delays retry on 429', async () => {
+  test('delays retry on 429', async () => {
     const headers = new Headers()
     const resetTime = 1234
     headers.set('x-ratelimit-reset', resetTime.toString())
