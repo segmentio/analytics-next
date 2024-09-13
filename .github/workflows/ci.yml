@@ -26,7 +26,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/node*' lint
-      - run: yarn turbo run --filter='./packages/node*' test --coverage
+      - run: yarn turbo run --filter='./packages/node*' test
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
       - name: Upload coverage
         uses: codecov/codecov-action@v4

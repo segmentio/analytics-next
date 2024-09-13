@@ -22,9 +22,8 @@ const createJestTSConfig = (
      * No need to manually run yarn build all the time.
      * This resolve packages for ts-jest so typescript compilation happens in-memory.
      */
-    /*collectCoverage: process.env.CI === true,
-    coverageDirectory: path.join(dirname, 'coverage'),
-    coverageReporters: ['json'],*/
+    collectCoverage: process.env.CI === true,
+    coverageReporters: ['text'],
     moduleNameMapper: moduleMap,
     preset: 'ts-jest',
     modulePathIgnorePatterns: [

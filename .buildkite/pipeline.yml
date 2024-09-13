@@ -71,7 +71,7 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
-      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test --coverage
+      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test
     retry:
       automatic:
         - exit_status: '*'
@@ -95,7 +95,7 @@ steps:
       - yarn run -T core . build
       - echo "+++ Run tests"
       - yarn run -T core lint
-      - yarn run -T core test --coverage
+      - yarn run -T core test
       - yarn turbo run --filter=core-integration-tests lint
     plugins:
       - joscha/codecov#v3.1.0:
@@ -132,7 +132,7 @@ steps:
       - echo "+++ Run Lint"
       - yarn turbo run --filter='./packages/consent/*' lint
       - echo "+++ Run Tests"
-      - yarn turbo run --filter='./packages/consent/*' test --coverage
+      - yarn turbo run --filter='./packages/consent/*' test
     plugins:
       - joscha/codecov#v3.1.0:
           args:
@@ -152,7 +152,7 @@ steps:
       - echo "+++ Run Lint"
       - yarn turbo run --filter='./packages/signals/*' lint
       - echo "+++ Run Tests"
-      - yarn turbo run --filter='./packages/signals/*' test --coverage
+      - yarn turbo run --filter='./packages/signals/*' test
     plugins:
       - joscha/codecov#v3.1.0:
           args:
