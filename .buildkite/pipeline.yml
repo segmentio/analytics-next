@@ -77,6 +77,9 @@ steps:
         - exit_status: '*'
           limit: 2
     plugins:
+      - joscha/codecov#v3.1.0:
+          args:
+            - '-F browser'
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
@@ -95,6 +98,9 @@ steps:
       - yarn run -T core test
       - yarn turbo run --filter=core-integration-tests lint
     plugins:
+      - joscha/codecov#v3.1.0:
+          args:
+            - '-F core'
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
@@ -128,6 +134,9 @@ steps:
       - echo "+++ Run Tests"
       - yarn turbo run --filter='./packages/consent/*' test
     plugins:
+      - joscha/codecov#v3.1.0:
+          args:
+            - '-F consent'
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
 
@@ -147,6 +156,9 @@ steps:
       - echo "+++ Run Tests"
       - yarn turbo run --filter='./packages/signals/*' test
     plugins:
+      - joscha/codecov#v3.1.0:
+          args:
+            - '-F signals'
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
