@@ -33,7 +33,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     logger.debug('SignalsPlugin initializing', { settings })
 
     this.signals = new Signals({
-      disableSignalRedaction: settings.disableSignalsRedaction,
+      disableSignalsRedaction: settings.disableSignalsRedaction,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       functionHost: settings.functionHost,
@@ -43,6 +43,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
         typeof settings.processSignal === 'function'
           ? settings.processSignal.toString()
           : settings.processSignal,
+      networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
+      networkSignalsAllowList: settings.networkSignalsAllowList,
+      networkSignalsDisallowList: settings.networkSignalsDisallowList,
+      signalStorage: settings.signalStorage,
     })
   }
 

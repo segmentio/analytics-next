@@ -1,6 +1,7 @@
 import { SignalsIngestClient } from '../index'
 import { createSuccess } from '@segment/analytics-next/src/test-helpers/factories'
 import unfetch from 'unfetch'
+
 jest.mock('unfetch')
 jest
   .mocked(unfetch)

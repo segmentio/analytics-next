@@ -46,4 +46,33 @@ export interface SignalsPluginSettingsConfig {
    * @default 2000
    */
   flushInterval?: number
+
+  /**
+   * Allow network requests for URLs that match the specified regex.
+   * Same domain signals will be automatically included, unless `networkSignalsAllowSameDomain` is `false`.
+   * @example  new RegExp("api.foo.com|api.bar.com")  // match api.foo.com/bar and api.foo.com/baz and api.bar.com/baz
+   * @example  new RegExp("api.foo.com/bar$") // match api.foo.com/bar but NOT api.foo.com/baz
+   * @example  "api.foo.com" // match api.foo.com/bar and api.foo.com/baz
+   */
+  networkSignalsAllowList?: RegexLike[] | undefined
+  networkSignalsDisallowList?: RegexLike[] | undefined
+
+  /**
+   * Allow network requests if originated from the same domain
+   * @default true
+   */
+  networkSignalsAllowSameDomain?: boolean | undefined
+
+  /**
+   * Custom signal storage implementation
+   */
+  signalStorage?: SignalStorage | undefined
+}
+
+export type RegexLike = RegExp | string
+
+export interface SignalStorage<Signal = any> {
+  getAll(): Promise<Signal[]> | Signal[]
+  add(value: Signal): Promise<void> | void
+  clear(): void
 }
