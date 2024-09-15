@@ -55,28 +55,15 @@ describe(NetworkGenerator, () => {
     const allowedCalls = mockEmitter.emit.mock.calls
     const [first, second] = allowedCalls
 
-    expect(first).toEqual([
-      {
-        type: 'network',
-        data: {
-          action: 'request',
-          url: `http://allowed.com/api/v1/test`,
-          method: 'POST',
-          data: { key: 'value' },
-        },
-      },
-    ])
+    expect(first[0].data).toMatchObject({
+      action: 'request',
+      url: 'http://allowed.com/api/v1/test',
+    })
 
-    expect(second).toEqual([
-      {
-        type: 'network',
-        data: {
-          action: 'response',
-          url: `http://allowed.com/api/v1/test`,
-          data: { data: 'test' },
-        },
-      },
-    ])
+    expect(second[0].data).toMatchObject({
+      action: 'response',
+      url: 'http://allowed.com/api/v1/test',
+    })
 
     // not allowed
     await window.fetch(`http://allowed.com/api/v666`, {
@@ -157,6 +144,12 @@ describe(NetworkGenerator, () => {
         [
           {
             "data": {
+              "_metadata": {
+                "filters": {
+                  "allowed": [],
+                  "disallowed": [],
+                },
+              },
               "action": "response",
               "data": {
                 "data": "test",
@@ -186,30 +179,47 @@ describe(NetworkGenerator, () => {
     })
 
     await sleep(100)
+    expect(mockEmitter.emit.mock.calls.length).toBe(2)
     const [first, second] = mockEmitter.emit.mock.calls
 
-    expect(first).toEqual([
+    expect(first[0]).toMatchInlineSnapshot(`
       {
-        type: 'network',
-        data: {
-          action: 'request',
-          url: `http://${window.location.hostname}/test`,
-          method: 'POST',
-          data: { key: 'value' },
+        "data": {
+          "_metadata": {
+            "filters": {
+              "allowed": [],
+              "disallowed": [],
+            },
+          },
+          "action": "request",
+          "data": {
+            "key": "value",
+          },
+          "method": "POST",
+          "url": "http://localhost/test",
         },
-      },
-    ])
+        "type": "network",
+      }
+    `)
 
-    expect(second).toEqual([
+    expect(second[0]).toMatchInlineSnapshot(`
       {
-        type: 'network',
-        data: {
-          action: 'response',
-          url: `http://${window.location.hostname}/test`,
-          data: { data: 'test' },
+        "data": {
+          "_metadata": {
+            "filters": {
+              "allowed": [],
+              "disallowed": [],
+            },
+          },
+          "action": "response",
+          "data": {
+            "data": "test",
+          },
+          "url": "http://localhost/test",
         },
-      },
-    ])
+        "type": "network",
+      }
+    `)
 
     unregister()
   })
@@ -234,7 +244,7 @@ describe(NetworkGenerator, () => {
     unregister()
   })
 
-  it('eeeeeeeeeeeeeee signals for same domain if networkSignalsAllowSameDomain = false', async () => {
+  it('emits signals for same domain if networkSignalsAllowSameDomain = false', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator({
       networkSignalsAllowList: ['foo.com'],
@@ -263,6 +273,27 @@ describe(NetworkGenerator, () => {
     await sleep(100)
     expect(mockEmitter.emit.mock.calls.length).toBe(2)
 
+    unregister()
+  })
+
+  it('disallows the signal if it matches in both the allow and disallow list', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator({
+      networkSignalsAllowList: ['disallowed-api.com'],
+      networkSignalsDisallowList: ['https://disallowed-api.com'],
+    })
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`https://disallowed-api.com/api/foo`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: 'value' }),
+    })
+
+    await sleep(100)
+    expect(mockEmitter.emit.mock.calls).toEqual([])
     unregister()
   })
 })

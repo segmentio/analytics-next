@@ -63,6 +63,7 @@ export class SignalGlobalSettings {
     }
     this.network = new NetworkSettingsConfig({
       networkSignalsAllowList: settings.networkSignalsAllowList,
+      networkSignalsDisallowList: settings.networkSignalsDisallowList,
       networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
     })
   }

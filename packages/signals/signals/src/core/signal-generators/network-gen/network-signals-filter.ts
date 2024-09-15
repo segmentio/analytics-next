@@ -3,7 +3,7 @@ import { RegexLike } from '../../../types/settings'
 import { isSameDomain } from './helpers'
 
 class NetworkFilterListItem {
-  private regexes: RegexLike[]
+  regexes: RegexLike[]
   private get combinedRegex(): RegExp {
     const normalizeRegex = (regex: RegExp | string): RegExp => {
       return typeof regex === 'string' ? new RegExp(regex) : regex
@@ -50,6 +50,7 @@ class NetworkFilterListItem {
 export class NetworkSignalsFilterList {
   public allowed: NetworkFilterListItem
   public disallowed: NetworkFilterListItem
+
   constructor(
     allowList: RegexLike[] | undefined,
     disallowList: RegexLike[] | undefined
@@ -63,6 +64,13 @@ export class NetworkSignalsFilterList {
     const allowed = this.allowed.test(url)
     return allowed && !disallowed
   }
+
+  getRegexes() {
+    return {
+      allowed: this.allowed.regexes.map((el) => el.toString()),
+      disallowed: this.disallowed.regexes.map((el) => el.toString()),
+    }
+  }
 }
 
 export type NetworkSignalsFilterSettings = Pick<
@@ -70,7 +78,7 @@ export type NetworkSignalsFilterSettings = Pick<
   'networkSignalsAllowSameDomain' | 'networkSignalsFilterList'
 >
 export class NetworkSignalsFilter {
-  private settings: NetworkSignalsFilterSettings
+  settings: NetworkSignalsFilterSettings
   constructor(settings: NetworkSignalsFilterSettings) {
     this.settings = settings
   }

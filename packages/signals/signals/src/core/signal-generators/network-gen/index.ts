@@ -62,6 +62,9 @@ export class NetworkGenerator implements SignalGenerator {
           url: normalizeUrl(sUrl),
           method: rq.method || '',
           data: JSON.parse(rq.body.toString()),
+          _metadata: {
+            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+          },
         })
       )
     }
@@ -80,6 +83,9 @@ export class NetworkGenerator implements SignalGenerator {
           action: 'response',
           url: url,
           data: data,
+          _metadata: {
+            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+          },
         })
       )
     }

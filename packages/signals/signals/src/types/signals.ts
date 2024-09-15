@@ -63,14 +63,28 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
-type NetworkRequestData = {
+interface NetworkSignalMetadata {
+  filters: {
+    allowed: string[]
+    disallowed: string[]
+  }
+}
+
+interface BaseNetworkData {
+  action: string
+  url: string
+  data: { [key: string]: unknown }
+  _metadata?: NetworkSignalMetadata
+}
+
+interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
   method: string
   data: { [key: string]: unknown }
 }
 
-type NetworkResponseData = {
+interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
   data: { [key: string]: unknown }

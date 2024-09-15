@@ -137,21 +137,28 @@ export class BasePage {
     )
   }
 
-  async waitForSignalsEmit({
-    filter,
-    expectedSignalCount,
-    maxTimeoutMs = 10000,
-  }: {
-    filter: (signal: Signal) => boolean
-    expectedSignalCount?: number
-    maxTimeoutMs?: number
-  }) {
+  async waitForSignalsEmit(
+    filter: (signal: Signal) => boolean,
+    {
+      expectedSignalCount,
+      maxTimeoutMs = 10000,
+      failOnEmit = false,
+    }: {
+      expectedSignalCount?: number
+      maxTimeoutMs?: number
+      failOnEmit?: boolean
+    } = {}
+  ) {
     return this.page.evaluate(
-      ([filter, expectedSignalCount, maxTimeoutMs]) => {
+      ([filter, expectedSignalCount, maxTimeoutMs, failOnEmit]) => {
         return new Promise((resolve, reject) => {
           let signalCount = 0
           const to = setTimeout(() => {
-            reject('Timed out waiting for signals')
+            if (failOnEmit) {
+              resolve('No signal emitted')
+            } else {
+              reject('Timed out waiting for signals')
+            }
           }, maxTimeoutMs)
           window.signalsPlugin.onSignal((signal) => {
             signalCount++
@@ -159,13 +166,28 @@ export class BasePage {
               eval(filter)(signal) &&
               signalCount === (expectedSignalCount ?? 1)
             ) {
+              if (failOnEmit) {
+                reject(
+                  `Signal should not have been emitted: ${JSON.stringify(
+                    signal,
+                    null,
+                    2
+                  )}`
+                )
+              } else {
+                resolve(signal)
+              }
               clearTimeout(to)
-              resolve(signal)
             }
           })
         })
       },
-      [filter.toString(), expectedSignalCount, maxTimeoutMs] as const
+      [
+        filter.toString(),
+        expectedSignalCount,
+        maxTimeoutMs,
+        failOnEmit,
+      ] as const
     )
   }
 
