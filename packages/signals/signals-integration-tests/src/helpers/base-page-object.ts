@@ -1,7 +1,10 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
-import { Page, Request } from '@playwright/test'
+import { Page, Request, Route } from '@playwright/test'
 import { logConsole } from './log-console'
 import { SegmentEvent } from '@segment/analytics-next'
+import { Signal, SignalsPluginSettingsConfig } from '@segment/analytics-signals'
+
+type FulfillOptions = Parameters<Route['fulfill']>['0']
 
 export class BasePage {
   protected page!: Page
@@ -19,27 +22,64 @@ export class BasePage {
   }
 
   /**
-   * load and setup routes
-   * @param page
-   * @param edgeFn - edge function to be loaded
+   * Load and setup routes
+   * and wait for analytics and signals to be initialized
    */
-  async load(page: Page, edgeFn: string) {
+  async loadAndWait(...args: Parameters<BasePage['load']>) {
+    await this.load(...args)
+    await this.waitForSignalsAssets()
+    return this
+  }
+
+  /**
+   * load and setup routes
+   */
+  async load(
+    page: Page,
+    edgeFn: string,
+    signalSettings: Partial<SignalsPluginSettingsConfig> = {}
+  ) {
     logConsole(page)
     this.page = page
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     await this.page.goto(this.url)
+    await this.invokeAnalyticsLoad(signalSettings)
   }
 
   /**
-   *  Wait for analytics and signals to be initialized
-   * Signals can be captured before this, so it's useful to have this method
+   * Wait for analytics and signals to be initialized
    */
-  async waitForAnalyticsInit() {
+  async waitForSignalsAssets() {
+    // this is kind of an approximation of full initialization
     return Promise.all([
       this.waitForCDNSettingsResponse(),
       this.waitForEdgeFunctionResponse(),
     ])
+  }
+
+  /**
+   * Invoke the analytics load sequence, but do not wait for analytics to full initialize
+   * Full initialization means that the CDN settings and edge function have been loaded
+   */
+  private async invokeAnalyticsLoad(
+    signalSettings: Partial<SignalsPluginSettingsConfig> = {}
+  ) {
+    await this.page.evaluate(
+      ({ signalSettings }) => {
+        window.signalsPlugin = new window.SignalsPlugin({
+          disableSignalsRedaction: true,
+          flushInterval: 500,
+          ...signalSettings,
+        })
+        window.analytics.load({
+          writeKey: '<SOME_WRITE_KEY>',
+          plugins: [window.signalsPlugin],
+        })
+      },
+      { signalSettings }
+    )
+    return this
   }
 
   private async setupMockedRoutes() {
@@ -94,6 +134,70 @@ export class BasePage {
           }),
         })
       }
+    )
+  }
+
+  async waitForSignalsEmit({
+    filter,
+    expectedSignalCount,
+    maxTimeoutMs = 10000,
+  }: {
+    filter: (signal: Signal) => boolean
+    expectedSignalCount?: number
+    maxTimeoutMs?: number
+  }) {
+    return this.page.evaluate(
+      ([filter, expectedSignalCount, maxTimeoutMs]) => {
+        return new Promise((resolve, reject) => {
+          let signalCount = 0
+          const to = setTimeout(() => {
+            reject('Timed out waiting for signals')
+          }, maxTimeoutMs)
+          window.signalsPlugin.onSignal((signal) => {
+            signalCount++
+            if (
+              eval(filter)(signal) &&
+              signalCount === (expectedSignalCount ?? 1)
+            ) {
+              clearTimeout(to)
+              resolve(signal)
+            }
+          })
+        })
+      },
+      [filter.toString(), expectedSignalCount, maxTimeoutMs] as const
+    )
+  }
+
+  async mockTestRoute(url?: string, response?: Partial<FulfillOptions>) {
+    await this.page.route(url || 'http://localhost:5432/api/foo', (route) => {
+      return route.fulfill({
+        contentType: 'application/json',
+        status: 200,
+        body: JSON.stringify({ someResponse: 'yep' }),
+        ...response,
+      })
+    })
+  }
+
+  async makeFetchCall(
+    url?: string,
+    request?: Partial<RequestInit>
+  ): Promise<void> {
+    return this.page.evaluate(
+      ({ url, request }) => {
+        return fetch(url || 'http://localhost:5432/api/foo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ foo: 'bar' }),
+          ...request,
+        })
+          .then(console.log)
+          .catch(console.error)
+      },
+      { url, request }
     )
   }
 

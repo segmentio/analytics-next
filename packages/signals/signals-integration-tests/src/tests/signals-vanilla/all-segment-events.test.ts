@@ -76,7 +76,7 @@ test('Should dispatch events from signals that occurred before analytics was ins
   // add a user defined signal before analytics is instantiated
   void indexPage.addUserDefinedSignal()
 
-  await indexPage.waitForAnalyticsInit()
+  await indexPage.waitForSignalsAssets()
 
   await Promise.all([
     indexPage.waitForSignalsApiFlush(),

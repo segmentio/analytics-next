@@ -1,16 +1,16 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin } from '@segment/analytics-signals'
 
-const analytics = new AnalyticsBrowser()
-;(window as any).analytics = analytics
+declare global {
+  interface Window {
+    analytics: AnalyticsBrowser
+    SignalsPlugin: typeof SignalsPlugin
+    signalsPlugin: SignalsPlugin
+  }
+}
 
-const signalsPlugin = new SignalsPlugin({
-  disableSignalsRedaction: true,
-})
-
-;(window as any).signalsPlugin = signalsPlugin
-
-analytics.load({
-  writeKey: '<SOME_WRITE_KEY>',
-  plugins: [signalsPlugin],
-})
+/**
+ * Not instantiating the analytics object here, as it will be instantiated in the test
+ */
+;(window as any).SignalsPlugin = SignalsPlugin
+;(window as any).analytics = new AnalyticsBrowser()

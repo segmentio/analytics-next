@@ -17,7 +17,7 @@ describe(AnalyticsService, () => {
   })
 
   it('should return the correct write key', () => {
-    expect(service.writeKey).toBe('foo')
+    expect(service.instance.settings.writeKey).toBe('foo')
   })
 
   describe('createSegmentInstrumentationEventGenerator', () => {
