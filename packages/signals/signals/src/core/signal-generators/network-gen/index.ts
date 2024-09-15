@@ -57,15 +57,17 @@ export class NetworkGenerator implements SignalGenerator {
       }
 
       emitter.emit(
-        createNetworkSignal({
-          action: 'request',
-          url: normalizeUrl(sUrl),
-          method: rq.method || '',
-          data: JSON.parse(rq.body.toString()),
-          _metadata: {
-            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+        createNetworkSignal(
+          {
+            action: 'request',
+            url: normalizeUrl(sUrl),
+            method: rq.method || '',
+            data: JSON.parse(rq.body.toString()),
           },
-        })
+          {
+            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+          }
+        )
       )
     }
     const handleResponse = async (rs: Response) => {
@@ -79,14 +81,16 @@ export class NetworkGenerator implements SignalGenerator {
 
       const data = await rs.json()
       emitter.emit(
-        createNetworkSignal({
-          action: 'response',
-          url: url,
-          data: data,
-          _metadata: {
-            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+        createNetworkSignal(
+          {
+            action: 'response',
+            url: url,
+            data: data,
           },
-        })
+          {
+            filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+          }
+        )
       )
     }
     this.interceptor.addFetchInterceptor(handleRequest, handleResponse)

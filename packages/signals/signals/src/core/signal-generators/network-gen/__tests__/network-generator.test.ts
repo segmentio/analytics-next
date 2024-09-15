@@ -144,17 +144,17 @@ describe(NetworkGenerator, () => {
         [
           {
             "data": {
-              "_metadata": {
-                "filters": {
-                  "allowed": [],
-                  "disallowed": [],
-                },
-              },
               "action": "response",
               "data": {
                 "data": "test",
               },
               "url": "/api",
+            },
+            "metadata": {
+              "filters": {
+                "allowed": [],
+                "disallowed": [],
+              },
             },
             "type": "network",
           },
@@ -185,18 +185,18 @@ describe(NetworkGenerator, () => {
     expect(first[0]).toMatchInlineSnapshot(`
       {
         "data": {
-          "_metadata": {
-            "filters": {
-              "allowed": [],
-              "disallowed": [],
-            },
-          },
           "action": "request",
           "data": {
             "key": "value",
           },
           "method": "POST",
           "url": "http://localhost/test",
+        },
+        "metadata": {
+          "filters": {
+            "allowed": [],
+            "disallowed": [],
+          },
         },
         "type": "network",
       }
@@ -205,17 +205,17 @@ describe(NetworkGenerator, () => {
     expect(second[0]).toMatchInlineSnapshot(`
       {
         "data": {
-          "_metadata": {
-            "filters": {
-              "allowed": [],
-              "disallowed": [],
-            },
-          },
           "action": "response",
           "data": {
             "data": "test",
           },
           "url": "http://localhost/test",
+        },
+        "metadata": {
+          "filters": {
+            "allowed": [],
+            "disallowed": [],
+          },
         },
         "type": "network",
       }

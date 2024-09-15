@@ -8,6 +8,7 @@ export type SignalType =
 export interface AppSignal<T extends SignalType, Data> {
   type: T
   data: Data
+  metadata?: Record<string, any>
 }
 
 export type InteractionData = ClickData | SubmitData | ChangeData
@@ -74,7 +75,6 @@ interface BaseNetworkData {
   action: string
   url: string
   data: { [key: string]: unknown }
-  _metadata?: NetworkSignalMetadata
 }
 
 interface NetworkRequestData extends BaseNetworkData {
@@ -166,9 +166,13 @@ export const createUserDefinedSignal = (
   }
 }
 
-export const createNetworkSignal = (data: NetworkData): NetworkSignal => {
+export const createNetworkSignal = (
+  data: NetworkData,
+  metadata: NetworkSignalMetadata
+): NetworkSignal => {
   return {
     type: 'network',
     data,
+    metadata: metadata,
   }
 }
