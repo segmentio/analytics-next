@@ -3,6 +3,7 @@ import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
 import { AnyAnalytics, Signal, SignalsPluginSettingsConfig } from '../types'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
+import { version } from '../generated/version'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -22,7 +23,7 @@ interface SignalsAugmentedFunctionality {
 export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   readonly type = 'utility'
   readonly name = 'SignalsPlugin'
-  readonly version = '0.0.0'
+  readonly version = version
   public signals: Signals
 
   constructor(settings: SignalsPluginSettingsConfig = {}) {
