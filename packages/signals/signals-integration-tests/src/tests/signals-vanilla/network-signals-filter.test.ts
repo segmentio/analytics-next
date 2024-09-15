@@ -3,9 +3,7 @@ import { IndexPage } from './index-page'
 import type { SegmentEvent } from '@segment/analytics-next'
 import { promiseTimeout } from '@internal/test-helpers'
 
-class NetworkPage extends IndexPage {}
-
-const network = new NetworkPage()
+const indexPage = new IndexPage()
 
 const basicEdgeFn = `
     // this is a process signal function
@@ -17,17 +15,18 @@ const basicEdgeFn = `
   }`
 
 test('network signals allow and disallow list', async ({ page }) => {
-  await network.loadAndWait(page, basicEdgeFn, {
+  await indexPage.loadAndWait(page, basicEdgeFn, {
     networkSignalsAllowList: ['allowed-api.com'],
     networkSignalsDisallowList: ['disallowed-api.com'],
   })
   const ALLOWED_URL = 'https://allowed-api.com/api/bar'
   const DISALLOWED_URL = 'https://disallowed-api.com/api/foo'
 
-  await network.mockTestRoute(ALLOWED_URL)
-  await network.makeFetchCall(ALLOWED_URL)
-  await network.waitForSignalsApiFlush()
-  const batch = network.lastSignalsApiReq.postDataJSON().batch as SegmentEvent[]
+  await indexPage.mockTestRoute(ALLOWED_URL)
+  await indexPage.makeFetchCall(ALLOWED_URL)
+  await indexPage.waitForSignalsApiFlush()
+  const batch = indexPage.lastSignalsApiReq.postDataJSON()
+    .batch as SegmentEvent[]
   const networkEvents = batch.filter(
     (el: SegmentEvent) => el.properties!.type === 'network'
   )
@@ -44,9 +43,9 @@ test('network signals allow and disallow list', async ({ page }) => {
   })
 
   // Mock and make a fetch call to a disallowed URL
-  await network.mockTestRoute(DISALLOWED_URL)
-  await network.makeFetchCall(DISALLOWED_URL)
-  await promiseTimeout(network.waitForSignalsApiFlush(), 2000)
+  await indexPage.mockTestRoute(DISALLOWED_URL)
+  await indexPage.makeFetchCall(DISALLOWED_URL)
+  await promiseTimeout(indexPage.waitForSignalsApiFlush(), 2000)
     .then(() => {
       throw Error('should not flush, as there are no signals')
     })
