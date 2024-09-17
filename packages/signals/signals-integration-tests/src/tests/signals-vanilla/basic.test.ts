@@ -42,6 +42,32 @@ test('network signals', async () => {
   expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
 })
 
+test('network signals xhr', async () => {
+  /**
+   * Make a fetch call, see if it gets sent to the signals endpoint
+   */
+  await indexPage.mockTestRoute()
+  await indexPage.makeXHRCall()
+  await indexPage.waitForSignalsApiFlush()
+  const batch = indexPage.lastSignalsApiReq.postDataJSON()
+    .batch as SegmentEvent[]
+  const networkEvents = batch.filter(
+    (el: SegmentEvent) => el.properties!.type === 'network'
+  )
+  expect(networkEvents).toHaveLength(2)
+  const requests = networkEvents.filter(
+    (el) => el.properties!.data.action === 'request'
+  )
+  expect(requests).toHaveLength(1)
+  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+
+  const responses = networkEvents.filter(
+    (el) => el.properties!.data.action === 'response'
+  )
+  expect(responses).toHaveLength(1)
+  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+})
+
 test('instrumentation signals', async () => {
   /**
    * Make an analytics.page() call, see if it gets sent to the signals endpoint

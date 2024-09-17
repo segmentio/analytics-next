@@ -74,20 +74,20 @@ interface NetworkSignalMetadata {
 interface BaseNetworkData {
   action: string
   url: string
-  data: { [key: string]: unknown }
+  data: unknown
 }
 
 interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
   method: string
-  data: { [key: string]: unknown }
+  data: unknown
 }
 
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
-  data: { [key: string]: unknown }
+  data: unknown
 }
 
 export type NetworkData = NetworkRequestData | NetworkResponseData

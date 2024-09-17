@@ -31,6 +31,7 @@ analytics.load({
 
 ```
 
+
 ### Debugging
 #### Enable debug mode
 Values sent to the signals API are redacted by default.

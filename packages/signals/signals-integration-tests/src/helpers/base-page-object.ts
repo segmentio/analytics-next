@@ -8,6 +8,7 @@ type FulfillOptions = Parameters<Route['fulfill']>['0']
 
 export class BasePage {
   protected page!: Page
+  static defaultTestApiURL = 'http://localhost:5432/api/foo'
   public lastSignalsApiReq!: Request
   public signalsApiReqs: SegmentEvent[] = []
   public lastTrackingApiReq!: Request
@@ -69,7 +70,6 @@ export class BasePage {
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
           disableSignalsRedaction: true,
-          flushInterval: 500,
           ...signalSettings,
         })
         window.analytics.load({
@@ -191,8 +191,11 @@ export class BasePage {
     )
   }
 
-  async mockTestRoute(url?: string, response?: Partial<FulfillOptions>) {
-    await this.page.route(url || 'http://localhost:5432/api/foo', (route) => {
+  async mockTestRoute(
+    url = BasePage.defaultTestApiURL,
+    response?: Partial<FulfillOptions>
+  ) {
+    await this.page.route(url, (route) => {
       return route.fulfill({
         contentType: 'application/json',
         status: 200,
@@ -203,12 +206,13 @@ export class BasePage {
   }
 
   async makeFetchCall(
-    url?: string,
+    url = BasePage.defaultTestApiURL,
     request?: Partial<RequestInit>
   ): Promise<void> {
-    return this.page.evaluate(
+    const req = this.page.waitForRequest(url)
+    await this.page.evaluate(
       ({ url, request }) => {
-        return fetch(url || 'http://localhost:5432/api/foo', {
+        return fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -221,6 +225,30 @@ export class BasePage {
       },
       { url, request }
     )
+    await req
+  }
+
+  async makeXHRCall(
+    url = BasePage.defaultTestApiURL,
+    request: Partial<{
+      method: string
+      body: any
+      contentType: string
+      responseType: XMLHttpRequestResponseType
+    }> = {}
+  ): Promise<void> {
+    const req = this.page.waitForRequest(url)
+    await this.page.evaluate(
+      ({ url, body, contentType, method, responseType }) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open(method ?? 'POST', url)
+        xhr.responseType = responseType ?? 'json'
+        xhr.setRequestHeader('Content-Type', contentType ?? 'application/json')
+        xhr.send(body || JSON.stringify({ foo: 'bar' }))
+      },
+      { url, ...request }
+    )
+    await req
   }
 
   waitForSignalsApiFlush(timeout = 5000) {

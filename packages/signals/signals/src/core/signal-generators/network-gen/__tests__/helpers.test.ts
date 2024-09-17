@@ -1,5 +1,5 @@
 import { setLocation } from '../../../../test-helpers/set-location'
-import { containsJSONContent, isSameDomain } from '../helpers'
+import { containsContentType, isSameDomain } from '../helpers'
 
 describe(isSameDomain, () => {
   it('should work if both domains are subdomains', () => {
@@ -55,24 +55,56 @@ describe(isSameDomain, () => {
   })
 })
 
-describe(containsJSONContent, () => {
-  it('should return true if headers contain application/json', () => {
+describe(containsContentType, () => {
+  it('should return true if headers specified content type', () => {
     const headers = new Headers({ 'content-type': 'application/json' })
-    expect(containsJSONContent(headers)).toBe(true)
+    expect(containsContentType(headers, ['application/json'])).toBe(true)
+  })
+
+  it('should return true if headers one of the specified content type', () => {
+    const headers = new Headers({ 'content-type': 'application/json' })
+    expect(
+      containsContentType(headers, ['application/json', 'text/html'])
+    ).toBe(true)
   })
   it('should be case insensitive', () => {
-    expect(containsJSONContent([['Content-Type', 'application/json']])).toBe(
-      true
-    )
     expect(
-      containsJSONContent(new Headers({ 'Content-Type': 'application/json' }))
+      containsContentType(new Headers({ 'Content-Type': 'application/json' }), [
+        'application/json',
+      ])
+    ).toBe(true)
+    expect(
+      containsContentType(new Headers({ 'Content-Type': 'application/json' }), [
+        'application/json',
+      ])
+    ).toBe(true)
+  })
+
+  it('should ignore charset', () => {
+    expect(
+      containsContentType(
+        new Headers({ 'Content-Type': 'application/json;charset=utf-8' }),
+        ['application/json']
+      )
+    ).toBe(true)
+
+    expect(
+      containsContentType(
+        new Headers({ 'Content-Type': 'application/json; charset=utf-8' }),
+        ['application/json']
+      )
+    ).toBe(true)
+    expect(
+      containsContentType(new Headers({ 'Content-Type': 'application/json' }), [
+        'application/json',
+      ])
     ).toBe(true)
   })
 
   it('should return false if headers do not contain application/json', () => {
     const headers = new Headers({ 'content-type': 'text/html' })
-    expect(containsJSONContent(headers)).toBe(false)
-    expect(containsJSONContent(new Headers())).toBe(false)
-    expect(containsJSONContent(undefined)).toBe(false)
+    expect(containsContentType(headers, ['application/json'])).toBe(false)
+    expect(containsContentType(new Headers(), ['application/json'])).toBe(false)
+    expect(containsContentType(undefined, ['application/json'])).toBe(false)
   })
 })

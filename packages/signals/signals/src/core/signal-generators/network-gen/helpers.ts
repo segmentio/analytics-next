@@ -30,12 +30,30 @@ const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
 
-export const containsJSONContent = (
-  headers: HeadersInit | undefined
+/**
+ * @example expect(containsContentType(headers, ['application/json'])).toBe(true)
+ */
+export const containsContentType = (
+  headers: HeadersInit | undefined,
+  match: string[]
 ): boolean => {
   if (!headers) {
     return false
   }
   const normalizedHeaders = normalizeHeaders(headers)
-  return normalizedHeaders.get('content-type') === 'application/json'
+
+  // format the content-type header to remove charset -- this is non-standard behavior that is somewhat common
+  // e.g. application/json;charset=utf-8 => application/json
+  const removeCharset = (header: string | null): string | null =>
+    header?.split(';')[0] ?? null
+
+  return match.some(
+    (t) => removeCharset(normalizedHeaders.get('content-type')) === t
+  )
+}
+
+export const containsJSONContentType = (
+  headers: HeadersInit | undefined
+): boolean => {
+  return containsContentType(headers, ['application/json'])
 }
