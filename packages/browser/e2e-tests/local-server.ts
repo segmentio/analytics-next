@@ -1,7 +1,6 @@
 import fetch from 'node-fetch'
 import http from 'http'
 import handler from 'serve-handler'
-import { AddressInfo } from 'net'
 
 export async function startLocalServer(): Promise<string> {
   const srv = http.createServer((request, response) => {
@@ -20,7 +19,8 @@ export async function startLocalServer(): Promise<string> {
     } catch (err) {
       srv.on('error', reject)
       srv.listen(desiredPort, () => {
-        const { port } = srv.address() as AddressInfo
+        // @ts-expect-error
+        const { port } = srv.address()
         resolve(`http://localhost:${port ?? desiredPort}`)
       })
     }
