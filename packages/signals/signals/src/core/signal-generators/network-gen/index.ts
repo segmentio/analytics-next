@@ -15,6 +15,7 @@ import {
   XMLHTTPRequestResponseBody,
 } from './network-interceptor'
 import { containsJSONContentType } from './helpers'
+import { JSONValue } from '@segment/analytics-next'
 
 export type NetworkSettingsConfigSettings = Pick<
   SignalsSettingsConfig,
@@ -176,17 +177,17 @@ function isPlainObject(obj: unknown): obj is Record<string, unknown> {
 
 const tryParseXHRBody = (
   body: XMLHTTPRequestResponseBody | XMLHttpRequestBodyInit
-): object | undefined => {
+): JSONValue => {
   if (!body) {
-    return undefined
+    return null
   }
 
   if (isPlainObject(body) || Array.isArray(body)) {
-    return body
+    return body as JSONValue
   }
   try {
     return JSON.parse(body.toString())
   } catch (e) {
-    return undefined
+    return null
   }
 }
