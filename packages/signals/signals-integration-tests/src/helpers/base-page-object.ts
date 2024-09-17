@@ -70,6 +70,7 @@ export class BasePage {
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
           disableSignalsRedaction: true,
+          flushInterval: 1000,
           ...signalSettings,
         })
         window.analytics.load({
