@@ -1,4 +1,4 @@
-import { setLocation } from '../../../test-helpers/set-location'
+import { setLocation } from '../../test-helpers/set-location'
 import { normalizeUrl } from '../normalize-url'
 
 describe('normalizeUrl', () => {

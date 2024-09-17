@@ -51,7 +51,10 @@ export class Signals implements ISignals {
 
     this.signalEmitter.subscribe(this.addToPreStartBuffer)
 
-    void this.registerGenerator([...domGenerators, NetworkGenerator])
+    void this.registerGenerator([
+      ...domGenerators,
+      new NetworkGenerator(this.globalSettings.network),
+    ])
   }
 
   private addToPreStartBuffer = (signal: Signal) => {
@@ -84,6 +87,10 @@ export class Signals implements ISignals {
 
     this.globalSettings.update({
       edgeFnDownloadURL: analyticsService.edgeFnSettings?.downloadURL,
+      disallowListURLs: [
+        analyticsService.instance.settings.apiHost,
+        analyticsService.instance.settings.cdnURL,
+      ],
     })
 
     const sandbox = new Sandbox(
@@ -105,7 +112,9 @@ export class Signals implements ISignals {
       analyticsService.createSegmentInstrumentationEventGenerator(),
     ])
 
-    await this.signalsClient.init({ writeKey: analyticsService.writeKey })
+    await this.signalsClient.init({
+      writeKey: analyticsService.instance.settings.writeKey,
+    })
   }
 
   stop() {

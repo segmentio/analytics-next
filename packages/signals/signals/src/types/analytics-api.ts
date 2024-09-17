@@ -49,6 +49,8 @@ export interface AnyAnalytics {
   settings: {
     cdnSettings: CDNSettings
     writeKey: string
+    cdnURL?: string //  temporarily optional because analytics does not have this API yet
+    apiHost?: string //  temporarily optional because analytics does not have this API yet
   }
   addSourceMiddleware(
     middleware: Function | SourceMiddlewareFunction

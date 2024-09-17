@@ -14,16 +14,15 @@ const basicEdgeFn = `
   }`
 
 test.beforeEach(async ({ page }) => {
-  await indexPage.load(page, basicEdgeFn)
-  await indexPage.waitForAnalyticsInit()
+  await indexPage.loadAndWait(page, basicEdgeFn)
 })
 
 test('network signals', async () => {
   /**
    * Make a fetch call, see if it gets sent to the signals endpoint
    */
-  await indexPage.mockRandomJSONApi()
-  await indexPage.makeFetchCallToRandomJSONApi()
+  await indexPage.mockTestRoute()
+  await indexPage.makeFetchCall()
   await indexPage.waitForSignalsApiFlush()
   const batch = indexPage.lastSignalsApiReq.postDataJSON()
     .batch as SegmentEvent[]

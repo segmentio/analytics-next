@@ -3,16 +3,23 @@ import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
 import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
+import { NetworkSettingsConfig } from '../signal-generators/network-gen'
+import { SignalsPluginSettingsConfig } from '../../types'
 
-export interface SignalsSettingsConfig {
-  maxBufferSize?: number
+export type SignalsSettingsConfig = Pick<
+  SignalsPluginSettingsConfig,
+  | 'maxBufferSize'
+  | 'apiHost'
+  | 'functionHost'
+  | 'flushAt'
+  | 'flushInterval'
+  | 'disableSignalsRedaction'
+  | 'networkSignalsAllowList'
+  | 'networkSignalsDisallowList'
+  | 'networkSignalsAllowSameDomain'
+> & {
   signalStorage?: SignalPersistentStorage
   processSignal?: string
-  apiHost?: string
-  functionHost?: string
-  flushAt?: number
-  flushInterval?: number
-  disableSignalRedaction?: boolean
 }
 
 /**
@@ -24,6 +31,7 @@ export class SignalGlobalSettings {
   sandbox: SandboxSettingsConfig
   signalBuffer: SignalBufferSettingsConfig
   ingestClient: SignalsIngestSettingsConfig
+  network: NetworkSettingsConfig
 
   private redaction = new SignalRedactionSettings()
 
@@ -35,7 +43,7 @@ export class SignalGlobalSettings {
     }
 
     this.redaction = new SignalRedactionSettings(
-      settings.disableSignalRedaction
+      settings.disableSignalsRedaction
     )
 
     this.signalBuffer = {
@@ -53,9 +61,31 @@ export class SignalGlobalSettings {
       processSignal: settings.processSignal,
       edgeFnDownloadURL: undefined,
     }
+    this.network = new NetworkSettingsConfig({
+      networkSignalsAllowList: settings.networkSignalsAllowList,
+      networkSignalsDisallowList: settings.networkSignalsDisallowList,
+      networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
+    })
   }
-  public update({ edgeFnDownloadURL }: { edgeFnDownloadURL?: string }): void {
+  public update({
+    edgeFnDownloadURL,
+    disallowListURLs,
+  }: {
+    /**
+     * The URL to download the edge function from
+     */
+    edgeFnDownloadURL?: string
+    /**
+     * Add new URLs to the disallow list
+     */
+    disallowListURLs: (string | undefined)[]
+  }): void {
     edgeFnDownloadURL && (this.sandbox.edgeFnDownloadURL = edgeFnDownloadURL)
+    this.network.networkSignalsFilterList.disallowed.addURLLike(
+      ...disallowListURLs.filter(<T>(val: T): val is NonNullable<T> =>
+        Boolean(val)
+      )
+    )
   }
 }
 

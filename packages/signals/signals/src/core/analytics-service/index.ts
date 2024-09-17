@@ -8,12 +8,10 @@ type EdgeFunctionSettings = { downloadURL: string; version?: number }
  * Helper / facade that wraps the analytics, and abstracts away the details of the analytics instance.
  */
 export class AnalyticsService {
-  writeKey: string
   instance: AnyAnalytics
   edgeFnSettings?: EdgeFunctionSettings
   constructor(analyticsInstance: AnyAnalytics) {
     this.instance = analyticsInstance
-    this.writeKey = analyticsInstance.settings.writeKey
     this.edgeFnSettings = this.parseEdgeFnSettings(
       analyticsInstance.settings.cdnSettings
     )
