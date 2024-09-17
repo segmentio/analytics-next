@@ -1,10 +1,14 @@
 import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { onPageChange } from '../../lib/on-page-change'
+import { SegmentFacade } from '../../lib/to-facade'
+import { RateLimitError } from './ratelimit-error'
+import { Context } from '../../core/context'
 
 export type BatchingDispatchConfig = {
   size?: number
   timeout?: number
+  maxRetries?: number
   keepalive?: boolean
 }
 
@@ -63,6 +67,7 @@ export default function batch(
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
+  let rateLimitTimeout = 0
 
   function sendBatch(batch: object[]) {
     if (batch.length === 0) {
@@ -88,28 +93,66 @@ export default function batch(
         batch: updatedBatch,
         sentAt: new Date().toISOString(),
       }),
+    }).then((res) => {
+      if (res.status >= 500) {
+        throw new Error(`Bad response from server: ${res.status}`)
+      }
+      if (res.status === 429) {
+        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
+        const retryTimeoutMS =
+          typeof retryTimeoutStringSecs == 'string'
+            ? parseInt(retryTimeoutStringSecs) * 1000
+            : timeout
+        throw new RateLimitError(
+          `Rate limit exceeded: ${res.status}`,
+          retryTimeoutMS
+        )
+      }
     })
   }
 
-  async function flush(): Promise<unknown> {
+  async function flush(attempt = 1): Promise<unknown> {
     if (buffer.length) {
       const batch = buffer
       buffer = []
-      return sendBatch(batch)
+      return sendBatch(batch)?.catch((error) => {
+        const ctx = Context.system()
+        ctx.log('error', 'Error sending batch', error)
+        if (attempt <= (config?.maxRetries ?? 10)) {
+          if (error.name === 'RateLimitError') {
+            rateLimitTimeout = error.retryTimeout
+          }
+          buffer.push(...batch)
+          buffer.map((event) => {
+            if ('_metadata' in event) {
+              const segmentEvent = event as ReturnType<SegmentFacade['json']>
+              segmentEvent._metadata = {
+                ...segmentEvent._metadata,
+                retryCount: attempt,
+              }
+            }
+          })
+          scheduleFlush(attempt + 1)
+        }
+      })
     }
   }
 
   let schedule: NodeJS.Timeout | undefined
 
-  function scheduleFlush(): void {
+  function scheduleFlush(attempt = 1): void {
     if (schedule) {
       return
     }
 
-    schedule = setTimeout(() => {
-      schedule = undefined
-      flush().catch(console.error)
-    }, timeout)
+    schedule = setTimeout(
+      () => {
+        schedule = undefined
+        flush(attempt).catch(console.error)
+      },
+      rateLimitTimeout ? rateLimitTimeout : timeout
+    )
+    rateLimitTimeout = 0
   }
 
   onPageChange((unloaded) => {

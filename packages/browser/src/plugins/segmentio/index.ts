@@ -109,11 +109,17 @@ export function segmentio(
     return client
       .dispatch(
         `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations)
+        normalize(analytics, json, settings, integrations, ctx)
       )
       .then(() => ctx)
-      .catch(() => {
-        buffer.pushWithBackoff(ctx)
+      .catch((error) => {
+        ctx.log('error', 'Error sending event', error)
+        if (error.name === 'RateLimitError') {
+          const timeout = error.retryTimeout
+          buffer.pushWithBackoff(ctx, timeout)
+        } else {
+          buffer.pushWithBackoff(ctx)
+        }
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         scheduleFlush(flushing, buffer, segmentio, scheduleFlush)
         return ctx
