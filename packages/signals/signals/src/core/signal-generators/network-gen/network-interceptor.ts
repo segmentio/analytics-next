@@ -46,6 +46,9 @@ export interface onXHRResponse {
  */
 export class NetworkInterceptor {
   addFetchInterceptor(onRequest: OnFetchRequest, onResponse: OnFetchResponse) {
+    if (!window.fetch) {
+      return
+    }
     origFetch = window.fetch
     window.fetch = async (...args) => {
       try {
@@ -64,6 +67,9 @@ export class NetworkInterceptor {
   }
 
   addXhrInterceptor(onRequest: onXHRRequest, onResponse: onXHRResponse) {
+    if (!window.XMLHttpRequest) {
+      return
+    }
     const OrigXMLHttpRequest = window.XMLHttpRequest
     class InterceptedXMLHttpRequest extends OrigXMLHttpRequest {
       _reqURL?: string
@@ -157,7 +163,7 @@ export class NetworkInterceptor {
   }
 
   cleanup() {
-    window.XMLHttpRequest = origXMLHttpRequest
-    window.fetch = origFetch
+    origXMLHttpRequest && (window.XMLHttpRequest = origXMLHttpRequest)
+    origFetch && (window.fetch = origFetch)
   }
 }
