@@ -1,5 +1,15 @@
 # @segment/analytics-signals
 
+## 1.1.0
+
+### Minor Changes
+
+- [#1147](https://github.com/segmentio/analytics-next/pull/1147) [`784ddf21`](https://github.com/segmentio/analytics-next/commit/784ddf21906a2a72c1ccea41d0ba323e189c4010) Thanks [@silesky](https://github.com/silesky)! - Update network signals to add support for allow/disallow
+
+### Patch Changes
+
+- [#1150](https://github.com/segmentio/analytics-next/pull/1150) [`04a7cc85`](https://github.com/segmentio/analytics-next/commit/04a7cc85247bdcdb832d0cca4ddbb4391ccada3a) Thanks [@silesky](https://github.com/silesky)! - Support XHR interception
+
 ## 1.0.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.7.0
+
+### Minor Changes
+
+- [#1084](https://github.com/segmentio/analytics-next/pull/1084) [`5647624c`](https://github.com/segmentio/analytics-next/commit/5647624cbcd4984e5bdbf2e9c907619366864c4e) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Adding support for 429 response from the server
+
 ## 1.6.0
 
 ### Minor Changes
