@@ -23,6 +23,14 @@ const parseNodeMap = (nodeMap: NamedNodeMap): Record<string, unknown> => {
   }, {} as Record<string, unknown>)
 }
 
+export const cleanText = (str: string): string => {
+  return str
+    .replace(/[\r\n\t]+/g, ' ') // Replace newlines and tabs with a space
+    .replace(/\s\s+/g, ' ') // Replace multiple spaces with a single space
+    .replace(/\u00A0/g, ' ') // Replace non-breaking spaces with a regular space
+    .trim() // Trim leading and trailing spaces
+}
+
 const parseElement = (el: HTMLElement) => {
   const base = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
@@ -36,7 +44,8 @@ const parseElement = (el: HTMLElement) => {
     title: el.title,
     type: (el as HTMLInputElement).type,
     value: (el as HTMLInputElement).value,
-    textContent: el.textContent,
+    textContent: el.textContent && cleanText(el.textContent),
+    innerText: el.innerText && cleanText(el.innerText),
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -66,11 +75,6 @@ const parseElement = (el: HTMLElement) => {
       readyState: el.readyState,
       src: el.src,
       volume: el.volume,
-    }
-  } else if (el instanceof HTMLButtonElement) {
-    return {
-      ...base,
-      innerText: el.innerText,
     }
   }
   return base

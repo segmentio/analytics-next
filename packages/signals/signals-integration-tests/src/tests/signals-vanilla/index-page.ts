@@ -36,4 +36,8 @@ export class IndexPage extends BasePage {
   async clickButton() {
     return this.page.click('#some-button')
   }
+
+  async clickComplexButton() {
+    return this.page.click('#complex-button')
+  }
 }
