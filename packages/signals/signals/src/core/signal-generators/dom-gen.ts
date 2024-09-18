@@ -32,11 +32,11 @@ const parseElement = (el: HTMLElement) => {
     labels: parseLabels((el as HTMLInputElement).labels),
     name: (el as HTMLInputElement).name,
     nodeName: el.nodeName,
-    nodeValue: el.nodeValue,
     tagName: el.tagName,
     title: el.title,
     type: (el as HTMLInputElement).type,
     value: (el as HTMLInputElement).value,
+    textContent: el.textContent,
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -81,12 +81,14 @@ export class ClickSignalsGenerator implements SignalGenerator {
 
   register(emitter: SignalEmitter) {
     const handleClick = (ev: MouseEvent) => {
-      const target = (ev.target as HTMLElement) ?? {}
-      if (this.isClickableElement(target)) {
+      const target = ev.target as HTMLElement | null
+      if (!target) return
+      const el = this.getClosestClickableElement(target)
+      if (el) {
         emitter.emit(
           createInteractionSignal({
             eventType: 'click',
-            target: parseElement(target),
+            target: parseElement(el),
           })
         )
       }
@@ -95,12 +97,9 @@ export class ClickSignalsGenerator implements SignalGenerator {
     return () => document.removeEventListener('click', handleClick)
   }
 
-  private isClickableElement(el: HTMLElement): boolean {
-    return (
-      el instanceof HTMLAnchorElement ||
-      el instanceof HTMLButtonElement ||
-      ['button', 'link'].includes(el.getAttribute('role') ?? '')
-    )
+  private getClosestClickableElement(el: HTMLElement): HTMLElement | null {
+    // if you click on a nested element, we want to get the closest clickable ancestor. Useful for things like buttons with nested text or images
+    return el.closest<HTMLElement>('button, a, [role="button"], [role="link"]')
   }
 }
 
@@ -190,4 +189,5 @@ export const domGenerators = [
   FormSubmitGenerator,
   OnChangeGenerator,
   OnNavigationEventGenerator,
+  PageScrollGenerator,
 ]

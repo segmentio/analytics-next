@@ -57,6 +57,11 @@ const ComplexForm = () => {
         </div>
         <button type="submit">Submit</button>
       </form>
+      <button>
+        <div>
+          Other Example Button with <h1>Nested Text</h1>
+        </div>
+      </button>
     </div>
   )
 }
