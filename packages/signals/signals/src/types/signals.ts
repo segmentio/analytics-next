@@ -1,3 +1,5 @@
+import { JSONValue } from '@segment/analytics-next'
+
 export type SignalType =
   | 'navigation'
   | 'interaction'
@@ -74,20 +76,18 @@ interface NetworkSignalMetadata {
 interface BaseNetworkData {
   action: string
   url: string
-  data: { [key: string]: unknown }
+  data: JSONValue
 }
 
 interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
   method: string
-  data: { [key: string]: unknown }
 }
 
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
-  data: { [key: string]: unknown }
 }
 
 export type NetworkData = NetworkRequestData | NetworkResponseData

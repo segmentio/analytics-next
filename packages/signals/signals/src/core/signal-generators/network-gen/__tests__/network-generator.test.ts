@@ -8,6 +8,7 @@ import { Response } from 'node-fetch'
 import { sleep } from '@internal/test-helpers'
 import { setLocation } from '../../../../test-helpers/set-location'
 
+// xhr tests are in integration tests
 describe(NetworkGenerator, () => {
   class TestNetworkGenerator extends NetworkGenerator {
     constructor(settings: Partial<NetworkSettingsConfigSettings> = {}) {

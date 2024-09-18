@@ -28,4 +28,22 @@ describe(NetworkInterceptor, () => {
     expect(mockRequestHandler).toHaveBeenCalled()
     expect(mockResponseHandler).toHaveBeenCalled()
   })
+
+  it('should intercept XHR requests and responses', async () => {
+    const mockRequestHandler = jest.fn()
+    const mockResponseHandler = jest.fn()
+    const xhr = new XMLHttpRequest()
+
+    interceptor.addXhrInterceptor(mockRequestHandler, mockResponseHandler)
+
+    xhr.open('GET', 'http://example.com')
+    xhr.send()
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === xhr.DONE) {
+        expect(mockRequestHandler).toHaveBeenCalled()
+        expect(mockResponseHandler).toHaveBeenCalled()
+      }
+    }
+  })
 })
