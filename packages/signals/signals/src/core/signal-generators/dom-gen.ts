@@ -189,5 +189,4 @@ export const domGenerators = [
   FormSubmitGenerator,
   OnChangeGenerator,
   OnNavigationEventGenerator,
-  PageScrollGenerator,
 ]
