@@ -1,4 +1,5 @@
 import { JSONValue } from '@segment/analytics-next'
+import { normalizeUrl } from '../lib/normalize-url'
 
 export type SignalType =
   | 'navigation'
@@ -66,7 +67,7 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
-interface NetworkSignalMetadata {
+export interface NetworkSignalMetadata {
   filters: {
     allowed: string[]
     disallowed: string[]
@@ -172,7 +173,13 @@ export const createNetworkSignal = (
 ): NetworkSignal => {
   return {
     type: 'network',
-    data,
+    data: {
+      ...data,
+      url: normalizeUrl(data.url),
+      ...(data.action === 'request'
+        ? { method: data.method.toUpperCase() }
+        : {}),
+    },
     metadata: metadata,
   }
 }

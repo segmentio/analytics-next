@@ -22,6 +22,10 @@ export class BasePage {
     this.url = 'http://localhost:5432/src/tests' + path
   }
 
+  public origin() {
+    return new URL(this.page.url()).origin
+  }
+
   /**
    * Load and setup routes
    * and wait for analytics and signals to be initialized
@@ -196,6 +200,9 @@ export class BasePage {
     url = BasePage.defaultTestApiURL,
     response?: Partial<FulfillOptions>
   ) {
+    if (url.startsWith('/')) {
+      url = new URL(url, this.page.url()).href
+    }
     await this.page.route(url, (route) => {
       return route.fulfill({
         contentType: 'application/json',
@@ -210,7 +217,11 @@ export class BasePage {
     url = BasePage.defaultTestApiURL,
     request?: Partial<RequestInit>
   ): Promise<void> {
-    const req = this.page.waitForRequest(url)
+    let normalizeUrl = url
+    if (url.startsWith('/')) {
+      normalizeUrl = new URL(url, this.page.url()).href
+    }
+    const req = this.page.waitForResponse(normalizeUrl ?? url)
     await this.page.evaluate(
       ({ url, request }) => {
         return fetch(url, {
@@ -238,7 +249,11 @@ export class BasePage {
       responseType: XMLHttpRequestResponseType
     }> = {}
   ): Promise<void> {
-    const req = this.page.waitForRequest(url)
+    let normalizeUrl = url
+    if (url.startsWith('/')) {
+      normalizeUrl = new URL(url, this.page.url()).href
+    }
+    const req = this.page.waitForResponse(normalizeUrl ?? url)
     await this.page.evaluate(
       ({ url, body, contentType, method, responseType }) => {
         const xhr = new XMLHttpRequest()
