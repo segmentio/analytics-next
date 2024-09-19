@@ -23,6 +23,14 @@ const parseNodeMap = (nodeMap: NamedNodeMap): Record<string, unknown> => {
   }, {} as Record<string, unknown>)
 }
 
+export const cleanText = (str: string): string => {
+  return str
+    .replace(/[\r\n\t]+/g, ' ') // Replace newlines and tabs with a space
+    .replace(/\s\s+/g, ' ') // Replace multiple spaces with a single space
+    .replace(/\u00A0/g, ' ') // Replace non-breaking spaces with a regular space
+    .trim() // Trim leading and trailing spaces
+}
+
 const parseElement = (el: HTMLElement) => {
   const base = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
@@ -32,11 +40,12 @@ const parseElement = (el: HTMLElement) => {
     labels: parseLabels((el as HTMLInputElement).labels),
     name: (el as HTMLInputElement).name,
     nodeName: el.nodeName,
-    nodeValue: el.nodeValue,
     tagName: el.tagName,
     title: el.title,
     type: (el as HTMLInputElement).type,
     value: (el as HTMLInputElement).value,
+    textContent: el.textContent && cleanText(el.textContent),
+    innerText: el.innerText && cleanText(el.innerText),
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -67,11 +76,6 @@ const parseElement = (el: HTMLElement) => {
       src: el.src,
       volume: el.volume,
     }
-  } else if (el instanceof HTMLButtonElement) {
-    return {
-      ...base,
-      innerText: el.innerText,
-    }
   }
   return base
 }
@@ -81,12 +85,14 @@ export class ClickSignalsGenerator implements SignalGenerator {
 
   register(emitter: SignalEmitter) {
     const handleClick = (ev: MouseEvent) => {
-      const target = (ev.target as HTMLElement) ?? {}
-      if (this.isClickableElement(target)) {
+      const target = ev.target as HTMLElement | null
+      if (!target) return
+      const el = this.getClosestClickableElement(target)
+      if (el) {
         emitter.emit(
           createInteractionSignal({
             eventType: 'click',
-            target: parseElement(target),
+            target: parseElement(el),
           })
         )
       }
@@ -95,12 +101,9 @@ export class ClickSignalsGenerator implements SignalGenerator {
     return () => document.removeEventListener('click', handleClick)
   }
 
-  private isClickableElement(el: HTMLElement): boolean {
-    return (
-      el instanceof HTMLAnchorElement ||
-      el instanceof HTMLButtonElement ||
-      ['button', 'link'].includes(el.getAttribute('role') ?? '')
-    )
+  private getClosestClickableElement(el: HTMLElement): HTMLElement | null {
+    // if you click on a nested element, we want to get the closest clickable ancestor. Useful for things like buttons with nested text or images
+    return el.closest<HTMLElement>('button, a, [role="button"], [role="link"]')
   }
 }
 

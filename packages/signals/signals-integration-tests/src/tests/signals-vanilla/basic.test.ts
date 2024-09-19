@@ -123,7 +123,6 @@ test('interaction signals', async () => {
       labels: [],
       name: '',
       nodeName: 'BUTTON',
-      nodeValue: null,
       tagName: 'BUTTON',
       title: '',
       type: 'submit',

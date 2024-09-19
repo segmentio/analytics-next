@@ -18,7 +18,6 @@ export type InteractionData = ClickData | SubmitData | ChangeData
 interface SerializedTarget {
   // nodeName: Node['nodeName']
   // textContent: Node['textContent']
-  // nodeValue: Node['nodeValue']
   // nodeType: Node['nodeType']
   [key: string]: any
 }
