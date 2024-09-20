@@ -1,5 +1,17 @@
 # @segment/analytics-signals
 
+## 1.2.0
+
+### Minor Changes
+
+- [#1152](https://github.com/segmentio/analytics-next/pull/1152) [`101e8414`](https://github.com/segmentio/analytics-next/commit/101e841404e5f55f53ba014b6195bf1066aeb67e) Thanks [@silesky](https://github.com/silesky)! - - normalize XHR URL, http methods, etc
+
+### Patch Changes
+
+- [#1151](https://github.com/segmentio/analytics-next/pull/1151) [`571386f5`](https://github.com/segmentio/analytics-next/commit/571386f5d388ed3ff44520ee94795424378950ed) Thanks [@silesky](https://github.com/silesky)! - - Clean up up innerText AND textContent artifacts to make easier to parse.
+  - Add textContent field
+  - Make button Clicks more reliable
+
 ## 1.1.0
 
 ### Minor Changes
