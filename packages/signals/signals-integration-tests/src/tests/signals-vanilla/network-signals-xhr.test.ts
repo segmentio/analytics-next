@@ -93,6 +93,55 @@ test.describe('XHR Tests', () => {
     })
   })
 
+  test('works with XHR and relative paths', async () => {
+    await indexPage.mockTestRoute(`/test`, {
+      body: JSON.stringify({ foo: 'test' }),
+      contentType: 'application/json',
+    })
+
+    await indexPage.makeXHRCall('/test', {
+      method: 'POST',
+      body: JSON.stringify({ key: 'value' }),
+      responseType: 'json',
+      contentType: 'application/json',
+    })
+
+    // Wait for the signals to be flushed
+    await indexPage.waitForSignalsApiFlush()
+
+    // Retrieve the batch of events from the signals request
+    const batch = indexPage.lastSignalsApiReq.postDataJSON()
+      .batch as SegmentEvent[]
+
+    // Filter out network events
+    const networkEvents = batch.filter(
+      (el) => el.properties!.type === 'network'
+    )
+
+    // Check the request
+    const requests = networkEvents.filter(
+      (el) => el.properties!.data.action === 'request'
+    )
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0].properties!.data).toMatchObject({
+      action: 'request',
+      url: `${indexPage.origin()}/test`,
+      data: { key: 'value' },
+    })
+
+    // Check the response
+    const responses = networkEvents.filter(
+      (el) => el.properties!.data.action === 'response'
+    )
+    expect(responses).toHaveLength(1)
+    expect(responses[0].properties!.data).toMatchObject({
+      action: 'response',
+      url: `${indexPage.origin()}/test`,
+      data: { foo: 'test' },
+    })
+  })
+
   test('should emit response but not request if request content-type is not json but response is', async () => {
     await indexPage.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),

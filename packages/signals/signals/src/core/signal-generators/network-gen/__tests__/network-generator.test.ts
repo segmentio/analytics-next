@@ -149,7 +149,7 @@ describe(NetworkGenerator, () => {
               "data": {
                 "data": "test",
               },
-              "url": "/api",
+              "url": "http://localhost/api",
             },
             "metadata": {
               "filters": {
@@ -242,6 +242,25 @@ describe(NetworkGenerator, () => {
     const [first] = mockEmitter.emit.mock.calls
 
     expect(first[0].data.url).toBe('http://localhost/test')
+    unregister()
+  })
+
+  it('should default to GET method if no method is provided', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator()
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`/test`, {
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: 'value' }),
+    })
+
+    await sleep(100)
+    const [first] = mockEmitter.emit.mock.calls
+
+    expect(first[0].data.method).toBe('GET')
     unregister()
   })
 

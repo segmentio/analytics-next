@@ -6,7 +6,6 @@ import {
 import { createNetworkSignal } from '../../../types'
 import { SignalEmitter } from '../../emitter'
 import { SignalsSettingsConfig } from '../../signals'
-import { normalizeUrl } from '../../../lib/normalize-url'
 import { SignalGenerator } from '../types'
 import {
   NetworkInterceptor,
@@ -70,8 +69,8 @@ export class NetworkGenerator implements SignalGenerator {
         createNetworkSignal(
           {
             action: 'request',
-            url: normalizeUrl(sUrl),
-            method: rq.method || '',
+            url: sUrl,
+            method: rq.method || 'GET',
             data: JSON.parse(rq.body.toString()),
           },
           createMetadata()
@@ -95,7 +94,7 @@ export class NetworkGenerator implements SignalGenerator {
         createNetworkSignal(
           {
             action: 'response',
-            url: url,
+            url,
             data: data,
           },
           createMetadata()
@@ -124,7 +123,7 @@ export class NetworkGenerator implements SignalGenerator {
         createNetworkSignal(
           {
             action: 'request',
-            url: normalizeUrl(sUrl),
+            url: sUrl,
             method: rq.method,
             data: tryParseXHRBody(rq.body),
           },
