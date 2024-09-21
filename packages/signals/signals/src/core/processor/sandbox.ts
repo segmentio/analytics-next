@@ -1,5 +1,5 @@
 import { logger } from '../../lib/logger'
-import createWorkerBox from 'workerboxjs'
+import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
 import { createSignalsRuntime } from './signals-runtime'
@@ -121,9 +121,9 @@ interface CodeSandbox {
 }
 
 class JavascriptSandbox implements CodeSandbox {
-  private workerbox: Promise<CodeSandbox>
+  private workerbox: Promise<WorkerBoxAPI>
   constructor() {
-    this.workerbox = createWorkerBox('')
+    this.workerbox = createWorkerBox()
   }
   async run(fn: string, scope: Record<string, any>) {
     try {

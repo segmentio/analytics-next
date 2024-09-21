@@ -10,4 +10,4 @@ const createWorkerBox = jest.fn(() => {
   })
 })
 
-export default createWorkerBox
+export { createWorkerBox }
