@@ -231,9 +231,7 @@ export class BasePage {
           },
           body: JSON.stringify({ foo: 'bar' }),
           ...request,
-        })
-          .then(console.log)
-          .catch(console.error)
+        }).catch(console.error)
       },
       { url, request }
     )
