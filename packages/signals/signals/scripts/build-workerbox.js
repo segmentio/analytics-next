@@ -55,5 +55,10 @@ async function build() {
     ].join('\n')
   )
 }
+
 build()
-console.log('Build successful')
+  .then(() => console.log('Build successful'))
+  .catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
