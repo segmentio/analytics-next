@@ -132,7 +132,9 @@ describe('standalone bundle', () => {
       // @ts-ignore ignore Response required fields
       .mockImplementation((): Promise<Response> => fetchSettings)
 
-    await loadCDNSettings(segmentDotCom)
+    const mockCdn = 'https://cdn.foo.com'
+
+    await loadCDNSettings(segmentDotCom, mockCdn)
 
     expect(unfetch).toHaveBeenCalledWith(
       'https://cdn.foo.com/v1/projects/foo/settings'
@@ -147,7 +149,7 @@ describe('standalone bundle', () => {
     const mockCdn = 'http://my-overridden-cdn.com'
 
     getGlobalAnalytics()!._cdn = mockCdn
-    await loadCDNSettings(segmentDotCom)
+    await loadCDNSettings(segmentDotCom, mockCdn)
 
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
   })
