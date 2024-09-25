@@ -1,5 +1,18 @@
 # @segment/analytics-node
 
+## 2.2.0
+
+### Minor Changes
+
+- [#1128](https://github.com/segmentio/analytics-next/pull/1128) [`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3) Thanks [@silesky](https://github.com/silesky)! - Do not make plugin.version required
+
+* [#1156](https://github.com/segmentio/analytics-next/pull/1156) [`9ece2726`](https://github.com/segmentio/analytics-next/commit/9ece2726de257ecd594d601ef098bea746858133) Thanks [@mrmckeb](https://github.com/mrmckeb)! - Improves support for TypeScript's `exactOptionalPropertyTypes` by allowing `undefined` to be passed to optional properties.
+
+### Patch Changes
+
+- Updated dependencies [[`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3), [`9ece2726`](https://github.com/segmentio/analytics-next/commit/9ece2726de257ecd594d601ef098bea746858133)]:
+  - @segment/analytics-core@1.8.0
+
 ## 2.1.3
 
 ### Patch Changes
