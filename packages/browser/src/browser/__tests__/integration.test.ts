@@ -1045,6 +1045,7 @@ describe('public settings api', () => {
       writeKey,
       cdnSettings: cdnSettingsMinimal,
       timeout: 300,
+      cdnURL: 'https://cdn.segment.com',
     })
   })
 

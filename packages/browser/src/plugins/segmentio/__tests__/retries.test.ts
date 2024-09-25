@@ -52,6 +52,7 @@ describe('Segment.io retries 500s and 429', () => {
   })
 
   test('delays retry on 429', async () => {
+    jest.useFakeTimers({ advanceTimers: true })
     const headers = new Headers()
     const resetTime = 1234
     headers.set('x-ratelimit-reset', resetTime.toString())

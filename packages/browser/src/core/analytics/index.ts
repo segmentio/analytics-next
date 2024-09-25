@@ -80,9 +80,10 @@ export class AnalyticsInstanceSettings {
    * This is an unstable API, it may change in the future without warning.
    */
   readonly cdnSettings: CDNSettings
+  readonly cdnURL?: string
 
   /**
-   * Auto-track specific timeout setting   for legacy purposes.
+   * Auto-track specific timeout setting for legacy purposes.
    */
   timeout = 300
 
@@ -92,6 +93,7 @@ export class AnalyticsInstanceSettings {
       integrations: {},
       edgeFunction: {},
     }
+    this.cdnURL = settings.cdnURL
   }
 }
 
@@ -101,6 +103,7 @@ export class AnalyticsInstanceSettings {
 export interface AnalyticsSettings {
   writeKey: string
   cdnSettings?: CDNSettings
+  cdnURL?: string
 }
 
 export interface InitOptions {
