@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import type { SegmentEvent } from '@segment/analytics-next'
 import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
@@ -21,10 +20,7 @@ test('button click (complex, with nested items)', async () => {
     indexPage.waitForSignalsApiFlush(),
   ])
 
-  const signalsReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
-  const interactionSignals = signalsReqJSON.batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'interaction'
-  )
+  const interactionSignals = indexPage.signalsAPI.getEvents('interaction')
   expect(interactionSignals).toHaveLength(1)
   const data = {
     eventType: 'click',

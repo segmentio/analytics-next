@@ -1,22 +1,19 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
-import { Page, Request, Route } from '@playwright/test'
+import { Page, Request } from '@playwright/test'
 import { logConsole } from './log-console'
 import { SegmentEvent } from '@segment/analytics-next'
 import { Signal, SignalsPluginSettingsConfig } from '@segment/analytics-signals'
-
-type FulfillOptions = Parameters<Route['fulfill']>['0']
+import { PageNetworkUtils, SignalAPIRequestBuffer } from './network-utils'
 
 export class BasePage {
   protected page!: Page
-  static defaultTestApiURL = 'http://localhost:5432/api/foo'
-  public lastSignalsApiReq!: Request
-  public signalsApiReqs: SegmentEvent[] = []
+  public signalsAPI = new SignalAPIRequestBuffer()
   public lastTrackingApiReq!: Request
   public trackingApiReqs: SegmentEvent[] = []
-
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   public edgeFn!: string
+  public network!: PageNetworkUtils
 
   constructor(path: string) {
     this.url = 'http://localhost:5432/src/tests' + path
@@ -46,6 +43,7 @@ export class BasePage {
   ) {
     logConsole(page)
     this.page = page
+    this.network = new PageNetworkUtils(page)
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     await this.page.goto(this.url)
@@ -89,10 +87,8 @@ export class BasePage {
 
   private async setupMockedRoutes() {
     // clear any existing saved requests
-    this.signalsApiReqs = []
     this.trackingApiReqs = []
-    this.lastSignalsApiReq = undefined as any as Request
-    this.lastTrackingApiReq = undefined as any as Request
+    this.signalsAPI.clear()
 
     await Promise.all([
       this.mockSignalsApi(),
@@ -126,8 +122,7 @@ export class BasePage {
     await this.page.route(
       'https://signals.segment.io/v1/*',
       (route, request) => {
-        this.lastSignalsApiReq = request
-        this.signalsApiReqs.push(request.postDataJSON())
+        this.signalsAPI.addRequest(request)
         if (request.method().toLowerCase() !== 'post') {
           throw new Error(`Unexpected method: ${request.method()}`)
         }
@@ -194,75 +189,6 @@ export class BasePage {
         failOnEmit,
       ] as const
     )
-  }
-
-  async mockTestRoute(
-    url = BasePage.defaultTestApiURL,
-    response?: Partial<FulfillOptions>
-  ) {
-    if (url.startsWith('/')) {
-      url = new URL(url, this.page.url()).href
-    }
-    await this.page.route(url, (route) => {
-      return route.fulfill({
-        contentType: 'application/json',
-        status: 200,
-        body: JSON.stringify({ someResponse: 'yep' }),
-        ...response,
-      })
-    })
-  }
-
-  async makeFetchCall(
-    url = BasePage.defaultTestApiURL,
-    request?: Partial<RequestInit>
-  ): Promise<void> {
-    let normalizeUrl = url
-    if (url.startsWith('/')) {
-      normalizeUrl = new URL(url, this.page.url()).href
-    }
-    const req = this.page.waitForResponse(normalizeUrl ?? url)
-    await this.page.evaluate(
-      ({ url, request }) => {
-        return fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ foo: 'bar' }),
-          ...request,
-        }).catch(console.error)
-      },
-      { url, request }
-    )
-    await req
-  }
-
-  async makeXHRCall(
-    url = BasePage.defaultTestApiURL,
-    request: Partial<{
-      method: string
-      body: any
-      contentType: string
-      responseType: XMLHttpRequestResponseType
-    }> = {}
-  ): Promise<void> {
-    let normalizeUrl = url
-    if (url.startsWith('/')) {
-      normalizeUrl = new URL(url, this.page.url()).href
-    }
-    const req = this.page.waitForResponse(normalizeUrl ?? url)
-    await this.page.evaluate(
-      ({ url, body, contentType, method, responseType }) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open(method ?? 'POST', url)
-        xhr.responseType = responseType ?? 'json'
-        xhr.setRequestHeader('Content-Type', contentType ?? 'application/json')
-        xhr.send(body || JSON.stringify({ foo: 'bar' }))
-      },
-      { url, ...request }
-    )
-    await req
   }
 
   waitForSignalsApiFlush(timeout = 5000) {

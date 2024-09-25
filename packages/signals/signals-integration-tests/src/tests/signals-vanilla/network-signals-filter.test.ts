@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
-import type { SegmentEvent } from '@segment/analytics-next'
 
 const indexPage = new IndexPage()
 
@@ -24,16 +23,12 @@ test('network signals allow and disallow list', async ({ page }) => {
   const emittedNetworkSignalsAllowed = indexPage.waitForSignalsEmit(
     (el) => el.type === 'network'
   )
-  await indexPage.mockTestRoute(ALLOWED_URL)
-  await indexPage.makeFetchCall(ALLOWED_URL)
+  await indexPage.network.mockTestRoute(ALLOWED_URL)
+  await indexPage.network.makeFetchCall(ALLOWED_URL)
   await emittedNetworkSignalsAllowed
 
   await indexPage.waitForSignalsApiFlush()
-  const batch = indexPage.lastSignalsApiReq.postDataJSON()
-    .batch as SegmentEvent[]
-  const networkEvents = batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'network'
-  )
+  const networkEvents = indexPage.signalsAPI.getEvents('network')
   const allowedRequestsAndResponses = networkEvents.filter(
     (el) => el.properties!.data.url === ALLOWED_URL
   )
@@ -54,7 +49,7 @@ test('network signals allow and disallow list', async ({ page }) => {
       failOnEmit: true,
     }
   )
-  await indexPage.mockTestRoute(DISALLOWED_URL)
-  await indexPage.makeFetchCall(DISALLOWED_URL)
+  await indexPage.network.mockTestRoute(DISALLOWED_URL)
+  await indexPage.network.makeFetchCall(DISALLOWED_URL)
   await emittedNetworkSignalsDisallowed
 })
