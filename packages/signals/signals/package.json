@@ -61,7 +61,6 @@
     "@internal/config-webpack": "workspace:^",
     "@internal/test-helpers": "workspace:^",
     "fake-indexeddb": "^6.0.0",
-    "minify": "^11.4.1",
     "node-fetch": "^2.6.7"
   }
 }
