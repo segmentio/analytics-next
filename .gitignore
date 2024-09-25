@@ -31,7 +31,7 @@ reports/*
 
 .changelog
 .turbo
-/test-results/
+test-results/
 playwright-report/
 playwright/.cache/
 tmp.tsconfig.json
