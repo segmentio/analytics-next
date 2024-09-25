@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.3.0
+
+### Minor Changes
+
+- [#1155](https://github.com/segmentio/analytics-next/pull/1155) [`29e856f9`](https://github.com/segmentio/analytics-next/commit/29e856f9f36088a0dc625014ebda8e09fc3b621e) Thanks [@silesky](https://github.com/silesky)! - - Fix npm installation esm error by vendoring esm-only module workerbox
+
 ## 1.2.0
 
 ### Minor Changes

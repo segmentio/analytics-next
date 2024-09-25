@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.74.0
+
+### Minor Changes
+
+- [#1157](https://github.com/segmentio/analytics-next/pull/1157) [`3f58366b`](https://github.com/segmentio/analytics-next/commit/3f58366b0e01aa723d9d3bbb9fe8549d3082eb8e) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Refactoring CDN Url to be available from analytics settings
+
+* [#1128](https://github.com/segmentio/analytics-next/pull/1128) [`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3) Thanks [@silesky](https://github.com/silesky)! - Do not make plugin.version required
+
+### Patch Changes
+
+- Updated dependencies [[`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3), [`9ece2726`](https://github.com/segmentio/analytics-next/commit/9ece2726de257ecd594d601ef098bea746858133)]:
+  - @segment/analytics-core@1.8.0
+
 ## 1.73.0
 
 ### Minor Changes
