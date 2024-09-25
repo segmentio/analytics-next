@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import type { SegmentEvent } from '@segment/analytics-next'
 import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
@@ -21,14 +20,10 @@ test('network signals', async () => {
   /**
    * Make a fetch call, see if it gets sent to the signals endpoint
    */
-  await indexPage.mockTestRoute()
-  await indexPage.makeFetchCall()
+  await indexPage.network.mockTestRoute()
+  await indexPage.network.makeFetchCall()
   await indexPage.waitForSignalsApiFlush()
-  const batch = indexPage.lastSignalsApiReq.postDataJSON()
-    .batch as SegmentEvent[]
-  const networkEvents = batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'network'
-  )
+  const networkEvents = indexPage.signalsAPI.getEvents('network')
   const requests = networkEvents.filter(
     (el) => el.properties!.data.action === 'request'
   )
@@ -46,14 +41,10 @@ test('network signals xhr', async () => {
   /**
    * Make a fetch call, see if it gets sent to the signals endpoint
    */
-  await indexPage.mockTestRoute()
-  await indexPage.makeXHRCall()
+  await indexPage.network.mockTestRoute()
+  await indexPage.network.makeXHRCall()
   await indexPage.waitForSignalsApiFlush()
-  const batch = indexPage.lastSignalsApiReq.postDataJSON()
-    .batch as SegmentEvent[]
-  const networkEvents = batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'network'
-  )
+  const networkEvents = indexPage.signalsAPI.getEvents('network')
   expect(networkEvents).toHaveLength(2)
   const requests = networkEvents.filter(
     (el) => el.properties!.data.action === 'request'
@@ -77,17 +68,14 @@ test('instrumentation signals', async () => {
     indexPage.waitForSignalsApiFlush(),
   ])
 
-  const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
-
   const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-  const instrumentationEvents = signalReqJSON.batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'instrumentation'
-  )
+  const instrumentationEvents =
+    indexPage.signalsAPI.getEvents('instrumentation')
   expect(instrumentationEvents).toHaveLength(1)
   const ev = instrumentationEvents[0]
   expect(ev.event).toBe('Segment Signal Generated')
   expect(ev.type).toBe('track')
-  const rawEvent = ev.properties.data.rawEvent
+  const rawEvent = ev.properties!.data.rawEvent
   expect(rawEvent).toMatchObject({
     type: 'page',
     anonymousId: expect.any(String),
@@ -107,10 +95,7 @@ test('interaction signals', async () => {
     indexPage.waitForTrackingApiFlush(),
   ])
 
-  const signalsReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
-  const interactionSignals = signalsReqJSON.batch.filter(
-    (el: SegmentEvent) => el.properties!.type === 'interaction'
-  )
+  const interactionSignals = indexPage.signalsAPI.getEvents('interaction')
   expect(interactionSignals).toHaveLength(1)
   const data = {
     eventType: 'click',
@@ -163,12 +148,8 @@ test('navigation signals', async ({ page }) => {
   {
     // on page load, a navigation signal should be sent
     await indexPage.waitForSignalsApiFlush()
-    const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
-    const navigationEvents = signalReqJSON.batch.filter(
-      (el: SegmentEvent) => el.properties!.type === 'navigation'
-    )
-    expect(navigationEvents).toHaveLength(1)
-    const ev = navigationEvents[0]
+    expect(indexPage.signalsAPI.getEvents()).toHaveLength(1)
+    const ev = indexPage.signalsAPI.lastEvent('navigation')
     expect(ev.properties).toMatchObject({
       type: 'navigation',
       data: {
@@ -188,13 +169,8 @@ test('navigation signals', async ({ page }) => {
       window.location.hash = '#foo'
     })
     await indexPage.waitForSignalsApiFlush()
-    const signalReqJSON = indexPage.lastSignalsApiReq.postDataJSON()
-
-    const navigationEvents = signalReqJSON.batch.filter(
-      (el: SegmentEvent) => el.properties!.type === 'navigation'
-    )
-    expect(navigationEvents).toHaveLength(1)
-    const ev = navigationEvents[0]
+    expect(indexPage.signalsAPI.getEvents()).toHaveLength(2)
+    const ev = indexPage.signalsAPI.lastEvent('navigation')
     expect(ev.properties).toMatchObject({
       index: expect.any(Number),
       type: 'navigation',
