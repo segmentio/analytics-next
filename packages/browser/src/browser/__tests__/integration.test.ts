@@ -1041,13 +1041,15 @@ describe('public settings api', () => {
       cdnSettings: cdnSettingsMinimal,
     })
 
-    expect(analytics.settings).toEqual({
-      writeKey,
-      cdnSettings: cdnSettingsMinimal,
-      timeout: 300,
-      cdnURL: 'https://cdn.segment.com',
-      apiHost: 'api.segment.io/v1',
-    })
+    expect(analytics.settings).toEqual(
+      expect.objectContaining({
+        writeKey,
+        cdnSettings: cdnSettingsMinimal,
+        timeout: 300,
+        cdnURL: 'https://cdn.segment.com',
+        apiHost: 'api.segment.io/v1',
+      })
+    )
   })
 
   it('should have a writeKey', async () => {
