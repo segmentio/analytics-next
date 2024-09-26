@@ -95,7 +95,7 @@ export class AnalyticsInstanceSettings {
    */
   timeout = 300
 
-  constructor(settings: AnalyticsInstanceSettingsOptions, queue: EventQueue) {
+  constructor(settings: AnalyticsSettings, queue: EventQueue) {
     this._getSegmentPluginMetadata = () =>
       queue.plugins.find(isSegmentPlugin)?.metadata
     this.writeKey = settings.writeKey
@@ -114,10 +114,6 @@ export interface AnalyticsSettings {
   writeKey: string
   cdnSettings?: CDNSettings
   cdnURL?: string
-}
-
-interface AnalyticsInstanceSettingsOptions extends AnalyticsSettings {
-  getSegmentPluginMetadata?: () => SegmentIOPluginMetadata | undefined
 }
 
 export interface InitOptions {
