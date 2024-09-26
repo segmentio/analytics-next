@@ -1046,6 +1046,7 @@ describe('public settings api', () => {
       cdnSettings: cdnSettingsMinimal,
       timeout: 300,
       cdnURL: 'https://cdn.segment.com',
+      apiHost: 'api.segment.io/v1',
     })
   })
 

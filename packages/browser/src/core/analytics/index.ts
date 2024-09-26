@@ -51,6 +51,8 @@ import {
 } from '../storage'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 import { popPageContext } from '../buffer'
+import { SegmentioSettings } from '../../plugins/segmentio'
+import { SEGMENT_API_HOST } from '../constants'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -81,19 +83,21 @@ export class AnalyticsInstanceSettings {
    */
   readonly cdnSettings: CDNSettings
   readonly cdnURL?: string
+  readonly apiHost?: string
 
   /**
    * Auto-track specific timeout setting for legacy purposes.
    */
   timeout = 300
 
-  constructor(settings: AnalyticsSettings) {
+  constructor(settings: AnalyticsSettings, apiHost?: string) {
     this.writeKey = settings.writeKey
     this.cdnSettings = settings.cdnSettings ?? {
       integrations: {},
       edgeFunction: {},
     }
     this.cdnURL = settings.cdnURL
+    this.apiHost = apiHost ?? SEGMENT_API_HOST
   }
 }
 
@@ -201,7 +205,13 @@ export class Analytics
     super()
     const cookieOptions = options?.cookie
     const disablePersistance = options?.disableClientPersistence ?? false
-    this.settings = new AnalyticsInstanceSettings(settings)
+
+    // Extract apiHost from Segment.io settings if available
+    const segmentLoadOptions = options?.integrations?.['Segment.io'] as
+      | SegmentioSettings
+      | undefined
+    const apiHost = segmentLoadOptions?.apiHost
+    this.settings = new AnalyticsInstanceSettings(settings, apiHost)
     this.queue =
       queue ??
       createDefaultQueue(
