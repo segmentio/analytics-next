@@ -50,6 +50,19 @@ function onAlias(analytics: Analytics, json: JSON): JSON {
   return json
 }
 
+export type SegmentIOPluginMetadata = {
+  writeKey: string
+  apiHost: string
+  protocol: string
+}
+export interface SegmentIOPlugin extends Plugin {
+  metadata: SegmentIOPluginMetadata
+}
+
+export const isSegmentPlugin = (plugin: Plugin): plugin is SegmentIOPlugin => {
+  return plugin.name === 'Segment.io'
+}
+
 export function segmentio(
   analytics: Analytics,
   settings?: SegmentioSettings,
@@ -129,7 +142,12 @@ export function segmentio(
       })
   }
 
-  const segmentio: Plugin = {
+  const segmentio: SegmentIOPlugin = {
+    metadata: {
+      writeKey,
+      apiHost,
+      protocol,
+    },
     name: 'Segment.io',
     type: 'destination',
     version: '0.1.0',

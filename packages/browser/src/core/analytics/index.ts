@@ -51,8 +51,10 @@ import {
 } from '../storage'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 import { popPageContext } from '../buffer'
-import { SegmentioSettings } from '../../plugins/segmentio'
-import { SEGMENT_API_HOST } from '../constants'
+import {
+  isSegmentPlugin,
+  SegmentIOPluginMetadata,
+} from '../../plugins/segmentio'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -83,21 +85,25 @@ export class AnalyticsInstanceSettings {
    */
   readonly cdnSettings: CDNSettings
   readonly cdnURL?: string
-  readonly apiHost?: string
+  get apiHost(): string | undefined {
+    return this._getSegmentPluginMetadata?.()?.apiHost
+  }
+  private _getSegmentPluginMetadata?: () => SegmentIOPluginMetadata | undefined
 
   /**
    * Auto-track specific timeout setting for legacy purposes.
    */
   timeout = 300
 
-  constructor(settings: AnalyticsSettings, apiHost?: string) {
+  constructor(settings: AnalyticsInstanceSettingsOptions, queue: EventQueue) {
+    this._getSegmentPluginMetadata = () =>
+      queue.plugins.find(isSegmentPlugin)?.metadata
     this.writeKey = settings.writeKey
     this.cdnSettings = settings.cdnSettings ?? {
       integrations: {},
       edgeFunction: {},
     }
     this.cdnURL = settings.cdnURL
-    this.apiHost = apiHost ?? SEGMENT_API_HOST
   }
 }
 
@@ -108,6 +114,10 @@ export interface AnalyticsSettings {
   writeKey: string
   cdnSettings?: CDNSettings
   cdnURL?: string
+}
+
+interface AnalyticsInstanceSettingsOptions extends AnalyticsSettings {
+  getSegmentPluginMetadata?: () => SegmentIOPluginMetadata | undefined
 }
 
 export interface InitOptions {
@@ -206,12 +216,6 @@ export class Analytics
     const cookieOptions = options?.cookie
     const disablePersistance = options?.disableClientPersistence ?? false
 
-    // Extract apiHost from Segment.io settings if available
-    const segmentLoadOptions = options?.integrations?.['Segment.io'] as
-      | SegmentioSettings
-      | undefined
-    const apiHost = segmentLoadOptions?.apiHost
-    this.settings = new AnalyticsInstanceSettings(settings, apiHost)
     this.queue =
       queue ??
       createDefaultQueue(
@@ -219,6 +223,7 @@ export class Analytics
         options?.retryQueue,
         disablePersistance
       )
+    this.settings = new AnalyticsInstanceSettings(settings, this.queue)
 
     const storageSetting = options?.storage
     this._universalStorage = this.createStore(
