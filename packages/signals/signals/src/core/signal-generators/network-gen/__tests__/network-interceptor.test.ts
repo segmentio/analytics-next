@@ -1,4 +1,4 @@
-import { NetworkInterceptor } from '../network-interceptor'
+import { NetworkInterceptor, onXHRResponse } from '../network-interceptor'
 import { Response } from 'node-fetch'
 import { EventEmitter } from 'events'
 
@@ -44,13 +44,16 @@ describe(NetworkInterceptor, () => {
       public status = 0
       public responseText = ''
       public onreadystatechange: (() => void) | null = null
+      public responseURL = ''
+      public _responseMethod = ''
+      public _responseHeaders = ''
 
-      open = jest.fn().mockImplementation(() => {
-        setTimeout(() => {
-          this.readyState = this.OPENED
-          this._emitter.emit('readystatechange')
-        }, 10)
+      open(method: string, url: string) {
+        this._responseMethod = method
+        this.responseURL = url
+      }
 
+      async send() {
         setTimeout(() => {
           this.readyState = this.HEADERS_RECEIVED
           this._emitter.emit('readystatechange')
@@ -60,19 +63,19 @@ describe(NetworkInterceptor, () => {
           this.readyState = this.LOADING
           this._emitter.emit('readystatechange')
         }, 30)
-      })
 
-      send = jest.fn().mockImplementation(() => {
         setTimeout(() => {
-          this.readyState = 4
+          this.readyState = this.DONE
           this.status = 200
           this.responseText = JSON.stringify({ data: 'test' })
+          this.responseURL = 'http://example.com'
+          this._responseHeaders = 'Content-Type: application/json'
           this._emitter.emit('readystatechange')
           if (this.onreadystatechange) {
             this.onreadystatechange()
           }
-        }, 0)
-      })
+        }, 40)
+      }
 
       setRequestHeader = jest.fn()
 
@@ -81,7 +84,11 @@ describe(NetworkInterceptor, () => {
       }
 
       getAllResponseHeaders() {
-        return 'Content-Type: application/json'
+        if (!this._responseHeaders)
+          throw new Error(
+            'Headers not set yet, please run this after the response is received'
+          )
+        return this._responseHeaders
       }
     }
 
@@ -91,13 +98,18 @@ describe(NetworkInterceptor, () => {
     interceptor.addXhrInterceptor(mockRequestHandler, mockResponseHandler)
 
     const xhr = new XMLHttpRequest()
-    xhr.open('GET', 'http://example.com')
+    xhr.open('POST', 'http://example.com')
     xhr.send()
 
-    // Simulate the readyState change
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     expect(mockRequestHandler).toHaveBeenCalled()
     expect(mockResponseHandler).toHaveBeenCalled()
+    const response = mockResponseHandler.mock
+      .calls[0][0] as Parameters<onXHRResponse>[0]
+    expect(response.headers).toBeInstanceOf(Headers)
+    expect(response.headers.get('content-type')).toBe('application/json')
+    expect(response.url).toBe('http://example.com')
+    expect(response.status).toBe(200)
   })
 })
