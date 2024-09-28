@@ -35,7 +35,7 @@ type SubmitData = {
 
 type ChangeData = {
   eventType: 'change'
-  [key: string]: unknown
+  target: SerializedTarget
 }
 
 export type InteractionSignal = AppSignal<'interaction', InteractionData>

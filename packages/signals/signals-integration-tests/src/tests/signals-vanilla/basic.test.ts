@@ -124,8 +124,7 @@ test('interaction signals', async () => {
     },
   })
 
-  const analyticsReqJSON = indexPage.lastTrackingApiReq.postDataJSON()
-
+  const analyticsReqJSON = indexPage.trackingAPI.lastEvent()
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
     event: 'click [interaction]',

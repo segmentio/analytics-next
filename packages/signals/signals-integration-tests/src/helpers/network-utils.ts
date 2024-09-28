@@ -1,5 +1,6 @@
 import { Page, Route, Request } from '@playwright/test'
 import { SegmentEvent } from '@segment/analytics-next'
+import { Signal } from '@segment/analytics-signals'
 
 type FulfillOptions = Parameters<Route['fulfill']>['0']
 export interface XHRRequestOptions {
@@ -70,8 +71,6 @@ export class PageNetworkUtils {
           body: JSON.stringify({ foo: 'bar' }),
           ...args.request,
         })
-          .then(console.log)
-          .catch(console.error)
       },
       { url, request }
     )
@@ -113,18 +112,23 @@ export class PageNetworkUtils {
   }
 }
 
-class SegmentAPIRequestBuffer {
+export class TrackingAPIRequestBuffer {
   private requests: Request[] = []
-  public lastEvent() {
-    return this.getEvents()[this.getEvents.length - 1]
+  public lastEvent(): SegmentEvent {
+    const allEvents = this.getEvents()
+    return allEvents[allEvents.length - 1]
   }
   public getEvents(): SegmentEvent[] {
-    return this.requests.flatMap((req) => req.postDataJSON().batch)
+    return this.requests.flatMap((req) => {
+      const body = req.postDataJSON()
+      return 'batch' in body ? body.batch : [body]
+    })
   }
 
   clear() {
     this.requests = []
   }
+
   addRequest(request: Request) {
     if (request.method().toLowerCase() !== 'post') {
       throw new Error(
@@ -135,18 +139,15 @@ class SegmentAPIRequestBuffer {
   }
 }
 
-export class SignalAPIRequestBuffer extends SegmentAPIRequestBuffer {
-  /**
-   * @example 'network', 'interaction', 'navigation', etc
-   */
-  override getEvents(signalType?: string): SegmentEvent[] {
+export class SignalAPIRequestBuffer extends TrackingAPIRequestBuffer {
+  override getEvents(signalType?: Signal['type']): SegmentEvent[] {
     if (signalType) {
       return this.getEvents().filter((e) => e.properties!.type === signalType)
     }
     return super.getEvents()
   }
 
-  override lastEvent(signalType?: string | undefined): SegmentEvent {
+  override lastEvent(signalType?: Signal['type']): SegmentEvent {
     if (signalType) {
       const res =
         this.getEvents(signalType)[this.getEvents(signalType).length - 1]

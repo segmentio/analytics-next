@@ -1,14 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `
-    // this is a process signal function
-    const processSignal = (signal) => {
-      if (signal.type === 'interaction') {
-        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
-        analytics.track(eventName, signal.data)
-      }
-  }`
+const basicEdgeFn = `const processSignal = (signal) => {}`
 
 test.describe('XHR Tests', () => {
   let indexPage: IndexPage
@@ -161,6 +154,7 @@ test.describe('XHR Tests', () => {
     })
 
     await indexPage.network.makeXHRCall('http://localhost/test', {
+      responseType: 'json',
       method: 'GET',
     })
 
@@ -269,5 +263,4 @@ test.describe('XHR Tests', () => {
       data: { req2: 'value' },
     })
   })
-  // Check the response
 })
