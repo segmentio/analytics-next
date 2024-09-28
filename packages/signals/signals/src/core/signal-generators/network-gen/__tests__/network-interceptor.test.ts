@@ -53,7 +53,7 @@ describe(NetworkInterceptor, () => {
         this.responseURL = url
       }
 
-      async send() {
+      send() {
         setTimeout(() => {
           this.readyState = this.HEADERS_RECEIVED
           this._emitter.emit('readystatechange')
