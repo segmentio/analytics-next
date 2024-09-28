@@ -39,7 +39,7 @@ test('network signals', async () => {
 
 test('network signals xhr', async () => {
   /**
-   * Make a fetch call, see if it gets sent to the signals endpoint
+   * Make a xhr call, see if it gets sent to the signals endpoint
    */
   await indexPage.network.mockTestRoute()
   await indexPage.network.makeXHRCall()
