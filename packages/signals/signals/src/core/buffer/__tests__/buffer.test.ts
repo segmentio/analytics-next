@@ -1,4 +1,4 @@
-import { createInteractionSignal } from '../../../types'
+import { createInteractionSignal } from '../../../types/factories'
 import { getSignalBuffer, SignalBuffer } from '../index'
 
 describe(getSignalBuffer, () => {

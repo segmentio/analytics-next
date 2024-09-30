@@ -3,7 +3,7 @@ import {
   NetworkSignalsFilter,
   NetworkSignalsFilterList,
 } from './network-signals-filter'
-import { createNetworkSignal } from '../../../types'
+import { createNetworkSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalsSettingsConfig } from '../../signals'
 import { SignalGenerator } from '../types'

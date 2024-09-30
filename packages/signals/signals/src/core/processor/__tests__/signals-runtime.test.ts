@@ -1,9 +1,8 @@
+import { InstrumentationSignal, InteractionSignal } from '../../../types'
 import {
-  InstrumentationSignal,
-  InteractionSignal,
   createInstrumentationSignal,
   createInteractionSignal,
-} from '../../../types'
+} from '../../../types/factories'
 import { createSignalsRuntime, SignalsRuntime } from '../signals-runtime'
 
 describe('SignalsRuntime', () => {

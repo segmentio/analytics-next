@@ -1,9 +1,6 @@
-import {
-  createNetworkSignal,
-  NetworkData,
-  NetworkSignalMetadata,
-} from '../signals'
+import { NetworkData, NetworkSignalMetadata } from '../signals'
 import { normalizeUrl } from '../../lib/normalize-url'
+import { createNetworkSignal } from '../factories'
 
 jest.mock('../../lib/normalize-url', () => ({
   normalizeUrl: jest.fn((url) => url),

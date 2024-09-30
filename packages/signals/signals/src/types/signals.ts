@@ -1,12 +1,6 @@
 import { JSONValue } from '@segment/analytics-next'
-import { normalizeUrl } from '../lib/normalize-url'
 
-export type SignalType =
-  | 'navigation'
-  | 'interaction'
-  | 'instrumentation'
-  | 'network'
-  | 'userDefined'
+export type SignalType = Signal['type']
 
 export interface AppSignal<T extends SignalType, Data> {
   type: T
@@ -123,64 +117,7 @@ export type Signal =
   | NetworkSignal
   | UserDefinedSignal
 
-interface SegmentEvent {
+export interface SegmentEvent {
   type: string // e.g 'track'
   [key: string]: any
-}
-/**
- * Factories
- */
-export const createInstrumentationSignal = (
-  rawEvent: SegmentEvent
-): InstrumentationSignal => {
-  return {
-    type: 'instrumentation',
-    data: {
-      rawEvent: rawEvent,
-    },
-  }
-}
-
-export const createInteractionSignal = (
-  data: InteractionData
-): InteractionSignal => {
-  return {
-    type: 'interaction',
-    data,
-  }
-}
-
-export const createNavigationSignal = (
-  data: NavigationData
-): NavigationSignal => {
-  return {
-    type: 'navigation',
-    data,
-  }
-}
-
-export const createUserDefinedSignal = (
-  data: UserDefinedSignalData
-): UserDefinedSignal => {
-  return {
-    type: 'userDefined',
-    data,
-  }
-}
-
-export const createNetworkSignal = (
-  data: NetworkData,
-  metadata: NetworkSignalMetadata
-): NetworkSignal => {
-  return {
-    type: 'network',
-    data: {
-      ...data,
-      url: normalizeUrl(data.url),
-      ...(data.action === 'request'
-        ? { method: data.method.toUpperCase() }
-        : {}),
-    },
-    metadata: metadata,
-  }
 }
