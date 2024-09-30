@@ -93,7 +93,8 @@ withCMP(window.analytics).load('<MY_WRITE_KEY')
 
 ## Wrapper Examples
 
-- [OneTrust](../consent-wrapper-onetrust) (beta)
+- [OneTrust](../consent-wrapper-onetrust) 
+- [TrustArc](https://github.com/trustarc/trustarc-segment-wrapper)
 
 ## Settings / Options / Configuration
 
