@@ -1,9 +1,13 @@
-import { InstrumentationSignal, InteractionSignal } from '../../../types'
+import {
+  InstrumentationSignal,
+  InteractionSignal,
+  SignalsRuntime,
+} from '../../../types'
 import {
   createInstrumentationSignal,
   createInteractionSignal,
 } from '../../../types/factories'
-import { createSignalsRuntime, SignalsRuntime } from '../signals-runtime'
+import { createSignalsRuntime } from '../signals-runtime'
 
 describe('SignalsRuntime', () => {
   let signalsRuntime: SignalsRuntime
@@ -46,10 +50,13 @@ describe('SignalsRuntime', () => {
 
   describe('filter', () => {
     it('should filter signals based on the provided function', () => {
-      const result = signalsRuntime.filter(
-        (signal) => signal.type === 'interaction'
-      )
+      const result = signalsRuntime.filter(signal1, 'interaction')
       expect(result).toEqual([signal2, signal3])
+    })
+
+    it('should return empty array if there are no following signals that match the query', () => {
+      const result = signalsRuntime.filter(signal1, 'instrumentation')
+      expect(result).toEqual([])
     })
   })
 })
