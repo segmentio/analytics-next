@@ -1,7 +1,7 @@
 import { Analytics, segmentio } from '@segment/analytics-next'
 import { logger } from '../../lib/logger'
 import { Signal } from '../../types'
-import { redactJsonValues } from './redact'
+import { redactSignalData } from './redact'
 
 export class SignalsIngestSettings {
   flushAt: number
@@ -74,12 +74,10 @@ export class SignalsIngestClient {
       throw new Error('Please initialize before calling this method.')
     }
     const disableRedaction = this.settings.shouldDisableSignalRedaction()
-    const data = disableRedaction
-      ? signal.data
-      : redactJsonValues(signal.data, 2)
+    const cleanSignal = disableRedaction ? signal : redactSignalData(signal)
 
     if (disableRedaction) {
-      logger.debug('Sending unredacted data to segment', data)
+      logger.debug('Sending unredacted data to segment', cleanSignal)
     }
 
     const MAGIC_EVENT_NAME = 'Segment Signal Generated'
@@ -87,7 +85,7 @@ export class SignalsIngestClient {
     return this.analytics.track(MAGIC_EVENT_NAME, {
       index: this.index++,
       type: signal.type,
-      data: data,
+      data: cleanSignal.data,
     })
   }
 

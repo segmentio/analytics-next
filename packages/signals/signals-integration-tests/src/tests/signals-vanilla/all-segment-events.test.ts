@@ -54,7 +54,9 @@ test('Segment events', async ({ page }) => {
     indexPage.waitForTrackingApiFlush(),
   ])
 
-  const trackingApiReqs = indexPage.trackingApiReqs.map(normalizeSnapshotEvent)
+  const trackingApiReqs = indexPage.trackingAPI
+    .getEvents()
+    .map(normalizeSnapshotEvent)
   expect(trackingApiReqs).toEqual(snapshot)
 })
 
@@ -76,13 +78,13 @@ test('Should dispatch events from signals that occurred before analytics was ins
   // add a user defined signal before analytics is instantiated
   void indexPage.addUserDefinedSignal()
 
-  await indexPage.waitForSignalsAssets()
+  await indexPage.waitForSettings()
 
   await Promise.all([
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
-  const trackingApiReqs = indexPage.trackingApiReqs
+  const trackingApiReqs = indexPage.trackingAPI.getEvents()
   expect(trackingApiReqs).toHaveLength(2)
 
   const pageEvents = trackingApiReqs.find((el) => el.type === 'page')!
