@@ -1,4 +1,4 @@
-import { JSONValue } from '@segment/analytics-next'
+import { JSONValue } from './json'
 
 export type SignalType = Signal['type']
 
