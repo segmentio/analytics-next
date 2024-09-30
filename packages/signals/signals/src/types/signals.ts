@@ -96,20 +96,8 @@ export interface UserDefinedSignalData {
 
 export type UserDefinedSignal = AppSignal<'userDefined', UserDefinedSignalData>
 
-export type SignalOfType<T extends SignalType> = T extends 'interaction'
-  ? InteractionSignal
-  : T extends 'navigation'
-  ? NavigationSignal
-  : T extends 'instrumentation'
-  ? InstrumentationSignal
-  : T extends 'userDefined'
-  ? UserDefinedSignal
-  : T extends 'network'
-  ? NetworkSignal
-  : never
-/**
- * Internal signal type
- */
+export type SignalOfType<T extends SignalType> = Signal & { type: T }
+
 export type Signal =
   | InteractionSignal
   | NavigationSignal
