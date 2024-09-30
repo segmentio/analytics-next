@@ -1,36 +1,14 @@
-export const SignalType = Object.freeze({
-  Interaction: 'interaction',
-  Navigation: 'navigation',
-  Network: 'network',
-  LocalData: 'localData',
-  Instrumentation: 'instrumentation',
-  UserDefined: 'userDefined',
-})
+export type JSONPrimitive = string | number | boolean | null
+export type JSONValue = JSONPrimitive | JSONObject | JSONArray
+export type JSONObject = { [member: string]: JSONValue }
+export type JSONArray = JSONValue[]
 
-export const EventType = Object.freeze({
-  Track: 'track',
-  Page: 'page',
-  Screen: 'screen',
-  Identify: 'identify',
-  Group: 'group',
-  Alias: 'alias',
-})
+export type SignalType = Signal['type']
 
-export const NavigationAction = Object.freeze({
-  URLChange: 'urlChange',
-  PageLoad: 'pageLoad',
-})
-
-export type SignalTypeName =
-  | 'navigation'
-  | 'interaction'
-  | 'instrumentation'
-  | 'network'
-  | 'userDefined'
-
-export interface AppSignal<T extends SignalTypeName, Data> {
+export interface AppSignal<T extends SignalType, Data> {
   type: T
   data: Data
+  metadata?: Record<string, any>
 }
 
 export type InteractionData = ClickData | SubmitData | ChangeData
@@ -38,7 +16,6 @@ export type InteractionData = ClickData | SubmitData | ChangeData
 interface SerializedTarget {
   // nodeName: Node['nodeName']
   // textContent: Node['textContent']
-  // nodeValue: Node['nodeValue']
   // nodeType: Node['nodeType']
   [key: string]: any
 }
@@ -86,17 +63,28 @@ export type InstrumentationSignal = AppSignal<
   InstrumentationData
 >
 
-type NetworkRequestData = {
+export interface NetworkSignalMetadata {
+  filters: {
+    allowed: string[]
+    disallowed: string[]
+  }
+}
+
+interface BaseNetworkData {
+  action: string
+  url: string
+  data: JSONValue
+}
+
+interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
   method: string
-  data: { [key: string]: unknown }
 }
 
-type NetworkResponseData = {
+interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
-  data: { [key: string]: unknown }
 }
 
 export type NetworkData = NetworkRequestData | NetworkResponseData
@@ -109,17 +97,7 @@ export interface UserDefinedSignalData {
 
 export type UserDefinedSignal = AppSignal<'userDefined', UserDefinedSignalData>
 
-export type SignalOfType<T extends SignalTypeName> = T extends 'interaction'
-  ? InteractionSignal
-  : T extends 'navigation'
-  ? NavigationSignal
-  : T extends 'instrumentation'
-  ? InstrumentationSignal
-  : T extends 'userDefined'
-  ? UserDefinedSignal
-  : T extends 'network'
-  ? NetworkSignal
-  : never
+export type SignalOfType<T extends SignalType> = Signal & { type: T }
 
 export type Signal =
   | InteractionSignal
@@ -127,3 +105,21 @@ export type Signal =
   | InstrumentationSignal
   | NetworkSignal
   | UserDefinedSignal
+
+export interface SegmentEvent {
+  type: string // e.g 'track'
+  [key: string]: any
+}
+
+export interface SignalsRuntimeAPI {
+  find: <T extends SignalType>(
+    fromSignal: Signal,
+    signalType: T,
+    predicate?: (signal: SignalOfType<T>) => boolean
+  ) => SignalOfType<T> | undefined
+  filter: <T extends SignalType>(
+    fromSignal: Signal,
+    signalType: T,
+    predicate?: (signal: SignalOfType<T>) => boolean
+  ) => SignalOfType<T>[]
+}
