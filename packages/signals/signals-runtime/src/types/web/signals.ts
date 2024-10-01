@@ -3,9 +3,9 @@ export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
-export type SignalType = Signal['type']
+export type SignalTypes = Signal['type']
 
-export interface AppSignal<T extends SignalType, Data> {
+export interface AppSignal<T extends SignalTypes, Data> {
   type: T
   data: Data
   metadata?: Record<string, any>
@@ -97,7 +97,7 @@ export interface UserDefinedSignalData {
 
 export type UserDefinedSignal = AppSignal<'userDefined', UserDefinedSignalData>
 
-export type SignalOfType<T extends SignalType> = Signal & { type: T }
+export type SignalOfType<T extends SignalTypes> = Signal & { type: T }
 
 export type Signal =
   | InteractionSignal
@@ -112,14 +112,9 @@ export interface SegmentEvent {
 }
 
 export interface SignalsRuntimeAPI {
-  find: <T extends SignalType>(
+  find: <T extends SignalTypes>(
     fromSignal: Signal,
     signalType: T,
     predicate?: (signal: SignalOfType<T>) => boolean
   ) => SignalOfType<T> | undefined
-  filter: <T extends SignalType>(
-    fromSignal: Signal,
-    signalType: T,
-    predicate?: (signal: SignalOfType<T>) => boolean
-  ) => SignalOfType<T>[]
 }

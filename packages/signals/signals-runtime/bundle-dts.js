@@ -40,7 +40,7 @@ function removeExport(filePath) {
 }
 
 const outFile = `generated/web.d.ts`
-const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check`
+const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check --inline-declare-global`
 execSync(command, { stdio: 'inherit' })
 // Example usage of processTSFile function
 const tsFilePath = path.join(__dirname, outFile)

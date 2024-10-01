@@ -10,8 +10,8 @@ type JSONObject = {
 	[member: string]: JSONValue;
 };
 type JSONArray = JSONValue[];
-type SignalType = Signal["type"];
-interface AppSignal<T extends SignalType, Data> {
+type SignalTypes = Signal["type"];
+interface AppSignal<T extends SignalTypes, Data> {
 	type: T;
 	data: Data;
 	metadata?: Record<string, any>;
@@ -75,7 +75,7 @@ interface UserDefinedSignalData {
 	[key: string]: any;
 }
 type UserDefinedSignal = AppSignal<"userDefined", UserDefinedSignalData>;
-type SignalOfType<T extends SignalType> = Signal & {
+type SignalOfType<T extends SignalTypes> = Signal & {
 	type: T;
 };
 type Signal = InteractionSignal | NavigationSignal | InstrumentationSignal | NetworkSignal | UserDefinedSignal;
@@ -83,8 +83,32 @@ interface SegmentEvent {
 	type: string;
 	[key: string]: any;
 }
-type SignalsRuntime = {
-	find: <T extends SignalType>(fromSignal: Signal, signalType: T, predicate?: (signal: SignalOfType<T>) => boolean) => SignalOfType<T> | undefined;
-	filter: <T extends SignalType>(fromSignal: Signal, signalType: T, predicate?: (signal: SignalOfType<T>) => boolean) => SignalOfType<T>[];
-};
+interface SignalsRuntimeAPI {
+	find: <T extends SignalTypes>(fromSignal: Signal, signalType: T, predicate?: (signal: SignalOfType<T>) => boolean) => SignalOfType<T> | undefined;
+}
+declare global {
+	interface Window {
+		signals: SignalsRuntimeAPI;
+		SignalType: {
+			Interaction: "interaction";
+			Navigation: "navigation";
+			Network: "network";
+			LocalData: "localData";
+			Instrumentation: "instrumentation";
+			UserDefined: "userDefined";
+		};
+		EventType: {
+			Track: "track";
+			Page: "page";
+			Screen: "screen";
+			Identify: "identify";
+			Group: "group";
+			Alias: "alias";
+		};
+		NavigationAction: {
+			URLChange: "urlChange";
+			PageLoad: "pageLoad";
+		};
+	}
+}
 
