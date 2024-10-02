@@ -19,16 +19,20 @@ function appendFileContents(targetFilePath, sourceFilePath, divider = '\n') {
   })
 }
 
-function removeExport(filePath) {
+function removeImportExport(filePath) {
   const data = fs.readFileSync(filePath, { encoding: 'utf-8' })
   // remove export declarations and non-interface/type exports
   const processedContent = data
     .split('\n')
     .filter((line) => {
+      const l = line.trim()
       // Remove export declarations
-      if (line.trim().startsWith('export ')) {
+      if (l.startsWith('export ')) {
         // Keep only interface and type exports
-        return line.includes('interface') || line.includes('type')
+        return l.includes('interface') || l.includes('type')
+      }
+      if (l.startsWith('import')) {
+        return false
       }
       return true
     })
@@ -62,9 +66,7 @@ const main = () => {
   const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check`
   execSync(command, { stdio: 'inherit' })
   const outFileAbs = path.join(__dirname, outFile)
-  removeExport(outFileAbs)
 
-  // Prepend ignore artifactions
   prependGenerated(outFileAbs)
 
   // Append the contents of web-exports-globals.ts
@@ -72,6 +74,7 @@ const main = () => {
   appendFileContents(outFileAbs, globalsFilePath)
   // remove any comments that use // like ts-ignore, ts-nocheck etc (/* */ is OK)
   filterLines(outFileAbs, (line) => !line.startsWith('//'))
+  removeImportExport(outFileAbs)
 }
 
 main()
