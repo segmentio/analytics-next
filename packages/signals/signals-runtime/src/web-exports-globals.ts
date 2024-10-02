@@ -1,8 +1,5 @@
-/**
- * This will be appended to the generated code -
- *dts-bundle-generator will not write declare const for whatever reason.
- */
-// @ts-ignore
+// @ts-nocheck
+// This will be appended to the generated code - dts-bundle-generator will not write declare const for whatever reason.
 declare const signals: SignalsRuntimeAPI
 declare const SignalType: {
   Interaction: 'interaction'
@@ -12,7 +9,6 @@ declare const SignalType: {
   Instrumentation: 'instrumentation'
   UserDefined: 'userDefined'
 }
-
 declare const EventType: {
   Track: 'track'
   Page: 'page'

@@ -4,27 +4,22 @@ const path = require('path')
 
 function prependGenerated(filePath) {
   const content = [
-    '// @ts-nocheck',
-    '// prettier-ignore',
-    '/* eslint-disable */',
+    '/* These types will be used in the segment app UI for autocomplete */',
     '\n',
   ].join('\n')
-  if (!fs.existsSync(filePath) || !content) {
-    return console.error('cannot prepend, invalid args.')
-  }
   const fileContent = fs.readFileSync(filePath, 'utf8')
   fs.writeFileSync(filePath, content + fileContent)
 }
 
-function appendFileContents(targetFilePath, sourceFilePath) {
+function appendFileContents(targetFilePath, sourceFilePath, divider = '\n') {
   const sourceContent = fs.readFileSync(sourceFilePath, { encoding: 'utf-8' })
-  fs.appendFileSync(targetFilePath, `\n\n${sourceContent}`, {
+  const newContent = `${divider}${sourceContent}`
+  fs.appendFileSync(targetFilePath, newContent, {
     encoding: 'utf-8',
   })
 }
 
 function removeExport(filePath) {
-  console.log(`Cleaning up ${filePath}...`)
   const data = fs.readFileSync(filePath, { encoding: 'utf-8' })
   // remove export declarations and non-interface/type exports
   const processedContent = data
@@ -46,14 +41,37 @@ function removeExport(filePath) {
   fs.writeFileSync(filePath, processedContent, { encoding: 'utf-8' })
 }
 
-const outFile = `generated/web.d.ts`
-const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check --inline-declare-global --inline-declare-externals`
-execSync(command, { stdio: 'inherit' })
-// Example usage of processTSFile function
-const tsFilePath = path.join(__dirname, outFile)
-removeExport(tsFilePath)
-prependGenerated(tsFilePath)
+/**
+ * Filters the lines of a file based on a callback function and writes the processed content back to the file.
+ *
+ * @param {string} filePath - The path to the file to be processed.
+ * @param {(line: string) => boolean} cb - A callback function that takes a line as input and returns a boolean indicating whether the line should be kept.
+ */
+function filterLines(filePath, cb) {
+  const data = fs.readFileSync(filePath, { encoding: 'utf-8' })
+  const processedContent = data
+    .split('\n')
+    .filter((line) => cb(line))
+    .join('\n')
 
-// Append the contents of web-exports-globals.ts
-const globalsFilePath = path.join(__dirname, 'src/web-exports-globals.ts')
-appendFileContents(tsFilePath, globalsFilePath)
+  fs.writeFileSync(filePath, processedContent, { encoding: 'utf-8' })
+}
+
+const main = () => {
+  const outFile = `dist/web.d.ts`
+  const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check`
+  execSync(command, { stdio: 'inherit' })
+  const outFileAbs = path.join(__dirname, outFile)
+  removeExport(outFileAbs)
+
+  // Prepend ignore artifactions
+  prependGenerated(outFileAbs)
+
+  // Append the contents of web-exports-globals.ts
+  const globalsFilePath = path.join(__dirname, 'src/web-exports-globals.ts')
+  appendFileContents(outFileAbs, globalsFilePath)
+  // remove any comments that use // like ts-ignore, ts-nocheck etc (/* */ is OK)
+  filterLines(outFileAbs, (line) => !line.startsWith('//'))
+}
+
+main()
