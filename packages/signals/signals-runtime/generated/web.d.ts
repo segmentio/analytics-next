@@ -86,29 +86,29 @@ interface SegmentEvent {
 interface SignalsRuntimeAPI {
 	find: <T extends SignalTypes>(fromSignal: Signal, signalType: T, predicate?: (signal: SignalOfType<T>) => boolean) => SignalOfType<T> | undefined;
 }
-declare global {
-	interface Window {
-		signals: SignalsRuntimeAPI;
-		SignalType: {
-			Interaction: "interaction";
-			Navigation: "navigation";
-			Network: "network";
-			LocalData: "localData";
-			Instrumentation: "instrumentation";
-			UserDefined: "userDefined";
-		};
-		EventType: {
-			Track: "track";
-			Page: "page";
-			Screen: "screen";
-			Identify: "identify";
-			Group: "group";
-			Alias: "alias";
-		};
-		NavigationAction: {
-			URLChange: "urlChange";
-			PageLoad: "pageLoad";
-		};
-	}
+
+
+
+// @ts-ignore
+declare const signals: SignalsRuntimeAPI
+declare const SignalType: {
+  Interaction: 'interaction'
+  Navigation: 'navigation'
+  Network: 'network'
+  LocalData: 'localData'
+  Instrumentation: 'instrumentation'
+  UserDefined: 'userDefined'
 }
 
+declare const EventType: {
+  Track: 'track'
+  Page: 'page'
+  Screen: 'screen'
+  Identify: 'identify'
+  Group: 'group'
+  Alias: 'alias'
+}
+declare const NavigationAction: {
+  URLChange: 'urlChange'
+  PageLoad: 'pageLoad'
+}
