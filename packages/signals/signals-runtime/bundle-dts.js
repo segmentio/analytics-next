@@ -62,7 +62,7 @@ function filterLines(filePath, cb) {
 }
 
 const main = () => {
-  const outFile = `dist/web.d.ts`
+  const outFile = `dist/web-editor.d.ts`
   const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check`
   execSync(command, { stdio: 'inherit' })
   const outFileAbs = path.join(__dirname, outFile)
