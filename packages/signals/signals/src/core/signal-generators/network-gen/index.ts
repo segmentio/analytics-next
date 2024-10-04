@@ -108,60 +108,6 @@ export class NetworkGenerator implements SignalGenerator {
     }
     this.interceptor.addInterceptors(handleRequest, handleResponse)
 
-    // const handleXHRRequest: OnNetworkRequest = ([url, rq]) => {
-    //   if (!rq || !rq.body) {
-    //     return
-    //   }
-
-    //   if (!containsJSONContentType(rq.headers)) {
-    //     return
-    //   }
-    //   const sUrl = url?.toString()
-    //   if (!url || !this.filter.isAllowed(sUrl)) {
-    //     return
-    //   }
-
-    //   emitter.emit(
-    //     createNetworkSignal(
-    //       {
-    //         action: 'request',
-    //         url: sUrl,
-    //         method: rq.method,
-    //         data: tryParseXHRBody(rq.body),
-    //       },
-    //       createMetadata()
-    //     )
-    //   )
-    // }
-
-    // const handleXHRResponse: onXHRResponse = ({
-    //   headers,
-    //   status,
-    //   url,
-    //   responseType,
-    //   body,
-    //   ok,
-    // }) => {
-    //   if (ok && responseType !== 'json' && !containsJSONContentType(headers)) {
-    //     return
-    //   }
-    //   if (!url || !this.filter.isAllowed(url)) {
-    //     return
-    //   }
-
-    //   emitter.emit(
-    //     createNetworkSignal(
-    //       {
-    //         action: 'response',
-    //         url: url,
-    //         data: tryParseXHRBody(body),
-    //         ok: ok,
-    //         status: status,
-    //       },
-    //       createMetadata()
-    //     )
-    //   )
-    // }
     return () => {
       this.interceptor.cleanup()
       logger.debug('Removing fetch interceptor')

@@ -1,5 +1,11 @@
 import { JSONArray, JSONObject, JSONValue } from '@segment/analytics-next'
-import { isOk, normalizeHeaders, tryJSONParse } from './helpers'
+import {
+  createRequestId,
+  isOk,
+  normalizeHeaders,
+  normalizeRequestInfo,
+  tryJSONParse,
+} from './helpers'
 
 let origFetch: typeof window.fetch
 let origXMLHttpRequest: typeof XMLHttpRequest
@@ -26,6 +32,59 @@ export interface NetworkInterceptorResponse {
     id: string
   }
 }
+
+const createInterceptorRequest = ({
+  url,
+  body,
+  headers,
+  id,
+  method,
+}: {
+  url: URL | string
+  body: string | undefined
+  method: string
+  headers: Headers | undefined
+  id: string
+}): NetworkInterceptorRequest => ({
+  url: url.toString(),
+  method: method,
+  headers,
+  contentType: headers?.get('content-type') ?? undefined,
+  body: typeof body == 'string' ? body : undefined,
+  id,
+})
+
+const createInterceptorResponse = ({
+  body,
+  headers,
+  initiator,
+  status,
+  statusText,
+  url,
+  responseType,
+  id,
+}: {
+  body: () => Promise<JSONValue>
+  headers: Headers
+  initiator: 'fetch' | 'xhr'
+  status: number
+  statusText: string
+  url: string
+  responseType: XMLHttpRequestResponseType | undefined
+  id: string
+}): NetworkInterceptorResponse => ({
+  body,
+  headers,
+  initiator,
+  ok: isOk(status),
+  status,
+  statusText,
+  url,
+  responseType,
+  req: {
+    id: id,
+  },
+})
 
 /**
  * Taken from https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/response
@@ -60,22 +119,22 @@ export class NetworkInterceptor {
     origFetch = window.fetch
     window.fetch = async (...args) => {
       const [url, options] = args
-      const headers = options?.headers
-        ? normalizeHeaders(options.headers)
-        : undefined
-
-      const id = Math.random().toString(36).substring(3)
-      const createRequest = (): NetworkInterceptorRequest => ({
-        url: url.toString(),
-        method: options?.method ?? 'GET',
-        headers,
-        contentType: headers?.get('content-type') ?? undefined,
-        body: typeof options?.body == 'string' ? options.body : undefined,
-        id,
-      })
-
+      const id = createRequestId()
       try {
-        onRequest(createRequest())
+        const normalizedURL = normalizeRequestInfo(url)
+        const headers = options?.headers
+          ? normalizeHeaders(options.headers)
+          : undefined
+
+        onRequest(
+          createInterceptorRequest({
+            url: normalizedURL,
+            body: typeof options?.body == 'string' ? options.body : undefined,
+            method: options?.method ?? 'GET',
+            headers,
+            id,
+          })
+        )
       } catch (err) {
         console.log('Error handling request: ', err)
       }
@@ -97,23 +156,22 @@ export class NetworkInterceptor {
           return tryJSONParse(text) // should never throw.
         }
 
-        onResponse({
-          body: lazyBody,
-          headers: response.headers,
-          initiator: 'fetch',
-          ok: response.ok,
-          status: response.status,
-          statusText: response.statusText,
-          url: response.url,
-          responseType: undefined,
-          req: {
-            id,
-          },
-        })
+        onResponse(
+          createInterceptorResponse({
+            body: lazyBody,
+            headers: response.headers,
+            initiator: 'fetch',
+            status: response.status,
+            statusText: response.statusText,
+            url: response.url,
+            responseType: undefined,
+            id: id,
+          })
+        )
       } catch (err) {
         console.log('Error handling response: ', err)
       }
-      return response
+      return ogResponse
     }
   }
 
@@ -130,7 +188,7 @@ export class NetworkInterceptor {
       _reqMethod?: string
       _reqBody?: XMLHttpRequestBodyInit
       _reqHeaders?: Headers
-      _reqId = Math.random().toString(36).substring(3)
+      _reqId = createRequestId()
 
       private getParsedXHRHeaders(allResponseHeaders: string): Headers {
         const headers = new Headers()
@@ -161,18 +219,18 @@ export class NetworkInterceptor {
         super()
 
         this.addEventListener('readystatechange', () => {
-          const createRequest = (): NetworkInterceptorRequest => ({
-            url: this._reqURL!,
-            method: this._reqMethod!,
-            contentType: this._reqHeaders?.get('content-type') ?? undefined,
-            body: this._reqBody ? this._reqBody.toString() : undefined,
-            headers: this._reqHeaders,
-            id: this._reqId,
-          })
           // Handle request
           if (this.readyState === this.HEADERS_RECEIVED) {
             try {
-              onRequest(createRequest())
+              onRequest(
+                createInterceptorRequest({
+                  url: this._reqURL!,
+                  method: this._reqMethod!,
+                  headers: this._reqHeaders,
+                  id: this._reqId,
+                  body: this._reqBody ? this._reqBody.toString() : undefined,
+                })
+              )
             } catch (err) {
               console.log('Error handling request', err)
             }
@@ -180,19 +238,20 @@ export class NetworkInterceptor {
           // Handle response
           if (this.readyState === this.DONE) {
             try {
-              onResponse({
-                status: this.status,
-                ok: isOk(this.status),
-                responseType: this.responseType,
-                statusText: this.statusText,
-                url: this.responseURL,
-                initiator: 'xhr',
-                body: () => Promise.resolve(this.getParsedXHRBody()),
-                headers: this.getParsedXHRHeaders(this.getAllResponseHeaders()),
-                req: {
+              onResponse(
+                createInterceptorResponse({
+                  status: this.status,
+                  responseType: this.responseType,
+                  statusText: this.statusText,
+                  url: this.responseURL,
+                  initiator: 'xhr',
+                  body: () => Promise.resolve(this.getParsedXHRBody()),
+                  headers: this.getParsedXHRHeaders(
+                    this.getAllResponseHeaders()
+                  ),
                   id: this._reqId,
-                },
-              })
+                })
+              )
             } catch (err) {
               console.log('Error handling response', err)
             }

@@ -78,3 +78,20 @@ export const tryJSONParse = (text: string): JSONObject | JSONArray | string => {
     return text
   }
 }
+
+/**
+ * Normalize the first parameter of a fetch request
+ */
+export const normalizeRequestInfo = (requestInfo: RequestInfo | URL) => {
+  if (typeof requestInfo === 'string') {
+    return requestInfo
+  } else if ('url' in requestInfo) {
+    return requestInfo.url
+  } else {
+    return requestInfo.toString()
+  }
+}
+
+export const createRequestId = () => {
+  return Math.random().toString(36).substring(3)
+}
