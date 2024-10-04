@@ -10,6 +10,7 @@ test.describe('network signals - fetch', () => {
     indexPage = new IndexPage()
     await indexPage.loadAndWait(page, basicEdgeFn)
   })
+
   test('should not emit anything if neither request nor response are json', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: 'hello',
@@ -29,16 +30,22 @@ test.describe('network signals - fetch', () => {
     expect(networkEvents).toHaveLength(0)
   })
 
-  test('can make a basic json request', async () => {
+  test('can make a basic json request / not break regular fetch calls', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),
     })
 
-    await indexPage.network.makeFetchCall('http://localhost/test', {
-      method: 'POST',
-      body: JSON.stringify({ key: 'value' }),
-      contentType: 'application/json',
-    })
+    const resBody = await indexPage.network.makeFetchCall(
+      'http://localhost/test',
+      {
+        method: 'POST',
+        body: JSON.stringify({ key: 'value' }),
+        contentType: 'application/json',
+        unwrapResponseBody: true,
+      }
+    )
+
+    expect(resBody).toEqual({ foo: 'test' })
 
     await indexPage.waitForSignalsApiFlush()
 

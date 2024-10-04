@@ -32,17 +32,19 @@ test.describe('network signals - XHR', () => {
     expect(networkEvents).toHaveLength(0)
   })
 
-  test('basic json request', async () => {
+  test('basic json request / not break XHR', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),
     })
 
-    await indexPage.network.makeXHRCall('http://localhost/test', {
+    const data = await indexPage.network.makeXHRCall('http://localhost/test', {
       method: 'POST',
       body: JSON.stringify({ key: 'value' }),
       responseType: 'json',
       contentType: 'application/json',
     })
+
+    expect(data).toEqual({ foo: 'test' })
 
     // Wait for the signals to be flushed
     await indexPage.waitForSignalsApiFlush()
