@@ -109,7 +109,7 @@ export class NetworkInterceptor {
     this.addFetchInterceptor(onRequest, onResponse)
     this.addXhrInterceptor(onRequest, onResponse)
   }
-  addFetchInterceptor(
+  private addFetchInterceptor(
     onRequest: NetworkRequestHandler,
     onResponse: NetworkResponseHandler
   ) {
@@ -175,7 +175,7 @@ export class NetworkInterceptor {
     }
   }
 
-  addXhrInterceptor(
+  private addXhrInterceptor(
     onRequest: NetworkRequestHandler,
     onResponse: NetworkResponseHandler
   ) {

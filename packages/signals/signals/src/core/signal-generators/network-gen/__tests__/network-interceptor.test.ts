@@ -19,12 +19,34 @@ describe(NetworkInterceptor, () => {
 
     window.fetch = jest.fn().mockResolvedValue(mockResponse)
 
-    interceptor.addFetchInterceptor(mockRequestHandler, mockResponseHandler)
+    interceptor.addInterceptors(mockRequestHandler, mockResponseHandler)
 
     await window.fetch('http://example.com')
 
     expect(mockRequestHandler).toHaveBeenCalled()
     expect(mockResponseHandler).toHaveBeenCalled()
+  })
+
+  it('should return the actual response, not a cloned response', async () => {
+    // we don't want to quietly break the users fetch implementation
+    interceptor = new NetworkInterceptor()
+    const mockResponse = new Response(JSON.stringify({ data: 'test' }), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    window.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+    interceptor.addInterceptors(
+      () => {},
+      async (r) => {
+        // in any Response object, .text() / .json() etc are single use only -- which is why we do response.clone().
+        // https://developer.mozilla.org/en-US/docs/Web/API/Response/clone
+        await r.body()
+      }
+    )
+
+    const response = await window.fetch('http://example.com')
+    return expect(() => response.json()).not.toThrow()
   })
 
   // Very primitive mock for XMLHttpRequest -- better tests are at the integration level
@@ -95,7 +117,7 @@ describe(NetworkInterceptor, () => {
     ;(globalThis as any).XMLHttpRequest = MockXMLHttpRequest
     interceptor = new NetworkInterceptor()
 
-    interceptor.addXhrInterceptor(mockRequestHandler, mockResponseHandler)
+    interceptor.addInterceptors(mockRequestHandler, mockResponseHandler)
 
     const xhr = new XMLHttpRequest()
     xhr.open('POST', 'http://example.com')
@@ -105,8 +127,7 @@ describe(NetworkInterceptor, () => {
 
     expect(mockRequestHandler).toHaveBeenCalled()
     expect(mockResponseHandler).toHaveBeenCalled()
-    const response = mockResponseHandler.mock
-      .calls[0][0] as Parameters<onXHRResponse>[0]
+    const response = mockResponseHandler.mock.calls[0][0]
     expect(response.headers).toBeInstanceOf(Headers)
     expect(response.headers.get('content-type')).toBe('application/json')
     expect(response.url).toBe('http://example.com')
