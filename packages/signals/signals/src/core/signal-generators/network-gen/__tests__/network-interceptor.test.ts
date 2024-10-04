@@ -1,4 +1,4 @@
-import { NetworkInterceptor, onXHRResponse } from '../network-interceptor'
+import { NetworkInterceptor } from '../network-interceptor'
 import { Response } from 'node-fetch'
 import { EventEmitter } from 'events'
 

@@ -1,64 +1,115 @@
+import { JSONArray, JSONObject, JSONValue } from '@segment/analytics-next'
+import { isOk, normalizeHeaders, tryJSONParse } from './helpers'
+
 let origFetch: typeof window.fetch
 let origXMLHttpRequest: typeof XMLHttpRequest
 
-export interface OnFetchRequest {
-  (rq: [url: RequestInfo | URL, init?: RequestInit | undefined]): void
-}
-
-export interface OnFetchResponse {
-  (rs: Response): void
-}
-
-export interface XMLHttpRequestInit {
+export interface NetworkInterceptorRequest {
+  url: string
   method: string
-  headers: Headers
-  body: XMLHttpRequestBodyInit
-  responseType: XMLHttpRequestResponseType
+  contentType: string | undefined
+  body: string | undefined
+  headers: Headers | undefined
+  id: string
 }
-export interface onXHRRequest {
-  (rq: [url: RequestInfo | URL, init?: XMLHttpRequestInit]): void
+
+export interface NetworkInterceptorResponse {
+  url: string
+  status: number
+  ok: boolean
+  statusText: string
+  headers: Headers
+  body: () => Promise<JSONValue>
+  initiator: 'fetch' | 'xhr'
+  responseType: XMLHttpRequestResponseType | undefined
+  req: {
+    id: string
+  }
 }
 
 /**
  * Taken from https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/response
  */
-export type XMLHTTPRequestResponseBody =
-  | string
-  | Document
-  | ArrayBuffer
-  | Blob
-  | Record<string, unknown>
-  | null
 
-export interface onXHRResponse {
-  (rs: {
-    url: string
-    status: number
-    statusText: string
-    headers: Headers
-    body: XMLHTTPRequestResponseBody
-    responseType: XMLHttpRequestResponseType
-  }): void
+export interface NetworkResponseHandler {
+  (rs: NetworkInterceptorResponse): void
+}
+
+export interface NetworkRequestHandler {
+  (rq: NetworkInterceptorRequest): void
 }
 
 /**
  * NetworkInterceptor class to intercept network requests and responses
  */
 export class NetworkInterceptor {
-  addFetchInterceptor(onRequest: OnFetchRequest, onResponse: OnFetchResponse) {
+  addInterceptors(
+    onRequest: NetworkRequestHandler,
+    onResponse: NetworkResponseHandler
+  ) {
+    this.addFetchInterceptor(onRequest, onResponse)
+    this.addXhrInterceptor(onRequest, onResponse)
+  }
+  addFetchInterceptor(
+    onRequest: NetworkRequestHandler,
+    onResponse: NetworkResponseHandler
+  ) {
     if (!window.fetch) {
       return
     }
     origFetch = window.fetch
     window.fetch = async (...args) => {
+      const [url, options] = args
+      const headers = options?.headers
+        ? normalizeHeaders(options.headers)
+        : undefined
+
+      const id = Math.random().toString(36).substring(3)
+      const createRequest = (): NetworkInterceptorRequest => ({
+        url: url.toString(),
+        method: options?.method ?? 'GET',
+        headers,
+        contentType: headers?.get('content-type') ?? undefined,
+        body: typeof options?.body == 'string' ? options.body : undefined,
+        id,
+      })
+
       try {
-        onRequest(args)
+        onRequest(createRequest())
       } catch (err) {
         console.log('Error handling request: ', err)
       }
-      const response = await origFetch(...args)
+      const ogResponse = await origFetch(...args)
+
+      // response.text() etc is single use only -- to prevent conflicts with app code, use clone
+      // https://developer.mozilla.org/en-US/docs/Web/API/Response/clone
+      const response = ogResponse.clone()
+
       try {
-        onResponse(response.clone())
+        const lazyBody = async (): Promise<JSONValue> => {
+          let text: string
+          try {
+            text = await response.text()
+          } catch (err) {
+            console.warn('Error converting to text', err, response)
+            return null
+          }
+          return tryJSONParse(text) // should never throw.
+        }
+
+        onResponse({
+          body: lazyBody,
+          headers: response.headers,
+          initiator: 'fetch',
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          responseType: undefined,
+          req: {
+            id,
+          },
+        })
       } catch (err) {
         console.log('Error handling response: ', err)
       }
@@ -66,7 +117,10 @@ export class NetworkInterceptor {
     }
   }
 
-  addXhrInterceptor(onRequest: onXHRRequest, onResponse: onXHRResponse) {
+  addXhrInterceptor(
+    onRequest: NetworkRequestHandler,
+    onResponse: NetworkResponseHandler
+  ) {
     if (!window.XMLHttpRequest) {
       return
     }
@@ -76,22 +130,49 @@ export class NetworkInterceptor {
       _reqMethod?: string
       _reqBody?: XMLHttpRequestBodyInit
       _reqHeaders?: Headers
+      _reqId = Math.random().toString(36).substring(3)
+
+      private getParsedXHRHeaders(allResponseHeaders: string): Headers {
+        const headers = new Headers()
+        allResponseHeaders
+          .trim()
+          .split(/[\r\n]+/)
+          .forEach((line) => {
+            const parts = line.split(': ')
+            const header = parts.shift()
+            const value = parts.join(': ')
+            if (header) {
+              headers.append(header, value)
+            }
+          })
+        return headers
+      }
+
+      private getParsedXHRBody(): JSONValue {
+        if (this.responseType === 'json') {
+          return this.response as JSONObject | JSONArray | null
+        } else if (typeof this.response === 'string') {
+          return tryJSONParse(this.response)
+        }
+        return null
+      }
+
       constructor() {
         super()
 
         this.addEventListener('readystatechange', () => {
+          const createRequest = (): NetworkInterceptorRequest => ({
+            url: this._reqURL!,
+            method: this._reqMethod!,
+            contentType: this._reqHeaders?.get('content-type') ?? undefined,
+            body: this._reqBody ? this._reqBody.toString() : undefined,
+            headers: this._reqHeaders,
+            id: this._reqId,
+          })
           // Handle request
           if (this.readyState === this.HEADERS_RECEIVED) {
             try {
-              onRequest([
-                this._reqURL!,
-                {
-                  body: this._reqBody!,
-                  headers: this._reqHeaders!,
-                  method: this._reqMethod!,
-                  responseType: this.responseType,
-                },
-              ])
+              onRequest(createRequest())
             } catch (err) {
               console.log('Error handling request', err)
             }
@@ -99,27 +180,18 @@ export class NetworkInterceptor {
           // Handle response
           if (this.readyState === this.DONE) {
             try {
-              const headers = new Headers()
-              const allResponseHeaders = this.getAllResponseHeaders()
-              allResponseHeaders
-                .trim()
-                .split(/[\r\n]+/)
-                .forEach((line) => {
-                  const parts = line.split(': ')
-                  const header = parts.shift()
-                  const value = parts.join(': ')
-                  if (header) {
-                    headers.append(header, value)
-                  }
-                })
-
               onResponse({
                 status: this.status,
+                ok: isOk(this.status),
                 responseType: this.responseType,
                 statusText: this.statusText,
                 url: this.responseURL,
-                headers,
-                body: this.response,
+                initiator: 'xhr',
+                body: () => Promise.resolve(this.getParsedXHRBody()),
+                headers: this.getParsedXHRHeaders(this.getAllResponseHeaders()),
+                req: {
+                  id: this._reqId,
+                },
               })
             } catch (err) {
               console.log('Error handling response', err)

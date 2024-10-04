@@ -30,18 +30,24 @@ export class PageNetworkUtils {
       (args) => {
         const xhr = new XMLHttpRequest()
         xhr.open(args.method ?? 'POST', args.url)
-        xhr.responseType = args.responseType ?? 'json'
-        xhr.setRequestHeader(
-          'Content-Type',
-          args.contentType ?? 'application/json'
-        )
+
+        const contentType = args.contentType ?? 'application/json'
+        xhr.setRequestHeader('Content-Type', contentType)
+
+        xhr.responseType = args.responseType
+          ? args.responseType
+          : contentType.includes('json')
+          ? 'json'
+          : '' // '' is the same as 'text' according to xhr spec
+
         if (typeof args.responseLatency === 'number') {
           xhr.setRequestHeader(
             'x-test-latency',
             args.responseLatency.toString()
           )
         }
-        xhr.send(args.body || JSON.stringify({ foo: 'bar' }))
+        const defaultResponseBody = JSON.stringify({ foo: 'bar' })
+        xhr.send(args.body ?? defaultResponseBody)
       },
       { url, ...reqOptions }
     )
@@ -52,7 +58,7 @@ export class PageNetworkUtils {
    */
   async makeFetchCall(
     url = this.defaultTestApiURL,
-    request: Partial<RequestInit> = {}
+    request: Partial<RequestInit> & { contentType?: string } = {}
   ): Promise<void> {
     let normalizeUrl = url
     if (url.startsWith('/')) {
@@ -66,7 +72,7 @@ export class PageNetworkUtils {
         return fetch(args.url, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': args.request.contentType ?? 'application/json',
           },
           body: JSON.stringify({ foo: 'bar' }),
           ...args.request,

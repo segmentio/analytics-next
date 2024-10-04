@@ -9,12 +9,10 @@ import { SignalsSettingsConfig } from '../../signals'
 import { SignalGenerator } from '../types'
 import {
   NetworkInterceptor,
-  onXHRRequest,
-  onXHRResponse,
-  XMLHTTPRequestResponseBody,
+  NetworkRequestHandler,
+  NetworkResponseHandler,
 } from './network-interceptor'
 import { containsJSONContentType } from './helpers'
-import { JSONValue } from '@segment/analytics-next'
 
 export type NetworkSettingsConfigSettings = Pick<
   SignalsSettingsConfig,
@@ -43,6 +41,9 @@ export class NetworkGenerator implements SignalGenerator {
 
   private filter: NetworkSignalsFilter
   private interceptor = new NetworkInterceptor()
+  /* List of all signal request IDs that have been emitted */
+  private emittedRequestIds: string[] = []
+
   constructor(settings: NetworkSettingsConfig) {
     this.filter = new NetworkSignalsFilter(settings)
   }
@@ -51,37 +52,38 @@ export class NetworkGenerator implements SignalGenerator {
     const createMetadata = () => ({
       filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
     })
-    const handleFetchRequest = ([url, rq]: Parameters<typeof window.fetch>) => {
-      if (!rq || !rq.body) {
-        return
-      }
-
+    const handleRequest: NetworkRequestHandler = (rq) => {
       if (!containsJSONContentType(rq.headers)) {
         return
       }
 
-      const sUrl = url?.toString()
-      if (!url || !this.filter.isAllowed(sUrl)) {
+      if (!rq.url || !this.filter.isAllowed(rq.url)) {
         return
       }
-
+      this.emittedRequestIds.push(rq.id)
       emitter.emit(
         createNetworkSignal(
           {
             action: 'request',
-            url: sUrl,
+            url: rq.url,
             method: rq.method || 'GET',
-            data: JSON.parse(rq.body.toString()),
+            data: rq.body ? JSON.parse(rq.body.toString()) : null,
           },
           createMetadata()
         )
       )
     }
-    const handleFetchResponse = async (rs: Response) => {
-      if (rs.status < 200 || rs.status >= 300) {
-        return
-      }
-      if (!containsJSONContentType(rs.headers)) {
+
+    const handleResponse: NetworkResponseHandler = async (rs) => {
+      const isSuccessWithNonJSONResponse =
+        rs.ok &&
+        rs.responseType !== 'json' &&
+        !containsJSONContentType(rs.headers)
+
+      const isErrorButRequestNeverEmittted =
+        !rs.ok && !this.emittedRequestIds.includes(rs.req.id)
+
+      if (isSuccessWithNonJSONResponse || isErrorButRequestNeverEmittted) {
         return
       }
       const url = rs.url
@@ -89,104 +91,80 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
 
-      const data = await rs.json()
+      const data = await rs.body()
+
       emitter.emit(
         createNetworkSignal(
           {
             action: 'response',
             url,
             data: data,
+            ok: rs.ok,
+            status: rs.status,
           },
           createMetadata()
         )
       )
     }
-    this.interceptor.addFetchInterceptor(
-      handleFetchRequest,
-      handleFetchResponse
-    )
+    this.interceptor.addInterceptors(handleRequest, handleResponse)
 
-    const handleXHRRequest: onXHRRequest = ([url, rq]) => {
-      if (!rq || !rq.body) {
-        return
-      }
+    // const handleXHRRequest: OnNetworkRequest = ([url, rq]) => {
+    //   if (!rq || !rq.body) {
+    //     return
+    //   }
 
-      if (!containsJSONContentType(rq.headers)) {
-        return
-      }
-      const sUrl = url?.toString()
-      if (!url || !this.filter.isAllowed(sUrl)) {
-        return
-      }
+    //   if (!containsJSONContentType(rq.headers)) {
+    //     return
+    //   }
+    //   const sUrl = url?.toString()
+    //   if (!url || !this.filter.isAllowed(sUrl)) {
+    //     return
+    //   }
 
-      emitter.emit(
-        createNetworkSignal(
-          {
-            action: 'request',
-            url: sUrl,
-            method: rq.method,
-            data: tryParseXHRBody(rq.body),
-          },
-          createMetadata()
-        )
-      )
-    }
+    //   emitter.emit(
+    //     createNetworkSignal(
+    //       {
+    //         action: 'request',
+    //         url: sUrl,
+    //         method: rq.method,
+    //         data: tryParseXHRBody(rq.body),
+    //       },
+    //       createMetadata()
+    //     )
+    //   )
+    // }
 
-    const handleXHRResponse: onXHRResponse = ({
-      body,
-      headers,
-      status,
-      url,
-      responseType,
-    }) => {
-      if (status < 200 || status >= 300) {
-        return
-      }
-      if (responseType !== 'json' && !containsJSONContentType(headers)) {
-        return
-      }
-      if (!url || !this.filter.isAllowed(url)) {
-        return
-      }
+    // const handleXHRResponse: onXHRResponse = ({
+    //   headers,
+    //   status,
+    //   url,
+    //   responseType,
+    //   body,
+    //   ok,
+    // }) => {
+    //   if (ok && responseType !== 'json' && !containsJSONContentType(headers)) {
+    //     return
+    //   }
+    //   if (!url || !this.filter.isAllowed(url)) {
+    //     return
+    //   }
 
-      emitter.emit(
-        createNetworkSignal(
-          {
-            action: 'response',
-            url: url,
-            data: tryParseXHRBody(body),
-          },
-          createMetadata()
-        )
-      )
-    }
-    this.interceptor.addXhrInterceptor(handleXHRRequest, handleXHRResponse)
+    //   emitter.emit(
+    //     createNetworkSignal(
+    //       {
+    //         action: 'response',
+    //         url: url,
+    //         data: tryParseXHRBody(body),
+    //         ok: ok,
+    //         status: status,
+    //       },
+    //       createMetadata()
+    //     )
+    //   )
+    // }
     return () => {
       this.interceptor.cleanup()
       logger.debug('Removing fetch interceptor')
     }
-  }
-}
-
-function isPlainObject(obj: unknown): obj is Record<string, unknown> {
-  return (
-    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
-  )
-}
-
-const tryParseXHRBody = (
-  body: XMLHTTPRequestResponseBody | XMLHttpRequestBodyInit
-): JSONValue => {
-  if (!body) {
-    return null
-  }
-
-  if (isPlainObject(body) || Array.isArray(body)) {
-    return body as JSONValue
-  }
-  try {
-    return JSON.parse(body.toString())
-  } catch (e) {
-    return null
   }
 }

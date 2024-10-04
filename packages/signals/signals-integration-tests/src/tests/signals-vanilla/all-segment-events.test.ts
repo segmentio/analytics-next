@@ -48,11 +48,12 @@ test('Segment events', async ({ page }) => {
   }`
 
   await indexPage.load(page, basicEdgeFn)
-  await indexPage.clickButton()
-  await Promise.all([
+  const flush = Promise.all([
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
+  await indexPage.clickButton()
+  await flush
 
   const trackingApiReqs = indexPage.trackingAPI
     .getEvents()
@@ -74,16 +75,15 @@ test('Should dispatch events from signals that occurred before analytics was ins
   }`
 
   await indexPage.load(page, edgeFn)
-
-  // add a user defined signal before analytics is instantiated
-  void indexPage.addUserDefinedSignal()
-
-  await indexPage.waitForSettings()
-
-  await Promise.all([
+  const flush = Promise.all([
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
+
+  // add a user defined signal before analytics is instantiated
+  void indexPage.addUserDefinedSignal()
+  await flush
+
   const trackingApiReqs = indexPage.trackingAPI.getEvents()
   expect(trackingApiReqs).toHaveLength(2)
 

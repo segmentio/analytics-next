@@ -52,8 +52,8 @@ module.exports = {
     onBeforeSetupMiddleware(devServer) {
       devServer.app.use(bodyParser.json())
       devServer.app.post('/parrot', (req, res) => {
-        console.log(req.body)
-        res.json(req.body)
+        console.log('/parrot', req.body)
+        res.status(req.body.status ?? 200).json(req.body)
       })
     },
     historyApiFallback: true,
