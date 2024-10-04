@@ -63,7 +63,6 @@ export class PageNetworkUtils {
     url = this.defaultTestApiURL,
     request: Partial<RequestInit> & {
       contentType?: string
-      unwrapResponseBody?: boolean
     } = {}
   ): Promise<any> {
     let normalizeUrl = url

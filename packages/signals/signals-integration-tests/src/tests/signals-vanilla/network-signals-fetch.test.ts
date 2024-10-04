@@ -41,7 +41,6 @@ test.describe('network signals - fetch', () => {
         method: 'POST',
         body: JSON.stringify({ key: 'value' }),
         contentType: 'application/json',
-        unwrapResponseBody: true,
       }
     )
 
