@@ -9,6 +9,9 @@ See: [settings.ts](src/types/settings.ts)
 
 ## Snippet Users
 ```html
+<head>
+  <title>My Website</title>
+  
   <!-- Load SignalsPlugin -->
   <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-signals@latest/dist/umd/analytics-signals.umd.js"></script>
 
@@ -25,6 +28,7 @@ See: [settings.ts](src/types/settings.ts)
     const signalsPlugin = new SignalsPlugin()
     analytics.register(signalsPlugin)
   </script>
+</head>
 ```
 
 ## `npm` Users
