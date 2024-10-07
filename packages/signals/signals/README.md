@@ -27,7 +27,7 @@ See: [settings.ts](src/types/settings.ts)
   </script>
 ```
 
-## NPM Users
+## `npm` Users
 ### Installation
 ```bash
 # npm
