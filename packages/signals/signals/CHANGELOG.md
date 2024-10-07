@@ -1,5 +1,13 @@
 # @segment/analytics-signals
 
+## 1.4.0
+
+### Minor Changes
+
+- [#1164](https://github.com/segmentio/analytics-next/pull/1164) [`c8ce6144`](https://github.com/segmentio/analytics-next/commit/c8ce6144b31bddfc66961e979d5648fb66e102e5) Thanks [@silesky](https://github.com/silesky)! - Emit network signals that result in errors if the response has been emitted. Add ok and status to network signal data.
+
+* [#1163](https://github.com/segmentio/analytics-next/pull/1163) [`29d17003`](https://github.com/segmentio/analytics-next/commit/29d1700303d0384fbd01edee9e9ff231f35de9ef) Thanks [@silesky](https://github.com/silesky)! - Loosen signal redaction (from https://github.com/segmentio/analytics-next/pull/1106)
+
 ## 1.3.0
 
 ### Minor Changes
