@@ -14,10 +14,10 @@ See: [settings.ts](src/types/settings.ts)
 
   <!-- Load Segment (copy snippet from app.segment.com)  -->
   <script>
-    !function(){var i="analytics",analytics=window[i].... 
+    !function(){var i="analytics",analytics=window[i]...  // etc
     analytics.load("<YOUR_WRITE_KEY>");
     analytics.page();
-  }}();
+    }()
   </script>
 
  <!-- Register SignalsPlugin  -->
@@ -43,8 +43,9 @@ pnpm install @segment/analytics-signals
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin } from '@segment/analytics-signals'
 
-const analytics = new AnalyticsBrowser()
-const signalsPlugin = new SignalsPlugin()
+export const analytics = new AnalyticsBrowser()
+export const signalsPlugin = new SignalsPlugin()
+
 analytics.register(signalsPlugin)
 
 analytics.load({
@@ -54,6 +55,8 @@ analytics.load({
 ```
 ### Extending / Emitting Custom Signals
 ```ts
+import { signalsPlugin } from './analytics' // assuming you exported your plugin instance.
+
 signalsPlugin.addSignal({
   type: 'userDefined',
   data: { foo: 'bar' }
@@ -77,6 +80,7 @@ https://my-website.com?segment_signals_debug=false
 #### Listening to signals
 ```ts
 const signalsPlugin = new SignalsPlugin()
+
 signalsPlugin.onSignal((signal) => console.log(signal))
 ```
 
