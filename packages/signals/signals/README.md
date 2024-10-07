@@ -6,6 +6,28 @@
 See: [settings.ts](src/types/settings.ts)
 
 ## Quick start
+
+## Snippet Users
+```html
+  <!-- Load SignalsPlugin -->
+  <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-signals@latest/dist/umd/analytics-signals.umd.js"></script>
+
+  <!-- Load Segment (copy snippet from app.segment.com)  -->
+  <script>
+    !function(){var i="analytics",analytics=window[i].... 
+    analytics.load("<YOUR_WRITE_KEY>");
+    analytics.page();
+  }}();
+  </script>
+
+ <!-- Register SignalsPlugin  -->
+  <script>
+    const signalsPlugin = new SignalsPlugin()
+    analytics.register(signalsPlugin)
+  </script>
+```
+
+## NPM Users
 ### Installation
 ```bash
 # npm
@@ -30,7 +52,13 @@ analytics.load({
 })
 
 ```
-
+### Extending / Emitting Custom Signals
+```ts
+signalsPlugin.addSignal({
+  type: 'userDefined',
+  data: { foo: 'bar' }
+})
+```
 
 ### Debugging
 #### Enable debug mode
@@ -52,14 +80,6 @@ const signalsPlugin = new SignalsPlugin()
 signalsPlugin.onSignal((signal) => console.log(signal))
 ```
 
-### Emitting Signals
-```ts
-const signalsPlugin = new SignalsPlugin()
-signalsPlugin.addSignal({
-  type: 'userDefined',
-  data: { foo: 'bar' }
-})
-```
 
 ### Playground / Development / Testing
 See the [signals example repo](../signals-example).
