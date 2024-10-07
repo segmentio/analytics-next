@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await indexPage.loadAndWait(page, basicEdgeFn)
 })
 
-test('network signals', async () => {
+test('network signals fetch', async () => {
   /**
    * Make a fetch call, see if it gets sent to the signals endpoint
    */

@@ -49,7 +49,7 @@ export class BasePage {
     await this.setupMockedRoutes()
     const url = options.updateURL ? options.updateURL(this.url) : this.url
     await this.page.goto(url)
-    await this.invokeAnalyticsLoad(signalSettings)
+    void this.invokeAnalyticsLoad(signalSettings)
   }
 
   /**

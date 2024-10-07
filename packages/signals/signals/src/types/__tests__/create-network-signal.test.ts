@@ -27,16 +27,31 @@ describe(createNetworkSignal, () => {
 
     const signal = createNetworkSignal(data, metadata)
 
-    expect(signal).toEqual({
-      type: 'network',
-      data: {
-        action: 'request',
-        url: 'http://example.com',
-        method: 'POST',
-        data: { key: 'value' },
-      },
-      metadata,
-    })
+    expect(signal).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "action": "request",
+          "data": {
+            "key": "value",
+          },
+          "method": "POST",
+          "url": "http://example.com",
+        },
+        "metadata": {
+          "filters": {
+            "allowed": [
+              "allowed1",
+              "allowed2",
+            ],
+            "disallowed": [
+              "disallowed1",
+              "disallowed2",
+            ],
+          },
+        },
+        "type": "network",
+      }
+    `)
     expect(normalizeUrl).toHaveBeenCalledWith('http://example.com')
   })
 
@@ -44,20 +59,39 @@ describe(createNetworkSignal, () => {
     const data: NetworkData = {
       action: 'response',
       url: 'http://example.com',
+      ok: true,
+      status: 200,
       data: { key: 'value' },
     }
 
     const signal = createNetworkSignal(data, metadata)
 
-    expect(signal).toEqual({
-      type: 'network',
-      data: {
-        action: 'response',
-        url: 'http://example.com',
-        data: { key: 'value' },
-      },
-      metadata,
-    })
+    expect(signal).toMatchInlineSnapshot(`
+      {
+        "data": {
+          "action": "response",
+          "data": {
+            "key": "value",
+          },
+          "ok": true,
+          "status": 200,
+          "url": "http://example.com",
+        },
+        "metadata": {
+          "filters": {
+            "allowed": [
+              "allowed1",
+              "allowed2",
+            ],
+            "disallowed": [
+              "disallowed1",
+              "disallowed2",
+            ],
+          },
+        },
+        "type": "network",
+      }
+    `)
     expect(normalizeUrl).toHaveBeenCalledWith('http://example.com')
   })
 })

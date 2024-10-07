@@ -18,7 +18,7 @@ export class PageNetworkUtils {
   async makeXHRCall(
     url = this.defaultTestApiURL,
     reqOptions: XHRRequestOptions = {}
-  ): Promise<void> {
+  ): Promise<any> {
     let normalizeUrl = url
     if (url.startsWith('/')) {
       normalizeUrl = new URL(url, this.page.url()).href
@@ -26,34 +26,45 @@ export class PageNetworkUtils {
     const req = this.page.waitForResponse(normalizeUrl ?? url, {
       timeout: this.defaultResponseTimeout,
     })
-    await this.page.evaluate(
+    const responseBody = this.page.evaluate(
       (args) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open(args.method ?? 'POST', args.url)
-        xhr.responseType = args.responseType ?? 'json'
-        xhr.setRequestHeader(
-          'Content-Type',
-          args.contentType ?? 'application/json'
-        )
-        if (typeof args.responseLatency === 'number') {
-          xhr.setRequestHeader(
-            'x-test-latency',
-            args.responseLatency.toString()
-          )
-        }
-        xhr.send(args.body || JSON.stringify({ foo: 'bar' }))
+        return new Promise<any>((resolve) => {
+          const xhr = new XMLHttpRequest()
+          xhr.open(args.method ?? 'POST', args.url)
+
+          const contentType = args.contentType ?? 'application/json'
+          xhr.setRequestHeader('Content-Type', contentType)
+
+          xhr.responseType = args.responseType
+            ? args.responseType
+            : contentType.includes('json')
+            ? 'json'
+            : '' // '' is the same as 'text' according to xhr spec
+
+          if (typeof args.responseLatency === 'number') {
+            xhr.setRequestHeader(
+              'x-test-latency',
+              args.responseLatency.toString()
+            )
+          }
+          xhr.send(args.body ?? JSON.stringify({ foo: 'bar' }))
+          xhr.onload = () => resolve(xhr.response)
+        })
       },
       { url, ...reqOptions }
     )
     await req
+    return responseBody
   }
   /**
    * Make a fetch call in the page context. By default it will POST a JSON object with {foo: 'bar'}
    */
   async makeFetchCall(
     url = this.defaultTestApiURL,
-    request: Partial<RequestInit> = {}
-  ): Promise<void> {
+    request: Partial<RequestInit> & {
+      contentType?: string
+    } = {}
+  ): Promise<any> {
     let normalizeUrl = url
     if (url.startsWith('/')) {
       normalizeUrl = new URL(url, this.page.url()).href
@@ -61,20 +72,29 @@ export class PageNetworkUtils {
     const req = this.page.waitForResponse(normalizeUrl ?? url, {
       timeout: this.defaultResponseTimeout,
     })
-    await this.page.evaluate(
-      (args) => {
-        return fetch(args.url, {
+    const responseBody = await this.page.evaluate(
+      async (args) => {
+        const res = await fetch(args.url, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': args.request.contentType ?? 'application/json',
           },
           body: JSON.stringify({ foo: 'bar' }),
           ...args.request,
         })
+        const type = res.headers.get('Content-Type')
+        if (type?.includes('json')) {
+          return res.json()
+        } else if (type?.includes('text')) {
+          return res.text()
+        } else {
+          console.error('Unexpected response content type')
+        }
       },
       { url, request }
     )
     await req
+    return responseBody
   }
 
   async mockTestRoute(
