@@ -12,6 +12,8 @@ steps:
       - echo "CI -> $CI"
   - label: '[Monorepo] QA'
     key: monorepo
+    env:
+      SEGMENT_CODECOV_FLAGS: 'scripts'
     agents:
       queue: v1
     commands:
@@ -64,6 +66,8 @@ steps:
 
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
+    env:
+      SEGMENT_CODECOV_FLAGS: 'browser'
     agents:
       queue: v1
     commands:
@@ -82,6 +86,8 @@ steps:
           paths: ['.yarn/cache/']
 
   - label: '[Core] Lint + Test'
+    env:
+      SEGMENT_CODECOV_FLAGS: 'core'
     agents:
       queue: v1
     commands:
@@ -115,6 +121,8 @@ steps:
           paths: ['.yarn/cache/']
 
   - label: '[Consent] Lint + Test'
+    env:
+      SEGMENT_CODECOV_FLAGS: 'consent'
     agents:
       queue: v1
     commands:
@@ -132,6 +140,8 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
 
   - label: '[Signals] Lint + Test'
+    env:
+      SEGMENT_CODECOV_FLAGS: 'signals'
     agents:
       queue: v1
     commands:

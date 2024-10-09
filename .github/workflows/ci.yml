@@ -28,6 +28,12 @@ jobs:
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: yarn turbo run --filter='./packages/node*' test
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: node
+          slug: segmentio/analytics-next/node
   analytics-node-cf-workers:
     name: 'analytics-node QA (Cloudflare Workers)'
     runs-on: ubuntu-latest
