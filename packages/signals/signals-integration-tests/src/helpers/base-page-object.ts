@@ -51,8 +51,8 @@ export class BasePage {
     const url = options.updateURL ? options.updateURL(this.url) : this.url
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     void this.invokeAnalyticsLoad({
-      ...signalSettings,
       flushInterval: 500,
+      ...signalSettings,
     })
     return this
   }
