@@ -21,6 +21,14 @@ export type JSONObject = { [member: string]: JSONValue }
 export type JSONArray = JSONValue[]
 
 export interface SegmentEvent {
-  type: string // e.g 'track'
+  type: EventType // e.g 'track'
   [key: string]: any
 }
+
+export type EventType =
+  | 'track'
+  | 'page'
+  | 'screen'
+  | 'identify'
+  | 'group'
+  | 'alias'

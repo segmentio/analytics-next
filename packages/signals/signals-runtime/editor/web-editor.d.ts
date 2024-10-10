@@ -18,9 +18,10 @@ type JSONObject = {
 };
 type JSONArray = JSONValue[];
 interface SegmentEvent {
-	type: string;
+	type: EventType;
 	[key: string]: any;
 }
+type EventType = "track" | "page" | "screen" | "identify" | "group" | "alias";
 type WebSignalTypes = WebSignal["type"];
 interface WebAppSignal<T extends WebSignalTypes, Data> extends BaseSignal {
 	type: T;
