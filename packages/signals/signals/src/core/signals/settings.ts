@@ -14,6 +14,8 @@ export type SignalsSettingsConfig = Pick<
   | 'flushAt'
   | 'flushInterval'
   | 'disableSignalsRedaction'
+  | 'signalsIngestion'
+  | 'sampleRate'
   | 'networkSignalsAllowList'
   | 'networkSignalsDisallowList'
   | 'networkSignalsAllowSameDomain'
@@ -34,6 +36,7 @@ export class SignalGlobalSettings {
   network: NetworkSettingsConfig
 
   private redaction = new SignalRedactionSettings()
+  private ingestion = new SignalIngestionSettings()
 
   constructor(settings: SignalsSettingsConfig) {
     if (settings.maxBufferSize && settings.signalStorage) {
@@ -55,6 +58,8 @@ export class SignalGlobalSettings {
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       shouldDisableSignalRedaction: this.redaction.getDisableSignalRedaction,
+      signalIngestion: this.ingestion.getSignalIngestion,
+      sampleRate: settings.sampleRate,
     }
     this.sandbox = {
       functionHost: settings.functionHost,
@@ -70,6 +75,7 @@ export class SignalGlobalSettings {
   public update({
     edgeFnDownloadURL,
     disallowListURLs,
+    sampleRate,
   }: {
     /**
      * The URL to download the edge function from
@@ -79,6 +85,10 @@ export class SignalGlobalSettings {
      * Add new URLs to the disallow list
      */
     disallowListURLs: (string | undefined)[]
+    /**
+     * The sample rate pulled from CDN settings
+     */
+    sampleRate: number
   }): void {
     edgeFnDownloadURL && (this.sandbox.edgeFnDownloadURL = edgeFnDownloadURL)
     this.network.networkSignalsFilterList.disallowed.addURLLike(
@@ -86,6 +96,7 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
+    this.ingestClient.sampleRate = sampleRate
   }
 }
 
@@ -130,6 +141,57 @@ class SignalRedactionSettings {
       if (isDisabled) {
         logger.debug(
           `${SignalRedactionSettings.redactionKey}=true (app. storage)`
+        )
+        return true
+      }
+    } catch (e) {
+      logger.debug('Storage error', e)
+    }
+    return false
+  }
+}
+
+class SignalIngestionSettings {
+  private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
+  constructor(initialValue?: boolean) {
+    if (typeof initialValue === 'boolean') {
+      this.setSignalIngestion(initialValue)
+    }
+
+    // setting ?segment_signals_debug=true will disable redaction, and set a key in local storage
+    // this setting will persist across page loads (even if there is no query string)
+    // in order to clear the setting, user must set ?segment_signals_debug=false
+    const debugModeInQs = parseDebugModeQueryString()
+    logger.debug('debugMode is set to true via query string')
+    if (typeof debugModeInQs === 'boolean') {
+      this.setSignalIngestion(debugModeInQs)
+    }
+  }
+
+  setSignalIngestion(shouldEnable: boolean) {
+    try {
+      if (shouldEnable) {
+        window.sessionStorage.setItem(
+          SignalIngestionSettings.ingestionKey,
+          'true'
+        )
+      } else {
+        logger.debug('Removing ingestion key from storage')
+        window.sessionStorage.removeItem(SignalIngestionSettings.ingestionKey)
+      }
+    } catch (e) {
+      logger.debug('Storage error', e)
+    }
+  }
+
+  getSignalIngestion() {
+    try {
+      const isEnabled = Boolean(
+        window.sessionStorage.getItem(SignalIngestionSettings.ingestionKey)
+      )
+      if (isEnabled) {
+        logger.debug(
+          `${SignalIngestionSettings.ingestionKey}=true (app. storage)`
         )
         return true
       }
