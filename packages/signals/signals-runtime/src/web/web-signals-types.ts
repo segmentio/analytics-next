@@ -1,108 +1,99 @@
 import { BaseSignal, JSONValue } from '../shared/shared-types'
 
-export type WebSignalTypes = WebSignal['type']
+export type SignalTypes = Signal['type']
 
-export interface WebAppSignal<T extends WebSignalTypes, Data>
-  extends BaseSignal {
+export interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
   type: T
   data: Data
   metadata?: Record<string, any>
 }
 
-export type WebInteractionData = WebClickData | WebSubmitData | WebChangeData
+export type InteractionData = ClickData | SubmitData | ChangeData
 
-interface WebSerializedTarget {
+interface SerializedTarget {
   [key: string]: any
 }
 
-type WebClickData = {
+type ClickData = {
   eventType: 'click'
-  target: WebSerializedTarget
+  target: SerializedTarget
 }
 
-type WebSubmitData = {
+type SubmitData = {
   eventType: 'submit'
-  submitter: WebSerializedTarget
+  submitter: SerializedTarget
 }
 
-type WebChangeData = {
+type ChangeData = {
   eventType: 'change'
   [key: string]: unknown
 }
 
-export type WebInteractionSignal = WebAppSignal<
-  'interaction',
-  WebInteractionData
->
+export type InteractionSignal = RawSignal<'interaction', InteractionData>
 
-interface WebBaseNavigationData<ActionType extends string> {
+interface BaseNavigationData<ActionType extends string> {
   action: ActionType
   url: string
   hash: string
 }
 
-export interface WebURLChangeNavigationData
-  extends WebBaseNavigationData<'urlChange'> {
+export interface URLChangeNavigationData
+  extends BaseNavigationData<'urlChange'> {
   prevUrl: string
 }
 
-export interface WebPageChangeNavigationData
-  extends WebBaseNavigationData<'pageLoad'> {}
+export interface PageChangeNavigationData
+  extends BaseNavigationData<'pageLoad'> {}
 
-export type WebNavigationData =
-  | WebURLChangeNavigationData
-  | WebPageChangeNavigationData
+export type NavigationData = URLChangeNavigationData | PageChangeNavigationData
 
-export type WebNavigationSignal = WebAppSignal<'navigation', WebNavigationData>
+export type NavigationSignal = RawSignal<'navigation', NavigationData>
 
-interface WebInstrumentationData {
+interface InstrumentationData {
   rawEvent: unknown
 }
-export type WebInstrumentationSignal = WebAppSignal<
+export type InstrumentationSignal = RawSignal<
   'instrumentation',
-  WebInstrumentationData
+  InstrumentationData
 >
 
-export interface WebNetworkSignalMetadata {
+export interface NetworkSignalMetadata {
   filters: {
     allowed: string[]
     disallowed: string[]
   }
 }
 
-interface WebBaseNetworkData {
+interface BaseNetworkData {
   action: string
   url: string
   data: JSONValue
 }
 
-interface WebNetworkRequestData extends WebBaseNetworkData {
+interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
   method: string
 }
 
-interface WebNetworkResponseData extends WebBaseNetworkData {
+interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
 }
 
-export type WebNetworkData = WebNetworkRequestData | WebNetworkResponseData
+export type NetworkData = NetworkRequestData | NetworkResponseData
 
-export type WebNetworkSignal = WebAppSignal<'network', WebNetworkData>
+export type NetworkSignal = RawSignal<'network', NetworkData>
 
-export interface WebUserDefinedSignalData {
+export interface UserDefinedSignalData {
   [key: string]: any
 }
 
-export type WebUserDefinedSignal = WebAppSignal<
-  'userDefined',
-  WebUserDefinedSignalData
->
+export type UserDefinedSignal = RawSignal<'userDefined', UserDefinedSignalData>
 
-export type WebSignal =
-  | WebInteractionSignal
-  | WebNavigationSignal
-  | WebInstrumentationSignal
-  | WebNetworkSignal
-  | WebUserDefinedSignal
+export type Signal =
+  | InteractionSignal
+  | NavigationSignal
+  | InstrumentationSignal
+  | NetworkSignal
+  | UserDefinedSignal
