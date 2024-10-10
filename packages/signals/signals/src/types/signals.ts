@@ -1,3 +1,5 @@
+import { ISignalsRuntime } from '@segment/analytics-signals-runtime'
+
 export type JSONPrimitive = string | number | boolean | null
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
@@ -113,15 +115,4 @@ export interface SegmentEvent {
   [key: string]: any
 }
 
-export type SignalsRuntime = {
-  find: <T extends SignalType>(
-    fromSignal: Signal,
-    signalType: T,
-    predicate?: (signal: SignalOfType<T>) => boolean
-  ) => SignalOfType<T> | undefined
-  filter: <T extends SignalType>(
-    fromSignal: Signal,
-    signalType: T,
-    predicate?: (signal: SignalOfType<T>) => boolean
-  ) => SignalOfType<T>[]
-}
+export type SignalsRuntime = ISignalsRuntime<Signal>
