@@ -49,7 +49,7 @@ export class BasePage {
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     const url = options.updateURL ? options.updateURL(this.url) : this.url
-    await this.page.goto(url, { waitUntil: 'domcontentloaded' })
+    await this.page.goto(url)
     void this.invokeAnalyticsLoad({
       flushInterval: 500,
       ...signalSettings,
