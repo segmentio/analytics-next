@@ -29,6 +29,11 @@ export interface SignalsPluginSettingsConfig {
   signalsIngestion?: boolean
 
   /**
+   * Percentage of sessions that should be ingested
+   */
+  sampleRate?: number
+
+  /**
    * Override signals API host
    * @default signals.segment.io/v1
    */

@@ -91,6 +91,9 @@ export class Signals implements ISignals {
         analyticsService.instance.settings.apiHost,
         analyticsService.instance.settings.cdnURL,
       ],
+      sampleRate:
+        analyticsService.instance.settings.cdnSettings
+          .autoInstrumentationSettings?.sampleRate || 0,
     })
 
     const sandbox = new Sandbox(

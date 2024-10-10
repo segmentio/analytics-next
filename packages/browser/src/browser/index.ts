@@ -122,6 +122,13 @@ export interface CDNSettings {
         version: number
       }
     | {}
+
+  /**
+   * Settings for auto instrumentation
+   */
+  autoInstrumentationSettings?: {
+    sampleRate: number
+  }
 }
 
 export interface AnalyticsBrowserSettings {

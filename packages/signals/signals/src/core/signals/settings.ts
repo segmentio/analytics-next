@@ -15,6 +15,7 @@ export type SignalsSettingsConfig = Pick<
   | 'flushInterval'
   | 'disableSignalsRedaction'
   | 'signalsIngestion'
+  | 'sampleRate'
   | 'networkSignalsAllowList'
   | 'networkSignalsDisallowList'
   | 'networkSignalsAllowSameDomain'
@@ -58,6 +59,7 @@ export class SignalGlobalSettings {
       flushInterval: settings.flushInterval,
       shouldDisableSignalRedaction: this.redaction.getDisableSignalRedaction,
       signalIngestion: this.ingestion.getSignalIngestion,
+      sampleRate: settings.sampleRate,
     }
     this.sandbox = {
       functionHost: settings.functionHost,
@@ -73,6 +75,7 @@ export class SignalGlobalSettings {
   public update({
     edgeFnDownloadURL,
     disallowListURLs,
+    sampleRate,
   }: {
     /**
      * The URL to download the edge function from
@@ -82,6 +85,10 @@ export class SignalGlobalSettings {
      * Add new URLs to the disallow list
      */
     disallowListURLs: (string | undefined)[]
+    /**
+     * The sample rate pulled from CDN settings
+     */
+    sampleRate: number
   }): void {
     edgeFnDownloadURL && (this.sandbox.edgeFnDownloadURL = edgeFnDownloadURL)
     this.network.networkSignalsFilterList.disallowed.addURLLike(
@@ -89,6 +96,7 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
+    this.ingestClient.sampleRate = sampleRate
   }
 }
 
