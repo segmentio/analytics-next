@@ -1,9 +1,9 @@
 // all import directives will be removed in the final build
 import { ISignalsRuntime } from '../shared/shared-types'
-import { WebSignal } from './web-exports'
+import { MobileSignal } from './mobile-signal-types'
 
 // This will be appended to the generated code - dts-bundle-generator will not write declare const for whatever reason.
-declare const signals: ISignalsRuntime<WebSignal>
+declare const signals: ISignalsRuntime<MobileSignal>
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'
@@ -20,7 +20,26 @@ declare const EventType: {
   Group: 'group'
   Alias: 'alias'
 }
+
 declare const NavigationAction: {
-  URLChange: 'urlChange'
-  PageLoad: 'pageLoad'
+  Forward: 'forward'
+  Backward: 'backward'
+  Modal: 'modal'
+  Entering: 'entering'
+  Leaving: 'leaving'
+  Page: 'page'
+  Popup: 'popup'
 }
+
+declare const NetworkAction: Readonly<{
+  Request: 'request'
+  Response: 'response'
+}>
+
+declare const LocalDataAction: Readonly<{
+  Loaded: 'loaded'
+  Updated: 'updated'
+  Saved: 'saved'
+  Deleted: 'deleted'
+  Undefined: 'undefined'
+}>

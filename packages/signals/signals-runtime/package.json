@@ -20,7 +20,7 @@
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
-    "build:types-bundle": "node bundle-dts.js",
+    "gen-editor-types": "node gen-editor-types.js",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "watch": "yarn concurrently 'yarn build:bundle-dev --watch' 'yarn build:esm --watch'",
