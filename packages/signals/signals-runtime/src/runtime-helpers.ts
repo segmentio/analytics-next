@@ -1,33 +1,77 @@
-import {
-  SignalsRuntimeAPI,
-  SignalOfType,
-  Signal,
-  SignalTypes,
-} from './types/web/signals'
+interface BaseSignal {
+  index?: number
+  type: string
+  time: number
+}
 
-export function createSignalsRuntimeHelpers(
-  signals: Signal[]
-): SignalsRuntimeAPI {
-  /**
-   * @param fromSignal - signal to start searching from
-   * @param signalType - type of signal to find (e.g. 'interaction')
-   * @param predicate - optional predicate function to filter the signals (search domain only includes signals after the signal defined in `fromSignal`)
-   * @returns signals after the current one.
-   */
-  function find<T extends SignalTypes>(
+export type SignalOfType<
+  AllSignals extends BaseSignal,
+  SignalType extends AllSignals['type']
+> = AllSignals & { type: SignalType }
+
+/**
+ * SignalsRuntime class to manage signals
+ * @param AnySignal - Type of signals
+ * @param signals - List of signals, with the most recent signals first (LIFO).
+ * @returns SignalsRuntime object
+ * @example
+ * type MobileSignal = NavigationSignal | InteractionSignal | SomeOtherMobileSpecificSignal
+ * const signalsRuntime = new SignalsRuntime<MobileSignal>([])
+ * signalsRuntime.add({
+ *  index: 0,
+ *  type: 'foo'
+ * })
+ */
+export class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
+  private signalBuffer: Signal[]
+  // mobile only - see brandon for this code
+  private signalCounter: number
+  // mobile only - see brandon for this code
+  private maxBufferSize: number
+
+  constructor(signals: Signal[]) {
+    // initial signals
+    this.signalBuffer = signals
+    // mobile only -- see brandon for this code
+    this.signalCounter = 0
+    this.maxBufferSize = 1000
+  }
+
+  find = <SignalType extends Signal['type']>(
     fromSignal: Signal,
-    signalType: T,
-    predicate?: (signal: SignalOfType<T>) => boolean
-  ): SignalOfType<T> | undefined {
-    const _isSignalOfType = (signal: Signal): signal is SignalOfType<T> =>
-      signal.type === signalType
-    return signals
-      .slice(signals.indexOf(fromSignal) + 1)
+    signalType: SignalType,
+    predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
+  ): SignalOfType<Signal, SignalType> | undefined => {
+    const _isSignalOfType = (
+      signal: Signal
+    ): signal is SignalOfType<Signal, SignalType> => signal.type === signalType
+    return this.signalBuffer
+      .slice(this.signalBuffer.indexOf(fromSignal) + 1)
       .filter(_isSignalOfType)
       .find((signal) => (predicate ? predicate(signal) : () => true))
   }
 
-  return {
-    find,
+  // mobile only - see brandon for this code
+  add = (signal: Signal) => {
+    if (this.signalCounter < 0) {
+      this.signalCounter = 0
+    }
+
+    if ('index' in signal && signal.index == -1) {
+      // this was previously broken for ages, not sure when this code path would ever be used.
+      // My understanding is that currently, getNextIndex() is called _outside_ of this function and used to construct the added signal. - seth
+      signal.index = this.getNextIndex()
+    }
+    this.signalBuffer.unshift(signal)
+    if (this.signalBuffer.length > this.maxBufferSize) {
+      this.signalBuffer.pop()
+    }
+  }
+
+  // mobile only - see brandon for this code
+  getNextIndex = () => {
+    const index = this.signalCounter
+    this.signalCounter += 1
+    return index
   }
 }
