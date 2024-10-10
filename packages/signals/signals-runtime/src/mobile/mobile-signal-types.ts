@@ -1,7 +1,6 @@
 import { BaseSignal } from '../shared/shared-types'
-export type MobileSignalTypes = MobileSignal['type']
 
-export type MobileSignalType = MobileSignal['type']
+export type MobileSignalTypes = MobileSignal['type']
 
 export type MobileNavigationAction =
   | 'forward'
