@@ -1,4 +1,8 @@
-import { BaseSignal, SignalOfType, ISignalsRuntime } from './types/shared'
+import {
+  BaseSignal,
+  SignalOfType,
+  ISignalsRuntime,
+} from '../shared/shared-types'
 
 /**
  * SignalsRuntime class to manage signals

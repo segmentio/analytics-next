@@ -2,4 +2,6 @@
  * This is the public API for this package.
  * We avoid using splat (*) exports so that we can control what is exposed.
  */
-export * from './types/web/signals'
+export * from './web-signals-types'
+export * from './web-exports-globals'
+export * from '../shared/shared-types'

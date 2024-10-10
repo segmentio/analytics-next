@@ -63,14 +63,14 @@ function filterLines(filePath, cb) {
 
 const main = () => {
   const outFile = `dist/web-editor.d.ts`
-  const command = `yarn dts-bundle-generator -o ${outFile} src/web-exports.ts --no-check`
+  const command = `yarn dts-bundle-generator -o ${outFile} src/web/web-exports.ts --no-check`
   execSync(command, { stdio: 'inherit' })
   const outFileAbs = path.join(__dirname, outFile)
 
   prependGenerated(outFileAbs)
 
   // Append the contents of web-exports-globals.ts
-  const globalsFilePath = path.join(__dirname, 'src/web-exports-globals.ts')
+  const globalsFilePath = path.join(__dirname, 'src/web/web-exports-globals.ts')
   appendFileContents(outFileAbs, globalsFilePath)
   // remove any comments that use // like ts-ignore, ts-nocheck etc (/* */ is OK)
   filterLines(outFileAbs, (line) => !line.startsWith('//'))
