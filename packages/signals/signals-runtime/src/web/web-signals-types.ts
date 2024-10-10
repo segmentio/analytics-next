@@ -1,7 +1,4 @@
-export type JSONPrimitive = string | number | boolean | null
-export type JSONValue = JSONPrimitive | JSONObject | JSONArray
-export type JSONObject = { [member: string]: JSONValue }
-export type JSONArray = JSONValue[]
+import { JSONValue } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
@@ -103,8 +100,3 @@ export type Signal =
   | InstrumentationSignal
   | NetworkSignal
   | UserDefinedSignal
-
-export interface SegmentEvent {
-  type: string // e.g 'track'
-  [key: string]: any
-}
