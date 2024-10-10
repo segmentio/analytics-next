@@ -22,76 +22,76 @@ interface SegmentEvent {
 	[key: string]: any;
 }
 type EventType = "track" | "page" | "screen" | "identify" | "group" | "alias";
-type WebSignalTypes = WebSignal["type"];
-interface WebAppSignal<T extends WebSignalTypes, Data> extends BaseSignal {
+type SignalTypes = Signal["type"];
+interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
 	type: T;
 	data: Data;
 	metadata?: Record<string, any>;
 }
-type WebInteractionData = WebClickData | WebSubmitData | WebChangeData;
-interface WebSerializedTarget {
+type InteractionData = ClickData | SubmitData | ChangeData;
+interface SerializedTarget {
 	[key: string]: any;
 }
-type WebClickData = {
+type ClickData = {
 	eventType: "click";
-	target: WebSerializedTarget;
+	target: SerializedTarget;
 };
-type WebSubmitData = {
+type SubmitData = {
 	eventType: "submit";
-	submitter: WebSerializedTarget;
+	submitter: SerializedTarget;
 };
-type WebChangeData = {
+type ChangeData = {
 	eventType: "change";
 	[key: string]: unknown;
 };
-type WebInteractionSignal = WebAppSignal<"interaction", WebInteractionData>;
-interface WebBaseNavigationData<ActionType extends string> {
+type InteractionSignal = RawSignal<"interaction", InteractionData>;
+interface BaseNavigationData<ActionType extends string> {
 	action: ActionType;
 	url: string;
 	hash: string;
 }
-interface WebURLChangeNavigationData extends WebBaseNavigationData<"urlChange"> {
+interface URLChangeNavigationData extends BaseNavigationData<"urlChange"> {
 	prevUrl: string;
 }
-interface WebPageChangeNavigationData extends WebBaseNavigationData<"pageLoad"> {
+interface PageChangeNavigationData extends BaseNavigationData<"pageLoad"> {
 }
-type WebNavigationData = WebURLChangeNavigationData | WebPageChangeNavigationData;
-type WebNavigationSignal = WebAppSignal<"navigation", WebNavigationData>;
-interface WebInstrumentationData {
+type NavigationData = URLChangeNavigationData | PageChangeNavigationData;
+type NavigationSignal = RawSignal<"navigation", NavigationData>;
+interface InstrumentationData {
 	rawEvent: unknown;
 }
-type WebInstrumentationSignal = WebAppSignal<"instrumentation", WebInstrumentationData>;
-interface WebNetworkSignalMetadata {
+type InstrumentationSignal = RawSignal<"instrumentation", InstrumentationData>;
+interface NetworkSignalMetadata {
 	filters: {
 		allowed: string[];
 		disallowed: string[];
 	};
 }
-interface WebBaseNetworkData {
+interface BaseNetworkData {
 	action: string;
 	url: string;
 	data: JSONValue;
 }
-interface WebNetworkRequestData extends WebBaseNetworkData {
+interface NetworkRequestData extends BaseNetworkData {
 	action: "request";
 	url: string;
 	method: string;
 }
-interface WebNetworkResponseData extends WebBaseNetworkData {
+interface NetworkResponseData extends BaseNetworkData {
 	action: "response";
 	url: string;
 }
-type WebNetworkData = WebNetworkRequestData | WebNetworkResponseData;
-type WebNetworkSignal = WebAppSignal<"network", WebNetworkData>;
-interface WebUserDefinedSignalData {
+type NetworkData = NetworkRequestData | NetworkResponseData;
+type NetworkSignal = RawSignal<"network", NetworkData>;
+interface UserDefinedSignalData {
 	[key: string]: any;
 }
-type WebUserDefinedSignal = WebAppSignal<"userDefined", WebUserDefinedSignalData>;
-type WebSignal = WebInteractionSignal | WebNavigationSignal | WebInstrumentationSignal | WebNetworkSignal | WebUserDefinedSignal;
+type UserDefinedSignal = RawSignal<"userDefined", UserDefinedSignalData>;
+type Signal = InteractionSignal | NavigationSignal | InstrumentationSignal | NetworkSignal | UserDefinedSignal;
 
 
 
-declare const signals: ISignalsRuntime<WebSignal>
+declare const signals: ISignalsRuntime<Signal>
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'

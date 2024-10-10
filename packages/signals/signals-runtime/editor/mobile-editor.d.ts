@@ -18,67 +18,68 @@ type JSONObject = {
 };
 type JSONArray = JSONValue[];
 interface SegmentEvent {
-	type: string;
+	type: EventType;
 	[key: string]: any;
 }
-type MobileSignalTypes = MobileSignal["type"];
-type MobileSignal = MobileInteractionSignal | MobileNavigationSignal | MobileNetworkSignal | MobileLocalDataSignal | MobileInstrumentationSignal | MobileUserDefinedSignal;
-interface MobileRawSignal extends BaseSignal {
+type EventType = "track" | "page" | "screen" | "identify" | "group" | "alias";
+type SignalTypes = Signal["type"];
+type NavigationAction = "forward" | "backward" | "modal" | "entering" | "leaving" | "page" | "popup";
+type NetworkAction = "request" | "response";
+type LocalDataAction = "loaded" | "updated" | "saved" | "deleted" | "undefined";
+type Signal = InteractionSignal | NavigationSignal | NetworkSignal | LocalDataSignal | InstrumentationSignal | UserDefinedSignal;
+interface RawSignal<SignalType extends string> extends BaseSignal {
+	type: SignalType;
 	anonymousId: string;
-	type: string;
 	data: any;
 	timestamp: string;
 	index: any;
 }
-interface MobileNavigationData {
-	action: string;
+interface NavigationData {
+	action: NavigationAction;
 	screen: string;
 }
-interface MobileNavigationSignal extends MobileRawSignal {
-	data: MobileNavigationData;
+interface NavigationSignal extends RawSignal<"navigation"> {
+	data: NavigationData;
 }
-interface MobileInteractionData {
+interface InteractionData {
 	component: string;
 	info: string;
 	data: any;
 }
-interface MobileInteractionSignal extends MobileRawSignal {
+interface InteractionSignal extends RawSignal<"interaction"> {
 	type: "interaction";
-	data: MobileInteractionData;
+	data: InteractionData;
 }
-interface MobileNetworkData {
-	action: string;
+interface NetworkData {
+	action: NetworkAction;
 	url: string;
 	data: any;
 }
-interface MobileNetworkSignal extends MobileRawSignal {
-	static: "network";
-	data: MobileNetworkData;
+interface NetworkSignal extends RawSignal<"network"> {
+	data: NetworkData;
 }
-interface MobileLocalData {
-	action: string;
+interface LocalData {
+	action: LocalDataAction;
 	identifier: string;
 	data: string;
 }
-interface MobileLocalDataSignal extends MobileRawSignal {
-	type: "localData";
-	data: MobileLocalData;
+interface LocalDataSignal extends RawSignal<"localData"> {
+	data: LocalData;
 }
-interface MobileUserDefinedSignal extends MobileRawSignal {
-	type: "userDefined";
+interface UserDefinedSignal extends RawSignal<"userDefined"> {
 	data: any;
 }
-interface MobileInstrumentationData {
+interface InstrumentationData {
 	type: "instrumentation";
 	rawEvent: any;
 }
-interface MobileInstrumentationSignal extends MobileRawSignal {
-	data: MobileInstrumentationData;
+interface InstrumentationSignal extends RawSignal<"instrumentation"> {
+	data: InstrumentationData;
 }
 
 
 
-declare const signals: ISignalsRuntime<MobileSignal>
+declare const signals: ISignalsRuntime<Signal>
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'
