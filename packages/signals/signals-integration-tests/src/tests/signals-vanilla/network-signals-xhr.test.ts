@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
+import { sleep } from '@segment/analytics-core'
 
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
@@ -23,7 +24,7 @@ test.describe('network signals - XHR', () => {
     })
 
     // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
+    await sleep(300)
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
 
@@ -45,10 +46,7 @@ test.describe('network signals - XHR', () => {
 
     expect(data).toEqual({ foo: 'test' })
 
-    // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
-
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
+    const networkEvents = await indexPage.signalsAPI.waitForEvents(2, 'network')
 
     // Check the request
     const requests = networkEvents.filter(
@@ -87,9 +85,7 @@ test.describe('network signals - XHR', () => {
     })
 
     // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
-
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
+    const networkEvents = await indexPage.signalsAPI.waitForEvents(2, 'network')
 
     // Check the request
     const requests = networkEvents.filter(
@@ -129,9 +125,8 @@ test.describe('network signals - XHR', () => {
     })
 
     // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
 
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
+    const networkEvents = await indexPage.signalsAPI.waitForEvents(1, 'network')
 
     // Check the response (only response should be captured)
     const responses = networkEvents.filter(
@@ -162,7 +157,7 @@ test.describe('network signals - XHR', () => {
     })
 
     // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
+    await indexPage.signalsAPI.waitForEvents(1, 'network')
 
     // Retrieve the batch of events from the signals request
     const networkEvents = indexPage.signalsAPI.getEvents('network')
@@ -210,10 +205,8 @@ test.describe('network signals - XHR', () => {
     ])
 
     // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
+    const networkEvents = await indexPage.signalsAPI.waitForEvents(2, 'network')
 
-    // Retrieve the batch of events from the signals request
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
     // Check the request
     const requests = networkEvents.filter(
       (el) => el.properties!.data.action === 'request'
@@ -251,7 +244,7 @@ test.describe('network signals - XHR', () => {
         contentType: 'application/json',
       })
 
-      await indexPage.waitForSignalsApiFlush()
+      await indexPage.signalsAPI.waitForEvents(2, 'network')
 
       const networkEvents = indexPage.signalsAPI.getEvents('network')
 
@@ -289,7 +282,7 @@ test.describe('network signals - XHR', () => {
         contentType: 'application/json',
       })
 
-      await indexPage.waitForSignalsApiFlush()
+      await indexPage.signalsAPI.waitForEvents(2, 'network')
 
       const networkEvents = indexPage.signalsAPI.getEvents('network')
 
@@ -330,8 +323,7 @@ test.describe('network signals - XHR', () => {
         responseType: 'json',
         contentType: 'application/json',
       })
-
-      await indexPage.waitForSignalsApiFlush()
+      await indexPage.signalsAPI.waitForEvents(2, 'network')
 
       const networkEvents = indexPage.signalsAPI.getEvents('network')
 
