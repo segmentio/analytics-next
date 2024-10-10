@@ -1,4 +1,4 @@
-import { BaseSignal, SignalOfType } from './types/shared'
+import { BaseSignal, SignalOfType, ISignalsRuntime } from './types/shared'
 
 /**
  * SignalsRuntime class to manage signals
@@ -13,7 +13,9 @@ import { BaseSignal, SignalOfType } from './types/shared'
  *  type: 'foo'
  * })
  */
-export class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
+export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
+  implements ISignalsRuntime<Signal>
+{
   private signalBuffer: Signal[]
   // mobile only - see brandon for this code
   private signalCounter: number

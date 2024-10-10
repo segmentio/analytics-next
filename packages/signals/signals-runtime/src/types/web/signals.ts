@@ -1,5 +1,3 @@
-import type { BaseSignal, SignalOfType } from '../shared'
-
 export type JSONPrimitive = string | number | boolean | null
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray
 export type JSONObject = { [member: string]: JSONValue }
@@ -109,12 +107,4 @@ export type Signal =
 export interface SegmentEvent {
   type: string // e.g 'track'
   [key: string]: any
-}
-
-export interface ISignalsRuntime<Signal extends BaseSignal> {
-  find: <SignalType extends Signal['type']>(
-    fromSignal: Signal,
-    signalType: SignalType,
-    predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
-  ) => SignalOfType<Signal, SignalType> | undefined
 }
