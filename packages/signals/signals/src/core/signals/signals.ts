@@ -93,7 +93,7 @@ export class Signals implements ISignals {
       ],
       sampleRate:
         analyticsService.instance.settings.cdnSettings
-          .autoInstrumentationSettings?.sampleRate || 0,
+          .autoInstrumentationSettings?.sampleRate ?? 0,
     })
 
     const sandbox = new Sandbox(

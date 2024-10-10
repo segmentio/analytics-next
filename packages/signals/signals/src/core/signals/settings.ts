@@ -34,6 +34,7 @@ export class SignalGlobalSettings {
   signalBuffer: SignalBufferSettingsConfig
   ingestClient: SignalsIngestSettingsConfig
   network: NetworkSettingsConfig
+  private sampleRate = 0
 
   private redaction = new SignalRedactionSettings()
   private ingestion = new SignalIngestionSettings()
@@ -58,8 +59,15 @@ export class SignalGlobalSettings {
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       shouldDisableSignalRedaction: this.redaction.getDisableSignalRedaction,
-      signalIngestion: this.ingestion.getSignalIngestion,
-      sampleRate: settings.sampleRate,
+      shouldIngestSignals: () => {
+        if (this.ingestion.getSignalIngestion()) {
+          return true
+        }
+        if (Math.random() > this.sampleRate) {
+          return false
+        }
+        return false
+      },
     }
     this.sandbox = {
       functionHost: settings.functionHost,
@@ -86,7 +94,7 @@ export class SignalGlobalSettings {
      */
     disallowListURLs: (string | undefined)[]
     /**
-     * The sample rate pulled from CDN settings
+     * Sample rate to determine sending signals
      */
     sampleRate: number
   }): void {
@@ -96,7 +104,7 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
-    this.ingestClient.sampleRate = sampleRate
+    this.sampleRate = sampleRate
   }
 }
 
