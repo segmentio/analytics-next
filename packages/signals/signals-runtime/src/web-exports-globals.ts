@@ -1,8 +1,8 @@
 // all import directives will be removed in the final build
-import { SignalsRuntimeAPI } from './types/web/signals'
+import { ISignalsRuntime, Signal } from './web-exports'
 
 // This will be appended to the generated code - dts-bundle-generator will not write declare const for whatever reason.
-declare const signals: SignalsRuntimeAPI
+declare const signals: ISignalsRuntime<Signal>
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'

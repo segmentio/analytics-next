@@ -1,13 +1,4 @@
-interface BaseSignal {
-  index?: number
-  type: string
-  time: number
-}
-
-export type SignalOfType<
-  AllSignals extends BaseSignal,
-  SignalType extends AllSignals['type']
-> = AllSignals & { type: SignalType }
+import { BaseSignal, SignalOfType } from './types/shared'
 
 /**
  * SignalsRuntime class to manage signals
