@@ -7,8 +7,7 @@ test.describe('network signals - fetch', () => {
   let indexPage: IndexPage
 
   test.beforeEach(async ({ page }) => {
-    indexPage = new IndexPage()
-    await indexPage.loadAndWait(page, basicEdgeFn)
+    indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
   })
 
   test('should not emit anything if neither request nor response are json', async () => {
