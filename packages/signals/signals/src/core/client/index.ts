@@ -8,6 +8,7 @@ export class SignalsIngestSettings {
   flushInterval: number
   apiHost: string
   shouldDisableSignalRedaction: () => boolean
+  signalIngestion: () => boolean
   writeKey?: string
   constructor(settings: SignalsIngestSettingsConfig) {
     this.flushAt = settings.flushAt ?? 5
@@ -15,6 +16,7 @@ export class SignalsIngestSettings {
     this.flushInterval = settings.flushInterval ?? 2000
     this.shouldDisableSignalRedaction =
       settings.shouldDisableSignalRedaction ?? (() => false)
+    this.signalIngestion = settings.signalIngestion ?? (() => false)
   }
 }
 
@@ -23,6 +25,7 @@ export interface SignalsIngestSettingsConfig {
   flushAt?: number
   flushInterval?: number
   shouldDisableSignalRedaction?: () => boolean
+  signalIngestion?: () => boolean
 }
 /**
  * This currently just uses the Segment analytics-next library to send signals.
@@ -72,6 +75,9 @@ export class SignalsIngestClient {
   private sendTrackCall(signal: Signal) {
     if (!this.analytics) {
       throw new Error('Please initialize before calling this method.')
+    }
+    if (!this.settings.signalIngestion) {
+      return
     }
     const disableRedaction = this.settings.shouldDisableSignalRedaction()
     const data = disableRedaction

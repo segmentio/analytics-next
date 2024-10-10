@@ -24,6 +24,11 @@ export interface SignalsPluginSettingsConfig {
   disableSignalsRedaction?: boolean
 
   /**
+   * If signals ingestion is enabled/disabled
+   */
+  signalsIngestion?: boolean
+
+  /**
    * Override signals API host
    * @default signals.segment.io/v1
    */
