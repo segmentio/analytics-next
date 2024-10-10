@@ -11,7 +11,13 @@ import fs from 'fs'
  */
 const execa = promisify(exec)
 
-const allPublicPackageDirNames = ['browser', 'core', 'node'] as const
+const allPublicPackageDirNames = [
+  'browser',
+  'core',
+  'node',
+  'signals/signals',
+  'signals/signals-runtime',
+] as const
 
 type PackageDirName = typeof allPublicPackageDirNames[number]
 

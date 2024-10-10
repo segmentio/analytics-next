@@ -1,6 +1,7 @@
 import { CDNSettings } from '@segment/analytics-next'
-import { AnyAnalytics, createInstrumentationSignal } from '../../types'
+import { AnyAnalytics } from '../../types'
 import { SignalGenerator } from '../signal-generators/types'
+import { createInstrumentationSignal } from '../../types/factories'
 
 type EdgeFunctionSettings = { downloadURL: string; version?: number }
 

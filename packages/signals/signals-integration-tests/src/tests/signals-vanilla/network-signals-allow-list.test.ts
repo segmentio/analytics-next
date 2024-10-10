@@ -1,12 +1,10 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
-const indexPage = new IndexPage()
-
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
 test('network signals allow and disallow list', async ({ page }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn, {
+  const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {
     networkSignalsAllowList: ['allowed-api.com'],
     networkSignalsDisallowList: ['https://disallowed-api.com/api/foo'],
   })

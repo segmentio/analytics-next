@@ -1,0 +1,8 @@
+{
+  "extends": "./api-extractor.base.json",
+  "mainEntryPointFilePath": "./dist/types/web/index.web-editor.d.ts",
+  "dtsRollup": {
+    "enabled": true,
+    "untrimmedFilePath": "./dist/editor/web-editor.d.ts.txt"
+  }
+}

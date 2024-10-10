@@ -1,9 +1,5 @@
-import {
-  createInstrumentationSignal,
-  createInteractionSignal,
-  createNetworkSignal,
-  NetworkSignalMetadata,
-} from '../../../types'
+import { NetworkSignalMetadata } from '@segment/analytics-signals-runtime'
+import * as factories from '../../../types/factories'
 import { redactJsonValues, redactSignalData } from '../redact'
 
 describe(redactJsonValues, () => {
@@ -69,7 +65,7 @@ describe(redactSignalData, () => {
     },
   }
   it('should return the signal as is if the type is "instrumentation"', () => {
-    const signal = createInstrumentationSignal({
+    const signal = factories.createInstrumentationSignal({
       foo: 123,
     } as any)
     expect(redactSignalData(signal)).toEqual(signal)
@@ -81,11 +77,11 @@ describe(redactSignalData, () => {
   })
 
   it('should redact the value in the "target" property if the type is "interaction"', () => {
-    const signal = createInteractionSignal({
+    const signal = factories.createInteractionSignal({
       eventType: 'change',
       target: { value: 'secret' },
     })
-    const expected = createInteractionSignal({
+    const expected = factories.createInteractionSignal({
       eventType: 'change',
       target: { value: 'XXX' },
     })
@@ -93,7 +89,7 @@ describe(redactSignalData, () => {
   })
 
   it('should redact the values in the "data" property if the type is "network"', () => {
-    const signal = createNetworkSignal(
+    const signal = factories.createNetworkSignal(
       {
         action: 'request',
         method: 'post',
@@ -102,7 +98,7 @@ describe(redactSignalData, () => {
       },
       metadataFixture
     )
-    const expected = createNetworkSignal(
+    const expected = factories.createNetworkSignal(
       {
         action: 'request',
         method: 'post',
@@ -115,7 +111,7 @@ describe(redactSignalData, () => {
   })
 
   it('should not mutate the original signal object', () => {
-    const originalSignal = createInteractionSignal({
+    const originalSignal = factories.createInteractionSignal({
       eventType: 'click',
       target: { value: 'sensitiveData' },
     })

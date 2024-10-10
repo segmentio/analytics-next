@@ -34,7 +34,7 @@ const isStage = process.env.STAGE === 'true'
 const signalsPlugin = new SignalsPlugin({
   ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
   enableDebugLogging: true,
-  // processSignal: processSignalExample,
+  processSignal: processSignalExample,
 })
 
 export const loadAnalytics = () =>
@@ -46,6 +46,7 @@ export const loadAnalytics = () =>
         ...(isStage ? { cdnURL: 'https://cdn.segment.build' } : {}),
       },
       {
+        initialPageview: true,
         ...(isStage
           ? {
               integrations: {

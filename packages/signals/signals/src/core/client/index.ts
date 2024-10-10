@@ -1,6 +1,6 @@
 import { Analytics, segmentio } from '@segment/analytics-next'
 import { logger } from '../../lib/logger'
-import { Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { redactSignalData } from './redact'
 
 export class SignalsIngestSettings {

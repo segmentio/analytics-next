@@ -1,8 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
-const indexPage = new IndexPage()
-
 const basicEdgeFn = `
     // this is a process signal function
     const processSignal = (signal) => {
@@ -12,8 +10,10 @@ const basicEdgeFn = `
       }
   }`
 
+let indexPage: IndexPage
+
 test.beforeEach(async ({ page }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn)
+  indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
 })
 
 test('network signals fetch', async () => {

@@ -7,8 +7,7 @@ test.describe('network signals - fetch', () => {
   let indexPage: IndexPage
 
   test.beforeEach(async ({ page }) => {
-    indexPage = new IndexPage()
-    await indexPage.loadAndWait(page, basicEdgeFn)
+    indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
   })
 
   test('should not emit anything if neither request nor response are json', async () => {
@@ -55,9 +54,10 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'request'
     )
     expect(requests).toHaveLength(1)
-    expect(requests[0].properties!.data).toMatchObject({
+    expect(requests[0].properties!.data).toEqual({
       action: 'request',
       url: 'http://localhost/test',
+      method: 'POST',
       data: { key: 'value' },
     })
 
@@ -65,10 +65,12 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'response'
     )
     expect(responses).toHaveLength(1)
-    expect(responses[0].properties!.data).toMatchObject({
+    expect(responses[0].properties!.data).toEqual({
       action: 'response',
       url: 'http://localhost/test',
       data: { foo: 'test' },
+      status: 200,
+      ok: true,
     })
   })
 
@@ -177,6 +179,8 @@ test.describe('network signals - fetch', () => {
         action: 'response',
         url: 'http://localhost/test',
         data: { errorMsg: 'foo' },
+        status: 400,
+        ok: false,
       })
       expect(responses).toHaveLength(1)
     })
@@ -214,6 +218,8 @@ test.describe('network signals - fetch', () => {
         action: 'response',
         url: 'http://localhost/test',
         data: 'foo',
+        status: 400,
+        ok: false,
       })
       expect(responses).toHaveLength(1)
     })
