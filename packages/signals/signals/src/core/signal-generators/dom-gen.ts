@@ -1,6 +1,9 @@
 import { URLChangeObservable } from '../../lib/detect-url-change'
 import { logger } from '../../lib/logger'
-import { createInteractionSignal, createNavigationSignal } from '../../types'
+import {
+  createInteractionSignal,
+  createNavigationSignal,
+} from '../../types/factories'
 import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
 

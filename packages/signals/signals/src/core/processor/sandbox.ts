@@ -2,8 +2,8 @@ import { logger } from '../../lib/logger'
 import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
-import { createSignalsRuntime } from './signals-runtime'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
+import { SignalsRuntime } from '@segment/analytics-signals-runtime'
 
 export type MethodName =
   | 'page'
@@ -212,8 +212,8 @@ export class Sandbox {
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
       await this.settings.processSignal,
-      `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
-      `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
+      `${SignalsRuntime.toString()}`,
+      `const signals = new SignalsRuntime(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
