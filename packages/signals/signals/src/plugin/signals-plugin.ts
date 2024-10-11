@@ -34,7 +34,8 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     logger.debug('SignalsPlugin initializing', { settings })
 
     this.signals = new Signals({
-      enableSignalsDebug: settings.enableSignalsDebug,
+      disableSignalsRedaction: settings.disableSignalsRedaction,
+      enableSignalsIngestion: settings.enableSignalsIngestion,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       functionHost: settings.functionHost,

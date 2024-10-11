@@ -13,7 +13,8 @@ export type SignalsSettingsConfig = Pick<
   | 'functionHost'
   | 'flushAt'
   | 'flushInterval'
-  | 'enableSignalsDebug'
+  | 'disableSignalsRedaction'
+  | 'enableSignalsIngestion'
   | 'networkSignalsAllowList'
   | 'networkSignalsDisallowList'
   | 'networkSignalsAllowSameDomain'
@@ -43,7 +44,10 @@ export class SignalGlobalSettings {
       )
     }
 
-    this.signalsDebug = new SignalsDebugSettings(settings.enableSignalsDebug)
+    this.signalsDebug = new SignalsDebugSettings(
+      settings.disableSignalsRedaction,
+      settings.enableSignalsIngestion
+    )
 
     this.signalBuffer = {
       signalStorage: settings.signalStorage,
@@ -53,9 +57,10 @@ export class SignalGlobalSettings {
       apiHost: settings.apiHost,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
-      shouldDisableSignalRedaction: this.signalsDebug.getSignalsDebug,
+      shouldDisableSignalsRedaction:
+        this.signalsDebug.getDisableSignalsRedaction,
       shouldIngestSignals: () => {
-        if (this.signalsDebug.getSignalsDebug()) {
+        if (this.signalsDebug.getEnableSignalsIngestion()) {
           return true
         }
         if (!this.sampleSuccess) {
@@ -106,10 +111,14 @@ export class SignalGlobalSettings {
 }
 
 class SignalsDebugSettings {
-  private static key = 'segment_signals_debug'
-  constructor(initialValue?: boolean) {
-    if (typeof initialValue === 'boolean') {
-      this.setSignalsDebug(initialValue)
+  private static redactionKey = 'segment_signals_debug_redaction_disabled'
+  private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
+  constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
+    if (typeof disableRedaction === 'boolean') {
+      this.setDebugKey(SignalsDebugSettings.redactionKey, disableRedaction)
+    }
+    if (typeof enableIngestion === 'boolean') {
+      this.setDebugKey(SignalsDebugSettings.ingestionKey, enableIngestion)
     }
 
     // setting ?segment_signals_debug=true will disable redaction, enable ingestion, and set keys in local storage
@@ -118,30 +127,46 @@ class SignalsDebugSettings {
     const debugModeInQs = parseDebugModeQueryString()
     logger.debug('debugMode is set to true via query string')
     if (typeof debugModeInQs === 'boolean') {
-      this.setSignalsDebug(debugModeInQs)
+      this.setDebugKey(SignalsDebugSettings.redactionKey, debugModeInQs)
+      this.setDebugKey(SignalsDebugSettings.ingestionKey, debugModeInQs)
     }
   }
 
-  setSignalsDebug(shouldDisable: boolean) {
+  setDebugKey(key: string, enable: boolean) {
     try {
-      if (shouldDisable) {
-        window.sessionStorage.setItem(SignalsDebugSettings.key, 'true')
+      if (enable) {
+        window.sessionStorage.setItem(key, 'true')
       } else {
-        logger.debug('Removing debug key from storage')
-        window.sessionStorage.removeItem(SignalsDebugSettings.key)
+        logger.debug(`Removing debug key ${key} from storage`)
+        window.sessionStorage.removeItem(key)
       }
     } catch (e) {
       logger.debug('Storage error', e)
     }
   }
 
-  getSignalsDebug() {
+  getDisableSignalsRedaction() {
     try {
-      const isDisabled = Boolean(
-        window.sessionStorage.getItem(SignalsDebugSettings.key)
+      const isEnabled = Boolean(
+        window.sessionStorage.getItem(SignalsDebugSettings.redactionKey)
       )
-      if (isDisabled) {
-        logger.debug(`${SignalsDebugSettings.key}=true (app. storage)`)
+      if (isEnabled) {
+        logger.debug(`${SignalsDebugSettings.redactionKey}=true (app. storage)`)
+        return true
+      }
+    } catch (e) {
+      logger.debug('Storage error', e)
+    }
+    return false
+  }
+
+  getEnableSignalsIngestion() {
+    try {
+      const isEnabled = Boolean(
+        window.sessionStorage.getItem(SignalsDebugSettings.ingestionKey)
+      )
+      if (isEnabled) {
+        logger.debug(`${SignalsDebugSettings.ingestionKey}=true (app. storage)`)
         return true
       }
     } catch (e) {

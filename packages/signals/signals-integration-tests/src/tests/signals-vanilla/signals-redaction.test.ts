@@ -10,8 +10,8 @@ test('redaction enabled -> will XXX the value of text input', async ({
   page,
 }) => {
   await indexPage.loadAndWait(page, basicEdgeFn, {
-    enableSignalsDebug: false,
-    signalsIngestion: true,
+    disableSignalsRedaction: false,
+    enableSignalsIngestion: true,
   })
 
   await Promise.all([

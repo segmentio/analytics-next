@@ -18,15 +18,15 @@ export interface SignalsPluginSettingsConfig {
   enableDebugLogging?: boolean
 
   /**
-   * Enables signals debug mode (turns off redaction, enables ingestion)
+   * Disable redaction of signals
    * @default false
    */
-  enableSignalsDebug?: boolean
+  disableSignalsRedaction?: boolean
 
   /**
-   * If signals ingestion is enabled/disabled
+   * Enable ingestion of signals
    */
-  signalsIngestion?: boolean
+  enableSignalsIngestion?: boolean
 
   /**
    * Percentage of sessions that should be ingested
