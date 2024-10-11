@@ -33,7 +33,7 @@ export class SignalGlobalSettings {
   ingestClient: SignalsIngestSettingsConfig
   network: NetworkSettingsConfig
 
-  private sampleRate = 0
+  private sampleSuccess = false
   private signalsDebug = new SignalsDebugSettings()
 
   constructor(settings: SignalsSettingsConfig) {
@@ -58,7 +58,7 @@ export class SignalGlobalSettings {
         if (this.signalsDebug.getSignalsDebug()) {
           return true
         }
-        if (Math.random() > this.sampleRate) {
+        if (!this.sampleSuccess) {
           return false
         }
         return false
@@ -99,7 +99,9 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
-    this.sampleRate = sampleRate
+    if (Math.random() <= sampleRate) {
+      this.sampleSuccess = true
+    }
   }
 }
 
