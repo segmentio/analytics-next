@@ -57,6 +57,7 @@ interface NetworkData {
 }
 interface NetworkSignal extends RawSignal<"network"> {
 	data: NetworkData;
+	[key: string]: unknown;
 }
 interface LocalData {
 	action: LocalDataAction;
