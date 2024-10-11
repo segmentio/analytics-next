@@ -18,10 +18,10 @@ export interface SignalsPluginSettingsConfig {
   enableDebugLogging?: boolean
 
   /**
-   * Disable redaction of signals
+   * Enables signals debug mode (turns off redaction, enables ingestion)
    * @default false
    */
-  disableSignalsRedaction?: boolean
+  enableSignalsDebug?: boolean
 
   /**
    * If signals ingestion is enabled/disabled

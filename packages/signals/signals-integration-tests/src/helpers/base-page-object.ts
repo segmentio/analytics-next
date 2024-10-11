@@ -71,7 +71,7 @@ export class BasePage {
     await this.page.evaluate(
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
-          disableSignalsRedaction: true,
+          enableSignalsDebug: true,
           flushInterval: 1000,
           ...signalSettings,
         })
