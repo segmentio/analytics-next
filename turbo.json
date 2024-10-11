@@ -20,6 +20,9 @@
     "test:int": {
       "dependsOn": ["build"]
     },
+    "tsc": {
+      "cache": false
+    },
     "watch": {
       "cache": false,
       "outputs": ["dist/**"]
