@@ -13,7 +13,7 @@ test('Collecting signals whenever a user enters text input', async ({
    * Input some text into the input field, see if the signal is emitted correctly
    */
   await indexPage.loadAndWait(page, basicEdgeFn, {
-    disableSignalsRedaction: true,
+    enableSignalsDebug: true,
   })
 
   await Promise.all([
