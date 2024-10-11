@@ -74,7 +74,6 @@ export class BasePage {
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
           enableSignalsDebug: true,
-          flushInterval: 1000,
           ...signalSettings,
         })
         window.analytics.load({
