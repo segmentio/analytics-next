@@ -15,7 +15,7 @@ describe('SignalsRuntime', () => {
   beforeEach(() => {
     signal1 = createInstrumentationSignal({ type: 'track' })
     signal2 = createInteractionSignal({ eventType: 'submit', submitter: {} })
-    signal3 = createInteractionSignal({ eventType: 'change' })
+    signal3 = createInteractionSignal({ eventType: 'change', target: {} })
     signalsRuntime = createSignalsRuntime([signal1, signal2, signal3])
   })
 

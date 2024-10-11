@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.75.0
+
+### Minor Changes
+
+- [#1160](https://github.com/segmentio/analytics-next/pull/1160) [`bedea03b`](https://github.com/segmentio/analytics-next/commit/bedea03bb50e01a7df71461087a9ec340375906d) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Adding apiHost to the readonly data available from Analytics.settings
+
 ## 1.74.0
 
 ### Minor Changes

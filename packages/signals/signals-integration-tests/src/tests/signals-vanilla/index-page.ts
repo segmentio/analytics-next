@@ -1,5 +1,6 @@
 import { BasePage } from '../../helpers/base-page-object'
 import { promiseTimeout } from '@internal/test-helpers'
+import { fillAndBlur } from '../../helpers/playwright-utils'
 
 export class IndexPage extends BasePage {
   constructor() {
@@ -39,5 +40,13 @@ export class IndexPage extends BasePage {
 
   async clickComplexButton() {
     return this.page.click('#complex-button')
+  }
+
+  async clickInsideComplexButton() {
+    return this.page.click('#complex-button h1')
+  }
+
+  async fillNameInput(text: string) {
+    return await fillAndBlur(this.page, '#name', text)
   }
 }

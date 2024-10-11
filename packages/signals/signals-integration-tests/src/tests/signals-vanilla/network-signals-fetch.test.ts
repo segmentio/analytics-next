@@ -3,50 +3,49 @@ import { IndexPage } from './index-page'
 
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
-test.describe('network signals - XHR', () => {
+test.describe('network signals - fetch', () => {
   let indexPage: IndexPage
 
   test.beforeEach(async ({ page }) => {
     indexPage = new IndexPage()
     await indexPage.loadAndWait(page, basicEdgeFn)
   })
+
   test('should not emit anything if neither request nor response are json', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: 'hello',
       contentType: 'text/plain',
     })
 
-    await indexPage.network.makeXHRCall('http://localhost/test', {
+    await indexPage.network.makeFetchCall('http://localhost/test', {
       method: 'POST',
       body: 'hello world',
       contentType: 'text/plain',
-      responseType: 'text',
     })
 
-    // Wait for the signals to be flushed
     await indexPage.waitForSignalsApiFlush()
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
 
-    // Ensure no request or response was captured
     expect(networkEvents).toHaveLength(0)
   })
 
-  test('basic json request / not break XHR', async () => {
+  test('can make a basic json request / not break regular fetch calls', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),
     })
 
-    const data = await indexPage.network.makeXHRCall('http://localhost/test', {
-      method: 'POST',
-      body: JSON.stringify({ key: 'value' }),
-      responseType: 'json',
-      contentType: 'application/json',
-    })
+    const resBody = await indexPage.network.makeFetchCall(
+      'http://localhost/test',
+      {
+        method: 'POST',
+        body: JSON.stringify({ key: 'value' }),
+        contentType: 'application/json',
+      }
+    )
 
-    expect(data).toEqual({ foo: 'test' })
+    expect(resBody).toEqual({ foo: 'test' })
 
-    // Wait for the signals to be flushed
     await indexPage.waitForSignalsApiFlush()
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
@@ -62,7 +61,6 @@ test.describe('network signals - XHR', () => {
       data: { key: 'value' },
     })
 
-    // Check the response
     const responses = networkEvents.filter(
       (el) => el.properties!.data.action === 'response'
     )
@@ -74,25 +72,22 @@ test.describe('network signals - XHR', () => {
     })
   })
 
-  test('handles relative URL paths', async () => {
+  test('can handle relative url paths', async () => {
     await indexPage.network.mockTestRoute(`/test`, {
       body: JSON.stringify({ foo: 'test' }),
       contentType: 'application/json',
     })
 
-    await indexPage.network.makeXHRCall('/test', {
+    await indexPage.network.makeFetchCall('/test', {
       method: 'POST',
       body: JSON.stringify({ key: 'value' }),
-      responseType: 'json',
       contentType: 'application/json',
     })
 
-    // Wait for the signals to be flushed
     await indexPage.waitForSignalsApiFlush()
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
 
-    // Check the request
     const requests = networkEvents.filter(
       (el) => el.properties!.data.action === 'request'
     )
@@ -104,7 +99,6 @@ test.describe('network signals - XHR', () => {
       data: { key: 'value' },
     })
 
-    // Check the response
     const responses = networkEvents.filter(
       (el) => el.properties!.data.action === 'response'
     )
@@ -122,19 +116,16 @@ test.describe('network signals - XHR', () => {
       contentType: 'application/json',
     })
 
-    await indexPage.network.makeXHRCall('http://localhost/test', {
+    await indexPage.network.makeFetchCall('http://localhost/test', {
       method: 'POST',
       body: 'hello world',
-      responseType: 'json',
       contentType: 'text/plain',
     })
 
-    // Wait for the signals to be flushed
     await indexPage.waitForSignalsApiFlush()
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
 
-    // Check the response (only response should be captured)
     const responses = networkEvents.filter(
       (el) => el.properties!.data.action === 'response'
     )
@@ -152,91 +143,6 @@ test.describe('network signals - XHR', () => {
     expect(requests).toHaveLength(0)
   })
 
-  test('should parse response if responseType is set to json but response header does not contain application/json', async () => {
-    await indexPage.network.mockTestRoute('http://localhost/test', {
-      body: '{"hello": "world"}',
-    })
-
-    await indexPage.network.makeXHRCall('http://localhost/test', {
-      responseType: 'json',
-      method: 'GET',
-    })
-
-    // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
-
-    // Retrieve the batch of events from the signals request
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
-
-    // Check the response
-    const responses = networkEvents.filter(
-      (el) => el.properties!.data.action === 'response'
-    )
-    expect(responses).toHaveLength(1)
-    expect(responses[0].properties!.data).toMatchObject({
-      action: 'response',
-      url: 'http://localhost/test',
-      data: { hello: 'world' },
-    })
-  })
-
-  test('can handle multiple requests with variable latency', async () => {
-    const req1URL = 'http://localhost/test/1'
-    const req2URL = 'http://localhost/test/2'
-
-    await Promise.all([
-      indexPage.network.mockTestRoute(req1URL, {
-        body: JSON.stringify({ res1: 'test' }),
-      }),
-      indexPage.network.mockTestRoute(req2URL, {
-        body: JSON.stringify({ res2: 'test' }),
-      }),
-    ])
-
-    await Promise.all([
-      indexPage.network.makeXHRCall(req1URL, {
-        method: 'POST',
-        body: JSON.stringify({ req1: 'value' }),
-        contentType: 'application/json',
-        responseType: 'json',
-        responseLatency: 300,
-      }),
-      indexPage.network.makeXHRCall(req2URL, {
-        method: 'POST',
-        body: JSON.stringify({ req2: 'value' }),
-        responseType: 'json',
-        contentType: 'application/json',
-        responseLatency: 0,
-      }),
-    ])
-
-    // Wait for the signals to be flushed
-    await indexPage.waitForSignalsApiFlush()
-
-    // Retrieve the batch of events from the signals request
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
-    // Check the request
-    const requests = networkEvents.filter(
-      (el) => el.properties!.data.action === 'request'
-    )
-    expect(requests).toHaveLength(2)
-    const request1 = requests.find((u) => u.properties!.data.url === req1URL)!
-    expect(request1).toBeDefined()
-    expect(request1.properties!.data).toMatchObject({
-      action: 'request',
-      url: req1URL,
-      data: { req1: 'value' },
-    })
-
-    const request2 = requests.find((u) => u.properties!.data.url === req2URL)!
-    expect(request2).toBeDefined()
-    expect(request2.properties!.data).toMatchObject({
-      action: 'request',
-      url: req2URL,
-      data: { req2: 'value' },
-    })
-  })
-
   test.describe('errors', () => {
     test('will handle a json error response', async () => {
       await indexPage.network.mockTestRoute('http://localhost/test', {
@@ -245,10 +151,9 @@ test.describe('network signals - XHR', () => {
         contentType: 'application/json',
       })
 
-      await indexPage.network.makeXHRCall('http://localhost/test', {
+      await indexPage.network.makeFetchCall('http://localhost/test', {
         method: 'POST',
         body: JSON.stringify({ key: 'value' }),
-        responseType: 'json', // if responseType is JSON and the API returns a non-JSON response, the response will be an empty object
         contentType: 'application/json',
       })
 
@@ -283,10 +188,9 @@ test.describe('network signals - XHR', () => {
         contentType: 'text/plain',
       })
 
-      await indexPage.network.makeXHRCall('http://localhost/test', {
+      await indexPage.network.makeFetchCall('http://localhost/test', {
         method: 'POST',
         body: JSON.stringify({ key: 'value' }),
-        responseType: 'text', // if responseType is JSON and the API returns a non-JSON response, the response will be an empty object
         contentType: 'application/json',
       })
 
@@ -313,47 +217,24 @@ test.describe('network signals - XHR', () => {
       })
       expect(responses).toHaveLength(1)
     })
+  })
 
-    test('will handle a json request and a text error response', async () => {
-      /**
-       * if the expected responseType is set to JSON and the error response is not JSON, the response will be an empty object
-       * This is a limitation of the XHR API, and the consumer is supposed to use responseType=text instead (but in practice, doesn't always)
-       **/
-      await indexPage.network.mockTestRoute('http://localhost/test', {
-        status: 400,
-        body: 'I should not be parsable',
-        contentType: 'text/plain',
-      })
-
-      await indexPage.network.makeXHRCall('http://localhost/test', {
-        method: 'POST',
-        body: JSON.stringify({ key: 'value' }),
-        responseType: 'json',
-        contentType: 'application/json',
-      })
-
-      await indexPage.waitForSignalsApiFlush()
-
-      const networkEvents = indexPage.signalsAPI.getEvents('network')
-
-      const requests = networkEvents.filter(
-        (el) => el.properties!.data.action === 'request'
-      )
-      expect(requests).toHaveLength(1)
-      expect(requests[0].properties!.data).toMatchObject({
-        action: 'request',
-        url: 'http://localhost/test',
-      })
-
-      const responses = networkEvents.filter(
-        (el) => el.properties!.data.action === 'response'
-      )
-      expect(responses[0].properties!.data).toMatchObject({
-        action: 'response',
-        url: 'http://localhost/test',
-        data: null,
-      })
-      expect(responses).toHaveLength(1)
+  test('not emit response errors if there is no corresponding request, even if correct content type', async () => {
+    await indexPage.network.mockTestRoute('http://localhost/test', {
+      body: JSON.stringify({ foo: 'test' }),
+      contentType: 'application/json',
+      status: 400,
     })
+
+    await indexPage.network.makeFetchCall('http://localhost/test', {
+      method: 'POST',
+      body: 'hello world',
+      contentType: 'text/plain',
+    })
+
+    await indexPage.waitForSignalsApiFlush()
+
+    const networkEvents = indexPage.signalsAPI.getEvents('network')
+    expect(networkEvents).toHaveLength(0)
   })
 })

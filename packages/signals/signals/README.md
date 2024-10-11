@@ -6,6 +6,32 @@
 See: [settings.ts](src/types/settings.ts)
 
 ## Quick start
+
+## Snippet Users
+```html
+<head>
+  <title>My Website</title>
+  
+  <!-- Load SignalsPlugin -->
+  <script src="https://cdn.jsdelivr.net/npm/@segment/analytics-signals@latest/dist/umd/analytics-signals.umd.js"></script>
+
+  <!-- Load Segment (copy snippet from app.segment.com)  -->
+  <script>
+    !function(){var i="analytics",analytics=window[i]...  // etc
+    analytics.load("<YOUR_WRITE_KEY>");
+    analytics.page();
+    }()
+  </script>
+
+ <!-- Register SignalsPlugin  -->
+  <script>
+    const signalsPlugin = new SignalsPlugin()
+    analytics.register(signalsPlugin)
+  </script>
+</head>
+```
+
+## `npm` Users
 ### Installation
 ```bash
 # npm
@@ -21,8 +47,9 @@ pnpm install @segment/analytics-signals
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin } from '@segment/analytics-signals'
 
-const analytics = new AnalyticsBrowser()
-const signalsPlugin = new SignalsPlugin()
+export const analytics = new AnalyticsBrowser()
+export const signalsPlugin = new SignalsPlugin()
+
 analytics.register(signalsPlugin)
 
 analytics.load({
@@ -30,7 +57,15 @@ analytics.load({
 })
 
 ```
+### Extending / Emitting Custom Signals
+```ts
+import { signalsPlugin } from './analytics' // assuming you exported your plugin instance.
 
+signalsPlugin.addSignal({
+  type: 'userDefined',
+  data: { foo: 'bar' }
+})
+```
 
 ### Debugging
 #### Enable debug mode
@@ -49,17 +84,10 @@ https://my-website.com?segment_signals_debug=false
 #### Listening to signals
 ```ts
 const signalsPlugin = new SignalsPlugin()
+
 signalsPlugin.onSignal((signal) => console.log(signal))
 ```
 
-### Emitting Signals
-```ts
-const signalsPlugin = new SignalsPlugin()
-signalsPlugin.addSignal({
-  type: 'userDefined',
-  data: { foo: 'bar' }
-})
-```
 
 ### Playground / Development / Testing
 See the [signals example repo](../signals-example).

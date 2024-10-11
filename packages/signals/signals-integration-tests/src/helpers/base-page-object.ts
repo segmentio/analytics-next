@@ -1,15 +1,17 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
-import { Page, Request } from '@playwright/test'
+import { Page } from '@playwright/test'
 import { logConsole } from './log-console'
-import { SegmentEvent } from '@segment/analytics-next'
 import { Signal, SignalsPluginSettingsConfig } from '@segment/analytics-signals'
-import { PageNetworkUtils, SignalAPIRequestBuffer } from './network-utils'
+import {
+  PageNetworkUtils,
+  SignalAPIRequestBuffer,
+  TrackingAPIRequestBuffer,
+} from './network-utils'
 
 export class BasePage {
   protected page!: Page
   public signalsAPI = new SignalAPIRequestBuffer()
-  public lastTrackingApiReq!: Request
-  public trackingApiReqs: SegmentEvent[] = []
+  public trackingAPI = new TrackingAPIRequestBuffer()
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   public edgeFn!: string
@@ -28,9 +30,7 @@ export class BasePage {
    * and wait for analytics and signals to be initialized
    */
   async loadAndWait(...args: Parameters<BasePage['load']>) {
-    await this.load(...args)
-    await this.waitForSignalsAssets()
-    return this
+    await Promise.all([this.load(...args), this.waitForSettings()])
   }
 
   /**
@@ -39,22 +39,24 @@ export class BasePage {
   async load(
     page: Page,
     edgeFn: string,
-    signalSettings: Partial<SignalsPluginSettingsConfig> = {}
+    signalSettings: Partial<SignalsPluginSettingsConfig> = {},
+    options: { updateURL?: (url: string) => string } = {}
   ) {
     logConsole(page)
     this.page = page
     this.network = new PageNetworkUtils(page)
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
-    await this.page.goto(this.url)
-    await this.invokeAnalyticsLoad(signalSettings)
+    const url = options.updateURL ? options.updateURL(this.url) : this.url
+    await this.page.goto(url)
+    void this.invokeAnalyticsLoad(signalSettings)
   }
 
   /**
    * Wait for analytics and signals to be initialized
+   * We could do the same thing with analytics.ready() and signalsPlugin.ready()
    */
-  async waitForSignalsAssets() {
-    // this is kind of an approximation of full initialization
+  async waitForSettings() {
     return Promise.all([
       this.waitForCDNSettingsResponse(),
       this.waitForEdgeFunctionResponse(),
@@ -87,7 +89,7 @@ export class BasePage {
 
   private async setupMockedRoutes() {
     // clear any existing saved requests
-    this.trackingApiReqs = []
+    this.trackingAPI.clear()
     this.signalsAPI.clear()
 
     await Promise.all([
@@ -99,11 +101,10 @@ export class BasePage {
 
   async mockTrackingApi() {
     await this.page.route('https://api.segment.io/v1/*', (route, request) => {
-      this.lastTrackingApiReq = request
-      this.trackingApiReqs.push(request.postDataJSON())
       if (request.method().toLowerCase() !== 'post') {
         throw new Error(`Unexpected method: ${request.method()}`)
       }
+      this.trackingAPI.addRequest(request)
       return route.fulfill({
         contentType: 'application/json',
         status: 201,
@@ -122,10 +123,10 @@ export class BasePage {
     await this.page.route(
       'https://signals.segment.io/v1/*',
       (route, request) => {
-        this.signalsAPI.addRequest(request)
         if (request.method().toLowerCase() !== 'post') {
           throw new Error(`Unexpected method: ${request.method()}`)
         }
+        this.signalsAPI.addRequest(request)
         return route.fulfill({
           contentType: 'application/json',
           status: 201,
@@ -241,15 +242,17 @@ export class BasePage {
     })
   }
 
-  waitForEdgeFunctionResponse() {
+  waitForEdgeFunctionResponse(timeout = 30000) {
     return this.page.waitForResponse(
-      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`
+      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`,
+      { timeout }
     )
   }
 
-  waitForCDNSettingsResponse() {
+  async waitForCDNSettingsResponse(timeout = 30000) {
     return this.page.waitForResponse(
-      'https://cdn.segment.com/v1/projects/*/settings'
+      'https://cdn.segment.com/v1/projects/*/settings',
+      { timeout }
     )
   }
 

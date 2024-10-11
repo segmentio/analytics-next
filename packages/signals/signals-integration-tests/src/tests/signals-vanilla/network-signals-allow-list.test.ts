@@ -3,14 +3,7 @@ import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
 
-const basicEdgeFn = `
-    // this is a process signal function
-    const processSignal = (signal) => {
-      if (signal.type === 'interaction') {
-        const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
-        analytics.track(eventName, signal.data)
-      }
-  }`
+const basicEdgeFn = `const processSignal = (signal) => {}`
 
 test('network signals allow and disallow list', async ({ page }) => {
   await indexPage.loadAndWait(page, basicEdgeFn, {

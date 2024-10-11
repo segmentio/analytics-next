@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await indexPage.loadAndWait(page, basicEdgeFn)
 })
 
-test('network signals', async () => {
+test('network signals fetch', async () => {
   /**
    * Make a fetch call, see if it gets sent to the signals endpoint
    */
@@ -39,7 +39,7 @@ test('network signals', async () => {
 
 test('network signals xhr', async () => {
   /**
-   * Make a fetch call, see if it gets sent to the signals endpoint
+   * Make a xhr call, see if it gets sent to the signals endpoint
    */
   await indexPage.network.mockTestRoute()
   await indexPage.network.makeXHRCall()
@@ -124,8 +124,7 @@ test('interaction signals', async () => {
     },
   })
 
-  const analyticsReqJSON = indexPage.lastTrackingApiReq.postDataJSON()
-
+  const analyticsReqJSON = indexPage.trackingAPI.lastEvent()
   expect(analyticsReqJSON).toMatchObject({
     writeKey: '<SOME_WRITE_KEY>',
     event: 'click [interaction]',

@@ -51,6 +51,10 @@ import {
 } from '../storage'
 import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 import { popPageContext } from '../buffer'
+import {
+  isSegmentPlugin,
+  SegmentIOPluginMetadata,
+} from '../../plugins/segmentio'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -81,13 +85,19 @@ export class AnalyticsInstanceSettings {
    */
   readonly cdnSettings: CDNSettings
   readonly cdnURL?: string
+  get apiHost(): string | undefined {
+    return this._getSegmentPluginMetadata?.()?.apiHost
+  }
+  private _getSegmentPluginMetadata?: () => SegmentIOPluginMetadata | undefined
 
   /**
    * Auto-track specific timeout setting for legacy purposes.
    */
   timeout = 300
 
-  constructor(settings: AnalyticsSettings) {
+  constructor(settings: AnalyticsSettings, queue: EventQueue) {
+    this._getSegmentPluginMetadata = () =>
+      queue.plugins.find(isSegmentPlugin)?.metadata
     this.writeKey = settings.writeKey
     this.cdnSettings = settings.cdnSettings ?? {
       integrations: {},
@@ -201,7 +211,7 @@ export class Analytics
     super()
     const cookieOptions = options?.cookie
     const disablePersistance = options?.disableClientPersistence ?? false
-    this.settings = new AnalyticsInstanceSettings(settings)
+
     this.queue =
       queue ??
       createDefaultQueue(
@@ -209,6 +219,7 @@ export class Analytics
         options?.retryQueue,
         disablePersistance
       )
+    this.settings = new AnalyticsInstanceSettings(settings, this.queue)
 
     const storageSetting = options?.storage
     this._universalStorage = this.createStore(

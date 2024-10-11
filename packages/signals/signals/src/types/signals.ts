@@ -35,7 +35,7 @@ type SubmitData = {
 
 type ChangeData = {
   eventType: 'change'
-  [key: string]: unknown
+  target: SerializedTarget
 }
 
 export type InteractionSignal = AppSignal<'interaction', InteractionData>
@@ -88,6 +88,8 @@ interface NetworkRequestData extends BaseNetworkData {
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
+  status: number
+  ok: boolean
 }
 
 export type NetworkData = NetworkRequestData | NetworkResponseData

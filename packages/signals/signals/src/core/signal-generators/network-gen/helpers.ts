@@ -1,3 +1,5 @@
+import { JSONArray, JSONObject } from '@segment/analytics-next'
+
 /**
  * @example example.foo.bar.com => example.com
  * @example example.foo.co.uk => example.co.uk
@@ -26,7 +28,7 @@ export const isSameDomain = (url: string): boolean => {
   return getDomainFromHost(host) === getDomainFromHost(window.location.hostname)
 }
 
-const normalizeHeaders = (headers: HeadersInit): Headers => {
+export const normalizeHeaders = (headers: HeadersInit): Headers => {
   return headers instanceof Headers ? headers : new Headers(headers)
 }
 
@@ -56,4 +58,40 @@ export const containsJSONContentType = (
   headers: HeadersInit | undefined
 ): boolean => {
   return containsContentType(headers, ['application/json'])
+}
+
+export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+  return (
+    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
+  )
+}
+
+export const isOk = (status: number) => status >= 200 && status < 300
+
+/**
+ * Safely parse JSON, if it fails, return the original text.
+ */
+export const tryJSONParse = (text: string): JSONObject | JSONArray | string => {
+  try {
+    return JSON.parse(text)
+  } catch (err) {
+    return text
+  }
+}
+
+/**
+ * Normalize the first parameter of a fetch request
+ */
+export const normalizeRequestInfo = (requestInfo: RequestInfo | URL) => {
+  if (typeof requestInfo === 'string') {
+    return requestInfo
+  } else if ('url' in requestInfo) {
+    return requestInfo.url
+  } else {
+    return requestInfo.toString()
+  }
+}
+
+export const createRequestId = () => {
+  return Math.random().toString(36).substring(3)
 }
