@@ -40,7 +40,7 @@ test('redation disabled -> will not touch the value of text input', async ({
   page,
 }) => {
   await indexPage.loadAndWait(page, basicEdgeFn, {
-    enableSignalsDebug: true,
+    enableSignalsIngestion: true,
   })
 
   await Promise.all([
