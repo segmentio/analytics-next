@@ -15,7 +15,7 @@ test('redaction enabled -> will XXX the value of text input', async ({
 
   await Promise.all([
     indexPage.fillNameInput('John Doe'),
-    indexPage.waitForSignalsApiFlush(),
+    // indexPage.waitForSignalsApiFlush(),
   ])
 
   await waitForCondition(
