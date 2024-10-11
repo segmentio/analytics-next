@@ -73,6 +73,7 @@ export class BasePage {
     await this.page.evaluate(
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
+          disableSignalsRedaction: true,
           enableSignalsIngestion: true,
           ...signalSettings,
         })
