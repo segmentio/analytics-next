@@ -10,12 +10,12 @@ test('redaction enabled -> will XXX the value of text input', async ({
   page,
 }) => {
   await indexPage.loadAndWait(page, basicEdgeFn, {
-    enableSignalsDebug: false,
+    enableSignalsDebug: true,
   })
 
   await Promise.all([
     indexPage.fillNameInput('John Doe'),
-    // indexPage.waitForSignalsApiFlush(),
+    indexPage.waitForSignalsApiFlush(),
   ])
 
   await waitForCondition(
