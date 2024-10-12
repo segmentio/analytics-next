@@ -3,7 +3,3 @@
  */
 import { SignalsPlugin } from './index'
 export { SignalsPlugin } // in case someone wants to use the umd module directly
-
-if (typeof window !== 'undefined') {
-  ;(window as any).SignalsPlugin = SignalsPlugin
-}

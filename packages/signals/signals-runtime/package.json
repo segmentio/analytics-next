@@ -24,6 +24,7 @@
     "build:editor-types": "node gen-editor-types.js",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
+    "build:global": "node build-signals-runtime-global.js",
     "watch": "yarn build:esm --watch",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
@@ -43,7 +44,6 @@
     "url": "https://github.com/segmentio/analytics-next"
   },
   "devDependencies": {
-    "@internal/config-webpack": "workspace:^",
     "@internal/test-helpers": "workspace:^",
     "dts-bundle-generator": "^9.5.1"
   }
