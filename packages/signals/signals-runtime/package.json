@@ -10,7 +10,7 @@
   "files": [
     "LICENSE",
     "dist/",
-    "dist-editor/",
+    "editor/",
     "src/",
     "!**/__tests__/**",
     "!**/test-helpers/**",
