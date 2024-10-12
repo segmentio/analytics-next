@@ -100,6 +100,7 @@ const process = async (type) => {
   // remove any comments that use // like ts-ignore, ts-nocheck etc (/* */ is OK)
   await filterLines(outFileAbs, (line) => !line.startsWith('//'))
   await removeImportExport(outFileAbs)
+  console.log(`wrote: ${outFile}`)
 }
 const main = async () => {
   const id = `Building type bundle`
