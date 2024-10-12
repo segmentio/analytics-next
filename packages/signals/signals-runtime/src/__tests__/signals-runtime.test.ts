@@ -25,6 +25,20 @@ describe(SignalsRuntime, () => {
     signalsRuntime = new SignalsRuntime<Signal>([signal1, signal2, signal3])
   })
 
+  describe('meta', () => {
+    it('should be serializable / iterable', () => {
+      const copy = { ...signalsRuntime }
+      expect(copy).toEqual({
+        find: expect.any(Function),
+        signalBuffer: expect.any(Array),
+        signalCounter: expect.any(Number),
+        getNextIndex: expect.any(Function),
+        maxBufferSize: expect.any(Number),
+        add: expect.any(Function),
+      })
+    })
+  })
+
   describe('find', () => {
     it('should find following signal based on the provided function', () => {
       const result = signalsRuntime.find(signal2, 'interaction', () => true)
