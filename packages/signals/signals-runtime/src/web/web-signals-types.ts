@@ -1,5 +1,4 @@
 import { BaseSignal, JSONValue } from '../shared/shared-types'
-import { ISignalsRuntime } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
@@ -100,5 +99,3 @@ export type Signal =
   | InstrumentationSignal
   | NetworkSignal
   | UserDefinedSignal
-
-export interface WebSignalsRuntime extends ISignalsRuntime<Signal> {}

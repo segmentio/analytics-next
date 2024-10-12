@@ -13,6 +13,11 @@ export interface ISignalsRuntime<Signal extends BaseSignal> {
     signalType: SignalType,
     predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
   ) => SignalOfType<Signal, SignalType> | undefined
+  filter: <SignalType extends Signal['type']>(
+    fromSignal: Signal,
+    signalType: SignalType,
+    predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
+  ) => SignalOfType<Signal, SignalType>[]
 }
 
 export type JSONPrimitive = string | number | boolean | null

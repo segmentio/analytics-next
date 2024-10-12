@@ -1,8 +1,9 @@
 // all import directives will be removed in the final build
-import { MobileSignalsRuntime } from './mobile-signals-types'
+import { Signal } from './mobile-signals-types'
+import { ISignalsRuntime } from './mobile-exports'
 
 // This will be appended to the generated code - dts-bundle-generator will not write declare const for whatever reason.
-declare const signals: MobileSignalsRuntime
+declare const signals: ISignalsRuntime<Signal>
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'
