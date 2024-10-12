@@ -3,11 +3,12 @@ const path = require('path')
 const fsPromises = require('fs').promises
 const util = require('util')
 const execAsync = util.promisify(exec)
+const pkgJSON = require('./package.json')
 
 async function prependGenerated(filePath) {
   const content = [
-    '/* These types will be used in the segment app UI for autocomplete */',
-    '/* eslint-disable */',
+    `// ${pkgJSON.name}@${pkgJSON.version}`,
+    '// These types will be used in the segment app UI for autocomplete',
     '\n',
   ].join('\n')
   try {
