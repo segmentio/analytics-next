@@ -39,13 +39,21 @@ export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
     signalType: SignalType,
     predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
   ): SignalOfType<Signal, SignalType> | undefined => {
+    return this.filter(fromSignal, signalType, predicate)[0]
+  }
+
+  filter = <SignalType extends Signal['type']>(
+    fromSignal: Signal,
+    signalType: SignalType,
+    predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
+  ): SignalOfType<Signal, SignalType>[] => {
     const _isSignalOfType = (
       signal: Signal
     ): signal is SignalOfType<Signal, SignalType> => signal.type === signalType
     return this.signalBuffer
       .slice(this.signalBuffer.indexOf(fromSignal) + 1)
       .filter(_isSignalOfType)
-      .find((signal) => (predicate ? predicate(signal) : () => true))
+      .filter((signal) => (predicate ? predicate(signal) : () => true))
   }
 
   // mobile only - see brandon for this code

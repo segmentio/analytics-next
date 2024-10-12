@@ -30,6 +30,7 @@ describe(SignalsRuntime, () => {
       const copy = { ...signalsRuntime }
       expect(copy).toEqual({
         find: expect.any(Function),
+        filter: expect.any(Function),
         signalBuffer: expect.any(Array),
         signalCounter: expect.any(Number),
         getNextIndex: expect.any(Function),
@@ -62,6 +63,36 @@ describe(SignalsRuntime, () => {
     it('should return the first match if predicate is not provided', () => {
       const result = signalsRuntime.find(signal1, 'interaction')
       expect(result).toEqual(signal2)
+    })
+  })
+
+  describe('filter', () => {
+    it('should filter based on the provided function', () => {
+      const result = signalsRuntime.filter(signal2, 'interaction', () => true)
+      expect(result).toEqual([signal3])
+    })
+
+    it('should return an empty array if there are no following signals that match the query', () => {
+      const result = signalsRuntime.filter(
+        signal1,
+        'instrumentation',
+        () => true
+      )
+      expect(result).toEqual([])
+    })
+
+    it('should filter based on predicate', () => {
+      const result = signalsRuntime.filter(
+        signal1,
+        'interaction',
+        (signal) => signal.data.eventType === 'change'
+      )
+      expect(result).toEqual([signal3])
+    })
+
+    it('should return all matches if predicate is not provided', () => {
+      const result = signalsRuntime.filter(signal1, 'interaction')
+      expect(result).toEqual([signal2, signal3])
     })
   })
 })
