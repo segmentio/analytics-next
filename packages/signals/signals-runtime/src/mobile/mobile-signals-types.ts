@@ -1,4 +1,4 @@
-import { BaseSignal } from '../shared/shared-types'
+import { BaseSignal, ISignalsRuntime } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
@@ -88,3 +88,5 @@ interface InstrumentationData {
 interface InstrumentationSignal extends RawSignal<'instrumentation'> {
   data: InstrumentationData
 }
+
+export interface MobileSignalsRuntime extends ISignalsRuntime<Signal> {}

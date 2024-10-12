@@ -21,7 +21,7 @@ export interface NetworkInterceptorRequest {
 
 export interface NetworkInterceptorResponse {
   url: string
-  status: number
+  statusCode: number
   ok: boolean
   statusText: string
   headers: Headers
@@ -58,7 +58,7 @@ const createInterceptorResponse = ({
   body,
   headers,
   initiator,
-  status,
+  statusCode,
   statusText,
   url,
   responseType,
@@ -67,7 +67,7 @@ const createInterceptorResponse = ({
   body: () => Promise<JSONValue>
   headers: Headers
   initiator: 'fetch' | 'xhr'
-  status: number
+  statusCode: number
   statusText: string
   url: string
   responseType: XMLHttpRequestResponseType | undefined
@@ -76,8 +76,8 @@ const createInterceptorResponse = ({
   body,
   headers,
   initiator,
-  ok: isOk(status),
-  status,
+  ok: isOk(statusCode),
+  statusCode,
   statusText,
   url,
   responseType,
@@ -161,7 +161,7 @@ export class NetworkInterceptor {
             body: lazyBody,
             headers: response.headers,
             initiator: 'fetch',
-            status: response.status,
+            statusCode: response.status,
             statusText: response.statusText,
             url: response.url,
             responseType: undefined,
@@ -240,7 +240,7 @@ export class NetworkInterceptor {
             try {
               onResponse(
                 createInterceptorResponse({
-                  status: this.status,
+                  statusCode: this.status,
                   responseType: this.responseType,
                   statusText: this.statusText,
                   url: this.responseURL,

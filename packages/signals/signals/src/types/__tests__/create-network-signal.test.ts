@@ -1,4 +1,7 @@
-import { NetworkData, NetworkSignalMetadata } from '../signals'
+import {
+  NetworkData,
+  NetworkSignalMetadata,
+} from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../../lib/normalize-url'
 import { createNetworkSignal } from '../factories'
 
@@ -57,7 +60,7 @@ describe(createNetworkSignal, () => {
       action: 'response',
       url: 'http://example.com',
       ok: true,
-      status: 200,
+      statusCode: 200,
       data: { key: 'value' },
     }
 

@@ -1,4 +1,5 @@
 import { BaseSignal, JSONValue } from '../shared/shared-types'
+import { ISignalsRuntime } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
@@ -79,6 +80,8 @@ interface NetworkRequestData extends BaseNetworkData {
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
+  statusCode: number
+  ok: boolean
 }
 
 export type NetworkData = NetworkRequestData | NetworkResponseData
@@ -97,3 +100,5 @@ export type Signal =
   | InstrumentationSignal
   | NetworkSignal
   | UserDefinedSignal
+
+export interface WebSignalsRuntime extends ISignalsRuntime<Signal> {}

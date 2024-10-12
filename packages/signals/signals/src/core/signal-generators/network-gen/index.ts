@@ -100,7 +100,7 @@ export class NetworkGenerator implements SignalGenerator {
             url,
             data: data,
             ok: rs.ok,
-            status: rs.status,
+            statusCode: rs.statusCode,
           },
           createMetadata()
         )

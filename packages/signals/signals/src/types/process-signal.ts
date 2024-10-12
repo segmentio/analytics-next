@@ -1,5 +1,4 @@
-import { ISignalsRuntime } from '@segment/analytics-signals-runtime'
-import { Signal } from './signals'
+import { WebSignalsRuntime, Signal } from '@segment/analytics-signals-runtime'
 
 /**
  * Types for the signals runtime
@@ -15,7 +14,7 @@ export interface AnalyticsRuntimePublicApi {
 
 export type ProcessSignalScope = {
   analytics: AnalyticsRuntimePublicApi
-  signals: ISignalsRuntime<Signal>
+  signals: WebSignalsRuntime
 } & typeof AnalyticsEnums
 
 export interface ProcessSignal {

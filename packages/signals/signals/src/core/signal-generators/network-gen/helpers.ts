@@ -66,7 +66,8 @@ export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
   )
 }
 
-export const isOk = (status: number) => status >= 200 && status < 300
+export const isOk = (statusCode: number) =>
+  statusCode >= 200 && statusCode < 300
 
 /**
  * Safely parse JSON, if it fails, return the original text.

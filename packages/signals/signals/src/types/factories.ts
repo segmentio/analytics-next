@@ -12,7 +12,7 @@ import {
   NetworkSignalMetadata,
   NetworkSignal,
   SegmentEvent,
-} from './signals'
+} from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../lib/normalize-url'
 
 /**

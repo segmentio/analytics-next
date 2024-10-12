@@ -7,7 +7,8 @@ import {
   SignalGenerator,
   SignalGeneratorClass,
 } from '../signal-generators/types'
-import { AnyAnalytics, Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { AnyAnalytics } from '../../types'
 import { registerGenerator } from '../signal-generators/register'
 import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
