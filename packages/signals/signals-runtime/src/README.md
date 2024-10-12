@@ -3,9 +3,8 @@ Encapsults Signals runtime functionality, in order to share logic between the si
 
 ### Development
 `yarn build` generate the following artifacts:
-| Artifact | Description | 
+| Generated File(s) | Description | 
 |--------|-------------|
-|  `/dist/cjs/index.js` | For npm library users |
-| `/dist/esm/index.js` | For npm library users | 
-| `/dist/global/index.js`  | Bundle that `globalThis.SignalsRuntime` | 
-| `./dist/global/editor/*.d.ts` | Runtime artifacts for powering autocomplete on app.segment.com |
+| `/dist/esm/index.js` | For `@segment/analytics-signals` to consume | 
+| `/dist/global/index.js`  |  Exposes `globalThis.SignalsRuntime`, either through the script tag or in the mobile JS engine. | 
+| `/dist/editor/*.d.ts` | Runtime artifacts for powering autocomplete on app.segment.com |
