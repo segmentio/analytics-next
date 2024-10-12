@@ -10,7 +10,7 @@ module.exports = merge(common, {
     'analytics-onetrust.umd': {
       import: path.resolve(__dirname, 'src/index.umd.ts'),
       library: {
-        name: 'AnalyticsOneTrust',
+        name: 'SignalsRuntime',
         type: 'umd',
       },
     },
