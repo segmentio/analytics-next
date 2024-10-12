@@ -1,9 +1,9 @@
 import { logger } from '../../lib/logger'
 import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
-import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
+import { AnalyticsRuntimePublicApi, AnalyticsEnums } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import { SignalsRuntime } from '@segment/analytics-signals-runtime'
+import { SignalsRuntime, Signal } from '@segment/analytics-signals-runtime'
 
 export type MethodName =
   | 'page'

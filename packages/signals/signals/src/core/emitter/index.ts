@@ -1,6 +1,6 @@
 import { Emitter } from '@segment/analytics-generic-utils'
 import { logger } from '../../lib/logger'
-import { Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 
 export interface EmitSignal {
   emit: (signal: Signal) => void

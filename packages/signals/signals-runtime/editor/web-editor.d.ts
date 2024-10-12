@@ -18,10 +18,12 @@ type JSONObject = {
 };
 type JSONArray = JSONValue[];
 interface SegmentEvent {
-	type: EventType;
-	[key: string]: any;
+	/**
+	 * @example 'track' | 'page' | 'screen' | 'identify' | 'group' | 'alias'
+	 */
+	type: string;
+	[key: string]: unknown;
 }
-type EventType = "track" | "page" | "screen" | "identify" | "group" | "alias";
 type SignalTypes = Signal["type"];
 interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
 	type: T;
@@ -80,6 +82,8 @@ interface NetworkRequestData extends BaseNetworkData {
 interface NetworkResponseData extends BaseNetworkData {
 	action: "response";
 	url: string;
+	statusCode: number;
+	ok: boolean;
 }
 type NetworkData = NetworkRequestData | NetworkResponseData;
 type NetworkSignal = RawSignal<"network", NetworkData>;
@@ -88,10 +92,12 @@ interface UserDefinedSignalData {
 }
 type UserDefinedSignal = RawSignal<"userDefined", UserDefinedSignalData>;
 type Signal = InteractionSignal | NavigationSignal | InstrumentationSignal | NetworkSignal | UserDefinedSignal;
+interface WebSignalsRuntime extends ISignalsRuntime<Signal> {
+}
 
 
 
-declare const signals: ISignalsRuntime<Signal>
+declare const signals: WebSignalsRuntime
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'

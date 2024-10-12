@@ -18,10 +18,12 @@ type JSONObject = {
 };
 type JSONArray = JSONValue[];
 interface SegmentEvent {
-	type: EventType;
-	[key: string]: any;
+	/**
+	 * @example 'track' | 'page' | 'screen' | 'identify' | 'group' | 'alias'
+	 */
+	type: string;
+	[key: string]: unknown;
 }
-type EventType = "track" | "page" | "screen" | "identify" | "group" | "alias";
 type SignalTypes = Signal["type"];
 type NavigationAction = "forward" | "backward" | "modal" | "entering" | "leaving" | "page" | "popup";
 type NetworkAction = "request" | "response";
@@ -57,7 +59,6 @@ interface NetworkData {
 }
 interface NetworkSignal extends RawSignal<"network"> {
 	data: NetworkData;
-	[key: string]: unknown;
 }
 interface LocalData {
 	action: LocalDataAction;
@@ -76,6 +77,8 @@ interface InstrumentationData {
 }
 interface InstrumentationSignal extends RawSignal<"instrumentation"> {
 	data: InstrumentationData;
+}
+interface MobileSignalsRuntime extends ISignalsRuntime<Signal> {
 }
 
 

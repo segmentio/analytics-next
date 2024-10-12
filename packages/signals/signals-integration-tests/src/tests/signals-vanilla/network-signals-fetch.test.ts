@@ -54,9 +54,10 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'request'
     )
     expect(requests).toHaveLength(1)
-    expect(requests[0].properties!.data).toMatchObject({
+    expect(requests[0].properties!.data).toEqual({
       action: 'request',
       url: 'http://localhost/test',
+      method: 'POST',
       data: { key: 'value' },
     })
 
@@ -64,10 +65,12 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'response'
     )
     expect(responses).toHaveLength(1)
-    expect(responses[0].properties!.data).toMatchObject({
+    expect(responses[0].properties!.data).toEqual({
       action: 'response',
       url: 'http://localhost/test',
       data: { foo: 'test' },
+      statusCode: 200,
+      ok: true,
     })
   })
 
@@ -176,6 +179,8 @@ test.describe('network signals - fetch', () => {
         action: 'response',
         url: 'http://localhost/test',
         data: { errorMsg: 'foo' },
+        statusCode: 400,
+        ok: false,
       })
       expect(responses).toHaveLength(1)
     })
@@ -213,6 +218,8 @@ test.describe('network signals - fetch', () => {
         action: 'response',
         url: 'http://localhost/test',
         data: 'foo',
+        statusCode: 400,
+        ok: false,
       })
       expect(responses).toHaveLength(1)
     })
