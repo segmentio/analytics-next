@@ -10,8 +10,8 @@
   "files": [
     "LICENSE",
     "dist/",
+    "dist-editor/",
     "src/",
-    "editor/",
     "!**/__tests__/**",
     "!**/test-helpers/**",
     "!*.tsbuildinfo"

@@ -86,7 +86,7 @@ async function generateDtsBundle(outFile, type) {
 
 const process = async (type) => {
   console.log(`generating ${type} bundle...`)
-  const outFile = `dist/editor/${type}-editor.d.ts`
+  const outFile = `editor/${type}-editor.d.ts`
   await generateDtsBundle(outFile, type)
   const outFileAbs = path.join(__dirname, outFile)
   await prependGenerated(outFileAbs)
