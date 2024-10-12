@@ -83,7 +83,7 @@ interface MobileSignalsRuntime extends ISignalsRuntime<Signal> {
 
 
 
-declare const signals: ISignalsRuntime<Signal>
+declare const signals: MobileSignalsRuntime
 declare const SignalType: {
   Interaction: 'interaction'
   Navigation: 'navigation'
