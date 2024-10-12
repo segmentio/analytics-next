@@ -3,6 +3,7 @@ import {
   InteractionSignal,
   SignalsRuntime,
   Signal,
+  WebSignalsRuntime,
 } from '../index'
 import {
   mockInstrumentationSignal,
@@ -10,7 +11,7 @@ import {
 } from '../test-helpers/mocks/mock-signal-types-web'
 
 describe(SignalsRuntime, () => {
-  let signalsRuntime: SignalsRuntime<Signal>
+  let signalsRuntime: WebSignalsRuntime
   let signal1: InstrumentationSignal
   let signal2: InteractionSignal
   let signal3: InteractionSignal

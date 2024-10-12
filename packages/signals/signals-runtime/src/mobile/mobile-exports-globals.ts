@@ -11,16 +11,16 @@ declare const SignalType: {
   Instrumentation: 'instrumentation'
   UserDefined: 'userDefined'
 }
-declare const EventType: {
+declare const EventType: Readonly<{
   Track: 'track'
   Page: 'page'
   Screen: 'screen'
   Identify: 'identify'
   Group: 'group'
   Alias: 'alias'
-}
+}>
 
-declare const NavigationAction: {
+declare const NavigationAction: Readonly<{
   Forward: 'forward'
   Backward: 'backward'
   Modal: 'modal'
@@ -28,7 +28,7 @@ declare const NavigationAction: {
   Leaving: 'leaving'
   Page: 'page'
   Popup: 'popup'
-}
+}>
 
 declare const NetworkAction: Readonly<{
   Request: 'request'
