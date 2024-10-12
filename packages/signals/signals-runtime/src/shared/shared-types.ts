@@ -7,6 +7,9 @@ export type SignalOfType<
   SignalType extends AllSignals['type']
 > = AllSignals & { type: SignalType }
 
+/**
+ * Interface for the Signals class (accessible via `signals` in the processSignal scope).
+ */
 export interface ISignalsRuntime<Signal extends BaseSignal> {
   /**
    * Finds a signal of a specific type from a given signal.
