@@ -7,8 +7,9 @@ const pkgJSON = require('./package.json')
 
 async function prependGenerated(filePath) {
   const content = [
-    `// ${pkgJSON.name}@${pkgJSON.version}`,
-    '// These types will be used in the segment app UI for autocomplete',
+    '/* These types will be used in the segment app UI for autocomplete */',
+    `/* Generated from: ${pkgJSON.name}@${pkgJSON.version} */`,
+    '/* eslint-disable */',
     '\n',
   ].join('\n')
   try {
