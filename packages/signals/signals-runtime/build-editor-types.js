@@ -7,6 +7,7 @@ async function prependGenerated(filePath) {
     '/* eslint-disable */',
     '// These types will be used in the segment app UI for autocomplete',
     `// Generated from: ${pkgJSON.name}@${pkgJSON.version}`,
+    '// Built as text so they do not cause global scope pollution for packages importing unrelated modules',
     '\n',
   ].join('\n')
   try {
@@ -38,7 +39,10 @@ const main = async () => {
   // eslint-disable-next-line no-undef
   execSync('npx api-extractor run --config ./api-extractor.mobile.json --local')
   execSync('npx api-extractor run --config ./api-extractor.web.json --local')
-  const outputs = ['./editor/web-editor.d.ts', './editor/mobile-editor.d.ts']
+  const outputs = [
+    './dist/editor/web-editor.d.ts.txt',
+    './dist/editor/mobile-editor.d.ts.txt',
+  ]
   await Promise.all(outputs.map(removeExports))
   await Promise.all(outputs.map(prependGenerated))
   console.log('wrote:', outputs.join(', '))

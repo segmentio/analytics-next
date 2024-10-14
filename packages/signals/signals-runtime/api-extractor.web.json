@@ -3,6 +3,6 @@
   "mainEntryPointFilePath": "./dist/types/web/index.web-editor.d.ts",
   "dtsRollup": {
     "enabled": true,
-    "untrimmedFilePath": "./editor/web-editor.d.ts"
+    "untrimmedFilePath": "./dist/editor/web-editor.d.ts.txt"
   }
 }
