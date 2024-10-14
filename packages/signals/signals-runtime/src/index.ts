@@ -5,9 +5,9 @@ export { SignalsRuntime } from './shared/signals-runtime'
 export * from './web/web-signals-types'
 export * from './shared/shared-types'
 export * as WebRuntimeConstants from './web/web-constants'
+export { RuntimeString as WebRuntimeString } from './web/get-runtime-string'
 
 // mobile
 export * as Mobile from './mobile/mobile-signals-types'
 export * as MobileRuntimeConstants from './mobile/mobile-constants'
-export { RuntimeString as WebRuntimeString } from './web/get-runtime-string'
 export { RuntimeString as MobileRuntimeString } from './mobile/get-runtime-string'
