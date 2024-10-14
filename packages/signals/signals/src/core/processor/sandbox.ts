@@ -1,9 +1,11 @@
 import { logger } from '../../lib/logger'
 import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
-import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
-import { createSignalsRuntime } from './signals-runtime'
+import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { getRuntimeCode } from '@segment/analytics-signals-runtime'
+import { polyfills } from './polyfills'
 
 export type MethodName =
   | 'page'
@@ -207,13 +209,13 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
-      ...AnalyticsEnums,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
+      polyfills,
       await this.settings.processSignal,
-      `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
-      `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
+      getRuntimeCode(),
+      `signals.signalBuffer = ${JSON.stringify(signals)};`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',

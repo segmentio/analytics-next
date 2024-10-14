@@ -1,9 +1,9 @@
 import {
-  createNetworkSignal,
   NetworkData,
   NetworkSignalMetadata,
-} from '../signals'
+} from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../../lib/normalize-url'
+import { createNetworkSignal } from '../factories'
 
 jest.mock('../../lib/normalize-url', () => ({
   normalizeUrl: jest.fn((url) => url),
@@ -60,7 +60,7 @@ describe(createNetworkSignal, () => {
       action: 'response',
       url: 'http://example.com',
       ok: true,
-      status: 200,
+      statusCode: 200,
       data: { key: 'value' },
     }
 
@@ -74,7 +74,7 @@ describe(createNetworkSignal, () => {
             "key": "value",
           },
           "ok": true,
-          "status": 200,
+          "statusCode": 200,
           "url": "http://example.com",
         },
         "metadata": {

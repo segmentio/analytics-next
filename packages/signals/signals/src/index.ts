@@ -4,10 +4,9 @@
  */
 export { SignalsPlugin } from './plugin/signals-plugin'
 export { Signals } from './core/signals'
-
+export type { Signal } from '@segment/analytics-signals-runtime'
 export type {
   ProcessSignal,
   AnalyticsRuntimePublicApi,
   SignalsPluginSettingsConfig,
-  Signal,
 } from './types'

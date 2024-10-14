@@ -1,5 +1,6 @@
 import { logger } from '../../lib/logger'
-import { AnyAnalytics, Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { AnyAnalytics } from '../../types'
 import { MethodName, Sandbox } from './sandbox'
 
 export class SignalEventProcessor {

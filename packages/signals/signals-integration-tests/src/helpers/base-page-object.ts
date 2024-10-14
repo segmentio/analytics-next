@@ -31,6 +31,7 @@ export class BasePage {
    */
   async loadAndWait(...args: Parameters<BasePage['load']>) {
     await Promise.all([this.load(...args), this.waitForSettings()])
+    return this
   }
 
   /**
@@ -48,8 +49,12 @@ export class BasePage {
     this.edgeFn = edgeFn
     await this.setupMockedRoutes()
     const url = options.updateURL ? options.updateURL(this.url) : this.url
-    await this.page.goto(url)
-    void this.invokeAnalyticsLoad(signalSettings)
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' })
+    void this.invokeAnalyticsLoad({
+      flushInterval: 500,
+      ...signalSettings,
+    })
+    return this
   }
 
   /**

@@ -39,12 +39,13 @@
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
-    "concurrently": "yarn run -T concurrently --raw",
+    "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest",
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
     "@segment/analytics-generic-utils": "1.2.0",
+    "@segment/analytics-signals-runtime": "0.0.0",
     "idb": "^8.0.0",
     "tslib": "^2.4.1"
   },

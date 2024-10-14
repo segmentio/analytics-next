@@ -150,7 +150,7 @@ describe(NetworkGenerator, () => {
                 "data": "test",
               },
               "ok": true,
-              "status": 200,
+              "statusCode": 200,
               "url": "http://localhost/api",
             },
             "metadata": {
@@ -213,7 +213,7 @@ describe(NetworkGenerator, () => {
             "data": "test",
           },
           "ok": true,
-          "status": 200,
+          "statusCode": 200,
           "url": "http://localhost/test",
         },
         "metadata": {

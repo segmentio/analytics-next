@@ -3,7 +3,7 @@ import {
   NetworkSignalsFilter,
   NetworkSignalsFilterList,
 } from './network-signals-filter'
-import { createNetworkSignal } from '../../../types'
+import { createNetworkSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalsSettingsConfig } from '../../signals'
 import { SignalGenerator } from '../types'
@@ -100,7 +100,7 @@ export class NetworkGenerator implements SignalGenerator {
             url,
             data: data,
             ok: rs.ok,
-            status: rs.status,
+            statusCode: rs.statusCode,
           },
           createMetadata()
         )
