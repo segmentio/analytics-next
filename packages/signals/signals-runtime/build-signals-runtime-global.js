@@ -9,8 +9,8 @@ const getBanner = (entryPoint) => {
   return content
 }
 const entryPoints = {
-  mobile: './src/mobile/index.global.ts',
-  web: './src/web/index.global.ts',
+  mobile: './src/mobile/index.signals-runtime.ts',
+  web: './src/web/index.signals-runtime.ts',
 }
 
 const buildAll = async () => {
