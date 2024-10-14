@@ -1,4 +1,4 @@
-import { NetworkSignalMetadata } from '../../../types'
+import { NetworkSignalMetadata } from '@segment/analytics-signals-runtime'
 import * as factories from '../../../types/factories'
 import { redactJsonValues, redactSignalData } from '../redact'
 
