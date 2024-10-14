@@ -10,10 +10,11 @@ export * as WebRuntimeConstants from './web/web-constants'
 export * as Mobile from './mobile/mobile-signals-types'
 export * as MobileRuntimeConstants from './mobile/mobile-constants'
 
-// @ts-ignore - hacky feeling AF
+// Signals runtime as strings for the sandbox
+// @ts-ignore
 import { getWebRuntimeString as getWebStr } from '../../dist/global/get-runtime-string.web'
 export const getWebRuntimeString: () => string = getWebStr
 
-// @ts-ignore - hacky feeling AF (maybe a better way would be generating the file into src, but that requires committing it :-/)
+// @ts-ignore
 import { getMobileRuntimeString as getMobStr } from '../../dist/global/get-runtime-string.mobile'
 export const getMobileRuntimeString: () => string = getMobStr
