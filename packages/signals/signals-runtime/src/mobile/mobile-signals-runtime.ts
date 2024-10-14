@@ -1,7 +1,7 @@
 import { SignalsRuntime } from '../shared/signals-runtime'
 import { Signal } from './mobile-signals-types'
 
-export class Signals extends SignalsRuntime<Signal> {
+export class MobileSignalsRuntime extends SignalsRuntime<Signal> {
   // mobile only
   private signalCounter: number
   // mobile only

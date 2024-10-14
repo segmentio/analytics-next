@@ -1,6 +1,7 @@
-import { Signals } from './web-signals-runtime'
+import { WebSignalsRuntime } from './web-signals-runtime'
+export { WebSignalsRuntime }
 
-export const signals = new Signals()
+export const signals = new WebSignalsRuntime()
 
 /**
  * Entry point for the editor definitions
@@ -8,4 +9,3 @@ export const signals = new Signals()
 export * from './web-signals-types'
 export * from '../shared/shared-types'
 export * from './web-constants'
-export * from './web-signals-runtime'

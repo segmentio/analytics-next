@@ -1,5 +1,7 @@
-import { Signals } from './mobile-signals-runtime'
-export const signals = new Signals()
+import { MobileSignalsRuntime } from './mobile-signals-runtime'
+export { MobileSignalsRuntime }
+
+export const signals = new MobileSignalsRuntime()
 
 /**
  * Entry point for the editor definitions
@@ -7,4 +9,3 @@ export const signals = new Signals()
 export * from './mobile-signals-types'
 export * from '../shared/shared-types'
 export * from './mobile-constants'
-export * from './mobile-signals-runtime'

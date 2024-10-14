@@ -1,11 +1,13 @@
 import * as Constants from './mobile-constants'
-import { Signals } from './mobile-signals-runtime'
+import { MobileSignalsRuntime } from './mobile-signals-runtime'
 
 // assign SignalsRuntime and all constants to globalThis
+// meant to replace this:
+// https://github.com/segmentio/SignalsJS-Runtime/blob/main/Runtime/Signals.js
 Object.assign(
   globalThis,
   {
-    Signals,
+    signals: new MobileSignalsRuntime(),
   },
   Constants
 )
