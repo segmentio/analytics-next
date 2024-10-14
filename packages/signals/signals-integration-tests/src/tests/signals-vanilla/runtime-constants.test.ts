@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
 
 test('constants should be accessible in the runtime', async () => {
   /**
-   * Make a button click, see if it:
+   * Make a button click, see ifdom.window.NavigationAction.URLChange it:
    * - creates an interaction signal that sends to the signals endpoint
    * - creates an analytics event that sends to the tracking endpoint
    */
