@@ -10,7 +10,7 @@ export * as WebRuntimeConstants from './web/web-constants'
 export * as Mobile from './mobile/mobile-signals-types'
 export * as MobileRuntimeConstants from './mobile/mobile-constants'
 
-// Signals runtime as strings for the sandbox
+// Signals runtime as strings for the sandbox -- these files are built outside of tsc, using the esbuild script.
 // @ts-ignore
 import { getWebRuntimeString as getWebStr } from '../../dist/global/get-runtime-string.web'
 export const getWebRuntimeString: () => string = getWebStr
