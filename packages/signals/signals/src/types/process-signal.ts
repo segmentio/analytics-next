@@ -1,4 +1,8 @@
-import { ISignalsRuntime, Signal } from '@segment/analytics-signals-runtime'
+import {
+  ISignalsRuntime,
+  Signal,
+  WebConstants,
+} from '@segment/analytics-signals-runtime'
 
 /**
  * Types for the signals runtime
@@ -15,31 +19,8 @@ export interface AnalyticsRuntimePublicApi {
 export type ProcessSignalScope = {
   analytics: AnalyticsRuntimePublicApi
   signals: ISignalsRuntime<Signal>
-} & typeof AnalyticsEnums
+} & typeof WebConstants
 
 export interface ProcessSignal {
   (signal: Signal, ctx: ProcessSignalScope): void
-}
-
-export const AnalyticsEnums = {
-  SignalType: Object.freeze({
-    Interaction: 'interaction',
-    Navigation: 'navigation',
-    Network: 'network',
-    LocalData: 'localData',
-    Instrumentation: 'instrumentation',
-    UserDefined: 'userDefined',
-  }),
-  EventType: Object.freeze({
-    Track: 'track',
-    Page: 'page',
-    Screen: 'screen',
-    Identify: 'identify',
-    Group: 'group',
-    Alias: 'alias',
-  }),
-  NavigationAction: Object.freeze({
-    URLChange: 'urlChange',
-    PageLoad: 'pageLoad',
-  }),
 }

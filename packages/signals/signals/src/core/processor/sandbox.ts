@@ -1,9 +1,13 @@
 import { logger } from '../../lib/logger'
 import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
-import { AnalyticsRuntimePublicApi, AnalyticsEnums } from '../../types'
+import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import { SignalsRuntime, Signal } from '@segment/analytics-signals-runtime'
+import {
+  SignalsRuntime,
+  Signal,
+  WebConstants,
+} from '@segment/analytics-signals-runtime'
 
 export type MethodName =
   | 'page'
@@ -207,7 +211,7 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
-      ...AnalyticsEnums,
+      ...WebConstants,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
