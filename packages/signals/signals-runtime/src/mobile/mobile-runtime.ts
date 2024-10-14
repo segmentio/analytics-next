@@ -1,7 +1,7 @@
-import { Signal } from './mobile-signals-types'
-import { ISignalsRuntime } from '../shared/shared-types'
+import { SignalsRuntime } from '../shared/signals-runtime'
 
-declare const signals: ISignalsRuntime<Signal>
+export const signals = new SignalsRuntime()
+
 // all import directives will be removed in the final build
 export const SignalType = Object.freeze({
   Interaction: 'interaction',

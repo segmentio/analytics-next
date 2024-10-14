@@ -9,13 +9,6 @@ import {
  * @param AnySignal - Type of signals
  * @param signals - List of signals, with the most recent signals first (LIFO).
  * @returns SignalsRuntime object
- * @example
- * type MobileSignal = NavigationSignal | InteractionSignal | SomeOtherMobileSpecificSignal
- * const signalsRuntime = new SignalsRuntime<MobileSignal>([])
- * signalsRuntime.add({
- *  index: 0,
- *  type: 'foo'
- * })
  */
 export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
   implements ISignalsRuntime<Signal>
@@ -26,7 +19,7 @@ export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
   // mobile only - see brandon for this code
   private maxBufferSize: number
 
-  constructor(signals: Signal[]) {
+  constructor(signals: Signal[] = []) {
     // initial signals
     this.signalBuffer = signals
     // mobile only -- see brandon for this code

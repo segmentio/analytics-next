@@ -1,9 +1,9 @@
 // all import directives will be removed in the final build
-import { Signal } from './web-exports'
-import { ISignalsRuntime } from '../shared/shared-types'
+import { SignalsRuntime } from '../shared/signals-runtime'
 
 // This will be appended to the generated code - dts-bundle-generator will not write declare const for whatever reason.
-declare const signals: ISignalsRuntime<Signal>
+export const signals = new SignalsRuntime()
+
 export const EventType = Object.freeze({
   Track: 'track',
   Page: 'page',
