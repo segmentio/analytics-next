@@ -6,7 +6,7 @@ describe('Global Scope Test', () => {
   let dom: JSDOM
   beforeAll(() => {
     // Load the built file
-    const filePath = path.resolve(__dirname, '../dist/global/index.js')
+    const filePath = path.resolve(__dirname, '../dist/global/index.mobile.js')
     const scriptContent = fs.readFileSync(filePath, 'utf-8')
 
     // Create a new JSDOM instance
@@ -26,5 +26,11 @@ describe('Global Scope Test', () => {
     expect(dom.window).toBeDefined()
     // @ts-ignore
     expect(typeof dom.window.SignalsRuntime).toBe('function')
+  })
+
+  test('should expose navigation actions', () => {
+    expect(dom.window.EventType.Track).toBe('track')
+    expect(dom.window.NavigationAction.URLChange).toBe('urlChange')
+    expect(dom.window.SignalType.Interaction).toBe('interaction')
   })
 })
