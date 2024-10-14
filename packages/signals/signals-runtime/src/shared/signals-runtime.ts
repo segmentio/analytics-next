@@ -1,8 +1,4 @@
-import {
-  BaseSignal,
-  SignalOfType,
-  ISignalsRuntime,
-} from '../shared/shared-types'
+import { BaseSignal, SignalOfType } from '../shared/shared-types'
 
 /**
  * Base class that provides runtime utilities for signals.

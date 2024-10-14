@@ -22,8 +22,8 @@ const getEntryPoint = (platform) => {
 }
 
 const getOutFiles = (platform) => {
-  const outfileMinified = `./dist/global/index.${platform}.min.js`
-  const outfileUnminified = `./dist/global/index.${platform}.js`
+  const outfileMinified = `./dist/runtime/index.${platform}.min.js`
+  const outfileUnminified = `./dist/runtime/index.${platform}.js`
   return {
     outfileMinified,
     outfileUnminified,

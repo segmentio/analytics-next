@@ -6,7 +6,7 @@ describe('Global Scope Test: Web', () => {
   let dom: JSDOM
   beforeAll(() => {
     // Load the built file
-    const filePath = path.resolve(__dirname, '../dist/global/index.web.js')
+    const filePath = path.resolve(__dirname, '../dist/runtime/index.web.js')
     const scriptContent = fs.readFileSync(filePath, 'utf-8')
 
     // Create a new JSDOM instance
@@ -39,7 +39,7 @@ describe('Global Scope Test: Mobile', () => {
   let dom: JSDOM
   beforeAll(() => {
     // Load the built file
-    const filePath = path.resolve(__dirname, '../dist/global/index.mobile.js')
+    const filePath = path.resolve(__dirname, '../dist/runtime/index.mobile.js')
     const scriptContent = fs.readFileSync(filePath, 'utf-8')
 
     // Create a new JSDOM instance
