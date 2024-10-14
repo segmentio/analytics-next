@@ -1,10 +1,3 @@
-import { SignalsRuntime } from '../shared/signals-runtime'
-import { ISignalsRuntime } from './index.mobile-editor'
-import { Signal } from './mobile-signals-types'
-
-export type Signals = ISignalsRuntime<Signal>
-export const signals: Signals = new SignalsRuntime<Signal>()
-
 export const SignalType = Object.freeze({
   Interaction: 'interaction',
   Navigation: 'navigation',

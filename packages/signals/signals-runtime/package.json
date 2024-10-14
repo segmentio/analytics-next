@@ -21,7 +21,7 @@
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
-    "build:editor-types": "node gen-editor-types.js",
+    "build:editor-types": "node build-editor-types.js",
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:global": "node build-signals-runtime-global.js",
@@ -45,7 +45,6 @@
   },
   "devDependencies": {
     "@internal/test-helpers": "workspace:^",
-    "@microsoft/api-extractor": "^7.47.9",
-    "dts-bundle-generator": "^9.5.1"
+    "@microsoft/api-extractor": "^7.47.9"
   }
 }
