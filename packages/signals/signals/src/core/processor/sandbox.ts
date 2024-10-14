@@ -4,9 +4,7 @@ import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
 import { Signal } from '@segment/analytics-signals-runtime'
-
-// @ts-ignore
-import { getWebRuntimeString } from '@segment/analytics-signals-runtime/dist/global/get-runtime-string.web'
+import { getWebRuntimeString } from '@segment/analytics-signals-runtime'
 
 export type MethodName =
   | 'page'
