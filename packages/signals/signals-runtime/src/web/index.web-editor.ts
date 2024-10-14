@@ -1,14 +1,11 @@
-// all import directives will be removed in the final build
-import { SignalsRuntime } from '../shared/signals-runtime'
-import { ISignalsRuntime } from '../shared/shared-types'
-import { Signal } from './web-signals-types'
+import { Signals } from './web-signals-runtime'
 
-export type Signals = ISignalsRuntime<Signal>
-export const signals: Signals = new SignalsRuntime<Signal>()
+export const signals = new Signals()
 
 /**
- * Entry point for the definitions
+ * Entry point for the editor definitions
  */
 export * from './web-signals-types'
 export * from '../shared/shared-types'
 export * from './web-constants'
+export * from './web-signals-runtime'

@@ -1,4 +1,4 @@
-import { SignalsRuntime as Signals } from '../shared/signals-runtime'
+import { Signals } from './web-signals-runtime'
 import * as Constants from '../web/web-constants'
 
 // assign SignalsRuntime and all constants to globalThis

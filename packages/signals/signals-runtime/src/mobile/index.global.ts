@@ -1,5 +1,5 @@
-import { SignalsRuntime as Signals } from '../shared/signals-runtime'
-import * as Constants from '../web/web-constants'
+import * as Constants from './mobile-constants'
+import { Signals } from './mobile-signals-runtime'
 
 // assign SignalsRuntime and all constants to globalThis
 Object.assign(

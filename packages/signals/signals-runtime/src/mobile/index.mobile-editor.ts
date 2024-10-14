@@ -1,13 +1,10 @@
-import { SignalsRuntime } from '../shared/signals-runtime'
-import { ISignalsRuntime } from './index.mobile-editor'
-import { Signal } from './mobile-signals-types'
+import { Signals } from './mobile-signals-runtime'
+export const signals = new Signals()
 
-export type Signals = ISignalsRuntime<Signal>
-export const signals: Signals = new SignalsRuntime<Signal>()
 /**
- * This is the public API for this package.
- * We avoid using splat (*) exports so that we can control what is exposed.
+ * Entry point for the editor definitions
  */
 export * from './mobile-signals-types'
 export * from '../shared/shared-types'
 export * from './mobile-constants'
+export * from './mobile-signals-runtime'

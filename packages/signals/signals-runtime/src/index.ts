@@ -9,3 +9,5 @@ export * as WebRuntimeConstants from './web/web-constants'
 // mobile
 export * as Mobile from './mobile/mobile-signals-types'
 export * as MobileRuntimeConstants from './mobile/mobile-constants'
+
+export * from './web/get-runtime-string'

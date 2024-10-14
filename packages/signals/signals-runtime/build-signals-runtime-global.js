@@ -17,6 +17,7 @@ const buildAll = async () => {
   for (const [type, entryPoint] of Object.entries(entryPoints)) {
     const outfileMinified = `./dist/global/index.${type}.min.js`
     const outfileUnminified = `./dist/global/index.${type}.js`
+    const outHelperFileUnminified = `./dist/global/get-runtime-string.${type}.js`
     try {
       // Build minified version
       await esbuild.build({
@@ -37,6 +38,20 @@ const buildAll = async () => {
         banner: { js: getBanner(entryPoint) },
       })
       console.log(`wrote: ${outfileUnminified}`)
+
+      esbuild
+        .build({
+          entryPoints: [`src/${type}/get-runtime-string.ts`], // Entry point for getFoo.ts
+          bundle: true,
+          outfile: outHelperFileUnminified, // Output to dist folder
+          platform: 'browser', // Browser environment
+          target: ['esnext'],
+          loader: {
+            '.js': 'text', // Load foo.js as a string
+          },
+          format: 'esm', // ESM format
+        })
+        .catch(() => process.exit(1))
     } catch (err) {
       console.error(err)
       process.exit(1)

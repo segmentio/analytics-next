@@ -3,11 +3,10 @@ import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import {
-  SignalsRuntime,
-  Signal,
-  WebRuntimeConstants,
-} from '@segment/analytics-signals-runtime'
+import { Signal } from '@segment/analytics-signals-runtime'
+
+// @ts-ignore
+import { getWebRuntimeString } from '@segment/analytics-signals-runtime/dist/global/get-runtime-string.web'
 
 export type MethodName =
   | 'page'
@@ -211,13 +210,12 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
-      ...WebRuntimeConstants,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
       await this.settings.processSignal,
-      `${SignalsRuntime.toString()}`,
-      `const signals = new SignalsRuntime(${JSON.stringify(signals)})`,
+      `${getWebRuntimeString()}`,
+      `const signals = new Signals(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
