@@ -17,21 +17,16 @@ async function prependGenerated(filePath) {
   }
 }
 
-async function removeImportExport(filePath) {
-  const data = await fsPromises.readFile(filePath, { encoding: 'utf-8' })
-
-  await fsPromises.writeFile(filePath, data, {
-    encoding: 'utf-8',
-  })
-}
-
 // https://github.com/microsoft/rushstack/issues/1601
 async function removeExports(filePath) {
   try {
     const data = await fsPromises.readFile(filePath, 'utf8')
-    // Regex to remove 'export { }' statements
-    let result = data.replace(/export\s+\{\s*\};?/g, '')
-    result = data.replace('export ', '')
+    // Remove 'export { }' lines and any instance of the word 'export'
+    let result = data
+      .split('\n')
+      .filter((line) => line.trim() !== 'export { }') // Remove lines that are exactly 'export { }'
+      .map((line) => line.replace(/\bexport\b/g, '')) // Remove any instance of the word 'export'
+      .join('\n')
     await fsPromises.writeFile(filePath, result, 'utf8')
   } catch (error) {
     console.error(`Error exports: ${error}`)
@@ -44,9 +39,8 @@ const main = async () => {
   execSync('npx api-extractor run --config ./api-extractor.mobile.json --local')
   execSync('npx api-extractor run --config ./api-extractor.web.json --local')
   const outputs = ['./editor/web-exports.d.ts', './editor/mobile-exports.d.ts']
-  await Promise.all(outputs.map(prependGenerated))
-  await Promise.all(outputs.map(removeImportExport))
   await Promise.all(outputs.map(removeExports))
+  await Promise.all(outputs.map(prependGenerated))
   console.log('wrote:', outputs.join(', '))
 }
 main()
