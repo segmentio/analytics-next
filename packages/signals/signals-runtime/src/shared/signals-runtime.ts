@@ -3,9 +3,7 @@ import { BaseSignal, SignalOfType } from '../shared/shared-types'
 /**
  * Base class that provides runtime utilities for signals.
  */
-export abstract class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
-  implements ISignalsRuntime<Signal>
-{
+export abstract class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
   signalBuffer: Signal[]
 
   constructor(signals: Signal[] = []) {
