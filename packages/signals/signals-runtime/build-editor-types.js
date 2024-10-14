@@ -18,7 +18,6 @@ async function prependGenerated(filePath) {
   }
 }
 
-// https://github.com/microsoft/rushstack/issues/1601
 async function removeExports(filePath) {
   try {
     const data = await fsPromises.readFile(filePath, 'utf8')
@@ -36,7 +35,6 @@ async function removeExports(filePath) {
 
 const main = async () => {
   execSync('yarn build:esm', { stdio: 'inherit' })
-  // eslint-disable-next-line no-undef
   execSync('npx api-extractor run --config ./api-extractor.mobile.json --local')
   execSync('npx api-extractor run --config ./api-extractor.web.json --local')
   const outputs = [
