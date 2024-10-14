@@ -1,13 +1,15 @@
 const esbuild = require('esbuild')
 
-const outfileMinified = './dist/global/index.min.js'
-const outfileUnminified = './dist/global/index.js'
-
-async function build() {
+/**
+ * @param {string} type - The type of build, either 'mobile' or 'web'.
+ */
+async function build(type) {
+  const outfileMinified = `./dist/global/index.${type}.min.js`
+  const outfileUnminified = `./dist/global/index.${type}.js`
   try {
     // Build minified version
     await esbuild.build({
-      entryPoints: ['./src/index.global.ts'],
+      entryPoints: [`./src/${type}/index.global.ts`],
       outfile: outfileMinified,
       bundle: true,
       minify: true,
@@ -16,7 +18,7 @@ async function build() {
 
     // Build unminified version
     await esbuild.build({
-      entryPoints: ['./src/index.global.ts'],
+      entryPoints: [`./src/${type}/index.global.ts`],
       outfile: outfileUnminified,
       bundle: true,
       minify: false,
@@ -28,4 +30,5 @@ async function build() {
   }
 }
 
-build()
+build('mobile')
+build('web')

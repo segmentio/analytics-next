@@ -14,9 +14,9 @@ export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
   implements ISignalsRuntime<Signal>
 {
   private signalBuffer: Signal[]
-  // mobile only - see brandon for this code
+  // mobile only
   private signalCounter: number
-  // mobile only - see brandon for this code
+  // mobile only
   private maxBufferSize: number
 
   constructor(signals: Signal[] = []) {
@@ -49,7 +49,7 @@ export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
       .filter((signal) => (predicate ? predicate(signal) : () => true))
   }
 
-  // mobile only - see brandon for this code
+  // mobile only
   add = (signal: Signal) => {
     if (this.signalCounter < 0) {
       this.signalCounter = 0
@@ -66,7 +66,7 @@ export class SignalsRuntime<Signal extends BaseSignal = BaseSignal>
     }
   }
 
-  // mobile only - see brandon for this code
+  // mobile only
   getNextIndex = () => {
     const index = this.signalCounter
     this.signalCounter += 1

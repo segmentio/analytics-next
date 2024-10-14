@@ -6,5 +6,5 @@ Encapsults Signals runtime functionality, in order to share logic between the si
 | Generated File(s) | Description | 
 |--------|-------------|
 | `/dist/esm/index.js` | For `@segment/analytics-signals` to consume | 
-| `/dist/global/index.js`  |  Exposes `globalThis.SignalsRuntime`, either through the script tag or in the mobile JS engine. | 
+| `/dist/global/index.mobile.js, `/dist/global/index.web.js`  |  Exposes `globalThis.SignalsRuntime`, either through the script tag or in the mobile JS engine. | 
 | `/editor/mobile-editor.d.ts`, `/editor/web-editor.d.ts` | Type definitions for monaco editor on app.segment.com |
