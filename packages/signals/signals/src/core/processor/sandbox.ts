@@ -6,7 +6,7 @@ import { replaceBaseUrl } from '../../lib/replace-base-url'
 import {
   SignalsRuntime,
   Signal,
-  WebConstants,
+  WebRuntimeConstants,
 } from '@segment/analytics-signals-runtime'
 
 export type MethodName =
@@ -211,7 +211,7 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
-      ...WebConstants,
+      ...WebRuntimeConstants,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
