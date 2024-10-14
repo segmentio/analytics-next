@@ -39,6 +39,7 @@ const buildAll = async () => {
       })
       console.log(`wrote: ${outfileUnminified}`)
 
+      // Build runtime as string (gets injected into globalThis)
       await esbuild.build({
         entryPoints: [`src/${type}/get-runtime-string.ts`],
         bundle: true,
