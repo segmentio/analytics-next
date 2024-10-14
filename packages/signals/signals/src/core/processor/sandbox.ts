@@ -5,6 +5,7 @@ import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { getWebRuntimeString } from '@segment/analytics-signals-runtime'
+import { polyfills } from './polyfills'
 
 export type MethodName =
   | 'page'
@@ -211,9 +212,10 @@ export class Sandbox {
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
+      polyfills,
       await this.settings.processSignal,
       getWebRuntimeString(),
-      `const signals = new Signals(${JSON.stringify(signals)})`,
+      `var signals = new Signals(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
