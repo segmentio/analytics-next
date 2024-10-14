@@ -25,6 +25,19 @@ async function removeImportExport(filePath) {
   })
 }
 
+// https://github.com/microsoft/rushstack/issues/1601
+async function removeExports(filePath) {
+  try {
+    const data = await fsPromises.readFile(filePath, 'utf8')
+    // Regex to remove 'export { }' statements
+    let result = data.replace(/export\s+\{\s*\};?/g, '')
+    result = data.replace('export ', '')
+    await fsPromises.writeFile(filePath, result, 'utf8')
+  } catch (error) {
+    console.error(`Error exports: ${error}`)
+  }
+}
+
 const main = async () => {
   execSync('yarn build:esm', { stdio: 'inherit' })
   // eslint-disable-next-line no-undef
@@ -33,5 +46,7 @@ const main = async () => {
   const outputs = ['./editor/web-exports.d.ts', './editor/mobile-exports.d.ts']
   await Promise.all(outputs.map(prependGenerated))
   await Promise.all(outputs.map(removeImportExport))
+  await Promise.all(outputs.map(removeExports))
+  console.log('wrote:', outputs.join(', '))
 }
 main()
