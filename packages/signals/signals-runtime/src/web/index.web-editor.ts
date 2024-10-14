@@ -11,4 +11,4 @@ export const signals: Signals = new SignalsRuntime<Signal>()
  */
 export * from './web-signals-types'
 export * from '../shared/shared-types'
-export * from './web-enums'
+export * from './web-constants'

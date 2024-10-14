@@ -10,4 +10,4 @@ export const signals: Signals = new SignalsRuntime<Signal>()
  */
 export * from './mobile-signals-types'
 export * from '../shared/shared-types'
-export * from './mobile-enums'
+export * from './mobile-constants'
