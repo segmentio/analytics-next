@@ -212,7 +212,7 @@ export class Sandbox {
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
       await this.settings.processSignal,
-      `${getWebRuntimeString()}`,
+      getWebRuntimeString(),
       `const signals = new Signals(${JSON.stringify(signals)})`,
       'try { processSignal(' +
         JSON.stringify(signal) +
