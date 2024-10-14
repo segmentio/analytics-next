@@ -2,17 +2,13 @@ import { SignalsRuntime } from '../shared/signals-runtime'
 import { Signal } from './mobile-signals-types'
 
 export class MobileSignalsRuntime extends SignalsRuntime<Signal> {
-  // mobile only
   private signalCounter: number
-  // mobile only
   private maxBufferSize: number
   constructor(signals: Signal[] = []) {
     super(signals)
-    // mobile only
     this.signalCounter = 0
     this.maxBufferSize = 1000
   }
-  // mobile only
   add = (signal: Signal) => {
     if (this.signalCounter < 0) {
       this.signalCounter = 0
@@ -29,7 +25,6 @@ export class MobileSignalsRuntime extends SignalsRuntime<Signal> {
     }
   }
 
-  // mobile only
   getNextIndex = () => {
     const index = this.signalCounter
     this.signalCounter += 1
