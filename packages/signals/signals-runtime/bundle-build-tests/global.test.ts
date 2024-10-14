@@ -2,7 +2,40 @@ import { JSDOM } from 'jsdom'
 import fs from 'node:fs'
 import path from 'node:path'
 
-describe('Global Scope Test', () => {
+describe('Global Scope Test: Web', () => {
+  let dom: JSDOM
+  beforeAll(() => {
+    // Load the built file
+    const filePath = path.resolve(__dirname, '../dist/global/index.web.js')
+    const scriptContent = fs.readFileSync(filePath, 'utf-8')
+
+    // Create a new JSDOM instance
+    dom = new JSDOM(`<!DOCTYPE html><html><head></head><body></body></html>`, {
+      runScripts: 'dangerously',
+      resources: 'usable',
+    })
+
+    // Execute the script in the JSDOM context
+    const scriptElement = dom.window.document.createElement('script')
+    scriptElement.textContent = scriptContent
+    dom.window.document.head.appendChild(scriptElement)
+  })
+
+  test('should expose Signals in the global scope', () => {
+    // @ts-ignore
+    expect(dom.window).toBeDefined()
+    // @ts-ignore
+    expect(typeof dom.window.Signals).toBe('function')
+  })
+
+  test('should expose constants', () => {
+    expect(dom.window.EventType.Track).toBe('track')
+    expect(dom.window.NavigationAction.URLChange).toBe('urlChange')
+    expect(dom.window.SignalType.Interaction).toBe('interaction')
+  })
+})
+
+describe('Global Scope Test: Mobile', () => {
   let dom: JSDOM
   beforeAll(() => {
     // Load the built file
@@ -21,16 +54,16 @@ describe('Global Scope Test', () => {
     dom.window.document.head.appendChild(scriptElement)
   })
 
-  test('should expose SignalsRuntime in the global scope', () => {
+  test('should expose Signals in the global scope', () => {
     // @ts-ignore
     expect(dom.window).toBeDefined()
     // @ts-ignore
-    expect(typeof dom.window.SignalsRuntime).toBe('function')
+    expect(typeof dom.window.Signals).toBe('function')
   })
 
-  test('should expose navigation actions', () => {
+  test('should expose constants', () => {
     expect(dom.window.EventType.Track).toBe('track')
-    expect(dom.window.NavigationAction.URLChange).toBe('urlChange')
+    expect(dom.window.NavigationAction.Forward).toBe('forward')
     expect(dom.window.SignalType.Interaction).toBe('interaction')
   })
 })

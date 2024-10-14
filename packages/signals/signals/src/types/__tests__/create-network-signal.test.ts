@@ -74,7 +74,7 @@ describe(createNetworkSignal, () => {
             "key": "value",
           },
           "ok": true,
-          "status": 200,
+          "statusCode": 200,
           "url": "http://example.com",
         },
         "metadata": {
