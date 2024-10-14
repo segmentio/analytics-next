@@ -14,7 +14,7 @@ export interface ISignalsRuntime<Signal extends BaseSignal> {
   /**
    * Finds a signal of a specific type from a given signal.
    *
-   * @template SignalType - The type of the signal to find.
+   * SignalType - The type of the signal to find.
    * @param fromSignal - The signal to search from.
    * @param signalType - The type of the signal to find.
    * @param predicate - Optional predicate function to filter the signals.
@@ -28,7 +28,7 @@ export interface ISignalsRuntime<Signal extends BaseSignal> {
 
   /**
    * Filters signals of a specific type from a given signal.
-   * @template SignalType - The type of the signals to filter.
+   * SignalType - The type of the signals to filter.
    * @param fromSignal - The signal to search from.
    * @param signalType - The type of the signals to filter.
    * @param predicate - Optional predicate function to filter the signals.

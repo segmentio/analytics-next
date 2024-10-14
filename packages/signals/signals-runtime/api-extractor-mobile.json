@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
+  "extends": "./api-extractor.base.json",
+  "mainEntryPointFilePath": "./dist/types/mobile/mobile-exports.d.ts",
+  "dtsRollup": {
+    "enabled": true,
+    "untrimmedFilePath": "./editor/mobile-exports.d.ts"
+  }
+}

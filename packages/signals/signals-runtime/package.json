@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@internal/test-helpers": "workspace:^",
+    "@microsoft/api-extractor": "^7.47.9",
     "dts-bundle-generator": "^9.5.1"
   }
 }

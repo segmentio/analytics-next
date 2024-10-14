@@ -2,7 +2,7 @@ import { BaseSignal, ISignalsRuntime } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
-export type NavigationAction =
+export type NavigationActionName =
   | 'forward'
   | 'backward'
   | 'modal'
@@ -11,9 +11,9 @@ export type NavigationAction =
   | 'page'
   | 'popup'
 
-export type NetworkAction = 'request' | 'response'
+export type NetworkActionName = 'request' | 'response'
 
-export type LocalDataAction =
+export type LocalDataActionName =
   | 'loaded'
   | 'updated'
   | 'saved'
@@ -37,7 +37,7 @@ interface RawSignal<SignalType extends string> extends BaseSignal {
 }
 
 interface NavigationData {
-  action: NavigationAction
+  action: NavigationActionName
   screen: string
 }
 
@@ -57,7 +57,7 @@ interface InteractionSignal extends RawSignal<'interaction'> {
 }
 
 interface NetworkData {
-  action: NetworkAction
+  action: NetworkActionName
   url: string
   data: any
 }
@@ -67,7 +67,7 @@ interface NetworkSignal extends RawSignal<'network'> {
 }
 
 interface LocalData {
-  action: LocalDataAction
+  action: LocalDataActionName
   identifier: string
   data: string
 }
