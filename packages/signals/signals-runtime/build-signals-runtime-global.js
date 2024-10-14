@@ -6,7 +6,8 @@ const pkgJSON = require('./package.json')
 
 const getBanner = (entryPoint) => {
   const content = [
-    `// Generated in: ${pkgJSON.name}@${pkgJSON.version}`,
+    `// GENERATED, DO NOT EDIT`,
+    `// ${pkgJSON.name}@${pkgJSON.version}`,
     `// Entry point: ${entryPoint}`,
   ].join('\n')
   return content
@@ -50,8 +51,9 @@ const buildRuntimeAsString = async (platform) => {
     fs.mkdirSync(generatedDir, { recursive: true })
   }
 
-  const generatedTsFile = `./src/${platform}/get-runtime-string.ts`
-  const tsFileContent = `export const RuntimeString = \`${runtimeContent}\``
+  const generatedTsFile = `./src/${platform}/get-runtime-code.generated.ts`
+  const tsFileContent = `export const getRuntimeCode = (): string => \`${runtimeContent}\`
+  `
 
   fs.writeFileSync(generatedTsFile, tsFileContent)
 

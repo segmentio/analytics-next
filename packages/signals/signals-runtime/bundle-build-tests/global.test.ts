@@ -21,11 +21,11 @@ describe('Global Scope Test: Web', () => {
     dom.window.document.head.appendChild(scriptElement)
   })
 
-  test('should expose Signals in the global scope', () => {
+  test('should expose a signals instance in the global scope', () => {
     // @ts-ignore
     expect(dom.window).toBeDefined()
     // @ts-ignore
-    expect(typeof dom.window.Signals).toBe('function')
+    expect(typeof dom.window.signals).toBe('object')
   })
 
   test('should expose constants', () => {
@@ -54,11 +54,11 @@ describe('Global Scope Test: Mobile', () => {
     dom.window.document.head.appendChild(scriptElement)
   })
 
-  test('should expose Signals in the global scope', () => {
+  test('should expose signals in the global scope', () => {
     // @ts-ignore
     expect(dom.window).toBeDefined()
     // @ts-ignore
-    expect(typeof dom.window.Signals).toBe('function')
+    expect(typeof dom.window.signals).toBe('object')
   })
 
   test('should expose constants', () => {

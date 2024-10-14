@@ -1,20 +1,16 @@
-import {
-  InstrumentationSignal,
-  InteractionSignal,
-  SignalsRuntime,
-  Signal,
-} from '../index'
+import { InstrumentationSignal, InteractionSignal, Signal } from '../index'
 import {
   mockInstrumentationSignal,
   mockInteractionSignal,
 } from '../test-helpers/mocks/mock-signal-types-web'
 
-describe(SignalsRuntime, () => {
-  let signalsRuntime: SignalsRuntime<Signal>
+import { WebSignalsRuntime } from '../web/web-signals-runtime'
+describe(WebSignalsRuntime, () => {
+  let signalsRuntime: WebSignalsRuntime
   let signal1: InstrumentationSignal
   let signal2: InteractionSignal
   let signal3: InteractionSignal
-
+  let mockSignals: Signal[] = []
   beforeEach(() => {
     signal1 = mockInstrumentationSignal
     signal2 = mockInteractionSignal
@@ -22,11 +18,8 @@ describe(SignalsRuntime, () => {
       ...mockInteractionSignal,
       data: { eventType: 'change', target: {} },
     }
-    signalsRuntime = new (class extends SignalsRuntime<Signal> {})([
-      signal1,
-      signal2,
-      signal3,
-    ])
+    mockSignals = [signal1, signal2, signal3]
+    signalsRuntime = new WebSignalsRuntime(mockSignals)
   })
 
   describe('meta', () => {
@@ -92,6 +85,27 @@ describe(SignalsRuntime, () => {
     it('should return all matches if predicate is not provided', () => {
       const result = signalsRuntime.filter(signal1, 'interaction')
       expect(result).toEqual([signal2, signal3])
+    })
+  })
+
+  describe('signalBuffer property', () => {
+    beforeEach(() => {
+      signalsRuntime = new WebSignalsRuntime()
+    })
+    it('should have no signals by default', () => {
+      expect(signalsRuntime.signalBuffer).toEqual([])
+    })
+    it('should let you set the signal buffer', () => {
+      signalsRuntime = new WebSignalsRuntime()
+      const newSignal = mockInstrumentationSignal
+      signalsRuntime.signalBuffer = [newSignal]
+      expect(signalsRuntime.signalBuffer).toEqual([newSignal])
+    })
+
+    it('should support find, etc', () => {
+      signalsRuntime.signalBuffer = mockSignals
+      const result = signalsRuntime.find(signal2, 'interaction', () => true)
+      expect(result).toEqual(signal3)
     })
   })
 })

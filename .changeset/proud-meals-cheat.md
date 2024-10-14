@@ -1,5 +1,4 @@
 ---
 '@segment/analytics-signals-runtime': major
 ---
-
-Release analytics-signals-runtime
+Release analytics-signals-runtime 

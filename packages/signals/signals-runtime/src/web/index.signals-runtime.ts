@@ -5,7 +5,7 @@ import * as Constants from './web-constants'
 Object.assign(
   globalThis,
   {
-    WebSignalsRuntime,
+    signals: new WebSignalsRuntime(),
   },
   Constants
 )
