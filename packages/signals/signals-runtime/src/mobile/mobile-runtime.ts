@@ -1,5 +1,5 @@
 import { SignalsRuntime } from '../shared/signals-runtime'
-import { ISignalsRuntime } from './mobile-exports'
+import { ISignalsRuntime } from './index.mobile-editor'
 import { Signal } from './mobile-signals-types'
 
 export type Signals = ISignalsRuntime<Signal>

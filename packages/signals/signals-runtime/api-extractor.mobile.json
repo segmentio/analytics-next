@@ -1,8 +1,8 @@
 {
   "extends": "./api-extractor.base.json",
-  "mainEntryPointFilePath": "./dist/types/mobile/mobile-exports.d.ts",
+  "mainEntryPointFilePath": "./dist/types/mobile/index.mobile-editor.d.ts",
   "dtsRollup": {
     "enabled": true,
-    "untrimmedFilePath": "./editor/mobile-exports.d.ts"
+    "untrimmedFilePath": "./editor/mobile-editor.d.ts"
   }
 }

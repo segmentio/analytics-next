@@ -38,7 +38,7 @@ const main = async () => {
   // eslint-disable-next-line no-undef
   execSync('npx api-extractor run --config ./api-extractor.mobile.json --local')
   execSync('npx api-extractor run --config ./api-extractor.web.json --local')
-  const outputs = ['./editor/web-exports.d.ts', './editor/mobile-exports.d.ts']
+  const outputs = ['./editor/web-editor.d.ts', './editor/mobile-editor.d.ts']
   await Promise.all(outputs.map(removeExports))
   await Promise.all(outputs.map(prependGenerated))
   console.log('wrote:', outputs.join(', '))
