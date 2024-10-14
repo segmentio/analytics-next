@@ -39,19 +39,17 @@ const buildAll = async () => {
       })
       console.log(`wrote: ${outfileUnminified}`)
 
-      esbuild
-        .build({
-          entryPoints: [`src/${type}/get-runtime-string.ts`], // Entry point for getFoo.ts
-          bundle: true,
-          outfile: outHelperFileUnminified, // Output to dist folder
-          platform: 'browser', // Browser environment
-          target: ['esnext'],
-          loader: {
-            '.js': 'text', // Load foo.js as a string
-          },
-          format: 'esm', // ESM format
-        })
-        .catch(() => process.exit(1))
+      await esbuild.build({
+        entryPoints: [`src/${type}/get-runtime-string.ts`],
+        bundle: true,
+        outfile: outHelperFileUnminified,
+        platform: 'browser',
+        target: ['esnext'],
+        loader: {
+          '.js': 'text',
+        },
+        format: 'esm',
+      })
     } catch (err) {
       console.error(err)
       process.exit(1)
