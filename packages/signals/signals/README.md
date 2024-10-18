@@ -25,7 +25,7 @@ See: [settings.ts](src/types/settings.ts)
 
  <!-- Register SignalsPlugin  -->
   <script>
-    const signalsPlugin = new SignalsPlugin()
+    var signalsPlugin = new SignalsPlugin()
     analytics.register(signalsPlugin)
   </script>
 </head>
