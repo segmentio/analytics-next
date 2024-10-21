@@ -1,6 +1,6 @@
 {
   "name": "@customerio/cdp-analytics-node",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
@@ -28,7 +28,7 @@
     "prepublish": "yarn run -T build"
   },
   "dependencies": {
-    "@customerio/cdp-analytics-core": "0.2.1",
+    "@customerio/cdp-analytics-core": "0.2.2",
     "@lukeed/uuid": "^2.0.0",
     "buffer": "^6.0.3",
     "node-fetch": "^2.6.7",
