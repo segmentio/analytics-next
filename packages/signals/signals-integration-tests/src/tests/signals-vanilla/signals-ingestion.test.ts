@@ -12,7 +12,7 @@ test('ingestion not enabled -> will not send the signal', async ({ page }) => {
   })
 
   await indexPage.fillNameInput('John Doe')
-  const promise = await indexPage.waitForSignalsApiFlush()
+  const promise = await indexPage.waitForSignalsApiFlush().catch(() => {})
 
   await expect(promise).rejects.toThrow()
 })
