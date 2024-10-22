@@ -74,6 +74,7 @@ export class BasePage {
       ({ signalSettings }) => {
         window.signalsPlugin = new window.SignalsPlugin({
           disableSignalsRedaction: true,
+          enableSignalsIngestion: true,
           ...signalSettings,
         })
         window.analytics.load({

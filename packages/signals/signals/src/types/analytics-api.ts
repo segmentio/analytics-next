@@ -8,9 +8,14 @@ export type EdgeFnCDNSettings = {
   downloadURL: string
 }
 
+export type AutoInstrumentationCDNSettings = {
+  sampleRate: number
+}
+
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
   edgeFunction?: EdgeFnCDNSettings | { [key: string]: never }
+  autoInstrumentationSettings?: AutoInstrumentationCDNSettings
 }
 
 export interface SegmentEventStub {

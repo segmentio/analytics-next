@@ -11,7 +11,9 @@ describe(SignalsIngestClient, () => {
   let client: SignalsIngestClient
 
   beforeEach(async () => {
-    client = new SignalsIngestClient()
+    client = new SignalsIngestClient({
+      shouldIngestSignals: () => true,
+    })
     await client.init({ writeKey: 'test' })
   })
 
