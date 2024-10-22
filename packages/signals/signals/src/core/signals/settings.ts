@@ -96,7 +96,7 @@ export class SignalGlobalSettings {
     /**
      * Sample rate to determine sending signals
      */
-    sampleRate: number
+    sampleRate?: number
   }): void {
     edgeFnDownloadURL && (this.sandbox.edgeFnDownloadURL = edgeFnDownloadURL)
     this.network.networkSignalsFilterList.disallowed.addURLLike(
@@ -104,7 +104,7 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
-    if (Math.random() <= sampleRate) {
+    if (sampleRate && Math.random() <= sampleRate) {
       this.sampleSuccess = true
     }
   }
