@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test'
-import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
 const indexPage = new IndexPage()
