@@ -24,7 +24,7 @@ function withTag(tag: string) {
 
   const documentSpy = jest.spyOn(global, 'document', 'get')
 
-  jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
+  jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
 
   windowSpy.mockImplementation(() => {
     return jsd.window as unknown as Window & typeof globalThis
@@ -51,9 +51,9 @@ it('should return the overridden cdn if window.analytics._cdn is mutated', () =>
   withTag(`
   <script src="https://cdp.customer.io/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
-    ; (window.analytics as any) = {
-      _cdn: 'http://foo.cdn.com',
-    }
+  ;(window.analytics as any) = {
+    _cdn: 'http://foo.cdn.com',
+  }
   expect(getCDN()).toMatchInlineSnapshot(`"http://foo.cdn.com"`)
 })
 
@@ -69,6 +69,13 @@ it('if analytics is not loaded yet, should still return cdn', () => {
 it('detects custom cdns that match in domain instrumentation patterns', () => {
   withTag(`
     <script src="https://my.cdn.domain/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
+  `)
+  expect(getCDN()).toMatchInlineSnapshot(`"https://my.cdn.domain"`)
+})
+
+it('detects custom cdns if the write key has : in it', () => {
+  withTag(`
+    <script src="https://my.cdn.domain/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZv:CF6czfBcfzNO6/analytics.min.js" />
   `)
   expect(getCDN()).toMatchInlineSnapshot(`"https://my.cdn.domain"`)
 })
