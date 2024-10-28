@@ -166,7 +166,7 @@ describe('Customer.io In-App Plugin', () => {
         actionType: 'viewed_content',
         contentId: 10,
         templateId: 20,
-        contentType: 'iab',
+        contentType: 'in_app_content',
       })
     })
 
@@ -191,7 +191,7 @@ describe('Customer.io In-App Plugin', () => {
         actionType: 'clicked_content',
         contentId: 10,
         templateId: 20,
-        contentType: 'iab',
+        contentType: 'in_app_content',
         actionName: 'action name',
         actionValue: 'action value',
       })

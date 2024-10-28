@@ -16,7 +16,7 @@ export enum JourneysEvents {
     ClickedContent = 'clicked_content'
 }
 
-export const AnonymousContentType = 'iab'
+export const ContentType = 'in_app_content'
 
 export function newEvent(type:string, detail:any): CustomEvent {
     return new CustomEvent(type, { detail })

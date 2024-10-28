@@ -2,7 +2,7 @@ import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 
-import { InAppEvents, JourneysEvents, newEvent, allEvents, gistToCIO, AnonymousContentType } from './events'
+import { InAppEvents, JourneysEvents, newEvent, allEvents, gistToCIO, ContentType } from './events'
 import Gist from 'customerio-gist-web'
 
 export { InAppEvents }
@@ -62,7 +62,7 @@ export function InAppPlugin(
                     'actionType': JourneysEvents.ViewedContent,
                     'contentId': broadcastId,
                     'templateId': templateId,
-                    'contentType': AnonymousContentType,
+                    'contentType': ContentType,
                 });
             }
         });
@@ -103,7 +103,7 @@ export function InAppPlugin(
                     'actionType': JourneysEvents.ClickedContent,
                     'contentId': broadcastId,
                     'templateId': templateId,
-                    'contentType': AnonymousContentType,
+                    'contentType': ContentType,
                     'actionName': params.name,
                     'actionValue': params.action,
                 });
