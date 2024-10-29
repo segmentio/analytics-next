@@ -23,15 +23,19 @@ export class IndexPage extends BasePage {
     return promiseTimeout(p, 2000, 'analytics.on("track") did not resolve')
   }
 
-  addUserDefinedSignal() {
-    return this.page.evaluate(() => {
-      window.signalsPlugin.addSignal({
-        type: 'userDefined',
-        data: {
-          foo: 'bar',
-        },
-      })
-    })
+  addUserDefinedSignal(data?: Record<string, unknown>) {
+    return this.page.evaluate(
+      (args) => {
+        window.signalsPlugin.addSignal({
+          type: 'userDefined',
+          data: {
+            foo: 'bar',
+            ...args.data,
+          },
+        })
+      },
+      { data }
+    )
   }
 
   async clickButton() {
