@@ -35,6 +35,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
 
     this.signals = new Signals({
       disableSignalsRedaction: settings.disableSignalsRedaction,
+      enableSignalsIngestion: settings.enableSignalsIngestion,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       functionHost: settings.functionHost,
