@@ -68,6 +68,7 @@ interface BaseNetworkData {
   action: string
   url: string
   data: JSONValue
+  contentType: string
 }
 
 interface NetworkRequestData extends BaseNetworkData {

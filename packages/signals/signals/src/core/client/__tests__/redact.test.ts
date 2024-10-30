@@ -91,6 +91,7 @@ describe(redactSignalData, () => {
   it('should redact the values in the "data" property if the type is "network"', () => {
     const signal = factories.createNetworkSignal(
       {
+        contentType: 'application/json',
         action: 'request',
         method: 'post',
         url: 'http://foo.com',
@@ -100,6 +101,7 @@ describe(redactSignalData, () => {
     )
     const expected = factories.createNetworkSignal(
       {
+        contentType: 'application/json',
         action: 'request',
         method: 'post',
         url: 'http://foo.com',

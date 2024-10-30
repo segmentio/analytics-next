@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
-import { sleep } from '@segment/analytics-core'
 
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
@@ -9,27 +8,6 @@ test.describe('network signals - XHR', () => {
 
   test.beforeEach(async ({ page }) => {
     indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
-  })
-  test('should not emit anything if neither request nor response are json', async () => {
-    await indexPage.network.mockTestRoute('http://localhost/test', {
-      body: 'hello',
-      contentType: 'text/plain',
-    })
-
-    await indexPage.network.makeXHRCall('http://localhost/test', {
-      method: 'POST',
-      body: 'hello world',
-      contentType: 'text/plain',
-      responseType: 'text',
-    })
-
-    // Wait for the signals to be flushed
-    await sleep(300)
-
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
-
-    // Ensure no request or response was captured
-    expect(networkEvents).toHaveLength(0)
   })
 
   test('basic json request / not break XHR', async () => {
@@ -111,7 +89,7 @@ test.describe('network signals - XHR', () => {
     })
   })
 
-  test('should emit response but not request if request content-type is not json but response is', async () => {
+  test('should emit request content type, even if not json', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),
       contentType: 'application/json',
@@ -128,7 +106,18 @@ test.describe('network signals - XHR', () => {
 
     const networkEvents = await indexPage.signalsAPI.waitForEvents(1, 'network')
 
-    // Check the response (only response should be captured)
+    // ensure request
+    const requests = networkEvents.filter(
+      (el) => el.properties!.data.action === 'request'
+    )
+    expect(requests).toHaveLength(1)
+    expect(requests[0].properties!.data).toMatchObject({
+      action: 'request',
+      url: 'http://localhost/test',
+      data: 'hello world',
+    })
+
+    // Check the response
     const responses = networkEvents.filter(
       (el) => el.properties!.data.action === 'response'
     )
@@ -138,12 +127,6 @@ test.describe('network signals - XHR', () => {
       url: 'http://localhost/test',
       data: { foo: 'test' },
     })
-
-    // Ensure no request was captured
-    const requests = networkEvents.filter(
-      (el) => el.properties!.data.action === 'request'
-    )
-    expect(requests).toHaveLength(0)
   })
 
   test('should parse response if responseType is set to json but response header does not contain application/json', async () => {

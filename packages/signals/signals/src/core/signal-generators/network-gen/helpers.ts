@@ -47,22 +47,29 @@ export const containsContentType = (
   // format the content-type header to remove charset -- this is non-standard behavior that is somewhat common
   // e.g. application/json;charset=utf-8 => application/json
   const removeCharset = (header: string | null): string | null =>
-    header?.split(';')[0] ?? null
+    header?.split(';')[0].trim() ?? null
 
-  return match.some(
-    (t) => removeCharset(normalizedHeaders.get('content-type')) === t
+  return match.some((t) =>
+    removeCharset(normalizedHeaders.get('content-type'))?.includes(t)
   )
 }
 
 export const containsJSONContentType = (
-  headers: HeadersInit | undefined
+  Headers: HeadersInit | undefined
 ): boolean => {
-  return containsContentType(headers, ['application/json'])
+  return containsContentType(Headers, [
+    'application/json',
+    'application/ld+json',
+    'text/json',
+  ])
 }
 
-export function isPlainObject(obj: unknown): obj is Record<string, unknown> {
+export const containsJSONParseableContentType = (
+  headers: HeadersInit | undefined
+): boolean => {
   return (
-    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
+    containsJSONContentType(headers) ||
+    containsContentType(headers, ['text/plain'])
   )
 }
 

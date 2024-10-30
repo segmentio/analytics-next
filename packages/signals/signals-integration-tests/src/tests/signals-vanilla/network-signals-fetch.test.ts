@@ -10,10 +10,58 @@ test.describe('network signals - fetch', () => {
     indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
   })
 
-  test('should not emit anything if neither request nor response are json', async () => {
+  test('should not emit non-json requests', async () => {
+    await indexPage.network.mockTestRoute('http://localhost/upload', {
+      body: JSON.stringify({ foo: 'test' }),
+    })
+
+    await indexPage.network.makeFileUploadRequest('http://localhost/upload')
+
+    await indexPage.waitForSignalsApiFlush()
+
+    const networkEvents = indexPage.signalsAPI.getEvents('network')
+
+    // Check the request
+    const requests = networkEvents.filter(
+      (el) => el.properties!.data.action === 'request'
+    )
+
+    expect(requests).toHaveLength(0)
+  })
+
+  test('should try to parse the body of text/plain requests', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
-      body: 'hello',
+      body: JSON.stringify({ foo: 'test' }),
+      contentType: 'application/json',
+    })
+
+    await indexPage.network.makeFetchCall('http://localhost/test', {
+      method: 'POST',
+      body: JSON.stringify({ key: 'value' }),
       contentType: 'text/plain',
+    })
+
+    await indexPage.waitForSignalsApiFlush()
+
+    const networkEvents = indexPage.signalsAPI.getEvents('network')
+
+    // Check the request
+    const requests = networkEvents.filter(
+      (el) => el.properties!.data.action === 'request'
+    )
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0].properties!.data).toMatchObject({
+      action: 'request',
+      url: 'http://localhost/test',
+      data: { key: 'value' },
+    })
+  })
+
+  test('should send the raw string if the request body cannot be parsed as json', async () => {
+    await indexPage.network.mockTestRoute('http://localhost/test', {
+      body: JSON.stringify({ foo: 'test' }),
+      contentType: 'application/json',
     })
 
     await indexPage.network.makeFetchCall('http://localhost/test', {
@@ -26,7 +74,17 @@ test.describe('network signals - fetch', () => {
 
     const networkEvents = indexPage.signalsAPI.getEvents('network')
 
-    expect(networkEvents).toHaveLength(0)
+    // Check the request
+    const requests = networkEvents.filter(
+      (el) => el.properties!.data.action === 'request'
+    )
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0].properties!.data).toMatchObject({
+      action: 'request',
+      url: 'http://localhost/test',
+      data: 'hello world',
+    })
   })
 
   test('can make a basic json request / not break regular fetch calls', async () => {
@@ -110,39 +168,6 @@ test.describe('network signals - fetch', () => {
       url: `${indexPage.origin()}/test`,
       data: { foo: 'test' },
     })
-  })
-
-  test('should emit response but not request if request content-type is not json but response is', async () => {
-    await indexPage.network.mockTestRoute('http://localhost/test', {
-      body: JSON.stringify({ foo: 'test' }),
-      contentType: 'application/json',
-    })
-
-    await indexPage.network.makeFetchCall('http://localhost/test', {
-      method: 'POST',
-      body: 'hello world',
-      contentType: 'text/plain',
-    })
-
-    await indexPage.waitForSignalsApiFlush()
-
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
-
-    const responses = networkEvents.filter(
-      (el) => el.properties!.data.action === 'response'
-    )
-    expect(responses).toHaveLength(1)
-    expect(responses[0].properties!.data).toMatchObject({
-      action: 'response',
-      url: 'http://localhost/test',
-      data: { foo: 'test' },
-    })
-
-    // Ensure no request was captured
-    const requests = networkEvents.filter(
-      (el) => el.properties!.data.action === 'request'
-    )
-    expect(requests).toHaveLength(0)
   })
 
   test.describe('errors', () => {
@@ -232,11 +257,7 @@ test.describe('network signals - fetch', () => {
       status: 400,
     })
 
-    await indexPage.network.makeFetchCall('http://localhost/test', {
-      method: 'POST',
-      body: 'hello world',
-      contentType: 'text/plain',
-    })
+    await indexPage.network.makeFileUploadRequest('http://localhost/test')
 
     await indexPage.waitForSignalsApiFlush()
 

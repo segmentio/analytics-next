@@ -39,6 +39,10 @@ test('Collecting signals whenever a user enters text input', async ({
       labels: [
         {
           textContent: 'Name:',
+          id: '',
+          attributes: {
+            for: 'name',
+          },
         },
       ],
       name: 'name',
