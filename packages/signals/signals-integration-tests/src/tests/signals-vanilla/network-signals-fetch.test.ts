@@ -114,6 +114,7 @@ test.describe('network signals - fetch', () => {
     expect(requests).toHaveLength(1)
     expect(requests[0].properties!.data).toEqual({
       action: 'request',
+      contentType: 'application/json',
       url: 'http://localhost/test',
       method: 'POST',
       data: { key: 'value' },
@@ -125,6 +126,7 @@ test.describe('network signals - fetch', () => {
     expect(responses).toHaveLength(1)
     expect(responses[0].properties!.data).toEqual({
       action: 'response',
+      contentType: 'application/json',
       url: 'http://localhost/test',
       data: { foo: 'test' },
       status: 200,
