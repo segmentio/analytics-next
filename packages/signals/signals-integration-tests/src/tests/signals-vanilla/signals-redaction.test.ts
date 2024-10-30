@@ -2,14 +2,12 @@ import { test, expect } from '@playwright/test'
 import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
-const indexPage = new IndexPage()
-
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
 test('redaction enabled -> will XXX the value of text input', async ({
   page,
 }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn, {
+  const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {
     disableSignalsRedaction: false,
     enableSignalsIngestion: true,
   })
@@ -39,11 +37,10 @@ test('redaction enabled -> will XXX the value of text input', async ({
 test('redation disabled -> will not touch the value of text input', async ({
   page,
 }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn, {
+  const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {
     disableSignalsRedaction: true,
     enableSignalsIngestion: true,
   })
-
   await Promise.all([
     indexPage.fillNameInput('John Doe'),
     indexPage.waitForSignalsApiFlush(),

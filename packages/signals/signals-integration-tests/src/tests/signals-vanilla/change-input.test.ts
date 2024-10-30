@@ -2,8 +2,6 @@ import { test, expect } from '@playwright/test'
 import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
-const indexPage = new IndexPage()
-
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
 test('Collecting signals whenever a user enters text input', async ({
@@ -12,7 +10,7 @@ test('Collecting signals whenever a user enters text input', async ({
   /**
    * Input some text into the input field, see if the signal is emitted correctly
    */
-  await indexPage.loadAndWait(page, basicEdgeFn, {
+  const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {
     disableSignalsRedaction: true,
     enableSignalsIngestion: true,
   })

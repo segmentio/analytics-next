@@ -1,6 +1,7 @@
 import { Page, Route, Request } from '@playwright/test'
 import { SegmentEvent } from '@segment/analytics-next'
 import { Signal } from '@segment/analytics-signals'
+import { waitForCondition } from './playwright-utils'
 
 type FulfillOptions = Parameters<Route['fulfill']>['0']
 export interface XHRRequestOptions {
@@ -160,6 +161,31 @@ export class TrackingAPIRequestBuffer {
 }
 
 export class SignalAPIRequestBuffer extends TrackingAPIRequestBuffer {
+  async waitForEvents(
+    numberOfSignals: number,
+    signalType?: Signal['type']
+  ): Promise<SegmentEvent[]> {
+    await waitForCondition(
+      () => this.getEvents(signalType).length >= numberOfSignals,
+      {
+        timeout: 5000,
+        errorMessage: `Found ${
+          this.getEvents(signalType).length
+        } signals, expected ${numberOfSignals}`,
+      }
+    )
+    const events = this.getEvents(signalType)
+    if (events.length < numberOfSignals) {
+      throw new Error(
+        `Expected ${numberOfSignals} signals of type ${signalType}, but got ${
+          this.getEvents(signalType).length
+        }`
+      )
+    } else {
+      return events
+    }
+  }
+
   override getEvents(signalType?: Signal['type']): SegmentEvent[] {
     if (signalType) {
       return this.getEvents().filter((e) => e.properties!.type === signalType)

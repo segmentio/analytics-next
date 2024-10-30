@@ -1,4 +1,4 @@
-import { Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 
 export const redactSignalData = (signalArg: Signal): Signal => {
   const signal = structuredClone(signalArg)

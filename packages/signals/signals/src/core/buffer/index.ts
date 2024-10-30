@@ -1,4 +1,4 @@
-import { Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { openDB, DBSchema, IDBPDatabase } from 'idb'
 import { logger } from '../../lib/logger'
 

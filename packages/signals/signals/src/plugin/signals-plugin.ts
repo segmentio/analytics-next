@@ -1,7 +1,8 @@
 import type { Plugin } from '@segment/analytics-next'
 import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
-import { AnyAnalytics, Signal, SignalsPluginSettingsConfig } from '../types'
+import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
 import { version } from '../generated/version'
 

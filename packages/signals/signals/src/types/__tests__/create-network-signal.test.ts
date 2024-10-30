@@ -1,9 +1,9 @@
 import {
-  createNetworkSignal,
   NetworkData,
   NetworkSignalMetadata,
-} from '../signals'
+} from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../../lib/normalize-url'
+import { createNetworkSignal } from '../factories'
 
 jest.mock('../../lib/normalize-url', () => ({
   normalizeUrl: jest.fn((url) => url),
