@@ -21,7 +21,8 @@ type ClickData = {
 
 type SubmitData = {
   eventType: 'submit'
-  submitter: SerializedTarget
+  submitter?: SerializedTarget
+  target: SerializedTarget
 }
 
 type ChangeData = {
