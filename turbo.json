@@ -9,6 +9,7 @@
         "**/webpack.config*",
         "**/*.ts",
         "**/*.tsx",
+        "!**/*.generated.*/*",
         "!**/__tests__/**",
         "!src/**/test-helpers/**"
       ],
