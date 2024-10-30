@@ -79,7 +79,7 @@ interface NetworkRequestData extends BaseNetworkData {
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
-  statusCode: number
+  status: number
   ok: boolean
 }
 
