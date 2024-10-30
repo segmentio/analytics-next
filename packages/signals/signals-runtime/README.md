@@ -1,5 +1,5 @@
 # @segment/analytics-signals-runtime
-Encapsults Signals runtime functionality, in order to share logic between the signals plugins for browser and mobile.
+Encapsulates Signals runtime functionality, in order to share logic between the signals plugins for browser and mobile.
 
 ### Development
 `yarn build` generate the following artifacts:
