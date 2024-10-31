@@ -56,7 +56,7 @@ interface ParsedElementBase {
   id: string
   labels?: Label[]
   label?: Label
-  name: string
+  name?: string
   nodeName: string
   tagName: string
   title: string
@@ -101,7 +101,7 @@ type AnyParsedElement =
 
 const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
-  const base = {
+  const base: ParsedElementBase = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
