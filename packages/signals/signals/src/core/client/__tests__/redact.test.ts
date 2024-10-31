@@ -83,8 +83,7 @@ describe(redactSignalData, () => {
     })
     const expected = factories.createInteractionSignal({
       eventType: 'change',
-      target: { value: 'XXX' },
-      formData: { password: 'XXX' },
+      target: { value: 'XXX', formData: { password: 'XXX' } },
     })
     expect(redactSignalData(signal)).toEqual(expected)
   })
