@@ -323,4 +323,24 @@ describe(NetworkGenerator, () => {
     expect(mockEmitter.emit.mock.calls).toEqual([])
     unregister()
   })
+
+  it('always disallows segment api network signals', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator({
+      networkSignalsAllowList: ['.*'],
+    })
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`https://api.segment.io`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: 'value' }),
+    })
+
+    await sleep(100)
+    expect(mockEmitter.emit.mock.calls).toEqual([])
+    unregister()
+  })
 })

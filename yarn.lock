@@ -3948,6 +3948,7 @@ __metadata:
   dependencies:
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^"
     "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-signals": "workspace:^"
     http-server: 14.1.1
   languageName: unknown
   linkType: soft

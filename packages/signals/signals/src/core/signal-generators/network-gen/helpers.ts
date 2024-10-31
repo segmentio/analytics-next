@@ -43,15 +43,7 @@ export const containsContentType = (
     return false
   }
   const normalizedHeaders = normalizeHeaders(headers)
-
-  // format the content-type header to remove charset -- this is non-standard behavior that is somewhat common
-  // e.g. application/json;charset=utf-8 => application/json
-  const removeCharset = (header: string | null): string | null =>
-    header?.split(';')[0].trim() ?? null
-
-  return match.some((t) =>
-    removeCharset(normalizedHeaders.get('content-type'))?.includes(t)
-  )
+  return match.some((t) => normalizedHeaders.get('content-type')?.includes(t))
 }
 
 export const containsJSONContentType = (
