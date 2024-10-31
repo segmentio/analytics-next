@@ -1,5 +1,29 @@
 # @segment/analytics-signals
 
+## 1.5.0
+
+### Minor Changes
+
+- [#1176](https://github.com/segmentio/analytics-next/pull/1176) [`7d5d9753`](https://github.com/segmentio/analytics-next/commit/7d5d9753509d8af8f10486c91505b30d2c6e240a) Thanks [@silesky](https://github.com/silesky)! - Update max buffer size to 50
+
+* [#1177](https://github.com/segmentio/analytics-next/pull/1177) [`11a943e2`](https://github.com/segmentio/analytics-next/commit/11a943e29e73189c613f93b268e10a64f2561fbc) Thanks [@silesky](https://github.com/silesky)! - - Fix runtime errors for submit
+  - Add better form submit data
+  - Loosen content-type to parse text/plain
+  - Tweak disallow list
+  - Add labels
+
+- [#1166](https://github.com/segmentio/analytics-next/pull/1166) [`9e6db285`](https://github.com/segmentio/analytics-next/commit/9e6db2857798f4b5bfdbbfe3570b3d4d83294a79) Thanks [@danieljackins](https://github.com/danieljackins)! - Add sampling logic and block non debug traffic
+
+* [#1168](https://github.com/segmentio/analytics-next/pull/1168) [`ba2f2b16`](https://github.com/segmentio/analytics-next/commit/ba2f2b165bf1b997a9ce79d410690d27d50378fd) Thanks [@silesky](https://github.com/silesky)! - Refactor runtime to use `@segment/analytics-signals-runtime`
+
+### Patch Changes
+
+- [#1178](https://github.com/segmentio/analytics-next/pull/1178) [`08e45530`](https://github.com/segmentio/analytics-next/commit/08e4553001da146f1d80a9b620aef0ef0db04bd4) Thanks [@silesky](https://github.com/silesky)! - \* Refactor disallowList logic to never allow api.segment.io
+  - Update README
+  - Export SignalsPlugin in umd as well as global
+- Updated dependencies [[`ba2f2b16`](https://github.com/segmentio/analytics-next/commit/ba2f2b165bf1b997a9ce79d410690d27d50378fd)]:
+  - @segment/analytics-signals-runtime@1.0.0
+
 ## 1.4.0
 
 ### Minor Changes

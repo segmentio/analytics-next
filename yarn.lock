@@ -4324,7 +4324,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@segment/analytics-signals-runtime@0.0.0, @segment/analytics-signals-runtime@workspace:packages/signals/signals-runtime":
+"@segment/analytics-signals-runtime@1.0.0, @segment/analytics-signals-runtime@workspace:packages/signals/signals-runtime":
   version: 0.0.0-use.local
   resolution: "@segment/analytics-signals-runtime@workspace:packages/signals/signals-runtime"
   dependencies:
@@ -4341,7 +4341,7 @@ __metadata:
     "@internal/config-webpack": "workspace:^"
     "@internal/test-helpers": "workspace:^"
     "@segment/analytics-generic-utils": 1.2.0
-    "@segment/analytics-signals-runtime": 0.0.0
+    "@segment/analytics-signals-runtime": 1.0.0
     fake-indexeddb: ^6.0.0
     idb: ^8.0.0
     node-fetch: ^2.6.7
