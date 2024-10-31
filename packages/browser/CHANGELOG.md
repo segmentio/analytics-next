@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.76.0
+
+### Minor Changes
+
+- [#1166](https://github.com/segmentio/analytics-next/pull/1166) [`9e6db285`](https://github.com/segmentio/analytics-next/commit/9e6db2857798f4b5bfdbbfe3570b3d4d83294a79) Thanks [@danieljackins](https://github.com/danieljackins)! - Add sampling logic and block non debug traffic
+
 ## 1.75.0
 
 ### Minor Changes
