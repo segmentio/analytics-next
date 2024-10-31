@@ -91,9 +91,6 @@ export class Signals implements ISignals {
       disallowListURLs: [
         analyticsService.instance.settings.apiHost,
         analyticsService.instance.settings.cdnURL,
-        'api.segment.io',
-        'signals.segment.io',
-        'cdn.segment.com',
       ],
       sampleRate:
         analyticsService.instance.settings.cdnSettings

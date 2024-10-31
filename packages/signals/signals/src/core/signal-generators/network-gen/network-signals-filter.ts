@@ -50,6 +50,7 @@ class NetworkFilterListItem {
 export class NetworkSignalsFilterList {
   public allowed: NetworkFilterListItem
   public disallowed: NetworkFilterListItem
+  private disallowedDefaults: NetworkFilterListItem
 
   constructor(
     allowList: RegexLike[] | undefined,
@@ -57,10 +58,16 @@ export class NetworkSignalsFilterList {
   ) {
     this.allowed = new NetworkFilterListItem(allowList || [])
     this.disallowed = new NetworkFilterListItem(disallowList || [])
+    this.disallowedDefaults = new NetworkFilterListItem([
+      'api.segment.io',
+      'signals.segment.io',
+      'cdn.segment.com',
+    ])
   }
 
   isAllowed(url: string): boolean {
-    const disallowed = this.disallowed.test(url)
+    const disallowed =
+      this.disallowed.test(url) || this.disallowedDefaults.test(url)
     const allowed = this.allowed.test(url)
     return allowed && !disallowed
   }
@@ -85,6 +92,7 @@ export class NetworkSignalsFilter {
   isAllowed(url: string): boolean {
     const { networkSignalsFilterList, networkSignalsAllowSameDomain } =
       this.settings
+
     const passesNetworkFilter = networkSignalsFilterList.isAllowed(url)
     const allowedBecauseSameDomain =
       networkSignalsAllowSameDomain && isSameDomain(url)
