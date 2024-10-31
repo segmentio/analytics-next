@@ -146,6 +146,7 @@ describe(NetworkGenerator, () => {
           {
             "data": {
               "action": "response",
+              "contentType": "application/json",
               "data": {
                 "data": "test",
               },
@@ -189,6 +190,7 @@ describe(NetworkGenerator, () => {
       {
         "data": {
           "action": "request",
+          "contentType": "application/json",
           "data": {
             "key": "value",
           },
@@ -209,6 +211,7 @@ describe(NetworkGenerator, () => {
       {
         "data": {
           "action": "response",
+          "contentType": "application/json",
           "data": {
             "data": "test",
           },

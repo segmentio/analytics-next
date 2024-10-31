@@ -99,6 +99,13 @@ describe(containsContentType, () => {
         'application/json',
       ])
     ).toBe(true)
+
+    expect(
+      containsContentType(
+        new Headers({ 'Content-Type': 'application/json ;  charset=utf-8' }),
+        ['application/json']
+      )
+    ).toBe(true)
   })
 
   it('should return false if headers do not contain application/json', () => {

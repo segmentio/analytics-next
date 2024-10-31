@@ -12,7 +12,11 @@ import {
   NetworkRequestHandler,
   NetworkResponseHandler,
 } from './network-interceptor'
-import { containsJSONContentType } from './helpers'
+import {
+  containsJSONContentType,
+  containsJSONParseableContentType,
+  tryJSONParse,
+} from './helpers'
 
 export type NetworkSettingsConfigSettings = Pick<
   SignalsSettingsConfig,
@@ -52,14 +56,18 @@ export class NetworkGenerator implements SignalGenerator {
     const createMetadata = () => ({
       filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
     })
+
     const handleRequest: NetworkRequestHandler = (rq) => {
-      if (!containsJSONContentType(rq.headers)) {
+      if (!containsJSONParseableContentType(rq.headers)) {
         return
       }
 
       if (!rq.url || !this.filter.isAllowed(rq.url)) {
         return
       }
+
+      const data = typeof rq.body === 'string' ? tryJSONParse(rq.body) : null
+
       this.emittedRequestIds.push(rq.id)
       emitter.emit(
         createNetworkSignal(
@@ -67,7 +75,8 @@ export class NetworkGenerator implements SignalGenerator {
             action: 'request',
             url: rq.url,
             method: rq.method || 'GET',
-            data: rq.body ? JSON.parse(rq.body.toString()) : null,
+            data,
+            contentType: rq.headers?.get('content-type') || '',
           },
           createMetadata()
         )
@@ -101,6 +110,7 @@ export class NetworkGenerator implements SignalGenerator {
             data: data,
             ok: rs.ok,
             status: rs.status,
+            contentType: rs.headers.get('content-type') || '',
           },
           createMetadata()
         )

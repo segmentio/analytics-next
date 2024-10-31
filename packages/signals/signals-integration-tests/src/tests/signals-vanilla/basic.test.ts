@@ -164,10 +164,11 @@ test('navigation signals', async ({ page }) => {
 
   // navigate to a new hash
   {
+    const flush = indexPage.waitForSignalsApiFlush()
     await page.evaluate(() => {
       window.location.hash = '#foo'
     })
-    await indexPage.waitForSignalsApiFlush()
+    await flush
     expect(indexPage.signalsAPI.getEvents()).toHaveLength(2)
     const ev = indexPage.signalsAPI.lastEvent('navigation')
     expect(ev.properties).toMatchObject({

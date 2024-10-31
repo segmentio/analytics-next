@@ -21,7 +21,8 @@ type ClickData = {
 
 type SubmitData = {
   eventType: 'submit'
-  submitter: SerializedTarget
+  submitter?: SerializedTarget
+  target: SerializedTarget
 }
 
 type ChangeData = {
@@ -68,6 +69,7 @@ interface BaseNetworkData {
   action: string
   url: string
   data: JSONValue
+  contentType: string
 }
 
 interface NetworkRequestData extends BaseNetworkData {

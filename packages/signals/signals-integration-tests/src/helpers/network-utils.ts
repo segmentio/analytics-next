@@ -57,6 +57,30 @@ export class PageNetworkUtils {
     await req
     return responseBody
   }
+  async makeFileUploadRequest(url: string) {
+    let normalizeUrl = url
+    if (url.startsWith('/')) {
+      normalizeUrl = new URL(url, this.page.url()).href
+    }
+    const req = this.page.waitForResponse(normalizeUrl ?? url, {
+      timeout: this.defaultResponseTimeout,
+    })
+    await this.page.evaluate((_url) => {
+      const formData = new FormData()
+      const file = new File(['file content'], 'test.txt', {
+        type: 'text/plain',
+      })
+      formData.append('file', file)
+      return fetch(_url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    }, normalizeUrl)
+    await req
+  }
   /**
    * Make a fetch call in the page context. By default it will POST a JSON object with {foo: 'bar'}
    */
@@ -64,6 +88,7 @@ export class PageNetworkUtils {
     url = this.defaultTestApiURL,
     request: Partial<RequestInit> & {
       contentType?: string
+      blob?: boolean
     } = {}
   ): Promise<any> {
     let normalizeUrl = url

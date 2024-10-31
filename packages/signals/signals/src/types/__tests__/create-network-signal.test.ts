@@ -23,6 +23,7 @@ describe(createNetworkSignal, () => {
       url: 'http://example.com',
       method: 'post',
       data: { key: 'value' },
+      contentType: 'application/json',
     }
 
     const signal = createNetworkSignal(data, metadata)
@@ -31,6 +32,7 @@ describe(createNetworkSignal, () => {
       {
         "data": {
           "action": "request",
+          "contentType": "application/json",
           "data": {
             "key": "value",
           },
@@ -61,6 +63,7 @@ describe(createNetworkSignal, () => {
       url: 'http://example.com',
       ok: true,
       status: 200,
+      contentType: 'application/json',
       data: { key: 'value' },
     }
 
@@ -70,6 +73,7 @@ describe(createNetworkSignal, () => {
       {
         "data": {
           "action": "response",
+          "contentType": "application/json",
           "data": {
             "key": "value",
           },

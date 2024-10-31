@@ -16,7 +16,7 @@ describe(getSignalBuffer, () => {
   it('should add and clear', async () => {
     const mockSignal = createInteractionSignal({
       eventType: 'submit',
-      submitter: {},
+      target: {},
     })
     await buffer.add(mockSignal)
     await expect(buffer.getAll()).resolves.toEqual([mockSignal])

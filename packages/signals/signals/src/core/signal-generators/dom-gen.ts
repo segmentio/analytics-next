@@ -8,15 +8,31 @@ import { SignalEmitter } from '../emitter'
 import { SignalGenerator } from './types'
 
 interface Label {
-  textContent?: string
+  textContent: string
+  id: string
+  attributes: Record<string, unknown>
 }
+
+const parseFormData = (data: FormData): Record<string, string> => {
+  return [...data].reduce((acc, [key, value]) => {
+    if (typeof value === 'string') {
+      acc[key] = value
+    }
+    return acc
+  }, {} as Record<string, string>)
+}
+
 const parseLabels = (
   labels: NodeListOf<HTMLLabelElement> | null | undefined
 ): Label[] => {
   if (!labels) return []
-  return [...labels].map((label) => ({
-    textContent: label.textContent ?? undefined,
-  }))
+  return [...labels]
+    .map((label) => ({
+      id: label.id,
+      attributes: parseNodeMap(label.attributes),
+      textContent: label.textContent ? cleanText(label.textContent) : undefined,
+    }))
+    .filter((el): el is Label => Boolean(el.textContent))
 }
 
 const parseNodeMap = (nodeMap: NamedNodeMap): Record<string, unknown> => {
@@ -34,21 +50,70 @@ export const cleanText = (str: string): string => {
     .trim() // Trim leading and trailing spaces
 }
 
-const parseElement = (el: HTMLElement) => {
+interface ParsedElementBase {
+  attributes: Record<string, unknown>
+  classList: string[]
+  id: string
+  labels?: Label[]
+  label?: Label
+  name: string
+  nodeName: string
+  tagName: string
+  title: string
+  type: string
+  value: string
+  textContent?: string
+  innerText?: string
+}
+
+interface ParsedSelectElement extends ParsedElementBase {
+  selectedOptions: { value: string; text: string }[]
+  selectedIndex: number
+}
+interface ParsedInputElement extends ParsedElementBase {
+  checked: boolean
+}
+interface ParsedMediaElement extends ParsedElementBase {
+  currentSrc?: string
+  currentTime?: number
+  duration: number
+  ended: boolean
+  muted: boolean
+  paused: boolean
+  playbackRate: number
+  readyState?: number
+  src?: string
+  volume?: number
+}
+
+interface ParsedHTMLFormElement extends ParsedElementBase {
+  formData: Record<string, string>
+}
+
+type AnyParsedElement =
+  | ParsedHTMLFormElement
+  | ParsedSelectElement
+  | ParsedInputElement
+  | ParsedMediaElement
+  | ParsedElementBase
+
+const parseElement = (el: HTMLElement): AnyParsedElement => {
+  const labels = parseLabels((el as HTMLInputElement).labels)
   const base = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
     id: el.id,
-    labels: parseLabels((el as HTMLInputElement).labels),
+    labels,
+    label: labels[0],
     name: (el as HTMLInputElement).name,
     nodeName: el.nodeName,
     tagName: el.tagName,
     title: el.title,
     type: (el as HTMLInputElement).type,
     value: (el as HTMLInputElement).value,
-    textContent: el.textContent && cleanText(el.textContent),
-    innerText: el.innerText && cleanText(el.innerText),
+    textContent: (el.textContent && cleanText(el.textContent)) ?? undefined,
+    innerText: (el.innerText && cleanText(el.innerText)) ?? undefined,
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -78,6 +143,11 @@ const parseElement = (el: HTMLElement) => {
       readyState: el.readyState,
       src: el.src,
       volume: el.volume,
+    }
+  } else if (el instanceof HTMLFormElement) {
+    return {
+      ...base,
+      formData: parseFormData(new FormData(el)),
     }
   }
   return base
@@ -114,11 +184,18 @@ export class FormSubmitGenerator implements SignalGenerator {
   id = 'form-submit'
   register(emitter: SignalEmitter) {
     const handleSubmit = (ev: SubmitEvent) => {
-      const target = ev.submitter!
+      const target = ev.target as HTMLFormElement | null
+
+      if (!target) return
+
+      // reference to the form element that the submit event is being fired at
+      const submitter = ev.submitter
+      // If the form is submitted via JavaScript using form.submit(), the submitter property will be null because no specific button/input triggered the submission.
       emitter.emit(
         createInteractionSignal({
           eventType: 'submit',
-          submitter: parseElement(target),
+          target: parseElement(target),
+          submitter: submitter ? parseElement(submitter) : undefined,
         })
       )
     }
@@ -131,8 +208,9 @@ export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
   register(emitter: SignalEmitter) {
     const handleChange = (ev: Event) => {
-      const target = ev.target as HTMLElement
-      if (target instanceof HTMLInputElement) {
+      const target = ev.target as HTMLElement | null
+      if (!target) return
+      if (target && target instanceof HTMLInputElement) {
         if (target.type === 'password') {
           logger.debug('Ignoring change event for input', target)
           return

@@ -38,6 +38,7 @@ export const mockNetworkSignal: NetworkSignal = {
   type: 'network',
   data: {
     action: 'request',
+    contentType: 'application/json',
     url: 'https://api.example.com/data',
     method: 'GET',
     data: { key: 'value' },

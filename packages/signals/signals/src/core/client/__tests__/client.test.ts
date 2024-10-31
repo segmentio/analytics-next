@@ -44,6 +44,7 @@ describe(SignalsIngestClient, () => {
     const ctx = await client.send({
       type: 'network',
       data: {
+        contentType: 'application/json',
         action: 'request',
         data: {
           hello: 'how are you',
@@ -58,6 +59,7 @@ describe(SignalsIngestClient, () => {
     expect(ctx!.event.properties!.data).toMatchInlineSnapshot(`
       {
         "action": "request",
+        "contentType": "application/json",
         "data": {
           "hello": "XXX",
         },
