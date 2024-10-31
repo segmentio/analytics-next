@@ -60,8 +60,8 @@ interface ParsedElementBase {
   nodeName: string
   tagName: string
   title: string
-  type: string
-  value: string
+  type?: string
+  value?: string
   textContent?: string
   innerText?: string
 }
@@ -88,6 +88,8 @@ interface ParsedMediaElement extends ParsedElementBase {
 
 interface ParsedHTMLFormElement extends ParsedElementBase {
   formData: Record<string, string>
+  innerText: never
+  textContent: never
 }
 
 type AnyParsedElement =
@@ -147,6 +149,8 @@ const parseElement = (el: HTMLElement): AnyParsedElement => {
   } else if (el instanceof HTMLFormElement) {
     return {
       ...base,
+      innerText: undefined,
+      textContent: undefined,
       formData: parseFormData(new FormData(el)),
     }
   }
