@@ -79,11 +79,11 @@ describe(redactSignalData, () => {
   it('should redact the value in the "target" property if the type is "interaction"', () => {
     const signal = factories.createInteractionSignal({
       eventType: 'change',
-      target: { value: 'secret' },
+      target: { value: 'secret', formData: { password: '123' } },
     })
     const expected = factories.createInteractionSignal({
       eventType: 'change',
-      target: { value: 'XXX' },
+      target: { value: 'XXX', formData: { password: 'XXX' } },
     })
     expect(redactSignalData(signal)).toEqual(expected)
   })

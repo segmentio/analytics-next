@@ -56,12 +56,12 @@ interface ParsedElementBase {
   id: string
   labels?: Label[]
   label?: Label
-  name: string
+  name?: string
   nodeName: string
   tagName: string
   title: string
-  type: string
-  value: string
+  type?: string
+  value?: string
   textContent?: string
   innerText?: string
 }
@@ -88,6 +88,8 @@ interface ParsedMediaElement extends ParsedElementBase {
 
 interface ParsedHTMLFormElement extends ParsedElementBase {
   formData: Record<string, string>
+  innerText: never
+  textContent: never
 }
 
 type AnyParsedElement =
@@ -99,7 +101,7 @@ type AnyParsedElement =
 
 const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
-  const base = {
+  const base: ParsedElementBase = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
@@ -147,6 +149,8 @@ const parseElement = (el: HTMLElement): AnyParsedElement => {
   } else if (el instanceof HTMLFormElement) {
     return {
       ...base,
+      innerText: undefined,
+      textContent: undefined,
       formData: parseFormData(new FormData(el)),
     }
   }
