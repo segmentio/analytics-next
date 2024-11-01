@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.5.1
+
+### Patch Changes
+
+- [#1179](https://github.com/segmentio/analytics-next/pull/1179) [`ed7a749b`](https://github.com/segmentio/analytics-next/commit/ed7a749be7cddcbf656ac9f72e444ea9f822a718) Thanks [@silesky](https://github.com/silesky)! - Redact formData
+
 ## 1.5.0
 
 ### Minor Changes
