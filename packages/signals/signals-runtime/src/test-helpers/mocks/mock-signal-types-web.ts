@@ -12,7 +12,6 @@ export const mockInteractionSignal: InteractionSignal = {
     eventType: 'click',
     target: { id: 'button1', className: 'btn-primary' },
   },
-  metadata: { timestamp: Date.now() },
 }
 
 export const mockNavigationSignal: NavigationSignal = {
@@ -23,7 +22,6 @@ export const mockNavigationSignal: NavigationSignal = {
     hash: '#section1',
     prevUrl: 'https://example.com/home',
   },
-  metadata: { timestamp: Date.now() },
 }
 
 export const mockInstrumentationSignal: InstrumentationSignal = {
@@ -31,7 +29,6 @@ export const mockInstrumentationSignal: InstrumentationSignal = {
   data: {
     rawEvent: { type: 'customEvent', detail: 'example' },
   },
-  metadata: { timestamp: Date.now() },
 }
 
 export const mockNetworkSignal: NetworkSignal = {
@@ -43,7 +40,6 @@ export const mockNetworkSignal: NetworkSignal = {
     method: 'GET',
     data: { key: 'value' },
   },
-  metadata: { timestamp: Date.now() },
 }
 
 export const mockUserDefinedSignal: UserDefinedSignal = {
@@ -51,5 +47,4 @@ export const mockUserDefinedSignal: UserDefinedSignal = {
   data: {
     customField: 'customValue',
   },
-  metadata: { timestamp: Date.now() },
 }
