@@ -4,9 +4,11 @@ import {
   mockInteractionSignal,
 } from '../test-helpers/mocks/mock-signal-types-web'
 
-import { WebSignalsRuntime } from '../web/web-signals-runtime'
-describe(WebSignalsRuntime, () => {
-  let signalsRuntime: WebSignalsRuntime
+import { SignalsRuntime } from '../shared/signals-runtime'
+
+describe(SignalsRuntime, () => {
+  class SomeSignalsRuntime extends SignalsRuntime<Signal> {}
+  let signalsRuntime: SomeSignalsRuntime
   let signal1: InstrumentationSignal
   let signal2: InteractionSignal
   let signal3: InteractionSignal
@@ -19,7 +21,7 @@ describe(WebSignalsRuntime, () => {
       data: { eventType: 'change', target: {} },
     }
     mockSignals = [signal1, signal2, signal3]
-    signalsRuntime = new WebSignalsRuntime(mockSignals)
+    signalsRuntime = new SomeSignalsRuntime(mockSignals)
   })
 
   describe('meta', () => {
@@ -125,13 +127,13 @@ describe(WebSignalsRuntime, () => {
 
   describe('signalBuffer property', () => {
     beforeEach(() => {
-      signalsRuntime = new WebSignalsRuntime()
+      signalsRuntime = new SomeSignalsRuntime()
     })
     it('should have no signals by default', () => {
       expect(signalsRuntime.signalBuffer).toEqual([])
     })
     it('should let you set the signal buffer', () => {
-      signalsRuntime = new WebSignalsRuntime()
+      signalsRuntime = new SomeSignalsRuntime()
       const newSignal = mockInstrumentationSignal
       signalsRuntime.signalBuffer = [newSignal]
       expect(signalsRuntime.signalBuffer).toEqual([newSignal])
