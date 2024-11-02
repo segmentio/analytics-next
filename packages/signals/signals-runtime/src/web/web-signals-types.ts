@@ -35,7 +35,25 @@ export type InteractionSignal = RawSignal<'interaction', InteractionData>
 interface BaseNavigationData<ActionType extends string> {
   action: ActionType
   url: string
+  /**
+   * The hash part of the URL, including the leading `#`
+   * @example '#section1'
+   */
   hash: string
+  /**
+   * The path part of the URL, including the leading `/`
+   * @example '/home'
+   */
+  path: string
+  /**
+   * The search part of the URL, including the leading `?`
+   * @example '?utm_source=google'
+   */
+  /**
+   * The title of the page
+   * @example 'Home Page'
+   */
+  title: string
 }
 
 export interface URLChangeNavigationData
@@ -66,22 +84,42 @@ export interface NetworkSignalMetadata {
 }
 
 interface BaseNetworkData {
-  action: string
+  action: 'request' | 'response'
   url: string
+  /**
+   * The content of the request or response
+   * @example { key: 'value' }
+   */
   data: JSONValue
+  /**
+   * The content type of the request or response
+   * @example 'application/json'
+   */
   contentType: string
 }
 
 interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
+  /**
+   * The HTTP method used for the request
+   * @example 'GET' | 'POST' | 'PUT' | 'DELETE'
+   */
   method: string
 }
 
 interface NetworkResponseData extends BaseNetworkData {
   action: 'response'
   url: string
+  /**
+   * The status code of the response
+   * @example 200
+   */
   status: number
+  /**
+   * Whether the request was successful
+   * For example, a status code of 200-299 is considered successful
+   */
   ok: boolean
 }
 

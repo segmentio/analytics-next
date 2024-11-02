@@ -21,13 +21,16 @@ export const mockNavigationSignal: NavigationSignal = {
     url: 'https://example.com',
     hash: '#section1',
     prevUrl: 'https://example.com/home',
+    path: '/home',
+    title: 'Home Page',
+    search: '?utm_source=google',
   },
 }
 
 export const mockInstrumentationSignal: InstrumentationSignal = {
   type: 'instrumentation',
   data: {
-    rawEvent: { type: 'customEvent', detail: 'example' },
+    rawEvent: { type: 'track', properties: { key: 'value' }, context: {} },
   },
 }
 
