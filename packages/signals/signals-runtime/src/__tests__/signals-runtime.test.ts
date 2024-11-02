@@ -86,6 +86,41 @@ describe(WebSignalsRuntime, () => {
       const result = signalsRuntime.filter(signal1, 'interaction')
       expect(result).toEqual([signal2, signal3])
     })
+
+    it('should handle referential comparison', () => {
+      signalsRuntime.signalBuffer = [signal1, signal2]
+      const result = signalsRuntime.filter(signal1, 'interaction')
+      expect(result).toEqual([signal2])
+    })
+
+    it('should handle comparison by id', () => {
+      const young = { ...signal1, id: undefined }
+      const middle = { ...signal1, id: 'unique-id3' }
+      const old = { ...signal1, id: undefined }
+
+      signalsRuntime.signalBuffer = [young, middle, old]
+      const result = signalsRuntime.filter(middle, 'instrumentation')
+      expect(result).toEqual([old])
+    })
+
+    it('should handle comparison by index', () => {
+      const young = { ...signal1, index: 1, id: undefined }
+      const middle = { ...signal1, index: 2, id: undefined }
+      const old = { ...signal1, index: 3, id: undefined }
+
+      signalsRuntime.signalBuffer = [young, middle, old]
+      const result = signalsRuntime.filter(middle, 'instrumentation')
+      expect(result).toEqual([old])
+    })
+
+    it('should handle deep comparison', () => {
+      const signalCopy1 = { ...signal1 }
+      const signalCopy2 = { ...signal1, foo: 123 }
+      const signalCopy3 = { ...signal1, foo: 123 }
+      signalsRuntime.signalBuffer = [signalCopy1, signalCopy2, signalCopy3]
+      const result = signalsRuntime.filter(signalCopy1, 'instrumentation')
+      expect(result[0]).toBe(signalCopy2)
+    })
   })
 
   describe('signalBuffer property', () => {

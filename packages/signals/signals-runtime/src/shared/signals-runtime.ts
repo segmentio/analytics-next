@@ -46,9 +46,20 @@ export abstract class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
       // or else, use JSON.stringify to do a deep comparison
       if (el === fromSignal) {
         return true
-      } else if ('id' in el && 'id' in fromSignal) {
+      } else if (
+        // if both have id, compare id
+        'id' in el &&
+        'id' in fromSignal &&
+        el.id !== undefined &&
+        fromSignal.id !== undefined
+      ) {
         return el.id === fromSignal.id
-      } else if ('index' in el && 'index' in fromSignal) {
+      } else if (
+        'index' in el &&
+        'index' in fromSignal &&
+        el.index !== undefined &&
+        fromSignal.index !== undefined
+      ) {
         return el.index === fromSignal.index
       } else {
         return JSON.stringify(el) === JSON.stringify(fromSignal)
