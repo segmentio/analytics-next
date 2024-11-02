@@ -41,11 +41,43 @@ export abstract class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
     signalType: SignalType,
     predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
   ): SignalOfType<Signal, SignalType>[] => {
+    const foundIndex = this.signalBuffer.findIndex((el) => {
+      // if can use referential comparison, use that. Or if has ID, use that to compare
+      // or else, use JSON.stringify to do a deep comparison
+      if (el === fromSignal) {
+        return true
+      } else if ('id' in el && 'id' in fromSignal) {
+        return el.id === fromSignal.id
+      } else if ('index' in el && 'index' in fromSignal) {
+        return el.index === fromSignal.index
+      } else {
+        return JSON.stringify(el) === JSON.stringify(fromSignal)
+      }
+    })
+
+    if (foundIndex === -1) {
+      console.warn(
+        'Invariant: the fromSignal was not found in the signalBuffer'
+      )
+    }
+
+    return this.filterBuffer(
+      this.signalBuffer.slice(foundIndex + 1),
+      signalType,
+      predicate
+    )
+  }
+
+  private filterBuffer = <SignalType extends Signal['type']>(
+    buffer: Signal[],
+    signalType: SignalType,
+    predicate?: (signal: SignalOfType<Signal, SignalType>) => boolean
+  ): SignalOfType<Signal, SignalType>[] => {
     const _isSignalOfType = (
       signal: Signal
     ): signal is SignalOfType<Signal, SignalType> => signal.type === signalType
-    return this.signalBuffer
-      .slice(this.signalBuffer.indexOf(fromSignal) + 1)
+
+    return buffer
       .filter(_isSignalOfType)
       .filter((signal) => (predicate ? predicate(signal) : () => true))
   }

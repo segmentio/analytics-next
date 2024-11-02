@@ -7,6 +7,7 @@ import {
   SignalAPIRequestBuffer,
   TrackingAPIRequestBuffer,
 } from './network-utils'
+import { SegmentEvent } from '@segment/analytics-next'
 
 export class BasePage {
   protected page!: Page
@@ -82,6 +83,17 @@ export class BasePage {
           enableSignalsIngestion: true,
           ...signalSettings,
         })
+
+        window.signalsEmitted = []
+        window.signalsPlugin.onSignal((signal) => {
+          window.signalsEmitted.push(signal)
+        })
+        window.segmentEvents = []
+        window.analytics.on('track', (event) => {
+          if (event !== 'Segment Signal Generated') {
+            window.segmentEvents.push(event)
+          }
+        })
         window.analytics.load({
           writeKey: '<SOME_WRITE_KEY>',
           plugins: [window.signalsPlugin],
@@ -90,6 +102,14 @@ export class BasePage {
       { signalSettings }
     )
     return this
+  }
+
+  getEmittedSignals(): Promise<Signal[]> {
+    return this.page.evaluate(() => window.signalsEmitted)
+  }
+
+  getSegmentEvents(): Promise<SegmentEvent[]> {
+    return this.page.evaluate(() => window.segmentEvents)
   }
 
   private async setupMockedRoutes() {

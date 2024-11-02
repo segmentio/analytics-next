@@ -14,11 +14,29 @@ test('should find the most recent signal', async ({ page }) => {
 }`
 
   await indexPage.loadAndWait(page, basicEdgeFn)
-  const tapiFlush = indexPage.waitForTrackingApiFlush()
   await indexPage.addUserDefinedSignal({ num: 1 })
   await indexPage.addUserDefinedSignal({ num: 2 })
   await indexPage.clickComplexButton()
-  await tapiFlush
-  const lastEvent = indexPage.trackingAPI.lastEvent()
-  expect(lastEvent.event).toEqual('correct signal found')
+  await page.waitForFunction(() => window.segmentEvents.length === 1)
+  const events = await page.evaluate(() => window.segmentEvents)
+  expect(events[0]).toEqual('correct signal found')
+})
+
+test('should work with other signals', async ({ page }) => {
+  const basicEdgeFn = `const processSignal = (signal) => {
+    if (signal.type === 'interaction' && signal.data.eventType === 'click') {
+        const oldSignal = signals.find(signal, 'userDefined', (s) => s.data.order === 'old')
+        const oldestSignal = signals.find(oldSignal, 'userDefined')
+        analytics.track('order: ' + oldestSignal.data.order)
+    }
+}`
+
+  await indexPage.loadAndWait(page, basicEdgeFn)
+  await indexPage.addUserDefinedSignal({ order: 'oldest' })
+  await indexPage.addUserDefinedSignal({ order: 'old' })
+  await indexPage.addUserDefinedSignal({ order: 'young' })
+  await indexPage.clickButton()
+  await page.waitForFunction(() => window.segmentEvents.length === 1)
+  const events = await page.evaluate(() => window.segmentEvents)
+  expect(events[0]).toEqual('order: oldest')
 })
