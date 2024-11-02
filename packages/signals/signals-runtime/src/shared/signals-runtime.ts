@@ -47,7 +47,6 @@ export abstract class SignalsRuntime<Signal extends BaseSignal = BaseSignal> {
       if (el === fromSignal) {
         return true
       } else if (
-        // if both have id, compare id
         'id' in el &&
         'id' in fromSignal &&
         el.id !== undefined &&
