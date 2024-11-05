@@ -18,7 +18,9 @@ export type MethodName =
 /**
  * Buffer of any analytics calls made during the processing of a signal
  */
-export type AnalyticsMethodCalls = Record<MethodName, any[]>
+export type AnalyticsMethodCalls = Record<MethodName, any[]> & {
+  reset: unknown[]
+}
 
 /**
  * Proxy around the analytics client
@@ -31,6 +33,7 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
     alias: [],
     screen: [],
     group: [],
+    reset: [],
   }
 
   getCalls(): AnalyticsMethodCalls {
@@ -114,6 +117,10 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
     } catch (err) {
       console.error(err)
     }
+  }
+
+  reset = () => {
+    this.calls.reset.push([])
   }
 }
 

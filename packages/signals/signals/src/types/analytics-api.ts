@@ -66,6 +66,8 @@ export interface AnyAnalytics {
   group(...args: any[]): void
   alias(...args: any[]): void
   screen(...args: any[]): void
+  reset(): void
+  on(name: 'reset', fn: (...args: any[]) => void): void
 }
 
 /**
