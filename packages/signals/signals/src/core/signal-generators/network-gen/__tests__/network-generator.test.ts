@@ -126,7 +126,7 @@ describe(NetworkGenerator, () => {
     unregister()
   })
 
-  it('should emit response signal but not request signal if content-type for request is not recognized  ', async () => {
+  it('should emit response signal and request signal, regardless of content type', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator()
     const unregister = networkGenerator.register(
@@ -134,7 +134,7 @@ describe(NetworkGenerator, () => {
     )
 
     await window.fetch(`/api`, {
-      method: 'GET',
+      method: 'POST',
       headers: { 'content-type': 'text/html' },
       body: 'hello world',
     })
@@ -142,6 +142,24 @@ describe(NetworkGenerator, () => {
     await sleep(100)
     expect(mockEmitter.emit.mock.calls).toMatchInlineSnapshot(`
       [
+        [
+          {
+            "data": {
+              "action": "request",
+              "contentType": "text/html",
+              "data": "hello world",
+              "method": "POST",
+              "url": "http://localhost/api",
+            },
+            "metadata": {
+              "filters": {
+                "allowed": [],
+                "disallowed": [],
+              },
+            },
+            "type": "network",
+          },
+        ],
         [
           {
             "data": {

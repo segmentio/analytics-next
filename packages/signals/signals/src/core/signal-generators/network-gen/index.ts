@@ -12,11 +12,7 @@ import {
   NetworkRequestHandler,
   NetworkResponseHandler,
 } from './network-interceptor'
-import {
-  containsJSONContentType,
-  containsJSONParseableContentType,
-  tryJSONParse,
-} from './helpers'
+import { containsJSONContentType, tryJSONParse } from './helpers'
 
 export type NetworkSettingsConfigSettings = Pick<
   SignalsSettingsConfig,
@@ -58,10 +54,6 @@ export class NetworkGenerator implements SignalGenerator {
     })
 
     const handleRequest: NetworkRequestHandler = (rq) => {
-      if (!containsJSONParseableContentType(rq.headers)) {
-        return
-      }
-
       if (!rq.url || !this.filter.isAllowed(rq.url)) {
         return
       }

@@ -65,9 +65,6 @@ export const createNetworkSignal = (
     data: {
       ...data,
       url: normalizeUrl(data.url),
-      ...(data.action === 'request'
-        ? { method: data.method.toUpperCase() }
-        : {}),
     },
     metadata: metadata,
   }

@@ -75,7 +75,7 @@ interface BaseNetworkData {
 interface NetworkRequestData extends BaseNetworkData {
   action: 'request'
   url: string
-  method: string
+  method: HTTPMethod
 }
 
 interface NetworkResponseData extends BaseNetworkData {
@@ -84,6 +84,15 @@ interface NetworkResponseData extends BaseNetworkData {
   status: number
   ok: boolean
 }
+
+export type HTTPMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS'
 
 export type NetworkData = NetworkRequestData | NetworkResponseData
 

@@ -93,7 +93,7 @@ describe(redactSignalData, () => {
       {
         contentType: 'application/json',
         action: 'request',
-        method: 'post',
+        method: 'POST',
         url: 'http://foo.com',
         data: { name: 'John Doe', age: 30 },
       },
@@ -103,7 +103,7 @@ describe(redactSignalData, () => {
       {
         contentType: 'application/json',
         action: 'request',
-        method: 'post',
+        method: 'POST',
         url: 'http://foo.com',
         data: { name: 'XXX', age: 999 },
       },

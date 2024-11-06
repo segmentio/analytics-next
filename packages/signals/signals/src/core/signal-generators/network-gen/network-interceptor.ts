@@ -10,9 +10,22 @@ import {
 let origFetch: typeof window.fetch
 let origXMLHttpRequest: typeof XMLHttpRequest
 
+export type HTTPMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS'
+
+const toHTTPMethod = (method: string): HTTPMethod => {
+  return method.toUpperCase() as HTTPMethod
+}
+
 export interface NetworkInterceptorRequest {
   url: string
-  method: string
+  method: HTTPMethod
   contentType: string | undefined
   body: string | undefined
   headers: Headers | undefined
@@ -42,7 +55,7 @@ const createInterceptorRequest = ({
 }: {
   url: URL | string
   body: string | undefined
-  method: string
+  method: HTTPMethod
   headers: Headers | undefined
   id: string
 }): NetworkInterceptorRequest => ({
@@ -130,7 +143,7 @@ export class NetworkInterceptor {
           createInterceptorRequest({
             url: normalizedURL,
             body: typeof options?.body == 'string' ? options.body : undefined,
-            method: options?.method ?? 'GET',
+            method: options?.method ? toHTTPMethod(options.method) : 'GET',
             headers,
             id,
           })
@@ -185,7 +198,7 @@ export class NetworkInterceptor {
     const OrigXMLHttpRequest = window.XMLHttpRequest
     class InterceptedXMLHttpRequest extends OrigXMLHttpRequest {
       _reqURL?: string
-      _reqMethod?: string
+      _reqMethod?: HTTPMethod
       _reqBody?: XMLHttpRequestBodyInit
       _reqHeaders?: Headers
       _reqId = createRequestId()
@@ -263,7 +276,7 @@ export class NetworkInterceptor {
         const [method, url] = args
         try {
           this._reqURL = url.toString()
-          this._reqMethod = method
+          this._reqMethod = toHTTPMethod(method)
         } catch (err) {
           console.log('Error handling request (open)', err)
         }
