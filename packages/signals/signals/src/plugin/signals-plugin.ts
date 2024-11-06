@@ -87,12 +87,15 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   }
 
   /**
-   * Turn on debug logging for signals
+   * Enable redaction and disable ingestion of signals.
    */
   debug() {
     this.signals.debug()
   }
 
+  /**
+   * Log signals to the console.
+   */
   enableDebugLogging(
     ...args: Parameters<typeof this.signals.enableDebugLogging>
   ) {
