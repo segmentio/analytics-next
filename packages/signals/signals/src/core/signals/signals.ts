@@ -135,7 +135,14 @@ export class Signals implements ISignals {
   debug(): void {
     this.globalSettings.signalsDebug.setAllDebugging(true)
   }
-  x
+
+  /**
+   * Log signals to the console.
+   */
+  enableDebugLogging(): void {
+    logger.enableDebugLogging()
+  }
+
   /**
    * Emit custom signals.
    */
