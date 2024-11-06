@@ -7,6 +7,7 @@ import { SignalEmitter } from '../../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@internal/test-helpers'
 import { setLocation } from '../../../../test-helpers/set-location'
+import { NetworkSignal } from '@segment/analytics-signals-runtime'
 
 // xhr tests are in integration tests
 describe(NetworkGenerator, () => {
@@ -126,7 +127,7 @@ describe(NetworkGenerator, () => {
     unregister()
   })
 
-  it('should emit response signal but not request signal if content-type for request is not recognized  ', async () => {
+  it('should emit response signal and request signal, regardless of content type', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator()
     const unregister = networkGenerator.register(
@@ -134,35 +135,46 @@ describe(NetworkGenerator, () => {
     )
 
     await window.fetch(`/api`, {
-      method: 'GET',
+      method: 'POST',
       headers: { 'content-type': 'text/html' },
       body: 'hello world',
     })
 
     await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toMatchInlineSnapshot(`
+    expect(
+      mockEmitter.emit.mock.calls.flatMap((call) =>
+        call.map((s: NetworkSignal) => s.data.action)
+      )
+    ).toMatchInlineSnapshot(`
       [
-        [
-          {
-            "data": {
-              "action": "response",
-              "contentType": "application/json",
-              "data": {
-                "data": "test",
-              },
-              "ok": true,
-              "status": 200,
-              "url": "http://localhost/api",
-            },
-            "metadata": {
-              "filters": {
-                "allowed": [],
-                "disallowed": [],
-              },
-            },
-            "type": "network",
-          },
-        ],
+        "request",
+        "response",
+      ]
+    `)
+
+    unregister()
+  })
+
+  it('should emit response signal and request signal if no content-type', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator()
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`/some-data?foo=123`, {
+      method: 'GET',
+    })
+
+    await sleep(100)
+    expect(
+      mockEmitter.emit.mock.calls.flatMap((call) =>
+        call.map((s: NetworkSignal) => s.data.action)
+      )
+    ).toMatchInlineSnapshot(`
+      [
+        "request",
+        "response",
       ]
     `)
 

@@ -21,7 +21,7 @@ describe(createNetworkSignal, () => {
     const data: NetworkData = {
       action: 'request',
       url: 'http://example.com',
-      method: 'post',
+      method: 'POST',
       data: { key: 'value' },
       contentType: 'application/json',
     }

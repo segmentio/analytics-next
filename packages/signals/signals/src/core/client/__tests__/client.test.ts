@@ -49,7 +49,7 @@ describe(SignalsIngestClient, () => {
         data: {
           hello: 'how are you',
         },
-        method: 'post',
+        method: 'POST',
         url: 'http://foo.com',
       },
     })
@@ -63,7 +63,7 @@ describe(SignalsIngestClient, () => {
         "data": {
           "hello": "XXX",
         },
-        "method": "post",
+        "method": "POST",
         "url": "http://foo.com",
       }
     `)

@@ -10,7 +10,7 @@ test.describe('network signals - fetch', () => {
     indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
   })
 
-  test('should not emit non-json requests', async () => {
+  test('should emit non-json requests but not include the data object', async () => {
     await indexPage.network.mockTestRoute('http://localhost/upload', {
       body: JSON.stringify({ foo: 'test' }),
     })
@@ -26,10 +26,16 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'request'
     )
 
-    expect(requests).toHaveLength(0)
+    expect(requests[0].properties!.data).toMatchObject({
+      action: 'request',
+      contentType: 'multipart/form-data',
+      data: null,
+      method: 'POST',
+      url: 'http://localhost/upload',
+    })
   })
 
-  test('should try to parse the body of text/plain requests', async () => {
+  test('should try to parse the body of any requests with string in the body', async () => {
     await indexPage.network.mockTestRoute('http://localhost/test', {
       body: JSON.stringify({ foo: 'test' }),
       contentType: 'application/json',
@@ -250,20 +256,5 @@ test.describe('network signals - fetch', () => {
       })
       expect(responses).toHaveLength(1)
     })
-  })
-
-  test('not emit response errors if there is no corresponding request, even if correct content type', async () => {
-    await indexPage.network.mockTestRoute('http://localhost/test', {
-      body: JSON.stringify({ foo: 'test' }),
-      contentType: 'application/json',
-      status: 400,
-    })
-
-    await indexPage.network.makeFileUploadRequest('http://localhost/test')
-
-    await indexPage.waitForSignalsApiFlush()
-
-    const networkEvents = indexPage.signalsAPI.getEvents('network')
-    expect(networkEvents).toHaveLength(0)
   })
 })
