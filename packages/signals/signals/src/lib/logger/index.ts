@@ -41,6 +41,10 @@ class Logger {
     this.setDebugKey(Logger.loggingKey, bool)
   }
 
+  log = (...args: any[]): void => {
+    console.log('[signals]', ...args)
+  }
+
   debug = (...args: any[]): void => {
     if (this.debugLoggingEnabled()) {
       console.log('[signals debug]', ...args)

@@ -92,4 +92,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   debug() {
     this.signals.debug()
   }
+
+  enableDebugLogging(
+    ...args: Parameters<typeof this.signals.enableDebugLogging>
+  ) {
+    this.signals.enableDebugLogging(...args)
+  }
 }

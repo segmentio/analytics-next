@@ -139,8 +139,14 @@ export class Signals implements ISignals {
   /**
    * Log signals to the console.
    */
-  enableDebugLogging(): void {
-    logger.enableDebugLogging()
+  enableDebugLogging({ signalsOnly } = { signalsOnly: true }): void {
+    if (signalsOnly) {
+      this.signalEmitter.subscribe((signal) => {
+        logger.log(signal.type, signal.data)
+      })
+    } else {
+      logger.enableDebugLogging()
+    }
   }
 
   /**
