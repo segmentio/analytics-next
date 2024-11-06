@@ -1,7 +1,9 @@
 import { parseDebugLoggingQueryString } from '../../core/debug-mode'
 
 class Logger {
-  private static loggingKey = 'segment_signals_debug_logging_enabled'
+  private storageType = 'sessionStorage' as const
+  private static loggingKey = 'segment_signals_debug_logging'
+  public signalsOnly = false
   constructor() {
     const val = parseDebugLoggingQueryString()
     if (typeof val === 'boolean') {
@@ -9,38 +11,37 @@ class Logger {
     }
   }
 
-  private debugLoggingEnabled(): boolean {
+  private debugLoggingEnabled = (): boolean => {
     try {
       const isEnabled = Boolean(
-        window.sessionStorage.getItem(Logger.loggingKey)
+        globalThis[this.storageType].getItem(Logger.loggingKey)
       )
       if (isEnabled) {
         return true
       }
     } catch (e) {
-      logger.debug('Storage error', e)
+      console.warn('Storage error', e)
     }
     return false
   }
 
-  private setDebugKey(key: string, enable: boolean) {
+  private setDebugKey = (key: string, enable: boolean) => {
     try {
       if (enable) {
-        window.sessionStorage.setItem(key, 'true')
+        globalThis[this.storageType].setItem(key, 'true')
       } else {
-        logger.debug(`Removing debug key ${key} from storage`)
-        window.sessionStorage.removeItem(key)
+        globalThis[this.storageType].removeItem(key)
       }
     } catch (e) {
-      logger.debug('Storage error', e)
+      console.warn('Storage error', e)
     }
   }
 
-  enableDebugLogging(bool = true) {
+  enableDebugLogging = (bool = true) => {
     this.setDebugKey(Logger.loggingKey, bool)
   }
 
-  debug(...args: any[]): void {
+  debug = (...args: any[]): void => {
     if (this.debugLoggingEnabled()) {
       console.log('[signals debug]', ...args)
     }

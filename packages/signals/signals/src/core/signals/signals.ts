@@ -129,17 +129,18 @@ export class Signals implements ISignals {
     void this.buffer.clear()
   }
 
-  debug({ logSignalsOnly = false } = {}): void {
+  /**
+   * Disable redaction and enable ingestion of signals.
+   */
+  debug(): void {
     this.globalSettings.signalsDebug.setAllDebugging(true)
-    if (logSignalsOnly) {
-      this.signalEmitter.subscribe((signal) => {
-        console.log('[signals debug]', signal.type, signal.data, {
-          buffer: this.buffer,
-        })
-      })
-    } else {
-      logger.enableDebugLogging()
-    }
+  }
+
+  /**
+   * Log signals to the console.
+   */
+  enableDebugLogging(): void {
+    this.enableDebugLogging()
   }
 
   /**

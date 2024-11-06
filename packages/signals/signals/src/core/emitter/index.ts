@@ -10,7 +10,7 @@ export class SignalEmitter implements EmitSignal {
   private emitter = new Emitter<{ add: [Signal] }>()
 
   emit(signal: Signal) {
-    logger.debug('new signal emitted', signal)
+    logger.debug('New signal:', signal.type, signal.data)
     this.emitter.emit('add', signal)
   }
 

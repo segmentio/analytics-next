@@ -130,12 +130,12 @@ export class SignalsDebugSettings {
     }
   }
 
-  setAllDebugging(boolean: boolean) {
+  setAllDebugging = (boolean: boolean) => {
     this.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
     this.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
   }
 
-  private setDebugKey(key: string, enable: boolean) {
+  private setDebugKey = (key: string, enable: boolean): void => {
     try {
       if (enable) {
         window[this.storageType].setItem(key, 'true')
@@ -148,7 +148,7 @@ export class SignalsDebugSettings {
     }
   }
 
-  private getDebugKey(key: string): boolean {
+  private getDebugKey = (key: string): boolean => {
     try {
       const isEnabled = Boolean(window[this.storageType].getItem(key))
       if (isEnabled) {
@@ -161,11 +161,11 @@ export class SignalsDebugSettings {
     return false
   }
 
-  getDisableSignalsRedaction(): boolean {
+  getDisableSignalsRedaction = (): boolean => {
     return this.getDebugKey(SignalsDebugSettings.redactionKey)
   }
 
-  getEnableSignalsIngestion(): boolean {
+  getEnableSignalsIngestion = (): boolean => {
     return this.getDebugKey(SignalsDebugSettings.ingestionKey)
   }
 }

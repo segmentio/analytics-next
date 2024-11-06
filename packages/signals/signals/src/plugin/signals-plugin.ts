@@ -1,5 +1,5 @@
 import type { Plugin } from '@segment/analytics-next'
-import { Signals, SignalsDebugSettings } from '../core/signals'
+import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
 import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
@@ -86,7 +86,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     return this
   }
 
-  debug(enable = true) {
-    this.signals.debug(enable)
+  /**
+   * Turn on debug logging for signals
+   */
+  debug() {
+    this.signals.debug()
   }
 }
