@@ -129,9 +129,17 @@ export class Signals implements ISignals {
     void this.buffer.clear()
   }
 
-  debug() {
-    this.globalSettings.signalsDebug.setDebugMode(true)
-    logger.enableDebugLogging()
+  debug({ logSignalsOnly = false } = {}): void {
+    this.globalSettings.signalsDebug.setAllDebugging(true)
+    if (logSignalsOnly) {
+      this.signalEmitter.subscribe((signal) => {
+        console.log('[signals debug]', signal.type, signal.data, {
+          buffer: this.buffer,
+        })
+      })
+    } else {
+      logger.enableDebugLogging()
+    }
   }
 
   /**
