@@ -33,9 +33,9 @@ export class SignalGlobalSettings {
   signalBuffer: SignalBufferSettingsConfig
   ingestClient: SignalsIngestSettingsConfig
   network: NetworkSettingsConfig
+  signalsDebug: SignalsDebugSettings
 
   private sampleSuccess = false
-  private signalsDebug = new SignalsDebugSettings()
 
   constructor(settings: SignalsSettingsConfig) {
     if (settings.maxBufferSize && settings.signalStorage) {
@@ -110,9 +110,11 @@ export class SignalGlobalSettings {
   }
 }
 
-class SignalsDebugSettings {
+export class SignalsDebugSettings {
+  private storageType = 'sessionStorage' as const
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
+
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
     if (typeof disableRedaction === 'boolean') {
       this.setDebugKey(SignalsDebugSettings.redactionKey, disableRedaction)
@@ -121,21 +123,22 @@ class SignalsDebugSettings {
       this.setDebugKey(SignalsDebugSettings.ingestionKey, enableIngestion)
     }
 
-    // setting ?segment_signals_debug=true will disable redaction, enable ingestion, and set keys in local storage
-    // this setting will persist across page loads (even if there is no query string)
-    // in order to clear the setting, user must set ?segment_signals_debug=false
     const debugModeInQs = parseDebugModeQueryString()
     logger.debug('debugMode is set to true via query string')
     if (typeof debugModeInQs === 'boolean') {
-      this.setDebugKey(SignalsDebugSettings.redactionKey, debugModeInQs)
-      this.setDebugKey(SignalsDebugSettings.ingestionKey, debugModeInQs)
+      this.setAllDebugging(debugModeInQs)
     }
   }
 
-  setDebugKey(key: string, enable: boolean) {
+  setAllDebugging(boolean: boolean) {
+    this.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
+    this.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
+  }
+
+  private setDebugKey(key: string, enable: boolean) {
     try {
       if (enable) {
-        window.sessionStorage.setItem(key, 'true')
+        window[this.storageType].setItem(key, 'true')
       } else {
         logger.debug(`Removing debug key ${key} from storage`)
         window.sessionStorage.removeItem(key)
@@ -145,13 +148,11 @@ class SignalsDebugSettings {
     }
   }
 
-  getDisableSignalsRedaction() {
+  private getDebugKey(key: string): boolean {
     try {
-      const isEnabled = Boolean(
-        window.sessionStorage.getItem(SignalsDebugSettings.redactionKey)
-      )
+      const isEnabled = Boolean(window[this.storageType].getItem(key))
       if (isEnabled) {
-        logger.debug(`${SignalsDebugSettings.redactionKey}=true (app. storage)`)
+        logger.debug(`${key}=true (app. storage)`)
         return true
       }
     } catch (e) {
@@ -160,18 +161,11 @@ class SignalsDebugSettings {
     return false
   }
 
-  getEnableSignalsIngestion() {
-    try {
-      const isEnabled = Boolean(
-        window.sessionStorage.getItem(SignalsDebugSettings.ingestionKey)
-      )
-      if (isEnabled) {
-        logger.debug(`${SignalsDebugSettings.ingestionKey}=true (app. storage)`)
-        return true
-      }
-    } catch (e) {
-      logger.debug('Storage error', e)
-    }
-    return false
+  getDisableSignalsRedaction(): boolean {
+    return this.getDebugKey(SignalsDebugSettings.redactionKey)
+  }
+
+  getEnableSignalsIngestion(): boolean {
+    return this.getDebugKey(SignalsDebugSettings.ingestionKey)
   }
 }

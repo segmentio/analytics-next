@@ -129,6 +129,11 @@ export class Signals implements ISignals {
     void this.buffer.clear()
   }
 
+  debug() {
+    this.globalSettings.signalsDebug.setDebugMode(true)
+    logger.enableDebugLogging()
+  }
+
   /**
    * Emit custom signals.
    */

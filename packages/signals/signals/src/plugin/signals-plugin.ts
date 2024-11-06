@@ -1,5 +1,5 @@
 import type { Plugin } from '@segment/analytics-next'
-import { Signals } from '../core/signals'
+import { Signals, SignalsDebugSettings } from '../core/signals'
 import { logger } from '../lib/logger'
 import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
@@ -26,12 +26,16 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   readonly name = 'SignalsPlugin'
   readonly version = version
   public signals: Signals
-
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
+
+    // assign to window for debugging purposes
+    Object.assign(window, { SegmentSignalsPlugin: this })
+
     if (settings.enableDebugLogging) {
       logger.enableDebugLogging()
     }
+
     logger.debug('SignalsPlugin initializing', { settings })
 
     this.signals = new Signals({
@@ -78,5 +82,9 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   addSignal(signal: Signal) {
     this.signals.signalEmitter.emit(signal)
     return this
+  }
+
+  debug(enable = true) {
+    this.signals.debug(enable)
   }
 }
