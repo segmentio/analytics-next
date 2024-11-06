@@ -150,7 +150,7 @@ export class Signals implements ISignals {
   }
 
   /**
-   * Emit custom signals.
+   * Register custom signal generators to emit signals.
    */
   async registerGenerator(
     generators: (SignalGeneratorClass | SignalGenerator)[]
