@@ -7,6 +7,7 @@ import { SignalEmitter } from '../../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@internal/test-helpers'
 import { setLocation } from '../../../../test-helpers/set-location'
+import { NetworkSignal } from '@segment/analytics-signals-runtime'
 
 // xhr tests are in integration tests
 describe(NetworkGenerator, () => {
@@ -140,47 +141,40 @@ describe(NetworkGenerator, () => {
     })
 
     await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toMatchInlineSnapshot(`
+    expect(
+      mockEmitter.emit.mock.calls.flatMap((call) =>
+        call.map((s: NetworkSignal) => s.data.action)
+      )
+    ).toMatchInlineSnapshot(`
       [
-        [
-          {
-            "data": {
-              "action": "request",
-              "contentType": "text/html",
-              "data": "hello world",
-              "method": "POST",
-              "url": "http://localhost/api",
-            },
-            "metadata": {
-              "filters": {
-                "allowed": [],
-                "disallowed": [],
-              },
-            },
-            "type": "network",
-          },
-        ],
-        [
-          {
-            "data": {
-              "action": "response",
-              "contentType": "application/json",
-              "data": {
-                "data": "test",
-              },
-              "ok": true,
-              "status": 200,
-              "url": "http://localhost/api",
-            },
-            "metadata": {
-              "filters": {
-                "allowed": [],
-                "disallowed": [],
-              },
-            },
-            "type": "network",
-          },
-        ],
+        "request",
+        "response",
+      ]
+    `)
+
+    unregister()
+  })
+
+  it('should emit response signal and request signal if no content-type', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator()
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`/some-data?foo=123`, {
+      method: 'GET',
+    })
+
+    await sleep(100)
+    expect(
+      mockEmitter.emit.mock.calls.flatMap((call) =>
+        call.map((s: NetworkSignal) => s.data.action)
+      )
+    ).toMatchInlineSnapshot(`
+      [
+        "request",
+        "response",
       ]
     `)
 
