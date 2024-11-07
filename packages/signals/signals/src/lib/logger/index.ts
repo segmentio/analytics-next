@@ -2,10 +2,9 @@ import { parseSignalsLoggingAdvancedQueryString } from '../../core/debug-mode'
 import { DebugStorage } from '../storage/debug-storage'
 
 class Logger {
-  private storageType = 'sessionStorage' as const
   private static advancedLogging = 'segment_signals_logging_advanced'
 
-  storage = new DebugStorage(this.storageType)
+  storage = new DebugStorage('sessionStorage')
   constructor() {
     const val = parseSignalsLoggingAdvancedQueryString()
     if (typeof val === 'boolean') {

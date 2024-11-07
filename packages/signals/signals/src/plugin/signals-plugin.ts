@@ -87,18 +87,9 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   }
 
   /**
-   * Enable redaction and disable ingestion of signals.
+   * Enable redaction and disable ingestion of signals. Also, logs signals to the console.
    */
-  debug() {
-    this.signals.debug()
-  }
-
-  /**
-   * Log signals to the console.
-   */
-  enableDebugLogging(
-    ...args: Parameters<typeof this.signals.enableDebugLogging>
-  ) {
-    this.signals.enableDebugLogging(...args)
+  debug(boolean = true): void {
+    this.signals.debug(boolean)
   }
 }
