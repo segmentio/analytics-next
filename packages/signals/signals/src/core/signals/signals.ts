@@ -129,24 +129,16 @@ export class Signals implements ISignals {
     void this.buffer.clear()
   }
 
-  /**
-   * Disable redaction and enable ingestion of signals.
-   */
-  debug(): void {
-    this.globalSettings.signalsDebug.setAllDebugging(true)
+  // create a reference so we prevent duplicate subscriptions
+  private logSignal = (signal: Signal) => {
+    logger.log(signal.type, signal.data, signal.metadata)
   }
-
   /**
-   * Log signals to the console.
+   * Disable redaction, ingestion of signals, and other debug logging.
    */
-  enableDebugLogging({ signalsOnly } = { signalsOnly: true }): void {
-    if (signalsOnly) {
-      this.signalEmitter.subscribe((signal) => {
-        logger.log(signal.type, signal.data)
-      })
-    } else {
-      logger.enableDebugLogging()
-    }
+  debug(boolean = true): void {
+    this.globalSettings.signalsDebug.setAllDebugging(boolean)
+    this.signalEmitter.subscribe(this.logSignal)
   }
 
   /**

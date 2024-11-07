@@ -114,6 +114,7 @@ export class SignalsDebugSettings {
   private storageType = 'sessionStorage' as const
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
+  private static logSignals = 'segment_signals_debug_log_signals_enabled'
 
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
     if (typeof disableRedaction === 'boolean') {
@@ -133,6 +134,7 @@ export class SignalsDebugSettings {
   setAllDebugging = (boolean: boolean) => {
     this.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
     this.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
+    this.setDebugKey(SignalsDebugSettings.logSignals, boolean)
   }
 
   private setDebugKey = (key: string, enable: boolean): void => {
@@ -167,5 +169,9 @@ export class SignalsDebugSettings {
 
   getEnableSignalsIngestion = (): boolean => {
     return this.getDebugKey(SignalsDebugSettings.ingestionKey)
+  }
+
+  getEnableLogSignals = (): boolean => {
+    return this.getDebugKey(SignalsDebugSettings.logSignals)
   }
 }
