@@ -116,6 +116,3 @@ Network signals emit when an HTTP Request is made, or an HTTP Response is receiv
 - Initiated using the `fetch` API
 - First party domain (e.g if on `foo.com`, then `foo.com/api/products`, but not `bar.com/api/products`)
 - Contains the content-type: `application/json`
-
-
-
