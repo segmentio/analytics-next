@@ -26,13 +26,19 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   readonly name = 'SignalsPlugin'
   readonly version = version
   public signals: Signals
-
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
+
+    // assign to window for debugging purposes
+    Object.assign(window, { SegmentSignalsPlugin: this })
+
     if (settings.enableDebugLogging) {
       logger.enableDebugLogging()
     }
-    logger.debug('SignalsPlugin initializing', { settings })
+
+    logger.debug(`SignalsPlugin v${version} initializing`, {
+      settings,
+    })
 
     this.signals = new Signals({
       disableSignalsRedaction: settings.disableSignalsRedaction,
@@ -78,5 +84,12 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   addSignal(signal: Signal) {
     this.signals.signalEmitter.emit(signal)
     return this
+  }
+
+  /**
+   * Enable redaction and disable ingestion of signals. Also, logs signals to the console.
+   */
+  debug(boolean = true): void {
+    this.signals.debug(boolean)
   }
 }

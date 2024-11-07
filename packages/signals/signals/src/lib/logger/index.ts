@@ -1,15 +1,31 @@
+import { parseSignalsLoggingAdvancedQueryString } from '../../core/debug-mode'
+import { DebugStorage } from '../storage/debug-storage'
+
 class Logger {
-  globalKey = 'SEGMENT_SIGNALS_DEBUG'
-  get debugLoggingEnabled() {
-    return (window as any)[this.globalKey] === true
+  private static advancedLogging = 'segment_signals_logging_advanced'
+
+  storage = new DebugStorage('sessionStorage')
+  constructor() {
+    const val = parseSignalsLoggingAdvancedQueryString()
+    if (typeof val === 'boolean') {
+      this.storage.setDebugKey(Logger.advancedLogging, val)
+    }
   }
 
-  enableDebugLogging() {
-    ;(window as any)[this.globalKey] = true
+  private debugLoggingEnabled = (): boolean => {
+    return this.storage.getDebugKey(Logger.advancedLogging)
   }
 
-  debug(...args: any[]): void {
-    if (this.debugLoggingEnabled) {
+  enableDebugLogging = (bool = true) => {
+    this.storage.setDebugKey(Logger.advancedLogging, bool)
+  }
+
+  log = (...args: any[]): void => {
+    console.log('[signals log]', ...args)
+  }
+
+  debug = (...args: any[]): void => {
+    if (this.debugLoggingEnabled()) {
       console.log('[signals debug]', ...args)
     }
   }

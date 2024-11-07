@@ -77,6 +77,14 @@ You can *turn off debugging* by doing:
 https://my-website.com?segment_signals_debug=false
 ```
 
+* This also logs all signals to the js console.
+
+#### Alternative method of enabling debug mode
+In your JS console:
+```js
+SegmentSignalsPlugin.debug() 
+```
+
 ### Advanced
 
 #### Listening to signals
@@ -108,4 +116,3 @@ Network signals emit when an HTTP Request is made, or an HTTP Response is receiv
 - Initiated using the `fetch` API
 - First party domain (e.g if on `foo.com`, then `foo.com/api/products`, but not `bar.com/api/products`)
 - Contains the content-type: `application/json`
-
