@@ -7,9 +7,7 @@ import { pTimeout } from '@segment/analytics-core'
  * If a signal is generated, the signal buffer should be reset
  * when the user clicks on the complex button.
  */
-const basicEdgeFn = `const processSignal = (signal) => {
-
-
+const edgeFn = `const processSignal = (signal) => {
   // create a custom signal to echo out the current signal buffer
   if (signal.type === 'userDefined') {
     analytics.track('current signal buffer', { signalBuffer: signals.signalBuffer })
@@ -24,7 +22,7 @@ const basicEdgeFn = `const processSignal = (signal) => {
 test('calls analytics.reset, and resets the signalBuffer after clear', async ({
   page,
 }) => {
-  const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
+  const indexPage = await new IndexPage().loadAndWait(page, edgeFn)
 
   await indexPage.addUserDefinedSignal({ num: 1 })
   const resetCalled = page.evaluate<any>(() => {
