@@ -1,48 +1,28 @@
-import { parseDebugLoggingQueryString } from '../../core/debug-mode'
+import { parseSignalsLoggingAdvancedQueryString } from '../../core/debug-mode'
+import { DebugStorage } from '../storage/debug-storage'
 
 class Logger {
   private storageType = 'sessionStorage' as const
-  private static loggingKey = 'segment_signals_debug_logging'
+  private static advancedLogging = 'segment_signals_logging_advanced'
 
+  storage = new DebugStorage(this.storageType)
   constructor() {
-    const val = parseDebugLoggingQueryString()
+    const val = parseSignalsLoggingAdvancedQueryString()
     if (typeof val === 'boolean') {
-      this.setDebugKey(Logger.loggingKey, val)
+      this.storage.setDebugKey(Logger.advancedLogging, val)
     }
   }
 
   private debugLoggingEnabled = (): boolean => {
-    try {
-      const isEnabled = Boolean(
-        globalThis[this.storageType].getItem(Logger.loggingKey)
-      )
-      if (isEnabled) {
-        return true
-      }
-    } catch (e) {
-      console.warn('Storage error', e)
-    }
-    return false
-  }
-
-  private setDebugKey = (key: string, enable: boolean) => {
-    try {
-      if (enable) {
-        globalThis[this.storageType].setItem(key, 'true')
-      } else {
-        globalThis[this.storageType].removeItem(key)
-      }
-    } catch (e) {
-      console.warn('Storage error', e)
-    }
+    return this.storage.getDebugKey(Logger.advancedLogging)
   }
 
   enableDebugLogging = (bool = true) => {
-    this.setDebugKey(Logger.loggingKey, bool)
+    this.storage.setDebugKey(Logger.advancedLogging, bool)
   }
 
   log = (...args: any[]): void => {
-    console.log('[signals]', ...args)
+    console.log('[signals log]', ...args)
   }
 
   debug = (...args: any[]): void => {

@@ -5,6 +5,7 @@ import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
 import { NetworkSettingsConfig } from '../signal-generators/network-gen'
 import { SignalsPluginSettingsConfig } from '../../types'
+import { DebugStorage } from '../../lib/storage/debug-storage'
 
 export type SignalsSettingsConfig = Pick<
   SignalsPluginSettingsConfig,
@@ -111,17 +112,24 @@ export class SignalGlobalSettings {
 }
 
 export class SignalsDebugSettings {
-  private storageType = 'sessionStorage' as const
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
-  private static logSignals = 'segment_signals_debug_log_signals_enabled'
+  private static logSignals = 'segment_signals_log_signals_enabled'
+  storage: DebugStorage
 
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
+    this.storage = new DebugStorage('sessionStorage')
     if (typeof disableRedaction === 'boolean') {
-      this.setDebugKey(SignalsDebugSettings.redactionKey, disableRedaction)
+      this.storage.setDebugKey(
+        SignalsDebugSettings.redactionKey,
+        disableRedaction
+      )
     }
     if (typeof enableIngestion === 'boolean') {
-      this.setDebugKey(SignalsDebugSettings.ingestionKey, enableIngestion)
+      this.storage.setDebugKey(
+        SignalsDebugSettings.ingestionKey,
+        enableIngestion
+      )
     }
 
     const debugModeInQs = parseDebugModeQueryString()
@@ -132,46 +140,20 @@ export class SignalsDebugSettings {
   }
 
   setAllDebugging = (boolean: boolean) => {
-    this.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
-    this.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
-    this.setDebugKey(SignalsDebugSettings.logSignals, boolean)
-  }
-
-  private setDebugKey = (key: string, enable: boolean): void => {
-    try {
-      if (enable) {
-        window[this.storageType].setItem(key, 'true')
-      } else {
-        logger.debug(`Removing debug key ${key} from storage`)
-        window.sessionStorage.removeItem(key)
-      }
-    } catch (e) {
-      logger.debug('Storage error', e)
-    }
-  }
-
-  private getDebugKey = (key: string): boolean => {
-    try {
-      const isEnabled = Boolean(window[this.storageType].getItem(key))
-      if (isEnabled) {
-        logger.debug(`${key}=true (app. storage)`)
-        return true
-      }
-    } catch (e) {
-      logger.debug('Storage error', e)
-    }
-    return false
+    this.storage.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
+    this.storage.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
+    this.storage.setDebugKey(SignalsDebugSettings.logSignals, boolean)
   }
 
   getDisableSignalsRedaction = (): boolean => {
-    return this.getDebugKey(SignalsDebugSettings.redactionKey)
+    return this.storage.getDebugKey(SignalsDebugSettings.redactionKey)
   }
 
   getEnableSignalsIngestion = (): boolean => {
-    return this.getDebugKey(SignalsDebugSettings.ingestionKey)
+    return this.storage.getDebugKey(SignalsDebugSettings.ingestionKey)
   }
 
   getEnableLogSignals = (): boolean => {
-    return this.getDebugKey(SignalsDebugSettings.logSignals)
+    return this.storage.getDebugKey(SignalsDebugSettings.logSignals)
   }
 }

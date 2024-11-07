@@ -38,7 +38,10 @@ export class Signals implements ISignals {
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
-    this.signalEmitter = new SignalEmitter()
+    this.signalEmitter = new SignalEmitter({
+      shouldLogSignals: () =>
+        this.globalSettings.signalsDebug.getEnableLogSignals(),
+    })
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
     )
@@ -129,16 +132,11 @@ export class Signals implements ISignals {
     void this.buffer.clear()
   }
 
-  // create a reference so we prevent duplicate subscriptions
-  private logSignal = (signal: Signal) => {
-    logger.log(signal.type, signal.data, signal.metadata)
-  }
   /**
    * Disable redaction, ingestion of signals, and other debug logging.
    */
   debug(boolean = true): void {
     this.globalSettings.signalsDebug.setAllDebugging(boolean)
-    this.signalEmitter.subscribe(this.logSignal)
   }
 
   /**

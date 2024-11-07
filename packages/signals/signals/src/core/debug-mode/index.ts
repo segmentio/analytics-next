@@ -14,12 +14,17 @@ export const parseDebugModeQueryString = (): boolean | undefined => {
   return undefined
 }
 
-export const parseDebugLoggingQueryString = (): boolean | undefined => {
+/**
+ * This turns on advanced logging for signals!
+ */
+export const parseSignalsLoggingAdvancedQueryString = ():
+  | boolean
+  | undefined => {
   const queryParams = new URLSearchParams(window.location.search)
 
   const val =
-    queryParams.get('segment_signals_logging') ||
-    queryParams.get('seg_signals_logging')
+    queryParams.get('segment_signals_logging_advanced') ||
+    queryParams.get('seg_signals_logging_advanced')
   if (val === 'true' || val === 'false') {
     return val === 'true'
   }
