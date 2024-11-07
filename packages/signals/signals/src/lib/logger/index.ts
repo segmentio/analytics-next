@@ -3,7 +3,7 @@ import { parseDebugLoggingQueryString } from '../../core/debug-mode'
 class Logger {
   private storageType = 'sessionStorage' as const
   private static loggingKey = 'segment_signals_debug_logging'
-  public signalsOnly = false
+
   constructor() {
     const val = parseDebugLoggingQueryString()
     if (typeof val === 'boolean') {
