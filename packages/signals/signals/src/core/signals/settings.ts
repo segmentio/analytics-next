@@ -5,7 +5,7 @@ import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
 import { NetworkSettingsConfig } from '../signal-generators/network-gen'
 import { SignalsPluginSettingsConfig } from '../../types'
-import { DebugStorage } from '../../lib/storage/debug-storage'
+import { WebStorage } from '../../lib/storage/web-storage'
 
 export type SignalsSettingsConfig = Pick<
   SignalsPluginSettingsConfig,
@@ -114,21 +114,15 @@ export class SignalGlobalSettings {
 export class SignalsDebugSettings {
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
-  storage: DebugStorage
+  storage: WebStorage
 
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
-    this.storage = new DebugStorage('sessionStorage')
+    this.storage = new WebStorage(window.sessionStorage)
     if (typeof disableRedaction === 'boolean') {
-      this.storage.setDebugKey(
-        SignalsDebugSettings.redactionKey,
-        disableRedaction
-      )
+      this.storage.setItem(SignalsDebugSettings.redactionKey, disableRedaction)
     }
     if (typeof enableIngestion === 'boolean') {
-      this.storage.setDebugKey(
-        SignalsDebugSettings.ingestionKey,
-        enableIngestion
-      )
+      this.storage.setItem(SignalsDebugSettings.ingestionKey, enableIngestion)
     }
 
     const debugModeInQs = parseDebugModeQueryString()
@@ -139,15 +133,15 @@ export class SignalsDebugSettings {
   }
 
   setAllDebugging = (boolean: boolean) => {
-    this.storage.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
-    this.storage.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
+    this.storage.setItem(SignalsDebugSettings.redactionKey, boolean)
+    this.storage.setItem(SignalsDebugSettings.ingestionKey, boolean)
   }
 
   getDisableSignalsRedaction = (): boolean => {
-    return this.storage.getDebugKey(SignalsDebugSettings.redactionKey)
+    return this.storage.getItem(SignalsDebugSettings.redactionKey) ?? false
   }
 
   getEnableSignalsIngestion = (): boolean => {
-    return this.storage.getDebugKey(SignalsDebugSettings.ingestionKey)
+    return this.storage.getItem(SignalsDebugSettings.ingestionKey) ?? false
   }
 }

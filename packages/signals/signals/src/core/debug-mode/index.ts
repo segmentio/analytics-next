@@ -17,8 +17,8 @@ export const parseDebugModeQueryString = (): boolean | undefined => {
 /**
  * This turns on advanced logging for signals!
  */
-export type LogLevelOptions = 'info' | 'debug' | 'off' | undefined
-export const parseSignalsLogLevel = (): LogLevelOptions => {
+export type LogLevelOptions = 'info' | 'debug' | 'off'
+export const parseSignalsLogLevel = (): LogLevelOptions | undefined => {
   const queryParams = new URLSearchParams(window.location.search)
 
   const val =
@@ -26,11 +26,10 @@ export const parseSignalsLogLevel = (): LogLevelOptions => {
     queryParams.get('seg_signals_log_level')
   if (val === 'info' || val === 'debug' || val === 'off') {
     return val
-  } else if (typeof val === undefined) {
-    return undefined
-  } else {
+  } else if (typeof val === 'string') {
     console.error(
       `Invalid signals_log_level: "${val}". Valid options are: info, debug, off`
     )
   }
+  return undefined
 }

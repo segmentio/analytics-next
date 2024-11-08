@@ -1,14 +1,16 @@
 import {
+  LogLevelOptions,
   parseDebugModeQueryString,
   parseSignalsLogLevel,
 } from '../../core/debug-mode'
-import { DebugStorage } from '../storage/debug-storage'
+import { WebStorage } from '../storage/web-storage'
 
 class Logger {
-  private static infoLogging = 'segment_signals_log_level_info'
-  private static debugLogging = 'segment_signals_log_level_debug'
-
-  storage = new DebugStorage('sessionStorage')
+  private logLevelKey = 'segment_signals_log_level'
+  get logLevel(): LogLevelOptions {
+    return this.storage.getItem(this.logLevelKey) ?? 'off'
+  }
+  storage = new WebStorage(window.sessionStorage)
 
   constructor() {
     // if debug mode is in the query string, we want simple logging
@@ -24,42 +26,23 @@ class Logger {
     }
   }
 
-  private loggingEnabled = (): boolean => {
-    return this.storage.getDebugKey(Logger.infoLogging)
-  }
-
-  private debugLoggingEnabled = (): boolean => {
-    return this.storage.getDebugKey(Logger.debugLogging)
-  }
-
-  enableDebugLogging = (bool = true) => {
-    this.storage.setDebugKey(Logger.debugLogging, bool)
-  }
-
   // if debug level is enabled, info level is also enabled
-  enableLogging = (type: 'info' | 'debug') => {
-    if (type === 'info') {
-      this.storage.setDebugKey(Logger.infoLogging, true)
-      this.storage.setDebugKey(Logger.debugLogging, false)
-    } else if (type === 'debug') {
-      this.storage.setDebugKey(Logger.debugLogging, true)
-      this.storage.setDebugKey(Logger.infoLogging, true)
-    }
+  enableLogging = (type: LogLevelOptions) => {
+    this.storage.setItem(this.logLevelKey, type)
   }
 
   disableLogging = () => {
-    this.storage.setDebugKey(Logger.infoLogging, false)
-    this.storage.setDebugKey(Logger.debugLogging, false)
+    this.storage.setItem(this.logLevelKey, 'off')
   }
 
   info = (...args: any[]): void => {
-    if (this.loggingEnabled() || this.debugLoggingEnabled()) {
+    if (this.logLevel === 'info' || this.logLevel === 'debug') {
       console.log('[signals log]', ...args)
     }
   }
 
   debug = (...args: any[]): void => {
-    if (this.debugLoggingEnabled()) {
+    if (this.logLevel === 'debug') {
       console.log('[signals debug]', ...args)
     }
   }

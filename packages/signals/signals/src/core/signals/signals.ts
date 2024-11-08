@@ -15,6 +15,7 @@ import { SignalEventProcessor } from '../processor/processor'
 import { Sandbox, SandboxSettings } from '../processor/sandbox'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
 import { logger } from '../../lib/logger'
+import { LogLevelOptions } from '../debug-mode'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -135,9 +136,9 @@ export class Signals implements ISignals {
   /**
    * Disable redaction, ingestion of signals, and other logging.
    */
-  debug(boolean = true): void {
+  debug(boolean = true, logLevel?: LogLevelOptions): void {
     this.globalSettings.signalsDebug.setAllDebugging(boolean)
-    logger.enableLogging('info')
+    logger.enableLogging(logLevel ?? 'info')
   }
 
   /**
