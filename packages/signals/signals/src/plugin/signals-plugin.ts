@@ -28,6 +28,8 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   public signals: Signals
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
+    // assign to window for debugging purposes
+    Object.assign(window, { SegmentSignalsPlugin: this })
 
     if (settings.enableDebugLogging) {
       logger.enableLogging('debug')
@@ -54,9 +56,6 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
       networkSignalsDisallowList: settings.networkSignalsDisallowList,
       signalStorage: settings.signalStorage,
     })
-
-    // assign to window for debugging purposes
-    Object.assign(window, { SegmentSignalsPlugin: this })
   }
 
   isLoaded() {
