@@ -38,10 +38,7 @@ export class Signals implements ISignals {
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
-    this.signalEmitter = new SignalEmitter({
-      shouldLogSignals: () =>
-        this.globalSettings.signalsDebug.getEnableLogSignals(),
-    })
+    this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
     )
@@ -136,10 +133,11 @@ export class Signals implements ISignals {
   }
 
   /**
-   * Disable redaction, ingestion of signals, and other debug logging.
+   * Disable redaction, ingestion of signals, and other logging.
    */
   debug(boolean = true): void {
     this.globalSettings.signalsDebug.setAllDebugging(boolean)
+    logger.enableLogging('info')
   }
 
   /**

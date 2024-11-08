@@ -114,7 +114,6 @@ export class SignalGlobalSettings {
 export class SignalsDebugSettings {
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
-  private static logSignals = 'segment_signals_log_signals_enabled'
   storage: DebugStorage
 
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
@@ -142,7 +141,6 @@ export class SignalsDebugSettings {
   setAllDebugging = (boolean: boolean) => {
     this.storage.setDebugKey(SignalsDebugSettings.redactionKey, boolean)
     this.storage.setDebugKey(SignalsDebugSettings.ingestionKey, boolean)
-    this.storage.setDebugKey(SignalsDebugSettings.logSignals, boolean)
   }
 
   getDisableSignalsRedaction = (): boolean => {
@@ -151,9 +149,5 @@ export class SignalsDebugSettings {
 
   getEnableSignalsIngestion = (): boolean => {
     return this.storage.getDebugKey(SignalsDebugSettings.ingestionKey)
-  }
-
-  getEnableLogSignals = (): boolean => {
-    return this.storage.getDebugKey(SignalsDebugSettings.logSignals)
   }
 }
