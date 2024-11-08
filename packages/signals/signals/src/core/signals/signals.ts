@@ -88,6 +88,9 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
+    analyticsService.instance.on('reset', () => {
+      this.clearStorage()
+    })
 
     this.globalSettings.update({
       edgeFnDownloadURL: analyticsService.edgeFnSettings?.downloadURL,

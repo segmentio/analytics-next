@@ -20,4 +20,6 @@ export const analyticsMock: jest.Mocked<AnyAnalytics> = {
   page: jest.fn(),
   track: jest.fn(),
   addSourceMiddleware: jest.fn(),
+  reset: jest.fn(),
+  on: jest.fn(),
 }

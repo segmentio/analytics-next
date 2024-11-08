@@ -14,6 +14,7 @@ export interface AnalyticsRuntimePublicApi {
   group: (...args: any[]) => void
   page: (...args: any[]) => void
   screen: (...args: any[]) => void
+  reset: () => void
 }
 
 export type ProcessSignalScope = {
