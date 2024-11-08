@@ -114,10 +114,9 @@ export class SignalGlobalSettings {
 export class SignalsDebugSettings {
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
   private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
-  storage: WebStorage
+  private storage = new WebStorage(window.sessionStorage)
 
   constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
-    this.storage = new WebStorage(window.sessionStorage)
     if (typeof disableRedaction === 'boolean') {
       this.storage.setItem(SignalsDebugSettings.redactionKey, disableRedaction)
     }
