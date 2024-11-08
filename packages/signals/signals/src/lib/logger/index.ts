@@ -7,26 +7,23 @@ import { WebStorage } from '../storage/web-storage'
 
 class Logger {
   private logLevelKey = 'segment_signals_log_level'
+  private storage = new WebStorage(window.sessionStorage)
   get logLevel(): LogLevelOptions {
     return this.storage.getItem(this.logLevelKey) ?? 'off'
   }
-  storage = new WebStorage(window.sessionStorage)
 
   constructor() {
-    // if debug mode is in the query string, we want simple logging
     const debugMode = parseDebugModeQueryString()
     if (typeof debugMode === 'boolean') {
       this.enableLogging('info')
     }
 
-    // if log level is set to 'off' / 'log' / 'debug' in the query string, we want to set the write key
     const logLevel = parseSignalsLogLevel()
     if (logLevel !== undefined) {
       logLevel === 'off' ? this.disableLogging() : this.enableLogging(logLevel)
     }
   }
 
-  // if debug level is enabled, info level is also enabled
   enableLogging = (type: LogLevelOptions) => {
     this.storage.setItem(this.logLevelKey, type)
   }
