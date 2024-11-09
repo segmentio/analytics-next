@@ -15,7 +15,7 @@ export class WebStorage {
       const item = JSON.stringify(value)
       this.storage.setItem(key, item)
     } catch (e) {
-      console.warn('Storage set error', e)
+      console.warn('Storage set error', { key, value }, e)
     }
   }
 
@@ -30,7 +30,7 @@ export class WebStorage {
       }
       return JSON.parse(item) as T
     } catch (e) {
-      console.warn('Storage retrieval error', e)
+      console.warn('Storage retrieval error', { key }, e)
     }
     return undefined
   }
