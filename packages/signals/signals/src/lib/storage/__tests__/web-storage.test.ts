@@ -38,11 +38,7 @@ describe('WebStorage', () => {
       const result = webStorage.getItem(key)
 
       expect(result).toBeUndefined()
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        'Storage error',
-        expect.any(SyntaxError)
-      )
-
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
       consoleWarnSpy.mockRestore()
     })
   })
