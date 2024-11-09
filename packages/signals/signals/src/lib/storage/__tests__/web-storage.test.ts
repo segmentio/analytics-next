@@ -34,14 +34,15 @@ describe('WebStorage', () => {
 
       webStorage.setItem(
         key,
-        // @ts-ignore
-        undefined
+        // @ts-ignore - intentational non-serializable value
+        BigInt(1)
       )
 
-      const result = webStorage.getItem(key)
-
-      expect(result).toBeUndefined()
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Storage set error',
+        expect.any(Object),
+        expect.any(Error)
+      )
     })
 
     it('should handle JSON parsing errors gracefully when retrieving', () => {
@@ -54,7 +55,11 @@ describe('WebStorage', () => {
       const result = webStorage.getItem(key)
 
       expect(result).toBeUndefined()
-      expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Storage retrieval error',
+        expect.any(Object),
+        expect.any(Error)
+      )
     })
   })
 })
