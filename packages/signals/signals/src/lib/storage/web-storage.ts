@@ -12,12 +12,17 @@ export class WebStorage {
     }
   }
 
-  public getItem = <T>(key: string): T | undefined => {
+  public getItem = (key: string): string | undefined => {
     try {
-      return (this.storage.getItem(key) as T) ?? undefined
+      return this.storage.getItem(key) ?? undefined
     } catch (e) {
       console.warn('Storage error', e)
     }
     return undefined
+  }
+
+  public getBooleanItem = (key: string): boolean | undefined => {
+    const item = this.getItem(key)
+    return item === 'true' ? true : item === 'false' ? false : undefined
   }
 }

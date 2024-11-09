@@ -137,10 +137,14 @@ export class SignalsDebugSettings {
   }
 
   getDisableSignalsRedaction = (): boolean => {
-    return this.storage.getItem(SignalsDebugSettings.redactionKey) ?? false
+    return (
+      this.storage.getBooleanItem(SignalsDebugSettings.redactionKey) ?? false
+    )
   }
 
   getEnableSignalsIngestion = (): boolean => {
-    return this.storage.getItem(SignalsDebugSettings.ingestionKey) ?? false
+    return (
+      this.storage.getBooleanItem(SignalsDebugSettings.ingestionKey) ?? false
+    )
   }
 }
