@@ -13,6 +13,7 @@ class Logger {
   }
 
   constructor() {
+    // if log level is set in query string, use that, otherwise if debug mode is set, set log level to info
     const logLevel = parseSignalsLogLevel()
     if (logLevel !== undefined) {
       logLevel === 'off' ? this.disableLogging() : this.enableLogging(logLevel)
