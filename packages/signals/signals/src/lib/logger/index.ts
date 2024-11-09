@@ -13,14 +13,14 @@ class Logger {
   }
 
   constructor() {
-    const debugMode = parseDebugModeQueryString()
-    if (typeof debugMode === 'boolean') {
-      this.enableLogging('info')
-    }
-
     const logLevel = parseSignalsLogLevel()
     if (logLevel !== undefined) {
       logLevel === 'off' ? this.disableLogging() : this.enableLogging(logLevel)
+    } else {
+      const debugMode = parseDebugModeQueryString()
+      if (debugMode === true) {
+        this.enableLogging('info')
+      }
     }
   }
 
