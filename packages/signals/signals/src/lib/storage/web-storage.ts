@@ -4,25 +4,34 @@ export class WebStorage {
     this.storage = storage
   }
 
-  public setItem = (key: string, value: string | boolean): void => {
+  /**
+   * Set a json-parsable item in storage
+   */
+  public setItem = <T extends string | number | boolean | object>(
+    key: string,
+    value: T
+  ): void => {
     try {
-      this.storage.setItem(key, value.toString())
+      const item = JSON.stringify(value)
+      this.storage.setItem(key, item)
     } catch (e) {
       console.warn('Storage error', e)
     }
   }
 
-  public getItem = (key: string): string | undefined => {
+  /**
+   * Get a json-parsed item from storage
+   */
+  public getItem = <T>(key: string): T | undefined => {
     try {
-      return this.storage.getItem(key) ?? undefined
+      const item = this.storage.getItem(key)
+      if (item === null) {
+        return undefined
+      }
+      return JSON.parse(item) as T
     } catch (e) {
       console.warn('Storage error', e)
     }
     return undefined
-  }
-
-  public getBooleanItem = (key: string): boolean | undefined => {
-    const item = this.getItem(key)
-    return item === 'true' ? true : item === 'false' ? false : undefined
   }
 }
