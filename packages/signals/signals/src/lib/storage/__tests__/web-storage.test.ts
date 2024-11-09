@@ -28,7 +28,23 @@ describe('WebStorage', () => {
       expect(result).toBeUndefined()
     })
 
-    it('should handle JSON parsing errors gracefully', () => {
+    it('should handle JSON serializing errors gracefully when setting', () => {
+      const key = 'testKey'
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+      webStorage.setItem(
+        key,
+        // @ts-ignore
+        undefined
+      )
+
+      const result = webStorage.getItem(key)
+
+      expect(result).toBeUndefined()
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should handle JSON parsing errors gracefully when retrieving', () => {
       const key = 'testKey'
       const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
@@ -39,7 +55,6 @@ describe('WebStorage', () => {
 
       expect(result).toBeUndefined()
       expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
-      consoleWarnSpy.mockRestore()
     })
   })
 })
