@@ -18,7 +18,7 @@ export class SignalEventProcessor {
       const name = methodName as MethodName
       const eventsCollection = analyticsMethodCalls[name]
       eventsCollection.forEach((args) => {
-        logger.info('New signals-originated event:', name, { args })
+        logger.info('New method call:', `analytics.${name}()`, args)
 
         // @ts-ignore
         this.analytics[name](...args)
