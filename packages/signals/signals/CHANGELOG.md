@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.7.1
+
+### Patch Changes
+
+- [#1186](https://github.com/segmentio/analytics-next/pull/1186) [`bf85047e`](https://github.com/segmentio/analytics-next/commit/bf85047e971add497d5c9ab72972394b1f27e887) Thanks [@silesky](https://github.com/silesky)! - Add signals logging for events
+
 ## 1.7.0
 
 ### Minor Changes
