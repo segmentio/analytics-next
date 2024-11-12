@@ -33,15 +33,19 @@ class Logger {
     this.storage.setItem(this.logLevelKey, 'off')
   }
 
+  private log = (level: 'info' | 'debug', ...args: any[]): void => {
+    console.log(`[signals:${level}]`, ...args)
+  }
+
   info = (...args: any[]): void => {
     if (this.logLevel === 'info' || this.logLevel === 'debug') {
-      console.log('[signals log]', ...args)
+      this.log('info', ...args)
     }
   }
 
   debug = (...args: any[]): void => {
     if (this.logLevel === 'debug') {
-      console.log('[signals debug]', ...args)
+      this.log('debug', ...args)
     }
   }
 }
