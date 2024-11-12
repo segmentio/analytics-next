@@ -6,21 +6,12 @@ export interface EmitSignal {
   emit: (signal: Signal) => void
 }
 
-interface SignalEmitterSettings {
-  shouldLogSignals: () => boolean
-}
-
 export class SignalEmitter implements EmitSignal {
   private emitter = new Emitter<{ add: [Signal] }>()
   private listeners = new Set<(signal: Signal) => void>()
-  private settings?: SignalEmitterSettings
-  constructor(settings?: SignalEmitterSettings) {
-    this.settings = settings
-  }
+
   emit(signal: Signal) {
-    if (this.settings?.shouldLogSignals()) {
-      logger.log('New signal:', signal.type, signal.data)
-    }
+    logger.info('New signal:', signal.type, signal.data)
     this.emitter.emit('add', signal)
   }
 

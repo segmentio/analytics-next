@@ -28,12 +28,11 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   public signals: Signals
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
-
     // assign to window for debugging purposes
     Object.assign(window, { SegmentSignalsPlugin: this })
 
     if (settings.enableDebugLogging) {
-      logger.enableDebugLogging()
+      logger.enableLogging('debug')
     }
 
     logger.debug(`SignalsPlugin v${version} initializing`, {
@@ -89,7 +88,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   /**
    * Enable redaction and disable ingestion of signals. Also, logs signals to the console.
    */
-  debug(boolean = true): void {
-    this.signals.debug(boolean)
+  debug(...args: Parameters<typeof this.signals['debug']>): void {
+    this.signals.debug(...args)
   }
 }

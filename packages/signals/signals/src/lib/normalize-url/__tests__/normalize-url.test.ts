@@ -1,5 +1,5 @@
-import { setLocation } from '../../test-helpers/set-location'
-import { normalizeUrl } from '../normalize-url'
+import { setLocation } from '../../../test-helpers/set-location'
+import { normalizeUrl } from '..'
 
 describe('normalizeUrl', () => {
   beforeEach(() => {
