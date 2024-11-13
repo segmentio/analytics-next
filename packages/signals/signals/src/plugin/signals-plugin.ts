@@ -55,6 +55,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
       networkSignalsAllowList: settings.networkSignalsAllowList,
       networkSignalsDisallowList: settings.networkSignalsDisallowList,
       signalStorage: settings.signalStorage,
+      signalStorageType: settings.signalStorageType,
     })
   }
 
