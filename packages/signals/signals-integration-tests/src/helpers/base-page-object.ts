@@ -7,6 +7,7 @@ import {
   SignalAPIRequestBuffer,
   TrackingAPIRequestBuffer,
 } from './network-utils'
+import { CDNSettings } from '@segment/analytics-next'
 
 export class BasePage {
   protected page!: Page
@@ -41,13 +42,14 @@ export class BasePage {
     page: Page,
     edgeFn: string,
     signalSettings: Partial<SignalsPluginSettingsConfig> = {},
-    options: { updateURL?: (url: string) => string } = {}
+    options: { updateURL?: (url: string) => string } = {},
+    cdnSettings?: Partial<CDNSettings>
   ) {
     logConsole(page)
     this.page = page
     this.network = new PageNetworkUtils(page)
     this.edgeFn = edgeFn
-    await this.setupMockedRoutes()
+    await this.setupMockedRoutes(cdnSettings)
     const url = options.updateURL ? options.updateURL(this.url) : this.url
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     void this.invokeAnalyticsLoad({
@@ -92,7 +94,7 @@ export class BasePage {
     return this
   }
 
-  private async setupMockedRoutes() {
+  private async setupMockedRoutes(settings?: Partial<CDNSettings>) {
     // clear any existing saved requests
     this.trackingAPI.clear()
     this.signalsAPI.clear()
@@ -100,7 +102,7 @@ export class BasePage {
     await Promise.all([
       this.mockSignalsApi(),
       this.mockTrackingApi(),
-      this.mockCDNSettings(),
+      this.mockCDNSettings(settings),
     ])
   }
 
@@ -203,7 +205,7 @@ export class BasePage {
     })
   }
 
-  async mockCDNSettings() {
+  async mockCDNSettings(settings?: Partial<CDNSettings>) {
     await this.page.route(
       'https://cdn.segment.com/v1/projects/*/settings',
       (route, request) => {
@@ -213,7 +215,7 @@ export class BasePage {
 
         const cdnSettings = new CDNSettingsBuilder({
           writeKey: '<SOME_WRITE_KEY>',
-          baseCDNSettings: {
+          baseCDNSettings: settings ?? {
             edgeFunction: {
               downloadURL: this.edgeFnDownloadURL,
               version: 1,

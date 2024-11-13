@@ -64,8 +64,8 @@ export class SignalGlobalSettings {
         if (this.signalsDebug.getEnableSignalsIngestion()) {
           return true
         }
-        if (!this.sampleSuccess) {
-          return false
+        if (this.sampleSuccess) {
+          return true
         }
         return false
       },
@@ -105,9 +105,22 @@ export class SignalGlobalSettings {
         Boolean(val)
       )
     )
-    if (sampleRate && Math.random() <= sampleRate) {
-      this.sampleSuccess = true
+    this.sampleSuccess = this.checkSampleRate(sampleRate ?? 0)
+  }
+  private checkSampleRate(sampleRate: number): boolean {
+    const storage = new WebStorage(window.sessionStorage)
+    const previousSample = storage.getItem<boolean>('segment_sample_success')
+    if (previousSample !== undefined) {
+      return previousSample
     }
+
+    if (sampleRate && Math.random() <= sampleRate) {
+      storage.setItem('segment_sample_success', true)
+      return true
+    }
+
+    storage.setItem('segment_sample_success', false)
+    return false
   }
 }
 
