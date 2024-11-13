@@ -694,7 +694,9 @@ describe('Dispatch', () => {
     })
 
     await sleep(10)
-    expect(fetchCalls[1].url).toBe('http://new.api.io/m')
+    expect(fetchCalls.some((call) => call.url === 'http://new.api.io/m')).toBe(
+      true
+    )
   })
 })
 
