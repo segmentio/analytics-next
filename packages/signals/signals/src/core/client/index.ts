@@ -1,20 +1,22 @@
 import { Analytics, segmentio } from '@segment/analytics-next'
 import { logger } from '../../lib/logger'
-import { Signal } from '../../types'
-import { redactJsonValues } from './redact'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { redactSignalData } from './redact'
 
 export class SignalsIngestSettings {
   flushAt: number
   flushInterval: number
   apiHost: string
-  shouldDisableSignalRedaction: () => boolean
+  shouldDisableSignalsRedaction: () => boolean
+  shouldIngestSignals: () => boolean
   writeKey?: string
   constructor(settings: SignalsIngestSettingsConfig) {
     this.flushAt = settings.flushAt ?? 5
     this.apiHost = settings.apiHost ?? 'signals.segment.io/v1'
     this.flushInterval = settings.flushInterval ?? 2000
-    this.shouldDisableSignalRedaction =
-      settings.shouldDisableSignalRedaction ?? (() => false)
+    this.shouldDisableSignalsRedaction =
+      settings.shouldDisableSignalsRedaction ?? (() => false)
+    this.shouldIngestSignals = settings.shouldIngestSignals ?? (() => false)
   }
 }
 
@@ -22,7 +24,8 @@ export interface SignalsIngestSettingsConfig {
   apiHost?: string
   flushAt?: number
   flushInterval?: number
-  shouldDisableSignalRedaction?: () => boolean
+  shouldDisableSignalsRedaction?: () => boolean
+  shouldIngestSignals?: () => boolean
 }
 /**
  * This currently just uses the Segment analytics-next library to send signals.
@@ -73,13 +76,14 @@ export class SignalsIngestClient {
     if (!this.analytics) {
       throw new Error('Please initialize before calling this method.')
     }
-    const disableRedaction = this.settings.shouldDisableSignalRedaction()
-    const data = disableRedaction
-      ? signal.data
-      : redactJsonValues(signal.data, 2)
+    if (!this.settings.shouldIngestSignals()) {
+      return
+    }
+    const disableRedaction = this.settings.shouldDisableSignalsRedaction()
+    const cleanSignal = disableRedaction ? signal : redactSignalData(signal)
 
     if (disableRedaction) {
-      logger.debug('Sending unredacted data to segment', data)
+      logger.debug('Sending unredacted data to segment', cleanSignal)
     }
 
     const MAGIC_EVENT_NAME = 'Segment Signal Generated'
@@ -87,7 +91,7 @@ export class SignalsIngestClient {
     return this.analytics.track(MAGIC_EVENT_NAME, {
       index: this.index++,
       type: signal.type,
-      data: data,
+      data: cleanSignal.data,
     })
   }
 

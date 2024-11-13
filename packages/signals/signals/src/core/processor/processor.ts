@@ -1,5 +1,6 @@
 import { logger } from '../../lib/logger'
-import { AnyAnalytics, Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { AnyAnalytics } from '../../types'
 import { MethodName, Sandbox } from './sandbox'
 
 export class SignalEventProcessor {
@@ -17,7 +18,8 @@ export class SignalEventProcessor {
       const name = methodName as MethodName
       const eventsCollection = analyticsMethodCalls[name]
       eventsCollection.forEach((args) => {
-        logger.debug(`analytics.${name}(...) called with args`, args)
+        logger.info('New method call:', `analytics.${name}()`, args)
+
         // @ts-ignore
         this.analytics[name](...args)
       })

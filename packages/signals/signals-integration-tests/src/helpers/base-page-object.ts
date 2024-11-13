@@ -1,53 +1,101 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
-import { Page, Request } from '@playwright/test'
+import { Page } from '@playwright/test'
 import { logConsole } from './log-console'
-import { SegmentEvent } from '@segment/analytics-next'
+import { Signal, SignalsPluginSettingsConfig } from '@segment/analytics-signals'
+import {
+  PageNetworkUtils,
+  SignalAPIRequestBuffer,
+  TrackingAPIRequestBuffer,
+} from './network-utils'
 
 export class BasePage {
   protected page!: Page
-  public lastSignalsApiReq!: Request
-  public signalsApiReqs: SegmentEvent[] = []
-  public lastTrackingApiReq!: Request
-  public trackingApiReqs: SegmentEvent[] = []
-
+  public signalsAPI = new SignalAPIRequestBuffer()
+  public trackingAPI = new TrackingAPIRequestBuffer()
   public url: string
   public edgeFnDownloadURL = 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js'
   public edgeFn!: string
+  public network!: PageNetworkUtils
 
   constructor(path: string) {
     this.url = 'http://localhost:5432/src/tests' + path
   }
 
-  /**
-   * load and setup routes
-   * @param page
-   * @param edgeFn - edge function to be loaded
-   */
-  async load(page: Page, edgeFn: string) {
-    logConsole(page)
-    this.page = page
-    this.edgeFn = edgeFn
-    await this.setupMockedRoutes()
-    await this.page.goto(this.url)
+  public origin() {
+    return new URL(this.page.url()).origin
   }
 
   /**
-   *  Wait for analytics and signals to be initialized
-   * Signals can be captured before this, so it's useful to have this method
+   * Load and setup routes
+   * and wait for analytics and signals to be initialized
    */
-  async waitForAnalyticsInit() {
+  async loadAndWait(...args: Parameters<BasePage['load']>) {
+    await Promise.all([this.load(...args), this.waitForSettings()])
+    return this
+  }
+
+  /**
+   * load and setup routes
+   */
+  async load(
+    page: Page,
+    edgeFn: string,
+    signalSettings: Partial<SignalsPluginSettingsConfig> = {},
+    options: { updateURL?: (url: string) => string } = {}
+  ) {
+    logConsole(page)
+    this.page = page
+    this.network = new PageNetworkUtils(page)
+    this.edgeFn = edgeFn
+    await this.setupMockedRoutes()
+    const url = options.updateURL ? options.updateURL(this.url) : this.url
+    await this.page.goto(url, { waitUntil: 'domcontentloaded' })
+    void this.invokeAnalyticsLoad({
+      flushInterval: 500,
+      ...signalSettings,
+    })
+    return this
+  }
+
+  /**
+   * Wait for analytics and signals to be initialized
+   * We could do the same thing with analytics.ready() and signalsPlugin.ready()
+   */
+  async waitForSettings() {
     return Promise.all([
       this.waitForCDNSettingsResponse(),
       this.waitForEdgeFunctionResponse(),
     ])
   }
 
+  /**
+   * Invoke the analytics load sequence, but do not wait for analytics to full initialize
+   * Full initialization means that the CDN settings and edge function have been loaded
+   */
+  private async invokeAnalyticsLoad(
+    signalSettings: Partial<SignalsPluginSettingsConfig> = {}
+  ) {
+    await this.page.evaluate(
+      ({ signalSettings }) => {
+        window.signalsPlugin = new window.SignalsPlugin({
+          disableSignalsRedaction: true,
+          enableSignalsIngestion: true,
+          ...signalSettings,
+        })
+        window.analytics.load({
+          writeKey: '<SOME_WRITE_KEY>',
+          plugins: [window.signalsPlugin],
+        })
+      },
+      { signalSettings }
+    )
+    return this
+  }
+
   private async setupMockedRoutes() {
     // clear any existing saved requests
-    this.signalsApiReqs = []
-    this.trackingApiReqs = []
-    this.lastSignalsApiReq = undefined as any as Request
-    this.lastTrackingApiReq = undefined as any as Request
+    this.trackingAPI.clear()
+    this.signalsAPI.clear()
 
     await Promise.all([
       this.mockSignalsApi(),
@@ -58,11 +106,10 @@ export class BasePage {
 
   async mockTrackingApi() {
     await this.page.route('https://api.segment.io/v1/*', (route, request) => {
-      this.lastTrackingApiReq = request
-      this.trackingApiReqs.push(request.postDataJSON())
       if (request.method().toLowerCase() !== 'post') {
         throw new Error(`Unexpected method: ${request.method()}`)
       }
+      this.trackingAPI.addRequest(request)
       return route.fulfill({
         contentType: 'application/json',
         status: 201,
@@ -81,11 +128,10 @@ export class BasePage {
     await this.page.route(
       'https://signals.segment.io/v1/*',
       (route, request) => {
-        this.lastSignalsApiReq = request
-        this.signalsApiReqs.push(request.postDataJSON())
         if (request.method().toLowerCase() !== 'post') {
           throw new Error(`Unexpected method: ${request.method()}`)
         }
+        this.signalsAPI.addRequest(request)
         return route.fulfill({
           contentType: 'application/json',
           status: 201,
@@ -94,6 +140,60 @@ export class BasePage {
           }),
         })
       }
+    )
+  }
+
+  async waitForSignalsEmit(
+    filter: (signal: Signal) => boolean,
+    {
+      expectedSignalCount,
+      maxTimeoutMs = 10000,
+      failOnEmit = false,
+    }: {
+      expectedSignalCount?: number
+      maxTimeoutMs?: number
+      failOnEmit?: boolean
+    } = {}
+  ) {
+    return this.page.evaluate(
+      ([filter, expectedSignalCount, maxTimeoutMs, failOnEmit]) => {
+        return new Promise((resolve, reject) => {
+          let signalCount = 0
+          const to = setTimeout(() => {
+            if (failOnEmit) {
+              resolve('No signal emitted')
+            } else {
+              reject('Timed out waiting for signals')
+            }
+          }, maxTimeoutMs)
+          window.signalsPlugin.onSignal((signal) => {
+            signalCount++
+            if (
+              eval(filter)(signal) &&
+              signalCount === (expectedSignalCount ?? 1)
+            ) {
+              if (failOnEmit) {
+                reject(
+                  `Signal should not have been emitted: ${JSON.stringify(
+                    signal,
+                    null,
+                    2
+                  )}`
+                )
+              } else {
+                resolve(signal)
+              }
+              clearTimeout(to)
+            }
+          })
+        })
+      },
+      [
+        filter.toString(),
+        expectedSignalCount,
+        maxTimeoutMs,
+        failOnEmit,
+      ] as const
     )
   }
 
@@ -147,15 +247,17 @@ export class BasePage {
     })
   }
 
-  waitForEdgeFunctionResponse() {
+  waitForEdgeFunctionResponse(timeout = 30000) {
     return this.page.waitForResponse(
-      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`
+      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`,
+      { timeout }
     )
   }
 
-  waitForCDNSettingsResponse() {
+  async waitForCDNSettingsResponse(timeout = 30000) {
     return this.page.waitForResponse(
-      'https://cdn.segment.com/v1/projects/*/settings'
+      'https://cdn.segment.com/v1/projects/*/settings',
+      { timeout }
     )
   }
 

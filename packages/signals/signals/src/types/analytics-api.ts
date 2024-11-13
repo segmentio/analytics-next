@@ -8,9 +8,14 @@ export type EdgeFnCDNSettings = {
   downloadURL: string
 }
 
+export type AutoInstrumentationCDNSettings = {
+  sampleRate: number
+}
+
 export interface CDNSettings {
   integrations: CDNSettingsIntegrations
   edgeFunction?: EdgeFnCDNSettings | { [key: string]: never }
+  autoInstrumentationSettings?: AutoInstrumentationCDNSettings
 }
 
 export interface SegmentEventStub {
@@ -49,6 +54,8 @@ export interface AnyAnalytics {
   settings: {
     cdnSettings: CDNSettings
     writeKey: string
+    cdnURL?: string //  temporarily optional because analytics does not have this API yet
+    apiHost?: string //  temporarily optional because analytics does not have this API yet
   }
   addSourceMiddleware(
     middleware: Function | SourceMiddlewareFunction
@@ -59,6 +66,8 @@ export interface AnyAnalytics {
   group(...args: any[]): void
   alias(...args: any[]): void
   screen(...args: any[]): void
+  reset(): void
+  on(name: 'reset', fn: (...args: any[]) => void): void
 }
 
 /**

@@ -2,11 +2,24 @@ import React, { FormEventHandler, useState } from 'react'
 
 const ComplexForm = () => {
   const [inputField, setInputField] = useState('')
+  const [expectFormError, setExpectFormError] = useState(false)
   const [selectField, setSelectField] = useState('')
+
+  const statusCode: number = React.useMemo(() => {
+    try {
+      // Change the response status code via the text input field
+      const val = parseInt(inputField, 10)
+      return val >= 100 && val <= 511 ? val : 400
+    } catch (err) {
+      return 400
+    }
+  }, [inputField])
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
+
     const formData = {
+      status: expectFormError ? statusCode : 200,
       inputField,
       selectField,
     }
@@ -33,16 +46,16 @@ const ComplexForm = () => {
       <button data-custom-attr="some-custom-attribute">Example Button</button>
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="ex-input">Input Field:</label>
+          <label htmlFor="ex-input-text">Input some text:</label>
           <input
-            id="ex-input"
+            id="ex-input-text"
             type="text"
             value={inputField}
             onChange={(e) => setInputField(e.target.value)}
           />
         </div>
         <div>
-          <label htmlFor="ex-select">Select Field:</label>
+          <label htmlFor="ex-select">Select an option:</label>
           <select
             id="ex-select"
             value={selectField}
@@ -55,8 +68,22 @@ const ComplexForm = () => {
             <option value="Option 2">Option 2</option>
           </select>
         </div>
-        <button type="submit">Submit</button>
+        <div>
+          <label htmlFor="ex-checkbox">{`Force submit network status: ${statusCode}`}</label>
+          <input
+            id="ex-checkbox"
+            type="checkbox"
+            checked={expectFormError}
+            onChange={(e) => setExpectFormError(e.target.checked)}
+          />
+        </div>
+        <button type="submit">Submit via network req</button>
       </form>
+      <button>
+        <div>
+          Other Example Button with <h1>Nested Text</h1>
+        </div>
+      </button>
     </div>
   )
 }

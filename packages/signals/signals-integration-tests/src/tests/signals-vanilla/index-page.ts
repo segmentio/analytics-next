@@ -1,5 +1,6 @@
 import { BasePage } from '../../helpers/base-page-object'
 import { promiseTimeout } from '@internal/test-helpers'
+import { fillAndBlur } from '../../helpers/playwright-utils'
 
 export class IndexPage extends BasePage {
   constructor() {
@@ -22,44 +23,34 @@ export class IndexPage extends BasePage {
     return promiseTimeout(p, 2000, 'analytics.on("track") did not resolve')
   }
 
-  addUserDefinedSignal() {
-    return this.page.evaluate(() => {
-      window.signalsPlugin.addSignal({
-        type: 'userDefined',
-        data: {
-          foo: 'bar',
-        },
-      })
-    })
-  }
-
-  async mockRandomJSONApi() {
-    await this.page.route('http://localhost:5432/api/foo', (route) => {
-      return route.fulfill({
-        contentType: 'application/json',
-        status: 200,
-        body: JSON.stringify({
-          someResponse: 'yep',
-        }),
-      })
-    })
-  }
-
-  async makeFetchCallToRandomJSONApi(): Promise<void> {
-    return this.page.evaluate(() => {
-      return fetch('http://localhost:5432/api/foo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ foo: 'bar' }),
-      })
-        .then(console.log)
-        .catch(console.error)
-    })
+  addUserDefinedSignal(data?: Record<string, unknown>) {
+    return this.page.evaluate(
+      (args) => {
+        window.signalsPlugin.addSignal({
+          type: 'userDefined',
+          data: {
+            foo: 'bar',
+            ...args.data,
+          },
+        })
+      },
+      { data }
+    )
   }
 
   async clickButton() {
     return this.page.click('#some-button')
+  }
+
+  async clickComplexButton() {
+    return this.page.click('#complex-button')
+  }
+
+  async clickInsideComplexButton() {
+    return this.page.click('#complex-button h1')
+  }
+
+  async fillNameInput(text: string) {
+    return await fillAndBlur(this.page, '#name', text)
   }
 }

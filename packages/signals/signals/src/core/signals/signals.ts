@@ -7,13 +7,15 @@ import {
   SignalGenerator,
   SignalGeneratorClass,
 } from '../signal-generators/types'
-import { AnyAnalytics, Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { AnyAnalytics } from '../../types'
 import { registerGenerator } from '../signal-generators/register'
 import { AnalyticsService } from '../analytics-service'
 import { SignalEventProcessor } from '../processor/processor'
 import { Sandbox, SandboxSettings } from '../processor/sandbox'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
 import { logger } from '../../lib/logger'
+import { LogLevelOptions } from '../debug-mode'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -51,7 +53,10 @@ export class Signals implements ISignals {
 
     this.signalEmitter.subscribe(this.addToPreStartBuffer)
 
-    void this.registerGenerator([...domGenerators, NetworkGenerator])
+    void this.registerGenerator([
+      ...domGenerators,
+      new NetworkGenerator(this.globalSettings.network),
+    ])
   }
 
   private addToPreStartBuffer = (signal: Signal) => {
@@ -81,9 +86,19 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
+    analyticsService.instance.on('reset', () => {
+      this.clearStorage()
+    })
 
     this.globalSettings.update({
       edgeFnDownloadURL: analyticsService.edgeFnSettings?.downloadURL,
+      disallowListURLs: [
+        analyticsService.instance.settings.apiHost,
+        analyticsService.instance.settings.cdnURL,
+      ],
+      sampleRate:
+        analyticsService.instance.settings.cdnSettings
+          .autoInstrumentationSettings?.sampleRate ?? 0,
     })
 
     const sandbox = new Sandbox(
@@ -105,7 +120,9 @@ export class Signals implements ISignals {
       analyticsService.createSegmentInstrumentationEventGenerator(),
     ])
 
-    await this.signalsClient.init({ writeKey: analyticsService.writeKey })
+    await this.signalsClient.init({
+      writeKey: analyticsService.instance.settings.writeKey,
+    })
   }
 
   stop() {
@@ -117,7 +134,15 @@ export class Signals implements ISignals {
   }
 
   /**
-   * Emit custom signals.
+   * Disable redaction, ingestion of signals, and other logging.
+   */
+  debug(boolean = true, logLevel?: LogLevelOptions): void {
+    this.globalSettings.signalsDebug.setAllDebugging(boolean)
+    logger.enableLogging(logLevel ?? 'info')
+  }
+
+  /**
+   * Register custom signal generators to emit signals.
    */
   async registerGenerator(
     generators: (SignalGeneratorClass | SignalGenerator)[]

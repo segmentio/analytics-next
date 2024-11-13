@@ -1,0 +1,49 @@
+{
+  "name": "@segment/analytics-signals-runtime",
+  "version": "1.1.0",
+  "keywords": [
+    "segment"
+  ],
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "LICENSE",
+    "dist/",
+    "src/",
+    "!**/__tests__/**",
+    "!**/test-helpers/**",
+    "!*.tsbuildinfo"
+  ],
+  "scripts": {
+    ".": "yarn run -T turbo run --filter=@segment/analytics-signals-runtime...",
+    "test": "yarn jest",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build:editor": "node build-editor-types.js",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
+    "build:global": "node build-signals-runtime-global.js",
+    "watch": "yarn build:esm --watch",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest",
+    "webpack": "yarn run -T webpack"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
+  },
+  "packageManager": "yarn@3.4.1",
+  "license": "MIT",
+  "repository": {
+    "directory": "packages/signals/signals-runtime",
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next"
+  },
+  "devDependencies": {
+    "@internal/test-helpers": "workspace:^",
+    "@microsoft/api-extractor": "^7.47.9"
+  }
+}

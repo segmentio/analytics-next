@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-signals",
-  "version": "1.0.1",
+  "version": "1.7.1",
   "main": "./dist/cjs/index.js",
   "license": "MIT",
   "repository": {
@@ -31,21 +31,22 @@
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:bundle": "NODE_ENV=production yarn run webpack",
-    "build:bundle-dev": "NODE_ENV=development yarn run webpack",
-    "watch": "yarn concurrently 'yarn build:bundle-dev --watch' 'yarn build:esm --watch'",
+    "workerbox": "node scripts/build-workerbox.js",
+    "assert-workerbox-built": "sh scripts/assert-workerbox-built.sh",
+    "watch": "yarn concurrently 'yarn build:bundle --watch' 'yarn build:esm --watch'",
     "version": "sh scripts/version.sh",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",
-    "concurrently": "yarn run -T concurrently --raw",
+    "concurrently": "yarn run -T concurrently",
     "jest": "yarn run -T jest",
     "webpack": "yarn run -T webpack"
   },
   "dependencies": {
     "@segment/analytics-generic-utils": "1.2.0",
+    "@segment/analytics-signals-runtime": "1.1.0",
     "idb": "^8.0.0",
-    "tslib": "^2.4.1",
-    "workerboxjs": "^6.1.1"
+    "tslib": "^2.4.1"
   },
   "peerDependencies": {
     "@segment/analytics-next": ">1.72.0"
@@ -59,6 +60,7 @@
   "devDependencies": {
     "@internal/config-webpack": "workspace:^",
     "@internal/test-helpers": "workspace:^",
-    "fake-indexeddb": "^6.0.0"
+    "fake-indexeddb": "^6.0.0",
+    "node-fetch": "^2.6.7"
   }
 }

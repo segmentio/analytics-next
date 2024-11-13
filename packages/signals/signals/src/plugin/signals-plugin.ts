@@ -1,8 +1,10 @@
 import type { Plugin } from '@segment/analytics-next'
 import { Signals } from '../core/signals'
 import { logger } from '../lib/logger'
-import { AnyAnalytics, Signal, SignalsPluginSettingsConfig } from '../types'
+import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
+import { version } from '../generated/version'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -22,18 +24,24 @@ interface SignalsAugmentedFunctionality {
 export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   readonly type = 'utility'
   readonly name = 'SignalsPlugin'
-  readonly version = '0.0.0'
+  readonly version = version
   public signals: Signals
-
   constructor(settings: SignalsPluginSettingsConfig = {}) {
     assertBrowserEnv()
+    // assign to window for debugging purposes
+    Object.assign(window, { SegmentSignalsPlugin: this })
+
     if (settings.enableDebugLogging) {
-      logger.enableDebugLogging()
+      logger.enableLogging('debug')
     }
-    logger.debug('SignalsPlugin initializing', { settings })
+
+    logger.debug(`SignalsPlugin v${version} initializing`, {
+      settings,
+    })
 
     this.signals = new Signals({
-      disableSignalRedaction: settings.disableSignalsRedaction,
+      disableSignalsRedaction: settings.disableSignalsRedaction,
+      enableSignalsIngestion: settings.enableSignalsIngestion,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
       functionHost: settings.functionHost,
@@ -43,6 +51,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
         typeof settings.processSignal === 'function'
           ? settings.processSignal.toString()
           : settings.processSignal,
+      networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
+      networkSignalsAllowList: settings.networkSignalsAllowList,
+      networkSignalsDisallowList: settings.networkSignalsDisallowList,
+      signalStorage: settings.signalStorage,
     })
   }
 
@@ -71,5 +83,12 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   addSignal(signal: Signal) {
     this.signals.signalEmitter.emit(signal)
     return this
+  }
+
+  /**
+   * Enable redaction and disable ingestion of signals. Also, logs signals to the console.
+   */
+  debug(...args: Parameters<typeof this.signals['debug']>): void {
+    this.signals.debug(...args)
   }
 }

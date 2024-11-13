@@ -2,12 +2,14 @@ import { Analytics } from '../../core/analytics'
 import { CDNSettings } from '../../browser'
 import { SegmentFacade } from '../../lib/to-facade'
 import { SegmentioSettings } from './index'
+import { Context } from '../../core/context'
 
 export function normalize(
   analytics: Analytics,
   json: ReturnType<SegmentFacade['json']>,
   settings?: SegmentioSettings,
-  integrations?: CDNSettings['integrations']
+  integrations?: CDNSettings['integrations'],
+  ctx?: Context
 ): object {
   const user = analytics.user()
 
@@ -23,6 +25,16 @@ export function normalize(
   const failed = analytics.queue.failedInitializations || []
   if (failed.length > 0) {
     json._metadata = { failedInitializations: failed }
+  }
+
+  if (ctx != null) {
+    if (ctx.attempts > 1) {
+      json._metadata = {
+        ...json._metadata,
+        retryCount: ctx.attempts,
+      }
+    }
+    ctx.attempts++
   }
 
   const bundled: string[] = []

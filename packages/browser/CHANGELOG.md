@@ -1,5 +1,41 @@
 # @segment/analytics-next
 
+## 1.76.0
+
+### Minor Changes
+
+- [#1166](https://github.com/segmentio/analytics-next/pull/1166) [`9e6db285`](https://github.com/segmentio/analytics-next/commit/9e6db2857798f4b5bfdbbfe3570b3d4d83294a79) Thanks [@danieljackins](https://github.com/danieljackins)! - Add sampling logic and block non debug traffic
+
+## 1.75.0
+
+### Minor Changes
+
+- [#1160](https://github.com/segmentio/analytics-next/pull/1160) [`bedea03b`](https://github.com/segmentio/analytics-next/commit/bedea03bb50e01a7df71461087a9ec340375906d) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Adding apiHost to the readonly data available from Analytics.settings
+
+## 1.74.0
+
+### Minor Changes
+
+- [#1157](https://github.com/segmentio/analytics-next/pull/1157) [`3f58366b`](https://github.com/segmentio/analytics-next/commit/3f58366b0e01aa723d9d3bbb9fe8549d3082eb8e) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Refactoring CDN Url to be available from analytics settings
+
+* [#1128](https://github.com/segmentio/analytics-next/pull/1128) [`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3) Thanks [@silesky](https://github.com/silesky)! - Do not make plugin.version required
+
+### Patch Changes
+
+- Updated dependencies [[`c45d445b`](https://github.com/segmentio/analytics-next/commit/c45d445beb1b1d5b03738557720720d05e9c08a3), [`9ece2726`](https://github.com/segmentio/analytics-next/commit/9ece2726de257ecd594d601ef098bea746858133)]:
+  - @segment/analytics-core@1.8.0
+
+## 1.73.0
+
+### Minor Changes
+
+- [#1084](https://github.com/segmentio/analytics-next/pull/1084) [`5647624c`](https://github.com/segmentio/analytics-next/commit/5647624cbcd4984e5bdbf2e9c907619366864c4e) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Adding support for 429 response from the server
+
+### Patch Changes
+
+- Updated dependencies [[`5647624c`](https://github.com/segmentio/analytics-next/commit/5647624cbcd4984e5bdbf2e9c907619366864c4e)]:
+  - @segment/analytics-core@1.7.0
+
 ## 1.72.2
 
 ### Patch Changes

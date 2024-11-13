@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
-    "@segment/analytics-next": "workspace:^"
+    "@segment/analytics-next": "workspace:^",
+    "@segment/analytics-signals": "workspace:^"
   },
   "devDependencies": {
     "http-server": "14.1.1"

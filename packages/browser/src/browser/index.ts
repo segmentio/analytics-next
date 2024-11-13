@@ -122,6 +122,13 @@ export interface CDNSettings {
         version: number
       }
     | {}
+
+  /**
+   * Settings for auto instrumentation
+   */
+  autoInstrumentationSettings?: {
+    sampleRate: number
+  }
 }
 
 export interface AnalyticsBrowserSettings {
@@ -148,10 +155,8 @@ export interface AnalyticsBrowserSettings {
 
 export function loadCDNSettings(
   writeKey: string,
-  cdnURL?: string
+  baseUrl: string
 ): Promise<CDNSettings> {
-  const baseUrl = cdnURL ?? getCDN()
-
   return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
     .then((res) => {
       if (!res.ok) {
@@ -355,9 +360,9 @@ async function loadAnalytics(
     preInitBuffer.add(new PreInitMethodCall('page', []))
   }
 
+  const cdnURL = settings.cdnURL ?? getCDN()
   let cdnSettings =
-    settings.cdnSettings ??
-    (await loadCDNSettings(settings.writeKey, settings.cdnURL))
+    settings.cdnSettings ?? (await loadCDNSettings(settings.writeKey, cdnURL))
 
   if (options.updateCDNSettings) {
     cdnSettings = options.updateCDNSettings(cdnSettings)
@@ -379,7 +384,7 @@ async function loadAnalytics(
     ...options,
   }
 
-  const analytics = new Analytics({ ...settings, cdnSettings }, options)
+  const analytics = new Analytics({ ...settings, cdnSettings, cdnURL }, options)
 
   attachInspector(analytics)
 

@@ -3,16 +3,25 @@ import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
 import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
+import { NetworkSettingsConfig } from '../signal-generators/network-gen'
+import { SignalsPluginSettingsConfig } from '../../types'
+import { WebStorage } from '../../lib/storage/web-storage'
 
-export interface SignalsSettingsConfig {
-  maxBufferSize?: number
+export type SignalsSettingsConfig = Pick<
+  SignalsPluginSettingsConfig,
+  | 'maxBufferSize'
+  | 'apiHost'
+  | 'functionHost'
+  | 'flushAt'
+  | 'flushInterval'
+  | 'disableSignalsRedaction'
+  | 'enableSignalsIngestion'
+  | 'networkSignalsAllowList'
+  | 'networkSignalsDisallowList'
+  | 'networkSignalsAllowSameDomain'
+> & {
   signalStorage?: SignalPersistentStorage
   processSignal?: string
-  apiHost?: string
-  functionHost?: string
-  flushAt?: number
-  flushInterval?: number
-  disableSignalRedaction?: boolean
 }
 
 /**
@@ -24,8 +33,10 @@ export class SignalGlobalSettings {
   sandbox: SandboxSettingsConfig
   signalBuffer: SignalBufferSettingsConfig
   ingestClient: SignalsIngestSettingsConfig
+  network: NetworkSettingsConfig
+  signalsDebug: SignalsDebugSettings
 
-  private redaction = new SignalRedactionSettings()
+  private sampleSuccess = false
 
   constructor(settings: SignalsSettingsConfig) {
     if (settings.maxBufferSize && settings.signalStorage) {
@@ -34,8 +45,9 @@ export class SignalGlobalSettings {
       )
     }
 
-    this.redaction = new SignalRedactionSettings(
-      settings.disableSignalRedaction
+    this.signalsDebug = new SignalsDebugSettings(
+      settings.disableSignalsRedaction,
+      settings.enableSignalsIngestion
     )
 
     this.signalBuffer = {
@@ -46,66 +58,93 @@ export class SignalGlobalSettings {
       apiHost: settings.apiHost,
       flushAt: settings.flushAt,
       flushInterval: settings.flushInterval,
-      shouldDisableSignalRedaction: this.redaction.getDisableSignalRedaction,
+      shouldDisableSignalsRedaction:
+        this.signalsDebug.getDisableSignalsRedaction,
+      shouldIngestSignals: () => {
+        if (this.signalsDebug.getEnableSignalsIngestion()) {
+          return true
+        }
+        if (!this.sampleSuccess) {
+          return false
+        }
+        return false
+      },
     }
     this.sandbox = {
       functionHost: settings.functionHost,
       processSignal: settings.processSignal,
       edgeFnDownloadURL: undefined,
     }
+    this.network = new NetworkSettingsConfig({
+      networkSignalsAllowList: settings.networkSignalsAllowList,
+      networkSignalsDisallowList: settings.networkSignalsDisallowList,
+      networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
+    })
   }
-  public update({ edgeFnDownloadURL }: { edgeFnDownloadURL?: string }): void {
+  public update({
+    edgeFnDownloadURL,
+    disallowListURLs,
+    sampleRate,
+  }: {
+    /**
+     * The URL to download the edge function from
+     */
+    edgeFnDownloadURL?: string
+    /**
+     * Add new URLs to the disallow list
+     */
+    disallowListURLs: (string | undefined)[]
+    /**
+     * Sample rate to determine sending signals
+     */
+    sampleRate?: number
+  }): void {
     edgeFnDownloadURL && (this.sandbox.edgeFnDownloadURL = edgeFnDownloadURL)
+    this.network.networkSignalsFilterList.disallowed.addURLLike(
+      ...disallowListURLs.filter(<T>(val: T): val is NonNullable<T> =>
+        Boolean(val)
+      )
+    )
+    if (sampleRate && Math.random() <= sampleRate) {
+      this.sampleSuccess = true
+    }
   }
 }
 
-class SignalRedactionSettings {
+export class SignalsDebugSettings {
   private static redactionKey = 'segment_signals_debug_redaction_disabled'
-  constructor(initialValue?: boolean) {
-    if (typeof initialValue === 'boolean') {
-      this.setDisableSignalRedaction(initialValue)
+  private static ingestionKey = 'segment_signals_debug_ingestion_enabled'
+  private storage = new WebStorage(window.sessionStorage)
+
+  constructor(disableRedaction?: boolean, enableIngestion?: boolean) {
+    if (typeof disableRedaction === 'boolean') {
+      this.storage.setItem(SignalsDebugSettings.redactionKey, disableRedaction)
+    }
+    if (typeof enableIngestion === 'boolean') {
+      this.storage.setItem(SignalsDebugSettings.ingestionKey, enableIngestion)
     }
 
-    // setting ?segment_signals_debug=true will disable redaction, and set a key in local storage
-    // this setting will persist across page loads (even if there is no query string)
-    // in order to clear the setting, user must set ?segment_signals_debug=false
     const debugModeInQs = parseDebugModeQueryString()
     logger.debug('debugMode is set to true via query string')
     if (typeof debugModeInQs === 'boolean') {
-      this.setDisableSignalRedaction(debugModeInQs)
+      this.setAllDebugging(debugModeInQs)
     }
   }
 
-  setDisableSignalRedaction(shouldDisable: boolean) {
-    try {
-      if (shouldDisable) {
-        window.sessionStorage.setItem(
-          SignalRedactionSettings.redactionKey,
-          'true'
-        )
-      } else {
-        logger.debug('Removing redaction key from storage')
-        window.sessionStorage.removeItem(SignalRedactionSettings.redactionKey)
-      }
-    } catch (e) {
-      logger.debug('Storage error', e)
-    }
+  setAllDebugging = (boolean: boolean) => {
+    this.storage.setItem(SignalsDebugSettings.redactionKey, boolean)
+    this.storage.setItem(SignalsDebugSettings.ingestionKey, boolean)
   }
 
-  getDisableSignalRedaction() {
-    try {
-      const isDisabled = Boolean(
-        window.sessionStorage.getItem(SignalRedactionSettings.redactionKey)
-      )
-      if (isDisabled) {
-        logger.debug(
-          `${SignalRedactionSettings.redactionKey}=true (app. storage)`
-        )
-        return true
-      }
-    } catch (e) {
-      logger.debug('Storage error', e)
-    }
-    return false
+  getDisableSignalsRedaction = (): boolean => {
+    return (
+      this.storage.getItem<boolean>(SignalsDebugSettings.redactionKey) ?? false
+    )
+  }
+
+  getEnableSignalsIngestion = (): boolean => {
+    return (
+      this.storage.getItem<boolean>(SignalsDebugSettings.ingestionKey) ?? false
+    )
   }
 }

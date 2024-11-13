@@ -1,9 +1,11 @@
 import { logger } from '../../lib/logger'
-import createWorkerBox from 'workerboxjs'
+import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
-import { AnalyticsRuntimePublicApi, Signal, AnalyticsEnums } from '../../types'
-import { createSignalsRuntime } from './signals-runtime'
+import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
+import { Signal } from '@segment/analytics-signals-runtime'
+import { getRuntimeCode } from '@segment/analytics-signals-runtime'
+import { polyfills } from './polyfills'
 
 export type MethodName =
   | 'page'
@@ -16,7 +18,9 @@ export type MethodName =
 /**
  * Buffer of any analytics calls made during the processing of a signal
  */
-export type AnalyticsMethodCalls = Record<MethodName, any[]>
+export type AnalyticsMethodCalls = Record<MethodName, any[]> & {
+  reset: unknown[]
+}
 
 /**
  * Proxy around the analytics client
@@ -29,6 +33,7 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
     alias: [],
     screen: [],
     group: [],
+    reset: [],
   }
 
   getCalls(): AnalyticsMethodCalls {
@@ -113,6 +118,10 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
       console.error(err)
     }
   }
+
+  reset = () => {
+    this.calls.reset.push([])
+  }
 }
 
 interface CodeSandbox {
@@ -121,9 +130,9 @@ interface CodeSandbox {
 }
 
 class JavascriptSandbox implements CodeSandbox {
-  private workerbox: Promise<CodeSandbox>
+  private workerbox: Promise<WorkerBoxAPI>
   constructor() {
-    this.workerbox = createWorkerBox('')
+    this.workerbox = createWorkerBox()
   }
   async run(fn: string, scope: Record<string, any>) {
     try {
@@ -207,13 +216,13 @@ export class Sandbox {
     const analytics = new AnalyticsRuntime()
     const scope = {
       analytics,
-      ...AnalyticsEnums,
     }
     logger.debug('processing signal', { signal, scope, signals })
     const code = [
+      polyfills,
       await this.settings.processSignal,
-      `const createSignalsRuntime = ${createSignalsRuntime.toString()}`,
-      `const signals = createSignalsRuntime(${JSON.stringify(signals)})`,
+      getRuntimeCode(),
+      `signals.signalBuffer = ${JSON.stringify(signals)};`,
       'try { processSignal(' +
         JSON.stringify(signal) +
         ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',

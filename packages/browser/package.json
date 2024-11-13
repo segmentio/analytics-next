@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.72.2",
+  "version": "1.76.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -50,7 +50,7 @@
   ],
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
-    "@segment/analytics-core": "1.6.0",
+    "@segment/analytics-core": "1.8.0",
     "@segment/analytics-generic-utils": "1.2.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",

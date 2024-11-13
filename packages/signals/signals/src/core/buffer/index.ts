@@ -1,4 +1,4 @@
-import { Signal } from '../../types'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { openDB, DBSchema, IDBPDatabase } from 'idb'
 import { logger } from '../../lib/logger'
 
@@ -31,7 +31,7 @@ export class SignalStore implements SignalPersistentStorage {
   }
 
   constructor(settings: { maxBufferSize?: number } = {}) {
-    this.maxBufferSize = settings.maxBufferSize ?? 25 // TODO: increase this number after development
+    this.maxBufferSize = settings.maxBufferSize ?? 50
     this.signalStore = this.createSignalStore()
     void this.initializeSignalCount()
   }
