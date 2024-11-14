@@ -5,20 +5,34 @@ const indexPage = new IndexPage()
 
 const basicEdgeFn = `const processSignal = (signal) => {}`
 
-test('ingestion not enabled -> will not send the signal', async ({ page }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn, {
-    enableSignalsIngestion: false,
-    flushAt: 1,
-  })
+test('debug ingestion disabled and sample rate 0 -> will not send the signal', async ({
+  page,
+}) => {
+  await indexPage.loadAndWait(
+    page,
+    basicEdgeFn,
+    {
+      enableSignalsIngestion: false,
+      flushAt: 1,
+    },
+    { sampleRate: 0 }
+  )
   await indexPage.fillNameInput('John Doe')
   await page.waitForTimeout(100)
   expect(indexPage.signalsAPI.getEvents('interaction')).toHaveLength(0)
 })
 
-test('ingestion enabled -> will send the signal', async ({ page }) => {
-  await indexPage.loadAndWait(page, basicEdgeFn, {
-    enableSignalsIngestion: true,
-  })
+test('debug ingestion enabled and sample rate 0 -> will send the signal', async ({
+  page,
+}) => {
+  await indexPage.loadAndWait(
+    page,
+    basicEdgeFn,
+    {
+      enableSignalsIngestion: true,
+    },
+    { sampleRate: 0 }
+  )
 
   await Promise.all([
     indexPage.fillNameInput('John Doe'),
@@ -28,24 +42,9 @@ test('ingestion enabled -> will send the signal', async ({ page }) => {
   expect(true).toBe(true)
 })
 
-test('never sends signal when sample rate is 0', async ({ page }) => {
-  await indexPage.loadAndWait(
-    page,
-    basicEdgeFn,
-    {
-      flushAt: 1,
-      enableSignalsIngestion: false,
-    },
-    {
-      sampleRate: 0,
-    }
-  )
-  await indexPage.fillNameInput('John Doe')
-  await page.waitForTimeout(100)
-  expect(indexPage.signalsAPI.getEvents('interaction')).toHaveLength(0)
-})
-
-test('always sends signal when sample rate is 1', async ({ page }) => {
+test('debug ingestion disabled and sample rate 1 -> will send the signal', async ({
+  page,
+}) => {
   await indexPage.loadAndWait(
     page,
     basicEdgeFn,
