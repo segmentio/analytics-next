@@ -36,15 +36,8 @@ test('never sends signal when sample rate is 0', async ({ page }) => {
       flushAt: 1,
       enableSignalsIngestion: false,
     },
-    undefined,
     {
-      edgeFunction: {
-        downloadURL: 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
-        version: 1,
-      },
-      autoInstrumentationSettings: {
-        sampleRate: 0,
-      },
+      sampleRate: 0,
     }
   )
   await indexPage.fillNameInput('John Doe')
@@ -60,15 +53,8 @@ test('always sends signal when sample rate is 1', async ({ page }) => {
       flushAt: 1,
       enableSignalsIngestion: false,
     },
-    undefined,
     {
-      edgeFunction: {
-        downloadURL: 'https://cdn.edgefn.segment.com/MY-WRITEKEY/foo.js',
-        version: 1,
-      },
-      autoInstrumentationSettings: {
-        sampleRate: 1,
-      },
+      sampleRate: 1,
     }
   )
   await indexPage.fillNameInput('John Doe')

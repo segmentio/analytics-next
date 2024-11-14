@@ -7,7 +7,6 @@ import {
   SignalAPIRequestBuffer,
   TrackingAPIRequestBuffer,
 } from './network-utils'
-import { CDNSettings } from '@segment/analytics-next'
 
 export class BasePage {
   protected page!: Page
@@ -42,14 +41,13 @@ export class BasePage {
     page: Page,
     edgeFn: string,
     signalSettings: Partial<SignalsPluginSettingsConfig> = {},
-    options: { updateURL?: (url: string) => string } = {},
-    cdnSettings?: Partial<CDNSettings>
+    options: { updateURL?: (url: string) => string; sampleRate?: number } = {}
   ) {
     logConsole(page)
     this.page = page
     this.network = new PageNetworkUtils(page)
     this.edgeFn = edgeFn
-    await this.setupMockedRoutes(cdnSettings)
+    await this.setupMockedRoutes(options.sampleRate)
     const url = options.updateURL ? options.updateURL(this.url) : this.url
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     void this.invokeAnalyticsLoad({
@@ -94,7 +92,7 @@ export class BasePage {
     return this
   }
 
-  private async setupMockedRoutes(settings?: Partial<CDNSettings>) {
+  private async setupMockedRoutes(sampleRate?: number) {
     // clear any existing saved requests
     this.trackingAPI.clear()
     this.signalsAPI.clear()
@@ -102,7 +100,7 @@ export class BasePage {
     await Promise.all([
       this.mockSignalsApi(),
       this.mockTrackingApi(),
-      this.mockCDNSettings(settings),
+      this.mockCDNSettings(sampleRate),
     ])
   }
 
@@ -205,7 +203,7 @@ export class BasePage {
     })
   }
 
-  async mockCDNSettings(settings?: Partial<CDNSettings>) {
+  async mockCDNSettings(sampleRate?: number) {
     await this.page.route(
       'https://cdn.segment.com/v1/projects/*/settings',
       (route, request) => {
@@ -215,10 +213,13 @@ export class BasePage {
 
         const cdnSettings = new CDNSettingsBuilder({
           writeKey: '<SOME_WRITE_KEY>',
-          baseCDNSettings: settings ?? {
+          baseCDNSettings: {
             edgeFunction: {
               downloadURL: this.edgeFnDownloadURL,
               version: 1,
+            },
+            autoInstrumentationSettings: {
+              sampleRate: sampleRate ?? 1,
             },
           },
         }).build()
