@@ -26,7 +26,6 @@ const createJestTSConfig = (
       ? {
           collectCoverage: true,
           coverageReporters: ['json'],
-          coveragePathIgnorePatterns: ['*backwards-compatibility*'],
         }
       : {}),
     moduleNameMapper: moduleMap,
