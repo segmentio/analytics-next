@@ -1,4 +1,5 @@
 env:
+  COVERAGE: true
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
