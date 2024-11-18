@@ -19,6 +19,7 @@ export type SignalsSettingsConfig = Pick<
   | 'networkSignalsAllowList'
   | 'networkSignalsDisallowList'
   | 'networkSignalsAllowSameDomain'
+  | 'signalStorageType'
 > & {
   signalStorage?: SignalPersistentStorage
   processSignal?: string
@@ -52,6 +53,7 @@ export class SignalGlobalSettings {
 
     this.signalBuffer = {
       signalStorage: settings.signalStorage,
+      storageType: settings.signalStorageType,
       maxBufferSize: settings.maxBufferSize,
     }
     this.ingestClient = {

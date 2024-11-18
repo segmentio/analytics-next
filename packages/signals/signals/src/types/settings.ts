@@ -72,6 +72,15 @@ export interface SignalsPluginSettingsConfig {
    * Custom signal storage implementation
    */
   signalStorage?: SignalStorage | undefined
+
+  /**
+   * Choose between sessionStorage and indexDB.
+   * IndexDB is more performant and has no size requirements, but has the security caveat that signals can be retained across sessions (cleared on new session, but still technically accessible), and only cleared at the beginning of a new session.
+   * SessionStorage is cleared on tab close.
+   *
+   * @default 'indexDB'
+   */
+  signalStorageType?: 'session' | 'indexDB' | undefined
 }
 
 export type RegexLike = RegExp | string
