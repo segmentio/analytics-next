@@ -61,14 +61,19 @@ describe(NetworkInterceptor, () => {
       LOADING = 3
       DONE = 4
 
-      private _emitter = new EventEmitter()
+      private _emitter: EventEmitter
       public readyState = 0
       public status = 0
       public responseText = ''
-      public onreadystatechange: (() => void) | null = null
       public responseURL = ''
       public _responseMethod = ''
       public _responseHeaders = ''
+      public onreadystatechange = () => undefined
+      constructor() {
+        this._emitter = new EventEmitter().on('readystatechange', () => {
+          this.onreadystatechange()
+        })
+      }
 
       open(method: string, url: string) {
         this._responseMethod = method
@@ -93,9 +98,6 @@ describe(NetworkInterceptor, () => {
           this.responseURL = 'http://example.com'
           this._responseHeaders = 'Content-Type: application/json'
           this._emitter.emit('readystatechange')
-          if (this.onreadystatechange) {
-            this.onreadystatechange()
-          }
         }, 40)
       }
 
