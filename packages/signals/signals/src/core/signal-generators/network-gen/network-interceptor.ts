@@ -28,7 +28,7 @@ export interface NetworkInterceptorRequest {
   method: HTTPMethod
   contentType: string | undefined
   body: string | undefined
-  headers: Headers | undefined
+  headers: Headers
   id: string
 }
 
@@ -61,7 +61,7 @@ const createInterceptorRequest = ({
 }): NetworkInterceptorRequest => ({
   url: url.toString(),
   method: method,
-  headers,
+  headers: headers ?? new Headers(),
   contentType: headers?.get('content-type') ?? undefined,
   body: typeof body == 'string' ? body : undefined,
   id,
