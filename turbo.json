@@ -35,6 +35,9 @@
     "tsc": {
       "cache": false
     },
+    "assert-generated": {
+      "cache": false
+    },
     "watch": {
       "cache": false,
       "outputs": ["dist/**"]
