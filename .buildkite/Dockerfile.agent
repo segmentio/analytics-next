@@ -1,5 +1,5 @@
-FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node16:latest
+FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node20
 
-RUN sudo npx playwright install-deps 
+RUN npx playwright install-deps 
 
 ENTRYPOINT []
