@@ -41,13 +41,13 @@ export class BasePage {
     page: Page,
     edgeFn: string,
     signalSettings: Partial<SignalsPluginSettingsConfig> = {},
-    options: { updateURL?: (url: string) => string } = {}
+    options: { updateURL?: (url: string) => string; sampleRate?: number } = {}
   ) {
     logConsole(page)
     this.page = page
     this.network = new PageNetworkUtils(page)
     this.edgeFn = edgeFn
-    await this.setupMockedRoutes()
+    await this.setupMockedRoutes(options.sampleRate)
     const url = options.updateURL ? options.updateURL(this.url) : this.url
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     void this.invokeAnalyticsLoad({
@@ -92,7 +92,7 @@ export class BasePage {
     return this
   }
 
-  private async setupMockedRoutes() {
+  private async setupMockedRoutes(sampleRate?: number) {
     // clear any existing saved requests
     this.trackingAPI.clear()
     this.signalsAPI.clear()
@@ -100,7 +100,7 @@ export class BasePage {
     await Promise.all([
       this.mockSignalsApi(),
       this.mockTrackingApi(),
-      this.mockCDNSettings(),
+      this.mockCDNSettings(sampleRate),
     ])
   }
 
@@ -203,7 +203,7 @@ export class BasePage {
     })
   }
 
-  async mockCDNSettings() {
+  async mockCDNSettings(sampleRate?: number) {
     await this.page.route(
       'https://cdn.segment.com/v1/projects/*/settings',
       (route, request) => {
@@ -217,6 +217,9 @@ export class BasePage {
             edgeFunction: {
               downloadURL: this.edgeFnDownloadURL,
               version: 1,
+            },
+            autoInstrumentationSettings: {
+              sampleRate: sampleRate ?? 1,
             },
           },
         }).build()
