@@ -1,14 +1,11 @@
-# Buildkite setup
+# Buildkite
 
-## Dockerfile.agent
-
-Builds the base image that is used by analytics-next in CI.
-
+## How to update the buildkite docker agent
+1. Make your changes to `Dockerfile.agent`.
+2. Push the changes to ecr
+(will need `Ops Write` permission).
 ```bash
-$ robo docker.login-privileged
+$ cd .buildkite 
+$ robo-tooling.docker.login-privileged     
 $ make agent
 ```
-
-## .pipeline
-
-Full buildkite configuration.

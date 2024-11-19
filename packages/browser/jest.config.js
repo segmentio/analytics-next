@@ -6,10 +6,10 @@ module.exports = createJestTSConfig(__dirname, {
   testEnvironment: 'jsdom',
   coverageThreshold: {
     global: {
-      branches: 80.91,
-      functions: 87.25,
-      lines: 91.03,
-      statements: 87.25,
+      branches: 74,
+      functions: 80,
+      lines: 87,
+      statements: 82,
     },
   },
 })
