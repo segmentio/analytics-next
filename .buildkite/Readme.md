@@ -1,4 +1,4 @@
-# Buildkite setup
+# Buildkite
 
 ## How to update the buildkite docker agent
 1. Make your changes to `Dockerfile.agent`.
