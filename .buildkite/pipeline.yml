@@ -35,6 +35,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
+      - npx playwright install-deps
       - yarn install --immutable
       - yarn run -T browser exec make ci
     plugins:
