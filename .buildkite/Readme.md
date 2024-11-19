@@ -5,6 +5,7 @@
 2. Push the changes to ecr
 (will need `Ops Write` permission).
 ```bash
-$ robo-tooling.docker.login
+$ cd .buildkite 
+$ robo-tooling.docker.login-privileged     
 $ make agent
 ```
