@@ -1,7 +1,6 @@
 env:
-  COVERAGE: true
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
-  SEGMENT_BUILDKITE_IMAGE: 'buildkite-agent-node20'
+  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
 steps:
   - label: Log Environment
     agents:
@@ -13,9 +12,6 @@ steps:
       - echo "CI -> $CI"
   - label: '[Monorepo] QA'
     key: monorepo
-    env:
-      SEGMENT_CODECOV_FLAGS: 'scripts'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/scripts/coverage'
     agents:
       queue: v1
     commands:
@@ -68,9 +64,6 @@ steps:
 
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
-    env:
-      SEGMENT_CODECOV_FLAGS: 'browser'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/browser/coverage'
     agents:
       queue: v1
     commands:
@@ -89,9 +82,6 @@ steps:
           paths: ['.yarn/cache/']
 
   - label: '[Core] Lint + Test'
-    env:
-      SEGMENT_CODECOV_FLAGS: 'core'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/core/coverage'
     agents:
       queue: v1
     commands:
@@ -125,9 +115,6 @@ steps:
           paths: ['.yarn/cache/']
 
   - label: '[Consent] Lint + Test'
-    env:
-      SEGMENT_CODECOV_FLAGS: 'consent'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/consent/coverage'
     agents:
       queue: v1
     commands:
@@ -145,9 +132,6 @@ steps:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
 
   - label: '[Signals] Lint + Test'
-    env:
-      SEGMENT_CODECOV_FLAGS: 'signals'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/signals/coverage'
     agents:
       queue: v1
     commands:
