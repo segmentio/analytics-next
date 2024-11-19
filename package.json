@@ -10,7 +10,7 @@
     "scripts"
   ],
   "engines": {
-    "node": "^16.16.0"
+    "node": "^20"
   },
   "scripts": {
     "test": "jest",

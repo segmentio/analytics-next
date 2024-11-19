@@ -2984,7 +2984,7 @@ __metadata:
   resolution: "@internal/scripts@workspace:scripts"
   dependencies:
     "@node-kit/yarn-workspace-root": ^3.2.0
-    "@types/node": ^16
+    "@types/node": ^20
     ts-node: ^10.8.0
   languageName: unknown
   linkType: soft
@@ -4273,7 +4273,7 @@ __metadata:
     "@types/js-cookie": 3.0.1
     "@types/jsdom": ^16.2.14
     "@types/mime": ^2.0.3
-    "@types/node": ^16
+    "@types/node": ^20
     "@types/serve-handler": ^6.1.0
     aws-sdk: ^2.814.0
     circular-dependency-plugin: ^5.2.2
@@ -4315,7 +4315,7 @@ __metadata:
     "@lukeed/uuid": ^2.0.0
     "@segment/analytics-core": 1.8.0
     "@segment/analytics-generic-utils": 1.2.0
-    "@types/node": ^16
+    "@types/node": ^18
     axios: ^1.6.2
     buffer: ^6.0.3
     jose: ^5.1.0
@@ -6463,10 +6463,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^18":
+  version: 18.19.64
+  resolution: "@types/node@npm:18.19.64"
+  dependencies:
+    undici-types: ~5.26.4
+  checksum: e7680215b03c9bee8a33947f03d06048e8e460f23b1b7b29c45350cf437faa5f8fcb7d8c3eb8dfec8427923e7a184df42bc710c1b6252b4852e3ed7064c6228f
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^18.11.15":
   version: 18.17.5
   resolution: "@types/node@npm:18.17.5"
   checksum: b8c658a99234b99425243c324b641ed7b9ceb6bee6b06421fdc9bb7c58f9a5552e353225cc549e6982462ac384abe1985022ed76e2e4728797f59b21f659ca2b
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20":
+  version: 20.17.6
+  resolution: "@types/node@npm:20.17.6"
+  dependencies:
+    undici-types: ~6.19.2
+  checksum: d51dbb9881c94d0310b32b5fd8013e3261595c61bc888fa27258469c93c3dc0b3c4d20a9f28f3f5f79562f6737e28e7f3dd04940dc8b4d966d34aaf318f7f69b
   languageName: node
   linkType: hard
 
@@ -22390,6 +22408,20 @@ __metadata:
     buffer: ^5.2.1
     through: ^2.3.8
   checksum: 0e67c4a91f4fa0fc7b4045f8b914d3498c2fc2e8c39c359977708ec85ac6d6029840e97f508675fdbdf21fcb8d276ca502043406f3682b70f075e69aae626d1d
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 3192ef6f3fd5df652f2dc1cd782b49d6ff14dc98e5dced492aa8a8c65425227da5da6aafe22523c67f035a272c599bb89cfe803c1db6311e44bed3042fc25487
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: de51f1b447d22571cf155dfe14ff6d12c5bdaec237c765085b439c38ca8518fc360e88c70f99469162bf2e14188a7b0bcb06e1ed2dc031042b984b0bb9544017
   languageName: node
   linkType: hard
 

@@ -3,7 +3,11 @@ import { Signal } from '@segment/analytics-signals-runtime'
 export const redactSignalData = (signalArg: Signal): Signal => {
   const signal = structuredClone(signalArg)
   if (signal.type === 'interaction') {
-    if ('target' in signal.data) {
+    if (
+      'target' in signal.data &&
+      signal.data.target &&
+      typeof signal.data.target === 'object'
+    ) {
       if ('value' in signal.data.target) {
         signal.data.target.value = redactJsonValues(signal.data.target.value)
       }
