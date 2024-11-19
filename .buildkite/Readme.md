@@ -5,7 +5,7 @@
 Builds the base image that is used by analytics-next in CI.
 
 ```bash
-$ robo docker.login-privileged
+$ robo-tooling.docker.login
 $ make agent
 ```
 
