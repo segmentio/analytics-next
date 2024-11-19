@@ -1,6 +1,6 @@
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
-  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
+  SEGMENT_BUILDKITE_IMAGE: 'buildkite-agent-node20'
 steps:
   - label: Log Environment
     agents:
@@ -50,6 +50,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
+      - npx playwright install-deps
       - yarn install --immutable
       - echo "+++ Run QA Tests :pray:"
       - yarn run -T browser exec make test-qa
@@ -68,6 +69,7 @@ steps:
       queue: v1
     commands:
       - echo "--- Install dependencies"
+      - npx playwright install-deps
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
       - echo "+++ Run Browser integration tests :pray:"
@@ -158,6 +160,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
+      - npx playwright install-deps
       - yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
       - yarn run -T browser exec make test-qa-destinations

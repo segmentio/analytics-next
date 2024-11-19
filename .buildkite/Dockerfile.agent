@@ -1,5 +1,0 @@
-FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node20
-
-RUN npx playwright install-deps 
-
-ENTRYPOINT []
