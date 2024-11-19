@@ -140,8 +140,8 @@ steps:
       - HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
       - yarn turbo run --filter='./packages/signals/*' build
-      - echo "--- Assert Workerbox Up-to-Date"
-      - yarn workspace @segment/analytics-signals run assert-workerbox-built
+      - echo "+++ Assert Generated Files Up-to-Date"
+      - yarn turbo run --filter='./packages/signals/*' assert-generated
       - echo "+++ Run Lint"
       - yarn turbo run --filter='./packages/signals/*' lint
       - echo "+++ Run Tests"

@@ -2,12 +2,10 @@ const esbuild = require('esbuild')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = fs.promises
-const pkgJSON = require('./package.json')
 
 const getBanner = (entryPoint) => {
   const content = [
     `// GENERATED, DO NOT EDIT`,
-    `// ${pkgJSON.name}@${pkgJSON.version}`,
     `// Entry point: ${entryPoint}`,
   ].join('\n')
   return content

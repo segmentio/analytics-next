@@ -24,6 +24,7 @@
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:global": "node build-signals-runtime-global.js",
+    "assert-generated": "bash scripts/assert-generated.sh",
     "watch": "yarn build:esm --watch",
     "watch:test": "yarn test --watch",
     "tsc": "yarn run -T tsc",
