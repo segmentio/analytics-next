@@ -37,19 +37,20 @@ type EmitterContract = {
 
 class ElementChangedEmitter extends Emitter<EmitterContract> {}
 
-export class InteractableElementMutationObserver {
+export class ElementChangeObservable {
   // Track observed elements to avoid duplicate observers
+  // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
   private observedElements = new WeakSet()
   private emitter = new ElementChangedEmitter()
   subscribe(fn: (event: AttributeChangedEvent) => void) {
     this.emitter.on('attributeChanged', fn)
   }
   constructor() {
-    // Start polling every 2 seconds
-    setInterval(() => this.pollForNewElements(this.emitter), 2000)
-
     // Initial setup
-    this.pollForNewElements(this.emitter)
+    this.checkForNewElements(this.emitter)
+
+    // Start polling every 2 seconds
+    setInterval(() => this.checkForNewElements(this.emitter), 2000)
   }
 
   private observeElementAttributes(
@@ -65,10 +66,11 @@ export class InteractableElementMutationObserver {
           const attributeName = mutation.attributeName
           if (!attributeName) return
           const newValue = element.getAttribute(attributeName)
-
+          if (!newValue) return console.warn('No new value found')
           const event: AttributeChangedEvent = {
             element: element as HTMLElement,
             attributeName,
+            // this is innacurate
             newValue,
           }
           emitter.emit('attributeChanged', event)
@@ -85,7 +87,7 @@ export class InteractableElementMutationObserver {
     this.observedElements.add(element)
   }
 
-  private pollForNewElements(emitter: ElementChangedEmitter) {
+  private checkForNewElements(emitter: ElementChangedEmitter) {
     // Observe elements with roles
     for (const [role, attributes] of Object.entries(roleAttributesMap)) {
       const elements = document.querySelectorAll(`[role="${role}"]`)

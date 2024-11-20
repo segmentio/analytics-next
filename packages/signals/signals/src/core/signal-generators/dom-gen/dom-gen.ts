@@ -1,6 +1,6 @@
 import { URLChangeObservable } from '../../../lib/detect-url-change'
 import { logger } from '../../../lib/logger'
-import { InteractableElementMutationObserver } from './mutation-observer'
+import { ElementChangeObservable } from './mutation-observer'
 import {
   createInteractionSignal,
   createNavigationSignal,
@@ -211,7 +211,7 @@ export class FormSubmitGenerator implements SignalGenerator {
 
 export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
-  elMutObserver = new InteractableElementMutationObserver()
+  elMutObserver = new ElementChangeObservable()
   register(emitter: SignalEmitter) {
     this.elMutObserver.subscribe((event) => {
       console.log(
@@ -222,7 +222,7 @@ export class OnChangeGenerator implements SignalGenerator {
       ) // TO: D
       emitter.emit(
         createInteractionSignal({
-          metadata: { customElement: true },
+          mutation: true,
           eventType: 'change',
           target: parseElement(event.element),
         })
