@@ -1,11 +1,12 @@
-import { URLChangeObservable } from '../../lib/detect-url-change'
-import { logger } from '../../lib/logger'
+import { URLChangeObservable } from '../../../lib/detect-url-change'
+import { logger } from '../../../lib/logger'
+import { InteractableElementMutationObserver } from './mutation-observer'
 import {
   createInteractionSignal,
   createNavigationSignal,
-} from '../../types/factories'
-import { SignalEmitter } from '../emitter'
-import { SignalGenerator } from './types'
+} from '../../../types/factories'
+import { SignalEmitter } from '../../emitter'
+import { SignalGenerator } from '../types'
 
 interface Label {
   textContent: string
@@ -210,7 +211,23 @@ export class FormSubmitGenerator implements SignalGenerator {
 
 export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
+  elMutObserver = new InteractableElementMutationObserver()
   register(emitter: SignalEmitter) {
+    this.elMutObserver.subscribe((event) => {
+      console.log(
+        'custom element event!',
+        event.attributeName,
+        event.newValue,
+        event.element
+      ) // TO: D
+      emitter.emit(
+        createInteractionSignal({
+          metadata: { customElement: true },
+          eventType: 'change',
+          target: parseElement(event.element),
+        })
+      )
+    })
     const handleChange = (ev: Event) => {
       const target = ev.target as HTMLElement | null
       if (!target) return
@@ -220,6 +237,7 @@ export class OnChangeGenerator implements SignalGenerator {
           return
         }
       }
+
       emitter.emit(
         createInteractionSignal({
           eventType: 'change',
