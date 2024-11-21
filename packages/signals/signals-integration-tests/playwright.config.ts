@@ -36,6 +36,9 @@ const config: PlaywrightTestConfig = {
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
+    launchOptions: {
+      args: ['--enable-precise-memory-info'],
+    },
   },
 
   /* Configure projects for major browsers */

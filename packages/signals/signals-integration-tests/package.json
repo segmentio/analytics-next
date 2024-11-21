@@ -8,7 +8,8 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/signals-integration-tests...",
     "build": "webpack",
-    "test": "playwright test",
+    "test": "playwright test src/tests/signals-vanilla",
+    "test:perf": "playwright test src/tests/performance",
     "watch": "webpack -w",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "concurrently": "yarn run -T concurrently",
