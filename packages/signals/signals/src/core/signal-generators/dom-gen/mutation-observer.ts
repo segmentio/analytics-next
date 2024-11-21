@@ -66,7 +66,9 @@ export class ElementChangeObservable {
           const attributeName = mutation.attributeName
           if (!attributeName) return
           const newValue = element.getAttribute(attributeName)
-          if (!newValue) return console.warn('No new value found')
+          if (newValue === null) {
+            return console.warn('New value is null?', attributeName)
+          }
           const event: AttributeChangedEvent = {
             element: element as HTMLElement,
             attributeName,
