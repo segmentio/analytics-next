@@ -20,7 +20,6 @@ const roleAttributesMap = {
   spinbutton: ['aria-valuenow'],
   switch: ['aria-checked'],
   tab: ['aria-selected'],
-  textbox: ['aria-invalid'], // this isn't really a textbox, as we're not reading the content of the textbox, but the state of the textbox
   treeitem: ['aria-expanded', 'aria-selected'],
 }
 
