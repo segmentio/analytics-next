@@ -1,5 +1,4 @@
 import { URLChangeObservable } from '../../../lib/detect-url-change'
-import { logger } from '../../../lib/logger'
 import { ElementChangeObservable } from './mutation-observer'
 import {
   createInteractionSignal,
@@ -212,41 +211,33 @@ export class FormSubmitGenerator implements SignalGenerator {
 export class OnChangeGenerator implements SignalGenerator {
   id = 'change'
   elMutObserver = new ElementChangeObservable()
+
   register(emitter: SignalEmitter) {
-    this.elMutObserver.subscribe((event) => {
-      console.log(
-        'custom element event!',
-        event.attributeName,
-        event.newValue,
-        event.element
-      ) // TO: D
-      emitter.emit(
-        createInteractionSignal({
-          mutation: true,
-          eventType: 'change',
-          target: parseElement(event.element),
-        })
-      )
-    })
-    const handleChange = (ev: Event) => {
-      const target = ev.target as HTMLElement | null
+    this.elMutObserver.subscribe((ev) => {
+      const target = ev.element as HTMLElement | null
       if (!target) return
-      if (target && target instanceof HTMLInputElement) {
-        if (target.type === 'password') {
-          logger.debug('Ignoring change event for input', target)
-          return
-        }
+      if (this.shouldIgnore(target)) {
+        return
       }
 
       emitter.emit(
         createInteractionSignal({
           eventType: 'change',
-          target: parseElement(target),
+          target: parseElement(ev.element),
+          targetDescribedBy: ev.describedElement
+            ? parseElement(ev.describedElement)
+            : undefined,
         })
       )
+    })
+    return () => this.elMutObserver.cleanup()
+  }
+
+  private shouldIgnore = (el: HTMLElement): boolean => {
+    if (el instanceof HTMLInputElement) {
+      return el.type === 'password'
     }
-    document.addEventListener('change', handleChange, true)
-    return () => document.removeEventListener('change', handleChange)
+    return false
   }
 }
 

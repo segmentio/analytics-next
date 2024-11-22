@@ -1,9 +1,27 @@
 import { Emitter } from '@segment/analytics-generic-utils'
 
+const globalAttributes = ['aria-expanded', 'aria-errormessage', 'aria-invalid']
+// Debounce function
+const debounce = <Fn extends (...args: any[]) => any>(
+  fn: Fn,
+  delay: number
+): Fn => {
+  let timeoutId: ReturnType<typeof setTimeout>
+  const debounced = (...args: any[]) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => {
+      fn(...args)
+    }, delay)
+  }
+  return debounced as Fn
+}
+
+// helper function to remove duplicates from an array
+const uniq = (arr: string[]) => [...new Set(arr)]
+
 // string enum of roles
 // map for Elements with <div role="button"> etc -- these map to a list of supported states and properties according to w3.org
 const roleAttributesMap = {
-  '*': ['aria-expanded', 'aria-errormessage'],
   button: ['aria-pressed'],
   checkbox: ['aria-checked'],
   combobox: ['aria-expanded', 'aria-activedescendant'],
@@ -33,7 +51,9 @@ const defaultElementAttributesMap = {
 }
 
 type AttributeChangedEvent = {
+  type: 'interaction' | 'alert'
   element: HTMLElement
+  describedElement: HTMLElement | null
   attributeName: string
   newValue: string | null
 }
@@ -43,18 +63,36 @@ type EmitterContract = {
 
 class ElementChangedEmitter extends Emitter<EmitterContract> {}
 
+/**
+ * This class is responsible for observing changes to elements in the DOM
+ * This is preferred over monitoring document 'change' events, as it captures changes to custom elements
+ */
 export class ElementChangeObservable {
+  debounceMs: number
   // Track observed elements to avoid duplicate observers
   // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
   private observedElements = new WeakSet()
+  private observers: MutationObserver[] = []
   private emitter = new ElementChangedEmitter()
   subscribe(fn: (event: AttributeChangedEvent) => void) {
     this.emitter.on('attributeChanged', fn)
   }
-  constructor(pollIntervalMs = 2000) {
+  unsubscribe(fn: (event: AttributeChangedEvent) => void) {
+    this.emitter.off('attributeChanged', fn)
+  }
+  cleanup() {
+    this.observers.forEach((observer) => observer.disconnect())
+  }
+  constructor(pollIntervalMs = 2000, debounceMs = 300) {
     if (pollIntervalMs < 500) {
       throw new Error('Poll interval must be at least 500ms')
     }
+    if (debounceMs < 100) {
+      throw new Error('Debounce must be at least 100ms')
+    } else {
+      this.debounceMs = debounceMs
+    }
+
     // Initial setup
     this.checkForNewElements(this.emitter)
 
@@ -67,10 +105,8 @@ export class ElementChangeObservable {
     attributes: string[],
     emitter: ElementChangedEmitter
   ) {
-    if (this.observedElements.has(element)) return // Skip if already observed
-
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
+    const cb: MutationCallback = (mutationsList) => {
+      mutationsList.forEach((mutation) => {
         if (mutation.type === 'attributes') {
           const attributeName = mutation.attributeName
           if (!attributeName) return
@@ -78,18 +114,30 @@ export class ElementChangeObservable {
           if (newValue === null) {
             return console.warn('New value is null?', attributeName)
           }
+          const describedElement = element.getAttribute('aria-describedby')
           const event: AttributeChangedEvent = {
+            type: 'interaction',
             element: element as HTMLElement,
             attributeName,
             // this is innacurate
+            describedElement: describedElement
+              ? document.getElementById(describedElement)
+              : null,
             newValue,
           }
           emitter.emit('attributeChanged', event)
         }
-      }
-    })
+      })
+    }
 
-    const allAttributes = [...roleAttributesMap['*'], ...attributes]
+    if (this.observedElements.has(element)) return // Skip if already observed
+
+    const debouncedCb = debounce(cb, this.debounceMs)
+    const observer = new MutationObserver(debouncedCb)
+    this.observers.push(observer)
+
+    const allAttributes = uniq([...globalAttributes, ...attributes])
+
     observer.observe(element, {
       attributes: true,
       attributeFilter: allAttributes,
