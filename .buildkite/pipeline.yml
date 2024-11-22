@@ -32,7 +32,7 @@ steps:
     key: browser-lint-test
     env:
       SEGMENT_CODECOV_FLAGS: 'browser'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/browser/coverage'
+      SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
     agents:
       queue: v1
     commands:
@@ -87,7 +87,7 @@ steps:
   - label: '[Core] Lint + Test'
     env:
       SEGMENT_CODECOV_FLAGS: 'core'
-      SEGMENT_CODECOV_ARGS: '--dir=packages/core/coverage'
+      SEGMENT_CODECOV_ARGS: '--dir=./packages/core/coverage'
     agents:
       queue: v1
     commands:
