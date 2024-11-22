@@ -59,7 +59,6 @@ export class ElementChangeObservable {
   // Track observed elements to avoid duplicate observers
   // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
   private observedElements = new WeakSet()
-  private observers: MutationObserver[] = []
   private emitter = new ElementChangedEmitter()
   subscribe(fn: (event: AttributeChangedEvent) => void) {
     this.emitter.on('attributeChanged', fn)
@@ -67,9 +66,7 @@ export class ElementChangeObservable {
   unsubscribe(fn: (event: AttributeChangedEvent) => void) {
     this.emitter.off('attributeChanged', fn)
   }
-  cleanup() {
-    this.observers.forEach((observer) => observer.disconnect())
-  }
+
   constructor(pollIntervalMs = 2000, debounceMs = 300) {
     if (pollIntervalMs < 500) {
       throw new Error('Poll interval must be at least 500ms')
@@ -118,7 +115,6 @@ export class ElementChangeObservable {
       })
     }, this.debounceMs)
     const observer = new MutationObserver(callback)
-    this.observers.push(observer)
 
     const allAttributes = uniq([...globalAttributes, ...attributes])
 

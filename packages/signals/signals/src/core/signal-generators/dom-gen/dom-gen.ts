@@ -26,13 +26,19 @@ const parseLabels = (
   labels: NodeListOf<HTMLLabelElement> | null | undefined
 ): Label[] => {
   if (!labels) return []
-  return [...labels]
-    .map((label) => ({
-      id: label.id,
-      attributes: parseNodeMap(label.attributes),
-      textContent: label.textContent ? cleanText(label.textContent) : undefined,
-    }))
-    .filter((el): el is Label => Boolean(el.textContent))
+  return [...labels].map(parseToLabel).filter((el): el is Label => Boolean(el))
+}
+
+const parseToLabel = (label: HTMLElement): Label | undefined => {
+  const textContent = label.textContent
+    ? cleanText(label.textContent)
+    : undefined
+  if (!textContent) return
+  return {
+    id: label.id,
+    attributes: parseNodeMap(label.attributes),
+    textContent: textContent,
+  }
 }
 
 const parseNodeMap = (nodeMap: NamedNodeMap): Record<string, unknown> => {
@@ -64,6 +70,7 @@ interface ParsedElementBase {
   value?: string
   textContent?: string
   innerText?: string
+  describedBy?: Label
 }
 
 interface ParsedSelectElement extends ParsedElementBase {
@@ -99,15 +106,34 @@ type AnyParsedElement =
   | ParsedMediaElement
   | ParsedElementBase
 
+const getRelatedElement = (
+  el: HTMLElement,
+  attr: string
+): HTMLElement | undefined => {
+  const value = el.getAttribute(attr)
+  if (!value) return undefined
+  return document.getElementById(value) ?? undefined
+}
+
+const getLabeledBy = (el: HTMLElement): HTMLElement | undefined => {
+  return getRelatedElement(el, 'aria-labelledby')
+}
+
+const getDescribedBy = (el: HTMLElement): HTMLElement | undefined => {
+  return getRelatedElement(el, 'aria-describedby')
+}
+
 const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
+  const describedBy = getDescribedBy(el)
+  const labeledBy = getLabeledBy(el)
   const base: ParsedElementBase = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
     id: el.id,
     labels,
-    label: labels[0],
+    label: labels[0] ?? (labeledBy ? parseToLabel(labeledBy) : undefined),
     name: (el as HTMLInputElement).name,
     nodeName: el.nodeName,
     tagName: el.tagName,
@@ -116,6 +142,7 @@ const parseElement = (el: HTMLElement): AnyParsedElement => {
     value: (el as HTMLInputElement).value,
     textContent: (el.textContent && cleanText(el.textContent)) ?? undefined,
     innerText: (el.innerText && cleanText(el.innerText)) ?? undefined,
+    describedBy: (describedBy && parseToLabel(describedBy)) ?? undefined,
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -253,7 +280,9 @@ export class OnChangeGenerator implements SignalGenerator {
     }, 300)
 
     document.addEventListener('change', handleOnChangeEvent, true)
-    return () => this.elMutObserver.cleanup()
+    return () => {
+      document.removeEventListener('change', handleOnChangeEvent)
+    }
   }
 
   private shouldIgnore = (el: HTMLElement): boolean => {
