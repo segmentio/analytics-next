@@ -650,6 +650,7 @@ describe('Dispatch', () => {
 
     expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       [
+        "analytics_js.invoke",
         "message_dispatched",
         "plugin_time",
         "plugin_time",
