@@ -6,7 +6,7 @@ import {
 } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
-
+import { debounce } from '../../../lib/debounce'
 interface Label {
   textContent: string
   id: string
@@ -224,12 +224,35 @@ export class OnChangeGenerator implements SignalGenerator {
         createInteractionSignal({
           eventType: 'change',
           target: parseElement(ev.element),
-          targetDescribedBy: ev.describedElement
-            ? parseElement(ev.describedElement)
-            : undefined,
+          metadata: {
+            changedAttribute: ev.attributeName,
+            changeAttributeVal: ev.newValue,
+            listener: 'mutation-observer',
+          },
         })
       )
     })
+
+    // vanilla change events do not trigger dom updates.
+    const handleOnChangeEvent = debounce((ev: Event) => {
+      const target = ev.target as HTMLElement | null
+      if (!target) return
+      if (this.shouldIgnore(target)) {
+        return
+      }
+
+      emitter.emit(
+        createInteractionSignal({
+          eventType: 'change',
+          target: parseElement(target),
+          metadata: {
+            listener: 'on-change',
+          },
+        })
+      )
+    }, 300)
+
+    document.addEventListener('change', handleOnChangeEvent, true)
     return () => this.elMutObserver.cleanup()
   }
 

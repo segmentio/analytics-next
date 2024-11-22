@@ -28,7 +28,7 @@ type SubmitData = {
 type ChangeData = {
   eventType: 'change'
   target: SerializedTarget
-  targetDescribedBy?: SerializedTarget
+  [key: string]: unknown
 }
 
 export type InteractionSignal = RawSignal<'interaction', InteractionData>

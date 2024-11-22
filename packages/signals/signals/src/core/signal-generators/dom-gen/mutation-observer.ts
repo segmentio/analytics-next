@@ -1,20 +1,7 @@
 import { Emitter } from '@segment/analytics-generic-utils'
+import { debounce } from '../../../lib/debounce'
 
 const globalAttributes = ['aria-expanded', 'aria-errormessage', 'aria-invalid']
-// Debounce function
-const debounce = <Fn extends (...args: any[]) => any>(
-  fn: Fn,
-  delay: number
-): Fn => {
-  let timeoutId: ReturnType<typeof setTimeout>
-  const debounced = (...args: any[]) => {
-    clearTimeout(timeoutId)
-    timeoutId = setTimeout(() => {
-      fn(...args)
-    }, delay)
-  }
-  return debounced as Fn
-}
 
 // helper function to remove duplicates from an array
 const uniq = (arr: string[]) => [...new Set(arr)]
@@ -105,7 +92,8 @@ export class ElementChangeObservable {
     attributes: string[],
     emitter: ElementChangedEmitter
   ) {
-    const cb: MutationCallback = (mutationsList) => {
+    if (this.observedElements.has(element)) return // Skip if already observed
+    const callback: MutationCallback = debounce((mutationsList) => {
       mutationsList.forEach((mutation) => {
         if (mutation.type === 'attributes') {
           const attributeName = mutation.attributeName
@@ -128,12 +116,8 @@ export class ElementChangeObservable {
           emitter.emit('attributeChanged', event)
         }
       })
-    }
-
-    if (this.observedElements.has(element)) return // Skip if already observed
-
-    const debouncedCb = debounce(cb, this.debounceMs)
-    const observer = new MutationObserver(debouncedCb)
+    }, this.debounceMs)
+    const observer = new MutationObserver(callback)
     this.observers.push(observer)
 
     const allAttributes = uniq([...globalAttributes, ...attributes])
