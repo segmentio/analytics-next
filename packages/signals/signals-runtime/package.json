@@ -37,7 +37,6 @@
     "tslib": "^2.4.1"
   },
   "packageManager": "yarn@3.4.1",
-  "license": "MIT",
   "repository": {
     "directory": "packages/signals/signals-runtime",
     "type": "git",

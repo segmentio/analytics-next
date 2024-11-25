@@ -7,12 +7,6 @@
 %   https://github.com/babel/babel/blob/main/constraints.pro
 %   https://github.com/yarnpkg/berry/blob/master/constraints.pro
 
-% Enforces the license in all public workspaces while removing it from private workspaces
-gen_enforced_field(WorkspaceCwd, 'license', 'MIT') :-
-  \+ workspace_field(WorkspaceCwd, 'private', true).
-gen_enforced_field(WorkspaceCwd, 'license', null) :-
-  workspace_field(WorkspaceCwd, 'private', true).
-
 % This rule will enforce that a workspace MUST depend on the same version of a dependency as the one used by the other workspaces
 gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, DependencyType) :-
   % Iterates over all dependencies from all workspaces
