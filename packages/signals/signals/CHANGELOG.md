@@ -1,5 +1,24 @@
 # @segment/analytics-signals
 
+## 1.8.0
+
+### Minor Changes
+
+- [#1190](https://github.com/segmentio/analytics-next/pull/1190) [`46e88198`](https://github.com/segmentio/analytics-next/commit/46e88198b2f9d3a835e02fa22317d784c6f71ebf) Thanks [@silesky](https://github.com/silesky)! - \* Clear signal buffer at start of new session
+  - Prune signalBuffer to maxBufferSize on new session (if different)
+  - Add sessionStorage storage type
+
+### Patch Changes
+
+- [#1192](https://github.com/segmentio/analytics-next/pull/1192) [`3410160c`](https://github.com/segmentio/analytics-next/commit/3410160c30024c292f252802cdb98b6b59fced0c) Thanks [@silesky](https://github.com/silesky)! - Always include headers in network interceptor, even if empty
+
+* [#1188](https://github.com/segmentio/analytics-next/pull/1188) [`de6f86dc`](https://github.com/segmentio/analytics-next/commit/de6f86dc637dbc49f5bb55c1e44a36a2011c14b9) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix sampleRate check
+
+- [#1197](https://github.com/segmentio/analytics-next/pull/1197) [`342868cb`](https://github.com/segmentio/analytics-next/commit/342868cb9db7da37d8851dadca4b1b1dc0ecd923) Thanks [@silesky](https://github.com/silesky)! - Update signals license
+
+- Updated dependencies [[`342868cb`](https://github.com/segmentio/analytics-next/commit/342868cb9db7da37d8851dadca4b1b1dc0ecd923)]:
+  - @segment/analytics-signals-runtime@1.1.1
+
 ## 1.7.1
 
 ### Patch Changes
