@@ -29,15 +29,12 @@ const parseLabels = (
   return [...labels].map(parseToLabel).filter((el): el is Label => Boolean(el))
 }
 
-const parseToLabel = (label: HTMLElement): Label | undefined => {
-  const textContent = label.textContent
-    ? cleanText(label.textContent)
-    : undefined
-  if (!textContent) return
+const parseToLabel = (label: HTMLElement): Label => {
+  const textContent = label.textContent ? cleanText(label.textContent) : ''
   return {
     id: label.id,
     attributes: parseNodeMap(label.attributes),
-    textContent: textContent,
+    textContent,
   }
 }
 
@@ -106,7 +103,10 @@ type AnyParsedElement =
   | ParsedMediaElement
   | ParsedElementBase
 
-const getRelatedElement = (
+/**
+ * Get the element referenced from an attribute
+ */
+const getReferencedElement = (
   el: HTMLElement,
   attr: string
 ): HTMLElement | undefined => {
@@ -115,25 +115,21 @@ const getRelatedElement = (
   return document.getElementById(value) ?? undefined
 }
 
-const getLabeledBy = (el: HTMLElement): HTMLElement | undefined => {
-  return getRelatedElement(el, 'aria-labelledby')
-}
-
-const getDescribedBy = (el: HTMLElement): HTMLElement | undefined => {
-  return getRelatedElement(el, 'aria-describedby')
-}
-
 const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
-  const describedBy = getDescribedBy(el)
-  const labeledBy = getLabeledBy(el)
+  const labeledBy = getReferencedElement(el, 'aria-labelledby')
+  const describedBy = getReferencedElement(el, 'aria-describedby')
+  if (labeledBy) {
+    const label = parseToLabel(labeledBy)
+    labels.unshift(label)
+  }
   const base: ParsedElementBase = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
     id: el.id,
     labels,
-    label: labels[0] ?? (labeledBy ? parseToLabel(labeledBy) : undefined),
+    label: labels[0],
     name: (el as HTMLInputElement).name,
     nodeName: el.nodeName,
     tagName: el.tagName,
