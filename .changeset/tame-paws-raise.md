@@ -3,4 +3,4 @@
 '@segment/analytics-signals-runtime': patch
 ---
 
-update license
+Update signals license 
