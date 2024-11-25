@@ -1,21 +1,324 @@
-The MIT License (MIT)
+Twilio Software Development Kit License Agreement 2.0
 
-Copyright © 2023 Segment
+Notice to user: THIS IS A TWILIO SOFTWARE DEVELOPMENT KIT LICENSE AGREEMENT 2.0 
+BETWEEN YOU AND TWILIO FOR ACCESS TO AND USE OF TWILIO'S SOFTWARE DEVELOPMENT 
+KIT. BY USING THIS SOFTWARE DEVELOPMENT KIT, YOU ACCEPT ALL THE TERMS AND 
+CONDITIONS OF THIS TWILIO SOFTWARE DEVELOPMENT KIT LICENSE AGREEMENT 2.0.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+As a courtesy, below is a quick summary of how this Twilio Software Development 
+Kit License Agreement 2.0 applies when you download, use, or otherwise access 
+this Twilio Software Development Kit. The full version can be found by scrolling 
+down and is the only one that is legally controlling and binding.
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+Summary
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+When you download, use, or otherwise access this software development kit:
+
+* Twilio grants you a limited license to use this software development kit only 
+  for the purposes of developing your own applications and software and 
+  distributing those applications and software in connection with your use of 
+  Twilio's products and services as a Twilio customer.
+
+* You agree not to use this software development kit to create a competing 
+  product or service to this software development kit.
+
+* You agree that Twilio may make changes or updates to this software development 
+  kit (including discontinuing support for and/or the availability of this 
+  software development kit) at any time for any reason.
+
+* You agree that you will not use this software development kit in any way that 
+  interferes with, disrupts, damages or otherwise affects anyone's servers, 
+  networks, or services (including Twilio's).
+
+* You agree that any feedback you provide to Twilio regarding this software 
+  development kit, including any suggestions for improvements, belong to Twilio 
+  without any compensation to you and that Twilio owns all legal rights to that 
+  feedback.
+
+* Except for this software development kit, any use of Twilio's products and 
+  services is governed by a separate agreement between you and Twilio.
+
+Full Version
+
+1. Introduction
+
+   a. This Twilio Software Development Kit License Agreement 2.0 (this 
+      "Agreement") accompanies the Twilio Software Development Kit for the 
+      software and related explanatory materials (including the Software and 
+      Documentation, the "SDK") and includes any upgrades, modified versions, 
+      updates, additions, and copies of the SDK licensed to you by Twilio. Twilio 
+      and you may be referred to herein collectively as the "parties" or 
+      individually as a "party."
+
+   b. "Documentation" means Twilio's user manuals, handbooks, installation 
+      guides, and any explanatory materials relating to or accompanying the SDK 
+      provided by Twilio to you either electronically or in hard copy form.
+
+   c. "Intellectual Property Rights" means any and all rights under patent law, 
+      copyright law, trade secret law, trademark law, and any and all other 
+      proprietary rights.
+
+   d. "Software" means the object and source code, and/or other original works of 
+      authorship in the SDK provided by Twilio to you, including all associated 
+      example code, other tools and any upgrades, modified versions, updates, 
+      additions, and copies provided to you pursuant to this Agreement.
+
+   e. "Twilio" means Twilio Inc., organized under the laws of the State of 
+      Delaware, USA, and operating under the laws of the USA with its principal 
+      place of business at 101 Spear Street, 5th Floor, San Francisco, CA 94105.
+
+2. Accepting this Agreement
+
+   a. In order to use the SDK, you must first agree to this Agreement. You may 
+      not use the SDK if you do not accept this Agreement. By using the SDK, you 
+      hereby agree to the terms of this Agreement. You may not use the SDK and 
+      may not accept this Agreement if you are a person barred from receiving the 
+      SDK under the laws of the United States or other countries, including the 
+      country in which you are a resident or from which you use the SDK. If you 
+      are agreeing to be bound by this Agreement on behalf of your employer or 
+      other entity, you represent and warrant that you have full legal authority 
+      to bind your employer or such entity to this Agreement. If you do not have 
+      the requisite authority, you may not accept this Agreement or use the SDK 
+      on behalf of your employer or other entity. You must use the SDK in 
+      conjunction with Twilio's products and services ("Twilio Services"), and 
+      your use of the Twilio Services will solely be governed by the Twilio Terms 
+      of Service available at https://www.twilio.com/legal/tos or a separate 
+      written agreement entered into between you and Twilio (each, a "Services 
+      Agreement"). This Agreement will, in no way, modify or affect the terms of 
+      the applicable Services Agreement.
+      
+3. SDK License from Twilio
+
+   a. Subject to the terms and conditions of this Agreement, Twilio grants you a 
+      non-exclusive, non-sublicensable, non-assignable, non-transferable, 
+      worldwide, royalty-free, access to and license to use the SDK solely (i) to 
+      copy, display, perform, modify, and create derivative works from the SDK 
+      only for the purpose of internal development of your software products 
+      (each, an "Application") solely for an Application's use in conjunction 
+      with the Twilio Services; and (ii) distribute the Software as part of an 
+      Application, provided that you have a Services Agreement with Twilio for 
+      the use of such Twilio Services. The license granted in Section 3(a)(ii) 
+      will survive the termination of this Agreement, except to the extent you 
+      are in material breach of any of the obligations hereunder.
+
+   b. You are responsible and liable for all use of the SDK, directly or 
+      indirectly, whether such access or use is permitted by or in violation of 
+      this Agreement. Twilio has no liability to you or any third party arising 
+      or resulting from your use of the SDK.
+
+   c. Use, reproduction, and distribution of software dependencies and components 
+      of the SDK licensed under an open source software license are governed 
+      solely by the terms of that open source software license and not this 
+      Agreement. You understand and acknowledge that such open source software is 
+      not licensed to you pursuant to the provisions of this Agreement and that 
+      this Agreement may not be construed to grant any such right and/or 
+      license. If you do not agree to abide by the applicable terms for such 
+      components of the SDK licensed under an open source software license, then 
+      you should not use the SDK.
+
+   d. You will not remove, obscure, or alter any proprietary rights notices 
+      (including copyright and trademark notices) that may be affixed to or 
+      contained within the SDK.
+
+4. Use of the SDK by You
+
+   a. You may not use the SDK to develop a competing product or service to the 
+      SDK or for any purposes not expressly permitted by this Agreement 
+      including, but not limited to, using the SDK in any manner or for any 
+      purpose that infringes, misappropriates, or otherwise violates any 
+      Intellectual Property Right or other right of any person, or that violates 
+      any applicable law or regulation (including any laws regarding the export 
+      of data or software to and from the United States or other relevant 
+      countries).
+
+   b. You acknowledge and agree that Twilio has no obligation to provide 
+      updates, upgrades, or any other modifications to the SDK. In addition, you 
+      acknowledge and agree that Twilio has no obligation to support or maintain 
+      the SDK.
+
+   c. You agree that the form and nature of the SDK that Twilio provides may 
+      change without prior notice to you and that future versions of the SDK may 
+      be incompatible with Applications developed on previous versions of the 
+      SDK. You agree that Twilio may stop (permanently or temporarily) providing 
+      the SDK (or any features within the SDK) to you or to users generally at 
+      Twilio's sole discretion, without prior notice to you.
+
+   d. You agree that you will not engage in any activity with the SDK, 
+      including the development or distribution of an Application, that 
+      interferes with, disrupts, damages, or accesses in an unauthorized manner 
+      the servers, networks, or other properties or services of any third party 
+      including, but not limited to, Twilio or any telecommunications provider.
+
+   e. Nothing in this Agreement gives you a right to use any of Twilio's trade 
+      names, trademarks, service marks, logos, domain names, or other 
+      distinctive brand features.
+
+   f. You agree that you are solely responsible for (and that Twilio has no 
+      responsibility to you or to any third party for) any breach of your 
+      obligations under this Agreement, any applicable third party contract, or 
+      any applicable law or regulation, and for the consequences (including any 
+      loss or damage which Twilio or any third party may suffer) of any such 
+      breach.
+
+5. Intellectual Property Ownership and Feedback
+
+   a. You agree that Twilio or third parties own all legal right, title, and 
+      interest in and to the SDK, including any Intellectual Property Rights 
+      that subsist in the SDK. Twilio reserves all rights not expressly granted 
+      to you in this Agreement. Except for the limited rights and licenses 
+      expressly granted under this Agreement, nothing in this Agreement grants, 
+      by implication, waiver, estoppel, or otherwise, to your or any third 
+      party any Intellectual Property Rights or other right, title, or interest 
+      in or to the SDK.
+
+   b. Twilio agrees that it obtains no right, title or interest from you (or 
+      your licensors) under this Agreement in or to any Applications that you 
+      develop using the SDK, including any Intellectual Property Rights that 
+      subsist in those Applications.
+
+   c. If you or any of your employees or contractors send or transmit any 
+      communications, materials, code, documentation, or other original works of 
+      authorship (including any modifications) to Twilio by any form of 
+      electronic or written communication, including but not limited to mail, 
+      email, telephone, source code control systems, issue tracking systems, or 
+      otherwise, suggesting or recommending changes to the SDK, including 
+      without limitation, new features or functionality relating thereto, or any 
+      comments, questions, suggestions, or the like ("Feedback"), Twilio is free 
+      to use such Feedback irrespective of any other obligation or limitation 
+      between the parties governing such Feedback. You hereby assign to Twilio 
+      on your behalf, and on behalf of your employees, contractors and/or 
+      agents, all right, title, and interest in, and Twilio is free to use, 
+      Feedback without any attribution or compensation to any party, any ideas, 
+      know-how, concepts, techniques, or other Intellectual Property Rights 
+      contained in the Feedback, for any purpose whatsoever. Twilio is not 
+      required to use any Feedback. For clarity, Feedback will not include any 
+      code, documentation, or works of authorship, including the Intellectual 
+      Property Rights embedded therein, which are (a) unrelated to the core 
+      functionality of the Software or (b) conceived and/or developed by you (i) 
+      prior to the date this Agreement is accepted by you, (ii) outside the 
+      scope of this Agreement, or (iii) independently without the use of the 
+      SDK.
+
+6. Terminating this Agreement
+
+   a. This Agreement, as may be updated from time to time, will commence on the 
+      date it is accepted by you and continue until terminated as set out below.
+
+   b. If you want to terminate this Agreement, you may do so by ceasing your 
+      use of the SDK.
+
+   c. Without prejudice to any other rights, this Agreement shall terminate 
+      automatically without notice from Twilio if:
+      i.   your Services Agreement for use of the Twilio Services terminates; or
+      ii.  you have breached any provision of this Agreement; or
+      iii. Twilio is required to do so by law or regulation; or
+      iv.  Twilio decides to no longer provide the SDK or certain parts of the 
+           SDK to users in the country in which you are resident or from which 
+           you use the service, or the provision of the SDK or certain SDK 
+           services to you by Twilio is, in Twilio's sole discretion, no longer 
+           commercially viable.
+
+   d. When this Agreement terminates, all of the legal rights, obligations, and 
+      liabilities that you and Twilio have benefited from, been subject to (or 
+      which have accrued over time whilst this Agreement has been in force) or 
+      which are expressed to continue indefinitely, will be unaffected by this 
+      cessation.
+
+7. DISCLAIMER OF WARRANTIES
+
+   a. YOU EXPRESSLY UNDERSTAND AND AGREE THAT YOUR USE OF THE SDK IS AT YOUR 
+      SOLE RISK AND THAT THE SDK IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT 
+      WARRANTY OF ANY KIND FROM TWILIO.
+
+   b. YOUR USE OF THE SDK AND ANY MATERIAL DOWNLOADED OR OTHERWISE OBTAINED 
+      THROUGH THE USE OF THE SDK IS AT YOUR OWN DISCRETION AND RISK AND YOU ARE 
+      SOLELY RESPONSIBLE FOR ANY DAMAGE TO YOUR COMPUTER SYSTEM OR OTHER DEVICE 
+      OR LOSS OF DATA THAT RESULTS FROM SUCH USE.
+
+   c. TWILIO FURTHER EXPRESSLY DISCLAIMS ALL WARRANTIES AND CONDITIONS OF ANY 
+      KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE 
+      IMPLIED WARRANTIES AND CONDITIONS OF MERCHANTABILITY, FITNESS FOR A 
+      PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+
+   a. YOU EXPRESSLY UNDERSTAND AND AGREE THAT TWILIO, ITS SUBSIDIARIES AND 
+      AFFILIATES, AND ITS LICENSORS WILL NOT BE LIABLE TO YOU UNDER ANY THEORY 
+      OF LIABILITY FOR ANY DAMAGES WHATSOEVER, INCLUDING, BUT NOT LIMITED TO, 
+      DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR EXEMPLARY 
+      DAMAGES THAT MAY BE INCURRED BY YOU, INCLUDING ANY LOSS OF DATA, WHETHER 
+      OR NOT TWILIO OR ITS REPRESENTATIVES HAVE BEEN ADVISED OF OR SHOULD HAVE 
+      BEEN AWARE OF THE POSSIBILITY OF ANY SUCH DAMAGES OR LOSSES ARISING.
+
+9. Indemnification
+
+   a. To the maximum extent permitted by law, you agree to defend, indemnify 
+      and hold harmless Twilio, its affiliates and their respective directors, 
+      officers, employees, and agents from and against any and all claims, 
+      actions, demands, suits, or proceedings, as well as any and all losses, 
+      liabilities, damages, costs and expenses (including reasonable attorneys' 
+      fees) arising out of or accruing from (a) your use of the SDK or any 
+      resulting Application you develop on the SDK; (b) any Application you 
+      develop using the SDK that infringes any copyright, trademark, trade 
+      secret, trade dress, patent, or other intellectual property right of any 
+      person or defames any person or violates their rights of publicity or 
+      privacy; and (c) your non-compliance with the terms of this Agreement.
+
+10. Changes to this Agreement
+
+    a. Twilio may make changes to this Agreement as it distributes new versions 
+       of the SDK. When these changes are made, Twilio will make a new version 
+       of this Agreement available on the website where the SDK is made 
+       available.
+       
+11. Additional Terms
+
+    a. Except as provided in this Agreement, this Agreement supersedes all prior 
+       and contemporaneous agreements, oral and written, in relation to the SDK. 
+       No oral or written information or advice given by Twilio, its agents or 
+       employees will create a warranty or in any way increase the scope of the 
+       warranties or obligations under this Agreement. Except as permitted in 
+       Section 10 of this Agreement, no modification to this Agreement will be 
+       legally binding unless set forth in writing and signed by you and Twilio.
+
+    b. You agree that Twilio's failure to enforce at any time any provision of 
+       this Agreement or any other of your obligations does not waive Twilio's 
+       right to do so later. And, if Twilio does expressly waive any provision 
+       of this Agreement or any of your other obligations, that does not mean it 
+       is waived for all time in the future. Any waiver must be in writing and 
+       signed by you and Twilio to be legally binding.
+
+    c. If any court of law, having the jurisdiction to decide on this matter, 
+       rules that any provision of this Agreement is invalid, then that 
+       provision will be removed from this Agreement without affecting the rest 
+       of this Agreement. The remaining provisions of this Agreement will 
+       continue to be valid and enforceable.
+
+    d. You acknowledge and agree that each member of the group of companies of 
+       which Twilio is the parent will be third party beneficiaries to this 
+       Agreement and that such other companies will be entitled to directly 
+       enforce, and rely upon, any provision of this Agreement that confers a 
+       benefit on (or rights in favor of) them. Other than this, no other 
+       person or company will be third party beneficiaries to this Agreement.
+
+    e. THE SDK IS SUBJECT TO UNITED STATES EXPORT LAWS AND REGULATIONS. YOU 
+       MUST COMPLY WITH ALL DOMESTIC AND INTERNATIONAL EXPORT LAWS AND 
+       REGULATIONS THAT APPLY TO THE SDK. THESE LAWS INCLUDE RESTRICTIONS ON 
+       DESTINATIONS, END USERS, AND END USE.
+
+    f. You will not assign or otherwise transfer this Agreement, in whole or in 
+       part, without Twilio's prior written consent. Any attempt by you to 
+       assign, delegate, or transfer this Agreement will be void. Twilio may 
+       assign this Agreement, in whole or in part, without consent. Subject to 
+       this Section 13(f), this Agreement will be binding on both you and 
+       Twilio and both parties' successors and assigns.
+
+    g. This Agreement will be governed by and interpreted according to the laws 
+       of the State of California without regard to conflicts of laws and 
+       principles that would cause laws of another jurisdiction to apply. This 
+       Agreement will not be governed by the United Nations Convention on 
+       Contracts for the International Sale of Goods. Any legal suit, action or 
+       proceeding arising out of or related to this Agreement or the SDK will be 
+       instituted in either the state or federal courts of San Francisco, 
+       California, and the parties each consent to the personal jurisdiction of 
+       these courts.       
