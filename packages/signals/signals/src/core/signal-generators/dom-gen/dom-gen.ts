@@ -54,19 +54,40 @@ export const cleanText = (str: string): string => {
 }
 
 interface ParsedElementBase {
+  /**
+   * The attributes of the element -- this is a key-value object of the attributes of the element
+   */
   attributes: Record<string, unknown>
   classList: string[]
   id: string
+  /**
+   * The labels associated with this element -- either from the `labels` property or from the `aria-labelledby` attribute
+   */
   labels?: Label[]
+  /**
+   * The first label associated with this element -- either from the `labels` property or from the `aria-labelledby` attribute
+   */
   label?: Label
   name?: string
   nodeName: string
   tagName: string
   title: string
   type?: string
+  /**
+   * The value of the element -- for inputs, this is the value of the input, for selects, this is the value of the selected option
+   */
   value?: string
+  /**
+   * The text content of the element -- this is the text content of the element, stripped of newlines, tabs, and multiple spaces
+   */
   textContent?: string
+  /**
+   * The inner text of the element -- this is the text content of the element, stripped of newlines, tabs, and multiple spaces
+   */
   innerText?: string
+  /**
+   * The element referenced by the `aria-describedby` attribute
+   */
   describedBy?: Label
 }
 
