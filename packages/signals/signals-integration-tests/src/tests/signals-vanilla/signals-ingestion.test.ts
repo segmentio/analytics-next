@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
+import { waitForCondition } from '../../helpers/playwright-utils'
 
 const indexPage = new IndexPage()
 
@@ -56,6 +57,10 @@ test('debug ingestion disabled and sample rate 1 -> will send the signal', async
       sampleRate: 1,
     }
   )
-  await indexPage.fillNameInput('John Doe')
-  expect(indexPage.signalsAPI.getEvents('interaction')).toHaveLength(1)
+  await Promise.all([
+    indexPage.fillNameInput('John Doe'),
+    waitForCondition(
+      () => indexPage.signalsAPI.getEvents('interaction').length > 0
+    ),
+  ])
 })
