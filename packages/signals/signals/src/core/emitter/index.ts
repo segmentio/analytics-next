@@ -11,7 +11,7 @@ const logSignal = (signal: Signal) => {
     'New signal:',
     signal.type,
     signal.data,
-    signal.type === 'interaction'
+    signal.type === 'interaction' && signal.data.eventType === 'change'
       ? {
           value: signal.data.target.value,
           changedAttribute: signal.data.target.changedAttribute,

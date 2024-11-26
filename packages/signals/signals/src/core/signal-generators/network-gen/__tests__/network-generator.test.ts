@@ -283,7 +283,7 @@ describe(NetworkGenerator, () => {
     unregister()
   })
 
-  it('emits signals for same domain if networkSignalsAllowSameDomain = false', async () => {
+  it('will not emit signals for same domain if networkSignalsAllowSameDomain = false', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator({
       networkSignalsAllowList: ['foo.com'],
@@ -301,7 +301,10 @@ describe(NetworkGenerator, () => {
     })
 
     await sleep(100)
-    expect(mockEmitter.emit.mock.calls.length).toBe(0)
+    let requests = mockEmitter.emit.mock.calls.filter(
+      (c) => c[0].data.action === 'request'
+    )
+    expect(requests.length).toBe(0)
 
     await window.fetch(`http://foo.com/test`, {
       method: 'POST',
@@ -310,7 +313,10 @@ describe(NetworkGenerator, () => {
     })
 
     await sleep(100)
-    expect(mockEmitter.emit.mock.calls.length).toBe(2)
+    requests = mockEmitter.emit.mock.calls.filter(
+      (c) => c[0].data.action === 'request'
+    )
+    expect(requests.length).toBe(1)
 
     unregister()
   })
@@ -333,6 +339,36 @@ describe(NetworkGenerator, () => {
 
     await sleep(100)
     expect(mockEmitter.emit.mock.calls).toEqual([])
+    unregister()
+  })
+
+  it('allows an explicit disallow list to override same-domain signals', async () => {
+    const mockEmitter = { emit: jest.fn() }
+    const networkGenerator = new TestNetworkGenerator({
+      networkSignalsDisallowList: ['/foo'],
+    })
+    const unregister = networkGenerator.register(
+      mockEmitter as unknown as SignalEmitter
+    )
+
+    await window.fetch(`/test/foo`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: 'value' }),
+    })
+
+    await window.fetch(`/test/bar`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ key: 'value' }),
+    })
+
+    await sleep(100)
+    const requests = mockEmitter.emit.mock.calls
+      .filter((c) => c[0].data.action === 'request')
+      .flatMap((c) => c[0].data.url)
+    expect(requests.length).toBe(1)
+    expect(requests[0]).toBe('http://localhost/test/bar')
     unregister()
   })
 
