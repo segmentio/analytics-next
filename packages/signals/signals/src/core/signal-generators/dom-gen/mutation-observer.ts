@@ -40,7 +40,6 @@ const defaultElementAttributesMap = {
 type AttributeChangedEvent = {
   type: 'interaction' | 'alert'
   element: HTMLElement
-  describedElement: HTMLElement | null
   attributeName: string
   newValue: string | null
 }
@@ -99,15 +98,10 @@ export class ElementChangeObservable {
           if (newValue === null) {
             return console.warn('New value is null?', attributeName)
           }
-          const describedElement = element.getAttribute('aria-describedby')
           const event: AttributeChangedEvent = {
             type: 'interaction',
             element: element as HTMLElement,
             attributeName,
-            // this is innacurate
-            describedElement: describedElement
-              ? document.getElementById(describedElement)
-              : null,
             newValue,
           }
           emitter.emit('attributeChanged', event)

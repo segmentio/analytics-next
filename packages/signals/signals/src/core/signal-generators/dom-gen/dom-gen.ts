@@ -263,14 +263,16 @@ export class OnChangeGenerator implements SignalGenerator {
       if (this.shouldIgnore(target)) {
         return
       }
-
+      const el = parseElement(ev.element)
       emitter.emit(
         createInteractionSignal({
           eventType: 'change',
-          target: parseElement(ev.element),
-          metadata: {
+          target: {
+            ...el,
+            changedValue: ev.newValue,
             changedAttribute: ev.attributeName,
-            changeAttributeVal: ev.newValue,
+          },
+          metadata: {
             listener: 'mutation-observer',
           },
         })
@@ -285,10 +287,15 @@ export class OnChangeGenerator implements SignalGenerator {
         return
       }
 
+      const el = parseElement(target)
       emitter.emit(
         createInteractionSignal({
           eventType: 'change',
-          target: parseElement(target),
+          target: {
+            ...el,
+            changedValue: el.value,
+            changedAttribute: 'value',
+          },
           metadata: {
             listener: 'on-change',
           },
