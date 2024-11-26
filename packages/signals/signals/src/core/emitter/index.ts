@@ -6,12 +6,27 @@ export interface EmitSignal {
   emit: (signal: Signal) => void
 }
 
+const logSignal = (signal: Signal) => {
+  logger.info(
+    'New signal:',
+    signal.type,
+    signal.data,
+    signal.type === 'interaction'
+      ? {
+          value: signal.data.target.value,
+          changedAttribute: signal.data.target.changedAttribute,
+          changedValue: signal.data.target.changedValue,
+        }
+      : undefined
+  )
+}
+
 export class SignalEmitter implements EmitSignal {
   private emitter = new Emitter<{ add: [Signal] }>()
   private listeners = new Set<(signal: Signal) => void>()
 
   emit(signal: Signal) {
-    logger.info('New signal:', signal.type, signal.data)
+    logSignal(signal)
     this.emitter.emit('add', signal)
   }
 

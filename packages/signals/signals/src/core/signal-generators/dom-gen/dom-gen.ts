@@ -272,9 +272,7 @@ export class OnChangeGenerator implements SignalGenerator {
             changedValue: ev.newValue,
             changedAttribute: ev.attributeName,
           },
-          metadata: {
-            listener: 'mutation-observer',
-          },
+          listener: 'mutation-observer',
         })
       )
     })
@@ -296,9 +294,7 @@ export class OnChangeGenerator implements SignalGenerator {
             changedValue: el.value,
             changedAttribute: 'value',
           },
-          metadata: {
-            listener: 'on-change',
-          },
+          listener: 'on-change',
         })
       )
     }, 300)
