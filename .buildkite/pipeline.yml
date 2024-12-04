@@ -33,6 +33,7 @@ steps:
     env:
       SEGMENT_CODECOV_FLAGS: 'browser'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
+      COVERAGE: true
     agents:
       queue: v1
     commands:
@@ -88,6 +89,7 @@ steps:
     env:
       SEGMENT_CODECOV_FLAGS: 'core'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/core/coverage'
+      COVERAGE: true
     agents:
       queue: v1
     commands:
