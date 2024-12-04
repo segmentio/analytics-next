@@ -41,7 +41,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - yarn run -T browser exec make ci
-      - echo " ############### Are there coverage files here?"
+      - echo " +++ Are there coverage files here"
       - echo $PWD
       - find . -name "coverage-*.json"
     plugins:
@@ -105,7 +105,7 @@ steps:
       - yarn run -T core lint
       - yarn run -T core test
       - yarn turbo run --filter=core-integration-tests lint
-      - echo " ############### Are there coverage files here?"
+      - echo " +++ Are there coverage files here"
       - echo $PWD
       - find . -name "coverage-*.json"
     plugins:
