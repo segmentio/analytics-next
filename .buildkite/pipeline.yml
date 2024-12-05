@@ -41,8 +41,6 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - yarn run -T browser exec make ci
-      - find . -name "coverage-*.json"
-      - echo $PWD
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -104,8 +102,6 @@ steps:
       - yarn run -T core lint
       - yarn run -T core test
       - yarn turbo run --filter=core-integration-tests lint
-      - find . -name "coverage-*.json"
-      - echo $PWD
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

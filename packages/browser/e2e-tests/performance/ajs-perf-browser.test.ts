@@ -53,6 +53,7 @@ describe('Performance', () => {
     await analyticsStub.browserPage.close()
   }, 50000)
 
+  /* istanbul ignore next */
   it('loads ajs in a browser', async () => {
     const analyticsStub = await tester(
       TEST_WRITEKEY,
