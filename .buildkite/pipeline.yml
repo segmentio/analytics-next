@@ -30,10 +30,6 @@ steps:
 
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
-    env:
-      SEGMENT_CODECOV_FLAGS: 'browser'
-      SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
-      COVERAGE: true
     agents:
       queue: v1
     commands:
@@ -51,6 +47,10 @@ steps:
     key: qa
     agents:
       queue: v1
+    env:
+      SEGMENT_CODECOV_FLAGS: 'browser'
+      SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
+      COVERAGE: true
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
