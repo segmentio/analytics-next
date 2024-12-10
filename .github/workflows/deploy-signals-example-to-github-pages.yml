@@ -28,8 +28,6 @@ jobs:
 
       - name: Building App
         run: yarn build
-        env:
-          REACT_APP_SEGMENT_WRITE_KEY: ${{ secrets.REACT_APP_SEGMENT_WRITE_KEY }}
         working-directory: packages/signals/signals-example
 
       - name: Deploy with gh-pages
