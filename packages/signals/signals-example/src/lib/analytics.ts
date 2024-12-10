@@ -62,11 +62,13 @@ const isStage =
   storage.getStorage().stage === 'true' || process.env.STAGE === 'true'
 const writeKey = storage.getStorage().writeKey || process.env.WRITEKEY
 
-if (!writeKey) {
-  throw new Error('No writekey provided.')
-}
-
 console.log('Query params allowed:', JSON.stringify(Object.values(queryParams)))
+
+if (!writeKey) {
+  throw new Error(
+    `No writekey provided. please add ?${queryParams.WRITE_KEY_NAME}=<writekey> to the URL`
+  )
+}
 
 export const analytics = new AnalyticsBrowser()
 
