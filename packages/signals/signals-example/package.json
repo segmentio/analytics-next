@@ -1,6 +1,7 @@
 {
   "name": "@internal/signals-example",
   "private": true,
+  "homepage": "https://segmentio.github.io/<repository-name>/my-test-site",
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/signals-example...",
     "dev": "webpack serve",

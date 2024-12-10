@@ -5,6 +5,33 @@ env:
   HUSKY: 0
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 jobs:
+ deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'yarn'
+
+      - name: Installing Dependencies
+        run: yarn install
+
+      - name: Building App
+        run: yarn build
+        env:
+          REACT_APP_SEGMENT_WRITE_KEY: ${{ secrets.REACT_APP_SEGMENT_WRITE_KEY }}
+
+      - name: Deploy with gh-pages
+        run: |
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          npx gh-pages -d build -u "github-actions-bot <support+actions@github.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   analytics-node:
     name: 'analytics-node QA (Node.js v${{ matrix.node-version }})'
     runs-on: ubuntu-latest

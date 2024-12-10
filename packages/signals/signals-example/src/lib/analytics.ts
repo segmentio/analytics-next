@@ -4,10 +4,71 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin, ProcessSignal } from '@segment/analytics-signals'
 
-export const analytics = new AnalyticsBrowser()
-if (!process.env.WRITEKEY) {
+// Function to get query string parameters
+
+const STORAGE_TYPE: 'localStorage' | 'sessionStorage' = 'localStorage'
+
+// Function to set localStorage from query string parameters
+
+const queryParams = {
+  STAGE_KEY_NAME: 'stage',
+  WRITE_KEY_NAME: 'wk',
+  RESET_KEY_NAME: 'reset',
+}
+
+const Storage = () => {
+  const getQueryParams = () => {
+    const params = new URLSearchParams(window.location.search)
+    const stage = params.get(queryParams.STAGE_KEY_NAME)
+    const writeKey = params.get(queryParams.WRITE_KEY_NAME)
+    const reset = params.get(queryParams.RESET_KEY_NAME)
+    return { stage, writeKey, reset }
+  }
+
+  const clearStorage = () => {
+    window[STORAGE_TYPE].removeItem(queryParams.STAGE_KEY_NAME)
+    window[STORAGE_TYPE].removeItem(queryParams.WRITE_KEY_NAME)
+  }
+  const setStorage = () => {
+    const { stage, writeKey, reset } = getQueryParams()
+
+    if (stage !== null) {
+      window[STORAGE_TYPE].setItem(queryParams.STAGE_KEY_NAME, stage)
+    }
+    if (writeKey !== null) {
+      window[STORAGE_TYPE].setItem(queryParams.WRITE_KEY_NAME, writeKey)
+    }
+    if (reset !== null) {
+      clearStorage()
+    }
+  }
+
+  setStorage()
+  return {
+    getStorage: () => {
+      return {
+        stage: window[STORAGE_TYPE].getItem(queryParams.STAGE_KEY_NAME),
+        writeKey: window[STORAGE_TYPE].getItem(queryParams.WRITE_KEY_NAME),
+      }
+    },
+  }
+}
+
+// Set localStorage from query string parameters
+const storage = Storage()
+
+// Retrieve values from localStorage or fall back to environment variables
+const isStage =
+  storage.getStorage().stage === 'true' || process.env.STAGE === 'true'
+const writeKey = storage.getStorage().writeKey || process.env.WRITEKEY
+
+if (!writeKey) {
   throw new Error('No writekey provided.')
 }
+
+console.log('Query params allowed:', JSON.stringify(Object.values(queryParams)))
+
+export const analytics = new AnalyticsBrowser()
 
 const processSignalExample: ProcessSignal = (
   signal,
@@ -29,8 +90,6 @@ const processSignalExample: ProcessSignal = (
   }
 }
 
-const isStage = process.env.STAGE === 'true'
-
 const signalsPlugin = new SignalsPlugin({
   ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
   // enableDebugLogging: true,
@@ -41,7 +100,7 @@ export const loadAnalytics = () =>
   analytics
     .load(
       {
-        writeKey: process.env.WRITEKEY!,
+        writeKey: writeKey,
         plugins: [signalsPlugin],
         ...(isStage ? { cdnURL: 'https://cdn.segment.build' } : {}),
       },
@@ -58,7 +117,7 @@ export const loadAnalytics = () =>
       }
     )
     .then(() => {
-      console.log(`Analytics loaded with WRITEKEY=${process.env.WRITEKEY}`)
+      console.log(`Analytics loaded with WRITEKEY=${writeKey}`)
       // @ts-ignore
       window.analytics = analytics // for debugging
     })
