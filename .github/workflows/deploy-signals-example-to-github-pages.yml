@@ -33,6 +33,6 @@ jobs:
         working-directory: packages/signals/signals-example
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-          yarn deploy
+          npx gh-pages -d dist -s public/index.html
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
