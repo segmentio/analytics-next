@@ -18,7 +18,7 @@ describe(WebSignalsRuntime, () => {
       ...mockInteractionSignal,
       data: {
         eventType: 'change',
-        target: {},
+        target: {} as any,
         change: {},
         listener: 'onchange',
       },
