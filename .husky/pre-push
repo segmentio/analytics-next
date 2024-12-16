@@ -1,4 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn concurrently --names 'LINT,TEST' -c 'yellow,blue' 'yarn lint' 'CI=true yarn test --colors --silent'
+yarn prepush
