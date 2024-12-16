@@ -16,6 +16,9 @@ const entries = files.reduce((acc, file) => {
 
 const config: WebpackConfiguration = {
   stats: 'minimal',
+  performance: {
+    hints: false,
+  },
   mode: 'development',
   devtool: 'source-map',
   entry: entries,
