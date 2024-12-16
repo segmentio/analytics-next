@@ -19,7 +19,7 @@
     "lint": "yarn constraints && turbo run lint --continue",
     "build": "turbo run build --filter='./packages/**'",
     "watch": "turbo run watch --filter='./packages/**'",
-    "dev": "yarn workspace @playground/nOxt-playground run dev",
+    "dev": "yarn workspace @playground/next-playground run dev",
     "prepush": "yarn lint && CI=true yarn test --colors --silent",
     "postinstall": "husky install",
     "changeset": "changeset",
