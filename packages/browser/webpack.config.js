@@ -38,7 +38,7 @@ if (process.env.ANALYZE) {
 
 /** @type { import('webpack').Configuration } */
 const config = {
-  stats: process.env.WATCH === 'true' ? 'errors-warnings' : 'normal',
+  stats: process.env.WATCH === 'true' ? 'errors-warnings' : 'minimal',
   node: {
     global: false, // do not polyfill global object, we can use getGlobal function if needed.
   },
