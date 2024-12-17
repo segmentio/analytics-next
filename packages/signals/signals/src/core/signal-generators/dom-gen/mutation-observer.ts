@@ -246,8 +246,8 @@ export class MutationObservable {
           return acc
         }, {})
 
-      const isEmpty = Object.keys(mutations).length > 0
-      if (!isEmpty) {
+      const isEmpty = Object.keys(mutations).length === 0
+      if (isEmpty) {
         return
       }
 
