@@ -206,7 +206,7 @@ export class MutationObservable {
 
     const shouldDebounceElement = shouldDebounce(element)
 
-    const _emitAttributeMutationEventDebounced = shouldDebounceElement
+    const _emitMaybeDebouncedEvent = shouldDebounceElement
       ? debounceWithKey(
           emit,
           // debounce based on the attribute names, so that we can debounce all changes to a single attribute. e.g if attribute "value" changes, that gets debounced, but if another attribute changes, that gets debounced separately
@@ -267,7 +267,7 @@ export class MutationObservable {
         ...mutations,
       })
 
-      _emitAttributeMutationEventDebounced(mutations)
+      _emitMaybeDebouncedEvent(mutations)
     }
 
     const observer = new MutationObserver(cb)
