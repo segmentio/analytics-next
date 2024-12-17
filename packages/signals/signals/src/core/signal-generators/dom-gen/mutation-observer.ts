@@ -184,10 +184,13 @@ export class MutationObservable {
   private experimentalOnChangeAdapter = new ExperimentalOnChangeEventAdapter()
 
   private observeElementAttributes(
-    element: HTMLElement,
+    element: Element,
     attributes: string[],
     emitter: ElementChangedEmitter
   ) {
+    if (!(element instanceof HTMLElement)) {
+      return
+    }
     const _emitAttributeMutationEvent = (attributes: AttributeMutations) => {
       emitter.emit('attributeChanged', {
         element,
@@ -295,7 +298,7 @@ export class MutationObservable {
         }
         logger.debug('Observing element', element)
         this.observeElementAttributes(
-          element as HTMLElement,
+          element,
           this.settings.observedAttributes,
           emitter
         )
