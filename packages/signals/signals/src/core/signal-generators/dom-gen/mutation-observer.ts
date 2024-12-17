@@ -2,6 +2,7 @@ import { Emitter } from '@segment/analytics-generic-utils'
 import { exists } from '../../../lib/exists'
 import { debounceWithKey } from '../../../lib/debounce'
 import { logger } from '../../../lib/logger'
+import { isObjectMatch } from './helpers'
 
 const DEFAULT_OBSERVED_ATTRIBUTES = [
   'aria-pressed',
@@ -32,15 +33,6 @@ const DEFAULT_OBSERVED_ROLES = [
   'treeitem',
 ]
 
-// Check if a subset object is a partial match of another object
-const isObjectMatch = <Obj extends Record<string, any>>(
-  partialObj: Partial<Obj>,
-  mainObj: Obj
-): boolean => {
-  return Object.keys(partialObj).every(
-    (key) => partialObj[key as keyof Obj] === mainObj[key as keyof Obj]
-  )
-}
 type AttributeMutations = { [attributeName: string]: string | null }
 export type AttributeChangedEvent = {
   element: HTMLElement
