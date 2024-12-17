@@ -650,6 +650,7 @@ describe('Dispatch', () => {
 
     expect(metrics.map((m) => m.metric)).toMatchInlineSnapshot(`
       [
+        "analytics_js.invoke",
         "message_dispatched",
         "plugin_time",
         "plugin_time",
@@ -694,7 +695,9 @@ describe('Dispatch', () => {
     })
 
     await sleep(10)
-    expect(fetchCalls[1].url).toBe('http://new.api.io/m')
+    expect(fetchCalls.some((call) => call.url === 'http://new.api.io/m')).toBe(
+      true
+    )
   })
 })
 

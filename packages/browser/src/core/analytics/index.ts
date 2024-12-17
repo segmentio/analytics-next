@@ -516,6 +516,7 @@ export class Analytics
     callback?: Callback
   ): Promise<DispatchedEvent> {
     const ctx = new Context(event)
+    ctx.stats.increment('analytics_js.invoke', 1, [event.type])
     if (isOffline() && !this.options.retryQueue) {
       return ctx
     }
