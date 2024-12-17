@@ -1,6 +1,7 @@
 import { Emitter } from '@segment/analytics-generic-utils'
 import { exists } from '../../../lib/exists'
 import { debounceWithKey } from '../../../lib/debounce'
+import { logger } from '../../../lib/logger'
 
 const DEFAULT_OBSERVED_ATTRIBUTES = [
   'aria-pressed',
@@ -133,6 +134,9 @@ const shouldDebounce = (el: HTMLElement): boolean => {
   return false
 }
 
+export type MutationObservableSubscriber = (
+  event: AttributeChangedEvent
+) => void
 /**
  * This class is responsible for observing changes to elements in the DOM
  * This is preferred over monitoring document 'change' events, as it captures changes to custom elements
@@ -143,9 +147,9 @@ export class MutationObservable {
   // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
   private observedElements = new WeakSet()
   private emitter = new ElementChangedEmitter()
-  private listeners = new Set<(event: AttributeChangedEvent) => void>()
+  private listeners = new Set<MutationObservableSubscriber>()
 
-  subscribe(fn: (event: AttributeChangedEvent) => void) {
+  subscribe(fn: MutationObservableSubscriber) {
     this.listeners.add(fn)
     this.emitter.on('attributeChanged', fn)
   }
@@ -158,13 +162,8 @@ export class MutationObservable {
 
   private pollTimeout: ReturnType<typeof setTimeout>
 
-  constructor(
-    settings: MutationObservableSettingsConfig | MutationObservableSettings = {}
-  ) {
-    this.settings =
-      settings instanceof MutationObservableSettings
-        ? settings
-        : new MutationObservableSettings(settings)
+  constructor(settings?: MutationObservableSettings) {
+    this.settings = settings ?? new MutationObservableSettings()
 
     this.checkForNewElements(this.emitter)
 
@@ -205,7 +204,9 @@ export class MutationObservable {
         ? addOnBlurListener
         : _emitAttributeMutationEvent
 
-    const _emitAttributeMutationEventDebounced = shouldDebounce(element)
+    const shouldDebounceElement = shouldDebounce(element)
+
+    const _emitAttributeMutationEventDebounced = shouldDebounceElement
       ? debounceWithKey(
           emit,
           // debounce based on the attribute names, so that we can debounce all changes to a single attribute. e.g if attribute "value" changes, that gets debounced, but if another attribute changes, that gets debounced separately
@@ -214,17 +215,26 @@ export class MutationObservable {
         )
       : _emitAttributeMutationEvent
 
+    // any call to setAttribute triggers a mutation event
     const cb: MutationCallback = (mutationsList) => {
       const attributeMutations = mutationsList
         .filter((m) => m.type === 'attributes')
         .map((m) => {
           const attributeName = m.attributeName
-          if (!attributeName) return
-          const newValue = element.getAttribute(attributeName)
+          const target = m.target
+          if (!attributeName || !target || !(target instanceof HTMLElement))
+            return
+
+          const newValue = target.getAttribute(attributeName)
           const v: AttributeMutation = {
             attributeName,
             newValue: newValue,
           }
+          logger.debug('Attribute mutation', {
+            newValue,
+            oldValue: m.oldValue,
+            target: m.target,
+          })
           return v
         })
         .filter(exists)
@@ -258,6 +268,7 @@ export class MutationObservable {
         if (this.observedElements.has(element)) {
           return
         }
+        logger.debug('Observing element', element)
         this.observeElementAttributes(
           element as HTMLElement,
           this.settings.observedAttributes,
