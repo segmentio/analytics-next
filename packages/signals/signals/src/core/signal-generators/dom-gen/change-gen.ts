@@ -25,21 +25,6 @@ export class MutationChangeGenerator implements SignalGenerator {
   }
 
   register(emitter: SignalEmitter) {
-    type NormalizedAttributes = { [attributeName: string]: string | null }
-    const normalizeAttributes = (
-      attributeMutation: AttributeChangedEvent
-    ): NormalizedAttributes => {
-      const attributes =
-        attributeMutation.attributes.reduce<NormalizedAttributes>(
-          (acc, { attributeName, newValue }) => {
-            acc[attributeName] = newValue
-            return acc
-          },
-          {}
-        )
-      return attributes
-    }
-
     const callback = (ev: AttributeChangedEvent) => {
       const target = ev.element as HTMLElement | null
       if (!target || shouldIgnoreElement(target)) {
@@ -51,7 +36,7 @@ export class MutationChangeGenerator implements SignalGenerator {
           eventType: 'change',
           target: el,
           listener: 'mutation',
-          change: normalizeAttributes(ev),
+          change: ev.attributes,
         })
       )
     }

@@ -32,13 +32,18 @@ const DEFAULT_OBSERVED_ROLES = [
   'treeitem',
 ]
 
-type AttributeMutation = {
-  attributeName: string
-  newValue: string | null
+const partialMatch = <Obj extends Record<string, any>>(
+  a: Partial<Obj>,
+  b: Obj
+): boolean => {
+  return Object.keys(a).every(
+    (key) => a[key as keyof Obj] === b[key as keyof Obj]
+  )
 }
+type AttributeMutations = { [attributeName: string]: string | null }
 export type AttributeChangedEvent = {
   element: HTMLElement
-  attributes: AttributeMutation[]
+  attributes: AttributeMutations
 }
 
 export interface MutationObservableSettingsConfig {
@@ -53,7 +58,7 @@ export interface MutationObservableSettingsConfig {
 
 export class MutationObservableSettings {
   pollIntervalMs: number
-  debounceTextInputMs: number
+  debounceMs: number
   emitInputStrategy: 'debounce-only' | 'blur'
   extraSelectors: string[]
   observedRoles: string[]
@@ -72,12 +77,10 @@ export class MutationObservableSettings {
     if (pollIntervalMs < 300) {
       throw new Error('Poll interval must be at least 300ms')
     }
-    if (debounceMs < 100) {
-      throw new Error('Debounce must be at least 100ms')
-    }
+
     this.emitInputStrategy = emitInputStrategy
     this.pollIntervalMs = pollIntervalMs
-    this.debounceTextInputMs = debounceMs
+    this.debounceMs = debounceMs
     this.extraSelectors = extraSelectors
 
     this.observedRoles = observedRoles
@@ -146,6 +149,7 @@ export class MutationObservable {
   // Track observed elements to avoid duplicate observers
   // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
   private observedElements = new WeakSet()
+  private prevMutationsCache = new WeakMap<HTMLElement, AttributeMutations>()
   private emitter = new ElementChangedEmitter()
   private listeners = new Set<MutationObservableSubscriber>()
 
@@ -173,9 +177,12 @@ export class MutationObservable {
     )
   }
 
-  private shouldEmitEvent(mut: AttributeMutation): boolean {
+  private shouldEmitEvent(
+    attributeName: string,
+    newValue: string | null
+  ): boolean {
     // Filter out aria-selected events where the new value is false, since there will always be another selected value -- otherwise, checked would/should be used
-    if (mut.attributeName === 'aria-selected' && mut.newValue === 'false') {
+    if (attributeName === 'aria-selected' && newValue === 'false') {
       return false
     }
     return true
@@ -188,13 +195,13 @@ export class MutationObservable {
     attributes: string[],
     emitter: ElementChangedEmitter
   ) {
-    const _emitAttributeMutationEvent = (attributes: AttributeMutation[]) => {
+    const _emitAttributeMutationEvent = (attributes: AttributeMutations) => {
       emitter.emit('attributeChanged', {
         element,
         attributes,
       })
     }
-    const addOnBlurListener = (attributeMutations: AttributeMutation[]) =>
+    const addOnBlurListener = (attributeMutations: AttributeMutations) =>
       this.experimentalOnChangeAdapter.onBlur(element, () =>
         _emitAttributeMutationEvent(attributeMutations)
       )
@@ -210,14 +217,14 @@ export class MutationObservable {
       ? debounceWithKey(
           emit,
           // debounce based on the attribute names, so that we can debounce all changes to a single attribute. e.g if attribute "value" changes, that gets debounced, but if another attribute changes, that gets debounced separately
-          (m) => Object.keys(m.map((m) => m.attributeName)).sort(),
-          this.settings.debounceTextInputMs
+          (m) => Object.keys(m).sort(),
+          this.settings.debounceMs
         )
       : _emitAttributeMutationEvent
 
     // any call to setAttribute triggers a mutation event
     const cb: MutationCallback = (mutationsList) => {
-      const attributeMutations = mutationsList
+      const mutations: AttributeMutations = mutationsList
         .filter((m) => m.type === 'attributes')
         .map((m) => {
           const attributeName = m.attributeName
@@ -226,10 +233,10 @@ export class MutationObservable {
             return
 
           const newValue = target.getAttribute(attributeName)
-          const v: AttributeMutation = {
+          const v = {
             attributeName,
             newValue: newValue,
-          }
+          } as const
           logger.debug('Attribute mutation', {
             newValue,
             oldValue: m.oldValue,
@@ -238,11 +245,35 @@ export class MutationObservable {
           return v
         })
         .filter(exists)
-        .filter((event) => this.shouldEmitEvent(event))
+        .filter((event) =>
+          this.shouldEmitEvent(event.attributeName, event.newValue)
+        )
+        .reduce<AttributeMutations>((acc, mut) => {
+          acc[mut.attributeName] = mut.newValue
+          return acc
+        }, {})
 
-      if (attributeMutations.length) {
-        _emitAttributeMutationEventDebounced(attributeMutations)
+      const isEmpty = Object.keys(mutations).length > 0
+      if (!isEmpty) {
+        return
       }
+
+      // only emit if there are actual change to an attribute.
+      // in mutationObserver, setAttribute('value', ''), setAttribute('value', '') will both trigger a mutation event
+      // if the value is the same as the last one emitted from a given element, we don't want to emit it again
+      const prevMutations = this.prevMutationsCache.get(element)
+      if (prevMutations) {
+        const hasActuallyChanged = !partialMatch(mutations, prevMutations)
+        if (!hasActuallyChanged) {
+          return
+        }
+      }
+      this.prevMutationsCache.set(element, {
+        ...prevMutations,
+        ...mutations,
+      })
+
+      _emitAttributeMutationEventDebounced(mutations)
     }
 
     const observer = new MutationObserver(cb)
