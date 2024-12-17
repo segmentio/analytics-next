@@ -32,12 +32,13 @@ const DEFAULT_OBSERVED_ROLES = [
   'treeitem',
 ]
 
-const partialMatch = <Obj extends Record<string, any>>(
-  a: Partial<Obj>,
-  b: Obj
+// Check if a subset object is a partial match of another object
+const isObjectMatch = <Obj extends Record<string, any>>(
+  partialObj: Partial<Obj>,
+  mainObj: Obj
 ): boolean => {
-  return Object.keys(a).every(
-    (key) => a[key as keyof Obj] === b[key as keyof Obj]
+  return Object.keys(partialObj).every(
+    (key) => partialObj[key as keyof Obj] === mainObj[key as keyof Obj]
   )
 }
 type AttributeMutations = { [attributeName: string]: string | null }
@@ -263,7 +264,7 @@ export class MutationObservable {
       // if the value is the same as the last one emitted from a given element, we don't want to emit it again
       const prevMutations = this.prevMutationsCache.get(element)
       if (prevMutations) {
-        const hasActuallyChanged = !partialMatch(mutations, prevMutations)
+        const hasActuallyChanged = !isObjectMatch(mutations, prevMutations)
         if (!hasActuallyChanged) {
           return
         }
