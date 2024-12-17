@@ -10,7 +10,11 @@ export const mockInteractionSignal: InteractionSignal = {
   type: 'interaction',
   data: {
     eventType: 'click',
-    target: { id: 'button1', className: 'btn-primary' },
+    target: {
+      id: 'button1',
+      className: 'btn-primary',
+      attributes: { id: 'button1', class: 'btn-primary' },
+    },
   },
   metadata: { timestamp: Date.now() },
 }

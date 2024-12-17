@@ -5,5 +5,6 @@ declare global {
   interface Window {
     analytics: AnalyticsBrowser
     signalsPlugin: SignalsPlugin
+    SignalsPlugin: typeof SignalsPlugin
   }
 }

@@ -1,4 +1,4 @@
-import { cleanText } from '../dom-gen'
+import { cleanText } from '../helpers'
 
 describe(cleanText, () => {
   test('should remove newline characters', () => {

@@ -6,16 +6,10 @@
       "request": "launch",
       "name": "Jest Current File",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": [
-        "--testTimeout=100000",
-        "--findRelatedTests",
-        "${relativeFile}"
-      ],
+      "args": ["--testTimeout=100000", "--findRelatedTests", "${relativeFile}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "type": "node",
@@ -30,9 +24,17 @@
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Run Jest Tests for Current Package",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": ["--testTimeout=100000"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "cwd": "${fileDirname}"
     },
     {
       "type": "node",
@@ -47,9 +49,7 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "type": "node",
@@ -64,9 +64,7 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "skipFiles": [
-        "<node_internals>/**"
-      ]
+      "skipFiles": ["<node_internals>/**"]
     },
     {
       "name": "ts-node Current File",

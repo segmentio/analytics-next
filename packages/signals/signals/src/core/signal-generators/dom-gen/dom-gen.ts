@@ -1,16 +1,17 @@
-import { URLChangeObservable } from '../../lib/detect-url-change'
-import { logger } from '../../lib/logger'
+import { URLChangeObservable } from '../../../lib/detect-url-change'
 import {
   createInteractionSignal,
   createNavigationSignal,
-} from '../../types/factories'
-import { SignalEmitter } from '../emitter'
-import { SignalGenerator } from './types'
+} from '../../../types/factories'
+import { SignalEmitter } from '../../emitter'
+import { SignalGenerator } from '../types'
+import { cleanText } from './helpers'
+import type { ParsedAttributes } from '@segment/analytics-signals-runtime'
 
 interface Label {
   textContent: string
   id: string
-  attributes: Record<string, unknown>
+  attributes: ParsedAttributes
 }
 
 const parseFormData = (data: FormData): Record<string, string> => {
@@ -26,48 +27,66 @@ const parseLabels = (
   labels: NodeListOf<HTMLLabelElement> | null | undefined
 ): Label[] => {
   if (!labels) return []
-  return [...labels]
-    .map((label) => ({
-      id: label.id,
-      attributes: parseNodeMap(label.attributes),
-      textContent: label.textContent ? cleanText(label.textContent) : undefined,
-    }))
-    .filter((el): el is Label => Boolean(el.textContent))
+  return [...labels].map(parseToLabel).filter((el): el is Label => Boolean(el))
 }
 
-const parseNodeMap = (nodeMap: NamedNodeMap): Record<string, unknown> => {
-  return Array.from(nodeMap).reduce((acc, attr) => {
+const parseToLabel = (label: HTMLElement): Label => {
+  const textContent = label.textContent ? cleanText(label.textContent) : ''
+  return {
+    id: label.id,
+    attributes: parseNodeMap(label.attributes),
+    textContent,
+  }
+}
+
+const parseNodeMap = (nodeMap: NamedNodeMap): ParsedAttributes => {
+  return Array.from(nodeMap).reduce<ParsedAttributes>((acc, attr) => {
     acc[attr.name] = attr.value
     return acc
-  }, {} as Record<string, unknown>)
-}
-
-export const cleanText = (str: string): string => {
-  return str
-    .replace(/[\r\n\t]+/g, ' ') // Replace newlines and tabs with a space
-    .replace(/\s\s+/g, ' ') // Replace multiple spaces with a single space
-    .replace(/\u00A0/g, ' ') // Replace non-breaking spaces with a regular space
-    .trim() // Trim leading and trailing spaces
+  }, {})
 }
 
 interface ParsedElementBase {
-  attributes: Record<string, unknown>
+  /**
+   * The attributes of the element -- this is a key-value object of the attributes of the element
+   */
+  attributes: ParsedAttributes
   classList: string[]
   id: string
+  /**
+   * The labels associated with this element -- either from the `labels` property or from the `aria-labelledby` attribute
+   */
   labels?: Label[]
+  /**
+   * The first label associated with this element -- either from the `labels` property or from the `aria-labelledby` attribute
+   */
   label?: Label
   name?: string
   nodeName: string
   tagName: string
   title: string
   type?: string
+
+  /**
+   * The value of the element -- for inputs, this is the value of the input, for selects, this is the value of the selected option
+   */
   value?: string
+  /**
+   * The value content of the element -- this is the value content of the element, stripped of newlines, tabs, and multiple spaces
+   */
   textContent?: string
+  /**
+   * The inner value of the element -- this is the value content of the element, stripped of newlines, tabs, and multiple spaces
+   */
   innerText?: string
+  /**
+   * The element referenced by the `aria-describedby` attribute
+   */
+  describedBy?: Label
 }
 
 interface ParsedSelectElement extends ParsedElementBase {
-  selectedOptions: { value: string; text: string }[]
+  selectedOptions: { label: string; value: string }[]
   selectedIndex: number
 }
 interface ParsedInputElement extends ParsedElementBase {
@@ -99,8 +118,26 @@ type AnyParsedElement =
   | ParsedMediaElement
   | ParsedElementBase
 
-const parseElement = (el: HTMLElement): AnyParsedElement => {
+/**
+ * Get the element referenced from an type
+ */
+const getReferencedElement = (
+  el: HTMLElement,
+  attr: string
+): HTMLElement | undefined => {
+  const value = el.getAttribute(attr)
+  if (!value) return undefined
+  return document.getElementById(value) ?? undefined
+}
+
+export const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
+  const labeledBy = getReferencedElement(el, 'aria-labelledby')
+  const describedBy = getReferencedElement(el, 'aria-describedby')
+  if (labeledBy) {
+    const label = parseToLabel(labeledBy)
+    labels.unshift(label)
+  }
   const base: ParsedElementBase = {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
@@ -116,6 +153,7 @@ const parseElement = (el: HTMLElement): AnyParsedElement => {
     value: (el as HTMLInputElement).value,
     textContent: (el.textContent && cleanText(el.textContent)) ?? undefined,
     innerText: (el.innerText && cleanText(el.innerText)) ?? undefined,
+    describedBy: (describedBy && parseToLabel(describedBy)) ?? undefined,
   }
 
   if (el instanceof HTMLSelectElement) {
@@ -123,7 +161,7 @@ const parseElement = (el: HTMLElement): AnyParsedElement => {
       ...base,
       selectedOptions: [...el.selectedOptions].map((option) => ({
         value: option.value,
-        text: option.text,
+        label: option.label,
       })),
       selectedIndex: el.selectedIndex,
     }
@@ -179,8 +217,22 @@ export class ClickSignalsGenerator implements SignalGenerator {
   }
 
   private getClosestClickableElement(el: HTMLElement): HTMLElement | null {
-    // if you click on a nested element, we want to get the closest clickable ancestor. Useful for things like buttons with nested text or images
-    return el.closest<HTMLElement>('button, a, [role="button"], [role="link"]')
+    // if you click on a nested element, we want to get the closest clickable ancestor. Useful for things like buttons with nested value or images
+    const selector = [
+      'button',
+      'a',
+      'option',
+      '[role="button"]',
+      '[role="link"]',
+      '[role="menuitem"]',
+      '[role="menuitemcheckbox"]',
+      '[role="menuitemradio"]',
+      '[role="tab"]',
+      '[role="option"]',
+      '[role="switch"]',
+      '[role="treeitem"]',
+    ].join(', ')
+    return el.closest<HTMLElement>(selector)
   }
 }
 
@@ -208,28 +260,11 @@ export class FormSubmitGenerator implements SignalGenerator {
   }
 }
 
-export class OnChangeGenerator implements SignalGenerator {
-  id = 'change'
-  register(emitter: SignalEmitter) {
-    const handleChange = (ev: Event) => {
-      const target = ev.target as HTMLElement | null
-      if (!target) return
-      if (target && target instanceof HTMLInputElement) {
-        if (target.type === 'password') {
-          logger.debug('Ignoring change event for input', target)
-          return
-        }
-      }
-      emitter.emit(
-        createInteractionSignal({
-          eventType: 'change',
-          target: parseElement(target),
-        })
-      )
-    }
-    document.addEventListener('change', handleChange, true)
-    return () => document.removeEventListener('change', handleChange)
+export const shouldIgnoreElement = (el: HTMLElement): boolean => {
+  if (el instanceof HTMLInputElement) {
+    return el.type === 'password'
   }
+  return false
 }
 
 export class OnNavigationEventGenerator implements SignalGenerator {
@@ -272,10 +307,3 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     }
   }
 }
-
-export const domGenerators = [
-  ClickSignalsGenerator,
-  FormSubmitGenerator,
-  OnChangeGenerator,
-  OnNavigationEventGenerator,
-]

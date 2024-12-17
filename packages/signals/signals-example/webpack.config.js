@@ -12,6 +12,10 @@ const bodyParser = require('body-parser')
  */
 
 module.exports = {
+  stats: 'minimal',
+  performance: {
+    hints: false,
+  },
   entry: './src/index.tsx',
   devtool: 'source-map',
   mode: 'development',

@@ -19,7 +19,7 @@ export function waitForCondition(
           resolve()
         } else if (Date.now() - startTime >= timeout) {
           clearInterval(interval)
-          reject(new Error(errorMessage))
+          reject(new Error(`${errorMessage}. Timeout: ${timeout}ms`))
         }
       } catch (error) {
         clearInterval(interval)

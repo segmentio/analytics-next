@@ -65,11 +65,12 @@ export class NetworkSignalsFilterList {
     ])
   }
 
+  isDisallowed(url: string): boolean {
+    return this.disallowed.test(url) || this.disallowedDefaults.test(url)
+  }
+
   isAllowed(url: string): boolean {
-    const disallowed =
-      this.disallowed.test(url) || this.disallowedDefaults.test(url)
-    const allowed = this.allowed.test(url)
-    return allowed && !disallowed
+    return this.allowed.test(url)
   }
 
   getRegexes() {
@@ -93,10 +94,16 @@ export class NetworkSignalsFilter {
     const { networkSignalsFilterList, networkSignalsAllowSameDomain } =
       this.settings
 
-    const passesNetworkFilter = networkSignalsFilterList.isAllowed(url)
-    const allowedBecauseSameDomain =
-      networkSignalsAllowSameDomain && isSameDomain(url)
-    const allowed = passesNetworkFilter || allowedBecauseSameDomain
+    // anything that is disallowed takes precedence over the allow list.
+    if (networkSignalsFilterList.isDisallowed(url)) {
+      return false
+    }
+
+    const allowed =
+      // allowed because it's in the allow list
+      networkSignalsFilterList.isAllowed(url) ||
+      // allowed because it's the same domain
+      (networkSignalsAllowSameDomain && isSameDomain(url))
     return allowed
   }
 }

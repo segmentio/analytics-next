@@ -1,4 +1,5 @@
 import { NetworkSignalMetadata } from '@segment/analytics-signals-runtime'
+import { createMockTarget } from '../../../test-helpers/mocks/factories'
 import * as factories from '../../../types/factories'
 import { redactJsonValues, redactSignalData } from '../redact'
 
@@ -79,11 +80,58 @@ describe(redactSignalData, () => {
   it('should redact the value in the "target" property if the type is "interaction"', () => {
     const signal = factories.createInteractionSignal({
       eventType: 'change',
-      target: { value: 'secret', formData: { password: '123' } },
+      change: { value: 'secret' },
+      listener: 'onchange',
+      target: createMockTarget({
+        value: 'secret',
+        formData: { password: '123' },
+      }),
     })
     const expected = factories.createInteractionSignal({
       eventType: 'change',
-      target: { value: 'XXX', formData: { password: 'XXX' } },
+      change: { value: 'XXX' },
+      listener: 'onchange',
+      target: createMockTarget({ value: 'XXX', formData: { password: 'XXX' } }),
+    })
+    expect(redactSignalData(signal)).toEqual(expected)
+  })
+
+  it('should redact attributes in change and in target if the listener is "mutation"', () => {
+    const signal = factories.createInteractionSignal({
+      eventType: 'change',
+      change: { 'aria-selected': 'value' },
+      listener: 'mutation',
+      target: createMockTarget({
+        attributes: { 'aria-selected': 'value', foo: 'value' },
+        textContent: 'value',
+        innerText: 'value',
+      }),
+    })
+    const expected = factories.createInteractionSignal({
+      eventType: 'change',
+      change: { 'aria-selected': 'XXX' },
+      listener: 'mutation',
+      target: createMockTarget({
+        attributes: { 'aria-selected': 'XXX', foo: 'XXX' },
+        textContent: 'XXX',
+        innerText: 'XXX',
+      }),
+    })
+    expect(redactSignalData(signal)).toEqual(expected)
+  })
+
+  it('should redact the textContent and innerText in the "target" property if the listener is "contenteditable"', () => {
+    const signal = factories.createInteractionSignal({
+      eventType: 'change',
+      listener: 'contenteditable',
+      change: { textContent: 'secret' },
+      target: createMockTarget({ textContent: 'secret', innerText: 'secret' }),
+    })
+    const expected = factories.createInteractionSignal({
+      eventType: 'change',
+      listener: 'contenteditable',
+      change: { textContent: 'XXX' },
+      target: createMockTarget({ textContent: 'XXX', innerText: 'XXX' }),
     })
     expect(redactSignalData(signal)).toEqual(expected)
   })
@@ -115,7 +163,7 @@ describe(redactSignalData, () => {
   it('should not mutate the original signal object', () => {
     const originalSignal = factories.createInteractionSignal({
       eventType: 'click',
-      target: { value: 'sensitiveData' },
+      target: createMockTarget({ value: 'sensitiveData' }),
     })
     const originalSignalCopy = JSON.parse(JSON.stringify(originalSignal))
 

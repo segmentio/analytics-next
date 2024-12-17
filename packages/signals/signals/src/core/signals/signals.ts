@@ -147,6 +147,12 @@ export class Signals implements ISignals {
   async registerGenerator(
     generators: (SignalGeneratorClass | SignalGenerator)[]
   ): Promise<void> {
-    this.cleanup.push(await registerGenerator(this.signalEmitter, generators))
+    this.cleanup.push(
+      await registerGenerator(
+        this.signalEmitter,
+        generators,
+        this.globalSettings
+      )
+    )
   }
 }
