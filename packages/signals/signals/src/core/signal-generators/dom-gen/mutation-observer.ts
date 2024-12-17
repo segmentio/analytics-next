@@ -148,7 +148,7 @@ export class MutationObservable {
   private settings: MutationObservableSettings
   // Track observed elements to avoid duplicate observers
   // WeakSet is used here to allow garbage collection of elements that are no longer in the DOM
-  private observedElements = new WeakSet()
+  private observedElements = new WeakSet<HTMLElement>()
   private prevMutationsCache = new WeakMap<HTMLElement, AttributeMutations>()
   private emitter = new ElementChangedEmitter()
   private listeners = new Set<MutationObservableSubscriber>()
@@ -296,7 +296,7 @@ export class MutationObservable {
     allElementSelectors.forEach((selector) => {
       const elements = document.querySelectorAll(selector)
       elements.forEach((element) => {
-        if (this.observedElements.has(element)) {
+        if (this.observedElements.has(element as HTMLElement)) {
           return
         }
         logger.debug('Observing element', element)
