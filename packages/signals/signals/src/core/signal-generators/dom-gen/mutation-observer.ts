@@ -261,6 +261,7 @@ export class MutationObservable {
           return
         }
       }
+
       this.prevMutationsCache.set(element, {
         ...prevMutations,
         ...mutations,
