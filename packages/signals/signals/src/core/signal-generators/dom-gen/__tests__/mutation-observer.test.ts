@@ -69,7 +69,7 @@ describe('MutationObservable', () => {
     })
   })
 
-  it('should debounce attribute changes if they occur in text inputs', async () => {
+  it('should debounce text inputs', async () => {
     mutationObservable = new MutationObservable(
       new MutationObservableSettings({
         debounceMs: 100,
@@ -89,8 +89,26 @@ describe('MutationObservable', () => {
       attributes: { value: 'hello world' },
     })
   })
+  it('should debounce tect inputs if happening in the same tick', async () => {
+    mutationObservable = new MutationObservable(
+      new MutationObservableSettings({
+        debounceMs: 100,
+      })
+    )
+    mutationObservable.subscribe(subscribeFn)
+    testInput.setAttribute('value', 'hello')
+    testInput.setAttribute('value', 'hello wor')
+    testInput.setAttribute('value', 'hello world')
+    await sleep(100)
 
-  it('should handle multiple attributes changeing', async () => {
+    expect(subscribeFn).toHaveBeenCalledTimes(1)
+    expect(subscribeFn).toHaveBeenCalledWith({
+      element: testInput,
+      attributes: { value: 'hello world' },
+    })
+  })
+
+  it('should handle multiple attributes changing', async () => {
     mutationObservable = new MutationObservable(
       new MutationObservableSettings({
         debounceMs: 100,
@@ -106,25 +124,6 @@ describe('MutationObservable', () => {
     expect(subscribeFn).toHaveBeenCalledWith({
       element: testInput,
       attributes: { value: 'hello', 'aria-foo': 'bar' },
-    })
-  })
-
-  it('should debounce if happening in the same tick', async () => {
-    mutationObservable = new MutationObservable(
-      new MutationObservableSettings({
-        debounceMs: 50,
-      })
-    )
-    mutationObservable.subscribe(subscribeFn)
-    testInput.setAttribute('value', 'hello')
-    testInput.setAttribute('value', 'hello wor')
-    testInput.setAttribute('value', 'hello world')
-    await sleep(100)
-
-    expect(subscribeFn).toHaveBeenCalledTimes(1)
-    expect(subscribeFn).toHaveBeenCalledWith({
-      element: testInput,
-      attributes: { value: 'hello world' },
     })
   })
 
