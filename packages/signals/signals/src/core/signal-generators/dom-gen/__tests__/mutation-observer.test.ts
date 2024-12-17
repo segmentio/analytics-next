@@ -92,7 +92,7 @@ describe('MutationObservable', () => {
   it('should debounce tect inputs if happening in the same tick', async () => {
     mutationObservable = new MutationObservable(
       new MutationObservableSettings({
-        debounceMs: 100,
+        debounceMs: 50,
       })
     )
     mutationObservable.subscribe(subscribeFn)
