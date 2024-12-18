@@ -23,7 +23,7 @@ export type FetchPriority = 'high' | 'low' | 'auto'
 interface DispatchConfig {
   /**
    * This is useful for ensuring that an event is sent even if the user navigates away from the page.
-   * However, it may increase the likelihood of events being lost, as there is a 64kb limit for all fetch requests with keepalive (which is why it's disabled by default).
+   * However, it may increase the likelihood of events being lost, as there is a 64kb limit for *all* fetch requests (not just ones to segment) with keepalive (which is why it's disabled by default). So, if you're sending a lot of data, this will likely cause events to be dropped.
    * @default false
    */
   keepalive?: boolean
@@ -35,9 +35,7 @@ interface DispatchConfig {
    */
   additionalHeaders?: AdditionalHeaders
   /**
-   * Priority of the request.
-   * chrome only
-   * @default 'auto'
+   * 'Fetch Priority' of the request (chrome-only).
    */
   fetchPriority?: FetchPriority
 }
