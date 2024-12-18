@@ -3,7 +3,7 @@ import type {
   UserTraits,
   CoreExtraContext,
   EventProperties,
-  Integrations,
+  IntegrationsOptions,
   Timestamp,
 } from '@segment/analytics-core'
 
@@ -29,7 +29,7 @@ export type AliasParams = {
   previousId: string
   context?: ExtraContext | undefined
   timestamp?: Timestamp | undefined
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   /**
    * Override the default messageId for the purposes of deduping events. Using a uuid library is strongly encouraged.
    * @link https://segment.com/docs/partners/faqs/#does-segment-de-dupe-messages
@@ -47,7 +47,7 @@ export type GroupParams = {
   traits?: GroupTraits | undefined
   context?: ExtraContext | undefined
   timestamp?: Timestamp | undefined
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   /**
    * Override the default messageId for the purposes of deduping events. Using a uuid library is strongly encouraged.
    * @link https://segment.com/docs/partners/faqs/#does-segment-de-dupe-messages
@@ -64,7 +64,7 @@ export type IdentifyParams = {
   traits?: UserTraits | undefined
   context?: ExtraContext | undefined
   timestamp?: Timestamp | undefined
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   /**
    * Override the default messageId for the purposes of deduping events. Using a uuid library is strongly encouraged.
    * @link https://segment.com/docs/partners/faqs/#does-segment-de-dupe-messages
@@ -81,7 +81,7 @@ export type PageParams = {
   properties?: EventProperties | undefined
   timestamp?: Timestamp | undefined
   context?: ExtraContext | undefined
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   /**
    * Override the default messageId for the purposes of deduping events. Using a uuid library is strongly encouraged.
    * @link https://segment.com/docs/partners/faqs/#does-segment-de-dupe-messages
@@ -94,7 +94,7 @@ export type TrackParams = {
   properties?: EventProperties | undefined
   context?: ExtraContext | undefined
   timestamp?: Timestamp | undefined
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   /**
    * Override the default messageId for the purposes of deduping events. Using a uuid library is strongly encouraged.
    * @link https://segment.com/docs/partners/faqs/#does-segment-de-dupe-messages
