@@ -9,7 +9,7 @@ export default function (config?: StandardDispatcherConfig): {
   function dispatch(url: string, body: object): Promise<unknown> {
     return fetch(url, {
       keepalive: config?.keepalive,
-      headers: createHeaders(config?.additionalHeaders),
+      headers: createHeaders(config?.headers),
       method: 'post',
       body: JSON.stringify(body),
       ...(config?.fetchPriority ? { priority: config?.fetchPriority } : {}),

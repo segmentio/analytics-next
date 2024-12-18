@@ -34,7 +34,7 @@ interface DispatchConfig {
    * If a function is provided, it will be called before each request.
    * @example { 'Content-Type': 'application/json' } or () => { 'Content-Type': 'application/json' }
    */
-  additionalHeaders?: AdditionalHeaders
+  headers?: AdditionalHeaders
   /**
    * 'Fetch Priority' of the request (chrome-only).
    */

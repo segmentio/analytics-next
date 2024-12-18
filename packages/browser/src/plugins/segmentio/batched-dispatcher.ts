@@ -78,7 +78,7 @@ export default function batch(
 
     return fetch(`https://${apiHost}/b`, {
       keepalive: config?.keepalive || pageUnloaded,
-      headers: createHeaders(config?.additionalHeaders),
+      headers: createHeaders(config?.headers),
       ...(config?.fetchPriority ? { priority: config?.fetchPriority } : {}),
       method: 'post',
       body: JSON.stringify({

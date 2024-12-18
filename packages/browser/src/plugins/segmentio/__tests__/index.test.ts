@@ -65,7 +65,7 @@ describe('Segment.io', () => {
     })
   })
 
-  describe('configuring additionalHeaders', () => {
+  describe('configuring headers', () => {
     it('should accept additional headers', async () => {
       const analytics = new Analytics({ writeKey: 'foo' })
 
@@ -74,7 +74,7 @@ describe('Segment.io', () => {
           apiKey: '',
           deliveryStrategy: {
             config: {
-              additionalHeaders: {
+              headers: {
                 'X-My-Header': 'foo',
               },
             },
@@ -96,7 +96,7 @@ describe('Segment.io', () => {
           apiKey: '',
           deliveryStrategy: {
             config: {
-              additionalHeaders: () => ({
+              headers: () => ({
                 'X-My-Header': 'foo',
               }),
             },
@@ -118,7 +118,7 @@ describe('Segment.io', () => {
           apiKey: '',
           deliveryStrategy: {
             config: {
-              additionalHeaders: () => ({
+              headers: () => ({
                 'Content-Type': 'bar',
               }),
             },
