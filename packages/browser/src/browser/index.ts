@@ -301,7 +301,7 @@ async function registerPlugins(
     basePlugins.push(
       await segmentio(
         analytics,
-        mergedSettings['Segment.io'] as SegmentioSettings,
+        mergedSettings['Segment.io'],
         cdnSettings.integrations
       )
     )

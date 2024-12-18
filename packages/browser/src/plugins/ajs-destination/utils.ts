@@ -1,4 +1,4 @@
-import { Integrations } from '@segment/analytics-core'
+import { IntegrationsOptions } from '@segment/analytics-core'
 import { RemoteIntegrationSettings } from '../..'
 
 export const isInstallableIntegration = (
@@ -20,7 +20,7 @@ export const isInstallableIntegration = (
 
 export const isDisabledIntegration = (
   integrationName: string,
-  globalIntegrations: Integrations
+  globalIntegrations: IntegrationsOptions
 ) => {
   const allDisableAndNotDefined =
     globalIntegrations.All === false &&

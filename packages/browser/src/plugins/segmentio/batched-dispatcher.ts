@@ -4,13 +4,7 @@ import { onPageChange } from '../../lib/on-page-change'
 import { SegmentFacade } from '../../lib/to-facade'
 import { RateLimitError } from './ratelimit-error'
 import { Context } from '../../core/context'
-
-export type BatchingDispatchConfig = {
-  size?: number
-  timeout?: number
-  maxRetries?: number
-  keepalive?: boolean
-}
+import { BatchingDispatchConfig, createHeaders } from './shared-dispatcher'
 
 const MAX_PAYLOAD_SIZE = 500
 const MAX_KEEPALIVE_SIZE = 64
@@ -84,9 +78,8 @@ export default function batch(
 
     return fetch(`https://${apiHost}/b`, {
       keepalive: config?.keepalive || pageUnloaded,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
+      headers: createHeaders(config?.headers),
+      ...(config?.fetchPriority ? { priority: config?.fetchPriority } : {}),
       method: 'post',
       body: JSON.stringify({
         writeKey,
