@@ -109,6 +109,27 @@ describe('Segment.io', () => {
       expect(params.headers['X-My-Header']).toBe('foo')
       expect(params.headers['Content-Type']).toBe('text/plain')
     })
+
+    it('should allow content type to be overridden', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              additionalHeaders: () => ({
+                'Content-Type': 'bar',
+              }),
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.headers['Content-Type']).toBe('bar')
+    })
   })
 
   describe('configuring fetch priority', () => {
