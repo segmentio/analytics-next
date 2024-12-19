@@ -1,4 +1,4 @@
-import { JSONObject, Options } from '../core/events/interfaces'
+import { Options } from '../core/events/interfaces'
 import { CDNSettings } from '../browser'
 
 /**
@@ -13,7 +13,7 @@ import { CDNSettings } from '../browser'
 export function mergedOptions(
   cdnSettings: CDNSettings,
   options: Options
-): Record<string, JSONObject> {
+): Record<string, any> {
   const optionOverrides = Object.entries(options.integrations ?? {}).reduce(
     (overrides, [integration, options]) => {
       if (typeof options === 'object') {
@@ -28,7 +28,7 @@ export function mergedOptions(
         [integration]: {},
       }
     },
-    {} as Record<string, JSONObject>
+    {} as Record<string, any>
   )
 
   return Object.entries(cdnSettings.integrations).reduce(
@@ -41,6 +41,6 @@ export function mergedOptions(
         },
       }
     },
-    {} as Record<string, JSONObject>
+    {} as Record<string, any>
   )
 }
