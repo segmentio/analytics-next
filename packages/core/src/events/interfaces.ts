@@ -23,7 +23,7 @@ export type EventProperties = Record<string, any>
 
 export type IntegrationsOptions = {
   All?: boolean | undefined
-  [integration: string]: boolean | Record<string, any> | undefined
+  [integrationName: string]: boolean | Record<string, unknown> | undefined
 }
 
 export interface CoreOptions {
