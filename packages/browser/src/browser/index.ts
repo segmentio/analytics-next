@@ -31,6 +31,8 @@ import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
+import { loadCDNSettings } from '../core/http-client/api-clients'
+import { FetchHTTPClient } from '../core/http-client'
 
 export interface RemoteIntegrationSettings {
   /* @deprecated - This does not indicate browser types anymore */
@@ -151,25 +153,6 @@ export interface AnalyticsBrowserSettings {
    * npm-installed classic destinations
    */
   classicIntegrations?: ClassicIntegrationSource[]
-}
-
-export function loadCDNSettings(
-  writeKey: string,
-  baseUrl: string
-): Promise<CDNSettings> {
-  return fetch(`${baseUrl}/v1/projects/${writeKey}/settings`)
-    .then((res) => {
-      if (!res.ok) {
-        return res.text().then((errorResponseMessage) => {
-          throw new Error(errorResponseMessage)
-        })
-      }
-      return res.json()
-    })
-    .catch((err) => {
-      console.error(err.message)
-      throw err
-    })
 }
 
 function hasLegacyDestinations(settings: CDNSettings): boolean {
@@ -350,6 +333,8 @@ async function loadAnalytics(
     return [new NullAnalytics(), Context.system()]
   }
 
+  const httpClient = new FetchHTTPClient(options.httpClient)
+
   if (options.globalAnalyticsKey)
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
@@ -362,7 +347,11 @@ async function loadAnalytics(
 
   const cdnURL = settings.cdnURL ?? getCDN()
   let cdnSettings =
-    settings.cdnSettings ?? (await loadCDNSettings(settings.writeKey, cdnURL))
+    settings.cdnSettings ??
+    (await loadCDNSettings(httpClient, {
+      writeKey: settings.writeKey,
+      baseUrl: cdnURL,
+    }))
 
   if (options.updateCDNSettings) {
     cdnSettings = options.updateCDNSettings(cdnSettings)

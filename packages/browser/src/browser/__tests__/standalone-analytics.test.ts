@@ -1,6 +1,6 @@
 import jsdom, { JSDOM } from 'jsdom'
 import { InitOptions, getGlobalAnalytics } from '../../'
-import { AnalyticsBrowser, loadCDNSettings } from '../../browser'
+import { AnalyticsBrowser } from '../../browser'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import { install } from '../standalone-analytics'
 import unfetch from 'unfetch'

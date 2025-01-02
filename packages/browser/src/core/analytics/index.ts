@@ -55,6 +55,7 @@ import {
   isSegmentPlugin,
   SegmentIOPluginMetadata,
 } from '../../plugins/segmentio'
+import { HTTPClient, HTTPFetchFn } from '../http-client'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -178,6 +179,11 @@ export interface InitOptions {
    * ```
    */
   disable?: boolean | ((cdnSettings: CDNSettings) => boolean | Promise<boolean>)
+
+  /**
+   * Override the fetch function used by the analytics instance.
+   */
+  httpClient?: HTTPFetchFn
 }
 
 /* analytics-classic stubs */
