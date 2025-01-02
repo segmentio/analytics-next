@@ -75,22 +75,20 @@ Here is an example of using analytics.js within a handler:
 ```ts
 const { Analytics } = require('@segment/analytics-node');
 
-// since analytics has the potential to be stateful if there are any plugins added,
-// to be on the safe side, we should instantiate a new instance of analytics on every request (the cost of instantiation is low).
-const analytics = () => new Analytics({
-      flushAt: 1,
+ // Preferable to create a new analytics instance per-invocation. Otherwise, we may get a warning about overlapping flush calls. Also, custom plugins have the potential to be stateful, so we prevent those kind of race conditions.
+const createAnalytics = () => new Analytics({
       writeKey: '<MY_WRITE_KEY>',
-    })
-    .on('error', console.error);
+    }).on('error', console.error);
 
 module.exports.handler = async (event) => {
-  ...
-  // we need to await before returning, otherwise the lambda will exit before sending the request.
-  await new Promise((resolve) =>
-    analytics().track({ ... }, resolve)
-   )
+  const analytics = createAnalytics()
 
-  ...
+  analytics.identify({ ... })
+  analytics.track({ ... })
+
+  // ensure analytics events get sent before program exits
+  await analytics.flush()
+
   return {
     statusCode: 200,
   };
@@ -99,31 +97,41 @@ module.exports.handler = async (event) => {
 ```
 
 ### Usage in Vercel Edge Functions
+
 ```ts
 import { Analytics } from '@segment/analytics-node';
 import { NextRequest, NextResponse } from 'next/server';
 
-export const analytics = new Analytics({
+const createAnalytics = () => new Analytics({
   writeKey: '<MY_WRITE_KEY>',
-  flushAt: 1,
-})
-  .on('error', console.error)
+}).on('error', console.error)
 
 export const config = {
   runtime: 'edge',
 };
 
 export default async (req: NextRequest) => {
-  await new Promise((resolve) =>
-    analytics.track({ ... }, resolve)
-  );
+  const analytics = createAnalytics()
+
+  analytics.identify({ ... })
+  analytics.track({ ... })
+
+  // ensure analytics events get sent before program exits
+  await analytics.flush()
+
   return NextResponse.json({ ... })
 };
 ```
 
 ### Usage in Cloudflare Workers
+
 ```ts
 import { Analytics, Context } from '@segment/analytics-node';
+
+
+const createAnalytics = () => new Analytics({
+  writeKey: '<MY_WRITE_KEY>',
+}).on('error', console.error);
 
 export default {
   async fetch(
@@ -131,16 +139,14 @@ export default {
     env: Env,
     ctx: ExecutionContext
   ): Promise<Response> {
-    const analytics = new Analytics({
-      flushAt: 1,
-      writeKey: '<MY_WRITE_KEY>',
-    }).on('error', console.error);
+    const analytics = createAnalytics()
 
-    await new Promise((resolve, reject) =>
-      analytics.track({ ... }, resolve)
-    );
+    analytics.identify({ ... })
+    analytics.track({ ... })
 
-    ...
+    // ensure analytics events get sent before program exits
+    await analytics.flush()
+
     return new Response(...)
   },
 };
@@ -167,10 +173,7 @@ const settings: OAuthSettings = {
 const analytics = new Analytics({
   writeKey: '<MY_WRITE_KEY>',
   oauthSettings: settings,
-})
-
-analytics.on('error', (err) => { console.error(err) })
+}).on('error', console.error)
 
 analytics.track({ userId: 'foo', event: 'bar' })
-
 ```
