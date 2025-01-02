@@ -18,7 +18,7 @@ import { Emitter } from '@segment/analytics-generic-utils'
 import {
   Callback,
   EventFactory,
-  Integrations,
+  IntegrationsOptions,
   Plan,
   EventProperties,
   SegmentEvent,
@@ -135,7 +135,7 @@ export interface InitOptions {
   storage?: StorageSettings
   user?: UserOptions
   group?: UserOptions
-  integrations?: Integrations
+  integrations?: IntegrationsOptions
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean
@@ -197,7 +197,7 @@ export class Analytics
   private _universalStorage: UniversalStorage
 
   initialized = false
-  integrations: Integrations
+  integrations: IntegrationsOptions
   options: InitOptions
   queue: EventQueue
 

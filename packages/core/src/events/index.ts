@@ -2,7 +2,7 @@ export * from './interfaces'
 import { dset } from 'dset'
 import { ID } from '../user'
 import {
-  Integrations,
+  IntegrationsOptions,
   EventProperties,
   CoreSegmentEvent,
   CoreOptions,
@@ -67,7 +67,7 @@ export abstract class CoreEventFactory {
     event: string,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ) {
     this.settings.onEventMethodCall({ type: 'track', options })
     return this.normalize({
@@ -85,7 +85,7 @@ export abstract class CoreEventFactory {
     page: string | null,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'page', options })
     const event: CoreSegmentEvent = {
@@ -116,7 +116,7 @@ export abstract class CoreEventFactory {
     screen: string | null,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'screen', options })
     const event: CoreSegmentEvent = {
@@ -144,7 +144,7 @@ export abstract class CoreEventFactory {
     userId: ID,
     traits?: UserTraits,
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'identify', options })
     return this.normalize({
@@ -161,7 +161,7 @@ export abstract class CoreEventFactory {
     groupId: ID,
     traits?: GroupTraits,
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'group', options })
     return this.normalize({
@@ -178,7 +178,7 @@ export abstract class CoreEventFactory {
     to: string,
     from: string | null, // TODO: can we make this undefined?
     options?: CoreOptions,
-    globalIntegrations?: Integrations
+    globalIntegrations?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'alias', options })
     const base: CoreSegmentEvent = {
