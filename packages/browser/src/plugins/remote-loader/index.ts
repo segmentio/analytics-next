@@ -1,4 +1,4 @@
-import type { Integrations } from '../../core/events/interfaces'
+import type { IntegrationsOptions } from '../../core/events/interfaces'
 import { CDNSettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin, InternalPluginWithAddMiddleware } from '../../core/plugin'
@@ -198,7 +198,7 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 }
 
 function isPluginDisabled(
-  userIntegrations: Integrations,
+  userIntegrations: IntegrationsOptions,
   remotePlugin: RemotePlugin
 ) {
   const creationNameEnabled = userIntegrations[remotePlugin.creationName]
@@ -260,7 +260,7 @@ async function loadPluginFactory(
 
 export async function remoteLoader(
   settings: CDNSettings,
-  userIntegrations: Integrations,
+  userIntegrations: IntegrationsOptions,
   mergedIntegrations: Record<string, JSONObject>,
   options?: InitOptions,
   routingMiddleware?: DestinationMiddlewareFunction,
@@ -281,9 +281,10 @@ export async function remoteLoader(
           ) || (await loadPluginFactory(remotePlugin, options?.obfuscate))
 
         if (pluginFactory) {
+          const intg = mergedIntegrations[remotePlugin.name]
           const plugin = await pluginFactory({
             ...remotePlugin.settings,
-            ...mergedIntegrations[remotePlugin.name],
+            ...intg,
           })
           const plugins = Array.isArray(plugin) ? plugin : [plugin]
 

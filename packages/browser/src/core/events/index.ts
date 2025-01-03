@@ -2,7 +2,7 @@ import { v4 as uuid } from '@lukeed/uuid'
 import { ID, User } from '../user'
 import {
   Options,
-  Integrations,
+  IntegrationsOptions,
   EventProperties,
   Traits,
   SegmentEvent,
@@ -53,7 +53,7 @@ export class EventFactory extends CoreEventFactory {
     event: string,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.track(event, properties, options, globalIntegrations)
@@ -66,7 +66,7 @@ export class EventFactory extends CoreEventFactory {
     page: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.page(
@@ -85,7 +85,7 @@ export class EventFactory extends CoreEventFactory {
     screen: string | null,
     properties?: EventProperties,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.screen(
@@ -103,7 +103,7 @@ export class EventFactory extends CoreEventFactory {
     userId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.identify(userId, traits, options, globalIntegrations)
@@ -115,7 +115,7 @@ export class EventFactory extends CoreEventFactory {
     groupId: ID,
     traits?: Traits,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.group(groupId, traits, options, globalIntegrations)
@@ -127,7 +127,7 @@ export class EventFactory extends CoreEventFactory {
     to: string,
     from: string | null,
     options?: Options,
-    globalIntegrations?: Integrations,
+    globalIntegrations?: IntegrationsOptions,
     pageCtx?: PageContext
   ): SegmentEvent {
     const ev = super.alias(to, from, options, globalIntegrations)
