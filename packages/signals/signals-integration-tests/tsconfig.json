@@ -2,6 +2,7 @@
   "extends": "../../../tsconfig.json",
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
+    "jsx": "react",
     "module": "esnext",
     "target": "ES2022",
     "moduleResolution": "node",

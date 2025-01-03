@@ -7,27 +7,51 @@ export interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
   data: Data
   metadata?: Record<string, any>
 }
-
 export type InteractionData = ClickData | SubmitData | ChangeData
 
-interface SerializedTarget {
+export type ParsedAttributes = { [attributeName: string]: string | null }
+
+export interface TargetedHTMLElement {
+  id: string
+  attributes: ParsedAttributes
   [key: string]: any
 }
 
 type ClickData = {
   eventType: 'click'
-  target: SerializedTarget
+  target: TargetedHTMLElement
 }
 
 type SubmitData = {
   eventType: 'submit'
-  submitter?: SerializedTarget
-  target: SerializedTarget
+  submitter?: TargetedHTMLElement
+  target: TargetedHTMLElement
 }
 
-type ChangeData = {
+export type ChangeData = {
   eventType: 'change'
-  [key: string]: unknown
+  /**
+   * The target element that changed.
+   */
+  target: TargetedHTMLElement
+  /**
+   * The name/type of "listener" that triggered the change.
+   * Elements can change due to a variety of reasons, such as a mutation, a change event, or a contenteditable change
+   */
+  listener: 'contenteditable' | 'onchange' | 'mutation'
+  /**
+   * The change that occurred -- this is a key-value object of the change that occurred
+   * For mutation listeners, this is the attributes that changed
+   * For contenteditable listeners, this is the text that changed
+   * @example
+   * ```ts
+   * { checked: true } // onchange
+   * { value: 'new value' } // onchange / mutation
+   * {'aria-selected': 'true' } // mutation
+   * { textContent: 'Sentence1\nSentence2\n' } // contenteditable
+   * ```
+   */
+  change: JSONValue
 }
 
 export type InteractionSignal = RawSignal<'interaction', InteractionData>

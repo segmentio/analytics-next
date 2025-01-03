@@ -6,10 +6,10 @@
     ".": "yarn run -T turbo run --filter=@playground/next-playground...",
     "concurrently": "yarn run -T concurrently",
     "dev": "yarn partytown && yarn concurrently 'yarn run -T watch --filter=next-playground' 'sleep 10 && next dev'",
-    "build": "yarn partytown && next build",
+    "build-playground": "yarn partytown && next build",
     "partytown": "partytown copylib public/~partytown",
     "start": "next start",
-    "lint": "next lint"
+    "lint-playground": "next lint"
   },
   "dependencies": {
     "@builder.io/partytown": "^0.7.4",

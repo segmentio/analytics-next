@@ -16,7 +16,7 @@ const isWatch = process.env.WATCH === 'true'
  */
 module.exports = {
   devtool: 'source-map',
-  stats: isWatch ? 'errors-warnings' : 'normal',
+  stats: isWatch ? 'errors-warnings' : 'minimal',
   mode: isProd ? 'production' : 'development',
   target: ['web', 'es5'], // target es5 for ie11 support (generates module boilerplate in es5)
   module: {

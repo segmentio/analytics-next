@@ -3,8 +3,11 @@ import globby from 'globby'
 import type { Configuration as WebpackConfiguration } from 'webpack'
 
 // This config is for bundling fixtures in order to serve the pages that webdriver.io will use in its tests.
-const files = globby.sync('src/tests/*/signals-bundle.ts', { cwd: __dirname })
+const files = globby.sync('src/tests/*/index.bundle.{ts,tsx}', {
+  cwd: __dirname,
+})
 
+// e.g if file is src/tests/signals-vanilla/index.bundle.ts, then entry is { signals-vanilla: src/tests/signals-vanilla/index.bundle.ts }
 const entries = files.reduce((acc, file) => {
   const [dirName] = file.split('/').slice(-2)
   const base = path.basename(dirName)
@@ -15,7 +18,11 @@ const entries = files.reduce((acc, file) => {
 }, {})
 
 const config: WebpackConfiguration = {
-  mode: 'development',
+  stats: 'minimal',
+  performance: {
+    hints: false,
+  },
+  mode: 'production',
   devtool: 'source-map',
   entry: entries,
   output: {
@@ -24,25 +31,22 @@ const config: WebpackConfiguration = {
     chunkFilename: '[name].chunk.js',
     clean: true,
   },
-  target: ['web', 'es5'],
+  target: ['web'],
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: [
-          {
-            loader: 'ts-loader',
-            options: {
-              configFile: 'tsconfig.json',
-              transpileOnly: true,
-            },
-          },
-        ],
+        test: /\.(ts|tsx)$/,
+        use: 'babel-loader',
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
   resolve: {
-    extensions: ['.ts', '.js'],
+    extensions: ['.ts', '.js', '.tsx'],
   },
 }
 

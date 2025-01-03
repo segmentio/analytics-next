@@ -1,7 +1,16 @@
 import { sleep } from '@segment/analytics-core'
+import { createMockTarget } from '../../../test-helpers/mocks/factories'
 import { range } from '../../../test-helpers/range'
 import { createInteractionSignal } from '../../../types/factories'
 import { getSignalBuffer, SignalBuffer } from '../index'
+
+const createMockSignal = () =>
+  createInteractionSignal({
+    eventType: 'submit',
+    target: createMockTarget({
+      id: Math.random().toString(),
+    }),
+  })
 
 describe(getSignalBuffer, () => {
   let buffer: SignalBuffer
@@ -19,7 +28,7 @@ describe(getSignalBuffer, () => {
     it('should add and clear', async () => {
       const mockSignal = createInteractionSignal({
         eventType: 'submit',
-        target: {},
+        target: createMockTarget({}),
       })
       await buffer.add(mockSignal)
       await expect(buffer.getAll()).resolves.toEqual([mockSignal])
@@ -28,13 +37,7 @@ describe(getSignalBuffer, () => {
     })
 
     it('should delete older signals when maxBufferSize is exceeded', async () => {
-      const signals = range(15).map((_, idx) =>
-        createInteractionSignal({
-          idx: idx,
-          eventType: 'change',
-          target: {},
-        })
-      )
+      const signals = range(15).map(() => createMockSignal())
 
       for (const signal of signals) {
         await buffer.add(signal)
@@ -46,13 +49,7 @@ describe(getSignalBuffer, () => {
     })
 
     it('should delete older signals on initialize if current number exceeds maxBufferSize', async () => {
-      const signals = range(15).map((_, idx) =>
-        createInteractionSignal({
-          idx: idx,
-          eventType: 'change',
-          target: {},
-        })
-      )
+      const signals = range(15).map((_) => createMockSignal())
 
       for (const signal of signals) {
         await buffer.add(signal)
@@ -69,10 +66,7 @@ describe(getSignalBuffer, () => {
     })
 
     it('should clear signal buffer if there is a new session according to session storage', async () => {
-      const mockSignal = createInteractionSignal({
-        eventType: 'submit',
-        target: {},
-      })
+      const mockSignal = createMockSignal()
       await buffer.add(mockSignal)
       await expect(buffer.getAll()).resolves.toEqual([mockSignal])
 
@@ -92,10 +86,7 @@ describe(getSignalBuffer, () => {
     })
 
     it('should add and clear', async () => {
-      const mockSignal = createInteractionSignal({
-        eventType: 'submit',
-        target: {},
-      })
+      const mockSignal = createMockSignal()
       await buffer.add(mockSignal)
       await expect(buffer.getAll()).resolves.toEqual([mockSignal])
       await buffer.clear()
@@ -103,13 +94,7 @@ describe(getSignalBuffer, () => {
     })
 
     it('should delete older signals when maxBufferSize is exceeded', async () => {
-      const signals = range(15).map((_, idx) =>
-        createInteractionSignal({
-          idx: idx,
-          eventType: 'change',
-          target: {},
-        })
-      )
+      const signals = range(15).map(() => createMockSignal())
 
       for (const signal of signals) {
         await buffer.add(signal)

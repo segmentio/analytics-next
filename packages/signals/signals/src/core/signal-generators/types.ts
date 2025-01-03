@@ -1,4 +1,5 @@
 import type { SignalEmitter } from '../emitter'
+import { SignalGlobalSettings } from '../signals'
 
 export interface SignalGenerator {
   /**
@@ -15,5 +16,5 @@ export interface SignalGenerator {
 
 export interface SignalGeneratorClass {
   id?: string
-  new (): SignalGenerator
+  new (settings: SignalGlobalSettings): SignalGenerator
 }

@@ -16,7 +16,12 @@ describe(WebSignalsRuntime, () => {
     signal2 = mockInteractionSignal
     signal3 = {
       ...mockInteractionSignal,
-      data: { eventType: 'change', target: {} },
+      data: {
+        eventType: 'change',
+        target: {} as any,
+        change: {},
+        listener: 'onchange',
+      },
     }
     mockSignals = [signal1, signal2, signal3]
     signalsRuntime = new WebSignalsRuntime(mockSignals)
