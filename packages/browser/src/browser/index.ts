@@ -353,7 +353,7 @@ async function registerPlugins(
     })
   }
 
-  // register any user-defined source middleware added via analytics.addSourceMiddleware()
+  // register any user-defined plugins added via analytics.addSourceMiddleware()
   await flushAddSourceMiddleware(analytics, preInitBuffer)
 
   return ctx
