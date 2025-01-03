@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-signals",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "main": "./dist/cjs/index.js",
   "repository": {
     "directory": "packages/signals/signals",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@segment/analytics-generic-utils": "1.2.0",
-    "@segment/analytics-signals-runtime": "1.1.1",
+    "@segment/analytics-signals-runtime": "1.2.0",
     "idb": "^8.0.0",
     "tslib": "^2.4.1"
   },
