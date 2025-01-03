@@ -378,7 +378,7 @@ async function loadAnalytics(
     preInitBuffer.add(new PreInitMethodCall('page', []))
   }
 
-  // also, read the query string before we start loading the settings in case the URL changes
+  // reading the query string as early as possible in case the URL changes
   const queryString = getQueryString()
 
   const cdnURL = settings.cdnURL ?? getCDN()
