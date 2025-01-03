@@ -216,7 +216,6 @@ async function flushFinalBuffer(
 }
 
 const getQueryString = (): string => {
-  // this is legacy code, I've just moved this into a function.
   const hash = window.location.hash ?? ''
   const search = window.location.search ?? ''
   const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
