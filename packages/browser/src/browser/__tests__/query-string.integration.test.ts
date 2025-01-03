@@ -1,6 +1,5 @@
 import { JSDOM } from 'jsdom'
 import { Analytics } from '../../core/analytics'
-// @ts-ignore loadCDNSettings mocked dependency is accused as unused
 import { AnalyticsBrowser } from '..'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { TEST_WRITEKEY } from '../../test-helpers/test-writekeys'
@@ -26,9 +25,6 @@ describe('queryString', () => {
   let jsd: JSDOM
 
   beforeEach(async () => {
-    jest.restoreAllMocks()
-    jest.resetAllMocks()
-
     const html = `
     <!DOCTYPE html>
       <head>
