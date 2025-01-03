@@ -216,7 +216,7 @@ async function flushFinalBuffer(
 }
 
 const getQueryString = (): string => {
-  // this is legacy code, I've just moved this into a function
+  // this is legacy code, I've just moved this into a function.
   const hash = window.location.hash ?? ''
   const search = window.location.search ?? ''
   const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
@@ -228,7 +228,6 @@ const flushQueryString = async (
   queryString: string
 ): Promise<void> => {
   if (queryString.includes('ajs_')) {
-    // not exactly sure why this async is in here or why we would need to await it, but it was legacy
     await analytics.queryString(queryString).catch(console.error)
   }
 }
