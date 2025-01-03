@@ -44,7 +44,7 @@
     },
     "lint": {
       "dependsOn": ["build"],
-      "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx", "**/*.js"],
+      "inputs": ["**/tsconfig*.json", "**/*.ts", "**/*.tsx"],
       "outputs": []
     },
     "test:cloudflare-workers": {
