@@ -216,6 +216,24 @@ async function flushFinalBuffer(
   flushAnalyticsCallsInNewTask(analytics, buffer)
 }
 
+const getQueryString = (): string => {
+  // this is legacy code, I've just moved this into a function
+  const hash = window.location.hash ?? ''
+  const search = window.location.search ?? ''
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+  return term
+}
+
+const flushQueryString = async (
+  analytics: Analytics,
+  queryString: string
+): Promise<void> => {
+  if (queryString.includes('ajs_')) {
+    // not exactly sure why this async is in here or why we would need to await it, but it was legacy
+    await analytics.queryString(queryString).catch(console.error)
+  }
+}
+
 async function registerPlugins(
   writeKey: string,
   cdnSettings: CDNSettings,
@@ -360,6 +378,9 @@ async function loadAnalytics(
     preInitBuffer.add(new PreInitMethodCall('page', []))
   }
 
+  // also, read the query string before we start loading the settings in case the URL changes
+  const queryString = getQueryString()
+
   const cdnURL = settings.cdnURL ?? getCDN()
   let cdnSettings =
     settings.cdnSettings ?? (await loadCDNSettings(settings.writeKey, cdnURL))
@@ -412,19 +433,13 @@ async function loadAnalytics(
     preInitBuffer
   )
 
-  const search = window.location.search ?? ''
-  const hash = window.location.hash ?? ''
-
-  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-  if (term.includes('ajs_')) {
-    await analytics.queryString(term).catch(console.error)
-  }
-
   analytics.initialized = true
   analytics.emit('initialize', settings, options)
 
   await flushFinalBuffer(analytics, preInitBuffer)
+
+  // not sure why we need to await this, but it was legacy -- can probably be removed
+  await flushQueryString(analytics, queryString)
 
   return [analytics, ctx]
 }
