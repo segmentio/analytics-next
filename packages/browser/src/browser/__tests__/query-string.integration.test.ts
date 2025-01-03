@@ -4,6 +4,21 @@ import { Analytics } from '../../core/analytics'
 import { AnalyticsBrowser } from '..'
 import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { TEST_WRITEKEY } from '../../test-helpers/test-writekeys'
+import { createMockFetchImplementation } from '../../test-helpers/fixtures/create-fetch-method'
+import { parseFetchCall } from '../../test-helpers/fetch-parse'
+import { cdnSettingsKitchenSink } from '../../test-helpers/fixtures/cdn-settings'
+
+const fetchCalls: ReturnType<typeof parseFetchCall>[] = []
+jest.mock('unfetch', () => {
+  return {
+    __esModule: true,
+    default: (url: RequestInfo, body?: RequestInit) => {
+      const call = parseFetchCall([url, body])
+      fetchCalls.push(call)
+      return createMockFetchImplementation(cdnSettingsKitchenSink)(url, body)
+    },
+  }
+})
 
 const writeKey = TEST_WRITEKEY
 
@@ -56,17 +71,22 @@ describe('queryString', () => {
 
   it('querystring events have middleware applied like any other event', async () => {
     jsd.reconfigure({
-      url: 'https://localhost/?ajs_aid=123',
+      url: 'https://localhost/?ajs_event=Clicked',
     })
 
     const analytics = new AnalyticsBrowser()
     void analytics.addSourceMiddleware(({ next, payload }) => {
-      payload.obj.context!.page!.url = 'http://foo.com'
+      payload.obj.event = payload.obj.event + ' Middleware Applied'
       return next(payload)
     })
     await analytics.load({ writeKey })
-    const pageContext = await analytics.page()
-    expect(pageContext.event.context!.page!.url).toBe('http://foo.com')
+    const trackCalls = fetchCalls.filter(
+      (call) => call.url === 'https://api.segment.io/v1/t'
+    )
+    expect(trackCalls.length).toBe(1)
+    expect(trackCalls[0].body.event).toMatchInlineSnapshot(
+      `"Clicked Middleware Applied"`
+    )
   })
 
   it('applies query string logic if window.location.search is present', async () => {
