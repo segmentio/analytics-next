@@ -208,11 +208,10 @@ function flushPreBuffer(
  */
 async function flushFinalBuffer(
   analytics: Analytics,
+  queryString: string,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  // Call popSnippetWindowBuffer before each flush task since there may be
-  // analytics calls during async function calls.
-  await flushAddSourceMiddleware(analytics, buffer)
+  await flushQueryString(analytics, queryString)
   flushAnalyticsCallsInNewTask(analytics, buffer)
 }
 
@@ -355,6 +354,9 @@ async function registerPlugins(
     })
   }
 
+  // register any source middleware that was added before initialization. Could probably be added to the buffer, but it's a bit of a special case.
+  await flushAddSourceMiddleware(analytics, preInitBuffer)
+
   return ctx
 }
 
@@ -435,11 +437,7 @@ async function loadAnalytics(
 
   analytics.initialized = true
   analytics.emit('initialize', settings, options)
-
-  await flushFinalBuffer(analytics, preInitBuffer)
-
-  // not sure why we need to await this, but it was legacy -- can probably be removed
-  await flushQueryString(analytics, queryString)
+  await flushFinalBuffer(analytics, queryString, preInitBuffer)
 
   return [analytics, ctx]
 }
