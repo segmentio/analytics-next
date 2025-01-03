@@ -353,7 +353,7 @@ async function registerPlugins(
     })
   }
 
-  // register any source middleware that was added before initialization. Could probably be added to the buffer, but it's a bit of a special case.
+  // register any user-defined source middleware added via analytics.addSourceMiddleware()
   await flushAddSourceMiddleware(analytics, preInitBuffer)
 
   return ctx
