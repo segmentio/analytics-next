@@ -1,5 +1,17 @@
 # @segment/analytics-signals
 
+## 1.9.0
+
+### Minor Changes
+
+- [#1202](https://github.com/segmentio/analytics-next/pull/1202) [`00a736f3`](https://github.com/segmentio/analytics-next/commit/00a736f31326328e91c9cae0b244b9db9b0791fc) Thanks [@silesky](https://github.com/silesky)! - - Add support for interaction signals for custom components and elements with contenteditable property
+  - Allow custom disallow list to override network signals, even if same domain.
+
+### Patch Changes
+
+- Updated dependencies [[`00a736f3`](https://github.com/segmentio/analytics-next/commit/00a736f31326328e91c9cae0b244b9db9b0791fc)]:
+  - @segment/analytics-signals-runtime@1.2.0
+
 ## 1.8.0
 
 ### Minor Changes
