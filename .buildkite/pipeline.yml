@@ -69,6 +69,8 @@ steps:
     key: browser-integ
     agents:
       queue: v1
+    env:
+      COVERAGE: false
     commands:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
@@ -161,6 +163,8 @@ steps:
     key: destinations
     agents:
       queue: v1
+    env:
+      COVERAGE: false
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
