@@ -25,12 +25,14 @@ const createJestTSConfig = (
     ...(process.env.COVERAGE === 'true'
       ? {
           collectCoverage: true,
-          coverageReporters: ['json'],
+          coverageReporters: ['json', 'text'],
           collectCoverageFrom: [
             'src/**/*.{js,jsx,ts,tsx}',
             '!src/**/*.test.{js,jsx,ts,tsx}',
-            // Exclude test files "!src/**/index.{js,ts}",
-            // Exclude index files
+            '!src/**/__tests__/**',
+            '!**/test*/**',
+            '!**/e2e-tests/**',
+            '!**/qa/**',
           ],
           coverageDirectory: '<rootDir>/coverage',
         }

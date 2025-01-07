@@ -1,6 +1,7 @@
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
+  COVERAGE: true
 steps:
   - label: Log Environment
     agents:
@@ -32,6 +33,9 @@ steps:
     key: browser-lint-test
     agents:
       queue: v1
+    env:
+      SEGMENT_CODECOV_FLAGS: 'browser'
+      SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -48,9 +52,7 @@ steps:
     agents:
       queue: v1
     env:
-      SEGMENT_CODECOV_FLAGS: 'browser'
-      SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
-      COVERAGE: true
+      COVERAGE: false
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -70,6 +72,8 @@ steps:
     key: browser-integ
     agents:
       queue: v1
+    env:
+      COVERAGE: false
     commands:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
@@ -89,7 +93,6 @@ steps:
     env:
       SEGMENT_CODECOV_FLAGS: 'core'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/core/coverage'
-      COVERAGE: true
     agents:
       queue: v1
     commands:
@@ -163,6 +166,8 @@ steps:
     key: destinations
     agents:
       queue: v1
+    env:
+      COVERAGE: false
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
