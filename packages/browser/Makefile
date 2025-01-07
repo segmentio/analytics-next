@@ -40,15 +40,15 @@ test-coverage: node_modules ## Runs unit tests with coverage
 .PHONY: test-coverage
 
 test-qa: build-browser ## Runs all QA tests in a single command
-	$(yarn_run) test --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	COVERAGE=false $(yarn_run) test --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-qa-destinations: build-browser ## Runs Destination QA tests. options. DESTINATION=amplitude DEBUG=true
-	$(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
+	COVERAGE=false $(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-coverage
 
 test-integration: build ## Runs all integration tests in a single command
-	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
+	COVERAGE=false $(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-coverage
 
 test-perf: build ## Runs all integration tests in a single command
