@@ -30,8 +30,9 @@ const createJestTSConfig = (
             'src/**/*.{js,jsx,ts,tsx}',
             '!src/**/*.test.{js,jsx,ts,tsx}',
             '!src/**/__tests__/**',
-            '!src/**/test*/**',
+            '!**/test*/**',
             '!**/e2e-tests/**',
+            '!**/qa/**',
           ],
           coverageDirectory: '<rootDir>/coverage',
         }
