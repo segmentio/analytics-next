@@ -13,10 +13,6 @@ node_modules:
 	yarn install --immutable
 	@touch $@
 
-build-browser: build # build dependencies
-	$(yarn_run) umd --no-stats
-.PHONY: build-browser
-
 build: ## Builds libraries in prod mode, and all dependencies
 	yarn run -T browser . build
 .PHONY: build
@@ -25,21 +21,15 @@ clean: ## Clean the build directory
 	rm -rf dist generated
 .PHONY: clean
 
-## Test Commands
-
-tdd: node_modules ## Runs unit tests in watch mode
-	$(yarn_run) test --watch
-.PHONY: tdd
-
 test-unit: node_modules ## Runs unit tests
 	$(yarn_run) test
 .PHONY: test-unit
 
-test-qa: build-browser 
+test-qa: build 
 	COVERAGE=false $(yarn_run) test --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-qa
 
-test-qa-destinations: build-browser 
+test-qa-destinations: build 
 	COVERAGE=false $(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-
 
