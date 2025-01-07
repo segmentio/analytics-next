@@ -40,7 +40,13 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
       - yarn install --immutable
-      - yarn run -T browser exec make ci
+      - echo "--- Build bundles"
+      - yarn run -T browser . build
+      - echo '--- Check Size limit'
+      - yarn run -T browser size-limit 
+      - echo "+++ Run tests"
+      - yarn run -T browser lint
+      - yarn run -T browser test
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -174,6 +180,8 @@ steps:
       - yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
       - yarn run -T browser exec make test-qa-destinations
+      - yarn run -T browser exec make test-integration
+      - yarn run -T browser exec make test-perf
     soft_fail:
       - exit_status: '*'
     plugins:
