@@ -87,7 +87,7 @@ export interface CDNSettings {
 
   legacyVideoPluginsEnabled?: boolean
 
-  remotePlugins?: RemotePlugin[]
+  remotePlugins: RemotePlugin[]
 
   /**
    * Top level consent settings
