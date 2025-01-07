@@ -42,8 +42,6 @@ steps:
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T browser . build
-      - echo '--- Check Size limit'
-      - yarn run -T browser size-limit 
       - echo "+++ Run tests"
       - yarn run -T browser lint
       - yarn run -T browser test
@@ -88,6 +86,8 @@ steps:
       - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test
       - yarn run -T browser exec make test-integration
       - yarn run -T browser exec make test-perf
+      - echo '+++ Check Size limit'
+      - yarn run -T browser size-limit 
     retry:
       automatic:
         - exit_status: '*'
