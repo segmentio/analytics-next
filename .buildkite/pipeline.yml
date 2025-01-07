@@ -39,7 +39,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T browser . build
       - echo '--- Check Size limit'

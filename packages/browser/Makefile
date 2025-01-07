@@ -21,19 +21,19 @@ test-unit: node_modules ## Runs unit tests
 	$(yarn_run) test
 .PHONY: test-unit
 
-test-qa: build 
+test-qa: build
 	COVERAGE=false $(yarn_run) test --runTestsByPath qa/__tests__/*.test.ts --testPathIgnorePatterns qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-qa
 
-test-qa-destinations: build 
+test-qa-destinations: build
 	COVERAGE=false $(yarn_run) test --forceExit --runTestsByPath qa/__tests__/destinations.test.ts --reporters="default" --reporters="<rootDir>/qa/lib/jest-reporter.js" ${args}
 .PHONY: test-
 
-test-integration: build 
+test-integration: build
 	COVERAGE=false $(yarn_run) test --forceExit --runTestsByPath e2e-tests/**/*.test.ts ${args}
 .PHONY: test-integration
 
-test-perf: build 
+test-perf: build
 	$(yarn_run) test --forceExit --runTestsByPath e2e-tests/performance/*.test.ts ${args}
 .PHONY: test-perf
 
