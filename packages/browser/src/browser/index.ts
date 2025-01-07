@@ -208,12 +208,27 @@ function flushPreBuffer(
  */
 async function flushFinalBuffer(
   analytics: Analytics,
+  queryString: string,
   buffer: PreInitMethodCallBuffer
 ): Promise<void> {
-  // Call popSnippetWindowBuffer before each flush task since there may be
-  // analytics calls during async function calls.
-  await flushAddSourceMiddleware(analytics, buffer)
+  await flushQueryString(analytics, queryString)
   flushAnalyticsCallsInNewTask(analytics, buffer)
+}
+
+const getQueryString = (): string => {
+  const hash = window.location.hash ?? ''
+  const search = window.location.search ?? ''
+  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
+  return term
+}
+
+const flushQueryString = async (
+  analytics: Analytics,
+  queryString: string
+): Promise<void> => {
+  if (queryString.includes('ajs_')) {
+    await analytics.queryString(queryString).catch(console.error)
+  }
 }
 
 async function registerPlugins(
@@ -337,6 +352,9 @@ async function registerPlugins(
     })
   }
 
+  // register any user-defined plugins added via analytics.addSourceMiddleware()
+  await flushAddSourceMiddleware(analytics, preInitBuffer)
+
   return ctx
 }
 
@@ -359,6 +377,9 @@ async function loadAnalytics(
     // capture the page context early, so it's always up-to-date
     preInitBuffer.add(new PreInitMethodCall('page', []))
   }
+
+  // reading the query string as early as possible in case the URL changes
+  const queryString = getQueryString()
 
   const cdnURL = settings.cdnURL ?? getCDN()
   let cdnSettings =
@@ -412,19 +433,9 @@ async function loadAnalytics(
     preInitBuffer
   )
 
-  const search = window.location.search ?? ''
-  const hash = window.location.hash ?? ''
-
-  const term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '')
-
-  if (term.includes('ajs_')) {
-    await analytics.queryString(term).catch(console.error)
-  }
-
   analytics.initialized = true
   analytics.emit('initialize', settings, options)
-
-  await flushFinalBuffer(analytics, preInitBuffer)
+  await flushFinalBuffer(analytics, queryString, preInitBuffer)
 
   return [analytics, ctx]
 }
