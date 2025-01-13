@@ -1,5 +1,4 @@
 import { Analytics } from '../../core/analytics'
-import { RemoteIntegrationSettings } from '../../browser'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
@@ -9,6 +8,7 @@ import {
   ClassicIntegrationBuilder,
   ClassicIntegrationSource,
 } from './types'
+import { RemoteIntegrationSettings } from '../../browser/settings'
 
 function normalizeName(name: string): string {
   return name.toLowerCase().replace('.', '').replace(/\s+/g, '-')

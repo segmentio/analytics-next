@@ -21,13 +21,13 @@ export type JSONArray = JSONValue[]
 
 export type EventProperties = Record<string, any>
 
-export type Integrations = {
+export type IntegrationsOptions = {
   All?: boolean | undefined
-  [integration: string]: boolean | JSONObject | undefined
+  [integrationName: string]: boolean | Record<string, unknown> | undefined
 }
 
 export interface CoreOptions {
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   timestamp?: Timestamp | undefined
   context?: CoreExtraContext | undefined
   anonymousId?: string | undefined
@@ -227,7 +227,7 @@ export interface CoreSegmentEvent {
 
   traits?: Traits | undefined // Traits is only defined in 'identify' and 'group', even if it can be passed in other calls.
 
-  integrations?: Integrations | undefined
+  integrations?: IntegrationsOptions | undefined
   context?: CoreExtraContext | undefined
   options?: CoreOptions | undefined
 
