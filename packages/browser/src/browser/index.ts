@@ -23,6 +23,7 @@ import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 import { CDNSettings, AnalyticsBrowserSettings, InitOptions } from './settings'
+import { fetch } from '../lib/fetch'
 
 export type { CDNSettings, AnalyticsBrowserSettings }
 
