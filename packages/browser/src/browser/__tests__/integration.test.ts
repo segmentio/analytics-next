@@ -789,28 +789,31 @@ describe('setAnonymousId', () => {
 })
 
 describe('addSourceMiddleware', () => {
-  it('supports registering source middlewares', async () => {
-    const [analytics] = await AnalyticsBrowser.load({
-      writeKey,
-    })
-
-    await analytics
-      .addSourceMiddleware(({ next, payload }) => {
-        payload.obj.context = {
-          hello: 'from the other side',
-        }
-        next(payload)
-      })
-      .catch((err) => {
-        throw err
+  it.each(['track', 'screen'] as const)(
+    'supports registering source middlewares for %s',
+    async (type) => {
+      const [analytics] = await AnalyticsBrowser.load({
+        writeKey,
       })
 
-    const ctx = await analytics.track('Hello!')
+      await analytics
+        .addSourceMiddleware(({ next, payload }) => {
+          payload.obj.context = {
+            hello: 'from the other side',
+          }
+          next(payload)
+        })
+        .catch((err) => {
+          throw err
+        })
 
-    expect(ctx.event.context).toMatchObject({
-      hello: 'from the other side',
-    })
-  })
+      const ctx = await analytics[type]('Hello!')
+
+      expect(ctx.event.context).toMatchObject({
+        hello: 'from the other side',
+      })
+    }
+  )
 })
 
 describe('addDestinationMiddleware', () => {

@@ -124,6 +124,7 @@ export function sourceMiddlewarePlugin(
 
     track: apply,
     page: apply,
+    screen: apply,
     identify: apply,
     alias: apply,
     group: apply,
