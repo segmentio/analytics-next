@@ -1,5 +1,13 @@
 # @segment/analytics-core
 
+## 1.8.1
+
+### Patch Changes
+
+- [#1212](https://github.com/segmentio/analytics-next/pull/1212) [`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea) Thanks [@silesky](https://github.com/silesky)! - Refactor settings
+
+* [#1212](https://github.com/segmentio/analytics-next/pull/1212) [`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea) Thanks [@silesky](https://github.com/silesky)! - Update types / variable names
+
 ## 1.8.0
 
 ### Minor Changes

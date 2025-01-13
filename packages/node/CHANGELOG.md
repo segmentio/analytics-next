@@ -1,5 +1,12 @@
 # @segment/analytics-node
 
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea), [`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea)]:
+  - @segment/analytics-core@1.8.1
+
 ## 2.2.0
 
 ### Minor Changes
