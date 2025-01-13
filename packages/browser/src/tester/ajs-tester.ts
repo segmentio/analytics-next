@@ -24,7 +24,6 @@ function makeStub(page: playwright.Page) {
     async track(
       ...args: Parameters<Analytics['track']>
     ): Promise<SerializedContext> {
-      // @ts-expect-error
       const ctx = await page.evaluate((innerArgs) => {
         // @ts-ignore
         return window.analytics.track(...innerArgs).then((ctx) => {

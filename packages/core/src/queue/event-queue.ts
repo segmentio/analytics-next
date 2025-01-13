@@ -4,7 +4,7 @@ import { ON_REMOVE_FROM_FUTURE, PriorityQueue } from '../priority-queue'
 
 import { CoreContext, ContextCancelation } from '../context'
 import { Emitter } from '@segment/analytics-generic-utils'
-import { Integrations, JSONObject } from '../events/interfaces'
+import { IntegrationsOptions } from '../events/interfaces'
 import { CorePlugin } from '../plugins'
 import { createTaskGroup, TaskGroup } from '../task/task-group'
 import { attempt, ensure } from './delivery'
@@ -233,14 +233,15 @@ export abstract class CoreEventQueue<
     return true
   }
 
-  private availableExtensions(denyList: Integrations) {
+  private availableExtensions(denyList: IntegrationsOptions) {
     const available = this.plugins.filter((p) => {
       // Only filter out destination plugins or the Segment.io plugin
       if (p.type !== 'destination' && p.name !== 'Segment.io') {
         return true
       }
 
-      let alternativeNameMatch: boolean | JSONObject | undefined = undefined
+      let alternativeNameMatch: boolean | Record<string, unknown> | undefined =
+        undefined
       p.alternativeNames?.forEach((name) => {
         if (denyList[name] !== undefined) {
           alternativeNameMatch = denyList[name]
