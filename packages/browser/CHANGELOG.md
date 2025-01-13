@@ -1,5 +1,18 @@
 # @segment/analytics-next
 
+## 1.76.1
+
+### Patch Changes
+
+- [#1207](https://github.com/segmentio/analytics-next/pull/1207) [`32582be8`](https://github.com/segmentio/analytics-next/commit/32582be828d112a31a92b16e80b15727c3a36613) Thanks [@silesky](https://github.com/silesky)! - Fix query string API not respecting source middleware
+
+* [#1213](https://github.com/segmentio/analytics-next/pull/1213) [`9d1b042d`](https://github.com/segmentio/analytics-next/commit/9d1b042d0bb09996e5c8674b7b3e4dd3bf138e3d) Thanks [@silesky](https://github.com/silesky)! - Support addSourceMiddleware for screen events
+
+- [#1189](https://github.com/segmentio/analytics-next/pull/1189) [`9883151f`](https://github.com/segmentio/analytics-next/commit/9883151f85d555266e40e69e876f1dec8a632c5a) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Added missing telemetry metric.
+
+- Updated dependencies [[`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea), [`7f9d5a00`](https://github.com/segmentio/analytics-next/commit/7f9d5a00747d885f794c7e05b6f0d1576580bfea)]:
+  - @segment/analytics-core@1.8.1
+
 ## 1.76.0
 
 ### Minor Changes
