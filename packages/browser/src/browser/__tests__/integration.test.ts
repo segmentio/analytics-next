@@ -1536,3 +1536,37 @@ describe('Options', () => {
     })
   })
 })
+
+describe('setting headers', () => {
+  it('allows setting headers', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        integrations: {
+          'Segment.io': {
+            deliveryStrategy: {
+              config: {
+                headers: {
+                  'X-Test': 'foo',
+                },
+              },
+            },
+          },
+        },
+      }
+    )
+
+    await ajs.track('sup')
+
+    await sleep(10)
+    const [call] = fetchCalls.filter((el) =>
+      el.url.toString().includes('api.segment.io')
+    )
+    expect(call.headers).toEqual({
+      'Content-Type': 'text/plain',
+      'X-Test': 'foo',
+    })
+  })
+})
