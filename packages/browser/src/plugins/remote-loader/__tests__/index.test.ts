@@ -6,6 +6,7 @@ import { AnalyticsBrowser, CDNSettings } from '../../../browser'
 import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { tsubMiddleware } from '../../routing-middleware'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 const pluginFactory = jest.fn()
 
@@ -26,7 +27,7 @@ describe('Remote Loader', () => {
   it('should attempt to load a script from the url of each remotePlugin', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -47,7 +48,7 @@ describe('Remote Loader', () => {
   it('should attempt to load a script from the obfuscated url of each remotePlugin', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        integrations: cdnSettingsMinimal.integrations,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -73,7 +74,7 @@ describe('Remote Loader', () => {
     window.analytics._cdn = 'foo.com'
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -98,7 +99,7 @@ describe('Remote Loader', () => {
     window.analytics._cdn = 'foo.com'
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -119,7 +120,7 @@ describe('Remote Loader', () => {
   it('should attempt calling the library', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -150,7 +151,7 @@ describe('Remote Loader', () => {
 
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'Braze Web Mode (Actions)',
@@ -201,7 +202,7 @@ describe('Remote Loader', () => {
   it('should not load remote plugins when integrations object contains all: false', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -224,7 +225,7 @@ describe('Remote Loader', () => {
   it('should load remote plugins when integrations object contains all: false but plugin: true', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -252,7 +253,7 @@ describe('Remote Loader', () => {
   it('should load remote plugin when integrations object contains plugin: false', async () => {
     await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -275,7 +276,7 @@ describe('Remote Loader', () => {
   it('should skip remote plugins that arent callable functions', async () => {
     const plugins = await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'remote plugin',
@@ -332,7 +333,7 @@ describe('Remote Loader', () => {
 
     const plugins = await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'multiple plugins',
@@ -421,7 +422,7 @@ describe('Remote Loader', () => {
 
     const plugins = await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'flaky plugin',
@@ -475,7 +476,7 @@ describe('Remote Loader', () => {
 
     const plugins = await remoteLoader(
       {
-        integrations: {},
+        ...cdnSettingsMinimal,
         remotePlugins: [
           {
             name: 'valid plugin',
@@ -521,7 +522,9 @@ describe('Remote Loader', () => {
 
   it('accepts settings overrides from merged integrations', async () => {
     const cdnSettings: CDNSettings = {
+      ...cdnSettingsMinimal,
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         remotePlugin: {
           name: 'Charlie Brown',
           version: '1.0',
@@ -549,6 +552,7 @@ describe('Remote Loader', () => {
     }
 
     await remoteLoader(cdnSettings, userOverrides, {
+      // @ts-ignore
       remotePlugin: {
         ...cdnSettings.integrations.remotePlugin,
         ...userOverrides.remotePlugin,
@@ -567,7 +571,9 @@ describe('Remote Loader', () => {
 
   it('accepts settings overrides from options (AnalyticsBrowser)', async () => {
     const cdnSettings = {
+      ...cdnSettingsMinimal,
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         remotePlugin: {
           name: 'Charlie Brown',
           version: '1.0',
@@ -620,6 +626,7 @@ describe('Remote Loader', () => {
   it('loads destinations when `All: false` but is enabled (pluginName)', async () => {
     const cdnSettings = {
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         oldValidName: {
           versionSettings: {
             componentTypes: [],
@@ -660,7 +667,9 @@ describe('Remote Loader', () => {
 
   it('loads destinations when `All: false` but is enabled (creationName)', async () => {
     const cdnSettings = {
+      ...cdnSettingsMinimal,
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         oldValidName: {
           versionSettings: {
             componentTypes: [],
@@ -701,7 +710,9 @@ describe('Remote Loader', () => {
 
   it('does not load destinations when disabled via pluginName', async () => {
     const cdnSettings = {
+      ...cdnSettingsMinimal,
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         oldValidName: {
           versionSettings: {
             componentTypes: [],
@@ -740,6 +751,7 @@ describe('Remote Loader', () => {
   it('does not load destinations when disabled via creationName', async () => {
     const cdnSettings = {
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         oldValidName: {
           versionSettings: {
             componentTypes: [],
@@ -786,7 +798,7 @@ describe('Remote Loader', () => {
     }
 
     const cdnSettings: CDNSettings = {
-      integrations: {},
+      ...cdnSettingsMinimal,
       middlewareSettings: {
         routingRules: [
           {
@@ -857,7 +869,7 @@ describe('Remote Loader', () => {
     }
 
     const cdnSettings: CDNSettings = {
-      integrations: {},
+      ...cdnSettingsMinimal,
       middlewareSettings: {
         routingRules: [
           {
@@ -924,7 +936,7 @@ describe('Remote Loader', () => {
     }
 
     const cdnSettings: CDNSettings = {
-      integrations: {},
+      ...cdnSettingsMinimal,
       remotePlugins: [
         {
           name: 'valid',

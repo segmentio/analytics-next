@@ -2,7 +2,9 @@ import { AnalyticsService, getInitializedAnalytics } from '../analytics-service'
 import { analyticsMock } from '../../../test-helpers/mocks'
 import { ValidationError } from '../../validation/validation-error'
 import { Context } from '@segment/analytics-next'
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 
+const minimalCDNSettings = new CDNSettingsBuilder().build()
 describe(AnalyticsService, () => {
   let analyticsService: AnalyticsService
 
@@ -292,11 +294,13 @@ describe(AnalyticsService, () => {
         })
         analyticsService.configureBlockingMiddlewareForOptOut()
         analyticsService['cdnSettingsDeferred'].resolve({
+          ...minimalCDNSettings,
           consentSettings: {
             allCategories: ['Foo'],
             hasUnmappedDestinations: false,
           },
           integrations: {
+            ...minimalCDNSettings.integrations,
             foo: {
               consentSettings: {
                 categories: ['Foo'], //
@@ -333,11 +337,13 @@ describe(AnalyticsService, () => {
         })
         analyticsService.configureBlockingMiddlewareForOptOut()
         analyticsService['cdnSettingsDeferred'].resolve({
+          ...minimalCDNSettings,
           consentSettings: {
             allCategories: ['C0001'],
             hasUnmappedDestinations: false,
           },
           integrations: {
+            ...minimalCDNSettings.integrations,
             foo: {
               consentSettings: {
                 categories: ['C0001'], //
@@ -384,7 +390,9 @@ describe(AnalyticsService, () => {
         })
         analyticsService.configureBlockingMiddlewareForOptOut()
         analyticsService['cdnSettingsDeferred'].resolve({
+          ...minimalCDNSettings,
           integrations: {
+            ...minimalCDNSettings.integrations,
             foo: {
               consentSettings: {
                 categories: ['Foo'],
@@ -424,7 +432,7 @@ describe(AnalyticsService, () => {
         })
 
         analyticsService['cdnSettingsDeferred'].resolve({
-          integrations: {},
+          integrations: minimalCDNSettings.integrations,
         })
         analyticsService.configureBlockingMiddlewareForOptOut()
         expect(analyticsMock.addDestinationMiddleware).toHaveBeenCalledTimes(1)
@@ -463,9 +471,7 @@ describe(AnalyticsService, () => {
           },
         })
 
-        analyticsService['cdnSettingsDeferred'].resolve({
-          integrations: {},
-        })
+        analyticsService['cdnSettingsDeferred'].resolve(minimalCDNSettings)
         analyticsService.configureBlockingMiddlewareForOptOut()
         const destinationMw =
           analyticsMock.addDestinationMiddleware.mock.lastCall![1]

@@ -4,15 +4,17 @@ import { Context } from '../../../core/context'
 import { schemaFilter } from '..'
 import { CDNSettings } from '../../../browser'
 import { segmentio, SegmentioSettings } from '../../segmentio'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 const settings: CDNSettings = {
+  ...cdnSettingsMinimal,
   integrations: {
+    ...cdnSettingsMinimal.integrations,
     'Braze Web Mode (Actions)': {},
     // note that Fullstory's name here doesn't contain 'Actions'
     Fullstory: {},
     'Google Analytics': {},
     'Google Analytics 4 Web': {},
-    'Segment.io': {},
   },
   remotePlugins: [
     {
@@ -124,7 +126,7 @@ describe('schema filter', () => {
 
     options = { apiKey: 'foo' }
     ajs = new Analytics({ writeKey: options.apiKey })
-    segment = await segmentio(ajs, options, {})
+    segment = await segmentio(ajs, options, settings.integrations)
     filterXt = schemaFilter({}, settings)
 
     jest.spyOn(segment, 'track')

@@ -2,7 +2,6 @@ import {
   CoreOptions,
   CoreSegmentEvent,
   Callback,
-  IntegrationsOptions,
   Plan,
   TrackPlan,
   PlanEvent,
@@ -24,7 +23,6 @@ export type EventProperties = Record<string, any>
 export interface SegmentEvent extends CoreSegmentEvent {}
 
 export type {
-  IntegrationsOptions,
   Plan,
   TrackPlan,
   PlanEvent,

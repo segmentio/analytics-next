@@ -9,6 +9,7 @@ import { Plugin } from '../../../core/plugin'
 import { envEnrichment } from '../../env-enrichment'
 import * as PQ from '../../../lib/priority-queue'
 import { createError, createSuccess } from '../../../test-helpers/factories'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 describe('Segment.io retries 500s and 429', () => {
   let options: SegmentioSettings
@@ -21,7 +22,11 @@ describe('Segment.io retries 500s and 429', () => {
 
     options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
-    segment = await segmentio(analytics, options, {})
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
     await analytics.register(segment, envEnrichment)
   })
 
@@ -74,7 +79,11 @@ describe('Batches retry 500s and 429', () => {
       },
     }
     analytics = new Analytics({ writeKey: options.apiKey })
-    segment = await segmentio(analytics, options, {})
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
     await analytics.register(segment, envEnrichment)
   })
 

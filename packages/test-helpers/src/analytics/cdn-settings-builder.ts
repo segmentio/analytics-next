@@ -22,7 +22,7 @@ export class CDNSettingsBuilder {
     const settings: CDNSettings = {
       integrations: {
         'Segment.io': {
-          apiKey: writeKey,
+          apiKey: writeKey || '',
           unbundledIntegrations: [],
           addBundledMetadata: true,
           maybeBundledConfigIds: {},

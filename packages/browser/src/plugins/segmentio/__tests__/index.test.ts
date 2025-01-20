@@ -5,6 +5,7 @@ import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { envEnrichment } from '../../env-enrichment'
 import cookie from 'js-cookie'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -22,7 +23,11 @@ describe('Segment.io', () => {
 
     options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
-    segment = await segmentio(analytics, options, {})
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
 
     await analytics.register(segment, envEnrichment)
 
@@ -54,7 +59,11 @@ describe('Segment.io', () => {
         protocol: 'http',
       }
       const analytics = new Analytics({ writeKey: options.apiKey })
-      const segment = await segmentio(analytics, options, {})
+      const segment = await segmentio(
+        analytics,
+        options,
+        cdnSettingsMinimal.integrations
+      )
       await analytics.register(segment, envEnrichment)
 
       // @ts-ignore test a valid ajsc page call

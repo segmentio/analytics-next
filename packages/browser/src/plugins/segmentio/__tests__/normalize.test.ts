@@ -5,7 +5,7 @@ import { normalize } from '../normalize'
 import { Analytics } from '../../../core/analytics'
 import { SegmentEvent } from '../../../core/events'
 import { JSDOM } from 'jsdom'
-
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 describe('before loading', () => {
   let jsdom: JSDOM
 
@@ -70,39 +70,39 @@ describe('before loading', () => {
 
     it('should add .anonymousId', () => {
       analytics.user().anonymousId('anon-id')
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.anonymousId === 'anon-id')
     })
 
     it('should add .sentAt', () => {
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.sentAt)
       // assert(type(object.sentAt) === 'date')
     })
 
     it('should add .userId', () => {
       analytics.user().id('user-id')
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.userId === 'user-id')
     })
 
     it('should not replace the .timestamp', () => {
       const timestamp = new Date()
       object.timestamp = timestamp
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.timestamp === timestamp)
     })
 
     it('should not replace the .userId', () => {
       analytics.user().id('user-id')
       object.userId = 'existing-id'
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.userId === 'existing-id')
     })
 
     it('should always add .anonymousId even if .userId is given', () => {
       object.userId = 'baz'
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.anonymousId?.length === 36)
     })
 
@@ -110,18 +110,19 @@ describe('before loading', () => {
       object.userId = 'baz'
       object.anonymousId = '👻'
 
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       expect(object.anonymousId).toEqual('👻')
     })
 
     it('should add .writeKey', () => {
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert(object.writeKey === options.apiKey)
     })
 
     describe('unbundling', () => {
       it('should add a list of bundled integrations', () => {
         normalize(analytics, object, options, {
+          // @ts-ignore
           'Segment.io': {},
           other: {
             bundlingStatus: 'bundled',
@@ -144,7 +145,7 @@ describe('before loading', () => {
             },
           },
           {
-            'Segment.io': {},
+            ...cdnSettingsMinimal.integrations,
             other: {
               bundlingStatus: 'bundled',
             },
@@ -159,6 +160,7 @@ describe('before loading', () => {
       it('should add a list of unbundled integrations when `unbundledIntegrations` is set', () => {
         options.unbundledIntegrations = ['other2']
         normalize(analytics, object, options, {
+          ...cdnSettingsMinimal.integrations,
           other2: {
             bundlingStatus: 'unbundled',
           },
@@ -171,10 +173,10 @@ describe('before loading', () => {
     })
 
     it('should pick up messageId from AJS', () => {
-      normalize(analytics, object, options, {}) // ajs core generates the message ID here
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations) // ajs core generates the message ID here
       const messageId = object.messageId
 
-      normalize(analytics, object, options, {})
+      normalize(analytics, object, options, cdnSettingsMinimal.integrations)
       assert.equal(object.messageId, messageId)
     })
   })

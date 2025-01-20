@@ -16,6 +16,7 @@ export interface CDNSettings {
   integrations: CDNSettingsIntegrations
   edgeFunction?: EdgeFnCDNSettings | { [key: string]: never }
   autoInstrumentationSettings?: AutoInstrumentationCDNSettings
+  [key: string]: unknown
 }
 
 export interface SegmentEventStub {
@@ -76,6 +77,7 @@ export interface AnyAnalytics {
  * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
  */
 export interface CDNSettingsIntegrations {
+  'Segment.io': any
   [integrationName: string]: { [key: string]: any }
 }
 

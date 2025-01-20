@@ -10,7 +10,11 @@ export const analyticsMock: jest.Mocked<AnyAnalytics> = {
     writeKey: 'test',
     cdnSettings: {
       edgeFunction: edgeFnSettings,
-      integrations: {},
+      integrations: {
+        'Segment.io': {
+          apiKey: '',
+        },
+      },
     },
   },
   alias: jest.fn(),

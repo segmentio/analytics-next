@@ -10,9 +10,12 @@ import { tsubMiddleware } from '../../routing-middleware'
 import { AMPLITUDE_WRITEKEY } from '../../../test-helpers/test-writekeys'
 import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
 import * as Factory from '../../../test-helpers/factories'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 const cdnResponse: CDNSettings = {
+  ...cdnSettingsMinimal,
   integrations: {
+    ...cdnSettingsMinimal.integrations,
     Zapier: {
       type: 'server',
     },
@@ -114,7 +117,9 @@ describe('loading ajsDestinations', () => {
       const destinations = ajsDestinations(
         writeKey,
         {
+          ...cdnSettingsMinimal,
           integrations: {
+            ...cdnSettingsMinimal.integrations,
             'Some server destination': {
               versionSettings: {
                 componentTypes: ['server'],
@@ -145,7 +150,9 @@ describe('loading ajsDestinations', () => {
       const destinations = ajsDestinations(
         writeKey,
         {
+          ...cdnSettingsMinimal,
           integrations: {
+            ...cdnSettingsMinimal.integrations,
             'Some server destination': {
               versionSettings: {
                 componentTypes: ['server'],
@@ -182,7 +189,9 @@ describe('loading ajsDestinations', () => {
     const destinations = ajsDestinations(
       writeKey,
       {
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           'Some server destination': {
             type: 'server',
             bundlingStatus: 'bundled', // this combination will never happen
@@ -207,7 +216,9 @@ describe('loading ajsDestinations', () => {
     const destinations = ajsDestinations(
       writeKey,
       {
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           'Some server destination': {
             type: 'server',
             bundlingStatus: 'bundled', // this combination will never happen
@@ -781,7 +792,9 @@ describe('option overrides', () => {
 
   it('accepts settings overrides from options', async () => {
     const cdnSettings = {
+      ...cdnSettingsMinimal,
       integrations: {
+        ...cdnSettingsMinimal.integrations,
         Amplitude: {
           type: 'browser',
           apiKey: '123',

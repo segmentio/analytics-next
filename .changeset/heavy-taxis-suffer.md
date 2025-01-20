@@ -1,7 +1,8 @@
 ---
 '@segment/analytics-next': minor
 ---
-Add new `headers` setting, along with `fetchPriority`.
+- Make Segment.io config type-safe
+- Add new `headers` setting, along with `priority`.
 
 ```ts
 analytics.load("<YOUR_WRITE_KEY>",
@@ -19,5 +20,6 @@ analytics.load("<YOUR_WRITE_KEY>",
     },
   }
 )
-
 ```
+
+
