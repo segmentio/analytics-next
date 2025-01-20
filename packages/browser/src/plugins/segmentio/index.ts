@@ -84,7 +84,9 @@ export function segmentio(
 
   const deliveryStrategy = settings?.deliveryStrategy
   const client =
-    deliveryStrategy?.strategy === 'batching'
+    deliveryStrategy &&
+    'strategy' in deliveryStrategy &&
+    deliveryStrategy.strategy === 'batching'
       ? batch(apiHost, deliveryStrategy.config)
       : standard(deliveryStrategy?.config)
 

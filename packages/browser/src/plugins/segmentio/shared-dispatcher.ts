@@ -48,13 +48,13 @@ interface DispatchFetchConfig {
 
 export interface BatchingDispatchConfig extends DispatchFetchConfig {
   /**
-   * The maximum number of events to send in a single request. If the batch reaches this size, a request will automatically be sent.
+   * If strategy = 'batching', the maximum number of events to send in a single request. If the batch reaches this size, a request will automatically be sent.
    *
    * @default 10
    */
   size?: number
   /**
-   * The maximum time, in milliseconds, to wait before sending a request.
+   * If strategy = 'batching', the maximum time, in milliseconds, to wait before sending a request.
    * This won't alaways be relevant, as the request will be sent when the size is reached.
    * However, if the size is never reached, the request will be sent after this time.
    * When it comes to retries, if there is a rate limit timeout header, that will be respected over the value here.
@@ -63,7 +63,7 @@ export interface BatchingDispatchConfig extends DispatchFetchConfig {
    */
   timeout?: number
   /**
-   * The maximum number of retries to attempt before giving up.
+   * If strategy = 'batching', the maximum number of retries to attempt before giving up.
    * @default 10
    */
   maxRetries?: number
@@ -73,10 +73,14 @@ export interface StandardDispatcherConfig extends DispatchFetchConfig {}
 
 export type DeliveryStrategy =
   | {
-      strategy?: 'standard'
+      strategy: 'batching'
+      config?: BatchingDispatchConfig
+    }
+  | {
+      strategy: 'standard'
       config?: StandardDispatcherConfig
     }
   | {
-      strategy?: 'batching'
-      config?: BatchingDispatchConfig
+      // if no strategy is provided, we default to standard
+      config: StandardDispatcherConfig
     }
