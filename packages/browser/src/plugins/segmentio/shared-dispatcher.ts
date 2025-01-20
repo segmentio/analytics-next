@@ -73,14 +73,10 @@ export interface StandardDispatcherConfig extends DispatchFetchConfig {}
 
 export type DeliveryStrategy =
   | {
+      strategy?: 'standard'
+      config: StandardDispatcherConfig
+    }
+  | {
       strategy: 'batching'
       config?: BatchingDispatchConfig
-    }
-  | {
-      strategy: 'standard'
-      config?: StandardDispatcherConfig
-    }
-  | {
-      // if no strategy is provided, we default to standard
-      config: StandardDispatcherConfig
     }
