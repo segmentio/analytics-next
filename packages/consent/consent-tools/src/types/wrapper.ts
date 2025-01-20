@@ -144,8 +144,8 @@ export interface CDNSettings {
  * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
  */
 export interface CDNSettingsIntegrations {
-  'Segment.io': any
-  [integrationName: string]: Record<string, any>
+  'Segment.io': Record<string, unknown>
+  [integrationName: string]: Record<string, unknown>
 }
 
 export interface CDNSettingsRemotePlugin {

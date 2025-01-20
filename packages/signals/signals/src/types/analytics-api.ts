@@ -13,8 +13,7 @@ export type AutoInstrumentationCDNSettings = {
 }
 
 export interface CDNSettings {
-  integrations: CDNSettingsIntegrations
-  edgeFunction?: EdgeFnCDNSettings | { [key: string]: never }
+  edgeFunction?: EdgeFnCDNSettings | {}
   autoInstrumentationSettings?: AutoInstrumentationCDNSettings
   [key: string]: unknown
 }
@@ -77,8 +76,8 @@ export interface AnyAnalytics {
  * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
  */
 export interface CDNSettingsIntegrations {
-  'Segment.io': any
-  [integrationName: string]: { [key: string]: any }
+  'Segment.io': any // this is unsafe, but it's also backward compatible and will have
+  [integrationName: string]: Record<string, unknown>
 }
 
 export type PluginType = 'before' | 'after' | 'destination'

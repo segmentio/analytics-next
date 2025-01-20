@@ -1,5 +1,4 @@
-import { CDNSettings } from '@segment/analytics-next'
-import { AnyAnalytics } from '../../types'
+import { AnyAnalytics, CDNSettings } from '../../types'
 import { SignalGenerator } from '../signal-generators/types'
 import { createInstrumentationSignal } from '../../types/factories'
 
