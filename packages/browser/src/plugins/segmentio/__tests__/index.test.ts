@@ -5,6 +5,7 @@ import { Analytics } from '../../../core/analytics'
 import { Plugin } from '../../../core/plugin'
 import { envEnrichment } from '../../env-enrichment'
 import cookie from 'js-cookie'
+import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
 
 jest.mock('unfetch', () => {
   return jest.fn()
@@ -22,7 +23,11 @@ describe('Segment.io', () => {
 
     options = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
-    segment = await segmentio(analytics, options, {})
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
 
     await analytics.register(segment, envEnrichment)
 
@@ -54,7 +59,11 @@ describe('Segment.io', () => {
         protocol: 'http',
       }
       const analytics = new Analytics({ writeKey: options.apiKey })
-      const segment = await segmentio(analytics, options, {})
+      const segment = await segmentio(
+        analytics,
+        options,
+        cdnSettingsMinimal.integrations
+      )
       await analytics.register(segment, envEnrichment)
 
       // @ts-ignore test a valid ajsc page call
@@ -65,7 +74,95 @@ describe('Segment.io', () => {
     })
   })
 
-  describe('configuring a keep alive', () => {
+  describe('configuring headers', () => {
+    it('should accept additional headers', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              headers: {
+                'X-My-Header': 'foo',
+              },
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.headers['X-My-Header']).toBe('foo')
+      expect(params.headers['Content-Type']).toBe('text/plain')
+    })
+
+    it('should allow additional headers to be a function', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              headers: () => ({
+                'X-My-Header': 'foo',
+              }),
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.headers['X-My-Header']).toBe('foo')
+      expect(params.headers['Content-Type']).toBe('text/plain')
+    })
+
+    it('should allow content type to be overridden', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              headers: () => ({
+                'Content-Type': 'bar',
+              }),
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.headers['Content-Type']).toBe('bar')
+    })
+  })
+
+  describe('configuring fetch priority', () => {
+    it('should accept fetch priority configuration', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              priority: 'high',
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.priority).toBe('high')
+    })
+  })
+
+  describe('configuring keepalive', () => {
     it('should accept keepalive configuration', async () => {
       const analytics = new Analytics({ writeKey: 'foo' })
 

@@ -11,7 +11,7 @@ import { Analytics, InitOptions } from '../../core/analytics'
 import { LegacyDestination } from '../../plugins/ajs-destination'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 // @ts-ignore loadCDNSettings mocked dependency is accused as unused
-import { AnalyticsBrowser, loadCDNSettings } from '..'
+import { AnalyticsBrowser, CDNSettings, loadCDNSettings } from '..'
 // @ts-ignore isOffline mocked dependency is accused as unused
 import { isOffline } from '../../core/connection'
 import * as SegmentPlugin from '../../plugins/segmentio'
@@ -376,7 +376,7 @@ describe('Initialization', () => {
     it('does not fetch source settings if cdnSettings is set', async () => {
       await AnalyticsBrowser.load({
         writeKey,
-        cdnSettings: { integrations: {} },
+        cdnSettings: cdnSettingsMinimal,
       })
 
       expect(fetchCalls.length).toBe(0)
@@ -666,8 +666,10 @@ describe('Dispatch', () => {
       {
         writeKey,
         cdnSettings: {
+          ...cdnSettingsMinimal,
           integrations: {
             'Segment.io': {
+              ...cdnSettingsMinimal.integrations['Segment.io'],
               apiHost: 'cdnSettings.api.io',
             },
           },
@@ -1334,6 +1336,7 @@ describe('Segment.io overrides', () => {
         integrations: {
           'Segment.io': {
             apiHost: 'https://my.endpoint.com',
+            // @ts-ignore
             anotherSettings: '👻',
           },
         },
@@ -1529,13 +1532,47 @@ describe('Options', () => {
       const disableSpy = jest.fn().mockReturnValue(true)
       const [analytics] = await AnalyticsBrowser.load(
         {
-          cdnSettings: { integrations: {}, foo: 123 },
+          cdnSettings: cdnSettingsMinimal,
           writeKey,
         },
         { disable: disableSpy }
       )
       expect(analytics).toBeInstanceOf(NullAnalytics)
-      expect(disableSpy).toBeCalledWith({ integrations: {}, foo: 123 })
+      expect(disableSpy).toHaveBeenCalledWith(cdnSettingsMinimal)
+    })
+  })
+})
+
+describe('setting headers', () => {
+  it('allows setting headers', async () => {
+    const [ajs] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+      },
+      {
+        integrations: {
+          'Segment.io': {
+            deliveryStrategy: {
+              config: {
+                headers: {
+                  'X-Test': 'foo',
+                },
+              },
+            },
+          },
+        },
+      }
+    )
+
+    await ajs.track('sup')
+
+    await sleep(10)
+    const [call] = fetchCalls.filter((el) =>
+      el.url.toString().includes('api.segment.io')
+    )
+    expect(call.headers).toEqual({
+      'Content-Type': 'text/plain',
+      'X-Test': 'foo',
     })
   })
 })

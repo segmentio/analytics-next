@@ -15,7 +15,7 @@ import { AnalyticsService } from '../analytics'
 
 const DEFAULT_LOAD_SETTINGS = {
   writeKey: 'foo',
-  cdnSettings: { integrations: {} },
+  cdnSettings: new CDNSettingsBuilder().build(),
 }
 
 const mockGetCategories: jest.MockedFn<CreateWrapperSettings['getCategories']> =

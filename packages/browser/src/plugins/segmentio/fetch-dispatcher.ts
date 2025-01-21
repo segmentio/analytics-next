@@ -1,11 +1,7 @@
 import { fetch } from '../../lib/fetch'
 import { RateLimitError } from './ratelimit-error'
-
+import { createHeaders, StandardDispatcherConfig } from './shared-dispatcher'
 export type Dispatcher = (url: string, body: object) => Promise<unknown>
-
-export type StandardDispatcherConfig = {
-  keepalive?: boolean
-}
 
 export default function (config?: StandardDispatcherConfig): {
   dispatch: Dispatcher
@@ -13,9 +9,11 @@ export default function (config?: StandardDispatcherConfig): {
   function dispatch(url: string, body: object): Promise<unknown> {
     return fetch(url, {
       keepalive: config?.keepalive,
-      headers: { 'Content-Type': 'text/plain' },
+      headers: createHeaders(config?.headers),
       method: 'post',
       body: JSON.stringify(body),
+      // @ts-ignore - not in the ts lib yet
+      priority: config?.priority,
     }).then((res) => {
       if (res.status >= 500) {
         throw new Error(`Bad response from server: ${res.status}`)

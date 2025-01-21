@@ -1,5 +1,6 @@
 import { CorePlugin, PluginType, sleep } from '@segment/analytics-core'
 import {
+  cdnSettingsMinimal,
   createMockFetchImplementation,
   createRemotePlugin,
   getBufferedPageCtxFixture,
@@ -92,7 +93,9 @@ describe('Lazy destination loading', () => {
   beforeEach(() => {
     jest.mocked(unfetch).mockImplementation(
       createMockFetchImplementation({
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           braze: {},
           google: {},
         },

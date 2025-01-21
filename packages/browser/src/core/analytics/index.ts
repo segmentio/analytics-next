@@ -18,7 +18,6 @@ import { Emitter } from '@segment/analytics-generic-utils'
 import {
   Callback,
   EventFactory,
-  IntegrationsOptions,
   EventProperties,
   SegmentEvent,
 } from '../events'
@@ -52,7 +51,11 @@ import {
   isSegmentPlugin,
   SegmentIOPluginMetadata,
 } from '../../plugins/segmentio'
-import { AnalyticsSettings, InitOptions } from '../../browser/settings'
+import {
+  AnalyticsSettings,
+  IntegrationsInitOptions,
+  InitOptions,
+} from '../../browser/settings'
 
 export type { InitOptions, AnalyticsSettings }
 
@@ -99,10 +102,17 @@ export class AnalyticsInstanceSettings {
     this._getSegmentPluginMetadata = () =>
       queue.plugins.find(isSegmentPlugin)?.metadata
     this.writeKey = settings.writeKey
-    this.cdnSettings = settings.cdnSettings ?? {
-      integrations: {},
-      edgeFunction: {},
+
+    // this is basically just to satisfy typescript / so we don't need to change the function sig of every test.
+    // when loadAnalytics is called, cdnSettings will always be available.
+    const emptyCDNSettings: CDNSettings = {
+      integrations: {
+        'Segment.io': {
+          apiKey: '',
+        },
+      },
     }
+    this.cdnSettings = settings.cdnSettings ?? emptyCDNSettings
     this.cdnURL = settings.cdnURL
   }
 }
@@ -124,7 +134,7 @@ export class Analytics
   private _universalStorage: UniversalStorage
 
   initialized = false
-  integrations: IntegrationsOptions
+  integrations: IntegrationsInitOptions
   options: InitOptions
   queue: EventQueue
 

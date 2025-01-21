@@ -1,4 +1,3 @@
-import type { IntegrationsOptions } from '../../core/events/interfaces'
 import { CDNSettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin, InternalPluginWithAddMiddleware } from '../../core/plugin'
@@ -12,6 +11,7 @@ import { Context, ContextCancelation } from '../../core/context'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 import { Analytics, InitOptions } from '../../core/analytics'
 import { createDeferred } from '@segment/analytics-generic-utils'
+import { IntegrationsInitOptions } from '../../browser/settings'
 
 export interface RemotePlugin {
   /** The name of the remote plugin */
@@ -198,7 +198,7 @@ function validate(pluginLike: unknown): pluginLike is Plugin[] {
 }
 
 function isPluginDisabled(
-  userIntegrations: IntegrationsOptions,
+  userIntegrations: IntegrationsInitOptions,
   remotePlugin: RemotePlugin
 ) {
   const creationNameEnabled = userIntegrations[remotePlugin.creationName]
@@ -260,7 +260,7 @@ async function loadPluginFactory(
 
 export async function remoteLoader(
   settings: CDNSettings,
-  userIntegrations: IntegrationsOptions,
+  integrations: IntegrationsInitOptions,
   mergedIntegrations: Record<string, JSONObject>,
   options?: InitOptions,
   routingMiddleware?: DestinationMiddlewareFunction,
@@ -272,7 +272,7 @@ export async function remoteLoader(
 
   const pluginPromises = (settings.remotePlugins ?? []).map(
     async (remotePlugin) => {
-      if (isPluginDisabled(userIntegrations, remotePlugin)) return
+      if (isPluginDisabled(integrations, remotePlugin)) return
 
       try {
         const pluginFactory =

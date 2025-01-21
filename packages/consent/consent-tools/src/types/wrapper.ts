@@ -136,6 +136,7 @@ export interface CDNSettings {
   integrations: CDNSettingsIntegrations
   remotePlugins?: CDNSettingsRemotePlugin[]
   consentSettings?: CDNSettingsConsent
+  [key: string]: unknown
 }
 
 /**
@@ -144,7 +145,8 @@ export interface CDNSettings {
  * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
  */
 export interface CDNSettingsIntegrations {
-  [integrationName: string]: { [key: string]: any }
+  'Segment.io': any // This key isn't actually used, but it's here to loosely match the expected type
+  [integrationName: string]: Record<string, unknown>
 }
 
 export interface CDNSettingsRemotePlugin {

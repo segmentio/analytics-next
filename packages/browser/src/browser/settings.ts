@@ -1,7 +1,7 @@
 /**
  * These settings will be exposed via the public API
  */
-import { IntegrationsOptions, Plan } from '../core/events'
+import { Plan } from '../core/events'
 import { MetricsOptions } from '../core/stats/remote-metrics'
 import { ClassicIntegrationSource } from '../plugins/ajs-destination/types'
 import { PluginFactory, RemotePlugin } from '../plugins/remote-loader'
@@ -10,17 +10,20 @@ import { RoutingRule } from '../plugins/routing-middleware'
 import { CookieOptions, StorageSettings } from '../core/storage'
 import { UserOptions } from '../core/user'
 import { HighEntropyHint } from '../lib/client-hints/interfaces'
+import { IntegrationsOptions } from '@segment/analytics-core'
+import { SegmentioSettings } from '../plugins/segmentio'
+
+interface VersionSettings {
+  version?: string
+  override?: string
+  componentTypes?: ('browser' | 'android' | 'ios' | 'server')[]
+}
 
 export interface RemoteIntegrationSettings {
   /* @deprecated - This does not indicate browser types anymore */
   type?: string
 
-  versionSettings?: {
-    version?: string
-    override?: string
-    componentTypes?: ('browser' | 'android' | 'ios' | 'server')[]
-  }
-
+  versionSettings?: VersionSettings
   /**
    * We know if an integration is device mode if it has `bundlingStatus: 'bundled'` and the `browser` componentType in `versionSettings`.
    * History: The term 'bundle' is left over from before action destinations, when a device mode destinations were 'bundled' in a custom bundle for every analytics.js source.
@@ -38,12 +41,39 @@ export interface RemoteIntegrationSettings {
     categories: string[]
   }
 
-  // Segment.io specific
-  retryQueue?: boolean
-
   // any extra unknown settings
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
+}
+
+export interface RemoteSegmentIOIntegrationSettings
+  extends RemoteIntegrationSettings {
+  /**
+   * Segment write key
+   */
+  apiKey: string
+
+  /**
+   * Whether or not offline events are stored and retried.
+   *
+   * Originally, each plugin was concieved to use global retry logic (e.g. throwing magic errors would result in retries),
+   * but this was not really used and is no longer encouraged. Instead, we favor of per-plugin retry logic, since it's confusing to have multiple levels of retries, and most device mode destinations contain their own retry behavior.
+   * The segmentio plugin itself has its own internal retry queue and is not affected by this setting.
+   *
+   * @default true
+   */
+  retryQueue?: boolean
+
+  /**
+   * Host of the segment cdn - this may need to be manually enabled on the source.
+   * @default 'api.segment.io/v1'
+   */
+  apiHost?: string
+  addBundledMetadata?: boolean
+  unbundledIntegrations?: string[]
+  bundledConfigIds?: string[]
+  unbundledConfigIds?: string[]
+  maybeBundledConfigIds?: Record<string, string[]>
 }
 
 /**
@@ -52,6 +82,7 @@ export interface RemoteIntegrationSettings {
  */
 export interface CDNSettings {
   integrations: {
+    'Segment.io': RemoteSegmentIOIntegrationSettings
     [creationName: string]: RemoteIntegrationSettings
   }
 
@@ -108,6 +139,11 @@ export interface CDNSettings {
   autoInstrumentationSettings?: {
     sampleRate: number
   }
+
+  /**
+   * Allow misc settings to be passed through, but
+   */
+  [key: string]: unknown
 }
 
 /**
@@ -121,7 +157,7 @@ export interface AnalyticsBrowserSettings {
    * If provided, `AnalyticsBrowser` will not fetch remote settings
    * for the source.
    */
-  cdnSettings?: CDNSettings & Record<string, unknown>
+  cdnSettings?: CDNSettings
   /**
    * If provided, will override the default Segment CDN (https://cdn.segment.com) for this application.
    */
@@ -145,6 +181,26 @@ export interface AnalyticsSettings {
   cdnURL?: string
 }
 
+/**
+ * Public Segment.io integration options.
+ * We don't expose all the settings for Segment.io, only the ones that are overridable
+ * (For example, we don't want `maybeBundledConfigIds to be exposed to the public API.)
+ */
+export type SegmentioIntegrationInitOptions = Pick<
+  SegmentioSettings,
+  'apiHost' | 'protocol' | 'deliveryStrategy'
+>
+
+/**
+ * Configurable Integrations Options -- these are the settings that are passed to the `analytics` instance.
+ */
+export interface IntegrationsInitOptions extends IntegrationsOptions {
+  /**
+   * Segment.io integration options -- note: Segment.io is not overridable OR disableable
+   */
+  'Segment.io'?: SegmentioIntegrationInitOptions | boolean
+}
+
 export interface InitOptions {
   /**
    * Disables storing any data on the client-side via cookies or localstorage.
@@ -164,7 +220,7 @@ export interface InitOptions {
   storage?: StorageSettings
   user?: UserOptions
   group?: UserOptions
-  integrations?: IntegrationsOptions
+  integrations?: IntegrationsInitOptions
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean

@@ -4,9 +4,12 @@ import { CDNSettings } from '..'
 import { pWhile } from '../../lib/p-while'
 import { snippet } from '../../tester/__fixtures__/segment-snippet'
 import * as Factory from '../../test-helpers/factories'
+import { cdnSettingsMinimal } from '../../test-helpers/fixtures'
 
 const cdnResponse: CDNSettings = {
+  ...cdnSettingsMinimal,
   integrations: {
+    ...cdnSettingsMinimal.integrations,
     Zapier: {
       type: 'server',
     },

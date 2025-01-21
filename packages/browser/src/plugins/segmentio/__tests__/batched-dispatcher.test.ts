@@ -102,6 +102,7 @@ describe('Batching', () => {
           },
           "keepalive": false,
           "method": "post",
+          "priority": undefined,
         },
       ]
     `)
@@ -185,6 +186,7 @@ describe('Batching', () => {
           },
           "keepalive": false,
           "method": "post",
+          "priority": undefined,
         },
       ]
     `)
@@ -220,6 +222,7 @@ describe('Batching', () => {
           },
           "keepalive": false,
           "method": "post",
+          "priority": undefined,
         },
       ]
     `)
@@ -234,6 +237,7 @@ describe('Batching', () => {
           },
           "keepalive": false,
           "method": "post",
+          "priority": undefined,
         },
       ]
     `)
@@ -265,6 +269,7 @@ describe('Batching', () => {
           },
           "keepalive": false,
           "method": "post",
+          "priority": undefined,
         },
       ]
     `)

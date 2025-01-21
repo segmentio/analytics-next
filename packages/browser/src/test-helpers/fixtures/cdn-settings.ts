@@ -1,8 +1,15 @@
-import { AnalyticsBrowserSettings } from '../..'
+import { CDNSettings } from '../../browser/settings'
 import type { RemotePlugin } from '../../plugins/remote-loader'
 import { mockIntegrationName } from './classic-destination'
 
-type CDNSettings = NonNullable<AnalyticsBrowserSettings['cdnSettings']>
+export const cdnSettingsMinimal: CDNSettings = {
+  integrations: {
+    'Segment.io': {
+      apiKey: 'my-writekey',
+    },
+    [mockIntegrationName]: {},
+  },
+}
 
 export const cdnSettingsKitchenSink: CDNSettings = {
   integrations: {
@@ -293,12 +300,6 @@ export const cdnSettingsKitchenSink: CDNSettings = {
   },
   legacyVideoPluginsEnabled: true,
   remotePlugins: [],
-}
-
-export const cdnSettingsMinimal: CDNSettings = {
-  integrations: {
-    [mockIntegrationName]: {},
-  },
 }
 
 export const createRemotePlugin = (

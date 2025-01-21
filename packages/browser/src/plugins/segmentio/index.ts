@@ -7,21 +7,12 @@ import { Plugin } from '../../core/plugin'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { toFacade } from '../../lib/to-facade'
-import batch, { BatchingDispatchConfig } from './batched-dispatcher'
-import standard, { StandardDispatcherConfig } from './fetch-dispatcher'
+import batch from './batched-dispatcher'
+import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 import { SEGMENT_API_HOST } from '../../core/constants'
-
-type DeliveryStrategy =
-  | {
-      strategy?: 'standard'
-      config?: StandardDispatcherConfig
-    }
-  | {
-      strategy?: 'batching'
-      config?: BatchingDispatchConfig
-    }
+import { DeliveryStrategy } from './shared-dispatcher'
 
 export type SegmentioSettings = {
   apiKey: string
@@ -93,9 +84,11 @@ export function segmentio(
 
   const deliveryStrategy = settings?.deliveryStrategy
   const client =
-    deliveryStrategy?.strategy === 'batching'
+    deliveryStrategy &&
+    'strategy' in deliveryStrategy &&
+    deliveryStrategy.strategy === 'batching'
       ? batch(apiHost, deliveryStrategy.config)
-      : standard(deliveryStrategy?.config as StandardDispatcherConfig)
+      : standard(deliveryStrategy?.config)
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {

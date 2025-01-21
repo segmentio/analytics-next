@@ -3,12 +3,15 @@ import { setGlobalCDNUrl } from '../../lib/parse-cdn'
 import { remoteLoader } from '../../plugins/remote-loader'
 import unfetch from 'unfetch'
 import { createSuccess } from '../../test-helpers/factories'
+import { cdnSettingsMinimal } from '../../test-helpers/fixtures'
 jest.mock('unfetch')
 
 const INTG_TO_DELETE = 'deleteMe'
 
 const cdnSettings = {
+  ...cdnSettingsMinimal,
   integrations: {
+    ...cdnSettingsMinimal.integrations,
     [INTG_TO_DELETE]: { bar: true },
     otherIntegration: { foo: true },
   },

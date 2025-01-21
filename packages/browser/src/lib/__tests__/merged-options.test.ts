@@ -1,10 +1,13 @@
+import { cdnSettingsMinimal } from '../../test-helpers/fixtures'
 import { mergedOptions } from '../merged-options'
 
 describe(mergedOptions, () => {
   it('merges options', () => {
     const merged = mergedOptions(
       {
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           CustomerIO: {},
           Amplitude: {
             apiKey: '🍌',
@@ -28,6 +31,10 @@ describe(mergedOptions, () => {
         "CustomerIO": {
           "ghost": "👻",
         },
+        "Fake": {},
+        "Segment.io": {
+          "apiKey": "my-writekey",
+        },
       }
     `)
   })
@@ -35,7 +42,9 @@ describe(mergedOptions, () => {
   it('ignores options for integrations that arent returned by CDN', () => {
     const merged = mergedOptions(
       {
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           Amplitude: {
             apiKey: '🍌',
           },
@@ -56,6 +65,10 @@ describe(mergedOptions, () => {
         "Amplitude": {
           "apiKey": "🍌",
         },
+        "Fake": {},
+        "Segment.io": {
+          "apiKey": "my-writekey",
+        },
       }
     `)
   })
@@ -63,7 +76,9 @@ describe(mergedOptions, () => {
   it('does not attempt to merge non objects', () => {
     const merged = mergedOptions(
       {
+        ...cdnSettingsMinimal,
         integrations: {
+          ...cdnSettingsMinimal.integrations,
           CustomerIO: {
             ghost: '👻',
           },
@@ -88,14 +103,20 @@ describe(mergedOptions, () => {
         "CustomerIO": {
           "ghost": "👻",
         },
+        "Fake": {},
+        "Segment.io": {
+          "apiKey": "my-writekey",
+        },
       }
     `)
   })
 
   it('works with boolean overrides', () => {
     const cdn = {
+      ...cdnSettingsMinimal,
       integrations: {
-        'Segment.io': { apiHost: 'api.segment.io' },
+        ...cdnSettingsMinimal.integrations,
+        'Segment.io': { apiHost: 'api.segment.io', apiKey: 'foo' },
         'Google Tag Manager': {
           ghost: '👻',
         },
@@ -111,11 +132,13 @@ describe(mergedOptions, () => {
 
     expect(mergedOptions(cdn, overrides)).toMatchInlineSnapshot(`
       {
+        "Fake": {},
         "Google Tag Manager": {
           "ghost": "👻",
         },
         "Segment.io": {
           "apiHost": "mgs.instacart.com/v2",
+          "apiKey": "foo",
         },
       }
     `)
