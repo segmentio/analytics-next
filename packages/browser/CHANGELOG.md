@@ -1,5 +1,31 @@
 # @segment/analytics-next
 
+## 1.77.0
+
+### Minor Changes
+
+- [#1204](https://github.com/segmentio/analytics-next/pull/1204) [`8e0162b9`](https://github.com/segmentio/analytics-next/commit/8e0162b9553419448b7975337a53fa1c66e70d47) Thanks [@silesky](https://github.com/silesky)! - - Make Segment.io config type-safe
+
+  - Add new `headers` setting, along with `priority`.
+
+  ```ts
+  analytics.load("<YOUR_WRITE_KEY>",
+    {
+      integrations: {
+        'Segment.io': {
+          deliveryStrategy: {
+            strategy: "standard" // also works for 'batching'
+            config: {
+              headers: { 'x-api-key': 'foo' } or () => {...}
+              priority: 'low',
+            },
+          },
+        },
+      },
+    }
+  )
+  ```
+
 ## 1.76.1
 
 ### Patch Changes
