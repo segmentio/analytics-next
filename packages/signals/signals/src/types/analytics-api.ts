@@ -76,7 +76,7 @@ export interface AnyAnalytics {
  * { "Fullstory": {...}, "Braze Web Mode (Actions)": {...}}
  */
 export interface CDNSettingsIntegrations {
-  'Segment.io': any // this is unsafe, but it's also backward compatible and will have
+  'Segment.io': any
   [integrationName: string]: Record<string, unknown>
 }
 
