@@ -53,7 +53,7 @@ import {
 } from '../../plugins/segmentio'
 import {
   AnalyticsSettings,
-  BrowserIntegrationsOptions,
+  IntegrationsInitOptions,
   InitOptions,
 } from '../../browser/settings'
 
@@ -134,7 +134,7 @@ export class Analytics
   private _universalStorage: UniversalStorage
 
   initialized = false
-  integrations: BrowserIntegrationsOptions
+  integrations: IntegrationsInitOptions
   options: InitOptions
   queue: EventQueue
 

@@ -31,7 +31,7 @@ import {
 } from './utils'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
 import { createDeferred } from '@segment/analytics-generic-utils'
-import { BrowserIntegrationsOptions } from '../../browser/settings'
+import { IntegrationsInitOptions } from '../../browser/settings'
 
 export type ClassType<T> = new (...args: unknown[]) => T
 
@@ -333,7 +333,7 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
 export function ajsDestinations(
   writeKey: string,
   settings: CDNSettings,
-  globalIntegrations: BrowserIntegrationsOptions = {},
+  integrations: IntegrationsInitOptions = {},
   options: InitOptions = {},
   routingMiddleware?: DestinationMiddlewareFunction,
   legacyIntegrationSources?: ClassicIntegrationSource[]
@@ -379,7 +379,7 @@ export function ajsDestinations(
   ])
 
   return Array.from(installableIntegrations)
-    .filter((name) => !shouldSkipIntegration(name, globalIntegrations))
+    .filter((name) => !shouldSkipIntegration(name, integrations))
     .map((name) => {
       const integrationSettings = remoteIntegrationsConfig[name]
       const version = resolveVersion(integrationSettings)

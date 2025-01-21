@@ -11,7 +11,7 @@ import { CookieOptions, StorageSettings } from '../core/storage'
 import { UserOptions } from '../core/user'
 import { HighEntropyHint } from '../lib/client-hints/interfaces'
 import { IntegrationsOptions } from '@segment/analytics-core'
-import { DeliveryStrategy } from '../plugins/segmentio/shared-dispatcher'
+import { SegmentioSettings } from '../plugins/segmentio'
 
 interface VersionSettings {
   version?: string
@@ -146,16 +146,6 @@ export interface CDNSettings {
   [key: string]: unknown
 }
 
-export interface BrowserIntegrationsOptions extends IntegrationsOptions {
-  'Segment.io'?: // subset of the SegmentSettings, since we don't want to expose all of them to the user
-  | {
-        apiHost?: string
-        protocol?: 'http' | 'https'
-        deliveryStrategy?: DeliveryStrategy
-      }
-    | boolean
-}
-
 /**
  * These are the settings that are the first argument to the npm installed plugin.
  */
@@ -191,6 +181,26 @@ export interface AnalyticsSettings {
   cdnURL?: string
 }
 
+/**
+ * Public Segment.io integration options.
+ * We don't expose all the settings for Segment.io, only the ones that are overridable
+ * (For example, we don't want `maybeBundledConfigIds to be exposed to the public API.)
+ */
+export type SegmentioIntegrationInitOptions = Pick<
+  SegmentioSettings,
+  'apiHost' | 'protocol' | 'deliveryStrategy'
+>
+
+/**
+ * Configurable Integrations Options -- these are the settings that are passed to the `analytics` instance.
+ */
+export interface IntegrationsInitOptions extends IntegrationsOptions {
+  /**
+   * Segment.io integration options -- note: Segment.io is not overridable OR disableable
+   */
+  'Segment.io'?: SegmentioIntegrationInitOptions | boolean
+}
+
 export interface InitOptions {
   /**
    * Disables storing any data on the client-side via cookies or localstorage.
@@ -210,7 +220,7 @@ export interface InitOptions {
   storage?: StorageSettings
   user?: UserOptions
   group?: UserOptions
-  integrations?: BrowserIntegrationsOptions
+  integrations?: IntegrationsInitOptions
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean

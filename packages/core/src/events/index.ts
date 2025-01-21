@@ -67,7 +67,7 @@ export abstract class CoreEventFactory {
     event: string,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationOptions?: IntegrationsOptions
   ) {
     this.settings.onEventMethodCall({ type: 'track', options })
     return this.normalize({
@@ -76,7 +76,7 @@ export abstract class CoreEventFactory {
       type: 'track',
       properties: properties ?? {}, // TODO: why is this not a shallow copy like everywhere else?
       options: { ...options },
-      integrations: { ...globalIntegrations },
+      integrations: { ...integrationOptions },
     })
   }
 
@@ -85,14 +85,14 @@ export abstract class CoreEventFactory {
     page: string | null,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationOptions?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'page', options })
     const event: CoreSegmentEvent = {
       type: 'page',
       properties: { ...properties },
       options: { ...options },
-      integrations: { ...globalIntegrations },
+      integrations: { ...integrationOptions },
     }
 
     if (category !== null) {
@@ -116,14 +116,14 @@ export abstract class CoreEventFactory {
     screen: string | null,
     properties?: EventProperties,
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationOptions?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'screen', options })
     const event: CoreSegmentEvent = {
       type: 'screen',
       properties: { ...properties },
       options: { ...options },
-      integrations: { ...globalIntegrations },
+      integrations: { ...integrationOptions },
     }
 
     if (category !== null) {
@@ -144,7 +144,7 @@ export abstract class CoreEventFactory {
     userId: ID,
     traits?: UserTraits,
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationsOptions?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'identify', options })
     return this.normalize({
@@ -153,7 +153,7 @@ export abstract class CoreEventFactory {
       userId,
       traits: traits ?? {},
       options: { ...options },
-      integrations: globalIntegrations,
+      integrations: integrationsOptions,
     })
   }
 
@@ -161,7 +161,7 @@ export abstract class CoreEventFactory {
     groupId: ID,
     traits?: GroupTraits,
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationOptions?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'group', options })
     return this.normalize({
@@ -169,7 +169,7 @@ export abstract class CoreEventFactory {
       type: 'group',
       traits: traits ?? {},
       options: { ...options }, // this spreading is intentional
-      integrations: { ...globalIntegrations }, //
+      integrations: { ...integrationOptions }, //
       groupId,
     })
   }
@@ -178,14 +178,14 @@ export abstract class CoreEventFactory {
     to: string,
     from: string | null, // TODO: can we make this undefined?
     options?: CoreOptions,
-    globalIntegrations?: IntegrationsOptions
+    integrationOptions?: IntegrationsOptions
   ): CoreSegmentEvent {
     this.settings.onEventMethodCall({ type: 'alias', options })
     const base: CoreSegmentEvent = {
       userId: to,
       type: 'alias',
       options: { ...options },
-      integrations: { ...globalIntegrations },
+      integrations: { ...integrationOptions },
     }
 
     if (from !== null) {
