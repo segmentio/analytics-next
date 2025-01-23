@@ -52,7 +52,7 @@
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
     "@segment/tsub": "1.0.1",
-    "customerio-gist-web": "^3.12.0",
+    "customerio-gist-web": "^3.12.1",
     "dset": "^3.1.2",
     "js-cookie": "3.0.1",
     "node-fetch": "^2.6.7",
