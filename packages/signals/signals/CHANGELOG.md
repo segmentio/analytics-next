@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.9.2
+
+### Patch Changes
+
+- [#1215](https://github.com/segmentio/analytics-next/pull/1215) [`9a8b0e03`](https://github.com/segmentio/analytics-next/commit/9a8b0e0322a4291a3ee3c5c06974a0af9ea5469f) Thanks [@silesky](https://github.com/silesky)! - Fix bug where in vanilla React environments, the onChange events would error due to circular references.
+
 ## 1.9.1
 
 ### Patch Changes
