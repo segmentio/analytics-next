@@ -67,7 +67,10 @@ export class OnChangeGenerator implements SignalGenerator {
     const parseChange = (target: HTMLElement): ChangedEvent | undefined => {
       if (target instanceof HTMLSelectElement) {
         return {
-          selectedOptions: Array.from(target.selectedOptions),
+          selectedOptions: Array.from(target.selectedOptions).map((option) => ({
+            value: option.value,
+            label: option.label,
+          })),
         }
       }
       if (target instanceof HTMLTextAreaElement) {
