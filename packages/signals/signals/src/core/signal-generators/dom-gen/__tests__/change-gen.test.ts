@@ -65,4 +65,34 @@ describe('OnChangeGenerator', () => {
 
     expect(emitSpy).not.toHaveBeenCalled()
   })
+
+  it('should emit a signal with selectedOptions for select elements', () => {
+    const emitSpy = jest.spyOn(emitter, 'emit')
+    const target = document.createElement('select')
+    const option1 = document.createElement('option')
+    option1.value = 'value1'
+    option1.label = 'label1'
+    option1.selected = true
+    const option2 = document.createElement('option')
+    option2.value = 'value2'
+    option2.label = 'label2'
+    target.append(option1, option2)
+
+    const event = new Event('change', { bubbles: true })
+    Object.defineProperty(event, 'target', { value: target })
+
+    unregister = onChangeGenerator.register(emitter)
+    document.dispatchEvent(event)
+
+    expect(emitSpy).toHaveBeenCalledWith(
+      createInteractionSignal({
+        eventType: 'change',
+        listener: 'onchange',
+        target: expect.any(Object),
+        change: {
+          selectedOptions: [{ value: 'value1', label: 'label1' }],
+        },
+      })
+    )
+  })
 })
