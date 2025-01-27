@@ -1,4 +1,3 @@
-import { sleep } from '@segment/analytics-core'
 import { createInteractionSignal } from '../../../../types/factories'
 import { SignalEmitter } from '../../../emitter'
 import { OnChangeGenerator } from '../change-gen'
@@ -27,8 +26,6 @@ describe('OnChangeGenerator', () => {
 
     unregister = onChangeGenerator.register(emitter)
     document.dispatchEvent(event)
-
-    await sleep(100)
 
     expect(emitSpy).toHaveBeenCalledWith(
       createInteractionSignal({
