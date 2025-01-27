@@ -39,8 +39,12 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - yarn install --immutable
-      - yarn run -T browser exec make ci
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - echo "--- Build bundles"
+      - yarn run -T browser . build
+      - echo "+++ Run tests"
+      - yarn run -T browser lint
+      - yarn run -T browser test
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -78,8 +82,12 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
+      - echo '+++ Check Size limit'
+      - yarn run -T browser size-limit 
       - echo "+++ Run Browser integration tests :pray:"
       - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test
+      - yarn run -T browser exec make test-integration
+      - yarn run -T browser exec make test-perf
     retry:
       automatic:
         - exit_status: '*'
@@ -88,7 +96,26 @@ steps:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
           paths: ['.yarn/cache/']
-
+  
+  - label: ':thisisfine: [Browser] Destinations QA / E2E'
+    key: destinations
+    agents:
+      queue: v1
+    env:
+      COVERAGE: false
+    commands:
+      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - echo "--- Install dependencies"
+      - yarn install --immutable
+      - echo "+++ Run Integration Tests :pray:"
+      - yarn run -T browser exec make test-qa-destinations
+    soft_fail:
+      - exit_status: '*'
+    plugins:
+      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
+          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
+          paths: ['.yarn/cache/']
+          
   - label: '[Core] Lint + Test'
     env:
       SEGMENT_CODECOV_FLAGS: 'core'
@@ -157,25 +184,6 @@ steps:
       - yarn turbo run --filter='./packages/signals/*' lint
       - echo "+++ Run Tests"
       - yarn turbo run --filter='./packages/signals/*' test
-    plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
-
-  - label: ':thisisfine: [Browser] Destinations QA / E2E'
-    key: destinations
-    agents:
-      queue: v1
-    env:
-      COVERAGE: false
-    commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
-      - echo "--- Install dependencies"
-      - yarn install --immutable
-      - echo "+++ Run Destinations QA Tests :pray:"
-      - yarn run -T browser exec make test-qa-destinations
-    soft_fail:
-      - exit_status: '*'
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
