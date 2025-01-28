@@ -76,10 +76,9 @@ steps:
       COVERAGE: false
     commands:
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
+      - yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
-      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=@internal/browser-integration-tests test
+      - yarn turbo run --filter=@internal/browser-integration-tests test
     retry:
       automatic:
         - exit_status: '*'
