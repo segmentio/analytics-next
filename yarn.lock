@@ -9560,7 +9560,7 @@ __metadata:
     prettier: ^2.6.2
     ts-jest: ^29.1.1
     ts-node: ^10.8.0
-    turbo: latest
+    turbo: ^2.3.4
     typescript: ^4.7.0
     webpack: ^5.76.0
     webpack-dev-server: ^4.15.1
@@ -23984,7 +23984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:latest":
+"turbo@npm:^2.3.4":
   version: 2.3.4
   resolution: "turbo@npm:2.3.4"
   dependencies:
