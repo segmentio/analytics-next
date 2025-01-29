@@ -36,6 +36,7 @@
       ]
     },
     "test": {
+      "env": ["COVERAGE"],
       "dependsOn": [
         "build"
       ]
