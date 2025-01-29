@@ -85,7 +85,7 @@ export class SignalEmitter implements EmitSignal {
     }
   }
 
-  // Subscribe a listener to signals
+  // Subscribe a listener to signals --  equivilant to a destination plugin?
   subscribe(listener: (signal: Signal) => void): void {
     if (!this.listeners.has(listener)) {
       logger.debug('subscribed')

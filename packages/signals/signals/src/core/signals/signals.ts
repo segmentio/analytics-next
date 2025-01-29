@@ -87,7 +87,6 @@ export class Signals implements ISignals {
     this.preStartBuffer = []
 
     // listen + process new signals - meaning, executing them in the analytics runtime
-    // This could be implemented as a plugin?
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())
     })
