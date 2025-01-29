@@ -32,7 +32,6 @@ export type SignalsPublicEmitterContract = {
 
 export class Signals implements ISignals {
   private buffer: SignalBuffer
-  private preStartBuffer: Signal[] = []
   public signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
@@ -59,37 +58,10 @@ export class Signals implements ISignals {
       void this.buffer.add(signal)
     })
 
-    this.signalEmitter.subscribe(this.addToPreStartBuffer)
-
     void this.registerGenerator([
       ...domGenerators,
       new NetworkGenerator(this.globalSettings.network),
     ])
-  }
-
-  private addToPreStartBuffer = (signal: Signal) => {
-    this.preStartBuffer.push(signal)
-  }
-
-  /**
-   * Flush/process any signals that were emitted before the start method was called.
-   */
-  private processSignals = (processor: SignalEventProcessor) => {
-    logger.debug(
-      `Flushing ${this.preStartBuffer.length} events in pre-start buffer`,
-      this.preStartBuffer
-    )
-    this.signalEmitter.unsubscribe(this.addToPreStartBuffer)
-    // process any signals that were emitted before start was called -- since our signalEmitter has the ability to enqueu signals until init, maybe can change?
-    this.preStartBuffer.forEach(async (signal) => {
-      void processor.process(signal, await this.buffer.getAll())
-    })
-    this.preStartBuffer = []
-
-    // listen + process new signals - meaning, executing them in the analytics runtime
-    this.signalEmitter.subscribe(async (signal) => {
-      void processor.process(signal, await this.buffer.getAll())
-    })
   }
 
   /**
@@ -120,7 +92,11 @@ export class Signals implements ISignals {
       analyticsService.instance,
       new Sandbox(new SandboxSettings(this.globalSettings.sandbox))
     )
-    void this.processSignals(processor)
+
+    // subscribe to all emitted signals
+    this.signalEmitter.subscribe(async (signal) => {
+      void processor.process(signal, await this.buffer.getAll())
+    })
 
     await this.registerGenerator([
       analyticsService.createSegmentInstrumentationEventGenerator(),
