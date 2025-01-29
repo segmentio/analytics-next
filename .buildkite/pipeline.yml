@@ -1,7 +1,12 @@
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
+   # Enable code coverage on jest tests (see the shared jest config)
   COVERAGE: true
+   # No need to install HUSKY precommit hooks
+  HUSKY: 0
+  # buildkite agent contains playwright browser installation step (see Dockerfile.agent)
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1 
 steps:
   - label: Log Environment
     agents:
@@ -18,7 +23,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "+++ Run tests"
       - yarn constraints
       - yarn scripts test
@@ -97,7 +102,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "--- Build bundles"
       - yarn run -T core . build
       - echo "+++ Run tests"
@@ -115,7 +120,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "+++ Run QA"
       - yarn turbo run --filter=@segment/analytics-generic-utils lint
       - yarn turbo run --filter=@segment/analytics-generic-utils test
@@ -130,7 +135,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "--- Build bundles"
       - yarn turbo run --filter='./packages/consent/*' build
       - echo "+++ Run Lint"
@@ -187,7 +192,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "+++ Release to CDN"
       - yarn run -T browser release:cdn
     plugins:
@@ -202,7 +207,7 @@ steps:
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "--- Build bundles"
       - yarn turbo run --filter='./playgrounds/*' build
       - echo "+++ Run tests"
@@ -226,7 +231,7 @@ steps:
       - git config --global user.name "buildkite-agent"
       - git config --global user.email "buildkite-agent@segment.com"
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
+      - yarn install --immutable
       - echo "+++ Release packages"
       - yarn release
     plugins:

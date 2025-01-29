@@ -1,5 +1,9 @@
 FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node20
 
+# install system dependencies
 RUN npx playwright install-deps 
+
+# install browsers
+RUN npx playwright install
 
 ENTRYPOINT []

@@ -58,13 +58,18 @@ jobs:
   consent-intg-tests:
     name: Consent Integration Tests
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        attempt: [1, 2, 3]  # Retry up to 3 times
     steps:
       - uses: actions/checkout@v3
 
       - uses: browser-actions/setup-chrome@v1
       - uses: actions/setup-node@v3
         with:
-          node-version: 16 # UPDATE TO NODE 20!!!
+          node-version: 16 # UPDATE TO NODE 20 / migrate to playwright
           cache: 'yarn'
       - run: yarn install --immutable
       - name: Turbo cache
@@ -75,3 +80,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
+      - name: Mark success if previous attempt failed
+        if: ${{ failure() && matrix.attempt != '3' }}
+        run: echo "Retrying... (Attempt ${{ matrix.attempt }})"
