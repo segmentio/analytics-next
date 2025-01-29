@@ -76,10 +76,9 @@ steps:
       COVERAGE: false
     commands:
       - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers npx playwright install
+      - yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
-      - PLAYWRIGHT_BROWSERS_PATH=$HOME/pw-browsers yarn turbo run --filter=browser-integration-tests test
+      - yarn turbo run --filter=@internal/browser-integration-tests test
     retry:
       automatic:
         - exit_status: '*'
@@ -104,7 +103,7 @@ steps:
       - echo "+++ Run tests"
       - yarn run -T core lint
       - yarn run -T core test
-      - yarn turbo run --filter=core-integration-tests lint
+      - yarn turbo run --filter=@internal/core-integration-tests lint
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
@@ -118,8 +117,8 @@ steps:
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Run QA"
-      - yarn turbo run --filter=analytics-generic-utils lint
-      - yarn turbo run --filter=analytics-generic-utils test
+      - yarn turbo run --filter=@segment/analytics-generic-utils lint
+      - yarn turbo run --filter=@segment/analytics-generic-utils test
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
