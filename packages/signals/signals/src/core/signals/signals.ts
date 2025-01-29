@@ -39,6 +39,9 @@ export class Signals implements ISignals {
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
+    /**
+     * TODO: add an event queue inside the signal emitter
+     */
     this.signalEmitter = new SignalEmitter()
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
@@ -46,6 +49,11 @@ export class Signals implements ISignals {
 
     this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
 
+    /**
+     * TODO: support middleweware chain should be able to modify the signal before it is added to the buffer. This middleware chain should be something that will wait for cdn settings before it dispatches
+     * (e.g, you can implement a disallow list that waits for the instance and then drops the signal)
+     * It can be set at the emitter level, so that no signals actually get emitted until the middleware has initialized.
+     */
     this.signalEmitter.subscribe((signal) => {
       void this.signalsClient.send(signal)
       void this.buffer.add(signal)
@@ -86,6 +94,7 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
+
     analyticsService.instance.on('reset', () => {
       this.clearStorage()
     })
@@ -101,6 +110,12 @@ export class Signals implements ISignals {
           .autoInstrumentationSettings?.sampleRate ?? 0,
     })
 
+    // promise will resolve once all the middleware has been initialized.
+    void this.signalEmitter.initialize({
+      settings: this.globalSettings,
+      writeKey: analyticsService.instance.settings.writeKey,
+    })
+
     const sandbox = new Sandbox(
       new SandboxSettings(this.globalSettings.sandbox)
     )
@@ -110,8 +125,8 @@ export class Signals implements ISignals {
       sandbox
     )
 
+    // flush pre start buffer and then actually process signals
     void this.flushPreStartBuffer(processor)
-
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())
     })
