@@ -777,7 +777,7 @@ __metadata:
     aws-sdk: ^2.814.0
     circular-dependency-plugin: ^5.2.2
     compression-webpack-plugin: ^8.0.1
-    customerio-gist-web: ^3.12.1
+    customerio-gist-web: ^3.13.0
     dset: ^3.1.2
     execa: ^4.1.0
     flat: ^5.0.2
@@ -5323,13 +5323,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"customerio-gist-web@npm:^3.12.1":
-  version: 3.12.1
-  resolution: "customerio-gist-web@npm:3.12.1"
+"customerio-gist-web@npm:^3.13.0":
+  version: 3.13.0
+  resolution: "customerio-gist-web@npm:3.13.0"
   dependencies:
     axios: ^0.28.1
     uuid: ^8.3.2
-  checksum: 05c6f89aaa511dfe1663b2ebb7f26ade2a6875e5f3c2d7dce7833c9f1c58a4b8cb850fec371efa8ddd40bd9866903d694eca7c66124eb3f60b1ee7c94febe726
+  checksum: e7d74cfba27509a303391a226462e2072ffded4577c923b483e2934027f7439d928d7826077440e0cf33e1cc177ca13200b7cbacddd735014a6bf498ffe2e3c9
   languageName: node
   linkType: hard
 
