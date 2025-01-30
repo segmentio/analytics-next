@@ -109,7 +109,7 @@ export class Signals implements ISignals {
 
     // load emitter and flush any queued signals to all subscribers
     void this.signalEmitter.initialize({
-      settings: this.globalSettings,
+      globalSettings: this.globalSettings,
       writeKey: analyticsService.instance.settings.writeKey,
     })
   }

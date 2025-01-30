@@ -5,6 +5,7 @@ import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
 import { version } from '../generated/version'
+import { SignalsMiddleware } from '../core/emitter'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -76,14 +77,49 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     return this.signals.stop()
   }
 
-  onSignal(cb: (signal: Signal) => void) {
+  onSignal(cb: (signal: Signal) => void): this {
     this.signals.signalEmitter.subscribe(cb)
     return this
   }
 
-  addSignal(signal: Signal) {
+  addSignal(signal: Signal): this {
     this.signals.signalEmitter.emit(signal)
     return this
+  }
+
+  /**
+   * Register custom signals middleware, to drop signals or modify them before they are emitted.
+   * @param example
+   *```ts
+   * class MyMiddleware implements SignalsMiddleware {
+   *   private unstableGlobalSettings!: SignalsMiddlewareContext['settings'];
+   *
+   *   load({ unstableGlobalSettings, analytics }: SignalsMiddlewareContext) {
+   *     this.settings = unstableGlobalSettings;
+   *   }
+   *
+   *   process(signal: Signal) {
+   *     // drop signal if it does not match the filter list
+   *     if (
+   *       signal.type === 'network' &&
+   *       networkSignalIsInvalid(
+   *         signal,
+   *         this.unstableGlobalSettings.network.networkSignalsFilterList
+   *       )
+   *     ) {
+   *       return null;
+   *     } else {
+   *       return signal;
+   *     }
+   *   }
+   * }
+   *
+   * signalsPlugin.register(new MyMiddleware());
+   * ````
+   *
+   */
+  register(...middleware: SignalsMiddleware[]): void {
+    this.signals.signalEmitter.register(...middleware)
   }
 
   /**

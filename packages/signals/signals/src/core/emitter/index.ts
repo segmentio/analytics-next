@@ -18,7 +18,15 @@ const logSignal = (signal: Signal) => {
 }
 
 export interface SignalsMiddlewareContext {
-  settings: SignalGlobalSettings
+  /**
+   * These are global application settings. They are considered unstable, and should only be used internally.
+   * @interal
+   */
+  unstableGlobalSettings: SignalGlobalSettings
+  writeKey: string
+}
+
+export interface PluginSettings {
   writeKey: string
 }
 
@@ -51,8 +59,8 @@ export class SignalEmitter implements EmitSignal {
   }
 
   // Register custom signals middleware, to drop signals or modify them before they are emitted.
-  register(middleware: SignalsMiddleware): void {
-    this.middlewares.push(middleware)
+  register(...middleware: SignalsMiddleware[]): void {
+    this.middlewares.push(...middleware)
   }
 
   // Process and emit a signal
@@ -70,11 +78,21 @@ export class SignalEmitter implements EmitSignal {
   }
 
   // Initialize the emitter, load plugin, flush the buffer, and enable eager processing
-  async initialize(settings: SignalsMiddlewareContext): Promise<void> {
+  async initialize({
+    globalSettings,
+    writeKey,
+  }: {
+    globalSettings: SignalGlobalSettings
+    writeKey: string
+  }): Promise<void> {
     if (this.initialized) return
 
     // Wait for all plugin to complete their load method
-    await Promise.all(this.middlewares.map((mw) => mw.load(settings)))
+    await Promise.all(
+      this.middlewares.map((mw) =>
+        mw.load({ unstableGlobalSettings: globalSettings, writeKey })
+      )
+    )
 
     this.initialized = true
 
