@@ -5,7 +5,6 @@ import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
 import { version } from '../generated/version'
-import { SignalsMiddleware } from '../core/emitter'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -57,6 +56,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
       networkSignalsDisallowList: settings.networkSignalsDisallowList,
       signalStorage: settings.signalStorage,
       signalStorageType: settings.signalStorageType,
+      middleware: settings.middleware,
     })
   }
 
@@ -85,32 +85,6 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   addSignal(signal: Signal): this {
     this.signals.signalEmitter.emit(signal)
     return this
-  }
-
-  /**
-   * Register custom signals middleware, to drop signals or modify them before they are emitted.
-   * @param example
-   *```ts
-   * class MyMiddleware implements SignalsMiddleware {
-   *   process(signal: Signal) {
-   *     if (
-   *        signal.type === 'network' &&
-   *        signal.data.action === 'request' &&
-   *        signal.data.contentType.includes('api-keys')
-   *     ) {
-   *       return null;
-   *     } else {
-   *       return signal;
-   *     }
-   *   }
-   * }
-   *
-   * signalsPlugin.register(new MyMiddleware());
-   * ````
-   *
-   */
-  register(...middleware: SignalsMiddleware[]): void {
-    this.signals.signalEmitter.register(...middleware)
   }
 
   /**

@@ -19,5 +19,7 @@ class MyMiddleware implements SignalsMiddleware {
     }
   }
 }
-signalsPlugin.register(new MyMiddleware())
+const signalsPlugin = new SignalsPlugin({
+  middleware: [new MyMiddleware()]
+})
 ```

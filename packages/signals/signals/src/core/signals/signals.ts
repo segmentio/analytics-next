@@ -41,7 +41,9 @@ export class Signals implements ISignals {
     /**
      * TODO: add an event queue inside the signal emitter
      */
-    this.signalEmitter = new SignalEmitter()
+    this.signalEmitter = new SignalEmitter({
+      middleware: settingsConfig.middleware ?? [],
+    })
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
     )

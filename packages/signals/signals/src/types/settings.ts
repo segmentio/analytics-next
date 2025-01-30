@@ -1,3 +1,4 @@
+import { SignalsMiddleware } from '../core/emitter'
 import { ProcessSignal } from './process-signal'
 
 export interface SignalsPluginSettingsConfig {
@@ -67,6 +68,30 @@ export interface SignalsPluginSettingsConfig {
    * @default true
    */
   networkSignalsAllowSameDomain?: boolean | undefined
+
+  /**
+   * Add custom signals middleware
+   * @param example
+   *```ts
+   * class MyMiddleware implements SignalsMiddleware {
+   *   process(signal: Signal) {
+   *     if (
+   *        signal.type === 'network' &&
+   *        signal.data.action === 'request' &&
+   *        signal.data.contentType.includes('api-keys')
+   *     ) {
+   *       return null;
+   *     } else {
+   *       return signal;
+   *     }
+   *   }
+   * }
+   * const myMiddleware = new MyMiddleware()
+   * ...
+   * middleware: [myMiddleware]
+   * ````
+   */
+  middleware?: SignalsMiddleware[] | undefined
 
   /**
    * Custom signal storage implementation

@@ -10,6 +10,7 @@ import { MutationGeneratorSettings } from '../signal-generators/dom-gen/change-g
 
 export type SignalsSettingsConfig = Pick<
   SignalsPluginSettingsConfig,
+  | 'middleware'
   | 'maxBufferSize'
   | 'apiHost'
   | 'functionHost'

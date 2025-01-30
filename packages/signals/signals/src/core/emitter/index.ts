@@ -39,11 +39,18 @@ export interface SignalsMiddleware {
   process(signal: Signal): Signal | null
 }
 
+export interface SignalEmitterSettings {
+  middleware?: SignalsMiddleware[]
+}
 export class SignalEmitter implements EmitSignal {
   private listeners = new Set<(signal: Signal) => void>()
   private middlewares: SignalsMiddleware[] = []
   private initialized = false // Controls buffering vs eager signal processing
   private signalQueue: Signal[] = [] // Buffer for signals emitted before initialization
+
+  constructor(settings?: SignalEmitterSettings) {
+    if (settings?.middleware) this.middlewares.push(...settings.middleware)
+  }
 
   // Emit a signal
   emit(signal: Signal): void {
@@ -56,11 +63,6 @@ export class SignalEmitter implements EmitSignal {
 
     // Process and notify listeners
     this.processAndEmit(signal)
-  }
-
-  // Register custom signals middleware, to drop signals or modify them before they are emitted.
-  register(...middleware: SignalsMiddleware[]): void {
-    this.middlewares.push(...middleware)
   }
 
   // Process and emit a signal
