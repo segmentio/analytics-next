@@ -55,7 +55,7 @@ export interface SignalsPluginSettingsConfig {
 
   /**
    * Add custom signals middleware
-   * @param example
+   * @example
    *```ts
    * class MyMiddleware implements SignalsMiddleware {
    *   process(signal: Signal) {
