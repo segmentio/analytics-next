@@ -59,15 +59,15 @@ export interface SignalsPluginSettingsConfig {
    *```ts
    * class MyMiddleware implements SignalsMiddleware {
    *   process(signal: Signal) {
+   *     // drop the event if some conditions are met
    *     if (
    *        signal.type === 'network' &&
    *        signal.data.action === 'request' &&
-   *        signal.data.contentType.includes('api-keys')
+   *       ... etc
    *     ) {
    *       return null;
    *     } else {
    *       return signal;
-   *     }
    *   }
    * }
    * const myMiddleware = new MyMiddleware()

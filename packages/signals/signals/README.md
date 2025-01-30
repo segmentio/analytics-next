@@ -95,6 +95,30 @@ signalsPlugin.onSignal((signal) => console.log(signal))
 ```
 
 
+### Middleware / Plugins
+#### Drop or modify signals
+```ts
+import { SignalsPlugin, SignalsMiddleware } from '@segment/analytics-signals'
+
+class MyMiddleware implements SignalsMiddleware {
+  process(signal: Signal) {
+    // drop the event if some conditions are met
+    if (
+       signal.type === 'network' &&
+       signal.data.action === 'request' &&
+       ...
+    ) {
+      return null;
+    } else {
+      return signal;
+    }
+  }
+}
+const signalsPlugin = new SignalsPlugin({ middleware: [myMiddleware]})
+analytics.register(signalsPlugin)
+```
+
+
 ### Playground / Development / Testing
 See the [signals example repo](../signals-example).
 

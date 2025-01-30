@@ -83,7 +83,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   }
 
   addSignal(signal: Signal): this {
-    this.signals.signalEmitter.emit(signal)
+    signal.type === 'network' &&
+      signal.data.action === 'request' &&
+      typeof signal.data.data === 'object' &&
+      this.signals.signalEmitter.emit(signal)
     return this
   }
 

@@ -2,7 +2,7 @@
 '@segment/analytics-signals': minor
 ---
 
-Allow registration of middleware
+Allow registration of middleware to allow for dropping and modification of signals
 
 ```ts
 class MyMiddleware implements SignalsMiddleware {
@@ -10,9 +10,9 @@ class MyMiddleware implements SignalsMiddleware {
     if (
       signal.type === 'network' &&
       signal.data.action === 'request' &&
-      signal.data.contentType.includes('api-keys')
+      ...
     ) {
-      // drop signal
+      // drop or modify signal
       return null
     } else {
       return signal
