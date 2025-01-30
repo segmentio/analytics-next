@@ -17,30 +17,25 @@ const logSignal = (signal: Signal) => {
   )
 }
 
-export type LoadContext = {
+export interface SignalsMiddlewareContext {
   settings: SignalGlobalSettings
   writeKey: string
 }
 
-interface SignalPlugin {
+export interface SignalsMiddleware {
   /**
-   * Wait for this to complete before emitting signals
-   * Like a 'before' plugin, blocks the event pipeline
+   * Wait for .load to complete before emitting signals
+   * This blocks the signal emitter until all plugins are loaded.
    */
-  load(ctx: LoadContext): Promise<void> | void
+  load(ctx: SignalsMiddlewareContext): Promise<void> | void
   process(signal: Signal): Signal | null
 }
 
 export class SignalEmitter implements EmitSignal {
   private listeners = new Set<(signal: Signal) => void>()
-  private middlewares: SignalPlugin[] = []
+  private middlewares: SignalsMiddleware[] = []
   private initialized = false // Controls buffering vs eager signal processing
   private signalQueue: Signal[] = [] // Buffer for signals emitted before initialization
-
-  // Add a plugin
-  addPlugin(plugin: SignalPlugin): void {
-    this.middlewares.push(plugin)
-  }
 
   // Emit a signal
   emit(signal: Signal): void {
@@ -53,6 +48,11 @@ export class SignalEmitter implements EmitSignal {
 
     // Process and notify listeners
     this.processAndEmit(signal)
+  }
+
+  // Register custom signals middleware, to drop signals or modify them before they are emitted.
+  register(middleware: SignalsMiddleware): void {
+    this.middlewares.push(middleware)
   }
 
   // Process and emit a signal
@@ -70,7 +70,7 @@ export class SignalEmitter implements EmitSignal {
   }
 
   // Initialize the emitter, load plugin, flush the buffer, and enable eager processing
-  async initialize(settings: LoadContext): Promise<void> {
+  async initialize(settings: SignalsMiddlewareContext): Promise<void> {
     if (this.initialized) return
 
     // Wait for all plugin to complete their load method
@@ -85,7 +85,10 @@ export class SignalEmitter implements EmitSignal {
     }
   }
 
-  // Subscribe a listener to signals --  equivilant to a destination plugin?
+  /**
+   * Listen to signals emitted, once they have travelled through the plugin pipeline.
+   * This is equivalent to a destination plugin.
+   */
   subscribe(listener: (signal: Signal) => void): void {
     if (!this.listeners.has(listener)) {
       logger.debug('subscribed')
@@ -98,14 +101,5 @@ export class SignalEmitter implements EmitSignal {
     if (this.listeners.delete(listener)) {
       logger.debug('unsubscribed')
     }
-  }
-
-  // Subscribe a listener to a single signal
-  once(listener: (signal: Signal) => void): void {
-    const wrappedListener = (signal: Signal) => {
-      this.unsubscribe(wrappedListener)
-      listener(signal)
-    }
-    this.subscribe(wrappedListener)
   }
 }
