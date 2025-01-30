@@ -92,14 +92,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
    * @param example
    *```ts
    * class MyMiddleware implements SignalsMiddleware {
-   *   private unstableGlobalSettings!: SignalsMiddlewareContext['settings'];
-   *
-   *   load({ unstableGlobalSettings, analytics }: SignalsMiddlewareContext) {
-   *     this.settings = unstableGlobalSettings;
-   *   }
-   *
    *   process(signal: Signal) {
-   *     // drop signal if it does not match the filter list
    *     if (
    *        signal.type === 'network' &&
    *        signal.data.action === 'request' &&
