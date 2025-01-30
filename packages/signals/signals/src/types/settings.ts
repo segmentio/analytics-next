@@ -52,6 +52,7 @@ export interface SignalsPluginSettingsConfig {
    * @default 2000
    */
   flushInterval?: number
+
   /**
    * Add custom signals middleware
    * @param example
