@@ -101,11 +101,9 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
    *   process(signal: Signal) {
    *     // drop signal if it does not match the filter list
    *     if (
-   *       signal.type === 'network' &&
-   *       networkSignalIsInvalid(
-   *         signal,
-   *         this.unstableGlobalSettings.network.networkSignalsFilterList
-   *       )
+   *        signal.type === 'network' &&
+   *        signal.data.action === 'request' &&
+   *        signal.data.contentType.includes('api-keys')
    *     ) {
    *       return null;
    *     } else {
