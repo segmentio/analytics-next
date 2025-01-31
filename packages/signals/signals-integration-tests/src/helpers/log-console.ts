@@ -10,6 +10,6 @@ export const logConsole = (page: Page) => {
     console.log(`console.${msg.type()}:`, text)
   })
   page.on('pageerror', (error) => {
-    console.error('Page error:', error, `[name]: ${error.name}`)
+    console.error('Page error:', error)
   })
 }
