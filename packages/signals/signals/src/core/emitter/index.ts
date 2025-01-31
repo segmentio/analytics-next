@@ -1,20 +1,8 @@
-import { logger } from '../../lib/logger'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { SignalGlobalSettings } from '../signals'
 
 export interface EmitSignal {
   emit: (signal: Signal) => void
-}
-
-const logSignal = (signal: Signal) => {
-  logger.info(
-    'New signal:',
-    signal.type,
-    signal.data,
-    ...(signal.type === 'interaction' && 'change' in signal.data
-      ? ['change:', JSON.stringify(signal.data.change, null, 2)]
-      : [])
-  )
 }
 
 export interface SignalsMiddlewareContext {
@@ -54,7 +42,6 @@ export class SignalEmitter implements EmitSignal {
 
   // Emit a signal
   emit(signal: Signal): void {
-    logSignal(signal)
     if (!this.initialized) {
       // Buffer the signal if not initialized
       this.signalQueue.push(signal)
@@ -111,15 +98,12 @@ export class SignalEmitter implements EmitSignal {
    */
   subscribe(listener: (signal: Signal) => void): void {
     if (!this.listeners.has(listener)) {
-      logger.debug('subscribed')
       this.listeners.add(listener)
     }
   }
 
   // Unsubscribe a listener
   unsubscribe(listener: (signal: Signal) => void): void {
-    if (this.listeners.delete(listener)) {
-      logger.debug('unsubscribed')
-    }
+    this.listeners.delete(listener)
   }
 }

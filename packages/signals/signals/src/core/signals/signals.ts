@@ -56,6 +56,7 @@ export class Signals implements ISignals {
      * It can be set at the emitter level, so that no signals actually get emitted until the middleware has initialized.
      */
     this.signalEmitter.subscribe((signal) => {
+      logger.logSignal(signal)
       void this.signalsClient.send(signal)
       void this.buffer.add(signal)
     })
