@@ -1,10 +1,10 @@
 import { Page } from '@playwright/test'
 
 export const logConsole = (page: Page) => {
+  const CONSOLE_BLACKLIST = ['Bad Request']
   page.on('console', (msg) => {
-    const CONSOLE_BLACKLIST = ['Bad Request']
     const text = msg.text()
-    // do not print errors that are expected -- e.g. network errors set up to test the unhappy path.
+    // keep stdout clean, e.g. by not printing intentional errors
     if (CONSOLE_BLACKLIST.some((str) => text.includes(str))) {
       return
     }
