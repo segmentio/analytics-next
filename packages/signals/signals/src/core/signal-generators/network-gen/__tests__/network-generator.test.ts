@@ -1,8 +1,4 @@
-import {
-  NetworkGenerator,
-  NetworkSettingsConfig,
-  NetworkSettingsConfigSettings,
-} from '..'
+import { NetworkGenerator } from '..'
 import { SignalEmitter } from '../../../emitter'
 import { Response } from 'node-fetch'
 import { sleep } from '@internal/test-helpers'
@@ -11,11 +7,7 @@ import { NetworkSignal } from '@segment/analytics-signals-runtime'
 
 // xhr tests are in integration tests
 describe(NetworkGenerator, () => {
-  class TestNetworkGenerator extends NetworkGenerator {
-    constructor(settings: Partial<NetworkSettingsConfigSettings> = {}) {
-      super(new NetworkSettingsConfig(settings))
-    }
-  }
+  class TestNetworkGenerator extends NetworkGenerator {}
 
   beforeEach(() => {
     setLocation({ hostname: 'localhost' })
@@ -30,101 +22,6 @@ describe(NetworkGenerator, () => {
     }
 
     window.fetch = mockFetch
-  })
-
-  it('should respect the allow/disallow list', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator({
-      networkSignalsAllowList: [
-        new RegExp(`allowed.com/api/v1`),
-        'foo.com/api/v2',
-      ],
-      networkSignalsDisallowList: [new RegExp(`allowed.com/api/v666`)],
-    })
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    // allowed
-    await window.fetch(`http://allowed.com/api/v1/test`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(50)
-    expect(mockEmitter.emit.mock.calls.length).toBe(2)
-    const allowedCalls = mockEmitter.emit.mock.calls
-    const [first, second] = allowedCalls
-
-    expect(first[0].data).toMatchObject({
-      action: 'request',
-      url: 'http://allowed.com/api/v1/test',
-    })
-
-    expect(second[0].data).toMatchObject({
-      action: 'response',
-      url: 'http://allowed.com/api/v1/test',
-    })
-
-    // not allowed
-    await window.fetch(`http://allowed.com/api/v666`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-    await sleep(50)
-    // expect no call
-    expect(mockEmitter.emit.mock.calls.length).toBe(2)
-
-    unregister() // Clean up by unregistering the interceptor
-  })
-
-  it('should not emit request or response signals if not on the same domain', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator()
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`https://foo.com`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toEqual([])
-    unregister()
-  })
-
-  it('should not emit request or response signals if content-type is not recognized in request/response', async () => {
-    // @ts-ignore
-    const mockFetch: typeof fetch = (input, init) => {
-      return Promise.resolve(
-        new Response(JSON.stringify({ data: 'test' }), {
-          headers: { 'content-type': 'foo/bar' },
-          url: input.toString(),
-        })
-      )
-    }
-    window.fetch = mockFetch
-
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator()
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`https://foo.com`, {
-      method: 'POST',
-      headers: { 'content-type': 'bar/baz' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toEqual([])
-    unregister()
   })
 
   it('should emit response signal and request signal, regardless of content type', async () => {
@@ -244,26 +141,6 @@ describe(NetworkGenerator, () => {
     unregister()
   })
 
-  it('should handle relative domains', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator()
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`/test`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    const [first] = mockEmitter.emit.mock.calls
-
-    expect(first[0].data.url).toBe('http://localhost/test')
-    unregister()
-  })
-
   it('should default to GET method if no method is provided', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator()
@@ -280,115 +157,6 @@ describe(NetworkGenerator, () => {
     const [first] = mockEmitter.emit.mock.calls
 
     expect(first[0].data.method).toBe('GET')
-    unregister()
-  })
-
-  it('will not emit signals for same domain if networkSignalsAllowSameDomain = false', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator({
-      networkSignalsAllowList: ['foo.com'],
-      networkSignalsDisallowList: [],
-      networkSignalsAllowSameDomain: false,
-    })
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`http://${window.location.hostname}/test`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    let requests = mockEmitter.emit.mock.calls.filter(
-      (c) => c[0].data.action === 'request'
-    )
-    expect(requests.length).toBe(0)
-
-    await window.fetch(`http://foo.com/test`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    requests = mockEmitter.emit.mock.calls.filter(
-      (c) => c[0].data.action === 'request'
-    )
-    expect(requests.length).toBe(1)
-
-    unregister()
-  })
-
-  it('disallows the signal if it matches in both the allow and disallow list', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator({
-      networkSignalsAllowList: ['disallowed-api.com'],
-      networkSignalsDisallowList: ['https://disallowed-api.com'],
-    })
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`https://disallowed-api.com/api/foo`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toEqual([])
-    unregister()
-  })
-
-  it('allows an explicit disallow list to override same-domain signals', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator({
-      networkSignalsDisallowList: ['/foo'],
-    })
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`/test/foo`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await window.fetch(`/test/bar`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    const requests = mockEmitter.emit.mock.calls
-      .filter((c) => c[0].data.action === 'request')
-      .flatMap((c) => c[0].data.url)
-    expect(requests.length).toBe(1)
-    expect(requests[0]).toBe('http://localhost/test/bar')
-    unregister()
-  })
-
-  it('always disallows segment api network signals', async () => {
-    const mockEmitter = { emit: jest.fn() }
-    const networkGenerator = new TestNetworkGenerator({
-      networkSignalsAllowList: ['.*'],
-    })
-    const unregister = networkGenerator.register(
-      mockEmitter as unknown as SignalEmitter
-    )
-
-    await window.fetch(`https://api.segment.io`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ key: 'value' }),
-    })
-
-    await sleep(100)
-    expect(mockEmitter.emit.mock.calls).toEqual([])
     unregister()
   })
 })

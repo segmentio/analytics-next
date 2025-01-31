@@ -1,11 +1,6 @@
 import { logger } from '../../../lib/logger'
-import {
-  NetworkSignalsFilter,
-  NetworkSignalsFilterList,
-} from './network-signals-filter'
 import { createNetworkSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
-import { SignalsSettingsConfig } from '../../signals'
 import { SignalGenerator } from '../types'
 import {
   NetworkInterceptor,
@@ -14,47 +9,16 @@ import {
 } from './network-interceptor'
 import { containsJSONContentType, tryJSONParse } from './helpers'
 
-export type NetworkSettingsConfigSettings = Pick<
-  SignalsSettingsConfig,
-  | 'networkSignalsAllowList'
-  | 'networkSignalsAllowSameDomain'
-  | 'networkSignalsDisallowList'
->
-export class NetworkSettingsConfig {
-  networkSignalsAllowSameDomain: boolean
-  networkSignalsFilterList: NetworkSignalsFilterList
-  constructor({
-    networkSignalsAllowList,
-    networkSignalsDisallowList,
-    networkSignalsAllowSameDomain,
-  }: NetworkSettingsConfigSettings) {
-    this.networkSignalsAllowSameDomain = networkSignalsAllowSameDomain ?? true
-    this.networkSignalsFilterList = new NetworkSignalsFilterList(
-      networkSignalsAllowList,
-      networkSignalsDisallowList
-    )
-  }
-}
-
 export class NetworkGenerator implements SignalGenerator {
   id = 'network'
 
-  private filter: NetworkSignalsFilter
   private interceptor = new NetworkInterceptor()
   /* List of all signal request IDs that have been emitted */
   private emittedRequestIds: string[] = []
 
-  constructor(settings: NetworkSettingsConfig) {
-    this.filter = new NetworkSignalsFilter(settings)
-  }
-
   register(emitter: SignalEmitter) {
-    const createMetadata = () => ({
-      filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
-    })
-
     const handleRequest: NetworkRequestHandler = (rq) => {
-      if (!rq.url || !this.filter.isAllowed(rq.url)) {
+      if (!rq.url) {
         return
       }
 
@@ -62,16 +26,13 @@ export class NetworkGenerator implements SignalGenerator {
 
       this.emittedRequestIds.push(rq.id)
       emitter.emit(
-        createNetworkSignal(
-          {
-            action: 'request',
-            url: rq.url,
-            method: rq.method || 'GET',
-            data,
-            contentType: rq.headers?.get('content-type') || '',
-          },
-          createMetadata()
-        )
+        createNetworkSignal({
+          action: 'request',
+          url: rq.url,
+          method: rq.method || 'GET',
+          data,
+          contentType: rq.headers?.get('content-type') || '',
+        })
       )
     }
 
@@ -88,24 +49,21 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
       const url = rs.url
-      if (!url || !this.filter.isAllowed(url)) {
+      if (!url) {
         return
       }
 
       const data = await rs.body()
 
       emitter.emit(
-        createNetworkSignal(
-          {
-            action: 'response',
-            url,
-            data: data,
-            ok: rs.ok,
-            status: rs.status,
-            contentType: rs.headers.get('content-type') || '',
-          },
-          createMetadata()
-        )
+        createNetworkSignal({
+          action: 'response',
+          url,
+          data: data,
+          ok: rs.ok,
+          status: rs.status,
+          contentType: rs.headers.get('content-type') || '',
+        })
       )
     }
     this.interceptor.addInterceptors(handleRequest, handleResponse)

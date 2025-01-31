@@ -1,3 +1,4 @@
+import { SignalsMiddleware } from '../core/emitter'
 import { ProcessSignal } from './process-signal'
 
 export interface SignalsPluginSettingsConfig {
@@ -51,6 +52,30 @@ export interface SignalsPluginSettingsConfig {
    * @default 2000
    */
   flushInterval?: number
+
+  /**
+   * Add custom signals middleware
+   * @example
+   *```ts
+   * class MyMiddleware implements SignalsMiddleware {
+   *   process(signal: Signal) {
+   *     // drop the event if some conditions are met
+   *     if (
+   *        signal.type === 'network' &&
+   *        signal.data.action === 'request' &&
+   *       ... etc
+   *     ) {
+   *       return null;
+   *     } else {
+   *       return signal;
+   *   }
+   * }
+   * const myMiddleware = new MyMiddleware()
+   * ...
+   * middleware: [myMiddleware]
+   * ````
+   */
+  middleware?: SignalsMiddleware[] | undefined
 
   /**
    * Allow network requests for URLs that match the specified regex.

@@ -56,6 +56,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
       networkSignalsDisallowList: settings.networkSignalsDisallowList,
       signalStorage: settings.signalStorage,
       signalStorageType: settings.signalStorageType,
+      middleware: settings.middleware,
     })
   }
 
@@ -76,12 +77,12 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     return this.signals.stop()
   }
 
-  onSignal(cb: (signal: Signal) => void) {
+  onSignal(cb: (signal: Signal) => void): this {
     this.signals.signalEmitter.subscribe(cb)
     return this
   }
 
-  addSignal(signal: Signal) {
+  addSignal(signal: Signal): this {
     this.signals.signalEmitter.emit(signal)
     return this
   }

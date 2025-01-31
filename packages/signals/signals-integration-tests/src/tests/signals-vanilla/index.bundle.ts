@@ -2,7 +2,7 @@ import { AnalyticsBrowser } from '@segment/analytics-next'
 import { SignalsPlugin } from '@segment/analytics-signals'
 
 /**
- * Not instantiating the analytics object here, as it will be instantiated in the test
+ * Not calling analytics.load() or instantiating Signals Plugin here, as all this configuration happens in the page object.
  */
 window.SignalsPlugin = SignalsPlugin
 window.analytics = new AnalyticsBrowser()

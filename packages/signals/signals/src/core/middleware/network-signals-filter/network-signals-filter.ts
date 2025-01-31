@@ -1,6 +1,30 @@
-import { NetworkSettingsConfig } from '.'
+import { Signal } from '@segment/analytics-signals-runtime'
 import { RegexLike } from '../../../types/settings'
-import { isSameDomain } from './helpers'
+import { SignalsMiddleware, SignalsMiddlewareContext } from '../../emitter'
+import { SignalsSettingsConfig } from '../../signals'
+import { isSameDomain } from '../../signal-generators/network-gen/helpers'
+
+export type NetworkSettingsConfigSettings = Pick<
+  SignalsSettingsConfig,
+  | 'networkSignalsAllowList'
+  | 'networkSignalsAllowSameDomain'
+  | 'networkSignalsDisallowList'
+>
+export class NetworkSettingsConfig {
+  networkSignalsAllowSameDomain: boolean
+  networkSignalsFilterList: NetworkSignalsFilterList
+  constructor({
+    networkSignalsAllowList,
+    networkSignalsDisallowList,
+    networkSignalsAllowSameDomain,
+  }: NetworkSettingsConfigSettings) {
+    this.networkSignalsAllowSameDomain = networkSignalsAllowSameDomain ?? true
+    this.networkSignalsFilterList = new NetworkSignalsFilterList(
+      networkSignalsAllowList,
+      networkSignalsDisallowList
+    )
+  }
+}
 
 class NetworkFilterListItem {
   regexes: RegexLike[]
@@ -107,3 +131,27 @@ export class NetworkSignalsFilter {
     return allowed
   }
 }
+
+export class NetworkSignalsFilterMiddleware implements SignalsMiddleware {
+  private filter!: NetworkSignalsFilter
+
+  load(ctx: SignalsMiddlewareContext): void | Promise<void> {
+    this.filter = new NetworkSignalsFilter(ctx.unstableGlobalSettings.network)
+  }
+
+  private createMetadata = () => ({
+    filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
+  })
+
+  process(signal: Signal): Signal | null {
+    if (signal.type === 'network') {
+      signal.metadata = this.createMetadata()
+      return this.filter.isAllowed(signal.data.url) ? signal : null
+    } else {
+      return signal
+    }
+  }
+}
+
+export const networkSignalsFilterMiddleware =
+  new NetworkSignalsFilterMiddleware()

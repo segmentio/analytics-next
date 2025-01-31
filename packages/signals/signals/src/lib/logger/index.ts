@@ -1,3 +1,4 @@
+import type { Signal } from '../..'
 import {
   LogLevelOptions,
   parseDebugModeQueryString,
@@ -47,6 +48,17 @@ class Logger {
     if (this.logLevel === 'debug') {
       this.log('debug', ...args)
     }
+  }
+
+  logSignal = (signal: Signal): void => {
+    this.info(
+      'New signal:',
+      signal.type,
+      signal.data,
+      ...(signal.type === 'interaction' && 'change' in signal.data
+        ? ['change:', JSON.stringify(signal.data.change, null, 2)]
+        : [])
+    )
   }
 }
 

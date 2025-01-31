@@ -16,6 +16,7 @@ import { Sandbox, SandboxSettings } from '../processor/sandbox'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
 import { logger } from '../../lib/logger'
 import { LogLevelOptions } from '../debug-mode'
+import { networkSignalsFilterMiddleware } from '../middleware/network-signals-filter/network-signals-filter'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -32,50 +33,36 @@ export type SignalsPublicEmitterContract = {
 
 export class Signals implements ISignals {
   private buffer: SignalBuffer
-  private preStartBuffer: Signal[] = []
   public signalEmitter: SignalEmitter
   private cleanup: VoidFunction[] = []
   private signalsClient: SignalsIngestClient
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
-    this.signalEmitter = new SignalEmitter()
+    this.signalEmitter = new SignalEmitter({
+      middleware: [
+        ...(settingsConfig.middleware ?? []),
+        networkSignalsFilterMiddleware,
+      ],
+    })
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
     )
 
     this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
 
+    /**
+     * TODO: support middleweware chain should be able to modify the signal before it is added to the buffer. This middleware chain should be something that will wait for cdn settings before it dispatches
+     * (e.g, you can implement a disallow list that waits for the instance and then drops the signal)
+     * It can be set at the emitter level, so that no signals actually get emitted until the middleware has initialized.
+     */
     this.signalEmitter.subscribe((signal) => {
+      logger.logSignal(signal)
       void this.signalsClient.send(signal)
       void this.buffer.add(signal)
     })
 
-    this.signalEmitter.subscribe(this.addToPreStartBuffer)
-
-    void this.registerGenerator([
-      ...domGenerators,
-      new NetworkGenerator(this.globalSettings.network),
-    ])
-  }
-
-  private addToPreStartBuffer = (signal: Signal) => {
-    this.preStartBuffer.push(signal)
-  }
-
-  /**
-   * Flush/process any signals that were emitted before the start method was called.
-   */
-  private flushPreStartBuffer = (processor: SignalEventProcessor) => {
-    logger.debug(
-      `Flushing ${this.preStartBuffer.length} events in pre-start buffer`,
-      this.preStartBuffer
-    )
-    this.signalEmitter.unsubscribe(this.addToPreStartBuffer)
-    this.preStartBuffer.forEach(async (signal) => {
-      void processor.process(signal, await this.buffer.getAll())
-    })
-    this.preStartBuffer = []
+    void this.registerGenerator([...domGenerators, new NetworkGenerator()])
   }
 
   /**
@@ -86,6 +73,7 @@ export class Signals implements ISignals {
    */
   async start(analytics: AnyAnalytics): Promise<void> {
     const analyticsService = new AnalyticsService(analytics)
+
     analyticsService.instance.on('reset', () => {
       this.clearStorage()
     })
@@ -101,17 +89,12 @@ export class Signals implements ISignals {
           .autoInstrumentationSettings?.sampleRate ?? 0,
     })
 
-    const sandbox = new Sandbox(
-      new SandboxSettings(this.globalSettings.sandbox)
-    )
-
     const processor = new SignalEventProcessor(
       analyticsService.instance,
-      sandbox
+      new Sandbox(new SandboxSettings(this.globalSettings.sandbox))
     )
 
-    void this.flushPreStartBuffer(processor)
-
+    // subscribe to all emitted signals
     this.signalEmitter.subscribe(async (signal) => {
       void processor.process(signal, await this.buffer.getAll())
     })
@@ -120,7 +103,14 @@ export class Signals implements ISignals {
       analyticsService.createSegmentInstrumentationEventGenerator(),
     ])
 
+    // flush pre start buffer and send any signals
     await this.signalsClient.init({
+      writeKey: analyticsService.instance.settings.writeKey,
+    })
+
+    // load emitter and flush any queued signals to all subscribers
+    void this.signalEmitter.initialize({
+      globalSettings: this.globalSettings,
       writeKey: analyticsService.instance.settings.writeKey,
     })
   }
