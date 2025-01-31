@@ -1,5 +1,3 @@
-// types/factories.ts
-
 import {
   InstrumentationSignal,
   InteractionData,
@@ -58,7 +56,7 @@ export const createUserDefinedSignal = (
 
 export const createNetworkSignal = (
   data: NetworkData,
-  metadata: NetworkSignalMetadata
+  metadata?: NetworkSignalMetadata
 ): NetworkSignal => {
   return {
     type: 'network',
@@ -66,6 +64,11 @@ export const createNetworkSignal = (
       ...data,
       url: normalizeUrl(data.url),
     },
-    metadata: metadata,
+    metadata: metadata ?? {
+      filters: {
+        allowed: [],
+        disallowed: [],
+      },
+    },
   }
 }

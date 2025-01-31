@@ -3,10 +3,10 @@ import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
 import { SignalsIngestSettingsConfig } from '../client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
-import { NetworkSettingsConfig } from '../signal-generators/network-gen'
 import { SignalsPluginSettingsConfig } from '../../types'
 import { WebStorage } from '../../lib/storage/web-storage'
 import { MutationGeneratorSettings } from '../signal-generators/dom-gen/change-gen'
+import { NetworkSettingsConfig } from '../middleware/network-signals-filter/network-signals-filter'
 
 export type SignalsSettingsConfig = Pick<
   SignalsPluginSettingsConfig,

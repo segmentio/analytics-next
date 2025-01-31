@@ -1,4 +1,3 @@
-import { analyticsMock } from '../../test-helpers/mocks'
 import { SignalsPlugin } from '../signals-plugin'
 
 // this specific test was throwing a bunch of warnings:

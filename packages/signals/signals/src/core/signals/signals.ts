@@ -16,6 +16,7 @@ import { Sandbox, SandboxSettings } from '../processor/sandbox'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
 import { logger } from '../../lib/logger'
 import { LogLevelOptions } from '../debug-mode'
+import { networkSignalsFilterMiddleware } from '../middleware/network-signals-filter/network-signals-filter'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -38,11 +39,11 @@ export class Signals implements ISignals {
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
-    /**
-     * TODO: add an event queue inside the signal emitter
-     */
     this.signalEmitter = new SignalEmitter({
-      middleware: settingsConfig.middleware ?? [],
+      middleware: [
+        ...(settingsConfig.middleware ?? []),
+        networkSignalsFilterMiddleware,
+      ],
     })
     this.signalsClient = new SignalsIngestClient(
       this.globalSettings.ingestClient
@@ -61,10 +62,7 @@ export class Signals implements ISignals {
       void this.buffer.add(signal)
     })
 
-    void this.registerGenerator([
-      ...domGenerators,
-      new NetworkGenerator(this.globalSettings.network),
-    ])
+    void this.registerGenerator([...domGenerators, new NetworkGenerator()])
   }
 
   /**

@@ -2,9 +2,13 @@ import { Page } from '@playwright/test'
 
 export const logConsole = (page: Page) => {
   page.on('console', (msg) => {
+    if (msg.text().includes('NAME_NOT_RESOLVED')) {
+      // dns error spam started showing up -- either a chrome change or a vpn issue
+      return
+    }
     console.log(`console.${msg.type()}:`, msg.text())
   })
   page.on('pageerror', (error) => {
-    console.error('Page error:', error)
+    console.error('Page error:', error, `[name]: ${error.name}`)
   })
 }
