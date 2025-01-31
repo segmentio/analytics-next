@@ -1,0 +1,6 @@
+[env]
+# Needed because on macOS there are no prebuilt binaries for Node <15. Requires mise 2024.12.7+.
+MISE_ARCH="x86_64"
+
+[tools]
+node = "14.21.3"
