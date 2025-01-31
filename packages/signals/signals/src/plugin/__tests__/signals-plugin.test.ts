@@ -1,3 +1,4 @@
+import { analyticsMock } from '../../test-helpers/mocks'
 import { SignalsPlugin } from '../signals-plugin'
 
 // this specific test was throwing a bunch of warnings:
@@ -39,7 +40,7 @@ describe(SignalsPlugin, () => {
     expect(emitterSpy.mock.calls[0][0]).toEqual(callback)
   })
 
-  test('addSignal method emits signal', () => {
+  test('addSignal method emits signal', async () => {
     const plugin = new SignalsPlugin()
     const signal = { data: 'test' } as any
     const emitterSpy = jest.spyOn(plugin.signals.signalEmitter, 'emit')
