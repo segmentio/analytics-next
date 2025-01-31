@@ -91,3 +91,10 @@ it('falls back if the script is not at all present on the page', () => {
   withTag('')
   expect(getCDN()).toMatchInlineSnapshot(`"https://cdp.customer.io"`)
 })
+
+it('detects localhost with port', () => {
+  withTag(`
+    <script src="http://localhost:3000/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZv/analytics.min.js" />
+  `)
+  expect(getCDN()).toMatchInlineSnapshot(`"http://localhost:3000"`)
+})
