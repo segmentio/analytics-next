@@ -6,9 +6,10 @@ describe('OnChangeGenerator', () => {
   let onChangeGenerator: OnChangeGenerator
   let emitter: SignalEmitter
   let unregister: () => void
-  beforeEach(() => {
+  beforeEach(async () => {
     onChangeGenerator = new OnChangeGenerator()
     emitter = new SignalEmitter()
+    await emitter.initialize({} as any)
   })
 
   afterEach(() => {
