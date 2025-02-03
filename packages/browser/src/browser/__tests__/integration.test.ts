@@ -29,6 +29,7 @@ import {
 import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
 import { NullAnalytics } from '../../core/analytics'
 import { recordIntegrationMetric } from '../../core/stats/metric-helpers'
+import { waitForCondition } from '../../test-helpers/helpers'
 
 let fetchCalls: ReturnType<typeof parseFetchCall>[] = []
 
@@ -385,6 +386,38 @@ describe('Initialization', () => {
 
   describe('options.integrations permutations', () => {
     const settings = { writeKey }
+
+    it('proxies integration options', async () => {
+      const analytics = AnalyticsBrowser.load(settings)
+      analytics.track(
+        'foo',
+        {},
+        {
+          integrations: {
+            Warehouses: {
+              warehouseIds: ['3dasf42dd'],
+              all: true,
+            },
+          },
+        }
+      )
+      await waitForCondition(() => {
+        return fetchCalls.some((el) => el.url.toString().includes('/v1/t'))
+      })
+      const trackCall = fetchCalls.find((el) =>
+        el.url.toString().includes('/v1/t')
+      )
+      expect(trackCall?.body.integrations).toMatchInlineSnapshot(`
+        {
+          "Warehouses": {
+            "all": true,
+            "warehouseIds": [
+              "3dasf42dd",
+            ],
+          },
+        }
+      `)
+    })
 
     it('does not load Segment.io if integrations.All is false and Segment.io is not listed', async () => {
       const options: { integrations: { [key: string]: boolean } } = {
