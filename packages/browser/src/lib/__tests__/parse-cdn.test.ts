@@ -51,6 +51,7 @@ it('should return the overridden cdn if window.analytics._cdn is mutated', () =>
   withTag(`
   <script src="https://cdp.customer.io/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />
   `)
+  // @ts-ignore
   ;(window.analytics as any) = {
     _cdn: 'http://foo.cdn.com',
   }
@@ -59,6 +60,7 @@ it('should return the overridden cdn if window.analytics._cdn is mutated', () =>
 
 it('if analytics is not loaded yet, should still return cdn', () => {
   // is this an impossible state?
+  // @ts-ignore
   window.analytics = undefined as any
   withTag(`
   <script src="https://cdp.customer.io/v1/analytics-js/snippet/gA5MBlJXrtZaB5sMMZvCF6czfBcfzNO6/analytics.min.js" />

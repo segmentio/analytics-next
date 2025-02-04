@@ -8,5 +8,5 @@ export * from './core/plugin'
 export * from './core/user'
 
 export * from './plugins/in-app-plugin'
-
-export type { AnalyticsSnippet } from './browser/standalone-analytics'
+export type { AnalyticsSnippet } from './browser/standalone-interface'
+export { getGlobalAnalytics } from './lib/global-analytics-helper'

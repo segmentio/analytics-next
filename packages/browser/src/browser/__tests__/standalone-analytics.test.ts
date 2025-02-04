@@ -1,13 +1,14 @@
 import jsdom, { JSDOM } from 'jsdom'
-import { InitOptions } from '../../'
+import { InitOptions, getGlobalAnalytics } from '../../'
 import { AnalyticsBrowser, loadLegacySettings } from '../../browser'
 import { snippet } from '../../tester/__fixtures__/snippet'
-import { install, AnalyticsStandalone } from '../standalone-analytics'
+import { install } from '../standalone-analytics'
 import unfetch from 'unfetch'
 import { PersistedPriorityQueue } from '../../lib/priority-queue/persisted'
 import { sleep } from '../../lib/sleep'
 import * as Factory from '../../test-helpers/factories'
 import { EventQueue } from '../../core/queue/event-queue'
+import { AnalyticsStandalone } from '../standalone-interface'
 
 const track = jest.fn()
 const identify = jest.fn()
@@ -42,20 +43,20 @@ describe('standalone bundle', () => {
   const mockObj = `foo`
 
   beforeEach(async () => {
-    ; (window as any).analytics = undefined
+    ;(window as any).analytics = undefined
     const html = `
     <!DOCTYPE html>
       <head>
         <script>
           ${snippet(
-      mockObj,
-      true,
-      `
+            mockObj,
+            true,
+            `
             window.analytics.track('fruit basket', { fruits: ['🍌', '🍇'] })
             window.analytics.setAnonymousId('anonNetto')
             window.analytics.on('initialize', () => ({ user: 'ariel' }))
           `
-    )}
+          )}
         </script>
       </head>
       <body>
@@ -74,8 +75,8 @@ describe('standalone bundle', () => {
     const windowSpy = jest.spyOn(global, 'window', 'get')
     const documentSpy = jest.spyOn(global, 'document', 'get')
 
-    jest.spyOn(console, 'warn').mockImplementationOnce(() => { })
-    jest.spyOn(console, 'error').mockImplementationOnce(() => { })
+    jest.spyOn(console, 'warn').mockImplementationOnce(() => {})
+    jest.spyOn(console, 'error').mockImplementationOnce(() => {})
 
     windowSpy.mockImplementation(() => {
       return jsd.window as unknown as Window & typeof globalThis
@@ -139,7 +140,7 @@ describe('standalone bundle', () => {
       .mockImplementation((): Promise<Response> => fetchSettings)
     const mockCdn = 'http://my-overridden-cdn.com'
 
-    window.analytics._cdn = mockCdn
+    getGlobalAnalytics()!._cdn = mockCdn
     await loadLegacySettings(mockObj)
 
     expect(unfetch).toHaveBeenCalledWith(expect.stringContaining(mockCdn))
@@ -256,7 +257,7 @@ describe('standalone bundle', () => {
 
     // register is called after flushPreBuffer in `loadAnalytics`
     register.mockImplementationOnce(() =>
-      window.analytics.track('race conditions', { foo: 'bar' })
+      getGlobalAnalytics()?.track('race conditions', { foo: 'bar' })
     )
 
     await install()

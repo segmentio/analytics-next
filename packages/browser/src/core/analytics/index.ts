@@ -48,6 +48,7 @@ import { version } from '../../generated/version'
 import { PriorityQueue } from '../../lib/priority-queue'
 import { getGlobal } from '../../lib/get-global'
 import { AnalyticsClassic, AnalyticsCore } from './interfaces'
+import { setGlobalAnalytics } from '../../lib/global-analytics-helper'
 
 const deprecationWarning =
   'This is being deprecated and will be not be available in future releases of Analytics JS'
@@ -102,6 +103,11 @@ export interface InitOptions {
     aid?: RegExp
     uid?: RegExp
   }
+  /**
+   * When using the snippet, this is the key that points to the global analytics instance (e.g. window.analytics).
+   * default: analytics
+   */
+  globalAnalyticsKey?: string
 }
 
 /* analytics-classic stubs */
@@ -468,7 +474,7 @@ export class Analytics
 
   noConflict(): Analytics {
     console.warn(deprecationWarning)
-    window.analytics = _analytics ?? this
+    setGlobalAnalytics(_analytics ?? this)
     return this
   }
 

@@ -4,6 +4,7 @@ import { LegacySettings } from '..'
 import { pWhile } from '../../lib/p-while'
 import { snippet } from '../../tester/__fixtures__/snippet'
 import * as Factory from '../../test-helpers/factories'
+import { getGlobalAnalytics } from '../..'
 
 const cdnResponse: LegacySettings = {
   integrations: {
@@ -86,11 +87,11 @@ describe('standalone bundle', () => {
     await import('../standalone')
 
     await pWhile(
-      () => window.analytics?.initialized !== true,
-      () => { }
+      () => getGlobalAnalytics()?.initialized !== true,
+      () => {}
     )
 
-    expect(window.analytics).not.toBeUndefined()
-    expect(window.analytics.initialized).toBe(true)
+    expect(getGlobalAnalytics()).not.toBeUndefined()
+    expect(getGlobalAnalytics()?.initialized).toBe(true)
   })
 })

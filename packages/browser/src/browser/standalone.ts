@@ -25,6 +25,7 @@ import { shouldPolyfill } from '../lib/browser-polyfill'
 import { RemoteMetrics } from '../core/stats/remote-metrics'
 import { embeddedWriteKey } from '../lib/embedded-write-key'
 import { onCSPError } from '../lib/csp-detection'
+import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 
 function onError(err?: unknown) {
   console.error('[analytics.js]', 'Failed to load Analytics.js', err)
@@ -52,6 +53,16 @@ async function attempt<T>(promise: () => Promise<T>) {
   } catch (err) {
     onError(err)
   }
+}
+
+const globalAnalyticsKey = (
+  document.querySelector(
+    'script[data-global-segment-analytics-key]'
+  ) as HTMLScriptElement
+)?.dataset.globalSegmentAnalyticsKey
+
+if (globalAnalyticsKey) {
+  setGlobalAnalyticsKey(globalAnalyticsKey)
 }
 
 if (shouldPolyfill()) {
