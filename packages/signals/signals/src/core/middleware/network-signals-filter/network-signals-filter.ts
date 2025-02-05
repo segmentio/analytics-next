@@ -152,6 +152,3 @@ export class NetworkSignalsFilterMiddleware implements SignalsMiddleware {
     }
   }
 }
-
-export const networkSignalsFilterMiddleware =
-  new NetworkSignalsFilterMiddleware()

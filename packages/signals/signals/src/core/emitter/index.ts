@@ -1,4 +1,6 @@
 import { Signal } from '@segment/analytics-signals-runtime'
+import { AnyAnalytics } from '../../types'
+import { SignalBuffer } from '../buffer'
 import { SignalGlobalSettings } from '../signals'
 
 export interface EmitSignal {
@@ -10,14 +12,26 @@ export interface SignalsMiddlewareContext {
    * These are global application settings. They are considered unstable, and should only be used internally.
    * @interal
    */
-  unstableGlobalSettings: SignalGlobalSettings
-  writeKey: string
+  readonly unstableGlobalSettings: SignalGlobalSettings
+
+  /**
+   * @internal
+   */
+  analyticsInstance: AnyAnalytics
+
+  /**
+   * @internal
+   */
+  buffer: SignalBuffer
 }
 
 export interface PluginSettings {
   writeKey: string
 }
 
+/**
+ * A middleware is a plugin that modifies or drops signals
+ */
 export interface SignalsMiddleware {
   /**
    * Wait for .load to complete before emitting signals
@@ -27,22 +41,65 @@ export interface SignalsMiddleware {
   process(signal: Signal): Signal | null
 }
 
+/**
+ * A subscriber is basically a destination -- it receives a signal once it has travelled through the pipeline.
+ */
+export interface SignalsSubscriber {
+  /**
+   * Wait for .load to complete before emitting signals to this subscriber
+   */
+  load(ctx: SignalsMiddlewareContext): Promise<void> | void
+  process(signal: Signal): void
+}
+
+export type AnySignalSubscriber = SignalsSubscriber | ((signal: Signal) => void)
+
+/**
+ * Normalizes all subscribers to a single interface
+ * Waits for the current plugin to load before emitting signals
+ * @internal
+ */
+class SignalsSubscriberAdapter implements SignalsSubscriber {
+  subscriber: AnySignalSubscriber
+  private loadedPromise?: Promise<void>
+  constructor(subscriber: AnySignalSubscriber) {
+    this.subscriber = subscriber
+  }
+
+  load(ctx: SignalsMiddlewareContext): void {
+    if (typeof this.subscriber === 'function') return
+    this.loadedPromise = Promise.resolve(this.subscriber.load(ctx))
+  }
+
+  process(signal: Signal): void {
+    const sub = this.subscriber
+    if (typeof sub === 'function') {
+      sub(signal)
+    } else {
+      if (this.loadedPromise) {
+        void this.loadedPromise.then(() => sub.process(signal))
+      } else {
+        throw new Error('load() must be called before process()')
+      }
+    }
+  }
+}
+
 export interface SignalEmitterSettings {
   middleware?: SignalsMiddleware[]
 }
 export class SignalEmitter implements EmitSignal {
-  private listeners = new Set<(signal: Signal) => void>()
+  private subscribers = new Set<SignalsSubscriberAdapter>()
   private middlewares: SignalsMiddleware[] = []
-  private initialized = false // Controls buffering vs eager signal processing
   private signalQueue: Signal[] = [] // Buffer for signals emitted before initialization
-
+  private startedCtx?: SignalsMiddlewareContext // Context that .start() is called with. If this is defined, the emitter has been started.
   constructor(settings?: SignalEmitterSettings) {
     if (settings?.middleware) this.middlewares.push(...settings.middleware)
   }
 
   // Emit a signal
   emit(signal: Signal): void {
-    if (!this.initialized) {
+    if (!this.startedCtx) {
       // Buffer the signal if not initialized
       this.signalQueue.push(signal)
       return
@@ -50,6 +107,63 @@ export class SignalEmitter implements EmitSignal {
 
     // Process and notify listeners
     this.processAndEmit(signal)
+  }
+
+  // Initialize the emitter, load all plugins, flush the buffer, and enable eager processing
+  async start(
+    signalsMiddlewareContext: SignalsMiddlewareContext
+  ): Promise<this> {
+    if (this.startedCtx) return this
+
+    // Wait for all plugin to complete their load method
+    await Promise.all(
+      this.middlewares.map((mw) => mw.load(signalsMiddlewareContext))
+    )
+
+    // Load all destinations, but do not wait for their load methods to be invoked.
+    this.subscribers.forEach((sub) => {
+      void sub.load(signalsMiddlewareContext)
+    })
+
+    this.startedCtx = signalsMiddlewareContext
+
+    // Process and emit all buffered signals
+    while (this.signalQueue.length > 0) {
+      const signal = this.signalQueue.shift() as Signal
+      // Never await -- if one destination fails to process, it should not block
+      this.processAndEmit(signal)
+    }
+    return this
+  }
+
+  /**
+   * Listen to signals emitted, once they have travelled through the plugin pipeline.
+   * This is equivalent to a destination plugin.
+   */
+  subscribe(...subs: AnySignalSubscriber[]): this {
+    subs
+      .map((d) => new SignalsSubscriberAdapter(d))
+      .forEach((d) => {
+        if (!this.subscribers.has(d)) {
+          this.subscribers.add(d)
+          if (this.startedCtx) {
+            void d.load(this.startedCtx)
+          }
+        }
+      })
+    return this
+  }
+
+  unsubscribe(...unsubbed: AnySignalSubscriber[]): this {
+    unsubbed.forEach((toUnsubscribe) => {
+      const adapter = [...this.subscribers].find(
+        (s) => s.subscriber === toUnsubscribe
+      )
+      if (adapter) {
+        this.subscribers.delete(adapter)
+      }
+    })
+    return this
   }
 
   // Process and emit a signal
@@ -60,50 +174,9 @@ export class SignalEmitter implements EmitSignal {
       if (processed === null) return // Drop the signal
     }
 
-    // Notify listeners
-    for (const listener of this.listeners) {
-      listener(signal)
+    // Process events for subscribers
+    for (const subscriber of this.subscribers) {
+      subscriber.process(signal)
     }
-  }
-
-  // Initialize the emitter, load plugin, flush the buffer, and enable eager processing
-  async initialize({
-    globalSettings,
-    writeKey,
-  }: {
-    globalSettings: SignalGlobalSettings
-    writeKey: string
-  }): Promise<void> {
-    if (this.initialized) return
-
-    // Wait for all plugin to complete their load method
-    await Promise.all(
-      this.middlewares.map((mw) =>
-        mw.load({ unstableGlobalSettings: globalSettings, writeKey })
-      )
-    )
-
-    this.initialized = true
-
-    // Process and emit all buffered signals
-    while (this.signalQueue.length > 0) {
-      const signal = this.signalQueue.shift() as Signal
-      this.processAndEmit(signal)
-    }
-  }
-
-  /**
-   * Listen to signals emitted, once they have travelled through the plugin pipeline.
-   * This is equivalent to a destination plugin.
-   */
-  subscribe(listener: (signal: Signal) => void): void {
-    if (!this.listeners.has(listener)) {
-      this.listeners.add(listener)
-    }
-  }
-
-  // Unsubscribe a listener
-  unsubscribe(listener: (signal: Signal) => void): void {
-    this.listeners.delete(listener)
   }
 }
