@@ -2,6 +2,17 @@
 import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
 import { setVersionType } from '../plugins/customerio/normalize'
 
+// The global analytics key must be set first so that subsequent calls to getCdn() fetch the CDN from the correct instance.
+const globalAnalyticsKey = (
+  document.querySelector(
+    'script[data-global-customerio-analytics-key]'
+  ) as HTMLScriptElement
+)?.dataset.globalCustomerioAnalyticsKey
+
+if (globalAnalyticsKey) {
+  setGlobalAnalyticsKey(globalAnalyticsKey)
+}
+
 if (process.env.ASSET_PATH) {
   if (process.env.ASSET_PATH === '/dist/umd/') {
     // @ts-ignore
@@ -53,16 +64,6 @@ async function attempt<T>(promise: () => Promise<T>) {
   } catch (err) {
     onError(err)
   }
-}
-
-const globalAnalyticsKey = (
-  document.querySelector(
-    'script[data-global-customerio-analytics-key]'
-  ) as HTMLScriptElement
-)?.dataset.globalCustomerioAnalyticsKey
-
-if (globalAnalyticsKey) {
-  setGlobalAnalyticsKey(globalAnalyticsKey)
 }
 
 if (shouldPolyfill()) {

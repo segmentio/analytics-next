@@ -9,14 +9,19 @@ const getCDNUrlFromScriptTag = (): string | undefined => {
   const scripts = Array.prototype.slice.call(
     document.querySelectorAll('script')
   )
-  scripts.forEach((s) => {
+  for (const s of scripts) {
     const src = s.getAttribute('src') ?? ''
     const result = analyticsScriptRegex.exec(src)
 
     if (result && result[1]) {
       cdn = result[1]
     }
-  })
+
+    // If the script tag has the globalCustomerioAnalyticsKey attribute, then this is a CDP script (not segment).
+    if (s.dataset?.globalCustomerioAnalyticsKey != null) {
+      break
+    }
+  }
   return cdn
 }
 
