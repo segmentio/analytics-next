@@ -57,9 +57,9 @@ async function attempt<T>(promise: () => Promise<T>) {
 
 const globalAnalyticsKey = (
   document.querySelector(
-    'script[data-global-segment-analytics-key]'
+    'script[data-global-customerio-analytics-key]'
   ) as HTMLScriptElement
-)?.dataset.globalSegmentAnalyticsKey
+)?.dataset.globalCustomerioAnalyticsKey
 
 if (globalAnalyticsKey) {
   setGlobalAnalyticsKey(globalAnalyticsKey)
