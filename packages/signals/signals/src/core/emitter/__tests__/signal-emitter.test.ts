@@ -284,6 +284,11 @@ describe(SignalEmitter, () => {
 
     void emitter.start(mockCtx)
 
+    await sleep(0)
+
+    expect(processSpy1).not.toHaveBeenCalled()
+    expect(processSpy2).not.toHaveBeenCalled()
+
     await sleep(50)
 
     expect(loadSpy1).toHaveBeenCalledTimes(1)
