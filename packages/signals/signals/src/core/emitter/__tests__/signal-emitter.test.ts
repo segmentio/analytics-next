@@ -319,8 +319,11 @@ describe(SignalEmitter, () => {
     const loadSpy1 = jest.spyOn(mockSubscriber1, 'load')
 
     class MockSubscriber2 extends MockSubscriber1 {
+      _resolveLoadForTest!: () => void
       async load(): Promise<void> {
-        await sleep(50)
+        return new Promise((resolve) => {
+          this._resolveLoadForTest = resolve
+        })
       }
     }
 
@@ -338,12 +341,13 @@ describe(SignalEmitter, () => {
 
     expect(loadSpy1).toHaveBeenCalledTimes(1)
     expect(processSpy1).toHaveBeenCalledWith(mockSignal)
-    // Subscriber 1 loads immediately and Subscriber 2 takes a while, but they shouldn't block eachother
+    // Subscriber 1 loads immediately and Subscriber 2 , but they shouldn't block eachother
     expect(loadSpy2).toHaveBeenCalledTimes(1)
     expect(processSpy2).not.toHaveBeenCalled()
 
     // Subscriber 2's load method should be resolved, so it should process the signal
-    await sleep(50)
+    mockSubscriber2._resolveLoadForTest()
+    await sleep(0)
     expect(processSpy2).toHaveBeenCalledTimes(1)
   })
 })
