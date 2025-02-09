@@ -13,9 +13,9 @@ import { AnalyticsService } from '../analytics-service'
 import { SignalGlobalSettings, SignalsSettingsConfig } from './settings'
 import { logger } from '../../lib/logger'
 import { LogLevelOptions } from '../debug-mode'
-import { NetworkSignalsFilterMiddleware } from '../middleware/network-signals-filter/network-signals-filter'
 import { SignalsIngestSubscriber } from '../middleware/signals-ingest'
 import { SignalsEventProcessorSubscriber } from '../middleware/event-processor'
+import { NetworkSignalsFilterMiddleware } from '../middleware/network-signals-filter/network-signals-filter'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -120,13 +120,17 @@ export class Signals implements ISignals {
   }
 
   private getSignalEmitter(middleware?: SignalsMiddleware[]): SignalEmitter {
-    return new SignalEmitter({
-      middleware: [...(middleware ?? []), new NetworkSignalsFilterMiddleware()],
-    }).subscribe(
-      (signal) => logger.logSignal(signal),
-      (signal) => this.buffer.add(signal),
-      new SignalsIngestSubscriber(),
-      new SignalsEventProcessorSubscriber()
-    )
+    // we initialize the emitter here so that registerGenerator can be called before start
+    return new SignalEmitter()
+      .addMiddleware(
+        new NetworkSignalsFilterMiddleware(),
+        ...(middleware || [])
+      )
+      .subscribe(
+        (signal) => logger.logSignal(signal),
+        (signal) => this.buffer.add(signal),
+        new SignalsIngestSubscriber(),
+        new SignalsEventProcessorSubscriber()
+      )
   }
 }
