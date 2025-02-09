@@ -186,4 +186,116 @@ describe(SignalEmitter, () => {
     expect(mockMiddleware.process).toHaveBeenCalledWith(mockSignal)
     expect(mockSubscriber.process).toHaveBeenCalledWith(mockSignal)
   })
+
+  it('should support .addMiddleware method', async () => {
+    emitter = await new SignalEmitter()
+      .addMiddleware(mockMiddleware)
+      .subscribe(mockSubscriber)
+      .start(mockCtx)
+
+    emitter.emit(mockSignal)
+
+    await sleep(0)
+
+    expect(mockMiddleware.process).toHaveBeenCalledWith(mockSignal)
+    expect(mockSubscriber.process).toHaveBeenCalledWith(mockSignal)
+  })
+
+  it('should support .removeMiddleware method', async () => {
+    emitter = await new SignalEmitter()
+      .addMiddleware(mockMiddleware)
+      .removeMiddleware(mockMiddleware)
+      .subscribe(mockSubscriber)
+      .start(mockCtx)
+
+    emitter.emit(mockSignal)
+
+    await sleep(0)
+
+    expect(mockMiddleware.process).not.toHaveBeenCalled()
+    expect(mockSubscriber.process).toHaveBeenCalled()
+  })
+
+  it('should support add and removeMiddleware after start', async () => {
+    emitter = await new SignalEmitter().subscribe(mockSubscriber).start(mockCtx)
+    emitter.addMiddleware(mockMiddleware)
+    emitter.emit(mockSignal)
+
+    await sleep(0)
+
+    expect(mockMiddleware.process).toHaveBeenCalledTimes(1)
+
+    emitter.removeMiddleware(mockMiddleware)
+
+    emitter.emit(mockSignal)
+    await sleep(0)
+    expect(mockMiddleware.process).toHaveBeenCalledTimes(1)
+  })
+
+  it('should handle multiple middlewares being added', async () => {
+    const mockMiddleware2 = {
+      load: jest.fn(),
+      process: jest.fn().mockReturnValue(mockSignal),
+    }
+
+    emitter = await new SignalEmitter()
+      .addMiddleware(mockMiddleware, mockMiddleware2)
+      .subscribe(mockSubscriber)
+      .start(mockCtx)
+
+    emitter.emit(mockSignal)
+
+    await sleep(0)
+
+    expect(mockMiddleware.process).toHaveBeenCalledWith(mockSignal)
+    expect(mockMiddleware2.process).toHaveBeenCalledWith(mockSignal)
+    expect(mockSubscriber.process).toHaveBeenCalledWith(mockSignal)
+  })
+
+  it('should block the processing of signals until all middleware .load promises are resolved', async () => {
+    class MockMiddleware1 implements SignalsMiddleware {
+      process(signal: Signal): Signal | null {
+        // @ts-ignore
+        signal.foo = this.ctx
+        return signal
+      }
+      ctx!: SignalsMiddlewareContext
+      async load(ctx: SignalsMiddlewareContext): Promise<void> {
+        await sleep(50)
+        this.ctx = ctx
+      }
+    }
+    const mockMiddleware1 = new MockMiddleware1()
+    const processSpy1 = jest.spyOn(mockMiddleware1, 'process')
+    const loadSpy1 = jest.spyOn(mockMiddleware1, 'load')
+
+    const mockMiddleware2 =
+      new (class MockMiddleware2 extends MockMiddleware1 {})()
+
+    const processSpy2 = jest.spyOn(mockMiddleware2, 'process')
+    const loadSpy2 = jest.spyOn(mockMiddleware2, 'load')
+
+    emitter = new SignalEmitter().addMiddleware(
+      mockMiddleware1,
+      mockMiddleware2
+    )
+
+    emitter.emit(mockSignal)
+
+    void emitter.start(mockCtx)
+
+    await sleep(50)
+
+    expect(loadSpy1).toHaveBeenCalledTimes(1)
+    expect(loadSpy2).toHaveBeenCalledTimes(1)
+
+    expect(processSpy1).toHaveBeenCalledWith(mockSignal)
+    expect(processSpy1).toHaveLastReturnedWith(
+      expect.objectContaining({ foo: mockCtx })
+    )
+    expect(processSpy2).toHaveBeenCalledWith(mockSignal)
+    expect(processSpy2).toHaveLastReturnedWith(
+      expect.objectContaining({ foo: mockCtx })
+    )
+  })
 })

@@ -94,7 +94,9 @@ export class SignalEmitter implements EmitSignal {
   private signalQueue: Signal[] = [] // Buffer for signals emitted before initialization
   private startedCtx?: SignalsMiddlewareContext // Context that .start() is called with. If this is defined, the emitter has been started.
   constructor(settings?: SignalEmitterSettings) {
-    settings?.middleware?.forEach((m) => this.middlewares.add(m))
+    if (settings?.middleware) {
+      this.addMiddleware(...settings.middleware)
+    }
   }
   /**
    * Load all middleware, flush the buffer, and enable eager processing
@@ -139,6 +141,21 @@ export class SignalEmitter implements EmitSignal {
     this.processAndEmit(signal)
   }
 
+  addMiddleware(...mws: SignalsMiddleware[]): this {
+    mws.forEach((mw) => {
+      if (this.startedCtx) {
+        void mw.load(this.startedCtx)
+      }
+      this.middlewares.add(mw)
+    })
+    return this
+  }
+
+  removeMiddleware(...mws: SignalsMiddleware[]): this {
+    mws.forEach((mw) => this.middlewares.delete(mw))
+    return this
+  }
+
   /**
    * Listen to signals emitted, once they have travelled through the plugin pipeline.
    * This is equivalent to a destination plugin.
@@ -148,10 +165,10 @@ export class SignalEmitter implements EmitSignal {
       .map((d) => new SignalsSubscriberAdapter(d))
       .forEach((d) => {
         if (!this.subscribers.has(d)) {
-          this.subscribers.add(d)
           if (this.startedCtx) {
             void d.load(this.startedCtx)
           }
+          this.subscribers.add(d)
         }
       })
     return this
