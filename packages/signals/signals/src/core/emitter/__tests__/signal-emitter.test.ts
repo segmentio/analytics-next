@@ -338,11 +338,11 @@ describe(SignalEmitter, () => {
 
     expect(loadSpy1).toHaveBeenCalledTimes(1)
     expect(processSpy1).toHaveBeenCalledWith(mockSignal)
-
-    // Subscriber 2 has an async load method, but it should not block the processing of signals for subscriber 1
+    // Subscriber 1 loads immediately and Subscriber 2 takes a while, but they shouldn't block eachother
     expect(loadSpy2).toHaveBeenCalledTimes(1)
     expect(processSpy2).not.toHaveBeenCalled()
 
+    // Subscriber 2's load method should be resolved, so it should process the signal
     await sleep(50)
     expect(processSpy2).toHaveBeenCalledTimes(1)
   })
