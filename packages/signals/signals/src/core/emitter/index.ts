@@ -90,14 +90,44 @@ export interface SignalEmitterSettings {
 }
 export class SignalEmitter implements EmitSignal {
   private subscribers = new Set<SignalsSubscriberAdapter>()
-  private middlewares: SignalsMiddleware[] = []
+  private middlewares = new Set<SignalsMiddleware>()
   private signalQueue: Signal[] = [] // Buffer for signals emitted before initialization
   private startedCtx?: SignalsMiddlewareContext // Context that .start() is called with. If this is defined, the emitter has been started.
   constructor(settings?: SignalEmitterSettings) {
-    if (settings?.middleware) this.middlewares.push(...settings.middleware)
+    settings?.middleware?.forEach((m) => this.middlewares.add(m))
+  }
+  /**
+   * Load all middleware, flush the buffer, and enable eager processing
+   */
+  async start(
+    signalsMiddlewareContext: SignalsMiddlewareContext
+  ): Promise<this> {
+    if (this.startedCtx) return this
+
+    //  Load all middleware, waiting for all of them to complete their load method before processing any singals
+    await Promise.all(
+      [...this.middlewares].map((mw) => mw.load(signalsMiddlewareContext))
+    )
+
+    // Load all destinations/subscribers, but do not wait for their load methods to be invoked, since they are not supposed to modify signals.
+    this.subscribers.forEach((sub) => {
+      void sub.load(signalsMiddlewareContext)
+    })
+
+    // Enable eager processing of signals
+    this.startedCtx = signalsMiddlewareContext
+
+    // Flush all buffered signals
+    while (this.signalQueue.length > 0) {
+      const signal = this.signalQueue.shift() as Signal
+      this.processAndEmit(signal)
+    }
+    return this
   }
 
-  // Emit a signal
+  /**
+   * Enqueue a signal to be processed by all plugins and subscribers
+   */
   emit(signal: Signal): void {
     if (!this.startedCtx) {
       // Buffer the signal if not initialized
@@ -107,33 +137,6 @@ export class SignalEmitter implements EmitSignal {
 
     // Process and notify listeners
     this.processAndEmit(signal)
-  }
-
-  // Initialize the emitter, load all plugins, flush the buffer, and enable eager processing
-  async start(
-    signalsMiddlewareContext: SignalsMiddlewareContext
-  ): Promise<this> {
-    if (this.startedCtx) return this
-
-    // Wait for all plugin to complete their load method
-    await Promise.all(
-      this.middlewares.map((mw) => mw.load(signalsMiddlewareContext))
-    )
-
-    // Load all destinations, but do not wait for their load methods to be invoked.
-    this.subscribers.forEach((sub) => {
-      void sub.load(signalsMiddlewareContext)
-    })
-
-    this.startedCtx = signalsMiddlewareContext
-
-    // Process and emit all buffered signals
-    while (this.signalQueue.length > 0) {
-      const signal = this.signalQueue.shift() as Signal
-      // Never await -- if one destination fails to process, it should not block
-      this.processAndEmit(signal)
-    }
-    return this
   }
 
   /**
@@ -166,17 +169,19 @@ export class SignalEmitter implements EmitSignal {
     return this
   }
 
-  // Process and emit a signal
   private processAndEmit(signal: Signal): void {
     // Apply plugin; drop the signal if any plugin returns null
-    for (const plugin of this.middlewares) {
-      const processed = plugin.process(signal)
+    for (const middleware of this.middlewares) {
+      const processed = middleware.process(signal)
       if (processed === null) return // Drop the signal
     }
 
     // Process events for subscribers
     for (const subscriber of this.subscribers) {
-      subscriber.process(signal)
+      // Emit shallow copy as basic protection against accidental modification
+      // Subscribers should not modify signals
+      const signalCopy = { ...signal }
+      subscriber.process(signalCopy)
     }
   }
 }
