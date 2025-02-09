@@ -252,7 +252,7 @@ describe(SignalEmitter, () => {
     expect(mockSubscriber.process).toHaveBeenCalledWith(mockSignal)
   })
 
-  it('should block the processing of signals until all middleware .load promises are resolved', async () => {
+  it('should block the flushing of signals until all middleware .load promises are resolved', async () => {
     class MockMiddleware1 implements SignalsMiddleware {
       process(signal: Signal): Signal | null {
         // @ts-ignore
@@ -299,7 +299,7 @@ describe(SignalEmitter, () => {
     )
   })
 
-  it('should not block the processing of signals for multiple subscribers .load method', async () => {
+  it('subscribers .load promises should not block the flushing ', async () => {
     class MockSubscriber1 implements SignalsSubscriber {
       process(signal: Signal): Signal {
         return signal
