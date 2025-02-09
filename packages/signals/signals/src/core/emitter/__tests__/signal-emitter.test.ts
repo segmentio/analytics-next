@@ -298,4 +298,47 @@ describe(SignalEmitter, () => {
       expect.objectContaining({ foo: mockCtx })
     )
   })
+
+  it('should not block the processing of signals for multiple subscribers .load method', async () => {
+    class MockSubscriber1 implements SignalsSubscriber {
+      process(signal: Signal): Signal {
+        return signal
+      }
+      ctx!: SignalsMiddlewareContext
+      async load(ctx: SignalsMiddlewareContext): Promise<void> {
+        this.ctx = ctx
+      }
+    }
+    const mockSubscriber1 = new MockSubscriber1()
+    const processSpy1 = jest.spyOn(mockSubscriber1, 'process')
+    const loadSpy1 = jest.spyOn(mockSubscriber1, 'load')
+
+    class MockSubscriber2 extends MockSubscriber1 {
+      async load(): Promise<void> {
+        await sleep(50)
+      }
+    }
+
+    const mockSubscriber2 = new MockSubscriber2()
+    const processSpy2 = jest.spyOn(mockSubscriber2, 'process')
+    const loadSpy2 = jest.spyOn(mockSubscriber2, 'load')
+
+    emitter = new SignalEmitter().subscribe(mockSubscriber1, mockSubscriber2)
+
+    emitter.emit(mockSignal)
+
+    void emitter.start(mockCtx)
+
+    await sleep(0)
+
+    expect(loadSpy1).toHaveBeenCalledTimes(1)
+    expect(processSpy1).toHaveBeenCalledWith(mockSignal)
+
+    // Subscriber 2 has an async load method, but it should not block the processing of signals for subscriber 1
+    expect(loadSpy2).toHaveBeenCalledTimes(1)
+    expect(processSpy2).not.toHaveBeenCalled()
+
+    await sleep(50)
+    expect(processSpy2).toHaveBeenCalledTimes(1)
+  })
 })
