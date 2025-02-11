@@ -1,6 +1,6 @@
 import { NetworkSignalMetadata } from '@segment/analytics-signals-runtime'
-import { createMockTarget } from '../../../test-helpers/mocks/factories'
-import * as factories from '../../../types/factories'
+import { createMockTarget } from '../../../../test-helpers/mocks/factories'
+import * as factories from '../../../../types/factories'
 import { redactJsonValues, redactSignalData } from '../redact'
 
 describe(redactJsonValues, () => {

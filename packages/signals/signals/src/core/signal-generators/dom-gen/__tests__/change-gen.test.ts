@@ -9,7 +9,7 @@ describe('OnChangeGenerator', () => {
   beforeEach(async () => {
     onChangeGenerator = new OnChangeGenerator()
     emitter = new SignalEmitter()
-    await emitter.initialize({} as any)
+    await emitter.start({} as any)
   })
 
   afterEach(() => {

@@ -1,7 +1,7 @@
 import { parseDebugModeQueryString } from '../debug-mode'
 import { logger } from '../../lib/logger'
 import { SignalBufferSettingsConfig, SignalPersistentStorage } from '../buffer'
-import { SignalsIngestSettingsConfig } from '../client'
+import { SignalsIngestSettingsConfig } from '../middleware/signals-ingest/signals-ingest-client'
 import { SandboxSettingsConfig } from '../processor/sandbox'
 import { SignalsPluginSettingsConfig } from '../../types'
 import { WebStorage } from '../../lib/storage/web-storage'

@@ -1,6 +1,6 @@
-import { SignalsIngestClient } from '../index'
 import { createSuccess } from '@segment/analytics-next/src/test-helpers/factories'
 import unfetch from 'unfetch'
+import { SignalsIngestClient } from '../signals-ingest-client'
 
 jest.mock('unfetch')
 jest
@@ -11,10 +11,9 @@ describe(SignalsIngestClient, () => {
   let client: SignalsIngestClient
 
   beforeEach(async () => {
-    client = new SignalsIngestClient({
+    client = new SignalsIngestClient('test', {
       shouldIngestSignals: () => true,
     })
-    await client.init({ writeKey: 'test' })
   })
 
   it('makes an instrumentation track call via the analytics api', async () => {

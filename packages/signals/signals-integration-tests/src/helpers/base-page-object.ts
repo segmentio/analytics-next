@@ -265,10 +265,9 @@ export class BasePage {
   }
 
   waitForEdgeFunctionResponse(timeout = 30000) {
-    return this.page.waitForResponse(
-      `https://cdn.edgefn.segment.com/MY-WRITEKEY/**`,
-      { timeout }
-    )
+    return this.page.waitForResponse(this.edgeFnDownloadURL, {
+      timeout,
+    })
   }
 
   async waitForCDNSettingsResponse(timeout = 30000) {
@@ -277,6 +276,4 @@ export class BasePage {
       { timeout }
     )
   }
-
-  // Additional mock methods can be added here
 }

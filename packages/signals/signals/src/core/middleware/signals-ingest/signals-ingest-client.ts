@@ -1,5 +1,5 @@
 import { Analytics, segmentio } from '@segment/analytics-next'
-import { logger } from '../../lib/logger'
+import { logger } from '../../../lib/logger'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { redactSignalData } from './redact'
 
@@ -32,20 +32,17 @@ export interface SignalsIngestSettingsConfig {
  * This persists the signals in a queue until the client is initialized.
  */
 export class SignalsIngestClient {
-  private buffer: Signal[]
-
   private settings: SignalsIngestSettings
-  private analytics: Analytics | undefined
+  private analytics: Promise<Analytics>
 
   /**
    * This matters to sort the signals in the UI if the timestamp conflict (which can happen very very rarely)
    */
   private index = 0
 
-  constructor(settings: SignalsIngestSettingsConfig = {}) {
+  constructor(writeKey: string, settings: SignalsIngestSettingsConfig = {}) {
     this.settings = new SignalsIngestSettings(settings)
-    this.buffer = []
-    this.analytics = undefined
+    this.analytics = this.createAnalyticsClient({ writeKey })
   }
 
   private async createAnalyticsClient(settings: { writeKey: string }) {
@@ -72,10 +69,8 @@ export class SignalsIngestClient {
     return analytics
   }
 
-  private sendTrackCall(signal: Signal) {
-    if (!this.analytics) {
-      throw new Error('Please initialize before calling this method.')
-    }
+  private async sendTrackCall(signal: Signal) {
+    const analytics = await this.analytics
     if (!this.settings.shouldIngestSignals()) {
       return
     }
@@ -88,39 +83,14 @@ export class SignalsIngestClient {
 
     const MAGIC_EVENT_NAME = 'Segment Signal Generated'
 
-    return this.analytics.track(MAGIC_EVENT_NAME, {
+    return analytics.track(MAGIC_EVENT_NAME, {
       index: this.index++,
       type: signal.type,
       data: cleanSignal.data,
     })
   }
 
-  /**
-   *  Initialize analytics and flush any events queue.
-   */
-  async init({ writeKey }: { writeKey: string }) {
-    this.analytics = await this.createAnalyticsClient({ writeKey })
-    this.flush()
-    logger.debug('Init signals-analytics client', { writeKey })
-  }
-
   send(signal: Signal) {
-    if (!this.analytics) {
-      logger.debug('Buffering signal', signal)
-      this.buffer.push(signal)
-    } else {
-      return this.sendTrackCall(signal)
-    }
-  }
-
-  flush() {
-    if (!this.analytics) {
-      throw new Error('Please initialize before calling this method.')
-    }
-    logger.debug('Flushing signals', this.buffer)
-    this.buffer.forEach((signal) => {
-      void this.sendTrackCall(signal)
-    })
-    this.buffer = []
+    return this.sendTrackCall(signal)
   }
 }
