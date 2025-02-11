@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-signals",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "main": "./dist/cjs/index.js",
   "repository": {
     "directory": "packages/signals/signals",
