@@ -36,7 +36,7 @@ export function InAppPlugin(
             allEvents.forEach((event) => {
                 _eventTarget.addEventListener(event, settings?.events as EventListenerOrEventListenerObject);
             });
-            ['messageShown', 'messageDismissed', 'messageError'].forEach((event) => {
+            ['messageDismissed', 'messageError'].forEach((event) => {
                 Gist.events.on(event, (message: any) => {
                     _eventTarget.dispatchEvent(newEvent(gistToCIO(event), { 
                         messageId: message.messageId,
@@ -48,6 +48,17 @@ export function InAppPlugin(
 
         Gist.events.on('messageShown', (message: any) => {
             const deliveryId:string = message?.properties?.gist?.campaignId;
+            if (settings.events) {
+                _eventTarget.dispatchEvent(newEvent(InAppEvents.MessageOpened, { 
+                    messageId: message?.messageId,
+                    deliveryId: deliveryId,
+                    message: {
+                        dismiss: function() {
+                            Gist.dismissMessage(message?.instanceId);
+                        }
+                    }
+                }));
+            }
             if (typeof deliveryId != 'undefined' && deliveryId != '') {
                 _analytics.track(JourneysEvents.Metric, {
                     'deliveryId': deliveryId,
@@ -68,10 +79,25 @@ export function InAppPlugin(
         });
 
         Gist.events.on('messageAction', (params: any) => {
+            const deliveryId:string = params?.message?.properties?.gist?.campaignId;
+            if (settings.events) {
+                _eventTarget.dispatchEvent(newEvent(InAppEvents.MessageAction, {
+                    messageId: params.message.messageId,
+                    deliveryId: deliveryId,
+                    action: params.action,
+                    name: params.name,
+                    actionName: params.name,
+                    actionValue: params.action,
+                    message: {
+                        dismiss: function() {
+                            Gist.dismissMessage(params.message.instanceId);
+                        }
+                    }
+                }));
+            }
             if (params.action == 'gist://close') {
                 return;
             }
-            const deliveryId:string = params?.message?.properties?.gist?.campaignId;
             if (typeof deliveryId != 'undefined' && deliveryId != '') {
                 _analytics.track(JourneysEvents.Metric, {
                     'deliveryId': deliveryId,
@@ -79,21 +105,6 @@ export function InAppPlugin(
                     'actionName': params.name,
                     'actionValue': params.action,
                 });
-                if (settings.events) {
-                    _eventTarget.dispatchEvent(newEvent(InAppEvents.MessageAction, {
-                        messageId: params.message.messageId,
-                        deliveryId: deliveryId,
-                        action: params.action,
-                        name: params.name,
-                        actionName: params.name,
-                        actionValue: params.action,
-                        message:{
-                            dismiss: function() {
-                                Gist.dismissMessage(params?.message?.instanceId);
-                            }
-                        }
-                    }));
-                }
                 return;
             }
             const broadcastId:Number = params?.message?.properties?.gist?.broadcast?.broadcastIdInt;
