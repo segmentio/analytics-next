@@ -51,8 +51,8 @@ Information is in the [@changesets automation instructions](https://github.com/c
 
 ### What does `yarn release` do?
 1. Run prepare scripts
-2. Publish all packages to npm
-3. Pushes _all_ tags to github (e.g. "@segment/analytics-next@1.7.0", "@segment/analytics-node@1.2.3", etc)
+2. Publish all packages to npm, pushes _all_ tags to github (e.g. "@segment/analytics-next@1.7.0", "@segment/analytics-node@1.2.3", etc) (Buildkite)
+3. Triggets an update of the github releases page (Github Actions)
 
 ### How do I fix the repo if all the packages were published, but the CI Failed to update the [github releases page](https://github.com/segmentio/analytics-next/releases)?
 ```bash
