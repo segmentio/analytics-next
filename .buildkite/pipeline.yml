@@ -225,15 +225,12 @@ steps:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - git config --global user.name "buildkite-agent"
       - git config --global user.email "buildkite-agent@segment.com"
+      - gh repo set-default segmentio/analytics-next
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Release packages"
       - yarn release
-      - |
-        curl -X POST -H "Accept: application/vnd.github.v3+json" \
-           -H "Authorization: token $${GITHUB_TOKEN}" \
-           https://api.github.com/repos/segmentio/analytics-next/actions/workflows/release-creator.yml/dispatches \
-           -d '{"ref":"master"}'
+      - yarn scripts create-release-from-tags
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
