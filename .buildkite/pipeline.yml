@@ -11,6 +11,8 @@ steps:
       - echo $(node -v)
       - echo "+++ MiscVariables"
       - echo "CI -> $CI"
+      - echo "Repo"
+      - gh repo list
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
