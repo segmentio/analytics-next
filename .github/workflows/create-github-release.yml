@@ -2,6 +2,9 @@
 name: Create Github Release
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "@segment/*"
 
 jobs:
   github_release:
@@ -9,6 +12,12 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Show current commit and tags
+        run: |
+          echo "Current HEAD commit: $(git rev-parse HEAD)"
+          git tag --points-at HEAD || echo "No tags found at HEAD"
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v3
         with:
