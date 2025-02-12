@@ -50,14 +50,22 @@ Information is in the [@changesets automation instructions](https://github.com/c
 [Check out the @changesets automation instructions](https://github.com/changesets/changesets/blob/main/docs/automating-changesets.md#automating-changesets)
 
 ### What does `yarn release` do?
-- run prepare scripts
-- publish all packages to npm
-- pushes tags to repo
-- triggers a github release on CI (via tags)
-- triggers a CDN release
+1. Run prepare scripts
+2. Publish all packages to npm
+3. Pushes _all_ tags to github (e.g. "@segment/analytics-next@1.7.0", "@segment/analytics-node@1.2.3", etc)
+
+### How do I fix the repo if all the packages were published, but the CI Failed to update the [github releases page](https://github.com/segmentio/analytics-next/releases)?
+```bash
+# checkout master so the HEAD is pointing to the "Version Packages" PR
+git co master && git pull --ff-only
+
+# Reads from the current tags and create github releases
+export GITHUB_TOKEN="???"
+yarn scripts create-release-from-tags
+```
+
 
 ### I don't want to use automation, how do I manually create a release?
-
 ```bash
 export GITHUB_TOKEN="???" ## changelog generator requirement (https://github.com/settings/tokens)
 
