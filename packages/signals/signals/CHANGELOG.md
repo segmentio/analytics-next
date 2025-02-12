@@ -1,5 +1,35 @@
 # @segment/analytics-signals
 
+## 1.10.0
+
+### Minor Changes
+
+- [#1220](https://github.com/segmentio/analytics-next/pull/1220) [`bf868573`](https://github.com/segmentio/analytics-next/commit/bf8685737466cb1193a54f99871ec7348b8616d8) Thanks [@silesky](https://github.com/silesky)! - Allow registration of middleware to allow for dropping and modification of signals
+
+  ```ts
+  class MyMiddleware implements SignalsMiddleware {
+    process(signal: Signal) {
+      if (
+        signal.type === 'network' &&
+        signal.data.action === 'request' &&
+        ...
+      ) {
+        // drop or modify signal
+        return null
+      } else {
+        return signal
+      }
+    }
+  }
+  const signalsPlugin = new SignalsPlugin({
+    middleware: [new MyMiddleware()]
+  })
+  ```
+
+### Patch Changes
+
+- [#1224](https://github.com/segmentio/analytics-next/pull/1224) [`171080cc`](https://github.com/segmentio/analytics-next/commit/171080cc9ca198b9f89a9e9154c2a78ed8ef29ee) Thanks [@silesky](https://github.com/silesky)! - Refactor to use SignalEmitter middleware + subscriber interface internally
+
 ## 1.9.2
 
 ### Patch Changes
