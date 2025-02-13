@@ -1,6 +1,7 @@
 {
   "name": "@segment/analytics-signals",
   "version": "1.10.1",
+  "license": "Twilio Software Development Kit License Agreement 2.0",
   "main": "./dist/cjs/index.js",
   "repository": {
     "directory": "packages/signals/signals",
