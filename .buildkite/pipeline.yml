@@ -214,6 +214,8 @@ steps:
 
   # Deploy and NPM publish releases
   - label: '[Browser] Publish Packages to NPM :rocket:'
+    env:
+      SEGMENT_GITHUB_APP: release-writer # allow creation of github release 
     if: |
       // Only run when Version Packages PR is merged in
       build.message =~ /^Version Packages/ &&
