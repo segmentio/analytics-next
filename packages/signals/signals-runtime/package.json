@@ -4,6 +4,7 @@
   "keywords": [
     "segment"
   ],
+  "license": "Twilio Software Development Kit License Agreement 2.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
