@@ -1,5 +1,11 @@
 # @segment/analytics-signals-runtime
 
+## 1.2.1
+
+### Patch Changes
+
+- [#1230](https://github.com/segmentio/analytics-next/pull/1230) [`2fc749a1`](https://github.com/segmentio/analytics-next/commit/2fc749a17b14b2667df76ecce685aefb6656eaae) Thanks [@silesky](https://github.com/silesky)! - Update license key
+
 ## 1.2.0
 
 ### Minor Changes
