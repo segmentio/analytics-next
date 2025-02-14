@@ -78,7 +78,7 @@ steps:
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
-      - yarn turbo run --filter=@internal/browser-integration-tests test
+      - yarn turbo run --filter=@internal/browser-integration-tests test:int
     retry:
       automatic:
         - exit_status: '*'
@@ -156,6 +156,8 @@ steps:
       - yarn turbo run --filter='./packages/signals/*' lint
       - echo "+++ Run Tests"
       - yarn turbo run --filter='./packages/signals/*' test
+      - echo "+++ Run Integration Tests"
+      - yarn turbo run --filter='./packages/signals/*' test:int
     plugins:
       - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
           key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"

@@ -8,7 +8,7 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/signals-integration-tests...",
     "build": "webpack",
-    "test": "playwright test",
+    "test:int": "playwright test",
     "test:vanilla": "playwright test src/tests/signals-vanilla",
     "test:perf": "playwright test src/tests/performance",
     "test:custom": "playwright test src/tests/custom",
