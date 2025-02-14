@@ -3,7 +3,8 @@ import { createInteractionSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGlobalSettings } from '../../signals'
 import { SignalGenerator } from '../types'
-import { shouldIgnoreElement, parseElement } from './dom-gen'
+import { shouldIgnoreElement } from './dom-gen'
+import { parseElement } from './element-parser'
 import {
   MutationObservable,
   AttributeChangedEvent,
