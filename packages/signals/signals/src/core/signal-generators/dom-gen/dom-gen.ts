@@ -140,12 +140,10 @@ const parsePropWithAttributeFallback = (
     return
   }
   // @ts-ignore
-  const n = element[propName]
-  if (typeof n === 'string') {
-    return n
-  } else if (n instanceof HTMLElement) {
-    return element.getAttribute(propName) || undefined
-  }
+  const val = element[propName]
+  return typeof val === 'string'
+    ? val
+    : element.getAttribute(propName) || undefined
 }
 
 export const parseElement = (el: HTMLElement): AnyParsedElement => {
