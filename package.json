@@ -20,7 +20,7 @@
     "build": "turbo run build --filter='./packages/**'",
     "watch": "turbo run watch --filter='./packages/**'",
     "dev": "yarn workspace @playground/next-playground run dev",
-    "prepush": "yarn lint && CI=true yarn test --colors --silent",
+    "prepush": "turbo run lint --filter='...[master...HEAD]' && CI=true yarn turbo run test --filter='...[master...HEAD] -- --colors --silent'",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all && bash scripts/update-lockfile.sh",
