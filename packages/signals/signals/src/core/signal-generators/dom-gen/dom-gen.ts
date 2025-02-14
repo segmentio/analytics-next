@@ -130,6 +130,24 @@ const getReferencedElement = (
   return document.getElementById(value) ?? undefined
 }
 
+// Fix a bug with react-hook-form where if the field name conflicts with a native attribute name like 'name',
+// the attribute will get overridden with the html element itself. This is a workaround to get the attribute value
+const parsePropWithAttributeFallback = (
+  element: HTMLElement,
+  propName: string
+): string | undefined => {
+  if (!(propName in element)) {
+    return
+  }
+  // @ts-ignore
+  const n = element[propName]
+  if (typeof n === 'string') {
+    return n
+  } else if (n instanceof HTMLElement) {
+    return element.getAttribute(propName) || undefined
+  }
+}
+
 export const parseElement = (el: HTMLElement): AnyParsedElement => {
   const labels = parseLabels((el as HTMLInputElement).labels)
   const labeledBy = getReferencedElement(el, 'aria-labelledby')
@@ -142,15 +160,15 @@ export const parseElement = (el: HTMLElement): AnyParsedElement => {
     // adding a bunch of fields that are not on _all_ elements, but are on enough that it's useful to have them here.
     attributes: parseNodeMap(el.attributes),
     classList: [...el.classList],
-    id: el.id,
+    id: parsePropWithAttributeFallback(el, 'id') || '',
     labels,
     label: labels[0],
-    name: (el as HTMLInputElement).name,
+    name: parsePropWithAttributeFallback(el, 'name'),
     nodeName: el.nodeName,
     tagName: el.tagName,
-    title: el.title,
-    type: (el as HTMLInputElement).type,
-    value: (el as HTMLInputElement).value,
+    title: parsePropWithAttributeFallback(el, 'title') || '',
+    type: parsePropWithAttributeFallback(el, 'type'),
+    value: parsePropWithAttributeFallback(el, 'value'),
     textContent: (el.textContent && cleanText(el.textContent)) ?? undefined,
     innerText: (el.innerText && cleanText(el.innerText)) ?? undefined,
     describedBy: (describedBy && parseToLabel(describedBy)) ?? undefined,
