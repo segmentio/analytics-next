@@ -6,7 +6,7 @@
     "hoistingLimits": "workspaces"
   },
   "scripts": {
-    "test": "playwright test",
+    "test:int": "playwright test",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "concurrently": "yarn run -T concurrently",
     "watch:test": "yarn test --watch",
