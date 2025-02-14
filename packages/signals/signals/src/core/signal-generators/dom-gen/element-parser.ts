@@ -113,8 +113,8 @@ export const parseElement = (el: HTMLElement): AnyParsedElement => {
 
   // This exists because of a bug in react-hook-form, where 'name', if used as the field registration name overrides the native element name value to reference itself.
   // This is a very weird scenario where a property was on the element, but not in the attributes map.
-  // Only using this
-  const getPropertyOrFallback = (prop: string): string | undefined => {
+  // This probably only needs to be run on name, but running this on some other fields out of caution.
+  const getSanitizedProp = (prop: string): string | undefined => {
     if (!(prop in el)) {
       return undefined
     }
@@ -126,15 +126,15 @@ export const parseElement = (el: HTMLElement): AnyParsedElement => {
   const base: ParsedElementBase = {
     attributes: parsedAttributes,
     classList: [...el.classList],
-    id: getPropertyOrFallback('id') || '',
+    id: getSanitizedProp('id') || '',
     labels,
     label: labels[0],
-    name: getPropertyOrFallback('name'),
+    name: getSanitizedProp('name'),
     nodeName: el.nodeName,
     tagName: el.tagName,
-    title: getPropertyOrFallback('title') || '',
-    type: getPropertyOrFallback('type'),
-    value: getPropertyOrFallback('value'),
+    title: getSanitizedProp('title') || '',
+    type: getSanitizedProp('type'),
+    value: getSanitizedProp('value'),
     textContent: (el.textContent && cleanText(el.textContent)) ?? undefined,
     innerText: (el.innerText && cleanText(el.innerText)) ?? undefined,
     describedBy: (describedBy && parseToLabel(describedBy)) ?? undefined,
