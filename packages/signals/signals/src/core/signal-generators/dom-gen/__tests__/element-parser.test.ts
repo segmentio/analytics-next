@@ -234,7 +234,7 @@ describe(parseElement, () => {
       }
     `)
   })
-  test.only('handles scenarios where name is an object', () => {
+  test('handles scenarios where name is an object', () => {
     const form = document.createElement('form')
     form.id = 'form-id'
     form.classList.add('form-class')
