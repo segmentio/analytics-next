@@ -25,8 +25,10 @@ interface IDBPObjectStoreSignals
     'readonly' | 'readwrite' | 'versionchange'
   > {}
 
+const MAX_BUFFER_SIZE_DEFAULT = 50
+
 interface StoreSettings {
-  maxBufferSize: number
+  maxBufferSize?: number
 }
 export class SignalStoreIndexDB implements SignalPersistentStorage {
   static readonly DB_NAME = 'Segment Signals Buffer'
@@ -50,7 +52,7 @@ export class SignalStoreIndexDB implements SignalPersistentStorage {
   }
 
   constructor(settings: StoreSettings) {
-    this.maxBufferSize = settings.maxBufferSize
+    this.maxBufferSize = settings.maxBufferSize ?? MAX_BUFFER_SIZE_DEFAULT
     this.db = this.initSignalDB()
   }
 
@@ -137,7 +139,7 @@ export class SignalStoreSessionStorage implements SignalPersistentStorage {
   private maxBufferSize: number
 
   constructor(settings: StoreSettings) {
-    this.maxBufferSize = settings.maxBufferSize
+    this.maxBufferSize = settings.maxBufferSize ?? MAX_BUFFER_SIZE_DEFAULT
   }
 
   add(signal: Signal): void {
@@ -216,13 +218,9 @@ export const getSignalBuffer = <
 >(
   settings: SignalBufferSettingsConfig<T>
 ) => {
-  const settingsWithDefaults: StoreSettings = {
-    maxBufferSize: 50,
-    ...settings,
-  }
   const store =
     settings.signalStorage ?? settings.storageType === 'session'
-      ? new SignalStoreSessionStorage(settingsWithDefaults)
-      : new SignalStoreIndexDB(settingsWithDefaults)
+      ? new SignalStoreSessionStorage(settings)
+      : new SignalStoreIndexDB(settings)
   return new SignalBuffer(store)
 }
