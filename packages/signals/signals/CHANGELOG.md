@@ -1,5 +1,13 @@
 # @segment/analytics-signals
 
+## 1.10.3
+
+### Patch Changes
+
+- [#1233](https://github.com/segmentio/analytics-next/pull/1233) [`9b470331`](https://github.com/segmentio/analytics-next/commit/9b470331584e02dd883942ae83300c9eb971bc95) Thanks [@silesky](https://github.com/silesky)! - Fix max buffer size
+
+* [#1232](https://github.com/segmentio/analytics-next/pull/1232) [`91dab927`](https://github.com/segmentio/analytics-next/commit/91dab9273954bc26dbcb579a387787f5a0cc185e) Thanks [@silesky](https://github.com/silesky)! - Fix circular submit error for react-hook-form
+
 ## 1.10.2
 
 ### Patch Changes
