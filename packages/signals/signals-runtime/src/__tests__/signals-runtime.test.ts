@@ -2,6 +2,7 @@ import { InstrumentationSignal, InteractionSignal, Signal } from '../index'
 import {
   mockInstrumentationSignal,
   mockInteractionSignal,
+  mockPageData,
 } from '../test-helpers/mocks/mock-signal-types-web'
 
 import { WebSignalsRuntime } from '../web/web-signals-runtime'
@@ -17,6 +18,7 @@ describe(WebSignalsRuntime, () => {
     signal3 = {
       ...mockInteractionSignal,
       data: {
+        page: mockPageData,
         eventType: 'change',
         target: {} as any,
         change: {},

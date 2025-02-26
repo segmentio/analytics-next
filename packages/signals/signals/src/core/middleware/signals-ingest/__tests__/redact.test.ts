@@ -73,7 +73,7 @@ describe(redactSignalData, () => {
   })
 
   it('should return the signal as is if the type is "userDefined"', () => {
-    const signal = { type: 'userDefined', data: { value: 'secret' } } as const
+    const signal = factories.createUserDefinedSignal({ value: 'secret' })
     expect(redactSignalData(signal)).toEqual(signal)
   })
 

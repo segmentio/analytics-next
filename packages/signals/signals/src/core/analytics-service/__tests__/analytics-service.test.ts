@@ -38,20 +38,20 @@ describe(AnalyticsService, () => {
       middleware({ payload: { obj: mockEvent }, next: jest.fn() })
 
       expect(mockSignalEmitter.emit).toHaveBeenCalledTimes(1)
-      expect(mockSignalEmitter.emit.mock.calls[0]).toMatchInlineSnapshot(`
-        [
-          {
-            "data": {
-              "rawEvent": {
-                "context": {
-                  "foo": 123,
-                },
-                "type": "track",
+      const call = mockSignalEmitter.emit.mock.calls[0][0]
+      delete call.data.page
+      expect(call).toMatchInlineSnapshot(`
+        {
+          "data": {
+            "rawEvent": {
+              "context": {
+                "foo": 123,
               },
+              "type": "track",
             },
-            "type": "instrumentation",
           },
-        ]
+          "type": "instrumentation",
+        }
       `)
     })
     it('should not emit signals if the event is a Signal event', async () => {
