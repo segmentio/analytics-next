@@ -1,7 +1,4 @@
-import {
-  createInteractionSignal,
-  createUserDefinedSignal,
-} from '../../types/factories'
+import { createUserDefinedSignal } from '../../types/factories'
 import { SignalsPlugin } from '../signals-plugin'
 
 // this specific test was throwing a bunch of warnings:
