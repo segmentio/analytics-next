@@ -1,5 +1,6 @@
 import { createSuccess } from '@segment/analytics-next/src/test-helpers/factories'
 import unfetch from 'unfetch'
+import { getPageData } from '../../../../lib/page-data'
 import {
   createInstrumentationSignal,
   createNetworkSignal,
@@ -23,8 +24,7 @@ describe(SignalsIngestClient, () => {
   it('makes an instrumentation track call via the analytics api', async () => {
     expect(client).toBeTruthy()
     const signal = createInstrumentationSignal({
-      type: 'instrumentation',
-      foo: 'bar',
+      type: 'track',
     })
     const ctx = await client.send(signal)
 
@@ -34,8 +34,9 @@ describe(SignalsIngestClient, () => {
       index: 0,
       data: {
         rawEvent: {
-          foo: 'bar',
+          type: 'track',
         },
+        page: getPageData(),
       },
     })
   })
