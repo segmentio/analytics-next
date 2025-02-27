@@ -44,13 +44,13 @@ export interface PageData {
 /**
  * The base data that all web signal data must have
  */
-interface BaseWebData {
+export interface BaseWebData {
   page: PageData
 }
 
 export interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
   type: T
-  data: Data & BaseWebData
+  data: BaseWebData & Data
   metadata?: Record<string, any>
 }
 export type InteractionData = ClickData | SubmitData | ChangeData

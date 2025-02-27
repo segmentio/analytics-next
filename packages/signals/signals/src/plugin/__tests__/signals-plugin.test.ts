@@ -42,10 +42,12 @@ describe(SignalsPlugin, () => {
 
   test('addSignal method emits signal', async () => {
     const plugin = new SignalsPlugin()
-    const signal = createUserDefinedSignal({ foo: 'bar' })
     const emitterSpy = jest.spyOn(plugin.signals.signalEmitter, 'emit')
-    plugin.addSignal(signal)
+    const userDefinedData = { foo: 'bar' }
+    plugin.addSignal(userDefinedData)
     expect(emitterSpy).toHaveBeenCalledTimes(1)
-    expect(emitterSpy.mock.calls[0][0]).toEqual(signal)
+    expect(emitterSpy.mock.calls[0][0]).toEqual(
+      createUserDefinedSignal(userDefinedData)
+    )
   })
 })

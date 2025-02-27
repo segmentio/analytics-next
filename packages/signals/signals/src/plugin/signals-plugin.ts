@@ -5,7 +5,7 @@ import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
 import { version } from '../generated/version'
-import { getPageData } from '../lib/page-data'
+import { createUserDefinedSignal } from '../types/factories'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -17,9 +17,9 @@ interface SignalsAugmentedFunctionality {
   onSignal: (fn: OnSignalCb) => this
 
   /**
-   * Emit/add a custom signal
+   * Emit/add a custom signal of type 'userDefined'
    */
-  addSignal(data: Signal): this
+  addSignal(userDefinedData: Record<string, unknown>): this
 }
 
 export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
@@ -83,9 +83,8 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     return this
   }
 
-  addSignal(signal: Signal): this {
-    signal.data.page ??= getPageData()
-    this.signals.signalEmitter.emit(signal)
+  addSignal(data: Record<string, unknown>): this {
+    this.signals.signalEmitter.emit(createUserDefinedSignal(data))
     return this
   }
 

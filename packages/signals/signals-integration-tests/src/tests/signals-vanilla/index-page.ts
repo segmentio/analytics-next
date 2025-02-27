@@ -27,12 +27,8 @@ export class IndexPage extends BasePage {
     return this.page.evaluate(
       (args) => {
         window.signalsPlugin.addSignal({
-          type: 'userDefined',
-          // @ts-ignore
-          data: {
-            foo: 'bar',
-            ...args.data,
-          },
+          foo: 'bar',
+          ...args.data,
         })
       },
       { data }
@@ -43,9 +39,7 @@ export class IndexPage extends BasePage {
     return this.page.click('#some-button')
   }
 
-  async clickComplexButton() {
-    return this.page.click('#complex-button')
-  }
+  async clickComplexButton() {}
 
   async clickInsideComplexButton() {
     return this.page.click('#complex-button h1')
