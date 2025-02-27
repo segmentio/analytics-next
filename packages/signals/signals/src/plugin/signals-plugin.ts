@@ -85,9 +85,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
 
   addSignal(signal: Signal): this {
     signal.data.page ??= getPageData()
-    this.signals.signalEmitter.emit({
-      ...signal,
-    })
+    this.signals.signalEmitter.emit(signal)
     return this
   }
 
