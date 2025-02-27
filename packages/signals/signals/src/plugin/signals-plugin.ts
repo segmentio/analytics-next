@@ -5,6 +5,7 @@ import { AnyAnalytics, SignalsPluginSettingsConfig } from '../types'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { assertBrowserEnv } from '../lib/assert-browser-env'
 import { version } from '../generated/version'
+import { getPageData } from '../lib/page-data'
 
 export type OnSignalCb = (signal: Signal) => void
 
@@ -83,7 +84,10 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
   }
 
   addSignal(signal: Signal): this {
-    this.signals.signalEmitter.emit(signal)
+    signal.data.page ??= getPageData()
+    this.signals.signalEmitter.emit({
+      ...signal,
+    })
     return this
   }
 
