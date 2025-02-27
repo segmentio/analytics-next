@@ -28,6 +28,7 @@ export class IndexPage extends BasePage {
       (args) => {
         window.signalsPlugin.addSignal({
           type: 'userDefined',
+          // @ts-ignore
           data: {
             foo: 'bar',
             ...args.data,
