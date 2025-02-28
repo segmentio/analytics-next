@@ -1,5 +1,11 @@
 # @segment/analytics-signals-runtime
 
+## 1.3.0
+
+### Minor Changes
+
+- [#1238](https://github.com/segmentio/analytics-next/pull/1238) [`0596bc45`](https://github.com/segmentio/analytics-next/commit/0596bc455b9ecf8ed179f1be5decb0a4b89bb9a5) Thanks [@silesky](https://github.com/silesky)! - Add page data to web signals
+
 ## 1.2.1
 
 ### Patch Changes
