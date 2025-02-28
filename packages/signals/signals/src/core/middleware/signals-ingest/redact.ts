@@ -72,7 +72,7 @@ export const redactSignalData = (signalArg: Signal): Signal => {
       }
     }
   } else if (signal.type === 'network') {
-    signal.data = redactJsonValues(signal.data, 2)
+    signal.data.data = redactJsonValues(signal.data.data)
   }
   return signal
 }

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { commonSignalData } from '../../helpers/fixtures'
 import { IndexPage } from './index-page'
 
 const basicEdgeFn = `
@@ -57,6 +58,7 @@ test('network signals xhr', async () => {
   )
   expect(responses).toHaveLength(1)
   expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+  expect(responses[0].properties!.data.page).toEqual(commonSignalData.page)
 })
 
 test('instrumentation signals', async () => {
@@ -113,6 +115,7 @@ test('interaction signals', async () => {
       type: 'submit',
       value: '',
     },
+    page: commonSignalData.page,
   }
 
   expect(interactionSignals[0]).toMatchObject({
@@ -182,6 +185,7 @@ test('navigation signals', async ({ page }) => {
         hash: '#foo',
         search: '',
         title: '',
+        page: expect.any(Object),
       },
     })
   }

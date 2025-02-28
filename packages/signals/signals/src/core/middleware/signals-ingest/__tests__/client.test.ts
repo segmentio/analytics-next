@@ -1,5 +1,10 @@
 import { createSuccess } from '@segment/analytics-next/src/test-helpers/factories'
 import unfetch from 'unfetch'
+import { getPageData } from '../../../../lib/page-data'
+import {
+  createInstrumentationSignal,
+  createNetworkSignal,
+} from '../../../../types/factories'
 import { SignalsIngestClient } from '../signals-ingest-client'
 
 jest.mock('unfetch')
@@ -18,14 +23,10 @@ describe(SignalsIngestClient, () => {
 
   it('makes an instrumentation track call via the analytics api', async () => {
     expect(client).toBeTruthy()
-    const ctx = await client.send({
-      type: 'instrumentation',
-      data: {
-        rawEvent: {
-          foo: 'bar',
-        },
-      },
+    const signal = createInstrumentationSignal({
+      type: 'track',
     })
+    const ctx = await client.send(signal)
 
     expect(ctx!.event.type).toEqual('track')
     expect(ctx!.event.properties).toEqual({
@@ -33,26 +34,25 @@ describe(SignalsIngestClient, () => {
       index: 0,
       data: {
         rawEvent: {
-          foo: 'bar',
+          type: 'track',
         },
+        page: getPageData(),
       },
     })
   })
   it('makes a network track call via the analytics api', async () => {
     expect(client).toBeTruthy()
-    const ctx = await client.send({
-      type: 'network',
+    const signal = createNetworkSignal({
+      contentType: 'application/json',
+      action: 'request',
       data: {
-        contentType: 'application/json',
-        action: 'request',
-        data: {
-          hello: 'how are you',
-        },
-        method: 'POST',
-        url: 'http://foo.com',
+        hello: 'how are you',
       },
+      method: 'POST',
+      url: 'http://foo.com',
     })
 
+    const ctx = await client.send(signal)
     expect(ctx!.event.type).toEqual('track')
     expect(ctx!.event.properties!.type).toBe('network')
     expect(ctx!.event.properties!.data).toMatchInlineSnapshot(`
@@ -63,6 +63,15 @@ describe(SignalsIngestClient, () => {
           "hello": "XXX",
         },
         "method": "POST",
+        "page": {
+          "hash": "",
+          "hostname": "localhost",
+          "path": "/",
+          "referrer": "",
+          "search": "",
+          "title": "",
+          "url": "http://localhost/",
+        },
         "url": "http://foo.com",
       }
     `)

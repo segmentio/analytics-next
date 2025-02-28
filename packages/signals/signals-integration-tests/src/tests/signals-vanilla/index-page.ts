@@ -27,11 +27,8 @@ export class IndexPage extends BasePage {
     return this.page.evaluate(
       (args) => {
         window.signalsPlugin.addSignal({
-          type: 'userDefined',
-          data: {
-            foo: 'bar',
-            ...args.data,
-          },
+          foo: 'bar',
+          ...args.data,
         })
       },
       { data }

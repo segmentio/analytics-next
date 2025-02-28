@@ -59,10 +59,13 @@ analytics.load({
 ```ts
 import { signalsPlugin } from './analytics' // assuming you exported your plugin instance.
 
-signalsPlugin.addSignal({
-  type: 'userDefined',
-  data: { foo: 'bar' }
-})
+signalsPlugin.addSignal({ someData: 'foo' }) 
+
+// emits a signal with the following shape
+{ 
+  type: 'userDefined' 
+  data: { someData: 'foo', ...  }
+}
 ```
 
 ### Debugging

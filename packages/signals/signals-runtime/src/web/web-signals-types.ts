@@ -2,9 +2,55 @@ import { BaseSignal, JSONValue } from '../shared/shared-types'
 
 export type SignalTypes = Signal['type']
 
+export interface PageData {
+  /**
+   * The full URL of the page
+   * If there is a canonical URL, this should be the canonical URL
+   * @example https://www.segment.com/docs/connections/sources/catalog/libraries/website/javascript/
+   */
+  url: string
+  /**
+   * The path of the page
+   * @example /docs/connections/sources/catalog/libraries/website/javascript/
+   */
+  path: string
+  /**
+   * The search parameters of the page
+   * @example ?utm_source=google
+   */
+  search: string
+  /**
+   * The hostname of the page
+   * @example www.segment.com
+   */
+  hostname: string
+  /**
+   * The hash of the page
+   * @example #hash
+   */
+  hash: string
+  /**
+   * The referrer of the page
+   * @example https://www.google.com/
+   */
+  referrer: string
+  /**
+   * The title of the page
+   * @example Segment - Documentation
+   */
+  title: string
+}
+
+/**
+ * The base data that all web signal data must have
+ */
+export interface BaseWebData {
+  page: PageData
+}
+
 export interface RawSignal<T extends SignalTypes, Data> extends BaseSignal {
   type: T
-  data: Data
+  data: BaseWebData & Data
   metadata?: Record<string, any>
 }
 export type InteractionData = ClickData | SubmitData | ChangeData

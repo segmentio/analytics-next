@@ -1,3 +1,4 @@
+import { createUserDefinedSignal } from '../../types/factories'
 import { SignalsPlugin } from '../signals-plugin'
 
 // this specific test was throwing a bunch of warnings:
@@ -41,10 +42,12 @@ describe(SignalsPlugin, () => {
 
   test('addSignal method emits signal', async () => {
     const plugin = new SignalsPlugin()
-    const signal = { data: 'test' } as any
     const emitterSpy = jest.spyOn(plugin.signals.signalEmitter, 'emit')
-    plugin.addSignal(signal)
+    const userDefinedData = { foo: 'bar' }
+    plugin.addSignal(userDefinedData)
     expect(emitterSpy).toHaveBeenCalledTimes(1)
-    expect(emitterSpy.mock.calls[0][0]).toEqual({ data: 'test' })
+    expect(emitterSpy.mock.calls[0][0]).toEqual(
+      createUserDefinedSignal(userDefinedData)
+    )
   })
 })

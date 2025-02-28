@@ -12,6 +12,7 @@ import {
   SegmentEvent,
 } from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../lib/normalize-url'
+import { getPageData } from '../lib/page-data'
 
 /**
  * Factories
@@ -22,6 +23,7 @@ export const createInstrumentationSignal = (
   return {
     type: 'instrumentation',
     data: {
+      page: getPageData(),
       rawEvent,
     },
   }
@@ -32,7 +34,10 @@ export const createInteractionSignal = (
 ): InteractionSignal => {
   return {
     type: 'interaction',
-    data,
+    data: {
+      ...data,
+      page: getPageData(),
+    },
   }
 }
 
@@ -41,7 +46,10 @@ export const createNavigationSignal = (
 ): NavigationSignal => {
   return {
     type: 'navigation',
-    data,
+    data: {
+      ...data,
+      page: getPageData(),
+    },
   }
 }
 
@@ -50,7 +58,10 @@ export const createUserDefinedSignal = (
 ): UserDefinedSignal => {
   return {
     type: 'userDefined',
-    data,
+    data: {
+      ...data,
+      page: getPageData(),
+    },
   }
 }
 
@@ -63,6 +74,7 @@ export const createNetworkSignal = (
     data: {
       ...data,
       url: normalizeUrl(data.url),
+      page: getPageData(),
     },
     metadata: metadata ?? {
       filters: {

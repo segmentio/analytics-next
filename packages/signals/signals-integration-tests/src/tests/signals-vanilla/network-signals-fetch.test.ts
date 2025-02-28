@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { commonSignalData } from '../../helpers/fixtures'
 import { IndexPage } from './index-page'
 
 const basicEdgeFn = `const processSignal = (signal) => {}`
@@ -32,6 +33,7 @@ test.describe('network signals - fetch', () => {
       data: null,
       method: 'POST',
       url: 'http://localhost/upload',
+      ...commonSignalData,
     })
   })
 
@@ -61,6 +63,7 @@ test.describe('network signals - fetch', () => {
       action: 'request',
       url: 'http://localhost/test',
       data: { key: 'value' },
+      ...commonSignalData,
     })
   })
 
@@ -90,6 +93,7 @@ test.describe('network signals - fetch', () => {
       action: 'request',
       url: 'http://localhost/test',
       data: 'hello world',
+      ...commonSignalData,
     })
   })
 
@@ -104,6 +108,7 @@ test.describe('network signals - fetch', () => {
         method: 'POST',
         body: JSON.stringify({ key: 'value' }),
         contentType: 'application/json',
+        ...commonSignalData,
       }
     )
 
@@ -124,6 +129,7 @@ test.describe('network signals - fetch', () => {
       url: 'http://localhost/test',
       method: 'POST',
       data: { key: 'value' },
+      ...commonSignalData,
     })
 
     const responses = networkEvents.filter(
@@ -137,6 +143,7 @@ test.describe('network signals - fetch', () => {
       data: { foo: 'test' },
       status: 200,
       ok: true,
+      ...commonSignalData,
     })
   })
 
@@ -165,6 +172,7 @@ test.describe('network signals - fetch', () => {
       action: 'request',
       url: `${indexPage.origin()}/test`,
       data: { key: 'value' },
+      ...commonSignalData,
     })
 
     const responses = networkEvents.filter(
@@ -175,6 +183,7 @@ test.describe('network signals - fetch', () => {
       action: 'response',
       url: `${indexPage.origin()}/test`,
       data: { foo: 'test' },
+      ...commonSignalData,
     })
   })
 
@@ -214,6 +223,7 @@ test.describe('network signals - fetch', () => {
         data: { errorMsg: 'foo' },
         status: 400,
         ok: false,
+        page: expect.any(Object),
       })
       expect(responses).toHaveLength(1)
     })
@@ -253,6 +263,7 @@ test.describe('network signals - fetch', () => {
         data: 'foo',
         status: 400,
         ok: false,
+        ...commonSignalData,
       })
       expect(responses).toHaveLength(1)
     })
