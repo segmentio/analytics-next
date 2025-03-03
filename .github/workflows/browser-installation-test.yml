@@ -1,0 +1,58 @@
+name: Verify Browser Package Build & Install
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14, 16, 18, 20]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build the package
+        run: export NODE_OPTIONS=--openssl-legacy-provider yarn build
+
+      - name: Pack `packages/browser`
+        run: |
+          cd packages/browser
+          npm pack
+          echo "PACKAGE_NAME=$(ls *.tgz)" >> $GITHUB_ENV
+
+      - name: Extract package filename
+        run: echo "PACKAGE_NAME=$(ls *.tgz)" >> $GITHUB_ENV
+
+      - name: Test installing the package in a fresh environment
+        run: |
+          mkdir test-install
+          cd test-install
+          npm init -y
+          npm cache clean --force
+          npm install ../packages/browser/$PACKAGE_NAME
+
+      - name: Check Installed Package Version
+        run: |
+          cd test-install
+          jq '.version' node_modules/@customerio/cdp-analytics-browser/package.json
+
