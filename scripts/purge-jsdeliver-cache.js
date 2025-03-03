@@ -3,6 +3,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 /**
  * Given a package name and a relative path to the dist folder -- it reads all the files and runs them through the jsdelivr cache purge API.
+ * Will abort the API unless the current commit has a tag with the package name on it.
  */
 const purgeJsDelivrCache = async (packageName, relativePath) => {
   const gitRoot = path.resolve(__dirname, '..')
@@ -22,7 +23,7 @@ const purgeJsDelivrCache = async (packageName, relativePath) => {
     const hasMatchingTag = tags.includes(packageName)
     if (!hasMatchingTag) {
       console.log(
-        `No tags containing the package name "${packageName}" found on the current git HEAD. Aborting script.`
+        `No tags containing the package name "${packageName}" found on the current git HEAD. Aborting cache purge.`
       )
       process.exit(0)
     }
