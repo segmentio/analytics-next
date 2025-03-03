@@ -6,6 +6,7 @@
     ".": "yarn run -T turbo run --filter=@internal/scripts",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "create-release-from-tags": "yarn ts-node-script --files create-release-from-tags/run.ts",
+    "purge-cdn-cache": "node purge-jsdeliver-cache",
     "test": "yarn jest",
     "tsc": "yarn run -T tsc",
     "eslint": "yarn run -T eslint",

@@ -1,0 +1,47 @@
+const fs = require('node:fs')
+const path = require('node:path')
+
+/**
+ * Given a package name and a relative path to the dist folder -- it reads all the files and runs them through the jsdelivr cache purge API.
+ */
+const purgeJsDelivrCache = async (packageName, relativePath) => {
+  const gitRoot = path.resolve(__dirname, '..')
+  const fullPath = path.join(gitRoot, relativePath)
+
+  if (!fs.existsSync(fullPath)) {
+    console.error(`Path does not exist: ${fullPath}`)
+    process.exit(1)
+  }
+
+  const files = fs.readdirSync(fullPath)
+
+  console.log(
+    `Purging files for ${packageName}: ${JSON.stringify(files, null, 2)}`
+  )
+  for (const file of files) {
+    const filePath = path.join(relativePath, file)
+    const url = `https://purge.jsdelivr.net/npm/${packageName}/${filePath}`
+
+    try {
+      const response = await fetch(url)
+      if (response.ok) {
+        console.log(`Purged: ${url} - Status: ${response.status}`)
+      } else {
+        console.error(`Failed to purge: ${url} - Status: ${response.status}`)
+      }
+    } catch (error) {
+      console.error(`Failed to purge: ${url} - Error: ${error.message}`)
+    }
+  }
+}
+
+const [packageName, relativePath] = process.argv.slice(2)
+
+if (!packageName || !relativePath) {
+  console.error(
+    'Usage: node purge-jsdeliver-cache-signals.js <package-name> <relative-path>'
+  )
+  process.exit(1)
+}
+
+purgeJsDelivrCache(packageName, relativePath)
