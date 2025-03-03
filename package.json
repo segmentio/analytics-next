@@ -24,7 +24,7 @@
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all && bash scripts/update-lockfile.sh",
-    "release": "yarn clean && yarn build --force && changeset publish && git push origin HEAD:master --follow-tags --no-verify",
+    "release": "yarn clean && yarn build --force && changeset publish && git push origin HEAD:master --follow-tags --no-verify && yarn scripts purge-cdn-cache",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @segment/analytics-core",
     "browser": "yarn workspace @segment/analytics-next",
