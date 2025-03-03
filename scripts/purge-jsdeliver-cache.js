@@ -15,12 +15,12 @@ const purgeJsDelivrCache = async (packageName, relativePath) => {
 
   // Check if the current git HEAD has a tag containing the package name
   try {
-    const tags = execSync('git tag --contains HEAD', { cwd: gitRoot })
-      .toString()
-      .split('\n')
-      .filter((tag) => tag.includes(packageName))
+    const tags = execSync('git tag --contains HEAD', {
+      cwd: gitRoot,
+    }).toString()
 
-    if (tags.length === 0) {
+    const hasTags = tags.includes(packageName)
+    if (!hasTags) {
       console.log(
         `No tags containing the package name "${packageName}" found on the current git HEAD. Aborting script.`
       )
