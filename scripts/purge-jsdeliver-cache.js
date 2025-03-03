@@ -19,8 +19,8 @@ const purgeJsDelivrCache = async (packageName, relativePath) => {
       cwd: gitRoot,
     }).toString()
 
-    const hasTags = tags.includes(packageName)
-    if (!hasTags) {
+    const hasMatchingTag = tags.includes(packageName)
+    if (!hasMatchingTag) {
       console.log(
         `No tags containing the package name "${packageName}" found on the current git HEAD. Aborting script.`
       )
