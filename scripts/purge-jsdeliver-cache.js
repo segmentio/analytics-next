@@ -1,6 +1,6 @@
+const { execSync } = require('node:child_process')
 const fs = require('node:fs')
 const path = require('node:path')
-
 /**
  * Given a package name and a relative path to the dist folder -- it reads all the files and runs them through the jsdelivr cache purge API.
  */
@@ -10,6 +10,24 @@ const purgeJsDelivrCache = async (packageName, relativePath) => {
 
   if (!fs.existsSync(fullPath)) {
     console.error(`Path does not exist: ${fullPath}`)
+    process.exit(1)
+  }
+
+  // Check if the current git HEAD has a tag containing the package name
+  try {
+    const tags = execSync('git tag --contains HEAD', { cwd: gitRoot })
+      .toString()
+      .split('\n')
+      .filter((tag) => tag.includes(packageName))
+
+    if (tags.length === 0) {
+      console.log(
+        `No tags containing the package name "${packageName}" found on the current git HEAD. Aborting script.`
+      )
+      process.exit(0)
+    }
+  } catch (error) {
+    console.error(`Failed to check git tags: ${error.message}`)
     process.exit(1)
   }
 
