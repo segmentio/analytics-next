@@ -3,7 +3,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 /**
  * Given a package name and a relative path to the dist folder -- it reads all the files and runs them through the jsdelivr cache purge API.
- * Will abort the API unless the current commit has a tag with the package name on it.
+ * On CI, will abort the purge unless the current commit has a tag with the package name on it.
  */
 const purgeJsDelivrCache = async (packageName, relativePath) => {
   console.log(`\n\n`)
@@ -63,9 +63,7 @@ const purgeJsDelivrCache = async (packageName, relativePath) => {
 const [packageName, relativePath] = process.argv.slice(2)
 
 if (!packageName || !relativePath) {
-  console.error(
-    'Usage: node purge-jsdeliver-cache-signals.js <package-name> <relative-path>'
-  )
+  console.error('Usage: node purge-cdn-cache.js <package-name> <relative-path>')
   process.exit(1)
 }
 
