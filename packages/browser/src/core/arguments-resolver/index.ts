@@ -52,12 +52,15 @@ export function resolveArguments(
   return [name, data, opts, cb]
 }
 
+const isNil = (val: any): val is null | undefined =>
+  val === null || val === undefined
+
 /**
  * Helper for page, screen methods
  */
 export function resolvePageArguments(
-  category?: string | object,
-  name?: string | object | Callback,
+  category?: string | object | null,
+  name?: string | object | Callback | null,
   properties?: EventProperties | Options | Callback | null,
   options?: Options | Callback,
   callback?: Callback
@@ -68,38 +71,56 @@ export function resolvePageArguments(
   Options,
   Callback | undefined
 ] {
+  let resolvedProperties: EventProperties
+  let resolvedOptions: Options
   let resolvedCategory: string | undefined | null = null
   let resolvedName: string | undefined | null = null
   const args = [category, name, properties, options, callback]
 
-  const strings = args.filter(isString)
-  if (strings[0] !== undefined && strings[1] !== undefined) {
-    resolvedCategory = strings[0]
-    resolvedName = strings[1]
+  if (typeof args[0] === 'string') {
+    resolvedCategory = args[0]
+  }
+  if (typeof args[1] === 'string') {
+    resolvedName = args[1]
   }
 
+  // if there is just one string in the first two args, it's the name
+  const strings = [args[0], args[1]].filter(isString)
   if (strings.length === 1) {
     resolvedCategory = null
     resolvedName = strings[0]
   }
 
+  // if there is any function, it's always the callback
   const resolvedCallback = args.find(isFunction) as Callback | undefined
 
-  const objects = args.filter((obj) => {
-    if (resolvedName === null) {
-      return isPlainObject(obj)
-    }
-    return isPlainObject(obj) || obj === null
-  }) as Array<JSONObject | null>
+  args.forEach((obj, argIdx) => {
+    if (isPlainObject(obj)) {
+      if (argIdx === 0) {
+        resolvedProperties = obj
+      }
+      if (argIdx === 1 || argIdx == 2) {
+        if (isNil(resolvedProperties)) {
+          resolvedProperties = obj
+        } else {
+          resolvedOptions = obj
+        }
+      }
 
-  const resolvedProperties = (objects[0] ?? {}) as EventProperties
-  const resolvedOptions = (objects[1] ?? {}) as Options
+      // if it's the third argument and it's an object, it's always properties
+      if (argIdx === 3) {
+        resolvedOptions = obj
+      }
+    }
+  })
+
+  // if there is an object and it's the fourth argument, it's options
 
   return [
     resolvedCategory,
     resolvedName,
-    resolvedProperties,
-    resolvedOptions,
+    (resolvedProperties ??= {}),
+    (resolvedOptions ??= {}),
     resolvedCallback,
   ]
 }
