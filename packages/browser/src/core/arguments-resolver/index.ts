@@ -98,6 +98,7 @@ export function resolvePageArguments(
       if (argIdx === 0) {
         resolvedProperties = obj
       }
+
       if (argIdx === 1 || argIdx == 2) {
         if (isNil(resolvedProperties)) {
           resolvedProperties = obj
@@ -106,14 +107,11 @@ export function resolvePageArguments(
         }
       }
 
-      // if it's the third argument and it's an object, it's always properties
       if (argIdx === 3) {
         resolvedOptions = obj
       }
     }
   })
-
-  // if there is an object and it's the fourth argument, it's options
 
   return [
     resolvedCategory,
