@@ -76,23 +76,31 @@ export function resolvePageArguments(
   let resolvedName: string | undefined | null = null
   const args = [category, name, properties, options, callback]
 
-  if (typeof args[0] === 'string') {
-    resolvedCategory = args[0]
-  }
-  if (typeof args[1] === 'string') {
-    resolvedName = args[1]
-  }
-
-  // if there is just one string in the first two args, it's the name
-  const strings = [args[0], args[1]].filter(isString)
+  // handle:
+  // - analytics.page('name')
+  // - analytics.page('category', 'name')
+  const strings = args.filter(isString)
   if (strings.length === 1) {
     resolvedCategory = null
     resolvedName = strings[0]
+  } else if (strings.length === 2) {
+    if (typeof args[0] === 'string') {
+      resolvedCategory = args[0]
+    }
+    if (typeof args[1] === 'string') {
+      resolvedName = args[1]
+    }
   }
 
-  // if there is any function, it's always the callback
+  // handle: analytics.page('category', 'name', properties, options, callback)
   const resolvedCallback = args.find(isFunction) as Callback | undefined
 
+  // handle:
+  // - analytics.page(properties)
+  // - analytics.page(properties, options)
+  // - analytics.page('name', properties)
+  // - analytics.page('name', properties, options)
+  // - analytics.page('category', 'name', properties, options)
   args.forEach((obj, argIdx) => {
     if (isPlainObject(obj)) {
       if (argIdx === 0) {
