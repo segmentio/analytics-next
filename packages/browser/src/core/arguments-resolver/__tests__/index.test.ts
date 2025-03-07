@@ -415,6 +415,16 @@ describe(resolvePageArguments, () => {
     expect(options).toEqual(baseOptions)
     expect(cb).toEqual(fn)
   })
+
+  test('should accept (callback)', () => {
+    const fn = jest.fn()
+    const [category, name, properties, options, cb] = resolvePageArguments(fn)
+    expect(category).toEqual(null)
+    expect(name).toEqual(null)
+    expect(properties).toEqual({})
+    expect(options).toEqual({})
+    expect(cb).toEqual(fn)
+  })
 })
 
 describe(resolveUserArguments, () => {

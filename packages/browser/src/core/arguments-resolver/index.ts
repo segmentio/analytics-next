@@ -96,11 +96,16 @@ export function resolvePageArguments(
   const resolvedCallback = args.find(isFunction) as Callback | undefined
 
   // handle:
+  // - analytics.page('name')
+  // - analytics.page('category', 'name')
   // - analytics.page(properties)
   // - analytics.page(properties, options)
   // - analytics.page('name', properties)
   // - analytics.page('name', properties, options)
   // - analytics.page('category', 'name', properties, options)
+  // - analytics.page('category', 'name', properties, options, callback)
+  // - analytics.page('category', 'name', callback)
+  // - analytics.page(callback), etc
   args.forEach((obj, argIdx) => {
     if (isPlainObject(obj)) {
       if (argIdx === 0) {
