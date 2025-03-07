@@ -7,7 +7,6 @@ import {
 import { Context } from '../context'
 import {
   Callback,
-  JSONObject,
   Options,
   EventProperties,
   SegmentEvent,
