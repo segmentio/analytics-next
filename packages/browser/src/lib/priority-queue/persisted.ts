@@ -34,7 +34,11 @@ function persistItems(key: string, items: Context[]): void {
     }
   }, {} as Record<string, Context>)
 
-  loc.setItem(key, JSON.stringify(Object.values(merged)))
+  try {
+    loc.setItem(key, JSON.stringify(Object.values(merged)))
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 function seen(key: string): Record<string, number> {
@@ -45,13 +49,17 @@ function seen(key: string): Record<string, number> {
 function persistSeen(key: string, memory: Record<string, number>): void {
   const stored = seen(key)
 
-  loc.setItem(
-    key,
-    JSON.stringify({
-      ...stored,
-      ...memory,
-    })
-  )
+  try {
+    loc.setItem(
+      key,
+      JSON.stringify({
+        ...stored,
+        ...memory,
+      })
+    )
+  } catch (err) {
+    console.error(err)
+  }
 }
 
 function remove(key: string): void {
@@ -70,9 +78,13 @@ function mutex(key: string, onUnlock: Function, attempt = 0): void {
 
   const allowed = lock === null || expired(lock)
   if (allowed) {
-    loc.setItem(lockKey, JSON.stringify(now() + lockTimeout))
-    onUnlock()
-    loc.removeItem(lockKey)
+    try {
+      loc.setItem(lockKey, JSON.stringify(now() + lockTimeout))
+      onUnlock()
+      loc.removeItem(lockKey)
+    } catch (err) {
+      console.error(err)
+    }
     return
   }
 
