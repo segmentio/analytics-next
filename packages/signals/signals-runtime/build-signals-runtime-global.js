@@ -2,6 +2,7 @@ const esbuild = require('esbuild')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = fs.promises
+const { execSync } = require('child_process')
 
 const getBanner = (entryPoint) => {
   const content = [
@@ -63,6 +64,14 @@ const buildRuntimeAsString = async (platform) => {
   console.log(`wrote: ${generatedTsFile}`)
 }
 
+// while esbuild supports target: es5 natively, it chokes with errors like]
+// ✘ [ERROR] Transforming const to the configured target environment ("es5") is not supported yet
+const compileToEs5WithBabel = (outFile) => {
+  return execSync(
+    `npx babel ${outFile} --out-file ${outFile} --config-file ./babel.config.js`
+  )
+}
+
 const buildRuntime = async (platform) => {
   const entryPoint = getEntryPoint(platform)
   const { outfileUnminified, outfileMinified } = getOutFiles(platform)
@@ -85,6 +94,11 @@ const buildRuntime = async (platform) => {
     minify: false,
     banner: { js: getBanner(entryPoint) },
   })
+
+  // Compile to ES5
+  compileToEs5WithBabel(outfileUnminified)
+  compileToEs5WithBabel(outfileMinified)
+
   console.log(`wrote: ${outfileUnminified}`)
 }
 

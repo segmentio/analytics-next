@@ -6001,6 +6001,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@segment/analytics-signals-runtime@workspace:packages/signals/signals-runtime"
   dependencies:
+    "@babel/cli": ^7.22.10
+    "@babel/core": ^7.22.11
+    "@babel/preset-env": ^7.22.10
     "@internal/test-helpers": "workspace:^"
     "@microsoft/api-extractor": ^7.47.9
     tslib: ^2.4.1

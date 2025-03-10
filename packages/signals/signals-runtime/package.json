@@ -44,6 +44,9 @@
     "url": "https://github.com/segmentio/analytics-next"
   },
   "devDependencies": {
+    "@babel/cli": "^7.22.10",
+    "@babel/core": "^7.22.11",
+    "@babel/preset-env": "^7.22.10",
     "@internal/test-helpers": "workspace:^",
     "@microsoft/api-extractor": "^7.47.9"
   }
