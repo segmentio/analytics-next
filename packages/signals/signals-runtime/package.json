@@ -47,7 +47,10 @@
     "@babel/cli": "^7.22.10",
     "@babel/core": "^7.22.11",
     "@babel/preset-env": "^7.22.10",
+    "@babel/preset-typescript": "^7.22.11",
     "@internal/test-helpers": "workspace:^",
-    "@microsoft/api-extractor": "^7.47.9"
+    "@microsoft/api-extractor": "^7.47.9",
+    "babel-preset-minify": "^0.5.2",
+    "esbuild-plugin-babel-cjs": "^1.0.0"
   }
 }

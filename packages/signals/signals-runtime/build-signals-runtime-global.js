@@ -2,7 +2,7 @@ const esbuild = require('esbuild')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = fs.promises
-const { execSync } = require('child_process')
+const babel = require('esbuild-plugin-babel-cjs')
 
 const getBanner = (entryPoint) => {
   const content = [
@@ -64,40 +64,44 @@ const buildRuntimeAsString = async (platform) => {
   console.log(`wrote: ${generatedTsFile}`)
 }
 
-const compileToEs5WithBabel = (outFile) => {
-  // While esbuild supports target: es5 natively, we use babel because esbuild chokes with errors. e.g.:
-  // ✘ [ERROR] Transforming const to the configured target environment ("es5") is not supported yet
-  return execSync(
-    `npx babel ${outFile} --out-file ${outFile} --config-file ./babel.config.js`
-  )
-}
-
 const buildRuntime = async (platform) => {
   const entryPoint = getEntryPoint(platform)
   const { outfileUnminified, outfileMinified } = getOutFiles(platform)
 
-  // Build minified version
+  // Transpile with Babel
+  const transpiledFile = `./dist/runtime/index.${platform}.transpiled.js`
   await esbuild.build({
     entryPoints: [entryPoint],
+    outfile: transpiledFile,
+    bundle: true,
+    minify: false,
+    plugins: [
+      babel({
+        config: {
+          presets: ['@babel/preset-env', '@babel/preset-typescript'],
+        },
+      }),
+    ],
+  })
+
+  // Bundle and minify with esbuild
+  await esbuild.build({
+    entryPoints: [transpiledFile],
     outfile: outfileMinified,
     bundle: true,
     minify: true,
     banner: { js: getBanner(entryPoint) },
   })
-  compileToEs5WithBabel(outfileMinified)
   console.log(`wrote: ${outfileMinified}`)
 
-  // Build unminified version
+  // Bundle without minification
   await esbuild.build({
-    entryPoints: [entryPoint],
+    entryPoints: [transpiledFile],
     outfile: outfileUnminified,
     bundle: true,
     minify: false,
     banner: { js: getBanner(entryPoint) },
   })
-
-  // Compile to ES5
-  compileToEs5WithBabel(outfileUnminified)
   console.log(`wrote: ${outfileUnminified}`)
 }
 
