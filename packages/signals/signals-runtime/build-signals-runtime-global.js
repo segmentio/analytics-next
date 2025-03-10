@@ -84,6 +84,7 @@ const buildRuntime = async (platform) => {
     minify: true,
     banner: { js: getBanner(entryPoint) },
   })
+  compileToEs5WithBabel(outfileMinified)
   console.log(`wrote: ${outfileMinified}`)
 
   // Build unminified version
@@ -97,8 +98,6 @@ const buildRuntime = async (platform) => {
 
   // Compile to ES5
   compileToEs5WithBabel(outfileUnminified)
-  compileToEs5WithBabel(outfileMinified)
-
   console.log(`wrote: ${outfileUnminified}`)
 }
 
