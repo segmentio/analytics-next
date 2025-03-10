@@ -13,38 +13,53 @@ pnpm install @segment/analytics-signals-runtime
 
 ### Usage
 
-### As a regular library
+### Importing the signals runtime as a module (e.g. `signals.find()`)
 
 ```ts
-import { 
-  WebSignalsRuntime,
-  // WebRuntimeConstants,
-  // MobileSignalsRuntime
-  // MobileRuntimeConstants
-} from  '@segment/analytics-signals-runtime'
+import { WebSignalsRuntime, Signal } from  '@segment/analytics-signals-runtime'
+// MobileSignalsRuntime
+// WebRuntimeConstants,
+// MobileRuntimeConstants,
 
-const signals = new WebSignalsRuntime([....])
+const mockSignalBuffer: Signal[] = [{
+  type: "network",
+  data: {
+    action: "response",
+    url: "https://segment-integrations.github.io/segment-shop-auto/cart",
+    data: { foo: "bar" },
+    ok: true,
+    status: 201,
+    contentType: "application/json",
+    page: {
+      path: "/segment-shop-auto/",
+      referrer: "",
+      title: "Segment Shop - Home Collection - Timecraft",
+      search: "",
+      url: "https://segment-integrations.github.io/segment-shop-auto/#/home-collection/Timecraft",
+      hostname: "segment-integrations.github.io",
+      hash: "#/home-collection/Timecraft"
+    }
+  }
+}]
 
-// get the more recent network signal in the buffer
+const signals = new WebSignalsRuntime(mockSignalBuffer)
+
 const networkSignal = signals.find(null, 'network')
 
-// all signals
-const allInstrumentationSignals = signals.find(null, 'network')
-
-
 ```
-### As a string
-Exposes the SignalsObject
-
+### Importing the signals runtime a JS string
 ```ts
-import { getRuntimeCode } from '@segment/analytics-signals-runtime``
+import { getRuntimeCode, getMobileRuntimeCode } from '@segment/analytics-signals-runtime'
 
 eval(`
- ${getRuntimeCode()}
+ ${getMobileRuntimeCode()}
  signals.signalBuffer = [....]
  `)
-
 ```
+
+### API documentation
+For all exports, explore [the index.ts](src/index.ts).
+
 ### Development
 `yarn build` generate the following artifacts:
 | Generated File(s) | Description | 
