@@ -2,4 +2,4 @@
 '@segment/analytics-signals-runtime': minor
 ---
 
-Transpile to es5
+Transpile to ES5
