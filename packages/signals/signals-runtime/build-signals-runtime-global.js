@@ -2,6 +2,7 @@ const esbuild = require('esbuild')
 const path = require('path')
 const fs = require('fs')
 const fsPromises = fs.promises
+const babel = require('esbuild-plugin-babel-cjs')
 
 const getBanner = (entryPoint) => {
   const content = [
@@ -67,9 +68,25 @@ const buildRuntime = async (platform) => {
   const entryPoint = getEntryPoint(platform)
   const { outfileUnminified, outfileMinified } = getOutFiles(platform)
 
-  // Build minified version
+  // Transpile with Babel
+  const transpiledFile = `./dist/runtime/index.${platform}.transpiled.js`
   await esbuild.build({
     entryPoints: [entryPoint],
+    outfile: transpiledFile,
+    bundle: true,
+    minify: false,
+    plugins: [
+      babel({
+        config: {
+          presets: ['@babel/preset-env', '@babel/preset-typescript'],
+        },
+      }),
+    ],
+  })
+
+  // Bundle and minify with esbuild
+  await esbuild.build({
+    entryPoints: [transpiledFile],
     outfile: outfileMinified,
     bundle: true,
     minify: true,
@@ -77,9 +94,9 @@ const buildRuntime = async (platform) => {
   })
   console.log(`wrote: ${outfileMinified}`)
 
-  // Build unminified version
+  // Bundle without minification
   await esbuild.build({
-    entryPoints: [entryPoint],
+    entryPoints: [transpiledFile],
     outfile: outfileUnminified,
     bundle: true,
     minify: false,

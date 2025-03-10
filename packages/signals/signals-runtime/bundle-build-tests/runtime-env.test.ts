@@ -26,6 +26,8 @@ describe('Global Scope Test: Web', () => {
     expect(dom.window).toBeDefined()
     // @ts-ignore
     expect(typeof dom.window.signals).toBe('object')
+    expect(typeof dom.window.signals.find).toBe('function')
+    expect(typeof dom.window.signals.filter).toBe('function')
   })
 
   test('should expose constants', () => {
@@ -59,6 +61,8 @@ describe('Global Scope Test: Mobile', () => {
     expect(dom.window).toBeDefined()
     // @ts-ignore
     expect(typeof dom.window.signals).toBe('object')
+    expect(typeof dom.window.signals.find).toBe('function')
+    expect(typeof dom.window.signals.filter).toBe('function')
   })
 
   test('should expose constants', () => {
