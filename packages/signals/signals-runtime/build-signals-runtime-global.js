@@ -68,6 +68,21 @@ const buildRuntime = async (platform) => {
   const entryPoint = getEntryPoint(platform)
   const { outfileUnminified, outfileMinified } = getOutFiles(platform)
 
+  const babelPlugin = babel({
+    config: {
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            targets: {
+              ie: '11', // target es5 -- for example, react-native's QuickJS does not support class
+            },
+          },
+        ],
+        '@babel/preset-typescript',
+      ],
+    },
+  })
   // Bundle and minify with esbuild
   await esbuild.build({
     entryPoints: [entryPoint],
@@ -75,13 +90,7 @@ const buildRuntime = async (platform) => {
     bundle: true,
     minify: true,
     banner: { js: getBanner(entryPoint) },
-    plugins: [
-      babel({
-        config: {
-          presets: ['@babel/preset-env', '@babel/preset-typescript'],
-        },
-      }),
-    ],
+    plugins: [babelPlugin],
   })
   console.log(`wrote: ${outfileMinified}`)
 
@@ -92,13 +101,7 @@ const buildRuntime = async (platform) => {
     bundle: true,
     minify: false,
     banner: { js: getBanner(entryPoint) },
-    plugins: [
-      babel({
-        config: {
-          presets: ['@babel/preset-env', '@babel/preset-typescript'],
-        },
-      }),
-    ],
+    plugins: [babelPlugin],
   })
   console.log(`wrote: ${outfileUnminified}`)
 }
