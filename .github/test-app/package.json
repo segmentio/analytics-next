@@ -1,0 +1,17 @@
+{
+  "name": "test-prog-vaniella",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "install": "^0.13.0",
+    "npm": "^11.2.0"
+  }
+}

@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14, 16, 18, 20]
+        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v3
 
@@ -32,7 +32,9 @@ jobs:
         run: yarn install
 
       - name: Build the package
-        run: export NODE_OPTIONS=--openssl-legacy-provider yarn build
+        run: |
+          export NODE_OPTIONS=--openssl-legacy-provider
+          yarn build
 
       - name: Pack `packages/browser`
         run: |
@@ -40,19 +42,10 @@ jobs:
           npm pack
           echo "PACKAGE_NAME=$(ls *.tgz)" >> $GITHUB_ENV
 
-      - name: Extract package filename
-        run: echo "PACKAGE_NAME=$(ls *.tgz)" >> $GITHUB_ENV
-
       - name: Test installing the package in a fresh environment
         run: |
-          mkdir test-install
-          cd test-install
-          npm init -y
-          npm cache clean --force
-          npm install ../packages/browser/$PACKAGE_NAME
-
-      - name: Check Installed Package Version
-        run: |
-          cd test-install
-          jq '.version' node_modules/@customerio/cdp-analytics-browser/package.json
-
+          rm -rf node_modules
+          cd .github/test-app
+          echo $PACKAGE_NAME
+          npm install ../../packages/browser/$PACKAGE_NAME --loglevel=verbose
+          npm run build
