@@ -64,9 +64,9 @@ const buildRuntimeAsString = async (platform) => {
   console.log(`wrote: ${generatedTsFile}`)
 }
 
-// while esbuild supports target: es5 natively, it chokes with errors like]
-// ✘ [ERROR] Transforming const to the configured target environment ("es5") is not supported yet
 const compileToEs5WithBabel = (outFile) => {
+  // While esbuild supports target: es5 natively, we use babel because esbuild chokes with errors. e.g.:
+  // ✘ [ERROR] Transforming const to the configured target environment ("es5") is not supported yet
   return execSync(
     `npx babel ${outFile} --out-file ${outFile} --config-file ./babel.config.js`
   )
