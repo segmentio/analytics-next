@@ -92,7 +92,7 @@ window.SegmentSignalsPlugin.debug()
 2. Passed as a setting
 ```js
 const signalsPlugin = new SignalsPlugin({
-   enableSignalsIngestion: process.env.SIGNALS_DEBUG_ENABLED = 'true'
+   enableSignalsIngestion: process.env.SEGMENT_SIGNALS_DEBUG
 })
 analytics.register(signalsPlugin)
 ```
