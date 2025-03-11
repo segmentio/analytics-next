@@ -82,10 +82,19 @@ https://my-website.com?segment_signals_debug=false
 
 * This also logs all signals to the js console.
 
-#### Alternative method of enabling debug mode
-In your JS console:
+#### Alternative method(s) of enabling debug mode
+1. In your JS console:
 ```js
-SegmentSignalsPlugin.debug() 
+window.SegmentSignalsPlugin.debug() 
+```
+
+
+2. Passed as a setting
+```js
+const signalsPlugin = new SignalsPlugin({
+   enableSignalsIngestion: process.env.SIGNALS_DEBUG_ENABLED = 'true'
+})
+analytics.register(signalsPlugin)
 ```
 
 ### Advanced
@@ -105,11 +114,9 @@ import { SignalsPlugin, SignalsMiddleware } from '@segment/analytics-signals'
 
 class MyMiddleware implements SignalsMiddleware {
   process(signal: Signal) {
-    // drop the event if some conditions are met
+    // drop all instrumentation signals
     if (
-       signal.type === 'network' &&
-       signal.data.action === 'request' &&
-       ...
+       signal.type === 'instrumentation'
     ) {
       return null;
     } else {
@@ -117,7 +124,12 @@ class MyMiddleware implements SignalsMiddleware {
     }
   }
 }
-const signalsPlugin = new SignalsPlugin({ middleware: [myMiddleware]})
+
+const signalsPlugin = new SignalsPlugin({ 
+  middleware: [
+    new MyMiddleware()
+  ]
+})
 analytics.register(signalsPlugin)
 ```
 
