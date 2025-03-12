@@ -68,39 +68,40 @@ const buildRuntime = async (platform) => {
   const entryPoint = getEntryPoint(platform)
   const { outfileUnminified, outfileMinified } = getOutFiles(platform)
 
-  // Transpile with Babel
-  const transpiledFile = `./dist/runtime/index.${platform}.transpiled.js`
-  await esbuild.build({
-    entryPoints: [entryPoint],
-    outfile: transpiledFile,
-    bundle: true,
-    minify: false,
-    plugins: [
-      babel({
-        config: {
-          presets: ['@babel/preset-env', '@babel/preset-typescript'],
-        },
-      }),
-    ],
+  const babelPlugin = babel({
+    config: {
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            targets: {
+              ie: '11', // target es5 -- for example, react-native's QuickJS does not support class
+            },
+          },
+        ],
+        '@babel/preset-typescript',
+      ],
+    },
   })
-
   // Bundle and minify with esbuild
   await esbuild.build({
-    entryPoints: [transpiledFile],
+    entryPoints: [entryPoint],
     outfile: outfileMinified,
     bundle: true,
     minify: true,
     banner: { js: getBanner(entryPoint) },
+    plugins: [babelPlugin],
   })
   console.log(`wrote: ${outfileMinified}`)
 
   // Bundle without minification
   await esbuild.build({
-    entryPoints: [transpiledFile],
+    entryPoints: [entryPoint],
     outfile: outfileUnminified,
     bundle: true,
     minify: false,
     banner: { js: getBanner(entryPoint) },
+    plugins: [babelPlugin],
   })
   console.log(`wrote: ${outfileUnminified}`)
 }
