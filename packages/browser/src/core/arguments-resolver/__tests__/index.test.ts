@@ -365,6 +365,23 @@ describe(resolvePageArguments, () => {
     expect(cb).toEqual(fn)
   })
 
+  test('should accept (category, name = null, properties, options, callback)', () => {
+    const fn = jest.fn()
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      'category',
+      null,
+      bananaPhone,
+      baseOptions,
+      fn
+    )
+
+    expect(category).toEqual('category')
+    expect(name).toEqual('name')
+    expect(properties).toEqual(bananaPhone)
+    expect(options).toEqual(baseOptions)
+    expect(cb).toEqual(fn)
+  })
+
   test('should accept (null, null, properties, options, callback)', () => {
     const fn = jest.fn()
     const [category, name, properties, options, cb] = resolvePageArguments(
