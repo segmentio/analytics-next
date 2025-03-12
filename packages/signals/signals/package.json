@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-signals",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "license": "Twilio Software Development Kit License Agreement 2.0",
   "main": "./dist/cjs/index.js",
   "repository": {
@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@segment/analytics-generic-utils": "1.2.0",
-    "@segment/analytics-signals-runtime": "1.3.0",
+    "@segment/analytics-signals-runtime": "1.4.0",
     "idb": "^8.0.0",
     "tslib": "^2.4.1"
   },
