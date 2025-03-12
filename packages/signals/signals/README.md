@@ -55,6 +55,24 @@ analytics.load({
 })
 
 ```
+### Sending and Viewing Signals on Segment.com (Debug mode)
+For privacy reasons, **signals are only to Segment.com when debug mode is on**. You must enable debug mode on the client to send and view those signals on segment.com. To enable debug mode on your client
+```
+https://my-website.com?segment_signals_debug=true
+```
+You can *turn off debugging* by doing:
+```
+https://my-website.com?segment_signals_debug=false
+```
+
+* This also logs all signals to the js console.
+
+#### Alternative method(s) of enabling debug mode
+### Enable debug mode from your JS console:
+```js
+window.SegmentSignalsPlugin.debug() 
+```
+
 ### Extending / Emitting Custom Signals
 ```ts
 import { signalsPlugin } from './analytics' // assuming you exported your plugin instance.
@@ -68,25 +86,10 @@ signalsPlugin.addSignal({ someData: 'foo' })
 }
 ```
 
-### Debugging
-#### Enable debug mode
-Values sent to the signals API are redacted by default.
-This adds a local storage key.  To disable redaction, add a magic query string:
-```
-https://my-website.com?segment_signals_debug=true
-```
-You can *turn off debugging* by doing:
-```
-https://my-website.com?segment_signals_debug=false
-```
+### Debugging  
+Debug mode **MUST** be enabled on the client to VIEW signals on segment.com.
 
-* This also logs all signals to the js console.
 
-#### Alternative method of enabling debug mode
-In your JS console:
-```js
-SegmentSignalsPlugin.debug() 
-```
 
 ### Advanced
 
@@ -105,11 +108,9 @@ import { SignalsPlugin, SignalsMiddleware } from '@segment/analytics-signals'
 
 class MyMiddleware implements SignalsMiddleware {
   process(signal: Signal) {
-    // drop the event if some conditions are met
+    // drop all instrumentation signals
     if (
-       signal.type === 'network' &&
-       signal.data.action === 'request' &&
-       ...
+       signal.type === 'instrumentation'
     ) {
       return null;
     } else {
@@ -117,7 +118,12 @@ class MyMiddleware implements SignalsMiddleware {
     }
   }
 }
-const signalsPlugin = new SignalsPlugin({ middleware: [myMiddleware]})
+
+const signalsPlugin = new SignalsPlugin({ 
+  middleware: [
+    new MyMiddleware()
+  ]
+})
 analytics.register(signalsPlugin)
 ```
 
