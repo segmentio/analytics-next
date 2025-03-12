@@ -1,5 +1,11 @@
 # @segment/analytics-signals-runtime
 
+## 1.4.0
+
+### Minor Changes
+
+- [#1250](https://github.com/segmentio/analytics-next/pull/1250) [`d5829da8`](https://github.com/segmentio/analytics-next/commit/d5829da8ce6a1664d9be2e00960791d929ee73bc) Thanks [@silesky](https://github.com/silesky)! - Transpile to ES5
+
 ## 1.3.0
 
 ### Minor Changes

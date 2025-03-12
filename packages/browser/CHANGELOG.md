@@ -1,5 +1,19 @@
 # @segment/analytics-next
 
+## 1.78.0
+
+### Minor Changes
+
+- [#1246](https://github.com/segmentio/analytics-next/pull/1246) [`ee838db5`](https://github.com/segmentio/analytics-next/commit/ee838db5b361fc52a400ab2fb8bae50bff4d262b) Thanks [@silesky](https://github.com/silesky)! - Fix argument resolver bug where the following would not set the correct options:
+  ```ts
+  analytics.page(
+     null,
+     'foo',
+     { url: "https://foo.com" },
+     { context: { __eventOrigin: { type: 'Signal' } } // would not be set correctly
+  )
+  ```
+
 ## 1.77.0
 
 ### Minor Changes
