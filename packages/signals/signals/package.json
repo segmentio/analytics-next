@@ -49,7 +49,7 @@
     "tslib": "^2.4.1"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">1.78.0"
+    "@segment/analytics-next": ">=1.78.0"
   },
   "peerDependenciesMeta": {
     "@segment/analytics-next": {
