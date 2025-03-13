@@ -51,9 +51,6 @@ export function resolveArguments(
   return [name, data, opts, cb]
 }
 
-const isNil = (val: any): val is null | undefined =>
-  val === null || val === undefined
-
 /**
  * Helper for page, screen methods
  */
@@ -76,13 +73,18 @@ export function resolvePageArguments(
   let resolvedName: string | undefined | null = null
   const args = [category, name, properties, options, callback]
 
-  // handle:
-  // - analytics.page('name')
-  // - analytics.page('category', 'name')
+  // The legacy logic is basically:
+  // - If there is a string, it's the name
+  // - If there are two strings, it's category and name
   const strings = args.filter(isString)
   if (strings.length === 1) {
-    resolvedCategory = null
-    resolvedName = strings[0]
+    if (isString(args[1])) {
+      resolvedName = args[1]
+      resolvedCategory = null
+    } else {
+      resolvedName = strings[0]
+      resolvedCategory = null
+    }
   } else if (strings.length === 2) {
     if (typeof args[0] === 'string') {
       resolvedCategory = args[0]
@@ -106,25 +108,26 @@ export function resolvePageArguments(
   // - analytics.page('category', 'name', properties, options, callback)
   // - analytics.page('category', 'name', callback)
   // - analytics.page(callback), etc
-  args.forEach((obj, argIdx) => {
-    if (isPlainObject(obj)) {
-      if (argIdx === 0) {
-        resolvedProperties = obj
-      }
 
-      if (argIdx === 1 || argIdx == 2) {
-        if (isNil(resolvedProperties)) {
-          resolvedProperties = obj
-        } else {
-          resolvedOptions = obj
-        }
-      }
-
-      if (argIdx === 3) {
-        resolvedOptions = obj
-      }
+  // The legacy logic is basically:
+  // - If there is a plain object, it's the properties
+  // - If there are two plain objects, it's properties and options
+  const objects = args.filter(isPlainObject)
+  if (objects.length === 1) {
+    if (isPlainObject(args[2])) {
+      resolvedOptions = {}
+      resolvedProperties = args[2]
+    } else if (isPlainObject(args[3])) {
+      resolvedProperties = {}
+      resolvedOptions = args[3]
+    } else {
+      resolvedProperties = objects[0]
+      resolvedOptions = {}
     }
-  })
+  } else if (objects.length === 2) {
+    resolvedProperties = objects[0]
+    resolvedOptions = objects[1]
+  }
 
   return [
     resolvedCategory,
