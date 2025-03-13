@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.78.1
+
+### Patch Changes
+
+- [#1259](https://github.com/segmentio/analytics-next/pull/1259) [`b538682b`](https://github.com/segmentio/analytics-next/commit/b538682bc67911fb40e84674136a6551e14e48cf) Thanks [@silesky](https://github.com/silesky)! - Add support for more argument resolver edge cases
+
 ## 1.78.0
 
 ### Minor Changes
