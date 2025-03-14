@@ -26,4 +26,8 @@ export const analyticsMock: jest.Mocked<AnyAnalytics> = {
   addSourceMiddleware: jest.fn(),
   reset: jest.fn(),
   on: jest.fn(),
+  user: jest.fn().mockReturnValue({
+    id: jest.fn(),
+    anonymousId: jest.fn(),
+  }),
 }

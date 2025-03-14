@@ -85,8 +85,7 @@ export class SignalsIngestClient {
 
     return analytics.track(MAGIC_EVENT_NAME, {
       index: this.index++,
-      type: signal.type,
-      data: cleanSignal.data,
+      ...cleanSignal,
     })
   }
 

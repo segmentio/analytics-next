@@ -97,6 +97,7 @@ describe(NetworkGenerator, () => {
 
     expect(first[0]).toMatchInlineSnapshot(`
       {
+        "anonymousId": "",
         "data": {
           "action": "request",
           "contentType": "application/json",
@@ -121,12 +122,14 @@ describe(NetworkGenerator, () => {
             "disallowed": [],
           },
         },
+        "timestamp": <ISO Timestamp>,
         "type": "network",
       }
     `)
 
     expect(second[0]).toMatchInlineSnapshot(`
       {
+        "anonymousId": "",
         "data": {
           "action": "response",
           "contentType": "application/json",
@@ -152,6 +155,7 @@ describe(NetworkGenerator, () => {
             "disallowed": [],
           },
         },
+        "timestamp": <ISO Timestamp>,
         "type": "network",
       }
     `)

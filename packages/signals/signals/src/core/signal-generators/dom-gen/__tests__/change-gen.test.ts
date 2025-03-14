@@ -1,8 +1,7 @@
-import { createInteractionSignal } from '../../../../types/factories'
 import { SignalEmitter } from '../../../emitter'
 import { OnChangeGenerator } from '../change-gen'
 
-describe('OnChangeGenerator', () => {
+describe(OnChangeGenerator, () => {
   let onChangeGenerator: OnChangeGenerator
   let emitter: SignalEmitter
   let unregister: () => void
@@ -28,14 +27,49 @@ describe('OnChangeGenerator', () => {
     unregister = onChangeGenerator.register(emitter)
     document.dispatchEvent(event)
 
-    expect(emitSpy).toHaveBeenCalledWith(
-      createInteractionSignal({
-        eventType: 'change',
-        listener: 'onchange',
-        target: expect.any(Object),
-        change: { value: 'new value' },
-      })
-    )
+    expect(emitSpy.mock.calls.length).toBe(1)
+    expect(emitSpy.mock.calls[0][0]).toMatchInlineSnapshot(`
+      {
+        "anonymousId": "",
+        "data": {
+          "change": {
+            "value": "new value",
+          },
+          "eventType": "change",
+          "listener": "onchange",
+          "page": {
+            "hash": "",
+            "hostname": "localhost",
+            "path": "/",
+            "referrer": "",
+            "search": "",
+            "title": "",
+            "url": "http://localhost/",
+          },
+          "target": {
+            "attributes": {
+              "type": "text",
+            },
+            "checked": false,
+            "classList": [],
+            "describedBy": undefined,
+            "id": "",
+            "innerText": undefined,
+            "label": undefined,
+            "labels": [],
+            "name": "",
+            "nodeName": "INPUT",
+            "tagName": "INPUT",
+            "textContent": "",
+            "title": "",
+            "type": "text",
+            "value": "new value",
+          },
+        },
+        "timestamp": <ISO Timestamp>,
+        "type": "interaction",
+      }
+    `)
   })
 
   it('should not emit a signal for ignored elements', () => {
@@ -85,15 +119,58 @@ describe('OnChangeGenerator', () => {
     unregister = onChangeGenerator.register(emitter)
     document.dispatchEvent(event)
 
-    expect(emitSpy).toHaveBeenCalledWith(
-      createInteractionSignal({
-        eventType: 'change',
-        listener: 'onchange',
-        target: expect.any(Object),
-        change: {
-          selectedOptions: [{ value: 'value1', label: 'label1' }],
+    expect(emitSpy.mock.lastCall).toMatchInlineSnapshot(`
+      [
+        {
+          "anonymousId": "",
+          "data": {
+            "change": {
+              "selectedOptions": [
+                {
+                  "label": "label1",
+                  "value": "value1",
+                },
+              ],
+            },
+            "eventType": "change",
+            "listener": "onchange",
+            "page": {
+              "hash": "",
+              "hostname": "localhost",
+              "path": "/",
+              "referrer": "",
+              "search": "",
+              "title": "",
+              "url": "http://localhost/",
+            },
+            "target": {
+              "attributes": {},
+              "classList": [],
+              "describedBy": undefined,
+              "id": "",
+              "innerText": undefined,
+              "label": undefined,
+              "labels": [],
+              "name": "",
+              "nodeName": "SELECT",
+              "selectedIndex": 0,
+              "selectedOptions": [
+                {
+                  "label": "label1",
+                  "value": "value1",
+                },
+              ],
+              "tagName": "SELECT",
+              "textContent": "",
+              "title": "",
+              "type": "select-one",
+              "value": "value1",
+            },
+          },
+          "timestamp": <ISO Timestamp>,
+          "type": "interaction",
         },
-      })
-    )
+      ]
+    `)
   })
 })

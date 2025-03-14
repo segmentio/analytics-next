@@ -41,6 +41,7 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     })
 
     this.signals = new Signals({
+      debug: settings.debug,
       disableSignalsRedaction: settings.disableSignalsRedaction,
       enableSignalsIngestion: settings.enableSignalsIngestion,
       flushAt: settings.flushAt,

@@ -42,6 +42,7 @@ describe(AnalyticsService, () => {
       delete call.data.page
       expect(call).toMatchInlineSnapshot(`
         {
+          "anonymousId": "",
           "data": {
             "rawEvent": {
               "context": {
@@ -50,6 +51,7 @@ describe(AnalyticsService, () => {
               "type": "track",
             },
           },
+          "timestamp": <ISO Timestamp>,
           "type": "instrumentation",
         }
       `)

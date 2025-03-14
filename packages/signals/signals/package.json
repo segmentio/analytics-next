@@ -25,6 +25,7 @@
   ],
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/analytics-signals...",
+    "..": "yarn run -T turbo run --filter=...@segment/analytics-signals...",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",

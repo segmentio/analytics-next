@@ -1,7 +1,4 @@
 import {
-  InstrumentationSignal,
-  InteractionData,
-  InteractionSignal,
   NavigationData,
   NavigationSignal,
   UserDefinedSignalData,
@@ -9,60 +6,60 @@ import {
   NetworkData,
   NetworkSignalMetadata,
   NetworkSignal,
+  SignalTypes,
+  Signal,
+  SignalOfType,
+  InstrumentationSignal,
+  InteractionData,
+  InteractionSignal,
   SegmentEvent,
 } from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../lib/normalize-url'
 import { getPageData } from '../lib/page-data'
 
 /**
- * Factories
+ * Base Signal Factory
  */
+const createBaseSignal = <
+  Type extends SignalTypes,
+  Data extends Omit<SignalOfType<Signal, Type>['data'], 'page'>
+>(
+  type: Type,
+  data: Data
+) => {
+  return {
+    timestamp: new Date().toISOString(),
+    anonymousId: '', // not set yet -- will be set by the runtime // TODO
+    type,
+    data: {
+      ...data,
+      page: getPageData(),
+    },
+  } as SignalOfType<Signal, Type>
+}
+
 export const createInstrumentationSignal = (
   rawEvent: SegmentEvent
 ): InstrumentationSignal => {
-  return {
-    type: 'instrumentation',
-    data: {
-      page: getPageData(),
-      rawEvent,
-    },
-  }
+  return createBaseSignal('instrumentation', { rawEvent })
 }
 
 export const createInteractionSignal = (
   data: InteractionData
 ): InteractionSignal => {
-  return {
-    type: 'interaction',
-    data: {
-      ...data,
-      page: getPageData(),
-    },
-  }
+  return createBaseSignal('interaction', data)
 }
 
 export const createNavigationSignal = (
   data: NavigationData
 ): NavigationSignal => {
-  return {
-    type: 'navigation',
-    data: {
-      ...data,
-      page: getPageData(),
-    },
-  }
+  return createBaseSignal('navigation', data)
 }
 
 export const createUserDefinedSignal = (
   data: UserDefinedSignalData
 ): UserDefinedSignal => {
-  return {
-    type: 'userDefined',
-    data: {
-      ...data,
-      page: getPageData(),
-    },
-  }
+  return createBaseSignal('userDefined', data)
 }
 
 export const createNetworkSignal = (
@@ -70,12 +67,10 @@ export const createNetworkSignal = (
   metadata?: NetworkSignalMetadata
 ): NetworkSignal => {
   return {
-    type: 'network',
-    data: {
+    ...createBaseSignal('network', {
       ...data,
       url: normalizeUrl(data.url),
-      page: getPageData(),
-    },
+    }),
     metadata: metadata ?? {
       filters: {
         allowed: [],

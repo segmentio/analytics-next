@@ -16,6 +16,7 @@ import { LogLevelOptions } from '../debug-mode'
 import { SignalsIngestSubscriber } from '../middleware/signals-ingest'
 import { SignalsEventProcessorSubscriber } from '../middleware/event-processor'
 import { NetworkSignalsFilterMiddleware } from '../middleware/network-signals-filter/network-signals-filter'
+import { UserInfoMiddleware } from '../middleware/user-info'
 
 interface ISignals {
   start(analytics: AnyAnalytics): Promise<void>
@@ -39,6 +40,9 @@ export class Signals implements ISignals {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
     this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
     this.signalEmitter = this.getSignalEmitter(settingsConfig.middleware)
+    if (settingsConfig.debug) {
+      this.debug()
+    }
 
     // We register the generators (along with the signal emitter) so they start collecting signals before the plugin is started.
     // Otherwise, we would wait until analytics is loaded, which would skip things like page network URL changes.
@@ -123,6 +127,7 @@ export class Signals implements ISignals {
     // we initialize the emitter here so that registerGenerator can be called before start
     return new SignalEmitter()
       .addMiddleware(
+        new UserInfoMiddleware(),
         new NetworkSignalsFilterMiddleware(),
         ...(middleware || [])
       )
