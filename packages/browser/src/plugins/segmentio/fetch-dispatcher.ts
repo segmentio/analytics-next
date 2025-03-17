@@ -8,6 +8,7 @@ export default function (config?: StandardDispatcherConfig): {
 } {
   function dispatch(url: string, body: object): Promise<unknown> {
     return fetch(url, {
+      credentials: config?.credentials,
       keepalive: config?.keepalive,
       headers: createHeaders(config?.headers),
       method: 'post',

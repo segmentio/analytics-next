@@ -77,6 +77,7 @@ export default function batch(
     })
 
     return fetch(`https://${apiHost}/b`, {
+      credentials: config?.credentials,
       keepalive: config?.keepalive || pageUnloaded,
       headers: createHeaders(config?.headers),
       method: 'post',

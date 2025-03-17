@@ -19,12 +19,19 @@ export type AdditionalHeaders =
   | (() => Record<string, string>)
 
 export type RequestPriority = 'high' | 'low' | 'auto'
+export type RequestCredentials = 'include' | 'same-origin' | 'omit'
 
 /**
  * These are the options that can be passed to the fetch dispatcher.
  * They more/less map to the Fetch RequestInit type.
  */
 interface DispatchFetchConfig {
+  /**
+   * Request credentials configuration
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/Request/credentials
+   */
+  credentials?: RequestCredentials
   /**
    * This is useful for ensuring that an event is sent even if the user navigates away from the page.
    * However, it may increase the likelihood of events being lost, as there is a 64kb limit for *all* fetch requests (not just ones to segment) with keepalive (which is why it's disabled by default). So, if you're sending a lot of data, this will likely cause events to be dropped.
