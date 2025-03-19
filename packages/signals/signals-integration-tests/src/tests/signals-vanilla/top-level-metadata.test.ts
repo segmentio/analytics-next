@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test'
+import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
 const basicEdgeFn = `
     // this is a process signal function
-    const processSignal = (signal) => {}
+    const processSignal = (signal) => {
+      if (signal.type === 'interaction') {
+        analytics.track('hello', { myAnonId: signal.anonymousId, myTimestamp: signal.timestamp })
+      } 
+    }
 `
 
 let indexPage: IndexPage
@@ -48,5 +53,19 @@ test('Signals should have anonymousId and timestamp at top level', async () => {
       }
       expect(event.properties).toMatchObject(expected)
     })
+  })
+
+  const getCreatedEvent = () =>
+    indexPage.trackingAPI
+      .getEvents()
+      .find((el) => el.type === 'track' && el.event === 'hello')
+
+  await waitForCondition(() => !!getCreatedEvent(), {
+    errorMessage: 'No track events found, should have an event',
+  })
+  const event = getCreatedEvent()!
+  expect(event.properties).toEqual({
+    myAnonId: event.anonymousId,
+    myTimestamp: expect.stringMatching(isoDateRegEx),
   })
 })

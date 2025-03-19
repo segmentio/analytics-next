@@ -35,10 +35,7 @@ test('network signals fetch', async () => {
     (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
-  const signalData = responses[0].properties!.data
-  expect(signalData.data).toEqual({ someResponse: 'yep' })
-  expect(signalData.anonymousId).toBe(responses[0].anonymousId)
-  expect(signalData.timestamp).toMatch(isoDateRegEx)
+  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
 })
 
 test('network signals xhr', async () => {
@@ -64,8 +61,7 @@ test('network signals xhr', async () => {
   expect(responses[0].properties!.data.page).toEqual(commonSignalData.page)
 })
 
-const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-test.only('instrumentation signals', async () => {
+test('instrumentation signals', async () => {
   /**
    * Make an analytics.page() call, see if it gets sent to the signals endpoint
    */
@@ -74,6 +70,7 @@ test.only('instrumentation signals', async () => {
     indexPage.waitForSignalsApiFlush(),
   ])
 
+  const isoDateRegEx = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
   const instrumentationEvents =
     indexPage.signalsAPI.getEvents('instrumentation')
   expect(instrumentationEvents).toHaveLength(1)
@@ -81,13 +78,9 @@ test.only('instrumentation signals', async () => {
   expect(ev.event).toBe('Segment Signal Generated')
   expect(ev.type).toBe('track')
   const rawEvent = ev.properties!.data.rawEvent
-  expect(ev.properties!.type).toBe('instrumentation')
-  expect(ev.properties!.timestamp).toMatch(isoDateRegEx)
-  expect(ev.properties!.anonymousId).toBe(ev.anonymousId)
-  expect(ev.properties)
   expect(rawEvent).toMatchObject({
     type: 'page',
-    anonymousId: ev.anonymousId,
+    anonymousId: expect.any(String),
     timestamp: expect.stringMatching(isoDateRegEx),
   })
 })
@@ -130,8 +123,6 @@ test('interaction signals', async () => {
     type: 'track',
     properties: {
       type: 'interaction',
-      anonymousId: interactionSignals[0].anonymousId,
-      timestamp: expect.stringMatching(isoDateRegEx),
       data,
     },
   })
@@ -163,8 +154,6 @@ test('navigation signals', async ({ page }) => {
     const ev = indexPage.signalsAPI.lastEvent('navigation')
     expect(ev.properties).toMatchObject({
       type: 'navigation',
-      anonymousId: ev.anonymousId,
-      timestamp: expect.stringMatching(isoDateRegEx),
       data: {
         action: 'pageLoad',
         url: indexPage.url,
@@ -187,8 +176,6 @@ test('navigation signals', async ({ page }) => {
     const ev = indexPage.signalsAPI.lastEvent('navigation')
     expect(ev.properties).toMatchObject({
       index: expect.any(Number),
-      anonymousId: ev.anonymousId,
-      timestamp: expect.stringMatching(isoDateRegEx),
       type: 'navigation',
       data: {
         action: 'urlChange',
