@@ -13,17 +13,11 @@ export interface SignalsPluginSettingsConfig {
   processSignal?: string | ProcessSignal
 
   /**
-   * Enable debug mode. Same as ?debug=true in the URL or SignalsPlugin.debug(true)
-   * This sets the log level to 'info', disables redaction, and enables signals ingestion
+   * Enable debug mode. Same as ?segment_signals_debug=true in the URL
+   * This sets the log level to 'info', disables redaction, and enables signals ingestion (sending signals to segment)
    * @default false
    */
   debug?: boolean
-
-  /**
-   * Add console debug logging
-   * @default false
-   */
-  enableDebugLogging?: boolean
 
   /**
    * Disable redaction of signals

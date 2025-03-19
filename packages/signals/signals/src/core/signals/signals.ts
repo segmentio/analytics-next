@@ -38,11 +38,11 @@ export class Signals implements ISignals {
   private globalSettings: SignalGlobalSettings
   constructor(settingsConfig: SignalsSettingsConfig = {}) {
     this.globalSettings = new SignalGlobalSettings(settingsConfig)
-    this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
-    this.signalEmitter = this.getSignalEmitter(settingsConfig.middleware)
     if (settingsConfig.debug) {
       this.debug()
     }
+    this.buffer = getSignalBuffer(this.globalSettings.signalBuffer)
+    this.signalEmitter = this.getSignalEmitter(settingsConfig.middleware)
 
     // We register the generators (along with the signal emitter) so they start collecting signals before the plugin is started.
     // Otherwise, we would wait until analytics is loaded, which would skip things like page network URL changes.
