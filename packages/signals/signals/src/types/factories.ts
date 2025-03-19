@@ -17,12 +17,17 @@ import {
 import { normalizeUrl } from '../lib/normalize-url'
 import { getPageData } from '../lib/page-data'
 
+type BaseData<T extends SignalTypes> = Omit<
+  SignalOfType<Signal, T>['data'],
+  'page'
+>
+
 /**
  * Base Signal Factory
  */
 const createBaseSignal = <
   Type extends SignalTypes,
-  Data extends Omit<SignalOfType<Signal, Type>['data'], 'page'>
+  Data extends BaseData<Type>
 >(
   type: Type,
   data: Data
@@ -35,7 +40,7 @@ const createBaseSignal = <
       ...data,
       page: getPageData(),
     },
-  } as SignalOfType<Signal, Type>
+  }
 }
 
 export const createInstrumentationSignal = (
