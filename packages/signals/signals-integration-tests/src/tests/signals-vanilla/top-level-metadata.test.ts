@@ -18,10 +18,7 @@ test.beforeEach(async ({ page }) => {
   indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
 })
 
-test('signal events should have anonymousId and timestamp at top level', async () => {
-  /**
-   * Make a fetch call, see if it gets sent to the signals endpoint
-   */
+test('Signals should have anonymousId and timestamp at top level', async () => {
   await indexPage.network.mockTestRoute()
   await indexPage.network.makeFetchCall()
   await Promise.all([
