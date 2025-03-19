@@ -29,7 +29,7 @@ const createBaseSignal = <
 ) => {
   return {
     timestamp: new Date().toISOString(),
-    anonymousId: '', // not set yet -- will be set by the runtime // TODO
+    anonymousId: '', // to be set by a middleware (that runs once analytics is instantiated)
     type,
     data: {
       ...data,
