@@ -5,8 +5,8 @@ import { SignalsMiddleware, SignalsMiddlewareContext } from '../../emitter'
 export class UserInfoMiddleware implements SignalsMiddleware {
   user!: UserInfo
 
-  async load(ctx: SignalsMiddlewareContext) {
-    this.user = await ctx.analyticsInstance.user()
+  load(ctx: SignalsMiddlewareContext) {
+    this.user = ctx.analyticsInstance.user()
   }
 
   process(signal: Signal): Signal {
