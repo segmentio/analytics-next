@@ -93,7 +93,7 @@ describe(redactSignalData, () => {
       listener: 'onchange',
       target: createMockTarget({ value: 'XXX', formData: { password: 'XXX' } }),
     })
-    expect(redactSignalData(signal)).toEqual(expected)
+    expect(redactSignalData(signal)).toMatchSignal(expected)
   })
 
   it('should redact attributes in change and in target if the listener is "mutation"', () => {
@@ -117,7 +117,7 @@ describe(redactSignalData, () => {
         innerText: 'XXX',
       }),
     })
-    expect(redactSignalData(signal)).toEqual(expected)
+    expect(redactSignalData(signal)).toMatchSignal(expected)
   })
 
   it('should redact the textContent and innerText in the "target" property if the listener is "contenteditable"', () => {
@@ -133,7 +133,7 @@ describe(redactSignalData, () => {
       change: { textContent: 'XXX' },
       target: createMockTarget({ textContent: 'XXX', innerText: 'XXX' }),
     })
-    expect(redactSignalData(signal)).toEqual(expected)
+    expect(redactSignalData(signal)).toMatchSignal(expected)
   })
 
   it('should redact the values in the "data" property if the type is "network"', () => {
@@ -157,7 +157,7 @@ describe(redactSignalData, () => {
       },
       metadataFixture
     )
-    expect(redactSignalData(signal)).toEqual(expected)
+    expect(redactSignalData(signal)).toMatchSignal(expected)
   })
 
   it('should not mutate the original signal object', () => {

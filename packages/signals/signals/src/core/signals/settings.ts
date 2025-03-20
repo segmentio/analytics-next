@@ -27,6 +27,7 @@ export type SignalsSettingsConfig = Pick<
   | 'mutationGenObservedTags'
   | 'mutationGenPollInterval'
   | 'mutationGenObservedAttributes'
+  | 'debug'
 > & {
   signalStorage?: SignalPersistentStorage
   processSignal?: string

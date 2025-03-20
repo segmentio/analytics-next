@@ -16,7 +16,6 @@ describe(createNetworkSignal, () => {
       disallowed: ['disallowed1', 'disallowed2'],
     },
   }
-
   it('should create a network signal for a request', () => {
     const data: NetworkData = {
       action: 'request',
@@ -30,6 +29,7 @@ describe(createNetworkSignal, () => {
 
     expect(signal).toMatchInlineSnapshot(`
       {
+        "anonymousId": "",
         "data": {
           "action": "request",
           "contentType": "application/json",
@@ -60,6 +60,7 @@ describe(createNetworkSignal, () => {
             ],
           },
         },
+        "timestamp": <ISO Timestamp>,
         "type": "network",
       }
     `)
@@ -80,6 +81,7 @@ describe(createNetworkSignal, () => {
 
     expect(signal).toMatchInlineSnapshot(`
       {
+        "anonymousId": "",
         "data": {
           "action": "response",
           "contentType": "application/json",
@@ -111,6 +113,7 @@ describe(createNetworkSignal, () => {
             ],
           },
         },
+        "timestamp": <ISO Timestamp>,
         "type": "network",
       }
     `)

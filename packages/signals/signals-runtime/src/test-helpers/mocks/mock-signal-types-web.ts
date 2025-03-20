@@ -1,3 +1,4 @@
+import { BaseSignal } from '../../shared/shared-types'
 import {
   InteractionSignal,
   NavigationSignal,
@@ -7,6 +8,13 @@ import {
   PageData,
 } from '../../web/web-signals-types'
 // Mock data for testing
+
+type DefaultProps = Pick<BaseSignal, 'anonymousId' | 'timestamp'>
+
+const baseSignalProps: DefaultProps = {
+  anonymousId: '123',
+  timestamp: '2020-01-01T00:00:00.000Z',
+}
 
 export const mockPageData: PageData = {
   url: 'https://www.segment.com/docs/connections/sources/catalog/libraries/website/javascript/',
@@ -29,7 +37,7 @@ export const mockInteractionSignal: InteractionSignal = {
       attributes: { id: 'button1', class: 'btn-primary' },
     },
   },
-  metadata: { timestamp: Date.now() },
+  ...baseSignalProps,
 }
 
 export const mockNavigationSignal: NavigationSignal = {
@@ -41,7 +49,7 @@ export const mockNavigationSignal: NavigationSignal = {
     hash: '#section1',
     prevUrl: 'https://example.com/home',
   },
-  metadata: { timestamp: Date.now() },
+  ...baseSignalProps,
 }
 
 export const mockInstrumentationSignal: InstrumentationSignal = {
@@ -50,7 +58,7 @@ export const mockInstrumentationSignal: InstrumentationSignal = {
     page: mockPageData,
     rawEvent: { type: 'customEvent', detail: 'example' },
   },
-  metadata: { timestamp: Date.now() },
+  ...baseSignalProps,
 }
 
 export const mockNetworkSignal: NetworkSignal = {
@@ -63,7 +71,7 @@ export const mockNetworkSignal: NetworkSignal = {
     method: 'GET',
     data: { key: 'value' },
   },
-  metadata: { timestamp: Date.now() },
+  ...baseSignalProps,
 }
 
 export const mockUserDefinedSignal: UserDefinedSignal = {
@@ -72,5 +80,5 @@ export const mockUserDefinedSignal: UserDefinedSignal = {
     page: mockPageData,
     customField: 'customValue',
   },
-  metadata: { timestamp: Date.now() },
+  ...baseSignalProps,
 }

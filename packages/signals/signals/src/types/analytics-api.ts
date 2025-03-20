@@ -50,6 +50,13 @@ export interface DestinationMiddlewareParams {
   integration: string
 }
 
+export type ID = string | null | undefined
+
+export interface UserInfo {
+  id(): ID
+  anonymousId(): ID
+}
+
 export interface AnyAnalytics {
   settings: {
     cdnSettings: CDNSettings
@@ -67,6 +74,7 @@ export interface AnyAnalytics {
   alias(...args: any[]): void
   screen(...args: any[]): void
   reset(): void
+  user(): UserInfo
   on(name: 'reset', fn: (...args: any[]) => void): void
 }
 

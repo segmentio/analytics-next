@@ -46,7 +46,7 @@ describe(SignalsPlugin, () => {
     const userDefinedData = { foo: 'bar' }
     plugin.addSignal(userDefinedData)
     expect(emitterSpy).toHaveBeenCalledTimes(1)
-    expect(emitterSpy.mock.calls[0][0]).toEqual(
+    expect(emitterSpy.mock.calls[0][0]).toMatchSignal(
       createUserDefinedSignal(userDefinedData)
     )
   })

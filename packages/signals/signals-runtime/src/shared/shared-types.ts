@@ -1,5 +1,9 @@
+export type ID = string | null | undefined
+
 export interface BaseSignal {
   type: string
+  anonymousId: ID
+  timestamp: string
 }
 
 export type SignalOfType<

@@ -1,3 +1,4 @@
+import { ISO_TIMESTAMP_REGEX } from '@internal/test-helpers'
 import { createSuccess } from '@segment/analytics-next/src/test-helpers/factories'
 import unfetch from 'unfetch'
 import { getPageData } from '../../../../lib/page-data'
@@ -29,7 +30,9 @@ describe(SignalsIngestClient, () => {
     const ctx = await client.send(signal)
 
     expect(ctx!.event.type).toEqual('track')
-    expect(ctx!.event.properties).toEqual({
+    expect(ctx!.event.properties).toMatchObject({
+      anonymousId: expect.any(String),
+      timestamp: expect.stringMatching(ISO_TIMESTAMP_REGEX),
       type: 'instrumentation',
       index: 0,
       data: {
@@ -53,26 +56,36 @@ describe(SignalsIngestClient, () => {
     })
 
     const ctx = await client.send(signal)
-    expect(ctx!.event.type).toEqual('track')
-    expect(ctx!.event.properties!.type).toBe('network')
-    expect(ctx!.event.properties!.data).toMatchInlineSnapshot(`
+    expect(ctx!.event.properties!).toMatchInlineSnapshot(`
       {
-        "action": "request",
-        "contentType": "application/json",
+        "anonymousId": "",
         "data": {
-          "hello": "XXX",
+          "action": "request",
+          "contentType": "application/json",
+          "data": {
+            "hello": "XXX",
+          },
+          "method": "POST",
+          "page": {
+            "hash": "",
+            "hostname": "localhost",
+            "path": "/",
+            "referrer": "",
+            "search": "",
+            "title": "",
+            "url": "http://localhost/",
+          },
+          "url": "http://foo.com",
         },
-        "method": "POST",
-        "page": {
-          "hash": "",
-          "hostname": "localhost",
-          "path": "/",
-          "referrer": "",
-          "search": "",
-          "title": "",
-          "url": "http://localhost/",
+        "index": 0,
+        "metadata": {
+          "filters": {
+            "allowed": [],
+            "disallowed": [],
+          },
         },
-        "url": "http://foo.com",
+        "timestamp": <ISO Timestamp>,
+        "type": "network",
       }
     `)
   })
