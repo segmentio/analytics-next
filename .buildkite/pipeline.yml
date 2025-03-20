@@ -3,6 +3,11 @@ env:
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
   COVERAGE: true
 steps:
+  - block: Allow this build to run?
+    prompt: ':rotating_light: Review the PR for concerning changes before unblocking'
+    if: build.pull_request.repository.fork
+    blocked_state: running
+
   - label: Log Environment
     agents:
       queue: v1
