@@ -1,5 +1,11 @@
 # @segment/analytics-signals-runtime
 
+## 1.5.0
+
+### Minor Changes
+
+- [#1263](https://github.com/segmentio/analytics-next/pull/1263) [`6753b4b4`](https://github.com/segmentio/analytics-next/commit/6753b4b40d5378734b51369510e707e813a0ad5e) Thanks [@silesky](https://github.com/silesky)! - Add anonymousID and timestamp to signals
+
 ## 1.4.0
 
 ### Minor Changes
