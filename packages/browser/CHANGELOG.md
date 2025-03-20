@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.79.0
+
+### Minor Changes
+
+- [#1262](https://github.com/segmentio/analytics-next/pull/1262) [`c91efe39`](https://github.com/segmentio/analytics-next/commit/c91efe397318cd6f333681b0537e5eb60b99d013) Thanks [@vbetivu-ellation](https://github.com/vbetivu-ellation)! - Add the possibility to configure the Request "credentials" option. Currently, the library only uses the default "same-site" value, which does not include cookies for cross-origin requests.
+
 ## 1.78.1
 
 ### Patch Changes
