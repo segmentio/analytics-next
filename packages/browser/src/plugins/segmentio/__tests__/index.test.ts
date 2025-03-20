@@ -74,6 +74,27 @@ describe('Segment.io', () => {
     })
   })
 
+  describe('configuring fetch credentials', () => {
+    it('should accept fetch credentials configuration', async () => {
+      const analytics = new Analytics({ writeKey: 'foo' })
+
+      await analytics.register(
+        await segmentio(analytics, {
+          apiKey: '',
+          deliveryStrategy: {
+            config: {
+              credentials: 'include',
+            },
+          },
+        })
+      )
+
+      await analytics.track('foo')
+      const [_, params] = spyMock.mock.lastCall
+      expect(params.credentials).toBe('include')
+    })
+  })
+
   describe('configuring headers', () => {
     it('should accept additional headers', async () => {
       const analytics = new Analytics({ writeKey: 'foo' })
