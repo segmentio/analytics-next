@@ -33,7 +33,8 @@
     "cjs": "tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "test": "yarn jest"
+    "test": "yarn jest",
+    "preinstall": "node scripts/check-node-version.js"
   },
   "size-limit": [
     {
@@ -41,6 +42,10 @@
       "limit": "28.0 KB"
     }
   ],
+  "engines": {
+    "node": ">=12.22.0 <22.0.0"
+  },
+  "engineStrict": true,
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics-core": "1.2.2",

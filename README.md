@@ -5,6 +5,12 @@ This is June's JS SDK, based on Analytics-Next by Segment.
 - `make dev` should start a development server after a `yarn install`.
 - The writeKey is a valid June API key. You can make one in interim by going into the database (`api_keys` table) and inserting a new row.
 
+## Node.js Compatibility
+
+This package supports Node.js 12.22.0 through 21.x. It is **not compatible** with Node.js 22+ or 23+ due to issues with a transitive dependency. 
+
+**Important**: Installation will fail if you attempt to install with Node.js 22+. You must use a compatible Node.js version (<22.0.0). For detailed information about compatibility issues and available solutions, please see [NODE_COMPATIBILITY.md](NODE_COMPATIBILITY.md).
+
 # Components
 
 - Tester (`example`): NextJS app used to generate and emit mock events to a test or production event ingress.
@@ -14,11 +20,11 @@ This is June's JS SDK, based on Analytics-Next by Segment.
 
 To start understanding this codebase, you need to look at a couple crucial folders within `src`:
 
-- `plugins`: analytics-next is implemented in a modular fashion, so there’s many plugins that perform separate functions.
+- `plugins`: analytics-next is implemented in a modular fashion, so there's many plugins that perform separate functions.
   - To be honest, the most important plugins are `segmentio` and `analytics-node`.
   - The `segmentio` plugin practically handles event sending for browser clients.
   - The `analytics-node` plugin handles event sending for Node clients.
-  - These plugins are both enabled in the entrypoint for the library, although e.g. configuration settings to both don’t necessarily get passed down to them raw.
+  - These plugins are both enabled in the entrypoint for the library, although e.g. configuration settings to both don't necessarily get passed down to them raw.
 
 # Testing Locally
 
@@ -34,7 +40,7 @@ The local remote for Analytics-Node is different, as the tester is proxied via D
 
 ## Standalone Build
 
-To change API endpoints for the standalone build, a full rebuild must be issued with the endpoint changes. There’s currently no mechanism to change apiHost on the fly (although, considering it uses the same code as the NPM build, this shouldn’t be tested separately anyways).
+To change API endpoints for the standalone build, a full rebuild must be issued with the endpoint changes. There's currently no mechanism to change apiHost on the fly (although, considering it uses the same code as the NPM build, this shouldn't be tested separately anyways).
 
 ## Browser (React, NPM)
 
@@ -88,9 +94,9 @@ const [nodeAnalytics] = await AnalyticsNode.load({
         juneify("API_KEY");
     </script>
     ```
-  - Then there’s the NPM package, alongside any custom scripts.
+  - Then there's the NPM package, alongside any custom scripts.
     - `scripts/sdk_release` should publish the package to NPM.
-    - You’ll need publish credentials (see https://github.com/juneHQ/june/issues/2837)
+    - You'll need publish credentials (see https://github.com/juneHQ/june/issues/2837)
 
 # Annotated Source
 
@@ -118,13 +124,13 @@ export default function batch(apiHost: string, config?: BatchingConfig) {
 }
 ```
 
-Some changes to note in the batched dispatcher include `application/json` content types, alongside a crucial bit: changing the `apiHost` from a hardcoded Segment API link to June’s endpoint (around L65 and some repetitions in the file).
+Some changes to note in the batched dispatcher include `application/json` content types, alongside a crucial bit: changing the `apiHost` from a hardcoded Segment API link to June's endpoint (around L65 and some repetitions in the file).
 
-We’ve never seen this dispatcher used, but keep it updated for compatibility purposes. The next file is the most important for browser usage.
+We've never seen this dispatcher used, but keep it updated for compatibility purposes. The next file is the most important for browser usage.
 
 ## segmentio/index.ts
 
-This plugin defines all visible behavior of the browser integration. This is where the critical bits lie: there are custom type definitions for June’s SDK settings (most notably the addition of an apiHost parameter not present in vanilla).
+This plugin defines all visible behavior of the browser integration. This is where the critical bits lie: there are custom type definitions for June's SDK settings (most notably the addition of an apiHost parameter not present in vanilla).
 
 ```jsx
 export function segmentio(
@@ -229,4 +235,4 @@ This file contains the API surface for the analytics package, which is standard 
 
 ## analytics-node.ts & browser.ts
 
-This file contains the modules imported when the NPM package is installed. There’s some modified type signatures, in particular to make sure passing an `httpScheme` and `apiHost` is allowed.
+This file contains the modules imported when the NPM package is installed. There's some modified type signatures, in particular to make sure passing an `httpScheme` and `apiHost` is allowed.
