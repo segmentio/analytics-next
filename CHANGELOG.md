@@ -1,5 +1,24 @@
 # @june/analytics-next
 
+## 3.0.0
+
+### ⚠️ Breaking Change
+- **Added Node.js version compatibility warnings**
+  - This package now provides warnings about Node.js version compatibility
+  - Warning messages are displayed when installing on Node.js versions 22.0.0 and higher
+  - The package may still work, but users on Node.js 22+ who encounter issues should consider:
+    - Downgrading to Node.js 20.x (LTS)
+    - Pinning to version 2.0.0
+    - Using a Docker container with Node.js 20.x
+
+### Added
+- Added Node.js version validation script with warnings
+- Added documentation about Node.js compatibility (NODE_COMPATIBILITY.md)
+- Added engines field to package.json: `"node": ">=12.22.0 <22.0.0"`
+
+### Why a major version bump?
+This change represents a significant advisory about potential runtime issues on newer Node.js versions. Following semantic versioning principles, this warrants a major version increment to highlight the potential compatibility concerns.
+
 ## 1.51.0
 
 ### Minor Changes
@@ -251,3 +270,29 @@
 ### Patch Changes
 
 - [#513](https://github.com/segmentio/analytics-next/pull/513) [`1d36ca1`](https://github.com/segmentio/analytics-next/commit/1d36ca1440fc5df9171d16278d8918b3e5a32128) Thanks [@silesky](https://github.com/silesky)! - test
+
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.0] - 2025-03-21
+
+### ⚠️ Breaking Change
+- **Added Node.js version compatibility warnings**
+  - This package now provides warnings about Node.js version compatibility
+  - Warning messages are displayed when installing on Node.js versions 22.0.0 and higher
+  - The package may still work, but users on Node.js 22+ who encounter issues should consider:
+    - Downgrading to Node.js 20.x (LTS)
+    - Pinning to version 2.0.0
+    - Using a Docker container with Node.js 20.x
+
+### Added
+- Added Node.js version validation script with warnings
+- Added documentation about Node.js compatibility (NODE_COMPATIBILITY.md)
+- Added engines field to package.json: `"node": ">=12.22.0 <22.0.0"`
+
+### Why a major version bump?
+This change represents a significant advisory about potential runtime issues on newer Node.js versions. Following semantic versioning principles, this warrants a major version increment to highlight the potential compatibility concerns.
