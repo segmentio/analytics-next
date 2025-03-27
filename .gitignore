@@ -5,3 +5,4 @@
 stats.json
 /coverage
 e2e-tests/data/requests/*.json
+.yarn/

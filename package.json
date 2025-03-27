@@ -1,6 +1,6 @@
 {
   "name": "@june-so/analytics-next",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "license": "MIT",
   "main": "./dist/cjs/index.js",
   "module": "./dist/pkg/index.js",
@@ -33,7 +33,8 @@
     "cjs": "tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "clean": "rm -rf dist",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
-    "test": "yarn jest"
+    "test": "yarn jest",
+    "vendor": "node scripts/vendor/run.js"
   },
   "size-limit": [
     {
@@ -50,7 +51,6 @@
     "@segment/analytics-core": "1.2.2",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
-    "@segment/tsub": "1.0.1",
     "dset": "^3.1.2",
     "js-cookie": "3.0.1",
     "node-fetch": "^2.6.7",
@@ -62,6 +62,7 @@
   "devDependencies": {
     "@segment/analytics.js-integration": "^3.3.3",
     "@segment/analytics.js-integration-amplitude": "^3.3.3",
+    "@segment/tsub": "1.0.1",
     "@size-limit/preset-big-lib": "^7.0.8",
     "@types/flat": "^5.0.1",
     "@types/fs-extra": "^9.0.2",
@@ -100,5 +101,5 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.8.0"
   },
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@1.22.21"
 }
