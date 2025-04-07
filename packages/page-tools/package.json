@@ -20,7 +20,15 @@
   "scripts": {
     "build": "rm -rf dist && yarn build:esm",
     "build:esm": "yarn tsup src/index.ts --format esm --dts --out-dir dist/esm",
-    "tsup": "yarn run -T tsup"
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "tsup": "yarn run -T tsup",
+    "test": "yarn jest",
+    "watch": "yarn build:esm --watch",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
   },
   "dependencies": {
     "tslib": "^2.4.1"
