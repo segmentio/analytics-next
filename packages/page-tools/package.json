@@ -8,11 +8,11 @@
   },
   "license": "MIT",
   "module": "./dist/esm/index.mjs",
-  "types": "./dist/esm/index.d.ts",
+  "types": "./dist/esm/index.d.mts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.mjs",
-      "types": "./dist/esm/index.d.ts"
+      "types": "./dist/esm/index.d.mts"
     }
   },
   "sideEffects": false,
