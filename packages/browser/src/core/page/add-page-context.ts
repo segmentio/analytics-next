@@ -1,6 +1,6 @@
 import { pick } from '../../lib/pick'
 import { EventProperties, SegmentEvent } from '../events'
-import { getDefaultPageContext } from './get-page-context'
+import { getDefaultPageContext } from '@segment/analytics-page-tools'
 
 /**
  * Augments a segment event with information about the current page.
