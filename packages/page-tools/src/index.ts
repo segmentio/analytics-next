@@ -1,1 +1,1 @@
-console.log('hello')
+export * from './page-context'
