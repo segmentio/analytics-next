@@ -9,12 +9,7 @@
   "license": "MIT",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/esm/index.d.mts",
-  "exports": {
-    ".": {
-      "import": "./dist/esm/index.mjs",
-      "types": "./dist/esm/index.d.mts"
-    }
-  },
+  "main": "./dist/cjs/index.js",
   "sideEffects": false,
   "files": [
     "LICENSE",
@@ -25,8 +20,9 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    "build": "rm -rf dist && yarn build:esm",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
     "build:esm": "yarn tsup src/index.ts --format esm --dts --out-dir dist/esm",
+    "build:cjs": "yarn tsup src/index.ts --format cjs --dts --out-dir dist/cjs",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "tsup": "yarn run -T tsup",
     "test": "yarn jest",

@@ -1,1 +1,1 @@
-export * from './page-context'
+export * from './page-context.js'
