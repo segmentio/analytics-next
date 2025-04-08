@@ -7,9 +7,9 @@
     "directory": "packages/page-tools"
   },
   "license": "MIT",
-  "module": "./dist/esm/index.mjs",
-  "types": "./dist/cjs/index.d.ts",
-  "main": "./dist/cjs/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
   "sideEffects": false,
   "files": [
     "LICENSE",
@@ -20,9 +20,7 @@
     "!*.tsbuildinfo"
   ],
   "scripts": {
-    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
-    "build:esm": "yarn tsup src/index.ts --format esm --dts --out-dir dist/esm",
-    "build:cjs": "yarn tsup src/index.ts --format cjs --dts --out-dir dist/cjs",
+    "build": "yarn tsup --config tsup.config.js",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "tsup": "yarn run -T tsup",
     "test": "yarn jest",
