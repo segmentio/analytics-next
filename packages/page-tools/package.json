@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "main": "./dist/index.js",
   "sideEffects": false,
   "files": [
