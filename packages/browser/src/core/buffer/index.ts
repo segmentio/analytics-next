@@ -6,12 +6,11 @@ import { version } from '../../generated/version'
 import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
 import {
   isBufferedPageContext,
-  BufferedPageContext,
   getDefaultBufferedPageContext,
   createPageContext,
-  PageContext,
 } from '../page'
 import { getVersionType } from '../../lib/version-type'
+import { PageContext, BufferedPageContext } from '@segment/analytics-page-tools'
 
 /**
  * The names of any AnalyticsBrowser methods that also exist on Analytics
