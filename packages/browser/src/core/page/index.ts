@@ -5,11 +5,8 @@ export {
   getDefaultBufferedPageContext,
   getDefaultPageContext,
   isBufferedPageContext,
-} from '@segment/analytics-page-tools'
-
-export type {
-  BufferedPageContext,
-  PageContext,
+  type PageContext,
+  type BufferedPageContext,
 } from '@segment/analytics-page-tools'
 
 export * from './add-page-context'

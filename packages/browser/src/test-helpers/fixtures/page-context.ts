@@ -1,8 +1,8 @@
 import {
-  BufferedPageContext,
+  type BufferedPageContext,
+  type PageContext,
   getDefaultBufferedPageContext,
   getDefaultPageContext,
-  PageContext,
 } from '../../core/page'
 
 export const getPageCtxFixture = (): PageContext => getDefaultPageContext()
