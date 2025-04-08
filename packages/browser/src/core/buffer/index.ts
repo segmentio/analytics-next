@@ -8,9 +8,10 @@ import {
   isBufferedPageContext,
   getDefaultBufferedPageContext,
   createPageContext,
+  BufferedPageContext,
+  PageContext,
 } from '../page'
 import { getVersionType } from '../../lib/version-type'
-import { PageContext, BufferedPageContext } from '@segment/analytics-page-tools'
 
 /**
  * The names of any AnalyticsBrowser methods that also exist on Analytics

@@ -3,6 +3,8 @@ export {
   createBufferedPageContext,
   createPageContext,
   getDefaultBufferedPageContext,
+  PageContext,
+  BufferedPageContext,
   getDefaultPageContext,
   isBufferedPageContext,
 } from '@segment/analytics-page-tools'
