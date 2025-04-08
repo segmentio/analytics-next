@@ -1,0 +1,6 @@
+[env]
+MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = '30s'
+
+[tools]
+node = '14.7.3'
+yarn = '3.2.1'
