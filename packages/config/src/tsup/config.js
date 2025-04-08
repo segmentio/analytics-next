@@ -1,6 +1,6 @@
 const { defineConfig } = require('tsup')
 
-module.exports = defineConfig({
+module.exports = defineConfig(() => ({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
   dts: {
@@ -9,4 +9,4 @@ module.exports = defineConfig({
   },
   outDir: 'dist',
   clean: true,
-})
+}))

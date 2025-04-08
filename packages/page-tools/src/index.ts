@@ -7,4 +7,4 @@ export {
   BufferedPageContext,
   getDefaultPageContext,
   isBufferedPageContext,
-} from './page-context.js'
+} from './page-context'
