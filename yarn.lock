@@ -777,7 +777,7 @@ __metadata:
     aws-sdk: ^2.814.0
     circular-dependency-plugin: ^5.2.2
     compression-webpack-plugin: ^8.0.1
-    customerio-gist-web: 3.15.2
+    customerio-gist-web: 3.15.3
     dset: ^3.1.2
     execa: ^4.1.0
     flat: ^5.0.2
@@ -4470,17 +4470,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.28.1":
-  version: 0.28.1
-  resolution: "axios@npm:0.28.1"
-  dependencies:
-    follow-redirects: ^1.15.0
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: 5115a38d79064d07437c5a28f15841e3607634040e3120ec06a2c4367a7d07cf213b16496eab53b6f58ebc5fb377a440ba9ed4782529b14449a1e285734bfb54
-  languageName: node
-  linkType: hard
-
 "babel-jest@npm:^28.1.1":
   version: 28.1.1
   resolution: "babel-jest@npm:28.1.1"
@@ -5516,13 +5505,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"customerio-gist-web@npm:3.15.2":
-  version: 3.15.2
-  resolution: "customerio-gist-web@npm:3.15.2"
+"customerio-gist-web@npm:3.15.3":
+  version: 3.15.3
+  resolution: "customerio-gist-web@npm:3.15.3"
   dependencies:
-    axios: ^0.28.1
     uuid: ^8.3.2
-  checksum: bba34efca5c5de8e122f8f99c8876f71de80a7d78d30114c70f093290980697eef906ed812a160b1ba9e5d42aeee1aec7fb184b276589c8b497b106e9e10f0c9
+  checksum: c14cdefbf29e08fb1fde35f18843255071e0c71e5467e50e2614f93459ca3b1f18b2afc8b88c132bac3da854127271e90409dbb96b5d39e9bfcf6603c342f7b5
   languageName: node
   linkType: hard
 
@@ -6732,16 +6720,6 @@ __metadata:
     debug:
       optional: true
   checksum: 6aa4e3e3cdfa3b9314801a1cd192ba756a53479d9d8cca65bf4db3a3e8834e62139245cd2f9566147c8dfe2efff1700d3e6aefd103de4004a7b99985e71dd533
-  languageName: node
-  linkType: hard
-
-"follow-redirects@npm:^1.15.0":
-  version: 1.15.6
-  resolution: "follow-redirects@npm:1.15.6"
-  peerDependenciesMeta:
-    debug:
-      optional: true
-  checksum: a62c378dfc8c00f60b9c80cab158ba54e99ba0239a5dd7c81245e5a5b39d10f0c35e249c3379eae719ff0285fff88c365dd446fab19dee771f1d76252df1bbf5
   languageName: node
   linkType: hard
 
@@ -10394,7 +10372,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proxy-from-env@npm:1.1.0, proxy-from-env@npm:^1.1.0":
+"proxy-from-env@npm:1.1.0":
   version: 1.1.0
   resolution: "proxy-from-env@npm:1.1.0"
   checksum: ed7fcc2ba0a33404958e34d95d18638249a68c430e30fcb6c478497d72739ba64ce9810a24f53a7d921d0c065e5b78e3822759800698167256b04659366ca4d4

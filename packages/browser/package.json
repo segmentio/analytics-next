@@ -52,7 +52,7 @@
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
-    "customerio-gist-web": "3.15.2",
+    "customerio-gist-web": "3.15.3",
     "dset": "^3.1.2",
     "js-cookie": "3.0.1",
     "node-fetch": "^2.6.7",
