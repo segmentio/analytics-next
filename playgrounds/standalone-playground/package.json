@@ -7,7 +7,10 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@playground/standalone-playground...",
     "start": "yarn http-server . -o /pages",
-    "dev": "yarn concurrently 'yarn start' 'sleep 3 && ASSET_PATH='/node_modules/@segment/analytics-next/dist/umd/' yarn . watch'",
+    "dev": "yarn concurrently 'yarn start' 'yarn watch'",
+    "watch": "yarn concurrently 'yarn:watch:*'",
+    "watch:ajs": "ASSET_PATH='/node_modules/@segment/analytics-next/dist/umd/' yarn workspace @segment/analytics-next watch",
+    "watch:signals": "yarn workspace @segment/analytics-signals watch",
     "concurrently": "yarn run -T concurrently"
   },
   "dependencies": {
