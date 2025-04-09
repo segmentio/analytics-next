@@ -6,9 +6,9 @@ import { version } from '../../generated/version'
 import { getGlobalAnalytics } from '../../lib/global-analytics-helper'
 import {
   isBufferedPageContext,
-  BufferedPageContext,
   getDefaultBufferedPageContext,
   createPageContext,
+  BufferedPageContext,
   PageContext,
 } from '../page'
 import { getVersionType } from '../../lib/version-type'

@@ -1,3 +1,5 @@
+// TODO: use webpack.config.common.js
+
 const path = require('path')
 const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
@@ -5,7 +7,9 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 const CircularDependencyPlugin = require('circular-dependency-plugin')
-
+const {
+  ECMAVersionValidatorPlugin,
+} = require('ecma-version-validator-webpack-plugin')
 const isProd = process.env.NODE_ENV === 'production'
 
 const ASSET_PATH = process.env.ASSET_PATH
@@ -30,6 +34,10 @@ const plugins = [
   new CircularDependencyPlugin({
     failOnError: true,
   }),
+  // ensure our js bundle only contains syntax supported in ie11.
+  // This does not check polyfills.
+  // This is especially neccessary because by default, node_modules are not transformed.
+  new ECMAVersionValidatorPlugin({ ecmaVersion: 5 }),
 ]
 
 if (process.env.ANALYZE) {

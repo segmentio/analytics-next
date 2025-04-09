@@ -1,4 +1,10 @@
-import { isPlainObject } from '@segment/analytics-core'
+function isPlainObject(
+  obj: unknown
+): obj is Record<string | symbol | number, unknown> {
+  return (
+    Object.prototype.toString.call(obj).slice(8, -1).toLowerCase() === 'object'
+  )
+}
 
 /**
  * Final Page Context object expected in the Segment Event context

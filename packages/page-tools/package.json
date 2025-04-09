@@ -1,0 +1,40 @@
+{
+  "name": "@segment/analytics-page-tools",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/segmentio/analytics-next",
+    "directory": "packages/page-tools"
+  },
+  "license": "MIT",
+  "module": "./dist/esm/index.mjs",
+  "main": "./dist/cjs/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "LICENSE",
+    "dist/",
+    "!**/__tests__/**",
+    "!**/test-helpers/**",
+    "!*.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "yarn tsup --config tsup.config.js",
+    "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
+    "tsup": "yarn run -T tsup",
+    "test": "yarn jest",
+    "watch": "yarn build:esm --watch",
+    "watch:test": "yarn test --watch",
+    "tsc": "yarn run -T tsc",
+    "eslint": "yarn run -T eslint",
+    "concurrently": "yarn run -T concurrently",
+    "jest": "yarn run -T jest"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
+  },
+  "devDependencies": {
+    "@internal/config": "workspace:^",
+    "@internal/config-tsup": "workspace:^"
+  }
+}

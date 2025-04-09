@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "exclude": ["**/__tests__/**"],
+  "compilerOptions": {
+    // Options tsup Ignores:
+    // module: tsup always outputs ESM or CommonJS based on its --format option.
+    // outDir: tsup uses its own --out-dir option to control output.
+  }
+}
