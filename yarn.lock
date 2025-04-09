@@ -3129,6 +3129,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@internal/config-tsup@workspace:^, @internal/config-tsup@workspace:packages/config-tsup":
+  version: 0.0.0-use.local
+  resolution: "@internal/config-tsup@workspace:packages/config-tsup"
+  languageName: unknown
+  linkType: soft
+
 "@internal/config-webpack@workspace:^, @internal/config-webpack@workspace:packages/config-webpack":
   version: 0.0.0-use.local
   resolution: "@internal/config-webpack@workspace:packages/config-webpack"
@@ -6319,6 +6325,7 @@ __metadata:
   resolution: "@segment/analytics-page-tools@workspace:packages/page-tools"
   dependencies:
     "@internal/config": "workspace:^"
+    "@internal/config-tsup": "workspace:^"
     tslib: ^2.4.1
   languageName: unknown
   linkType: soft

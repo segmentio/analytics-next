@@ -1,1 +1,1 @@
-module.exports = require('@internal/config').tsupConfig
+module.exports = require('@internal/config-tsup/config')
