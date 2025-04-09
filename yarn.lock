@@ -3132,6 +3132,8 @@ __metadata:
 "@internal/config-tsup@workspace:^, @internal/config-tsup@workspace:packages/config-tsup":
   version: 0.0.0-use.local
   resolution: "@internal/config-tsup@workspace:packages/config-tsup"
+  dependencies:
+    tsup: ^8.4.0
   languageName: unknown
   linkType: soft
 
