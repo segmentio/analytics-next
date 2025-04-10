@@ -6,25 +6,13 @@ import { SignalGenerator } from '../types'
 
 function getURLDifferences(url1: URL, url2: URL): ChangedProperties[] {
   const changed: ChangedProperties[] = []
-  const propertiesToCompare: (keyof URL)[] = [
-    'href',
-    'protocol',
-    'host',
-    'hostname',
-    'port',
-    'pathname',
-    'search',
-    'hash',
-    'username',
-    'password',
-  ]
+  const propertiesToCompare: (keyof URL)[] = ['pathname', 'search', 'hash']
 
   for (const property of propertiesToCompare) {
     if (url1[property] !== url2[property]) {
       if (property === 'pathname') {
         changed.push('path')
-      }
-      if (['search', 'hash'].includes(property)) {
+      } else {
         changed.push(property as ChangedProperties)
       }
     }

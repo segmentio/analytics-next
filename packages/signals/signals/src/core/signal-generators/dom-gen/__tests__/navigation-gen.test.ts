@@ -6,7 +6,7 @@ import { OnNavigationEventGenerator } from '../navigation-gen'
 
 const originalLocation = window.location
 
-describe('OnNavigationEventGenerator', () => {
+describe(OnNavigationEventGenerator, () => {
   let emitter: SignalEmitter
   let emitSpy: jest.SpiedFunction<SignalEmitter['emit']>
 
