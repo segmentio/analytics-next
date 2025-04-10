@@ -40,8 +40,8 @@ export class OnNavigationEventGenerator implements SignalGenerator {
   id = 'navigation'
 
   urlChange: URLChangeObservable
-  constructor(settings: URLChangeObservableSettings) {
-    this.urlChange = new URLChangeObservable(settings)
+  constructor() {
+    this.urlChange = new URLChangeObservable()
   }
 
   register(emitter: SignalEmitter): () => void {
