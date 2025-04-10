@@ -1,8 +1,5 @@
 import { ChangedProperties } from '@segment/analytics-signals-runtime'
-import {
-  URLChangeObservable,
-  URLChangeObservableSettings,
-} from '../../../lib/detect-url-change'
+import { URLChangeObservable } from '../../../lib/detect-url-change'
 import { createNavigationSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
@@ -66,7 +63,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     )
 
     return () => {
-      urlChange.unsubscribe()
+      this.urlChange.unsubscribe()
     }
   }
 
