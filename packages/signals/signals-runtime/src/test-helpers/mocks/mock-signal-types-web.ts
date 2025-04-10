@@ -43,8 +43,11 @@ export const mockInteractionSignal: InteractionSignal = {
 export const mockNavigationSignal: NavigationSignal = {
   type: 'navigation',
   data: {
-    page: mockPageData,
     action: 'urlChange',
+    changedProperties: ['path', 'search', 'hash'],
+    page: mockPageData,
+    path: '/',
+    search: '',
     url: 'https://example.com',
     hash: '#section1',
     prevUrl: 'https://example.com/home',
