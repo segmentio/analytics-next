@@ -80,9 +80,9 @@ export const shouldIgnoreElement = (el: HTMLElement): boolean => {
   return false
 }
 
-export function getDifferentProperties(url1: URL, url2: URL): string[] {
-  const differentProperties: string[] = []
-  const propertiesToCompare = [
+function getURLDifferences(url1: URL, url2: URL): ChangedProperties[] {
+  const changed: ChangedProperties[] = []
+  const propertiesToCompare: (keyof URL)[] = [
     'href',
     'protocol',
     'host',
@@ -96,25 +96,16 @@ export function getDifferentProperties(url1: URL, url2: URL): string[] {
   ]
 
   for (const property of propertiesToCompare) {
-    if (url1[property as keyof URL] !== url2[property as keyof URL]) {
-      differentProperties.push(property)
+    if (url1[property] !== url2[property]) {
+      if (property === 'pathname') {
+        changed.push('path')
+      }
+      if (['search', 'hash'].includes(property)) {
+        changed.push(property as ChangedProperties)
+      }
     }
   }
 
-  return differentProperties
-}
-
-function getURLDifferences(current: URL, previous: URL): ChangedProperties[] {
-  const difference = getDifferentProperties(current, previous)
-  const changed: ChangedProperties[] = []
-  for (const k of difference) {
-    if (k === 'pathname') {
-      changed.push('path')
-    }
-    if (['search', 'hash'].includes(k)) {
-      changed.push(k as ChangedProperties)
-    }
-  }
   return changed
 }
 
