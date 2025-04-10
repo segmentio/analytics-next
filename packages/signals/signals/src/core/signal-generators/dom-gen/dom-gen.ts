@@ -80,15 +80,32 @@ export const shouldIgnoreElement = (el: HTMLElement): boolean => {
   return false
 }
 
-function getObjectDifferences<T extends object>(obj1: T, obj2: T): string[] {
-  const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)])
-  return Array.from(keys).filter(
-    (key) => obj1[key as keyof T] !== obj2[key as keyof T]
-  )
+export function getDifferentProperties(url1: URL, url2: URL): string[] {
+  const differentProperties: string[] = []
+  const propertiesToCompare = [
+    'href',
+    'protocol',
+    'host',
+    'hostname',
+    'port',
+    'pathname',
+    'search',
+    'hash',
+    'username',
+    'password',
+  ]
+
+  for (const property of propertiesToCompare) {
+    if (url1[property as keyof URL] !== url2[property as keyof URL]) {
+      differentProperties.push(property)
+    }
+  }
+
+  return differentProperties
 }
 
 function getURLDifferences(current: URL, previous: URL): ChangedProperties[] {
-  const difference = getObjectDifferences(current, previous)
+  const difference = getDifferentProperties(current, previous)
   const changed: ChangedProperties[] = []
   for (const k of difference) {
     if (k === 'pathname') {
