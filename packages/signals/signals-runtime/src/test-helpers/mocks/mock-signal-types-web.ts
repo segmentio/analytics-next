@@ -44,7 +44,7 @@ export const mockNavigationSignal: NavigationSignal = {
   type: 'navigation',
   data: {
     action: 'urlChange',
-    changedProperties: ['path', 'search', 'hash'],
+    changedProperties: ['path'],
     page: mockPageData,
     path: '/',
     search: '',
