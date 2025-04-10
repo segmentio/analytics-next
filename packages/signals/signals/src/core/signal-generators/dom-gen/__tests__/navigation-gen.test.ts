@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals'
 import { URLChangeNavigationData } from '@segment/analytics-signals-runtime'
-import { URLChangeObservableSettings } from '../../../../lib/detect-url-change'
 import { setLocation } from '../../../../test-helpers/set-location'
 import { SignalEmitter } from '../../../emitter'
 import { OnNavigationEventGenerator } from '../navigation-gen'
@@ -23,9 +22,7 @@ describe('OnNavigationEventGenerator', () => {
   })
 
   it('should emit an event with action "pageLoad" on initialization', () => {
-    const settings: URLChangeObservableSettings = { pollInterval: 100 }
-    const generator = new OnNavigationEventGenerator(settings)
-
+    const generator = new OnNavigationEventGenerator()
     generator.register(emitter)
     expect(emitSpy).toHaveBeenCalledTimes(1)
     expect(emitSpy.mock.lastCall).toMatchInlineSnapshot(`
@@ -57,8 +54,7 @@ describe('OnNavigationEventGenerator', () => {
   })
 
   it('should emit an event with "action: urlChange" when the URL changes', () => {
-    const settings: URLChangeObservableSettings = { pollInterval: 100 }
-    const generator = new OnNavigationEventGenerator(settings)
+    const generator = new OnNavigationEventGenerator()
 
     generator.register(emitter)
 
@@ -75,7 +71,7 @@ describe('OnNavigationEventGenerator', () => {
     })
 
     // Advance the timers to trigger the polling
-    jest.advanceTimersByTime(settings.pollInterval! + 100)
+    jest.advanceTimersByTime(1000)
 
     expect(emitSpy).toHaveBeenCalledTimes(2)
 
@@ -114,8 +110,7 @@ describe('OnNavigationEventGenerator', () => {
   })
 
   it('should only list the property that actually changed in changedProperties, and no more/less', () => {
-    const settings: URLChangeObservableSettings = { pollInterval: 100 }
-    const generator = new OnNavigationEventGenerator(settings)
+    const generator = new OnNavigationEventGenerator()
 
     generator.register(emitter)
 
@@ -126,7 +121,7 @@ describe('OnNavigationEventGenerator', () => {
       hash: newUrl.hash,
     })
 
-    jest.advanceTimersByTime(settings.pollInterval! + 1000)
+    jest.advanceTimersByTime(1000)
     const lastCall = emitSpy.mock.lastCall![0].data as URLChangeNavigationData
     expect(lastCall.changedProperties).toEqual(['hash'])
   })
