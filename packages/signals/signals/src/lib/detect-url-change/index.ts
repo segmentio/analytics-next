@@ -1,13 +1,5 @@
 import { Emitter } from '@segment/analytics-generic-utils'
 
-const safeParseURL = (url: string): URL | null => {
-  try {
-    return new URL(url)
-  } catch (e) {
-    return null
-  }
-}
-
 type ChangeData = {
   current: URL
   previous: URL
@@ -27,8 +19,8 @@ export class URLChangeObservable {
     setInterval(() => {
       const currentUrl = window.location.href
       if (currentUrl != prevUrl) {
-        const current = safeParseURL(currentUrl)!
-        const prev = safeParseURL(prevUrl)!
+        const current = new URL(currentUrl)
+        const prev = new URL(prevUrl)
         this.emitter.emit('change', {
           current,
           previous: prev,
