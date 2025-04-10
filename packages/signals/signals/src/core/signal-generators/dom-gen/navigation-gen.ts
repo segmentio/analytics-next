@@ -1,5 +1,8 @@
 import { ChangedProperties } from '@segment/analytics-signals-runtime'
-import { URLChangeObservable } from '../../../lib/detect-url-change'
+import {
+  URLChangeObservable,
+  URLChangeObservableSettings,
+} from '../../../lib/detect-url-change'
 import { createNavigationSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
@@ -36,6 +39,11 @@ function getURLDifferences(url1: URL, url2: URL): ChangedProperties[] {
 export class OnNavigationEventGenerator implements SignalGenerator {
   id = 'navigation'
 
+  urlChange: URLChangeObservable
+  constructor(settings: URLChangeObservableSettings) {
+    this.urlChange = new URLChangeObservable(settings)
+  }
+
   register(emitter: SignalEmitter): () => void {
     // emit navigation signal on page load
     emitter.emit(
@@ -46,8 +54,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     )
 
     // emit a navigation signal whenever the URL has changed
-    const urlChange = new URLChangeObservable()
-    urlChange.subscribe(({ previous, current }) =>
+    this.urlChange.subscribe(({ previous, current }) =>
       emitter.emit(
         createNavigationSignal({
           action: 'urlChange',

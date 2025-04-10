@@ -1,9 +1,4 @@
-import { ChangedProperties } from '@segment/analytics-signals-runtime'
-import { URLChangeObservable } from '../../../lib/detect-url-change'
-import {
-  createInteractionSignal,
-  createNavigationSignal,
-} from '../../../types/factories'
+import { createInteractionSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
 import { parseElement } from './element-parser'

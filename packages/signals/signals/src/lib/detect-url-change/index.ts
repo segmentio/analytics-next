@@ -4,13 +4,18 @@ type ChangeData = {
   current: URL
   previous: URL
 }
+export interface URLChangeObservableSettings {
+  pollInterval?: number
+}
+
 // This seems hacky, but if using react router (or other SPAs), popstate will not always fire on navigation
 // Otherwise, we could use popstate / hashchange events
 export class URLChangeObservable {
   private emitter = new Emitter<{ change: [ChangeData] }>()
-  private pollInterval = 500
+  private pollInterval: number
   private urlChanged?: (data: ChangeData) => void
-  constructor() {
+  constructor(settings: URLChangeObservableSettings = {}) {
+    this.pollInterval = settings.pollInterval ?? 500
     this.pollURLChange()
   }
 
