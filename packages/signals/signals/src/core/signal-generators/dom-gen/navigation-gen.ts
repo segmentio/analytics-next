@@ -4,7 +4,7 @@ import { createNavigationSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
 
-function getURLDifferences(url1: URL, url2: URL): ChangedProperties[] {
+function getChangedProperties(url1: URL, url2: URL): ChangedProperties[] {
   const changed: ChangedProperties[] = []
   const propertiesToCompare = ['pathname', 'search', 'hash'] as const
 
@@ -44,7 +44,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
         createNavigationSignal({
           action: 'urlChange',
           prevUrl: previous.href,
-          changedProperties: getURLDifferences(current, previous),
+          changedProperties: getChangedProperties(current, previous),
           ...this.createCommonFields(),
         })
       )

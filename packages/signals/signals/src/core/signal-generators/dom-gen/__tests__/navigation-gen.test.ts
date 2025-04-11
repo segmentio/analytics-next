@@ -125,4 +125,40 @@ describe(OnNavigationEventGenerator, () => {
     const lastCall = emitSpy.mock.lastCall![0].data as URLChangeNavigationData
     expect(lastCall.changedProperties).toEqual(['hash'])
   })
+
+  it('should stop emitting events after unsubscribe is called', () => {
+    const generator = new OnNavigationEventGenerator()
+
+    const unsubscribe = generator.register(emitter)
+
+    // Simulate a URL change
+    const newUrl = new URL(location.href)
+    newUrl.pathname = '/new-path'
+    setLocation({
+      href: newUrl.href,
+      pathname: newUrl.pathname,
+    })
+
+    // Advance the timers to trigger the polling
+    jest.advanceTimersByTime(1000)
+
+    // Ensure the event is emitted before unsubscribe
+    expect(emitSpy).toHaveBeenCalledTimes(2)
+
+    // Unsubscribe the generator
+    unsubscribe()
+
+    // Simulate another URL change
+    newUrl.pathname = '/another-path'
+    setLocation({
+      href: newUrl.href,
+      pathname: newUrl.pathname,
+    })
+
+    // Advance the timers again
+    jest.advanceTimersByTime(1000)
+
+    // Ensure no additional events are emitted after unsubscribe
+    expect(emitSpy).toHaveBeenCalledTimes(2)
+  })
 })
