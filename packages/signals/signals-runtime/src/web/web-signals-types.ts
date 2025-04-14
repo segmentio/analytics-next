@@ -106,11 +106,15 @@ interface BaseNavigationData<ActionType extends string> {
   action: ActionType
   url: string
   hash: string
+  search: string
+  path: string
 }
 
+export type ChangedProperties = 'path' | 'search' | 'hash'
 export interface URLChangeNavigationData
   extends BaseNavigationData<'urlChange'> {
   prevUrl: string
+  changedProperties: ChangedProperties[]
 }
 
 export interface PageChangeNavigationData

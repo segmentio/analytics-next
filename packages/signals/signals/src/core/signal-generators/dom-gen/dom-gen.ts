@@ -1,8 +1,4 @@
-import { URLChangeObservable } from '../../../lib/detect-url-change'
-import {
-  createInteractionSignal,
-  createNavigationSignal,
-} from '../../../types/factories'
+import { createInteractionSignal } from '../../../types/factories'
 import { SignalEmitter } from '../../emitter'
 import { SignalGenerator } from '../types'
 import { parseElement } from './element-parser'
@@ -77,45 +73,4 @@ export const shouldIgnoreElement = (el: HTMLElement): boolean => {
     return el.type === 'password'
   }
   return false
-}
-
-export class OnNavigationEventGenerator implements SignalGenerator {
-  id = 'navigation'
-
-  register(emitter: SignalEmitter): () => void {
-    // emit navigation signal on page load
-    emitter.emit(
-      createNavigationSignal({
-        action: 'pageLoad',
-        ...this.createCommonFields(),
-      })
-    )
-
-    // emit a navigation signal whenever the URL has changed
-    const urlChange = new URLChangeObservable()
-    urlChange.subscribe((prevUrl) =>
-      emitter.emit(
-        createNavigationSignal({
-          action: 'urlChange',
-          prevUrl,
-          ...this.createCommonFields(),
-        })
-      )
-    )
-
-    return () => {
-      urlChange.unsubscribe()
-    }
-  }
-
-  private createCommonFields() {
-    return {
-      // these fields are named after those from the page call, rather than a DOM api.
-      url: location.href,
-      path: location.pathname,
-      hash: location.hash,
-      search: location.search,
-      title: document.title,
-    }
-  }
 }
