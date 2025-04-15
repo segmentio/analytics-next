@@ -1,5 +1,11 @@
 # @segment/analytics-signals-runtime
 
+## 1.5.1
+
+### Patch Changes
+
+- [#1274](https://github.com/segmentio/analytics-next/pull/1274) [`a00fa28d`](https://github.com/segmentio/analytics-next/commit/a00fa28d76af890f1e2adb69ea0b0860beafca15) Thanks [@silesky](https://github.com/silesky)! - Add a changedProperties array to navigation signals
+
 ## 1.5.0
 
 ### Minor Changes
