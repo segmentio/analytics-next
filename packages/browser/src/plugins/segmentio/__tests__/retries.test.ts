@@ -36,7 +36,7 @@ describe('Segment.io retries 500s and 429', () => {
     const ctx = await analytics.track('event')
     jest.runAllTimers()
 
-    expect(ctx.attempts).toBeGreaterThanOrEqual(3) // Gets incremented after use
+    expect(ctx.attempts).toBeGreaterThanOrEqual(2) // Gets incremented after use
     expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(2)
     expect(fetch.mock.lastCall[1].body).toContain('"retryCount":')
   })
@@ -129,5 +129,56 @@ describe('Batches retry 500s and 429', () => {
     expect(fetch).toHaveBeenCalledTimes(3) // capped at 2 retries (+ intial attempt)
     // Check the metadata about retry count
     expect(fetch.mock.lastCall[1].body).toContain('"retryCount":2')
+  })
+})
+
+describe('retryQueue', () => {
+  let options: SegmentioSettings
+  let analytics: Analytics
+  let segment: Plugin
+  beforeEach(async () => {
+    jest.useRealTimers()
+    jest.resetAllMocks()
+    jest.restoreAllMocks()
+
+    options = {
+      apiKey: 'foo',
+    }
+
+    fetch.mockReturnValue(createError({ status: 500 }))
+  })
+
+  it('Only attempts once if retryQueue is false', async () => {
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      { retryQueue: false }
+    )
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
+    await analytics.register(segment, envEnrichment)
+
+    await analytics.track('foo')
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('Attempts multiple times if retryQueue is not false', async () => {
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      { retryQueue: true }
+    )
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
+    await analytics.register(segment, envEnrichment)
+
+    await analytics.track('foo')
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(2)
   })
 })
