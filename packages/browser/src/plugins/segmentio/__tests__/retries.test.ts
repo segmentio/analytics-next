@@ -21,7 +21,10 @@ describe('Segment.io retries 500s and 429', () => {
     jest.restoreAllMocks()
 
     options = { apiKey: 'foo' }
-    analytics = new Analytics({ writeKey: options.apiKey })
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      { retryQueue: true }
+    )
     segment = await segmentio(
       analytics,
       options,
@@ -149,6 +152,7 @@ describe('retryQueue', () => {
   })
 
   it('Only attempts once if retryQueue is false', async () => {
+    jest.useFakeTimers({ advanceTimers: true })
     analytics = new Analytics(
       { writeKey: options.apiKey },
       { retryQueue: false }
@@ -161,11 +165,12 @@ describe('retryQueue', () => {
     await analytics.register(segment, envEnrichment)
 
     await analytics.track('foo')
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    jest.runAllTimers()
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  it('Attempts multiple times if retryQueue is not false', async () => {
+  it('Attempts multiple times if retryQueue is true', async () => {
+    jest.useFakeTimers({ advanceTimers: true })
     analytics = new Analytics(
       { writeKey: options.apiKey },
       { retryQueue: true }
@@ -178,7 +183,7 @@ describe('retryQueue', () => {
     await analytics.register(segment, envEnrichment)
 
     await analytics.track('foo')
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    jest.runAllTimers()
     expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(2)
   })
 })
