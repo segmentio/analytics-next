@@ -140,7 +140,7 @@ describe('retryQueue', () => {
   let analytics: Analytics
   let segment: Plugin
   beforeEach(async () => {
-    jest.useRealTimers()
+    jest.useFakeTimers({ advanceTimers: true })
     jest.resetAllMocks()
     jest.restoreAllMocks()
 
@@ -150,9 +150,11 @@ describe('retryQueue', () => {
 
     fetch.mockReturnValue(createError({ status: 500 }))
   })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
 
   it('Only attempts once if retryQueue is false', async () => {
-    jest.useFakeTimers({ advanceTimers: true })
     analytics = new Analytics(
       { writeKey: options.apiKey },
       { retryQueue: false }
@@ -170,7 +172,6 @@ describe('retryQueue', () => {
   })
 
   it('Attempts multiple times if retryQueue is true', async () => {
-    jest.useFakeTimers({ advanceTimers: true })
     analytics = new Analytics(
       { writeKey: options.apiKey },
       { retryQueue: true }
