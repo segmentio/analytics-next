@@ -2,7 +2,8 @@ export enum InAppEvents {
     MessageOpened = 'in-app:message-opened',
     MessageDismissed =  'in-app:message-dismissed',
     MessageError = 'in-app:message-error',
-    MessageAction = 'in-app:message-action'
+    MessageAction = 'in-app:message-action',
+    MessageVisible = 'in-app:message-visible'
 }
 
 export const allEvents:string[] = Object.values(InAppEvents);
@@ -32,6 +33,8 @@ export function gistToCIO(gistEvent:string): string {
             return InAppEvents.MessageError;
         case 'messageAction':
             return InAppEvents.MessageAction;
+        case 'messageVisible':
+            return InAppEvents.MessageVisible;
         default:
             return "";
     }
