@@ -1,18 +1,18 @@
+import { Page } from '@playwright/test'
 import { BasePage } from './base-page'
 
-class OneTrustPage extends BasePage {
-  constructor() {
-    super('onetrust.html')
+export class OneTrustPage extends BasePage {
+  constructor(page: Page) {
+    super(page, 'onetrust.html')
   }
 
-  get isOneTrustLoaded(): Promise<void> {
-    // @ts-ignore
-    return window.isOneTrustLoaded
+  // Check if OneTrust is loaded by evaluating a global variable on the page
+  async isOneTrustLoaded() {
+    // To Do
   }
 
-  clickAcceptButtonAndClosePopup() {
-    return $('#onetrust-accept-btn-handler').click()
+  //Click the OneTrust accept button
+  async clickAcceptButtonAndClosePopup() {
+    // To Do
   }
 }
-
-export default new OneTrustPage()

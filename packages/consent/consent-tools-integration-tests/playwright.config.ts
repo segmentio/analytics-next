@@ -2,7 +2,7 @@ import type { PlaywrightTestConfig } from '@playwright/test'
 
 const PORT = 4567
 const config: PlaywrightTestConfig = {
-  testDir: './src/playwright/tests',
+  testDir: './src/tests',
   timeout: 30000,
   retries: 2,
   webServer: {
