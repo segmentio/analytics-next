@@ -10,5 +10,5 @@ const analytics = new AnalyticsBrowser()
 ;(window as any).analytics = analytics
 
 withMockCMP(analytics).load({
-  writeKey: 'foo',
+  writeKey: 'C8qe7TaOyZburANuEAbA4WovdITZHywg',
 })

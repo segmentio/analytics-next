@@ -10,13 +10,18 @@
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "eslint": "yarn run -T eslint",
     "tsc": "tsc",
-    "concurrently": "yarn run -T concurrently --raw"
+    "concurrently": "yarn run -T concurrently --raw",
+    "playwright-test": "playwright test",
+    "playwright-test:headed": "playwright test --headed",
+    "playwright-test:debug": "playwright test --debug",
+    "serve": "http-server public -p 4567"
   },
   "installConfig": {
     "hoistingLimits": "workspaces"
   },
   "devDependencies": {
     "@internal/test-helpers": "workspace:^",
+    "@playwright/test": "^1.28.1",
     "@segment/analytics-consent-tools": "workspace:^",
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
     "@segment/analytics-next": "workspace:^",
@@ -29,6 +34,7 @@
     "@wdio/types": "8",
     "expect": "^29.4.1",
     "globby": "^11.0.2",
+    "http-server": "14.1.1",
     "wdio-intercept-service": "^4.4.0",
     "webpack": "^5.94.0",
     "webpack-cli": "^4.8.0"

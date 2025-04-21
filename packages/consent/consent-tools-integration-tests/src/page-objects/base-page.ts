@@ -1,48 +1,29 @@
-import { CDNSettingsBuilder } from '@internal/test-helpers'
-import type { SegmentEvent } from '@segment/analytics-next'
-import assert from 'assert'
-import type { Matches } from 'webdriverio'
-
-const waitUntilReady = () =>
-  browser.waitUntil(
-    () => browser.execute(() => document.readyState === 'complete'),
-    {
-      timeout: 10000,
-    }
-  )
+import { Page, Route, Request } from '@playwright/test'
 
 export abstract class BasePage {
-  constructor(protected page: string) {}
+  protected page: Page
+  protected pageFile: string
 
-  segmentTrackingApiReqs: Matches[] = []
-  fetchIntegrationReqs: Matches[] = []
+  segmentTrackingApiReqs: any[] = []
+  fetchIntegrationReqs: any[] = []
+
+  constructor(page: Page, pageFile: string) {
+    this.page = page
+    this.pageFile = pageFile
+  }
 
   async load(): Promise<void> {
-    const baseURL = browser.options.baseUrl
-    assert(baseURL)
     await this.mockAPIs()
-    await browser.url(baseURL + '/public/' + this.page)
-    await waitUntilReady()
+    await this.page.goto(`/${this.pageFile}`)
+    await this.page.waitForLoadState('load')
   }
 
   async clearStorage() {
-    await browser.deleteAllCookies()
-    await browser.execute(() => window.localStorage.clear())
-  }
-
-  getAllTrackingEvents(): SegmentEvent[] {
-    const reqBodies = this.segmentTrackingApiReqs.map((el) =>
-      JSON.parse(el.postData!)
-    )
-    return reqBodies
-  }
-
-  getConsentChangedEvents(): SegmentEvent[] {
-    const reqBodies = this.getAllTrackingEvents()
-    const consentEvents = reqBodies.filter(
-      (el) => el.event === 'Segment Consent Preference Updated'
-    )
-    return consentEvents
+    await this.page.context().clearCookies()
+    await this.page.evaluate(() => {
+      window.localStorage.clear()
+      window.sessionStorage.clear()
+    })
   }
 
   async cleanup() {
@@ -51,74 +32,85 @@ export abstract class BasePage {
     await this.clearStorage()
   }
 
-  async mockAPIs() {
+  getAllTrackingEvents(): any[] {
+    return this.segmentTrackingApiReqs
+  }
+
+  getConsentChangedEvents(): any[] {
+    return this.getAllTrackingEvents().filter(
+      (el) => el.event === 'Segment Consent Preference Updated'
+    )
+  }
+
+  get fetchIntegrationReqsData(): any[] {
+    return this.fetchIntegrationReqs
+  }
+
+  private async mockAPIs() {
     await this.mockSegmentTrackingAPI()
     await this.mockCDNSettingsAPI()
     await this.mockNextIntegrationsAPI()
   }
 
-  private async mockSegmentTrackingAPI(): Promise<void> {
-    const mock = await browser.mock('https://api.segment.io/v1/t', {
-      method: 'post',
-    })
-    mock.respond((mock) => {
-      this.segmentTrackingApiReqs.push(mock)
-      // response with status 200
-      return Promise.resolve({
-        statusCode: 200,
-        body: JSON.stringify({ success: true }),
-      })
-    })
+  private async mockSegmentTrackingAPI() {
+    await this.page.route(
+      'https://api.segment.io/v1/t',
+      async (route: Route, request: Request) => {
+        const postData = await request.postData()
+        const parsed = JSON.parse(postData || '{}')
+        this.segmentTrackingApiReqs.push(parsed) // store the parsed event object directly
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true }),
+        })
+      }
+    )
   }
 
-  private async mockNextIntegrationsAPI(): Promise<void> {
-    const mock = await browser.mock('**/next-integrations/**')
-    mock.respond((mock) => {
-      this.fetchIntegrationReqs.push(mock)
-      return Promise.resolve({
-        statusCode: 200,
-        body: 'console.log("mocking action and classic destinations")',
-      })
-    })
+  private async mockNextIntegrationsAPI() {
+    await this.page.route(
+      '**/next-integrations/**',
+      async (route: Route, request: Request) => {
+        this.fetchIntegrationReqs.push({ url: request.url() })
+        await route.fulfill({
+          status: 200,
+          body: 'console.log("mocking action and classic destinations")',
+          contentType: 'application/javascript',
+        })
+      }
+    )
   }
 
-  /**   * Mock the CDN Settings endpoint so that this can run offline
-   */
-  private async mockCDNSettingsAPI(): Promise<void> {
-    const settings = new CDNSettingsBuilder({
-      writeKey: 'something',
-    })
-      .addActionDestinationSettings(
-        {
+  private async mockCDNSettingsAPI() {
+    const settings = {
+      integrations: {
+        FullStory: {
           url: 'https://cdn.segment.com/next-integrations/actions/fullstory-plugins/foo.js',
-          creationName: 'FullStory',
           consentSettings: {
             categories: ['FooCategory2'],
           },
         },
-        {
+        'Actions Amplitude': {
           url: 'https://cdn.segment.com/next-integrations/actions/amplitude-plugins/foo.js',
-          creationName: 'Actions Amplitude',
           consentSettings: {
             categories: ['FooCategory1'],
           },
-        }
-      )
-      .build()
-
-    const mock = await browser.mock('**/settings')
-    mock.respond(settings, {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
+        },
       },
+    }
+
+    await this.page.route('**/settings', async (route: Route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(settings),
+      })
     })
   }
 
-  /**
-   * Hard reload the page
-   */
-  reload() {
-    return browser.execute(() => window.location.reload())
+  async reload() {
+    await this.page.reload()
   }
 }
