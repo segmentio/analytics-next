@@ -112,6 +112,11 @@ export function segmentio(
       json = onAlias(analytics, json)
     }
 
+    if (buffer.getAttempts(ctx) >= buffer.maxAttempts) {
+      inflightEvents.delete(ctx)
+      return ctx
+    }
+
     return client
       .dispatch(
         `${remote}/${path}`,
