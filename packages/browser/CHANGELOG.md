@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.81.0
+
+### Minor Changes
+
+- [#1276](https://github.com/segmentio/analytics-next/pull/1276) [`37df4c96`](https://github.com/segmentio/analytics-next/commit/37df4c96c50db9fdde3e9ab1a37b72299a504a5c) Thanks [@danieljackins](https://github.com/danieljackins)! - Fix retry behavior
+
 ## 1.80.0
 
 ### Minor Changes
