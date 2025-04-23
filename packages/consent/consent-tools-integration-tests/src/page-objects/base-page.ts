@@ -104,7 +104,6 @@ export abstract class BasePage {
     await this.page.route('**/settings', async (route: Route) => {
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
         body: JSON.stringify(settings),
       })
     })

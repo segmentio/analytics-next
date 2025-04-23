@@ -14,7 +14,9 @@
     "playwright-test": "playwright test",
     "playwright-test:headed": "playwright test --headed",
     "playwright-test:debug": "playwright test --debug",
-    "serve": "http-server public -p 4567"
+    "serve": "http-server public -p 4567",
+    "server": "http-server --port 5432",
+    "browser": "playwright test --debug"
   },
   "installConfig": {
     "hoistingLimits": "workspaces"
