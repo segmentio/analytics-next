@@ -10,7 +10,7 @@ const analytics = new AnalyticsBrowser()
 
 withMockCMP(analytics).load(
   {
-    writeKey: '9lSrez3BlfLAJ7NOChrqWtILiATiycoc',
+    writeKey: 'foo',
   },
   { initialPageview: true }
 )

@@ -22,7 +22,7 @@ test.afterEach(async () => {
   await pageObject.cleanup()
 })
 
-test('should send a track call after waiting for explicit consent', async ({
+test('Consent Tools Vanilla Opt-in: Should send a track call after waiting for explicit consent', async ({
   page,
 }) => {
   // Attempt to track an event before consent is given — this should be buffered/blocked
