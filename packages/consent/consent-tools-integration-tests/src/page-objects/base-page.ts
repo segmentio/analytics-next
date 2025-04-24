@@ -1,3 +1,4 @@
+import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Route, Request } from '@playwright/test'
 
 export abstract class BasePage {
@@ -84,27 +85,30 @@ export abstract class BasePage {
   }
 
   private async mockCDNSettingsAPI() {
-    const settings = {
-      integrations: {
-        FullStory: {
+    const cdnSettings = new CDNSettingsBuilder()
+      .addActionDestinationSettings(
+        {
+          creationName: 'FullStory',
           url: 'https://cdn.segment.com/next-integrations/actions/fullstory-plugins/foo.js',
           consentSettings: {
             categories: ['FooCategory2'],
           },
         },
-        'Actions Amplitude': {
+        {
+          creationName: 'Actions Amplitude',
           url: 'https://cdn.segment.com/next-integrations/actions/amplitude-plugins/foo.js',
           consentSettings: {
             categories: ['FooCategory1'],
           },
-        },
-      },
-    }
+        }
+      )
+      .build()
 
     await this.page.route('**/settings', async (route: Route) => {
       await route.fulfill({
         status: 200,
-        body: JSON.stringify(settings),
+        contentType: 'application/json',
+        body: JSON.stringify(cdnSettings),
       })
     })
   }
