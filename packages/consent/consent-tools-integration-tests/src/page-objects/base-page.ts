@@ -1,13 +1,14 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Route, Request } from '@playwright/test'
 import { SegmentEvent } from '@segment/analytics-next'
+import { CoreExtraContext } from '@segment/analytics-core'
 
 export abstract class BasePage {
   protected page: Page
   protected pageFile: string
 
   segmentTrackingApiReqs: SegmentEvent[] = []
-  fetchIntegrationReqs: SegmentEvent[] = []
+  fetchIntegrationReqs: CoreExtraContext[] = []
 
   constructor(page: Page, pageFile: string) {
     this.page = page
@@ -44,7 +45,7 @@ export abstract class BasePage {
     )
   }
 
-  get fetchIntegrationReqsData(): SegmentEvent[] {
+  get fetchIntegrationReqsData(): CoreExtraContext[] {
     return this.fetchIntegrationReqs
   }
 
