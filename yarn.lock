@@ -3169,6 +3169,7 @@ __metadata:
   resolution: "@internal/consent-tools-integration-tests@workspace:packages/consent/consent-tools-integration-tests"
   dependencies:
     "@internal/test-helpers": "workspace:^"
+    "@playwright/test": ^1.28.1
     "@segment/analytics-consent-tools": "workspace:^"
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^"
     "@segment/analytics-next": "workspace:^"
@@ -3181,6 +3182,7 @@ __metadata:
     "@wdio/types": 8
     expect: ^29.4.1
     globby: ^11.0.2
+    http-server: 14.1.1
     wdio-intercept-service: ^4.4.0
     webpack: ^5.94.0
     webpack-cli: ^4.8.0

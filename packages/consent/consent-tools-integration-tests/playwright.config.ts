@@ -7,7 +7,7 @@ import path from 'path'
  */
 const config: PlaywrightTestConfig = {
   webServer: {
-    command: 'yarn run server',
+    command: 'yarn serve',
     url: 'http://127.0.0.1:5432',
     reuseExistingServer: !process.env.CI,
   },
