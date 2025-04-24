@@ -1,12 +1,13 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Route, Request } from '@playwright/test'
+import { SegmentEvent } from '@segment/analytics-next'
 
 export abstract class BasePage {
   protected page: Page
   protected pageFile: string
 
-  segmentTrackingApiReqs: any[] = []
-  fetchIntegrationReqs: any[] = []
+  segmentTrackingApiReqs: SegmentEvent[] = []
+  fetchIntegrationReqs: SegmentEvent[] = []
 
   constructor(page: Page, pageFile: string) {
     this.page = page
@@ -33,17 +34,17 @@ export abstract class BasePage {
     await this.clearStorage()
   }
 
-  getAllTrackingEvents(): any[] {
+  getAllTrackingEvents(): SegmentEvent[] {
     return this.segmentTrackingApiReqs
   }
 
-  getConsentChangedEvents(): any[] {
+  getConsentChangedEvents(): SegmentEvent[] {
     return this.getAllTrackingEvents().filter(
       (el) => el.event === 'Segment Consent Preference Updated'
     )
   }
 
-  get fetchIntegrationReqsData(): any[] {
+  get fetchIntegrationReqsData(): SegmentEvent[] {
     return this.fetchIntegrationReqs
   }
 
