@@ -84,8 +84,10 @@ export abstract class BasePage {
     )
   }
 
-  private async mockCDNSettingsAPI() {
-    const cdnSettings = new CDNSettingsBuilder()
+  private async mockCDNSettingsAPI(): Promise<void> {
+    const cdnSettings = new CDNSettingsBuilder({
+      writeKey: 'foo',
+    })
       .addActionDestinationSettings(
         {
           creationName: 'FullStory',
