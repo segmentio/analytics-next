@@ -1,6 +1,6 @@
-import { SandboxSettings, SandboxSettingsConfig } from '../sandbox'
+import { WorkerSandboxSettings, SandboxSettingsConfig } from '../sandbox'
 
-describe(SandboxSettings, () => {
+describe(WorkerSandboxSettings, () => {
   const edgeFnResponseBody = `function processSignal() { console.log('hello world') }`
   const baseSettings: SandboxSettingsConfig = {
     functionHost: undefined,
@@ -13,7 +13,7 @@ describe(SandboxSettings, () => {
     ),
   }
   test('initializes with provided settings', async () => {
-    const sandboxSettings = new SandboxSettings({ ...baseSettings })
+    const sandboxSettings = new WorkerSandboxSettings({ ...baseSettings })
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
       baseSettings.edgeFnDownloadURL
     )
@@ -27,7 +27,7 @@ describe(SandboxSettings, () => {
       functionHost: 'newHost.com',
       edgeFnDownloadURL: 'https://original.com/download',
     }
-    new SandboxSettings(settings)
+    new WorkerSandboxSettings(settings)
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
       'https://newHost.com/download'
     )
@@ -42,7 +42,7 @@ describe(SandboxSettings, () => {
       processSignal: undefined,
       edgeFnDownloadURL: undefined,
     }
-    const sandboxSettings = new SandboxSettings(settings)
+    const sandboxSettings = new WorkerSandboxSettings(settings)
     expect(await sandboxSettings.processSignal).toEqual(
       'globalThis.processSignal = function processSignal() {}'
     )

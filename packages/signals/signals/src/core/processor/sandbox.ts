@@ -3,9 +3,14 @@ import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import { Signal } from '@segment/analytics-signals-runtime'
+import {
+  Signal,
+  WebRuntimeConstants,
+  WebSignalsRuntime,
+} from '@segment/analytics-signals-runtime'
 import { getRuntimeCode } from '@segment/analytics-signals-runtime'
 import { polyfills } from './polyfills'
+import { loadScript } from '../../lib/load-script'
 
 export type MethodName =
   | 'page'
@@ -151,6 +156,17 @@ class JavascriptSandbox implements CodeSandbox {
   }
 }
 
+export const normalizeEdgeFunctionURL = (
+  functionHost: string | undefined,
+  edgeFnDownloadURL: string | undefined
+) => {
+  if (functionHost && edgeFnDownloadURL) {
+    replaceBaseUrl(edgeFnDownloadURL, `https://${functionHost}`)
+  } else {
+    return edgeFnDownloadURL
+  }
+}
+
 export type SandboxSettingsConfig = {
   functionHost: string | undefined
   processSignal: string | undefined
@@ -158,7 +174,12 @@ export type SandboxSettingsConfig = {
   edgeFnFetchClient?: typeof fetch
 }
 
-export class SandboxSettings {
+export type WorkerboxSettingsConfig = Pick<
+  SandboxSettingsConfig,
+  'processSignal' | 'edgeFnFetchClient' | 'edgeFnDownloadURL'
+>
+
+export class WorkerSandboxSettings {
   /**
    * Should look like:
    * ```js
@@ -168,48 +189,42 @@ export class SandboxSettings {
    * ```
    */
   processSignal: Promise<string>
-  constructor(settings: SandboxSettingsConfig) {
-    const edgeFnDownloadURLNormalized =
-      settings.functionHost && settings.edgeFnDownloadURL
-        ? replaceBaseUrl(
-            settings.edgeFnDownloadURL,
-            `https://${settings.functionHost}`
-          )
-        : settings.edgeFnDownloadURL
-
-    if (!edgeFnDownloadURLNormalized && !settings.processSignal) {
-      // user may be onboarding and not have written a signal -- so do a noop so we can collect signals
-      this.processSignal = Promise.resolve(
-        `globalThis.processSignal = function processSignal() {}`
-      )
-      console.warn(
-        `No processSignal function found. Have you written a processSignal function on app.segment.com?`
-      )
-      return
-    }
-
+  constructor(settings: WorkerboxSettingsConfig) {
     const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
 
     const processSignalNormalized = settings.processSignal
       ? Promise.resolve(settings.processSignal).then(
           (str) => `globalThis.processSignal = ${str}`
         )
-      : fetch(edgeFnDownloadURLNormalized!).then((res) => res.text())
+      : fetch(settings.edgeFnDownloadURL!).then((res) => res.text())
 
     this.processSignal = processSignalNormalized
   }
 }
 
-export class Sandbox {
-  settings: SandboxSettings
+export interface SignalSandbox {
+  isLoaded(): Promise<void>
+  execute(
+    signal: Signal,
+    signals: Signal[]
+  ): Promise<AnalyticsMethodCalls | undefined>
+  destroy(): void | Promise<void>
+}
+
+export class WorkerSandbox implements SignalSandbox {
+  settings: WorkerSandboxSettings
   jsSandbox: CodeSandbox
 
-  constructor(settings: SandboxSettings) {
+  constructor(settings: WorkerSandboxSettings) {
     this.settings = settings
     this.jsSandbox = new JavascriptSandbox()
   }
 
-  async process(
+  isLoaded(): Promise<any> {
+    return Promise.resolve() // TODO
+  }
+
+  async execute(
     signal: Signal,
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls> {
@@ -231,5 +246,65 @@ export class Sandbox {
 
     const calls = analytics.getCalls()
     return calls
+  }
+  destroy(): void {
+    void this.jsSandbox.destroy()
+  }
+}
+
+// This is not ideal -- but processSignal currently depends on
+
+const processWithGlobals = (
+  signalBuffer: Signal[]
+): AnalyticsMethodCalls | undefined => {
+  const g = globalThis as any
+  // Load all constants into the global scope
+  Object.entries(WebRuntimeConstants).forEach(([key, value]) => {
+    g[key] = value
+  })
+
+  // processSignal expects a global called `signals` -- of course, there can local variable naming conflict on the client, which is why globals were a bad idea.
+  g['signals'] = new WebSignalsRuntime(signalBuffer)
+
+  // expect analytics to be instantiated -- this will conflict in the global scope TODO
+  g['analytics'] = new AnalyticsRuntime()
+
+  // another possible namespace conflict?
+  // @ts-ignore
+  if (typeof processSignal != 'undefined') {
+    g['processSignal'](signalBuffer[0])
+  } else {
+    console.warn('no processSignal function is defined in the global scope')
+  }
+
+  return g['analytics'].getCalls()
+}
+
+interface GlobalScopeSandboxSettings {
+  edgeFnDownloadURL: string
+}
+export class GlobalScopeSandbox implements SignalSandbox {
+  script: Promise<HTMLScriptElement>
+  async isLoaded(): Promise<void> {
+    await this.script
+  }
+  constructor(settings: GlobalScopeSandboxSettings) {
+    this.script = loadScript(settings.edgeFnDownloadURL)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async execute(_signal: Signal, signals: Signal[]) {
+    return processWithGlobals(signals)
+  }
+  destroy(): void {}
+}
+
+export class NoopSandbox implements SignalSandbox {
+  async isLoaded(): Promise<void> {}
+  execute(_signal: Signal, _signals: Signal[]) {
+    return Promise.resolve(undefined)
+  }
+  destroy(): void | Promise<void> {
+    return
   }
 }

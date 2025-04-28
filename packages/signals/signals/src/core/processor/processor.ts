@@ -1,20 +1,21 @@
 import { logger } from '../../lib/logger'
 import { Signal } from '@segment/analytics-signals-runtime'
 import { AnyAnalytics } from '../../types'
-import { AnalyticsMethodCalls, MethodName, Sandbox } from './sandbox'
+import { AnalyticsMethodCalls, MethodName, SignalSandbox } from './sandbox'
 
 export class SignalEventProcessor {
-  private sandbox: Sandbox
-  private analytics: AnyAnalytics
-  constructor(analytics: AnyAnalytics, sandbox: Sandbox) {
+  analytics: AnyAnalytics
+  sandbox: SignalSandbox
+  constructor(analytics: AnyAnalytics, sandbox: SignalSandbox) {
     this.analytics = analytics
     this.sandbox = sandbox
   }
 
   async process(signal: Signal, signals: Signal[]) {
-    let analyticsMethodCalls: AnalyticsMethodCalls
+    await this.sandbox.isLoaded()
+    let analyticsMethodCalls: AnalyticsMethodCalls | undefined
     try {
-      analyticsMethodCalls = await this.sandbox.process(signal, signals)
+      analyticsMethodCalls = await this.sandbox.execute(signal, signals)
     } catch (err) {
       // in practice, we should never hit this error, but if we do, we should log it.
       console.error('Error processing signal', { signal, signals }, err)
@@ -34,6 +35,6 @@ export class SignalEventProcessor {
   }
 
   cleanup() {
-    return this.sandbox.jsSandbox.destroy()
+    return this.sandbox.destroy()
   }
 }
