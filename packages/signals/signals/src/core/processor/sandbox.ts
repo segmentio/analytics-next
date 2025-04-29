@@ -1,7 +1,7 @@
 import { logger } from '../../lib/logger'
 import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
-import { AnalyticsRuntimePublicApi } from '../../types'
+import { AnalyticsRuntimePublicApi, ProcessSignal } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
 import {
   Signal,
@@ -172,6 +172,13 @@ export type SandboxSettingsConfig = {
   processSignal: string | undefined
   edgeFnDownloadURL: string | undefined
   edgeFnFetchClient?: typeof fetch
+  /**
+   * What sandbox strategy to use
+   * default - use a web worker and regular evaluation
+   * globalScope - evaluate everything in the global scope -- this avoids CSP errors
+   * @default 'default'
+   */
+  sandboxStrategy?: 'default' | 'globalScope'
 }
 
 export type WorkerboxSettingsConfig = Pick<
@@ -203,7 +210,6 @@ export class WorkerSandboxSettings {
 }
 
 export interface SignalSandbox {
-  isLoaded(): Promise<void>
   execute(
     signal: Signal,
     signals: Signal[]
@@ -218,10 +224,6 @@ export class WorkerSandbox implements SignalSandbox {
   constructor(settings: WorkerSandboxSettings) {
     this.settings = settings
     this.jsSandbox = new JavascriptSandbox()
-  }
-
-  isLoaded(): Promise<any> {
-    return Promise.resolve() // TODO
   }
 
   async execute(
@@ -252,55 +254,82 @@ export class WorkerSandbox implements SignalSandbox {
   }
 }
 
-// This is not ideal -- but processSignal currently depends on
-
-const processWithGlobals = (
+// ProcessSignal unfortunately uses globals. This should change.
+// For now, we are setting up the globals between each invocation
+const processWithGlobalScopeExecutionEnv = (
+  signal: Signal,
   signalBuffer: Signal[]
 ): AnalyticsMethodCalls | undefined => {
   const g = globalThis as any
+  const processSignal: ProcessSignal = g['processSignal']
+
+  if (typeof processSignal == 'undefined') {
+    console.warn('no processSignal function is defined in the global scope')
+    return undefined
+  }
+
   // Load all constants into the global scope
   Object.entries(WebRuntimeConstants).forEach(([key, value]) => {
     g[key] = value
   })
 
   // processSignal expects a global called `signals` -- of course, there can local variable naming conflict on the client, which is why globals were a bad idea.
-  g['signals'] = new WebSignalsRuntime(signalBuffer)
+  const analytics = new AnalyticsRuntime()
+  const signals = new WebSignalsRuntime(signalBuffer)
 
-  // expect analytics to be instantiated -- this will conflict in the global scope TODO
-  g['analytics'] = new AnalyticsRuntime()
+  const originalAnalytics = g.analytics
+  try {
+    if (g['analytics'] instanceof AnalyticsRuntime) {
+      console.warn(
+        'Invariant: analytics variable was not properly restored on the previous execution. This indicates a concurrency bug'
+      )
 
-  // another possible namespace conflict?
-  // @ts-ignore
-  if (typeof processSignal != 'undefined') {
-    g['processSignal'](signalBuffer[0])
-  } else {
-    console.warn('no processSignal function is defined in the global scope')
+      return
+    }
+
+    g['analytics'] = analytics
+
+    g['signals'] = signals
+    processSignal(signal, {
+      // we eventually want to get rid of globals and processSignal just uses local variables.
+      analytics: analytics,
+      signals: signals,
+      // constants
+      EventType: WebRuntimeConstants.EventType,
+      NavigationAction: WebRuntimeConstants.NavigationAction,
+      SignalType: WebRuntimeConstants.SignalType,
+    })
+  } finally {
+    // restore globals
+    g['analytics'] = originalAnalytics
   }
 
-  return g['analytics'].getCalls()
+  // this seems like it could potentially cause bugs in async environment
+  g.analytics = originalAnalytics
+  return analytics.getCalls()
 }
 
+/**
+ * Sandbox that avoids CSP errors, but evaluates everything globally
+ */
 interface GlobalScopeSandboxSettings {
   edgeFnDownloadURL: string
 }
 export class GlobalScopeSandbox implements SignalSandbox {
-  script: Promise<HTMLScriptElement>
-  async isLoaded(): Promise<void> {
-    await this.script
-  }
+  htmlScriptLoaded: Promise<HTMLScriptElement>
+
   constructor(settings: GlobalScopeSandboxSettings) {
-    this.script = loadScript(settings.edgeFnDownloadURL)
+    this.htmlScriptLoaded = loadScript(settings.edgeFnDownloadURL)
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async execute(_signal: Signal, signals: Signal[]) {
-    return processWithGlobals(signals)
+  async execute(signal: Signal, signals: Signal[]) {
+    await this.htmlScriptLoaded
+    return processWithGlobalScopeExecutionEnv(signal, signals)
   }
   destroy(): void {}
 }
 
 export class NoopSandbox implements SignalSandbox {
-  async isLoaded(): Promise<void> {}
   execute(_signal: Signal, _signals: Signal[]) {
     return Promise.resolve(undefined)
   }

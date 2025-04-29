@@ -12,7 +12,6 @@ export class SignalEventProcessor {
   }
 
   async process(signal: Signal, signals: Signal[]) {
-    await this.sandbox.isLoaded()
     let analyticsMethodCalls: AnalyticsMethodCalls | undefined
     try {
       analyticsMethodCalls = await this.sandbox.execute(signal, signals)

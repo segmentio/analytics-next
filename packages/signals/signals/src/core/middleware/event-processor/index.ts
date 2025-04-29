@@ -30,7 +30,7 @@ export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
         `No processSignal function found. Have you written a processSignal function on app.segment.com?`
       )
       sandbox = new NoopSandbox()
-    } else if (!GLOBAL_SCOPE_SANDBOX) {
+    } else if (!GLOBAL_SCOPE_SANDBOX || sandboxSettings.processSignal) {
       sandbox = new WorkerSandbox(
         new WorkerSandboxSettings({
           processSignal: sandboxSettings.processSignal,
