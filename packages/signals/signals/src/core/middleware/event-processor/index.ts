@@ -24,7 +24,7 @@ export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
     )
 
     let sandbox: SignalSandbox
-    console.log('sup')
+
     if (!normalizedEdgeFunctionURL) {
       console.warn(
         `No processSignal function found. Have you written a processSignal function on app.segment.com?`
