@@ -86,6 +86,14 @@ signalsPlugin.addSignal({ someData: 'foo' })
 }
 ```
 
+### Sandbox Strategies
+If getting CSP errors, you can use the experimental 'global' sandbox strategy.
+
+```ts
+new SignalsPlugin({ sandboxStrategy: 'global' })
+```
+
+
 ### Debugging  
 Debug mode **MUST** be enabled on the client to VIEW signals on segment.com.
 

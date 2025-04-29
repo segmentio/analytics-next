@@ -28,6 +28,7 @@ export type SignalsSettingsConfig = Pick<
   | 'mutationGenPollInterval'
   | 'mutationGenObservedAttributes'
   | 'debug'
+  | 'sandboxStrategy'
 > & {
   signalStorage?: SignalPersistentStorage
   processSignal?: string
@@ -89,6 +90,7 @@ export class SignalGlobalSettings {
       },
     }
     this.sandbox = {
+      sandboxStrategy: settings.sandboxStrategy ?? 'iframe',
       functionHost: settings.functionHost,
       processSignal: settings.processSignal,
       edgeFnDownloadURL: undefined,

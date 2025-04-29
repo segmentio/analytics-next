@@ -172,21 +172,15 @@ export type SandboxSettingsConfig = {
   processSignal: string | undefined
   edgeFnDownloadURL: string | undefined
   edgeFnFetchClient?: typeof fetch
-  /**
-   * What sandbox strategy to use
-   * default - use a web worker and regular evaluation
-   * globalScope - evaluate everything in the global scope -- this avoids CSP errors
-   * @default 'default'
-   */
-  sandboxStrategy?: 'default' | 'globalScope'
+  sandboxStrategy: 'iframe' | 'global'
 }
 
-export type WorkerboxSettingsConfig = Pick<
+export type IframeSandboxSettingsConfig = Pick<
   SandboxSettingsConfig,
   'processSignal' | 'edgeFnFetchClient' | 'edgeFnDownloadURL'
 >
 
-export class WorkerSandboxSettings {
+export class IframeSandboxSettings {
   /**
    * Should look like:
    * ```js
@@ -196,7 +190,7 @@ export class WorkerSandboxSettings {
    * ```
    */
   processSignal: Promise<string>
-  constructor(settings: WorkerboxSettingsConfig) {
+  constructor(settings: IframeSandboxSettingsConfig) {
     const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
 
     const processSignalNormalized = settings.processSignal
@@ -218,10 +212,10 @@ export interface SignalSandbox {
 }
 
 export class WorkerSandbox implements SignalSandbox {
-  settings: WorkerSandboxSettings
+  settings: IframeSandboxSettings
   jsSandbox: CodeSandbox
 
-  constructor(settings: WorkerSandboxSettings) {
+  constructor(settings: IframeSandboxSettings) {
     this.settings = settings
     this.jsSandbox = new JavascriptSandbox()
   }
@@ -280,11 +274,9 @@ const processWithGlobalScopeExecutionEnv = (
   const originalAnalytics = g.analytics
   try {
     if (g['analytics'] instanceof AnalyticsRuntime) {
-      console.warn(
+      throw new Error(
         'Invariant: analytics variable was not properly restored on the previous execution. This indicates a concurrency bug'
       )
-
-      return
     }
 
     g['analytics'] = analytics
@@ -319,6 +311,7 @@ export class GlobalScopeSandbox implements SignalSandbox {
   htmlScriptLoaded: Promise<HTMLScriptElement>
 
   constructor(settings: GlobalScopeSandboxSettings) {
+    logger.debug('Initializing global scope sandbox')
     this.htmlScriptLoaded = loadScript(settings.edgeFnDownloadURL)
   }
 

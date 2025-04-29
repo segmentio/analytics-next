@@ -34,24 +34,11 @@ export class SignalsPlugin implements Plugin, SignalsAugmentedFunctionality {
     Object.assign(window, { SegmentSignalsPlugin: this })
 
     this.signals = new Signals({
-      debug: settings.debug,
-      disableSignalsRedaction: settings.disableSignalsRedaction,
-      enableSignalsIngestion: settings.enableSignalsIngestion,
-      flushAt: settings.flushAt,
-      flushInterval: settings.flushInterval,
-      functionHost: settings.functionHost,
-      apiHost: settings.apiHost,
-      maxBufferSize: settings.maxBufferSize,
+      ...settings,
       processSignal:
         typeof settings.processSignal === 'function'
           ? settings.processSignal.toString()
           : settings.processSignal,
-      networkSignalsAllowSameDomain: settings.networkSignalsAllowSameDomain,
-      networkSignalsAllowList: settings.networkSignalsAllowList,
-      networkSignalsDisallowList: settings.networkSignalsDisallowList,
-      signalStorage: settings.signalStorage,
-      signalStorageType: settings.signalStorageType,
-      middleware: settings.middleware,
     })
 
     logger.debug(`SignalsPlugin v${version} initializing`, {

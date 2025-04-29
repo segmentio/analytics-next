@@ -144,6 +144,14 @@ export interface SignalsPluginSettingsConfig {
    * (defaultAttributes) => defaultAttributes.filter(attr => attr.toLowerCase() !== 'aria-selected')
    */
   mutationGenObservedAttributes?: (defaultAttributes: string[]) => string[]
+
+  /**
+   * What sandbox strategy to use
+   * - global - [EXPERIMENTAL] evaluate everything in the global scope -- use this if you want to avoid CSP errors.
+   * - iframe - use a web worker and regular evaluation
+   * @default 'iframe'
+   */
+  sandboxStrategy?: 'iframe' | 'global'
 }
 
 export type RegexLike = RegExp | string

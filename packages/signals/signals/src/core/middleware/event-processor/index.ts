@@ -1,4 +1,5 @@
 import { Signal } from '@segment/analytics-signals-runtime'
+import { logger } from '../../../lib/logger'
 import { SignalBuffer } from '../../buffer'
 import { SignalsSubscriber, SignalsMiddlewareContext } from '../../emitter'
 import { SignalEventProcessor } from '../../processor/processor'
@@ -6,12 +7,10 @@ import {
   normalizeEdgeFunctionURL,
   GlobalScopeSandbox,
   WorkerSandbox,
-  WorkerSandboxSettings,
+  IframeSandboxSettings,
   SignalSandbox,
   NoopSandbox,
 } from '../../processor/sandbox'
-
-const GLOBAL_SCOPE_SANDBOX = true
 
 export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
   processor!: SignalEventProcessor
@@ -25,19 +24,26 @@ export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
     )
 
     let sandbox: SignalSandbox
+    console.log('sup')
     if (!normalizedEdgeFunctionURL) {
       console.warn(
         `No processSignal function found. Have you written a processSignal function on app.segment.com?`
       )
+      logger.debug('Initializing sandbox: noop')
       sandbox = new NoopSandbox()
-    } else if (!GLOBAL_SCOPE_SANDBOX || sandboxSettings.processSignal) {
+    } else if (
+      sandboxSettings.sandboxStrategy === 'iframe' ||
+      sandboxSettings.processSignal
+    ) {
+      logger.debug('Initializing sandbox: iframe')
       sandbox = new WorkerSandbox(
-        new WorkerSandboxSettings({
+        new IframeSandboxSettings({
           processSignal: sandboxSettings.processSignal,
           edgeFnDownloadURL: normalizedEdgeFunctionURL,
         })
       )
     } else {
+      logger.debug('Initializing sandbox: global scope')
       sandbox = new GlobalScopeSandbox({
         edgeFnDownloadURL: normalizedEdgeFunctionURL,
       })
