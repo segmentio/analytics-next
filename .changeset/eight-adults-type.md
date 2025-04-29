@@ -2,4 +2,4 @@
 '@segment/analytics-signals': minor
 ---
 
-Add globalscope strategy
+Fix CSP errors with sandboxStrategy: global
