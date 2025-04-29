@@ -49,7 +49,7 @@ export abstract class BasePage {
     return this.fetchIntegrationReqs
   }
 
-  private async mockAPIs() {
+  protected async mockAPIs() {
     await this.mockSegmentTrackingAPI()
     await this.mockCDNSettingsAPI()
     await this.mockNextIntegrationsAPI()
