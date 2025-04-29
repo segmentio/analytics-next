@@ -341,7 +341,5 @@ export class NoopSandbox implements SignalSandbox {
   execute(_signal: Signal, _signals: Signal[]) {
     return Promise.resolve(undefined)
   }
-  destroy(): void | Promise<void> {
-    return
-  }
+  destroy(): void {}
 }
