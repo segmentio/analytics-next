@@ -287,18 +287,18 @@ const processWithGlobalScopeExecutionEnv = (
   const signals = new WebSignalsRuntime(signalBuffer)
 
   const originalAnalytics = g.analytics
+  if (originalAnalytics instanceof AnalyticsRuntime) {
+    throw new Error(
+      'Invariant: analytics variable was not properly restored on the previous execution. This indicates a concurrency bug'
+    )
+  }
+
   try {
-    if (g['analytics'] instanceof AnalyticsRuntime) {
-      throw new Error(
-        'Invariant: analytics variable was not properly restored on the previous execution. This indicates a concurrency bug'
-      )
-    }
-
     g['analytics'] = analytics
-
     g['signals'] = signals
     processSignal(signal, {
       // we eventually want to get rid of globals and processSignal just uses local variables.
+      // TODO: update processSignal generator to accept params like these for web (mobile currently uses globals for their architecture -- can be changed but hard).
       analytics: analytics,
       signals: signals,
       // constants
