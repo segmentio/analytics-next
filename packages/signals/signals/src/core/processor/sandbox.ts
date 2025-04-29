@@ -180,6 +180,11 @@ export type IframeSandboxSettingsConfig = Pick<
   'processSignal' | 'edgeFnFetchClient' | 'edgeFnDownloadURL'
 >
 
+const consoleWarnProcessSignal = () =>
+  console.warn(
+    'processSignal is not defined - have you set up auto-instrumentation on app.segment.com?'
+  )
+
 export class IframeSandboxSettings {
   /**
    * Should look like:
@@ -193,11 +198,21 @@ export class IframeSandboxSettings {
   constructor(settings: IframeSandboxSettingsConfig) {
     const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
 
-    const processSignalNormalized = settings.processSignal
-      ? Promise.resolve(settings.processSignal).then(
-          (str) => `globalThis.processSignal = ${str}`
-        )
-      : fetch(settings.edgeFnDownloadURL!).then((res) => res.text())
+    let processSignalNormalized = Promise.resolve(
+      `globalThis.processSignal = function() {}`
+    )
+
+    if (settings.processSignal) {
+      processSignalNormalized = Promise.resolve(settings.processSignal).then(
+        (str) => `globalThis.processSignal = ${str}`
+      )
+    } else if (settings.edgeFnDownloadURL) {
+      processSignalNormalized = fetch(settings.edgeFnDownloadURL!).then((res) =>
+        res.text()
+      )
+    } else {
+      consoleWarnProcessSignal()
+    }
 
     this.processSignal = processSignalNormalized
   }
@@ -258,7 +273,7 @@ const processWithGlobalScopeExecutionEnv = (
   const processSignal: ProcessSignal = g['processSignal']
 
   if (typeof processSignal == 'undefined') {
-    console.warn('no processSignal function is defined in the global scope')
+    consoleWarnProcessSignal()
     return undefined
   }
 

@@ -19,16 +19,15 @@ describe(IframeSandboxSettings, () => {
     expect(await sandboxSettings.processSignal).toEqual(edgeFnResponseBody)
   })
 
-  test('normalizes edgeFnDownloadURL when functionHost is provided', async () => {
-    const settings = {
+  test('should call edgeFnDownloadURL', async () => {
+    const settings: IframeSandboxSettingsConfig = {
       ...baseSettings,
       processSignal: undefined,
-      functionHost: 'newHost.com',
-      edgeFnDownloadURL: 'https://original.com/download',
+      edgeFnDownloadURL: 'https://foo.com/download',
     }
     new IframeSandboxSettings(settings)
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
-      'https://newHost.com/download'
+      'https://foo.com/download'
     )
   })
 
@@ -36,14 +35,14 @@ describe(IframeSandboxSettings, () => {
     const consoleWarnSpy = jest
       .spyOn(console, 'warn')
       .mockImplementation(() => {})
-    const settings = {
+    const settings: IframeSandboxSettingsConfig = {
       ...baseSettings,
       processSignal: undefined,
       edgeFnDownloadURL: undefined,
     }
     const sandboxSettings = new IframeSandboxSettings(settings)
-    expect(await sandboxSettings.processSignal).toEqual(
-      'globalThis.processSignal = function processSignal() {}'
+    expect(await sandboxSettings.processSignal).toMatchInlineSnapshot(
+      `"globalThis.processSignal = function() {}"`
     )
     expect(baseSettings.edgeFnFetchClient).not.toHaveBeenCalled()
     expect(consoleWarnSpy).toHaveBeenCalledWith(
