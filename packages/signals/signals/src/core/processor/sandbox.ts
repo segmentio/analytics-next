@@ -292,6 +292,7 @@ const processWithGlobalScopeExecutionEnv = (
       'Invariant: analytics variable was not properly restored on the previous execution. This indicates a concurrency bug'
     )
   }
+  const originalSignals = g.signals
 
   try {
     g['analytics'] = analytics
@@ -309,10 +310,9 @@ const processWithGlobalScopeExecutionEnv = (
   } finally {
     // restore globals
     g['analytics'] = originalAnalytics
+    g['signals'] = originalSignals
   }
 
-  // this seems like it could potentially cause bugs in async environment
-  g.analytics = originalAnalytics
   return analytics.getCalls()
 }
 
