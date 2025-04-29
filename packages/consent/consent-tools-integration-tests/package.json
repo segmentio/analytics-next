@@ -4,6 +4,7 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/consent-tools-integration-tests...",
     "test:int": "playwright test",
+    "test:int-debug": "playwright test --debug",
     "build": "webpack",
     "watch": "yarn build --watch",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",

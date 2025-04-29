@@ -1,18 +1,35 @@
+// page-objects/onetrust.ts
 import { Page } from '@playwright/test'
 import { BasePage } from './base-page'
 
-export class OneTrustPage extends BasePage {
+class OneTrustPage extends BasePage {
   constructor(page: Page) {
-    super(page, 'onetrust.html')
+    super(page, 'consent-tools-onetrust.html')
   }
 
-  // Check if OneTrust is loaded by evaluating a global variable on the page
-  async isOneTrustLoaded() {
-    // To Do
+  // Check for global variable `window.isOneTrustLoaded`
+  async isOneTrustLoaded(): Promise<boolean> {
+    return await this.page.evaluate(() => {
+      return Boolean((window as any).isOneTrustLoaded)
+    })
   }
 
-  //Click the OneTrust accept button
-  async clickAcceptButtonAndClosePopup() {
-    // To Do
+  async clickGiveConsent() {
+    //await this.page.click('#onetrust-accept-btn-handler')
+    const acceptButton = this.page.locator('#onetrust-accept-btn-handler')
+    await acceptButton.waitFor({ state: 'visible' }) // Ensure the button is visible
+    await acceptButton.click()
+  }
+
+  async clickDenyConsent() {
+    const rejectButton = await this.page.locator('#onetrust-reject-all-handler')
+    await rejectButton.waitFor({ state: 'visible' }) // Ensure the button is visible
+    await rejectButton.click()
+  }
+}
+
+export class OneTrustConsentPage extends OneTrustPage {
+  constructor(page: Page) {
+    super(page)
   }
 }

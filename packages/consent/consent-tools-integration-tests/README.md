@@ -22,7 +22,7 @@ yarn . test:int
 ### Debugging Tips:
 - Webdriver.io has the handy `browser.debug()` command.
 
-- You can serve the static pages by themselves (without webdriver.io) with the following:
+- You can serve the static pages by themselves (without Playwright) with the following:
 ```
 yarn webpack -w &
 npx live-server .
