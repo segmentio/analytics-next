@@ -64,7 +64,7 @@ export class BasePage {
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     if (!options.skipSignalsPluginInit) {
       void this.invokeAnalyticsLoad({
-        sandboxStrategy: envConfig.SANDBOX_STRATEGY ?? 'iframe',
+        sandboxStrategy: envConfig.SANDBOX_STRATEGY,
         flushInterval: 500,
         ...signalSettings,
       })
