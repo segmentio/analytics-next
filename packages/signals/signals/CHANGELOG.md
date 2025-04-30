@@ -1,5 +1,13 @@
 # @segment/analytics-signals
 
+## 1.13.0
+
+### Minor Changes
+
+- [#1284](https://github.com/segmentio/analytics-next/pull/1284) [`64835418`](https://github.com/segmentio/analytics-next/commit/64835418f9dc6cc16fbc6fa7580c565dfb3a446a) Thanks [@silesky](https://github.com/silesky)! - Fix CSP errors with sandboxStrategy: global
+
+* [#1284](https://github.com/segmentio/analytics-next/pull/1284) [`64835418`](https://github.com/segmentio/analytics-next/commit/64835418f9dc6cc16fbc6fa7580c565dfb3a446a) Thanks [@silesky](https://github.com/silesky)! - Update max signals in buffer to 100
+
 ## 1.12.1
 
 ### Patch Changes
