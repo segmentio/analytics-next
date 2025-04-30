@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `const processSignal = (signal) => {}`
+const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
 
 test('network signals allow and disallow list', async ({ page }) => {
   const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {

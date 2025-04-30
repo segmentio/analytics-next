@@ -7,6 +7,7 @@ import {
   SignalAPIRequestBuffer,
   TrackingAPIRequestBuffer,
 } from './network-utils'
+import { envConfig } from './env-config'
 
 export class BasePage {
   protected page!: Page
@@ -63,6 +64,7 @@ export class BasePage {
     await this.page.goto(url, { waitUntil: 'domcontentloaded' })
     if (!options.skipSignalsPluginInit) {
       void this.invokeAnalyticsLoad({
+        sandboxStrategy: envConfig.SANDBOX_STRATEGY ?? 'iframe',
         flushInterval: 500,
         ...signalSettings,
       })

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
 const basicEdgeFn = `
-    const processSignal = (signal) => {
+    globalThis.processSignal = (signal) => {
       // test that constants are properly injected
       if (typeof EventType !== 'object') {
         throw new Error('EventType is missing?')
