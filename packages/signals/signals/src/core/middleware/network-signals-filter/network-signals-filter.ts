@@ -87,11 +87,15 @@ export class NetworkSignalsFilterList {
       'signals.segment.io',
       'cdn.segment',
       'webpack',
-      'hot-update',
-      'hmr',
-      'browser-sync',
+      'rspack-hot-update',
+      '@vite/client',
+      '@vite/env',
+      '__parcel_hmr',
+      'react-refresh',
       'livereload',
+      'browser-sync',
       'esbuild',
+      'rollup-plugin-hmr',
     ])
   }
 
