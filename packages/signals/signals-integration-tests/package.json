@@ -8,11 +8,11 @@
   "scripts": {
     ".": "yarn run -T turbo run --filter=@internal/signals-integration-tests...",
     "build": "webpack",
-    "test:int": "playwright test && yarn test:global-sandbox",
+    "test:int": "playwright test && SKIP_BUILD=true yarn test:global-sandbox",
     "test:vanilla": "playwright test src/tests/signals-vanilla",
     "test:perf": "playwright test src/tests/performance",
     "test:custom": "playwright test src/tests/custom",
-    "test:global-sandbox": "SANDBOX_STRATEGY=global yarn test:vanilla && SANDBOX_STRATEGY=global yarn test:custom",
+    "test:global-sandbox": "SANDBOX_STRATEGY=global playwright test src/tests/signals-vanilla src/tests/custom",
     "watch": "webpack -w",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "concurrently": "yarn run -T concurrently",
