@@ -84,7 +84,6 @@ steps:
       - yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter=@internal/browser-integration-tests test:int
-      - yarn turbo run --filter=@internal/browser-integration-tests test:int
     retry:
       automatic:
         - exit_status: '*'
