@@ -67,7 +67,6 @@ module.exports = {
             '@typescript-eslint/no-restricted-imports': [
               'error',
               {
-                patterns: [],
                 paths: [
                   {
                     // Prevent accidental imports from 'lodash'
