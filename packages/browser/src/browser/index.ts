@@ -308,7 +308,16 @@ async function loadAnalytics(
   )
 
   analytics.initialized = true
-  analytics.emit('initialize', settings, options)
+  analytics.emit(
+    'initialize',
+    {
+      writeKey: settings.writeKey,
+      cdnSettings: settings.cdnSettings,
+      analytics: analytics,
+    },
+    /* @deprecated -- can just use analytics.options */
+    options
+  )
   await flushFinalBuffer(analytics, queryString, preInitBuffer)
 
   return [analytics, ctx]
