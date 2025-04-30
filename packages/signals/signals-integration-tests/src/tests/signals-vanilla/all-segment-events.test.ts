@@ -37,7 +37,7 @@ const snapshot = (
 test('Segment events', async ({ page }) => {
   const basicEdgeFn = `
     // this is a process signal function
-    const processSignal = (signal) => {
+    globalThis.processSignal = (signal) => {
       if (signal.type === 'interaction' && signal.data.eventType === 'click') {
         analytics.identify('john', { found: true })
         analytics.group('foo', { hello: 'world' })
@@ -65,7 +65,7 @@ test('Should dispatch events from signals that occurred before analytics was ins
   page,
 }) => {
   const edgeFn = `
-    const processSignal = (signal) => {
+    globalThis.processSignal = (signal) => {
        if (signal.type === 'navigation' && signal.data.action === 'pageLoad') {
           analytics.page('dispatched from signals - navigation')
       }

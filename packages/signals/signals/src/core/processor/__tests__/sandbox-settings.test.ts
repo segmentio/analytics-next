@@ -1,9 +1,8 @@
-import { SandboxSettings, SandboxSettingsConfig } from '../sandbox'
+import { IframeSandboxSettings, IframeSandboxSettingsConfig } from '../sandbox'
 
-describe(SandboxSettings, () => {
+describe(IframeSandboxSettings, () => {
   const edgeFnResponseBody = `function processSignal() { console.log('hello world') }`
-  const baseSettings: SandboxSettingsConfig = {
-    functionHost: undefined,
+  const baseSettings: IframeSandboxSettingsConfig = {
     processSignal: undefined,
     edgeFnDownloadURL: 'http://example.com/download',
     edgeFnFetchClient: jest.fn().mockReturnValue(
@@ -13,23 +12,22 @@ describe(SandboxSettings, () => {
     ),
   }
   test('initializes with provided settings', async () => {
-    const sandboxSettings = new SandboxSettings({ ...baseSettings })
+    const sandboxSettings = new IframeSandboxSettings({ ...baseSettings })
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
       baseSettings.edgeFnDownloadURL
     )
     expect(await sandboxSettings.processSignal).toEqual(edgeFnResponseBody)
   })
 
-  test('normalizes edgeFnDownloadURL when functionHost is provided', async () => {
-    const settings: SandboxSettingsConfig = {
+  test('should call edgeFnDownloadURL', async () => {
+    const settings: IframeSandboxSettingsConfig = {
       ...baseSettings,
       processSignal: undefined,
-      functionHost: 'newHost.com',
-      edgeFnDownloadURL: 'https://original.com/download',
+      edgeFnDownloadURL: 'https://foo.com/download',
     }
-    new SandboxSettings(settings)
+    new IframeSandboxSettings(settings)
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
-      'https://newHost.com/download'
+      'https://foo.com/download'
     )
   })
 
@@ -37,14 +35,14 @@ describe(SandboxSettings, () => {
     const consoleWarnSpy = jest
       .spyOn(console, 'warn')
       .mockImplementation(() => {})
-    const settings: SandboxSettingsConfig = {
+    const settings: IframeSandboxSettingsConfig = {
       ...baseSettings,
       processSignal: undefined,
       edgeFnDownloadURL: undefined,
     }
-    const sandboxSettings = new SandboxSettings(settings)
-    expect(await sandboxSettings.processSignal).toEqual(
-      'globalThis.processSignal = function processSignal() {}'
+    const sandboxSettings = new IframeSandboxSettings(settings)
+    expect(await sandboxSettings.processSignal).toMatchInlineSnapshot(
+      `"globalThis.processSignal = function() {}"`
     )
     expect(baseSettings.edgeFnFetchClient).not.toHaveBeenCalled()
     expect(consoleWarnSpy).toHaveBeenCalledWith(

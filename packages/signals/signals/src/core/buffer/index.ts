@@ -25,7 +25,7 @@ interface IDBPObjectStoreSignals
     'readonly' | 'readwrite' | 'versionchange'
   > {}
 
-const MAX_BUFFER_SIZE_DEFAULT = 50
+const MAX_BUFFER_SIZE_DEFAULT = 100
 
 interface StoreSettings {
   maxBufferSize?: number

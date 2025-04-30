@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `const processSignal = (signal) => {}`
+const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
 let indexPage: IndexPage
 test.beforeEach(async ({ page }) => {
   indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn)
