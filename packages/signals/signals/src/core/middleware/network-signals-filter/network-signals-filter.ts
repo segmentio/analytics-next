@@ -85,7 +85,17 @@ export class NetworkSignalsFilterList {
     this.disallowedDefaults = new NetworkFilterListItem([
       'api.segment.io',
       'signals.segment.io',
-      'cdn.segment.com',
+      'cdn.segment',
+      'webpack',
+      'hot-update',
+      '@vite/client',
+      '@vite/env',
+      '_hmr',
+      '-hmr',
+      'react-refresh',
+      'livereload',
+      'browser-sync',
+      'esbuild',
     ])
   }
 
