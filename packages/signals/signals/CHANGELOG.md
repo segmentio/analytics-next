@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 1.13.1
+
+### Patch Changes
+
+- [#1287](https://github.com/segmentio/analytics-next/pull/1287) [`093ecf65`](https://github.com/segmentio/analytics-next/commit/093ecf65c9327fa7ac4753e55620819841d4f43c) Thanks [@silesky](https://github.com/silesky)! - Update default filter to exclude webpack and other HMR mechanisms
+
 ## 1.13.0
 
 ### Minor Changes
