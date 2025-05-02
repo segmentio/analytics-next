@@ -4,7 +4,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest - run related tests for current file",
+      "name": "Jest - run only related tests for current file",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
       "args": [
         "--testTimeout=100000",
@@ -43,8 +43,14 @@
   "inputs": [
     {
       "id": "additionalJestArgs",
-      "type": "promptString",
-      "description": "Add additional Jest arguments (e.g., --watch, --runInBand, --coverage, --updateSnapshot)",
+      "type": "pickString",
+      "description": "Select additional Jest arguments (optional)",
+      "options": [
+        "--runInBand",
+        "--watch",
+        "--coverage",
+        "--updateSnapshot",
+      ],
       "default": ""
     }
   ]
