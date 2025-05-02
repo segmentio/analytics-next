@@ -4,76 +4,48 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest Current File",
-      "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["--testTimeout=100000", "--findRelatedTests", "${relativeFile}"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Jest Watch Current File",
+      "name": "Jest: current file",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
       "args": [
         "--testTimeout=100000",
-        "--watch",
         "--findRelatedTests",
-        "${relativeFile}"
+        "${relativeFile}",
+        "${input:additionalJestArgs}"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"]
     },
+   
     {
-      "name": "Run Jest Tests for Current Package",
+      "name": "Jest: run for current package",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/node_modules/.bin/jest",
-      "args": ["--testTimeout=100000"],
+      "args": [
+        "--testTimeout=100000",
+        "${input:additionalJestArgs}"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "cwd": "${fileDirname}"
     },
     {
-      "type": "node",
-      "name": "Jest All",
-      "request": "launch",
-      "args": [
-        "--testTimeout=100000",
-        "-c",
-        "${workspaceFolder}/jest.config.js"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "skipFiles": ["<node_internals>/**"]
-    },
-    {
-      "type": "node",
-      "name": "Jest All: Browser",
-      "request": "launch",
-      "args": [
-        "--testTimeout=100000",
-        "-c",
-        "${workspaceFolder}/packages/browser/jest.config.js"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "program": "${workspaceFolder}/node_modules/jest/bin/jest",
-      "skipFiles": ["<node_internals>/**"]
-    },
-    {
-      "name": "ts-node Current File",
+      "name": "Run .ts script with ts-node: Current File",
       "type": "node",
       "request": "launch",
       "args": ["${relativeFile}"],
       "runtimeArgs": ["-r", "ts-node/register"],
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart"
+    },
+  ],
+  "inputs": [
+    {
+      "id": "additionalJestArgs",
+      "type": "promptString",
+      "description": "Add additional Jest arguments (e.g., --watch, --runInBand, --coverage, --updateSnapshot)",
+      "default": ""
     }
   ]
 }
