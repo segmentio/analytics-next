@@ -21,7 +21,7 @@
     "build": "turbo run build --filter='./packages/**'",
     "watch": "turbo run watch --filter='./packages/**'",
     "dev": "yarn workspace @playground/next-playground run dev",
-    "prepush": "yarn run typecheck --affected",
+    "prepush": "yarn run tsc --affected",
     "postinstall": "husky install",
     "changeset": "changeset",
     "update-versions-and-changelogs": "changeset version && yarn version-run-all && bash scripts/update-lockfile.sh",
