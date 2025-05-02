@@ -31,7 +31,7 @@
       "cwd": "${fileDirname}"
     },
     {
-      "name": "Run .ts script with ts-node: Current File",
+      "name": "ts-node: execute current .ts file",
       "type": "node",
       "request": "launch",
       "args": ["${relativeFile}"],
