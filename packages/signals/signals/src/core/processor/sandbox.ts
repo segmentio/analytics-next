@@ -8,7 +8,6 @@ import {
   WebSignalsRuntime,
 } from '@segment/analytics-signals-runtime'
 import { getRuntimeCode } from '@segment/analytics-signals-runtime'
-import { polyfills } from './polyfills'
 import { loadScript } from '../../lib/load-script'
 
 export type MethodName =
