@@ -1,6 +1,9 @@
-import { IframeSandboxSettings, IframeSandboxSettingsConfig } from '../sandbox'
+import {
+  IframeWorkerSandboxSettings,
+  IframeSandboxSettingsConfig,
+} from '../sandbox'
 
-describe(IframeSandboxSettings, () => {
+describe(IframeWorkerSandboxSettings, () => {
   const edgeFnResponseBody = `function processSignal() { console.log('hello world') }`
   const baseSettings: IframeSandboxSettingsConfig = {
     processSignal: undefined,
@@ -12,7 +15,7 @@ describe(IframeSandboxSettings, () => {
     ),
   }
   test('initializes with provided settings', async () => {
-    const sandboxSettings = new IframeSandboxSettings({ ...baseSettings })
+    const sandboxSettings = new IframeWorkerSandboxSettings({ ...baseSettings })
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
       baseSettings.edgeFnDownloadURL
     )
@@ -25,7 +28,7 @@ describe(IframeSandboxSettings, () => {
       processSignal: undefined,
       edgeFnDownloadURL: 'https://foo.com/download',
     }
-    new IframeSandboxSettings(settings)
+    new IframeWorkerSandboxSettings(settings)
     expect(baseSettings.edgeFnFetchClient).toHaveBeenCalledWith(
       'https://foo.com/download'
     )
@@ -40,7 +43,7 @@ describe(IframeSandboxSettings, () => {
       processSignal: undefined,
       edgeFnDownloadURL: undefined,
     }
-    const sandboxSettings = new IframeSandboxSettings(settings)
+    const sandboxSettings = new IframeWorkerSandboxSettings(settings)
     expect(await sandboxSettings.processSignal).toMatchInlineSnapshot(
       `"globalThis.processSignal = function() {}"`
     )

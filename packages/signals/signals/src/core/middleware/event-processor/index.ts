@@ -6,10 +6,9 @@ import { SignalEventProcessor } from '../../processor/processor'
 import {
   normalizeEdgeFunctionURL,
   GlobalScopeSandbox,
-  WorkerSandbox,
-  IframeSandboxSettings,
   SignalSandbox,
   NoopSandbox,
+  IframeSandbox,
 } from '../../processor/sandbox'
 
 export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
@@ -36,12 +35,7 @@ export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
       sandboxSettings.processSignal
     ) {
       logger.debug('Initializing sandbox: iframe')
-      sandbox = new WorkerSandbox(
-        new IframeSandboxSettings({
-          processSignal: sandboxSettings.processSignal,
-          edgeFnDownloadURL: normalizedEdgeFunctionURL,
-        })
-      )
+      sandbox = new IframeSandbox(normalizedEdgeFunctionURL)
     } else {
       logger.debug('Initializing sandbox: global scope')
       sandbox = new GlobalScopeSandbox({
