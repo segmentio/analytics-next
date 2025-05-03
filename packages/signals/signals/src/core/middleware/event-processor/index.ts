@@ -35,7 +35,10 @@ export class SignalsEventProcessorSubscriber implements SignalsSubscriber {
       sandboxSettings.processSignal
     ) {
       logger.debug('Initializing sandbox: iframe')
-      sandbox = new IframeSandbox(normalizedEdgeFunctionURL)
+      sandbox = new IframeSandbox(
+        normalizedEdgeFunctionURL,
+        sandboxSettings.processSignal
+      )
     } else {
       logger.debug('Initializing sandbox: global scope')
       sandbox = new GlobalScopeSandbox({

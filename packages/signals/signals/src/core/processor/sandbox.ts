@@ -1,5 +1,4 @@
 import { logger } from '../../lib/logger'
-import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, ProcessSignal } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
@@ -129,33 +128,6 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
   }
 }
 
-interface CodeSandbox {
-  run: (fn: string, scope: Record<string, any>) => Promise<any>
-  destroy: () => Promise<void>
-}
-
-class JavascriptSandbox implements CodeSandbox {
-  private workerbox: Promise<WorkerBoxAPI>
-  constructor() {
-    this.workerbox = createWorkerBox()
-  }
-  async run(fn: string, scope: Record<string, any>) {
-    try {
-      const wb = await this.workerbox
-      await wb.run(fn, scope)
-    } catch (err) {
-      console.error('processSignal() error in sandbox', err, {
-        fn,
-      })
-    }
-  }
-
-  async destroy(): Promise<void> {
-    const wb = await this.workerbox
-    await wb.destroy()
-  }
-}
-
 export const normalizeEdgeFunctionURL = (
   functionHost: string | undefined,
   edgeFnDownloadURL: string | undefined
@@ -185,82 +157,12 @@ const PROCESS_SIGNAL_UNDEFINED =
 
 const consoleWarnProcessSignal = () => console.warn(PROCESS_SIGNAL_UNDEFINED)
 
-export class IframeWorkerSandboxSettings {
-  /**
-   * Should look like:
-   * ```js
-   * function processSignal(signal) {
-   * ...
-   * }
-   * ```
-   */
-  processSignal: Promise<string>
-  constructor(settings: IframeSandboxSettingsConfig) {
-    const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
-
-    let processSignalNormalized = Promise.resolve(
-      `globalThis.processSignal = function() {}`
-    )
-
-    if (settings.processSignal) {
-      processSignalNormalized = Promise.resolve(settings.processSignal).then(
-        (str) => `globalThis.processSignal = ${str}`
-      )
-    } else if (settings.edgeFnDownloadURL) {
-      processSignalNormalized = fetch(settings.edgeFnDownloadURL!).then((res) =>
-        res.text()
-      )
-    } else {
-      consoleWarnProcessSignal()
-    }
-
-    this.processSignal = processSignalNormalized
-  }
-}
-
 export interface SignalSandbox {
   execute(
     signal: Signal,
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls | undefined>
   destroy(): void | Promise<void>
-}
-
-export class WorkerSandbox implements SignalSandbox {
-  settings: IframeWorkerSandboxSettings
-  jsSandbox: CodeSandbox
-
-  constructor(settings: IframeWorkerSandboxSettings) {
-    this.settings = settings
-    this.jsSandbox = new JavascriptSandbox()
-  }
-
-  async execute(
-    signal: Signal,
-    signals: Signal[]
-  ): Promise<AnalyticsMethodCalls> {
-    const analytics = new AnalyticsRuntime()
-    const scope = {
-      analytics,
-    }
-    logger.debug('processing signal', { signal, scope, signals })
-    const code = [
-      polyfills,
-      await this.settings.processSignal,
-      getRuntimeCode(),
-      `signals.signalBuffer = ${JSON.stringify(signals)};`,
-      'try { processSignal(' +
-        JSON.stringify(signal) +
-        ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
-    ].join('\n')
-    await this.jsSandbox.run(code, scope)
-
-    const calls = analytics.getCalls()
-    return calls
-  }
-  destroy(): void {
-    void this.jsSandbox.destroy()
-  }
 }
 
 // ProcessSignal unfortunately uses globals. This should change.
@@ -373,13 +275,14 @@ const noramizeMethodCallsWithArgResolver = (
   })
   return normalizedRuntime.getCalls()
 }
+
 export class IframeSandbox implements SignalSandbox {
   private iframe: HTMLIFrameElement
   private iframeReady: Promise<void>
   private _resolveReady!: () => void
   edgeFnUrl: string
 
-  constructor(edgeFnUrl: string) {
+  constructor(edgeFnUrl: string, processSignalFn?: string) {
     this.edgeFnUrl = edgeFnUrl
     this.iframe = document.createElement('iframe')
     this.iframe.id = 'segment-signals-sandbox'
@@ -405,16 +308,32 @@ export class IframeSandbox implements SignalSandbox {
     const doc = this.iframe.contentDocument!
     doc.open()
     doc.write(
-      `<!DOCTYPE html><html><head><script id="edge-fn" src=${this.edgeFnUrl}></script></head><body></body></html>`
+      [
+        `<!DOCTYPE html>`,
+        `<html>`,
+        `<head>`,
+        processSignalFn
+          ? ''
+          : `<script id="edge-fn" src=${this.edgeFnUrl}></script>`,
+        `</head>`,
+        `<body></body>
+      </html>`,
+      ].join(',')
     )
     doc.close()
 
     // External signal processor script
     // Inject runtime via Blob (CSP-safe)
     const runtimeJs = `
+    ${processSignalFn ? `window.processSignal = ${processSignalFn}` : ''}
+
      const signalsScript = document.getElementById('edge-fn')
-     signalsScript.onload = () => {
-       window.parent.postMessage('iframe_ready', '*')
+     if (typeof processSignal === 'undefined') {
+      signalsScript.onload = () => {
+        window.parent.postMessage('iframe_ready', '*')
+       }
+      } else {
+        window.parent.postMessage('iframe_ready', '*')
       }
  
       class AnalyticsRuntimeProxy {

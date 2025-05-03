@@ -32,8 +32,6 @@
     "build:esm": "yarn tsc -p tsconfig.build.json",
     "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
     "build:bundle": "NODE_ENV=production yarn run webpack",
-    "workerbox": "node scripts/build-workerbox.js",
-    "assert-generated": "sh scripts/assert-workerbox-built.sh",
     "watch": "rm -rf dist && yarn concurrently 'yarn build:bundle --watch' 'yarn build:esm --watch'",
     "version": "sh scripts/version.sh",
     "watch:test": "yarn test --watch",
