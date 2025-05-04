@@ -218,7 +218,7 @@ const processWithGlobalScopeExecutionEnv = (
 }
 
 /**
- * Sandbox that avoids CSP errors, but evaluates everything globally
+ * Sandbox that invokes processSignal in the global scope (avoids all CSP errors)
  */
 interface GlobalScopeSandboxSettings {
   edgeFnDownloadURL: string
@@ -246,35 +246,12 @@ export class NoopSandbox implements SignalSandbox {
 }
 
 /**
- * window.addEventListener('message', async (event) => {
-  const { type, payload } = event.data
-  if (type === 'execute') {
-    try {
-      const { signal, signals, analytics, SignalType, EventType, NavigationAction } = payload
-      await processSignal(signal, { analytics, signals, SignalType, EventType, NavigationAction })
-      event.source.postMessage({ type: 'result', payload: analytics.getCalls() }, '*')
-    } catch (err) {
-      event.source.postMessage({ type: 'error', error: err.message }, '*')
-    }
-  }
-})
-
-window.parent.postMessage('iframe_ready', '*')
+ * Sandbox that executes code in an iframe.
+ * Pros:
+ *  - More secure
+ * Cons:
+ * - Can trigger CSP errors unless :blob directive is present
  */
-
-const noramizeMethodCallsWithArgResolver = (
-  methodCalls: AnalyticsMethodCalls
-) => {
-  const normalizedRuntime = new AnalyticsRuntime()
-  Object.entries(methodCalls).forEach(([methodName, calls]) => {
-    calls.forEach((args) => {
-      // @ts-ignore
-      normalizedRuntime[methodName](...args)
-    })
-  })
-  return normalizedRuntime.getCalls()
-}
-
 export class IframeSandbox implements SignalSandbox {
   private iframe: HTMLIFrameElement
   private iframeReady: Promise<void>
@@ -339,7 +316,7 @@ export class IframeSandbox implements SignalSandbox {
         constructor() {
           this.calls = new Map();
         }
-        getFormattedCalls() {
+        getCalls() {
           return Object.fromEntries(this.calls); // call in {track: [args]} format
         }
         createProxy() {
@@ -389,7 +366,7 @@ export class IframeSandbox implements SignalSandbox {
             });
             window.signals.signalBuffer = signalBuffer; // signals is exposed as part of get runtimeCode
             window.processSignal(signal, { signals, constants })
-            event.source.postMessage({ type: 'execution_result', payload: analyticsProxy.getFormattedCalls() }, '*');
+            event.source.postMessage({ type: 'execution_result', payload: analyticsProxy.getCalls() }, '*');
          } catch(err) {
             event.source.postMessage({ type: 'execution_error', error: err }, '*'); 
          } 
@@ -405,6 +382,19 @@ export class IframeSandbox implements SignalSandbox {
     doc.head.appendChild(runtimeScript)
   }
 
+  private normalizeAnalyticsMethodCallsWithArgResolver = (
+    methodCalls: AnalyticsMethodCalls
+  ) => {
+    const analytics = new AnalyticsRuntime()
+    Object.entries(methodCalls).forEach(([methodName, calls]) => {
+      calls.forEach((args) => {
+        // @ts-ignore
+        analytics[methodName](...args)
+      })
+    })
+    return analytics.getCalls()
+  }
+
   async execute(
     signal: Signal,
     signals: Signal[]
@@ -416,7 +406,10 @@ export class IframeSandbox implements SignalSandbox {
         if (e.source !== this.iframe.contentWindow) return
         if (e.data?.type === 'execution_result') {
           window.removeEventListener('message', handler)
-          resolve(noramizeMethodCallsWithArgResolver(e.data.payload))
+          const methodCalls = this.normalizeAnalyticsMethodCallsWithArgResolver(
+            e.data.payload
+          )
+          resolve(methodCalls)
         }
         if (e.data?.type === 'execution_error') {
           window.removeEventListener('message', handler)
