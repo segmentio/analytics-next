@@ -269,7 +269,7 @@ export class IframeSandbox implements SignalSandbox {
     doc.write(this.getIframeHTML(processSignalFn))
     doc.close()
 
-    const runtimeJs = this.getIframeRuntimeJSForBlob(processSignalFn)
+    const runtimeJs = this.getIframeJS(processSignalFn)
     const blob = new Blob([runtimeJs], { type: 'application/javascript' })
     const runtimeScript = doc.createElement('script')
     runtimeScript.src = URL.createObjectURL(blob)
@@ -306,7 +306,7 @@ export class IframeSandbox implements SignalSandbox {
     ].join(',')
   }
 
-  private getIframeRuntimeJSForBlob(processSignalFn?: string): string {
+  private getIframeJS(processSignalFn?: string): string {
     // External signal processor script
     // Inject runtime via Blob (CSP-safe)
     return `
