@@ -256,6 +256,7 @@ export class IframeSandbox implements SignalSandbox {
   edgeFnUrl: string
 
   constructor(edgeFnUrl: string, processSignalFn?: string) {
+    logger.debug('Initializing iframe sandbox')
     this.edgeFnUrl = edgeFnUrl
     this.iframe = document.createElement('iframe')
     this.iframe.id = 'segment-signals-sandbox'
