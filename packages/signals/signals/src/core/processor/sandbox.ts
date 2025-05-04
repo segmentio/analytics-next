@@ -203,10 +203,7 @@ const processWithGlobalScopeExecutionEnv = (
       // TODO: update processSignal generator to accept params like these for web (mobile currently uses globals for their architecture -- can be changed but hard).
       analytics: analytics,
       signals: signals,
-      // constants
-      EventType: WebRuntimeConstants.EventType,
-      NavigationAction: WebRuntimeConstants.NavigationAction,
-      SignalType: WebRuntimeConstants.SignalType,
+      constants: WebRuntimeConstants,
     })
   } finally {
     // restore globals
