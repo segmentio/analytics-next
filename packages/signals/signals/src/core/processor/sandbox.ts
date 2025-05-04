@@ -307,7 +307,7 @@ export class IframeSandbox implements SignalSandbox {
     ].join(',')
   }
 
-  private getRuntimeJSForIframe(processSignalFn?: string) {
+  private getRuntimeJSForIframe(processSignalFn?: string): string {
     // External signal processor script
     // Inject runtime via Blob (CSP-safe)
     return `
