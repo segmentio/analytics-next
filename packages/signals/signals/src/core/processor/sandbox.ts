@@ -269,12 +269,9 @@ export class IframeSandbox implements SignalSandbox {
 
     void window.addEventListener('message', (e) => {
       if (e.source === this.iframe.contentWindow && e.data === 'iframe_ready') {
-        this.iframe.contentWindow!.postMessage(
-          {
-            type: 'init',
-          },
-          '*'
-        )
+        this.iframe.contentWindow!.postMessage({
+          type: 'init',
+        })
         this._resolveReady()
       }
     })
@@ -304,10 +301,10 @@ export class IframeSandbox implements SignalSandbox {
      const signalsScript = document.getElementById('edge-fn')
      if (typeof processSignal === 'undefined') {
       signalsScript.onload = () => {
-        window.parent.postMessage('iframe_ready', '*')
+        window.parent.postMessage('iframe_ready')
        }
       } else {
-        window.parent.postMessage('iframe_ready', '*')
+        window.parent.postMessage('iframe_ready')
       }
  
       class AnalyticsRuntimeProxy {
@@ -364,9 +361,9 @@ export class IframeSandbox implements SignalSandbox {
             });
             window.signals.signalBuffer = signalBuffer; // signals is exposed as part of get runtimeCode
             window.processSignal(signal, { signals, constants })
-            event.source.postMessage({ type: 'execution_result', payload: analyticsProxy.getCalls() }, '*');
+            event.source.postMessage({ type: 'execution_result', payload: analyticsProxy.getCalls() });
          } catch(err) {
-            event.source.postMessage({ type: 'execution_error', error: err }, '*'); 
+            event.source.postMessage({ type: 'execution_error', error: err }); 
          } 
         }
       });
@@ -417,17 +414,14 @@ export class IframeSandbox implements SignalSandbox {
 
       window.addEventListener('message', handler)
 
-      this.iframe.contentWindow!.postMessage(
-        {
-          type: 'execute',
-          payload: {
-            signal,
-            signalBuffer: signals,
-            constants: WebRuntimeConstants,
-          },
+      this.iframe.contentWindow!.postMessage({
+        type: 'execute',
+        payload: {
+          signal,
+          signalBuffer: signals,
+          constants: WebRuntimeConstants,
         },
-        '*'
-      )
+      })
     })
   }
 
