@@ -262,8 +262,23 @@ export class IframeSandbox implements SignalSandbox {
     this.iframe.style.display = 'none'
     this.iframe.src = 'about:blank'
     document.body.appendChild(this.iframe)
-    this.iframeReady = new Promise((resolve) => {
-      void window.addEventListener('message', (e) => {
+    this.iframeReady = this.listenForIframeInit()
+
+    const doc = this.iframe.contentDocument!
+    doc.open()
+    doc.write(this.getIframeInitialDoc(processSignalFn))
+    doc.close()
+
+    const runtimeJs = this.getRuntimeJSForIframe(processSignalFn)
+    const blob = new Blob([runtimeJs], { type: 'application/javascript' })
+    const runtimeScript = doc.createElement('script')
+    runtimeScript.src = URL.createObjectURL(blob)
+    doc.head.appendChild(runtimeScript)
+  }
+
+  private listenForIframeInit(): Promise<void> {
+    return new Promise((resolve) => {
+      window.addEventListener('message', (e) => {
         if (
           e.source === this.iframe.contentWindow &&
           e.data === 'iframe_ready'
@@ -271,31 +286,31 @@ export class IframeSandbox implements SignalSandbox {
           this.iframe.contentWindow!.postMessage({
             type: 'init',
           })
-          resolve()
+          resolve(undefined)
         }
       })
     })
+  }
 
-    const doc = this.iframe.contentDocument!
-    doc.open()
-    doc.write(
-      [
-        `<!DOCTYPE html>`,
-        `<html>`,
-        `<head>`,
-        processSignalFn
-          ? ''
-          : `<script id="edge-fn" src=${this.edgeFnUrl}></script>`,
-        `</head>`,
-        `<body></body>
+  private getIframeInitialDoc(processSignalFn?: string): string {
+    return [
+      `<!DOCTYPE html>`,
+      `<html>`,
+      `<head>`,
+      // this could probably also be loaded dynamically (in getRuntimeJS etc)
+      processSignalFn
+        ? ''
+        : `<script id="edge-fn" src=${this.edgeFnUrl}></script>`,
+      `</head>`,
+      `<body></body>
       </html>`,
-      ].join(',')
-    )
-    doc.close()
+    ].join(',')
+  }
 
+  private getRuntimeJSForIframe(processSignalFn?: string) {
     // External signal processor script
     // Inject runtime via Blob (CSP-safe)
-    const runtimeJs = `
+    return `
     ${processSignalFn ? `window.processSignal = ${processSignalFn}` : ''}
 
      const signalsScript = document.getElementById('edge-fn')
@@ -367,16 +382,8 @@ export class IframeSandbox implements SignalSandbox {
          } 
         }
       });
-
-
     `
-    const blob = new Blob([runtimeJs], { type: 'application/javascript' })
-    const runtimeScript = doc.createElement('script')
-    runtimeScript.src = URL.createObjectURL(blob)
-
-    doc.head.appendChild(runtimeScript)
   }
-
   private normalizeAnalyticsMethodCallsWithArgResolver = (
     methodCalls: AnalyticsMethodCalls
   ) => {
