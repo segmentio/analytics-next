@@ -252,7 +252,6 @@ export class NoopSandbox implements SignalSandbox {
 export class IframeSandbox implements SignalSandbox {
   private iframe: HTMLIFrameElement
   private iframeReady: Promise<void>
-  private _resolveReady!: () => void
   edgeFnUrl: string
 
   constructor(edgeFnUrl: string, processSignalFn?: string) {
@@ -263,17 +262,18 @@ export class IframeSandbox implements SignalSandbox {
     this.iframe.style.display = 'none'
     this.iframe.src = 'about:blank'
     document.body.appendChild(this.iframe)
-    this.iframeReady = new Promise((res) => {
-      this._resolveReady = res
-    })
-
-    void window.addEventListener('message', (e) => {
-      if (e.source === this.iframe.contentWindow && e.data === 'iframe_ready') {
-        this.iframe.contentWindow!.postMessage({
-          type: 'init',
-        })
-        this._resolveReady()
-      }
+    this.iframeReady = new Promise((resolve) => {
+      void window.addEventListener('message', (e) => {
+        if (
+          e.source === this.iframe.contentWindow &&
+          e.data === 'iframe_ready'
+        ) {
+          this.iframe.contentWindow!.postMessage({
+            type: 'init',
+          })
+          resolve()
+        }
+      })
     })
 
     const doc = this.iframe.contentDocument!
