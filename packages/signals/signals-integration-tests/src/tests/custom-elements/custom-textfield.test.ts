@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
+const basicEdgeFn = `function processSignal(signal) {}`
 
 test('Collecting signals whenever a user enters text input and focuses out', async ({
   page,

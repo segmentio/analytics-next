@@ -16,7 +16,7 @@ declare global {
 
 const basicEdgeFn = `
     // this is a process signal function
-    globalThis.processSignal = (signal) => {
+    function processSignal(signal) {
       if (signal.type === 'interaction') {
         const eventName = signal.data.eventType + ' ' + '[' + signal.type + ']'
         analytics.track(eventName, signal.data)

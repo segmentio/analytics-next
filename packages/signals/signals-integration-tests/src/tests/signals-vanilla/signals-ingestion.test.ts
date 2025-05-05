@@ -4,7 +4,7 @@ import { waitForCondition } from '../../helpers/playwright-utils'
 
 const indexPage = new IndexPage()
 
-const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
+const basicEdgeFn = `function processSignal(signal) {}`
 
 test('debug ingestion disabled and sample rate 0 -> will not send the signal', async ({
   page,

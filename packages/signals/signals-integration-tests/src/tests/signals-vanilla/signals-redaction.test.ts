@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
+const basicEdgeFn = `function processSignal(signal) {}`
 
 test('redaction enabled -> will XXX the value of text input', async ({
   page,
