@@ -5,12 +5,6 @@
     "module": "ESNext",
     "target": "es6",
     "noEmit": true,
-    "types": [
-      "@wdio/globals/types",
-      "node",
-      "expect-webdriverio",
-      "@wdio/mocha-framework",
-      "wdio-intercept-service"
-    ]
+    "types": ["node"]
   }
 }

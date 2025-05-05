@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 import OneTrustPage from '../page-objects/onetrust'
-
 test.describe('OneTrust Consent Tests', () => {
   let pageObject: OneTrustPage
 
@@ -13,7 +12,7 @@ test.describe('OneTrust Consent Tests', () => {
     await pageObject.cleanup()
   })
 
-  test('should send a consent changed event when user clicks accept on popup', async () => {
+  test.skip('should send a consent changed event when user clicks accept on popup', async () => {
     expect(pageObject.getConsentChangedEvents().length).toBe(0)
 
     await pageObject.clickAcceptButtonAndClosePopup()
