@@ -61,7 +61,7 @@ test('Segment events', async ({ page }) => {
   expect(trackingApiReqs).toEqual(snapshot)
 })
 
-test.only('Should dispatch events from signals that occurred before analytics was instantiated', async ({
+test('Should dispatch events from signals that occurred before analytics was instantiated', async ({
   page,
 }) => {
   const indexPage = new IndexPage()

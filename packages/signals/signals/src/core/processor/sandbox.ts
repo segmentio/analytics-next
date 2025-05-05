@@ -257,51 +257,52 @@ export class IframeSandbox implements SignalSandbox {
   constructor(edgeFnUrl: string, processSignalFn?: string) {
     logger.debug('Initializing iframe sandbox')
     this.edgeFnUrl = edgeFnUrl
-    this.iframe = document.createElement('iframe')
-    this.iframe.id = 'segment-signals-sandbox'
-    this.iframe.style.display = 'none'
-    this.iframe.src = 'about:blank'
-    document.body.appendChild(this.iframe)
-
-    const doc = this.iframe.contentDocument!
+    const innerHTML = this.buildIframeInnerHTMLWithScriptTag(
+      Boolean(processSignalFn)
+    )
+    const jsScriptContent = this.getIframeScriptJSScriptContent(processSignalFn)
+    const iframe = document.createElement('iframe')
+    iframe.id = 'segment-signals-sandbox'
+    iframe.style.display = 'none'
+    iframe.src = 'about:blank'
+    document.body.appendChild(iframe)
+    const doc = iframe.contentDocument!
     doc.open()
-    doc.write(this.getIframeHTML(processSignalFn))
+    doc.write(innerHTML)
     doc.close()
-    this.iframeReady = new Promise((resolve) => {
+    const ready = new Promise<undefined>((resolve) => {
       window.addEventListener('message', (e) => {
-        if (
-          e.source === this.iframe.contentWindow &&
-          e.data === 'iframe_ready'
-        ) {
-          this.iframe.contentWindow!.postMessage({
+        if (e.source === iframe.contentWindow && e.data === 'iframe_ready') {
+          iframe.contentWindow!.postMessage({
             type: 'init',
           })
           resolve(undefined)
         }
       })
     })
-    const runtimeJs = this.getIframeJS(processSignalFn)
-    const blob = new Blob([runtimeJs], { type: 'application/javascript' })
+    const blob = new Blob([jsScriptContent], { type: 'application/javascript' })
     const runtimeScript = doc.createElement('script')
     runtimeScript.src = URL.createObjectURL(blob)
     doc.head.appendChild(runtimeScript)
+    this.iframeReady = ready
+    this.iframe = iframe
   }
 
-  private getIframeHTML(processSignalFn?: string): string {
+  private buildIframeInnerHTMLWithScriptTag(includedEdgeFn = true): string {
     return [
       `<!DOCTYPE html>`,
       `<html>`,
       `<head>`,
-      processSignalFn
-        ? ''
-        : `<script id="edge-fn" src=${this.edgeFnUrl}></script>`,
+      includedEdgeFn
+        ? `<script id="edge-fn" src=${this.edgeFnUrl}></script>`
+        : '',
       `</head>`,
       `<body></body>
       </html>`,
     ].join(',')
   }
 
-  private getIframeJS(processSignalFn?: string): string {
+  private getIframeScriptJSScriptContent(processSignalFn?: string): string {
     // External signal processor script
     // Inject runtime via Blob (CSP-safe)
     return `
