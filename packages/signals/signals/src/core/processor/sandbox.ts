@@ -262,22 +262,12 @@ export class IframeSandbox implements SignalSandbox {
     this.iframe.style.display = 'none'
     this.iframe.src = 'about:blank'
     document.body.appendChild(this.iframe)
-    this.iframeReady = this.listenForIframeInit()
 
     const doc = this.iframe.contentDocument!
     doc.open()
     doc.write(this.getIframeHTML(processSignalFn))
     doc.close()
-
-    const runtimeJs = this.getIframeJS(processSignalFn)
-    const blob = new Blob([runtimeJs], { type: 'application/javascript' })
-    const runtimeScript = doc.createElement('script')
-    runtimeScript.src = URL.createObjectURL(blob)
-    doc.head.appendChild(runtimeScript)
-  }
-
-  private listenForIframeInit(): Promise<void> {
-    return new Promise((resolve) => {
+    this.iframeReady = new Promise((resolve) => {
       window.addEventListener('message', (e) => {
         if (
           e.source === this.iframe.contentWindow &&
@@ -290,6 +280,11 @@ export class IframeSandbox implements SignalSandbox {
         }
       })
     })
+    const runtimeJs = this.getIframeJS(processSignalFn)
+    const blob = new Blob([runtimeJs], { type: 'application/javascript' })
+    const runtimeScript = doc.createElement('script')
+    runtimeScript.src = URL.createObjectURL(blob)
+    doc.head.appendChild(runtimeScript)
   }
 
   private getIframeHTML(processSignalFn?: string): string {
