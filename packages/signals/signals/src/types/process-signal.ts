@@ -20,7 +20,8 @@ export interface AnalyticsRuntimePublicApi {
 export type ProcessSignalScope = {
   analytics: AnalyticsRuntimePublicApi
   signals: SignalsRuntime<Signal>
-} & typeof WebRuntimeConstants
+  constants: typeof WebRuntimeConstants
+}
 
 export interface ProcessSignal {
   (signal: Signal, ctx: ProcessSignalScope): void
