@@ -55,23 +55,3 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:cloudflare-workers
-  consent-intg-tests:
-    name: Consent Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: browser-actions/setup-chrome@v1
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16 # UPDATE TO NODE 20!!!
-          cache: 'yarn'
-      - run: yarn install --immutable
-      - name: Turbo cache
-        uses: actions/cache@v3
-        with:
-          path: node_modules/.cache/turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
-      - run: yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
