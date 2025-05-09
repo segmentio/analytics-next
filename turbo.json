@@ -47,7 +47,7 @@
       ]
     },
     "tsc": {
-      "cache": false
+      "dependsOn": ["^build:esm"] 
     },
     "assert-generated": {
       "cache": false

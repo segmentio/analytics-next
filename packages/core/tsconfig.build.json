@@ -3,6 +3,7 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/*.test.*"],
   "compilerOptions": {
+    "noEmit": false,
     "outDir": "./dist/esm",
     "declarationDir": "./dist/types"
   }

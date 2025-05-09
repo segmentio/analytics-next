@@ -3,6 +3,7 @@
   "include": ["src"],
   "exclude": ["**/__tests__/**", "**/test-helpers/**", "**/tester/**"],
   "compilerOptions": {
+    "noEmit": false,
     "outDir": "./dist/pkg",
     "declarationDir": "./dist/types"
   }
