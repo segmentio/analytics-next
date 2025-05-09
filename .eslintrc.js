@@ -1,7 +1,9 @@
 /** @type { import('eslint').Linter.Config } */
 module.exports = {
   root: true,
-  ignorePatterns: ['node_modules', 'dist'],
+  ignorePatterns: require('eslint-gitignore').readGitignoreFiles({
+    cwd: __dirname,
+  }),
   parserOptions: {
     ecmaVersion: 2020,
   },
