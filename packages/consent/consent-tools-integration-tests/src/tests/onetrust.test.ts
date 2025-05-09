@@ -12,15 +12,10 @@ test.describe('OneTrust Consent Tests', () => {
     await pageObject.cleanup()
   })
 
-  test.skip('should send a consent changed event when user clicks accept on popup', async () => {
+  test('should send a consent changed event when user clicks accept on popup', async () => {
     expect(pageObject.getConsentChangedEvents().length).toBe(0)
-
-    await pageObject.clickAcceptButtonAndClosePopup()
-
-    await expect
-      .poll(() => pageObject.getConsentChangedEvents().length, {
-        timeout: 5000,
-      })
-      .toBe(1)
+    await pageObject.openAlertBoxIfNeeded()
+    await pageObject.clickConfirmButtonAndClosePopup()
+    await expect.poll(() => pageObject.getConsentChangedEvents().length).toBe(1)
   })
 })

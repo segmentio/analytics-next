@@ -1,22 +1,16 @@
 import { AnalyticsBrowser } from '@segment/analytics-next'
-import { initMockConsentManager } from '../helpers/mock-cmp'
-import { withMockCMP } from '../helpers/mock-cmp-wrapper'
+import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 
-initMockConsentManager({
-  consentModel: 'opt-in',
-})
-//import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-
-// declare global {
-//   interface Window {
-//     withOneTrust: typeof import('@segment/analytics-consent-wrapper-onetrust').withOneTrust
-//   }
-// }
-// window.withOneTrust = withOneTrust
+declare global {
+  interface Window {
+    withOneTrust: typeof import('@segment/analytics-consent-wrapper-onetrust').withOneTrust
+  }
+}
+window.withOneTrust = withOneTrust
 
 const analytics = new AnalyticsBrowser()
 
-withMockCMP(analytics).load(
+withOneTrust(analytics).load(
   {
     writeKey: 'foo',
   },

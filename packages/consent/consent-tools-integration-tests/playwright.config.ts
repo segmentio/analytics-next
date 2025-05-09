@@ -37,9 +37,6 @@ const config: PlaywrightTestConfig = {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     baseURL: `http://127.0.0.1:5432`,
     trace: 'on',
-    launchOptions: {
-      args: ['--enable-precise-memory-info', '--js-flags=--expose-gc'],
-    },
   },
 
   /* Configure projects for major browsers */
