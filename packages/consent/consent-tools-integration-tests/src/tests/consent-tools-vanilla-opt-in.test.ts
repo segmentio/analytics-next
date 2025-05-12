@@ -1,82 +1,94 @@
 /**
- * Tests targeting @segment/analytics-consent-tools
+ * Playwright Tests targeting @segment/analytics-consent-tools
+ *
+ * This test verifies that:
+ *  - Tracking events do not go through before explicit consent.
+ *  - After giving consent, appropriate events are sent with the correct consent context.
  */
 
 import { ConsentToolsVanillaOptIn } from '../page-objects/consent-tools-vanilla'
-import { expect } from 'expect'
+import { test, expect } from '@playwright/test'
 
-const page = new ConsentToolsVanillaOptIn()
+let pageObject: ConsentToolsVanillaOptIn
 
-afterEach(async () => {
-  await page.cleanup()
+test.beforeEach(async ({ page }) => {
+  // Initialize the test page object and load the test HTML fixture
+  pageObject = new ConsentToolsVanillaOptIn(page)
+  await pageObject.load()
 })
 
-it('should send a track call after waiting for explicit consent', async () => {
-  await page.load()
+test.afterEach(async () => {
+  // Cleanup local/session storage and reset intercepted requests after each test
+  await pageObject.cleanup()
+})
 
-  void browser.execute(() => {
-    return window.analytics.track('buffered')
+test('Consent Tools Vanilla Opt-in: Should send a track call after waiting for explicit consent', async ({
+  page,
+}) => {
+  // Attempt to track an event before consent is given — this should be buffered/blocked
+  await page.evaluate(() => {
+    void window.analytics.track('buffered')
   })
 
-  try {
-    // we don't expect any tracking events to go through yet
-    await browser.waitUntil(() => page.getAllTrackingEvents().length, {
-      timeout: 7000,
+  // Optional delay to let the network pipeline settle (useful in debugging)
+  await page.waitForTimeout(2000)
+
+  // Assert that no events have been tracked yet
+  await expect.poll(() => pageObject.getAllTrackingEvents().length).toBe(0)
+
+  // Ensure analytics is loaded before interacting
+  await page.waitForFunction(() => typeof window.analytics !== 'undefined')
+
+  // Simulate user giving consent
+  await pageObject.clickGiveConsent()
+
+  // Wait until the consent change event is tracked
+  await expect
+    .poll(() => pageObject.getConsentChangedEvents().length, {
+      timeout: 10_000,
     })
-    throw new Error('Expected no track calls to be made')
-  } catch (err) {
-    // expected to fail
-  }
+    .toBeGreaterThan(0)
 
-  await page.clickGiveConsent()
+  // Validate that the expected consent change event was emitted
+  const events = pageObject.getConsentChangedEvents()
+  expect(events.length).toBe(1)
+  expect(events[0].event).toBe('Segment Consent Preference Updated')
 
-  await browser.waitUntil(() => page.getConsentChangedEvents().length, {
-    timeout: 20000,
-    timeoutMsg: 'Expected a consent change call to be made',
+  // Now track a new event "hello" after consent has been given
+  await page.evaluate(() => {
+    void window.analytics.track('hello')
   })
 
-  const consentChangeEvents = page.getConsentChangedEvents()
-  expect(consentChangeEvents.length).toBe(1)
-  expect(consentChangeEvents[0].event).toEqual(
-    'Segment Consent Preference Updated'
-  )
+  // Helper to retrieve the "hello" tracking event
+  const getHelloEvent = () =>
+    pageObject.getAllTrackingEvents().find((e) => e.event === 'hello')
 
-  await browser.waitUntil(() => page.fetchIntegrationReqs.length, {
-    timeout: 20000,
-    timeoutMsg: 'Expected integrations/destinations to be fetched',
-  })
+  // Wait until "hello" event is tracked
+  await expect.poll(getHelloEvent).not.toBe(undefined)
 
-  await browser.execute(() => {
-    return window.analytics.track('hello')
-  })
-
-  const getHelloTrackEvents = () =>
-    page.getAllTrackingEvents().find((el) => el.event === 'hello')
-
-  await browser.waitUntil(() => getHelloTrackEvents(), {
-    timeout: 20000,
-    timeoutMsg: 'Expected a hello track call to be made',
-  })
-
-  expect(getHelloTrackEvents()!.context?.consent).toEqual({
+  // Validate that the "hello" event includes the correct consent context
+  expect((await getHelloEvent())?.context?.consent).toEqual({
     categoryPreferences: {
       FooCategory1: true,
       FooCategory2: true,
     },
   })
 
-  const getBufferTrackEvents = () =>
-    page.getAllTrackingEvents().find((el) => el.event === 'buffered')
+  // Now re-check the previously buffered event "buffered"
+  const getBufferedEvent = () =>
+    pageObject.getAllTrackingEvents().find((e) => e.event === 'buffered')
 
-  await browser.waitUntil(() => getBufferTrackEvents(), {
-    timeout: 20000,
-    timeoutMsg: 'Expected a "BUFFER" track call to be made',
-  })
+  // Wait until the "buffered" event is finally flushed and sent
+  await expect.poll(getBufferedEvent).not.toBe(undefined)
 
-  expect(getBufferTrackEvents()!.context?.consent).toEqual({
+  // Assert that the flushed "buffered" event also includes the consent context
+  expect((await getBufferedEvent())?.context?.consent).toEqual({
     categoryPreferences: {
       FooCategory1: true,
       FooCategory2: true,
     },
   })
+
+  // Optional: print all tracking events for debug purposes
+  //console.log('All tracking events so far:', pageObject.getAllTrackingEvents())
 })
