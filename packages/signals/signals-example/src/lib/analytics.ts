@@ -2,7 +2,11 @@
 // You only want to instantiate SignalsPlugin in a browser context, otherwise you'll get an error.
 
 import { AnalyticsBrowser } from '@segment/analytics-next'
-import { SignalsPlugin, ProcessSignal } from '@segment/analytics-signals'
+import {
+  SignalsPlugin,
+  SignalsPluginSettingsConfig,
+  ProcessSignal,
+} from '@segment/analytics-signals'
 
 export const analytics = new AnalyticsBrowser()
 if (!process.env.WRITEKEY) {
@@ -29,11 +33,20 @@ const processSignalExample: ProcessSignal = (
   }
 }
 
+const getQueryParams = () => {
+  const params = new URLSearchParams()
+  const sandboxStrategy = params.get('sandboxStrategy')
+  return {
+    sandboxStrategy:
+      sandboxStrategy as SignalsPluginSettingsConfig['sandboxStrategy'],
+  }
+}
 const isStage = process.env.STAGE === 'true'
 
+const queryParams = getQueryParams()
 const signalsPlugin = new SignalsPlugin({
   ...(isStage ? { apiHost: 'signals.segment.build/v1' } : {}),
-  sandboxStrategy: 'global',
+  sandboxStrategy: queryParams.sandboxStrategy ?? 'iframe',
   // processSignal: processSignalExample,
 })
 

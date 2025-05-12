@@ -7,7 +7,7 @@ import { pTimeout } from '@segment/analytics-core'
  * If a signal is generated, the signal buffer should be reset
  * when the user clicks on the complex button.
  */
-const edgeFn = `globalThis.processSignal = (signal) => {
+const edgeFn = `function processSignal(signal) {
   // create a custom signal to echo out the current signal buffer
   if (signal.type === 'userDefined') {
     analytics.track('current signal buffer', { signalBuffer: signals.signalBuffer })
