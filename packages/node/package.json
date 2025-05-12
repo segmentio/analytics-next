@@ -46,7 +46,7 @@
   "devDependencies": {
     "@internal/config": "0.0.0",
     "@types/node": "^18",
-    "axios": "^1.6.2"
+    "axios": "^1.8.2"
   },
   "packageManager": "yarn@3.4.1"
 }
