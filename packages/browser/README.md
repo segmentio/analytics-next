@@ -11,12 +11,12 @@ npm install @customerio/cdp-analytics-browser
 ```ts
 import { AnalyticsBrowser } from '@customerio/cdp-analytics-browser'
 
-const analytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
+const cioanalytics = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
 
-analytics.identify('hello world')
+cioanalytics.identify('hello world')
 
 document.body?.addEventListener('click', () => {
-  analytics.track('document body clicked!')
+  cioanalytics.track('document body clicked!')
 })
 ```
 
@@ -27,10 +27,10 @@ If you're in our [EU data center](https://customer.io/docs/accounts-and-workspac
 ```ts
 import { AnalyticsBrowser } from '@customerio/cdp-analytics-browser'
 
-const analytics = AnalyticsBrowser.load({
+const cioanalytics = AnalyticsBrowser.load({
   cdnURL: 'https://cdp-eu.customer.io',
   writeKey: '<YOUR_WRITE_KEY>'
 })
 
-analytics.identify('hello world')
+cioanalytics.identify('hello world')
 ```
