@@ -223,13 +223,14 @@ function isPluginDisabled(
 
 async function loadPluginFactory(
   remotePlugin: RemotePlugin,
-  obfuscate?: boolean
+  options?: { obfuscate?: boolean; nonce?: string }
 ): Promise<void | PluginFactory> {
   try {
     const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
     const cdn = getCDN()
+    const nonceAttr = options?.nonce ? { nonce: options.nonce } : undefined
 
-    if (obfuscate) {
+    if (options?.obfuscate) {
       const urlSplit = remotePlugin.url.split('/')
       const name = urlSplit[urlSplit.length - 2]
       const obfuscatedURL = remotePlugin.url.replace(
@@ -241,10 +242,10 @@ async function loadPluginFactory(
       } catch (error) {
         // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
         // We should use the unobfuscated version as a fallback.
-        await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
+        await loadScript(remotePlugin.url.replace(defaultCdn, cdn), nonceAttr)
       }
     } else {
-      await loadScript(remotePlugin.url.replace(defaultCdn, cdn))
+      await loadScript(remotePlugin.url.replace(defaultCdn, cdn), nonceAttr)
     }
 
     // @ts-expect-error
@@ -278,7 +279,7 @@ export async function remoteLoader(
         const pluginFactory =
           pluginSources?.find(
             ({ pluginName }) => pluginName === remotePlugin.name
-          ) || (await loadPluginFactory(remotePlugin, options?.obfuscate))
+          ) || (await loadPluginFactory(remotePlugin, options))
 
         if (pluginFactory) {
           const intg = mergedIntegrations[remotePlugin.name]
