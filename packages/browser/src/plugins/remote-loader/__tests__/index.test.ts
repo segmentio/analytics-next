@@ -72,7 +72,7 @@ describe('Remote Loader', () => {
     )
   })
 
-  it('should pass the nonce attribute to for each remotePlugin load', async () => {
+  it('should pass the nonce attribute for each remotePlugin load', async () => {
     await remoteLoader(
       {
         ...cdnSettingsMinimal,
