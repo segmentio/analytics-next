@@ -4,7 +4,7 @@ import { IndexPage } from './index-page'
 
 const basicEdgeFn = `
     // this is a process signal function
-    globalThis.processSignal = (signal) => {
+    function processSignal(signal) {
       if (signal.type === 'interaction') {
         analytics.track('hello', { myAnonId: signal.anonymousId, myTimestamp: signal.timestamp })
       } 

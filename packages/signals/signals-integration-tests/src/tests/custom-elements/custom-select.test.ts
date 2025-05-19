@@ -3,7 +3,7 @@ import { waitForCondition } from '../../helpers/playwright-utils'
 import { IndexPage } from './index-page'
 import type { SegmentEvent } from '@segment/analytics-next'
 
-const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
+const basicEdgeFn = `function processSignal(signal) {}`
 
 test('Collecting signals whenever a user selects an item', async ({ page }) => {
   const indexPage = await new IndexPage().loadAndWait(page, basicEdgeFn, {
