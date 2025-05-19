@@ -42,7 +42,10 @@ describe('Remote Loader', () => {
       {}
     )
 
-    expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js')
+    expect(loader.loadScript).toHaveBeenCalledWith(
+      'cdn/path/to/file.js',
+      undefined
+    )
   })
 
   it('should attempt to load a script from the obfuscated url of each remotePlugin', async () => {
@@ -69,6 +72,30 @@ describe('Remote Loader', () => {
     )
   })
 
+  it('should pass the nonce attribute to for each remotePlugin load', async () => {
+    await remoteLoader(
+      {
+        ...cdnSettingsMinimal,
+        remotePlugins: [
+          {
+            name: 'remote plugin',
+            creationName: 'remote plugin',
+            url: 'cdn/path/to/file.js',
+            libraryName: 'testPlugin',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      {},
+      { nonce: 'my-foo-nonce' }
+    )
+
+    expect(loader.loadScript).toHaveBeenCalledWith('cdn/path/to/file.js', {
+      nonce: 'my-foo-nonce',
+    })
+  })
+
   it('should attempt to load a script from a custom CDN', async () => {
     window.analytics = {}
     window.analytics._cdn = 'foo.com'
@@ -89,7 +116,10 @@ describe('Remote Loader', () => {
       {}
     )
 
-    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/file.js')
+    expect(loader.loadScript).toHaveBeenCalledWith(
+      'foo.com/actions/file.js',
+      undefined
+    )
   })
 
   it('should work if the cdn is staging', async () => {
@@ -114,7 +144,10 @@ describe('Remote Loader', () => {
       {}
     )
 
-    expect(loader.loadScript).toHaveBeenCalledWith('foo.com/actions/foo.js')
+    expect(loader.loadScript).toHaveBeenCalledWith(
+      'foo.com/actions/foo.js',
+      undefined
+    )
   })
 
   it('should attempt calling the library', async () => {
