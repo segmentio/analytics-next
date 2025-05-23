@@ -195,9 +195,9 @@ async function registerPlugins(
   const schemaFilter = opts.plan?.track
     ? await import(
         /* webpackChunkName: "schemaFilter" */ '../plugins/schema-filter'
-    ).then((mod) => {
-      return mod.schemaFilter(opts.plan?.track, legacySettings)
-    })
+      ).then((mod) => {
+        return mod.schemaFilter(opts.plan?.track, legacySettings)
+      })
     : undefined
 
   const mergedSettings = mergedOptions(legacySettings, options)
@@ -209,12 +209,22 @@ async function registerPlugins(
     tsubMiddleware
   ).catch(() => [])
 
-  const inAppPlugin = options.integrations?.['Customer.io In-App Plugin'] as InAppPluginSettings
+  const inAppPluginName = 'Customer.io In-App Plugin'
+  let inAppPluginSettings = mergedSettings[
+    inAppPluginName
+  ] as InAppPluginSettings
+  if (!inAppPluginSettings) {
+    inAppPluginSettings = options.integrations?.[
+      inAppPluginName
+    ] as InAppPluginSettings
+  }
+
+  const inAppPlugin = inAppPluginSettings
     ? await import(
         /* webpackChunkName: "inAppPlugin" */ '../plugins/in-app-plugin'
-    ).then((mod) => {
-      return mod.InAppPlugin(options.integrations?.['Customer.io In-App Plugin'] as InAppPluginSettings)
-    })
+      ).then((mod) => {
+        return mod.InAppPlugin(inAppPluginSettings)
+      })
     : undefined
 
   const toRegister = [
