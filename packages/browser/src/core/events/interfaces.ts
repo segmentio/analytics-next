@@ -11,12 +11,13 @@ import {
   JSONObject,
   GroupTraits,
   UserTraits,
+  BaseUserTraits,
   Traits,
 } from '@segment/analytics-core'
 
 export interface Options extends CoreOptions {}
 
-export type { GroupTraits, UserTraits, Traits }
+export type { GroupTraits, UserTraits, Traits, BaseUserTraits }
 
 export type EventProperties = Record<string, any>
 

@@ -1,5 +1,6 @@
 import type {
   GroupTraits,
+  BaseUserTraits,
   UserTraits,
   CoreExtraContext,
   EventProperties,
@@ -7,7 +8,7 @@ import type {
   Timestamp,
 } from '@segment/analytics-core'
 
-export type { GroupTraits, UserTraits }
+export type { GroupTraits, UserTraits, BaseUserTraits }
 
 /**
  * A dictionary of extra context to attach to the call.
