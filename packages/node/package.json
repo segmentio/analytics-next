@@ -17,7 +17,7 @@
     "!*.tsbuildinfo"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     ".": "yarn run -T turbo run --filter=@segment/analytics-node",

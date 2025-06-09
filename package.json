@@ -10,7 +10,7 @@
     "scripts"
   ],
   "engines": {
-    "node": "^20"
+    "node": ">=20"
   },
   "scripts": {
     "test": "jest",
