@@ -1,6 +1,9 @@
 [env]
+MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "30s"
 # Needed because on macOS there are no prebuilt binaries for Node <15. Requires mise 2024.12.7+.
 MISE_ARCH="x86_64"
 
 [tools]
-node = "14.21.3"
+node = "18.19.0"
+yarn = "3.2.1"
+python = "3.11"

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "engines": {
-    "node": "^14.15.0"
+    "node": "^18.19.0"
   },
   "scripts": {
     "test": "jest",
@@ -64,6 +64,7 @@
   "resolutions": {
     "@customerio/cdp-analytics-browser": "workspace:*",
     "@customerio/cdp-analytics-node": "workspace:*",
-    "@customerio/cdp-analytics-core": "workspace:*"
+    "@customerio/cdp-analytics-core": "workspace:*",
+    "axios": "1.8.2"
   }
 }
