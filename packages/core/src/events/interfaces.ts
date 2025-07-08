@@ -362,7 +362,7 @@ type BaseGroupTraits = DeepNullable<{
  * This interface represents reserved traits that Segment has standardized.
  * @link https://segment.com/docs/connections/spec/identify/#traits
  */
-type BaseUserTraits = DeepNullable<{
+export type BaseUserTraits = DeepNullable<{
   /**
    * Unique ID in your database for a user
    */
