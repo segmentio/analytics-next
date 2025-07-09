@@ -6,7 +6,6 @@ import { SegmentEvent } from '@segment/analytics-next'
 /**
  * This test ensures that
  */
-const indexPage = new IndexPage()
 
 const normalizeSnapshotEvent = (el: SegmentEvent) => {
   return {
@@ -35,9 +34,10 @@ const snapshot = (
 ).map(normalizeSnapshotEvent)
 
 test('Segment events', async ({ page }) => {
+  const indexPage = new IndexPage()
   const basicEdgeFn = `
     // this is a process signal function
-    globalThis.processSignal = (signal) => {
+    function processSignal(signal) {
       if (signal.type === 'interaction' && signal.data.eventType === 'click') {
         analytics.identify('john', { found: true })
         analytics.group('foo', { hello: 'world' })
@@ -64,8 +64,9 @@ test('Segment events', async ({ page }) => {
 test('Should dispatch events from signals that occurred before analytics was instantiated', async ({
   page,
 }) => {
+  const indexPage = new IndexPage()
   const edgeFn = `
-    globalThis.processSignal = (signal) => {
+    function processSignal(signal) {
        if (signal.type === 'navigation' && signal.data.action === 'pageLoad') {
           analytics.page('dispatched from signals - navigation')
       }
@@ -76,23 +77,25 @@ test('Should dispatch events from signals that occurred before analytics was ins
 
   await indexPage.load(page, edgeFn)
   const flush = Promise.all([
+    indexPage.addUserDefinedSignal(),
     indexPage.waitForSignalsApiFlush(),
     indexPage.waitForTrackingApiFlush(),
   ])
 
-  // add a user defined signal before analytics is instantiated
-  void indexPage.addUserDefinedSignal()
   await flush
 
   const trackingApiReqs = indexPage.trackingAPI.getEvents()
   expect(trackingApiReqs).toHaveLength(2)
 
   const pageEvents = trackingApiReqs.find((el) => el.type === 'page')!
+
   expect(pageEvents).toBeTruthy()
   expect(pageEvents.name).toEqual('dispatched from signals - navigation')
 
   const userDefinedEvents = trackingApiReqs.find((el) => el.type === 'track')!
-  expect(userDefinedEvents).toBeTruthy()
+  if (!userDefinedEvents) {
+    console.warn('invariant', trackingApiReqs)
+  }
   expect(userDefinedEvents.event).toEqual(
     'dispatched from signals - userDefined'
   )

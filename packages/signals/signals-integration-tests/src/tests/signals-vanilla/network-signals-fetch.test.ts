@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { commonSignalData } from '../../helpers/fixtures'
 import { IndexPage } from './index-page'
 
-const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
+const basicEdgeFn = `function processSignal(signal) {}`
 
 test.describe('network signals - fetch', () => {
   let indexPage: IndexPage

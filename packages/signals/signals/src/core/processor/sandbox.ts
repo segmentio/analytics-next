@@ -1,5 +1,4 @@
 import { logger } from '../../lib/logger'
-import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, ProcessSignal } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
@@ -9,7 +8,6 @@ import {
   WebSignalsRuntime,
 } from '@segment/analytics-signals-runtime'
 import { getRuntimeCode } from '@segment/analytics-signals-runtime'
-import { polyfills } from './polyfills'
 import { loadScript } from '../../lib/load-script'
 
 export type MethodName =
@@ -129,33 +127,6 @@ class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
   }
 }
 
-interface CodeSandbox {
-  run: (fn: string, scope: Record<string, any>) => Promise<any>
-  destroy: () => Promise<void>
-}
-
-class JavascriptSandbox implements CodeSandbox {
-  private workerbox: Promise<WorkerBoxAPI>
-  constructor() {
-    this.workerbox = createWorkerBox()
-  }
-  async run(fn: string, scope: Record<string, any>) {
-    try {
-      const wb = await this.workerbox
-      await wb.run(fn, scope)
-    } catch (err) {
-      console.error('processSignal() error in sandbox', err, {
-        fn,
-      })
-    }
-  }
-
-  async destroy(): Promise<void> {
-    const wb = await this.workerbox
-    await wb.destroy()
-  }
-}
-
 export const normalizeEdgeFunctionURL = (
   functionHost: string | undefined,
   edgeFnDownloadURL: string | undefined
@@ -180,43 +151,10 @@ export type IframeSandboxSettingsConfig = Pick<
   'processSignal' | 'edgeFnFetchClient' | 'edgeFnDownloadURL'
 >
 
-const consoleWarnProcessSignal = () =>
-  console.warn(
-    'processSignal is not defined - have you set up auto-instrumentation on app.segment.com?'
-  )
+const PROCESS_SIGNAL_UNDEFINED =
+  'processSignal is not defined - have you set up auto-instrumentation on app.segment.com?'
 
-export class IframeSandboxSettings {
-  /**
-   * Should look like:
-   * ```js
-   * function processSignal(signal) {
-   * ...
-   * }
-   * ```
-   */
-  processSignal: Promise<string>
-  constructor(settings: IframeSandboxSettingsConfig) {
-    const fetch = settings.edgeFnFetchClient ?? globalThis.fetch
-
-    let processSignalNormalized = Promise.resolve(
-      `globalThis.processSignal = function() {}`
-    )
-
-    if (settings.processSignal) {
-      processSignalNormalized = Promise.resolve(settings.processSignal).then(
-        (str) => `globalThis.processSignal = ${str}`
-      )
-    } else if (settings.edgeFnDownloadURL) {
-      processSignalNormalized = fetch(settings.edgeFnDownloadURL!).then((res) =>
-        res.text()
-      )
-    } else {
-      consoleWarnProcessSignal()
-    }
-
-    this.processSignal = processSignalNormalized
-  }
-}
+const consoleWarnProcessSignal = () => console.warn(PROCESS_SIGNAL_UNDEFINED)
 
 export interface SignalSandbox {
   execute(
@@ -224,43 +162,6 @@ export interface SignalSandbox {
     signals: Signal[]
   ): Promise<AnalyticsMethodCalls | undefined>
   destroy(): void | Promise<void>
-}
-
-export class WorkerSandbox implements SignalSandbox {
-  settings: IframeSandboxSettings
-  jsSandbox: CodeSandbox
-
-  constructor(settings: IframeSandboxSettings) {
-    this.settings = settings
-    this.jsSandbox = new JavascriptSandbox()
-  }
-
-  async execute(
-    signal: Signal,
-    signals: Signal[]
-  ): Promise<AnalyticsMethodCalls> {
-    const analytics = new AnalyticsRuntime()
-    const scope = {
-      analytics,
-    }
-    logger.debug('processing signal', { signal, scope, signals })
-    const code = [
-      polyfills,
-      await this.settings.processSignal,
-      getRuntimeCode(),
-      `signals.signalBuffer = ${JSON.stringify(signals)};`,
-      'try { processSignal(' +
-        JSON.stringify(signal) +
-        ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
-    ].join('\n')
-    await this.jsSandbox.run(code, scope)
-
-    const calls = analytics.getCalls()
-    return calls
-  }
-  destroy(): void {
-    void this.jsSandbox.destroy()
-  }
 }
 
 // ProcessSignal unfortunately uses globals. This should change.
@@ -302,10 +203,7 @@ const processWithGlobalScopeExecutionEnv = (
       // TODO: update processSignal generator to accept params like these for web (mobile currently uses globals for their architecture -- can be changed but hard).
       analytics: analytics,
       signals: signals,
-      // constants
-      EventType: WebRuntimeConstants.EventType,
-      NavigationAction: WebRuntimeConstants.NavigationAction,
-      SignalType: WebRuntimeConstants.SignalType,
+      constants: WebRuntimeConstants,
     })
   } finally {
     // restore globals
@@ -317,7 +215,7 @@ const processWithGlobalScopeExecutionEnv = (
 }
 
 /**
- * Sandbox that avoids CSP errors, but evaluates everything globally
+ * Sandbox that invokes processSignal in the global scope (avoids all CSP errors)
  */
 interface GlobalScopeSandboxSettings {
   edgeFnDownloadURL: string
@@ -342,4 +240,194 @@ export class NoopSandbox implements SignalSandbox {
     return Promise.resolve(undefined)
   }
   destroy(): void {}
+}
+
+/**
+ * Sandbox that executes code in an iframe.
+ * Pros:
+ *  - More secure
+ * Cons:
+ * - Can trigger CSP errors unless :blob directive is present
+ */
+export class IframeSandbox implements SignalSandbox {
+  private iframe: HTMLIFrameElement
+  private iframeReady: Promise<void>
+  edgeFnUrl: string
+
+  constructor(edgeFnUrl: string, processSignalFn?: string) {
+    logger.debug('Initializing iframe sandbox')
+    this.edgeFnUrl = edgeFnUrl
+    const innerHTML = this.buildIframeInnerHTMLWithScriptTag(
+      Boolean(processSignalFn)
+    )
+    const jsScriptContent = this.getIframeScriptJSScriptContent(processSignalFn)
+    const iframe = document.createElement('iframe')
+    iframe.id = 'segment-signals-sandbox'
+    iframe.style.display = 'none'
+    iframe.src = 'about:blank'
+    document.body.appendChild(iframe)
+    const doc = iframe.contentDocument!
+    doc.open()
+    doc.write(innerHTML)
+    doc.close()
+    const ready = new Promise<undefined>((resolve) => {
+      window.addEventListener('message', (e) => {
+        if (e.source === iframe.contentWindow && e.data === 'iframe_ready') {
+          iframe.contentWindow!.postMessage({
+            type: 'init',
+          })
+          resolve(undefined)
+        }
+      })
+    })
+    const blob = new Blob([jsScriptContent], { type: 'application/javascript' })
+    const runtimeScript = doc.createElement('script')
+    runtimeScript.src = URL.createObjectURL(blob)
+    doc.head.appendChild(runtimeScript)
+    this.iframeReady = ready
+    this.iframe = iframe
+  }
+
+  private buildIframeInnerHTMLWithScriptTag(includedEdgeFn = true): string {
+    return [
+      `<!DOCTYPE html>`,
+      `<html>`,
+      `<head>`,
+      includedEdgeFn
+        ? `<script id="edge-fn" src=${this.edgeFnUrl}></script>`
+        : '',
+      `</head>`,
+      `<body></body>
+      </html>`,
+    ].join(',')
+  }
+
+  private getIframeScriptJSScriptContent(processSignalFn?: string): string {
+    // External signal processor script
+    // Inject runtime via Blob (CSP-safe)
+    return `
+    ${processSignalFn ? `window.processSignal = ${processSignalFn}` : ''}
+
+     const signalsScript = document.getElementById('edge-fn')
+     if (typeof processSignal === 'undefined') {
+      signalsScript.onload = () => {
+        window.parent.postMessage('iframe_ready')
+       }
+      } else {
+        window.parent.postMessage('iframe_ready')
+      }
+ 
+      class AnalyticsRuntimeProxy {
+        constructor() {
+          this.calls = new Map();
+        }
+        getCalls() {
+          return Object.fromEntries(this.calls); // call in {track: [args]} format
+        }
+        createProxy() {
+          return new Proxy({}, {
+            get: (_, methodName) => {
+              return (...args) => {
+                if (!this.calls.has(methodName)) {
+                  this.calls.set(methodName, []);
+                }
+                this.calls.get(methodName).push(args);
+              };
+            },
+          });
+        }
+      }
+        
+
+      // expose the signals global
+      ${getRuntimeCode()}
+
+      window.addEventListener('message', async (event) => {
+        const { type, payload } = event.data;
+
+        
+        if (type === 'execute') {
+          try {
+            const analyticsProxy = new AnalyticsRuntimeProxy();
+            window.analytics = analyticsProxy.createProxy();
+            if (!payload.signal) {
+              throw new Error('invariant: no signal found')
+            }
+            if (!payload.signalBuffer) {
+              throw new Error('invariant: no signalBuffer found')
+            }
+            if (!payload.constants) {
+              throw new Error('invariant: no constants found')
+            }
+            if (typeof processSignal === 'undefined') {
+              throw new Error('processSignal is undefined')
+            }
+      
+            const signalBuffer = payload.signalBuffer
+            const signal = payload.signal
+            const constants = payload.constants
+            Object.entries(constants).forEach(([key, value]) => { // expose constants as globals
+              window[key] = value;
+            });
+            window.signals.signalBuffer = signalBuffer; // signals is exposed as part of get runtimeCode
+            window.processSignal(signal, { signals, constants })
+            event.source.postMessage({ type: 'execution_result', payload: analyticsProxy.getCalls() });
+         } catch(err) {
+            event.source.postMessage({ type: 'execution_error', error: err }); 
+         } 
+        }
+      });
+    `
+  }
+  private normalizeAnalyticsMethodCallsWithArgResolver = (
+    methodCalls: AnalyticsMethodCalls
+  ) => {
+    const analytics = new AnalyticsRuntime()
+    Object.entries(methodCalls).forEach(([methodName, calls]) => {
+      calls.forEach((args) => {
+        // @ts-ignore
+        analytics[methodName](...args)
+      })
+    })
+    return analytics.getCalls()
+  }
+
+  async execute(
+    signal: Signal,
+    signals: Signal[]
+  ): Promise<AnalyticsMethodCalls> {
+    await this.iframeReady
+
+    return new Promise((resolve, reject) => {
+      const handler = (e: MessageEvent) => {
+        if (e.source !== this.iframe.contentWindow) return
+        if (e.data?.type === 'execution_result') {
+          window.removeEventListener('message', handler)
+          const methodCalls = this.normalizeAnalyticsMethodCallsWithArgResolver(
+            e.data.payload
+          )
+          resolve(methodCalls)
+        }
+        if (e.data?.type === 'execution_error') {
+          window.removeEventListener('message', handler)
+          reject(e.data.error)
+        }
+      }
+
+      window.addEventListener('message', handler)
+
+      this.iframe.contentWindow!.postMessage({
+        type: 'execute',
+        payload: {
+          signal,
+          signalBuffer: signals,
+          constants: WebRuntimeConstants,
+        },
+      })
+    })
+  }
+
+  destroy() {
+    this.iframe.remove()
+  }
 }
