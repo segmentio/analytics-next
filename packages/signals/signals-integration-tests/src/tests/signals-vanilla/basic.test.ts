@@ -29,13 +29,13 @@ test('network signals fetch', async () => {
     (el) => el.properties!.data.action === 'request'
   )
   expect(requests).toHaveLength(1)
-  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+  expect(requests[0].properties!.data.body).toEqual({ foo: 'bar' })
 
   const responses = networkEvents.filter(
     (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
-  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+  expect(responses[0].properties!.data.body).toEqual({ someResponse: 'yep' })
 })
 
 test('network signals xhr', async () => {
@@ -51,13 +51,13 @@ test('network signals xhr', async () => {
     (el) => el.properties!.data.action === 'request'
   )
   expect(requests).toHaveLength(1)
-  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+  expect(requests[0].properties!.data.body).toEqual({ foo: 'bar' })
 
   const responses = networkEvents.filter(
     (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
-  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+  expect(responses[0].properties!.data.body).toEqual({ someResponse: 'yep' })
   expect(responses[0].properties!.data.page).toEqual(commonSignalData.page)
 })
 
@@ -155,8 +155,7 @@ test('navigation signals', async ({ page }) => {
     expect(ev.properties).toMatchObject({
       type: 'navigation',
       data: {
-        action: 'pageLoad',
-        url: indexPage.url,
+        currentUrl: indexPage.url,
         path: expect.any(String),
         hash: '',
         search: '',
@@ -178,9 +177,8 @@ test('navigation signals', async ({ page }) => {
       index: expect.any(Number),
       type: 'navigation',
       data: {
-        action: 'urlChange',
-        url: indexPage.url + '#foo',
-        prevUrl: indexPage.url,
+        currentUrl: indexPage.url + '#foo',
+        previousUrl: indexPage.url,
         path: expect.any(String),
         hash: '#foo',
         search: '',

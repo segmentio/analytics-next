@@ -31,6 +31,13 @@ describe(OnChangeGenerator, () => {
     expect(emitSpy.mock.calls[0][0]).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "change": {
             "value": "new value",
@@ -66,6 +73,7 @@ describe(OnChangeGenerator, () => {
             "value": "new value",
           },
         },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "interaction",
       }
@@ -123,6 +131,13 @@ describe(OnChangeGenerator, () => {
       [
         {
           "anonymousId": "",
+          "context": {
+            "library": {
+              "name": "@segment/analytics-next",
+              "version": "0.0.0",
+            },
+            "signalsRuntime": "",
+          },
           "data": {
             "change": {
               "selectedOptions": [
@@ -167,6 +182,7 @@ describe(OnChangeGenerator, () => {
               "value": "value1",
             },
           },
+          "index": undefined,
           "timestamp": <ISO Timestamp>,
           "type": "interaction",
         },

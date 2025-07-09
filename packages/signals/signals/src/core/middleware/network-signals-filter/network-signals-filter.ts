@@ -149,13 +149,8 @@ export class NetworkSignalsFilterMiddleware implements SignalsMiddleware {
     this.filter = new NetworkSignalsFilter(ctx.unstableGlobalSettings.network)
   }
 
-  private createMetadata = () => ({
-    filters: this.filter.settings.networkSignalsFilterList.getRegexes(),
-  })
-
   process(signal: Signal): Signal | null {
     if (signal.type === 'network') {
-      signal.metadata = this.createMetadata()
       return this.filter.isAllowed(signal.data.url) ? signal : null
     } else {
       return signal

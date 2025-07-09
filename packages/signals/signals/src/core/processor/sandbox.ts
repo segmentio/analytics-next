@@ -3,11 +3,7 @@ import { createWorkerBox, WorkerBoxAPI } from '../../lib/workerbox'
 import { resolvers } from './arg-resolvers'
 import { AnalyticsRuntimePublicApi, ProcessSignal } from '../../types'
 import { replaceBaseUrl } from '../../lib/replace-base-url'
-import {
-  Signal,
-  WebRuntimeConstants,
-  WebSignalsRuntime,
-} from '@segment/analytics-signals-runtime'
+import { Signal, WebSignalsRuntime } from '@segment/analytics-signals-runtime'
 import { getRuntimeCode } from '@segment/analytics-signals-runtime'
 import { polyfills } from './polyfills'
 import { loadScript } from '../../lib/load-script'
@@ -251,7 +247,7 @@ export class WorkerSandbox implements SignalSandbox {
       `signals.signalBuffer = ${JSON.stringify(signals)};`,
       'try { processSignal(' +
         JSON.stringify(signal) +
-        ', { analytics, signals, SignalType, EventType, NavigationAction }); } catch(err) { console.error("Process signal failed.", err); }',
+        ', { analytics, signals }); } catch(err) { console.error("Process signal failed.", err); }',
     ].join('\n')
     await this.jsSandbox.run(code, scope)
 
@@ -277,11 +273,6 @@ const processWithGlobalScopeExecutionEnv = (
     return undefined
   }
 
-  // Load all constants into the global scope
-  Object.entries(WebRuntimeConstants).forEach(([key, value]) => {
-    g[key] = value
-  })
-
   // processSignal expects a global called `signals` -- of course, there can local variable naming conflict on the client, which is why globals were a bad idea.
   const analytics = new AnalyticsRuntime()
   const signals = new WebSignalsRuntime(signalBuffer)
@@ -303,9 +294,6 @@ const processWithGlobalScopeExecutionEnv = (
       analytics: analytics,
       signals: signals,
       // constants
-      EventType: WebRuntimeConstants.EventType,
-      NavigationAction: WebRuntimeConstants.NavigationAction,
-      SignalType: WebRuntimeConstants.SignalType,
     })
   } finally {
     // restore globals

@@ -22,7 +22,7 @@ export class NetworkGenerator implements SignalGenerator {
         return
       }
 
-      const data = typeof rq.body === 'string' ? tryJSONParse(rq.body) : null
+      const body = typeof rq.body === 'string' ? tryJSONParse(rq.body) : null
 
       this.emittedRequestIds.push(rq.id)
       emitter.emit(
@@ -30,8 +30,9 @@ export class NetworkGenerator implements SignalGenerator {
           action: 'request',
           url: rq.url,
           method: rq.method || 'GET',
-          data,
+          body,
           contentType: rq.headers?.get('content-type') || '',
+          requestId: rq.id,
         })
       )
     }
@@ -59,10 +60,11 @@ export class NetworkGenerator implements SignalGenerator {
         createNetworkSignal({
           action: 'response',
           url,
-          data: data,
+          body: data,
           ok: rs.ok,
           status: rs.status,
           contentType: rs.headers.get('content-type') || '',
+          requestId: rs.req.id,
         })
       )
     }

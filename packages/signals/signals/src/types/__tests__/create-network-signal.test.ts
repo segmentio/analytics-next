@@ -1,7 +1,4 @@
-import {
-  NetworkData,
-  NetworkSignalMetadata,
-} from '@segment/analytics-signals-runtime'
+import { NetworkData } from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../../lib/normalize-url'
 import { createNetworkSignal } from '../factories'
 
@@ -10,32 +7,34 @@ jest.mock('../../lib/normalize-url', () => ({
 }))
 
 describe(createNetworkSignal, () => {
-  const metadata: NetworkSignalMetadata = {
-    filters: {
-      allowed: ['allowed1', 'allowed2'],
-      disallowed: ['disallowed1', 'disallowed2'],
-    },
-  }
   it('should create a network signal for a request', () => {
-    const data: NetworkData = {
+    const body: NetworkData = {
       action: 'request',
       url: 'http://example.com',
       method: 'POST',
-      data: { key: 'value' },
+      body: { key: 'value' },
       contentType: 'application/json',
+      requestId: '12345',
     }
 
-    const signal = createNetworkSignal(data, metadata)
+    const signal = createNetworkSignal(body)
 
     expect(signal).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "request",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "key": "value",
           },
+          "contentType": "application/json",
           "method": "POST",
           "page": {
             "hash": "",
@@ -46,20 +45,10 @@ describe(createNetworkSignal, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": "12345",
           "url": "http://example.com",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [
-              "allowed1",
-              "allowed2",
-            ],
-            "disallowed": [
-              "disallowed1",
-              "disallowed2",
-            ],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
@@ -68,26 +57,34 @@ describe(createNetworkSignal, () => {
   })
 
   it('should create a network signal for a response', () => {
-    const data: NetworkData = {
+    const body: NetworkData = {
       action: 'response',
+      requestId: '12345',
       url: 'http://example.com',
       ok: true,
       status: 200,
       contentType: 'application/json',
-      data: { key: 'value' },
+      body: { key: 'value' },
     }
 
-    const signal = createNetworkSignal(data, metadata)
+    const signal = createNetworkSignal(body)
 
     expect(signal).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "response",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "key": "value",
           },
+          "contentType": "application/json",
           "ok": true,
           "page": {
             "hash": "",
@@ -98,21 +95,11 @@ describe(createNetworkSignal, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": "12345",
           "status": 200,
           "url": "http://example.com",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [
-              "allowed1",
-              "allowed2",
-            ],
-            "disallowed": [
-              "disallowed1",
-              "disallowed2",
-            ],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }

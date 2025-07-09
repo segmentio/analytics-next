@@ -66,7 +66,7 @@ test('Should dispatch events from signals that occurred before analytics was ins
 }) => {
   const edgeFn = `
     globalThis.processSignal = (signal) => {
-       if (signal.type === 'navigation' && signal.data.action === 'pageLoad') {
+       if (signal.type === 'navigation') {
           analytics.page('dispatched from signals - navigation')
       }
       if (signal.type === 'userDefined') {

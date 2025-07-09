@@ -77,7 +77,9 @@ describe(NetworkGenerator, () => {
 
     unregister()
   })
-
+  const networkSignalMatcher = {
+    data: { requestId: expect.stringMatching(/.+/) },
+  }
   it('should register and emit signals on fetch requests and responses if on same domain', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator()
@@ -95,15 +97,24 @@ describe(NetworkGenerator, () => {
     expect(mockEmitter.emit.mock.calls.length).toBe(2)
     const [first, second] = mockEmitter.emit.mock.calls
 
-    expect(first[0]).toMatchInlineSnapshot(`
+    expect(first[0]).toMatchInlineSnapshot(
+      networkSignalMatcher,
+      `
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "request",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "key": "value",
           },
+          "contentType": "application/json",
           "method": "POST",
           "page": {
             "hash": "",
@@ -114,28 +125,34 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": StringMatching /\\.\\+/,
           "url": "http://localhost/test",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [],
-            "disallowed": [],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
-    `)
+    `
+    )
 
-    expect(second[0]).toMatchInlineSnapshot(`
+    expect(second[0]).toMatchInlineSnapshot(
+      networkSignalMatcher,
+      `
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "response",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "data": "test",
           },
+          "contentType": "application/json",
           "ok": true,
           "page": {
             "hash": "",
@@ -146,19 +163,16 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": StringMatching /\\.\\+/,
           "status": 200,
           "url": "http://localhost/test",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [],
-            "disallowed": [],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
-    `)
+    `
+    )
 
     unregister()
   })

@@ -4,20 +4,20 @@ import {
   UserDefinedSignalData,
   UserDefinedSignal,
   NetworkData,
-  NetworkSignalMetadata,
   NetworkSignal,
-  SignalTypes,
+  SignalType,
   Signal,
   SignalOfType,
   InstrumentationSignal,
   InteractionData,
   InteractionSignal,
   SegmentEvent,
+  EventType,
 } from '@segment/analytics-signals-runtime'
 import { normalizeUrl } from '../lib/normalize-url'
 import { getPageData } from '../lib/page-data'
 
-type BaseData<T extends SignalTypes> = Omit<
+type BaseData<T extends SignalType> = Omit<
   SignalOfType<Signal, T>['data'],
   'page'
 >
@@ -25,17 +25,22 @@ type BaseData<T extends SignalTypes> = Omit<
 /**
  * Base Signal Factory
  */
-const createBaseSignal = <
-  Type extends SignalTypes,
-  Data extends BaseData<Type>
->(
+const createBaseSignal = <Type extends SignalType, Data extends BaseData<Type>>(
   type: Type,
   data: Data
 ) => {
   return {
+    index: undefined, // This will get overridden by a middleware that runs once analytics is instantiated
     timestamp: new Date().toISOString(),
     anonymousId: '', // to be set by a middleware (that runs once analytics is instantiated)
     type,
+    context: {
+      library: {
+        name: '@segment/analytics-next',
+        version: '0.0.0',
+      },
+      signalsRuntime: '',
+    },
     data: {
       ...data,
       page: getPageData(),
@@ -46,7 +51,10 @@ const createBaseSignal = <
 export const createInstrumentationSignal = (
   rawEvent: SegmentEvent
 ): InstrumentationSignal => {
-  return createBaseSignal('instrumentation', { rawEvent })
+  return createBaseSignal('instrumentation', {
+    rawEvent,
+    type: rawEvent.type as EventType,
+  })
 }
 
 export const createInteractionSignal = (
@@ -67,20 +75,11 @@ export const createUserDefinedSignal = (
   return createBaseSignal('userDefined', data)
 }
 
-export const createNetworkSignal = (
-  data: NetworkData,
-  metadata?: NetworkSignalMetadata
-): NetworkSignal => {
+export const createNetworkSignal = (data: NetworkData): NetworkSignal => {
   return {
     ...createBaseSignal('network', {
       ...data,
       url: normalizeUrl(data.url),
     }),
-    metadata: metadata ?? {
-      filters: {
-        allowed: [],
-        disallowed: [],
-      },
-    },
   }
 }

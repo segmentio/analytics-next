@@ -29,8 +29,15 @@ describe(OnNavigationEventGenerator, () => {
       [
         {
           "anonymousId": "",
+          "context": {
+            "library": {
+              "name": "@segment/analytics-next",
+              "version": "0.0.0",
+            },
+            "signalsRuntime": "",
+          },
           "data": {
-            "action": "pageLoad",
+            "currentUrl": "http://localhost/",
             "hash": "",
             "page": {
               "hash": "",
@@ -44,8 +51,8 @@ describe(OnNavigationEventGenerator, () => {
             "path": "/",
             "search": "",
             "title": "",
-            "url": "http://localhost/",
           },
+          "index": undefined,
           "timestamp": <ISO Timestamp>,
           "type": "navigation",
         },
@@ -79,13 +86,20 @@ describe(OnNavigationEventGenerator, () => {
       [
         {
           "anonymousId": "",
+          "context": {
+            "library": {
+              "name": "@segment/analytics-next",
+              "version": "0.0.0",
+            },
+            "signalsRuntime": "",
+          },
           "data": {
-            "action": "urlChange",
             "changedProperties": [
               "path",
               "search",
               "hash",
             ],
+            "currentUrl": "http://localhost/new-path?query=123#hello",
             "hash": "#hello",
             "page": {
               "hash": "#hello",
@@ -97,11 +111,11 @@ describe(OnNavigationEventGenerator, () => {
               "url": "http://localhost/new-path?query=123#hello",
             },
             "path": "/new-path",
-            "prevUrl": "http://localhost/",
+            "previousUrl": "http://localhost/",
             "search": "?query=123",
             "title": "",
-            "url": "http://localhost/new-path?query=123#hello",
           },
+          "index": undefined,
           "timestamp": <ISO Timestamp>,
           "type": "navigation",
         },

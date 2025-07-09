@@ -2,6 +2,7 @@ import { exec } from 'child_process'
 import { promisify } from 'util'
 import path from 'path'
 import fs from 'fs'
+import getPackages from 'get-monorepo-packages'
 
 /**
  * This script is for extra typechecking of the built .d.ts files in {package_name}/dist/types/*.
@@ -11,13 +12,19 @@ import fs from 'fs'
  */
 const execa = promisify(exec)
 
-const allPublicPackageDirNames = [
-  'browser',
-  'core',
-  'node',
-  'signals/signals',
-  'signals/signals-runtime',
-] as const
+// Get public packages programmatically
+const packages = getPackages(path.join(__dirname, '..'))
+const publicPackageNames = [
+  '@segment/analytics-next',
+  '@segment/analytics-core',
+  '@segment/analytics-node',
+  '@segment/analytics-signals',
+]
+
+const allPublicPackageDirNames = packages
+  .filter((pkg) => publicPackageNames.includes(pkg.package.name))
+  .map((pkg) => path.relative('packages', pkg.location))
+  .sort() as readonly string[]
 
 type PackageDirName = typeof allPublicPackageDirNames[number]
 

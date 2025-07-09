@@ -1,4 +1,3 @@
-import { NetworkSignalMetadata } from '@segment/analytics-signals-runtime'
 import { createMockTarget } from '../../../../test-helpers/mocks/factories'
 import * as factories from '../../../../types/factories'
 import { redactJsonValues, redactSignalData } from '../redact'
@@ -59,12 +58,6 @@ describe(redactJsonValues, () => {
 })
 
 describe(redactSignalData, () => {
-  const metadataFixture: NetworkSignalMetadata = {
-    filters: {
-      allowed: [],
-      disallowed: [],
-    },
-  }
   it('should return the signal as is if the type is "instrumentation"', () => {
     const signal = factories.createInstrumentationSignal({
       foo: 123,
@@ -137,26 +130,22 @@ describe(redactSignalData, () => {
   })
 
   it('should redact the values in the "data" property if the type is "network"', () => {
-    const signal = factories.createNetworkSignal(
-      {
-        contentType: 'application/json',
-        action: 'request',
-        method: 'POST',
-        url: 'http://foo.com',
-        data: { name: 'John Doe', age: 30 },
-      },
-      metadataFixture
-    )
-    const expected = factories.createNetworkSignal(
-      {
-        contentType: 'application/json',
-        action: 'request',
-        method: 'POST',
-        url: 'http://foo.com',
-        data: { name: 'XXX', age: 999 },
-      },
-      metadataFixture
-    )
+    const signal = factories.createNetworkSignal({
+      requestId: 'foo',
+      contentType: 'application/json',
+      action: 'request',
+      method: 'POST',
+      url: 'http://foo.com',
+      body: { name: 'John Doe', age: 30 },
+    })
+    const expected = factories.createNetworkSignal({
+      requestId: 'foo',
+      contentType: 'application/json',
+      action: 'request',
+      method: 'POST',
+      url: 'http://foo.com',
+      body: { name: 'XXX', age: 999 },
+    })
     expect(redactSignalData(signal)).toMatchSignal(expected)
   })
 

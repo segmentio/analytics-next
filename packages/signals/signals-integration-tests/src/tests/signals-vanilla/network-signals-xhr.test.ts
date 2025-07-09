@@ -34,7 +34,7 @@ test.describe('network signals - XHR', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: 'http://localhost/test',
-      data: { key: 'value' },
+      body: { key: 'value' },
     })
 
     // Check the response
@@ -45,7 +45,7 @@ test.describe('network signals - XHR', () => {
     expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       url: 'http://localhost/test',
-      data: { foo: 'test' },
+      body: { foo: 'test' },
     })
   })
 
@@ -74,7 +74,7 @@ test.describe('network signals - XHR', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: `${indexPage.origin()}/test`,
-      data: { key: 'value' },
+      body: { key: 'value' },
     })
 
     // Check the response
@@ -85,7 +85,7 @@ test.describe('network signals - XHR', () => {
     expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       url: `${indexPage.origin()}/test`,
-      data: { foo: 'test' },
+      body: { foo: 'test' },
     })
   })
 
@@ -114,7 +114,7 @@ test.describe('network signals - XHR', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: 'http://localhost/test',
-      data: 'hello world',
+      body: 'hello world',
     })
 
     // Check the response
@@ -125,7 +125,7 @@ test.describe('network signals - XHR', () => {
     expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       url: 'http://localhost/test',
-      data: { foo: 'test' },
+      body: { foo: 'test' },
     })
   })
 
@@ -153,7 +153,7 @@ test.describe('network signals - XHR', () => {
     expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       url: 'http://localhost/test',
-      data: { hello: 'world' },
+      body: { hello: 'world' },
     })
   })
 
@@ -200,7 +200,7 @@ test.describe('network signals - XHR', () => {
     expect(request1.properties!.data).toMatchObject({
       action: 'request',
       url: req1URL,
-      data: { req1: 'value' },
+      body: { req1: 'value' },
     })
 
     const request2 = requests.find((u) => u.properties!.data.url === req2URL)!
@@ -208,7 +208,7 @@ test.describe('network signals - XHR', () => {
     expect(request2.properties!.data).toMatchObject({
       action: 'request',
       url: req2URL,
-      data: { req2: 'value' },
+      body: { req2: 'value' },
     })
   })
 
@@ -246,7 +246,7 @@ test.describe('network signals - XHR', () => {
       expect(responses[0].properties!.data).toMatchObject({
         action: 'response',
         url: 'http://localhost/test',
-        data: { errorMsg: 'foo' },
+        body: { errorMsg: 'foo' },
       })
       expect(responses).toHaveLength(1)
     })
@@ -284,7 +284,7 @@ test.describe('network signals - XHR', () => {
       expect(responses[0].properties!.data).toMatchObject({
         action: 'response',
         url: 'http://localhost/test',
-        data: 'foo',
+        body: 'foo',
       })
       expect(responses).toHaveLength(1)
     })
@@ -325,7 +325,7 @@ test.describe('network signals - XHR', () => {
       expect(responses[0].properties!.data).toMatchObject({
         action: 'response',
         url: 'http://localhost/test',
-        data: null,
+        body: null,
       })
       expect(responses).toHaveLength(1)
     })
