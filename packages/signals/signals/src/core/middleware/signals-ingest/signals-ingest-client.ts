@@ -84,8 +84,8 @@ export class SignalsIngestClient {
     const MAGIC_EVENT_NAME = 'Segment Signal Generated'
 
     return analytics.track(MAGIC_EVENT_NAME, {
-      index: this.index++,
       ...cleanSignal,
+      index: this.index++,
     })
   }
 

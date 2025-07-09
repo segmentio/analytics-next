@@ -46,9 +46,10 @@ describe(SignalsIngestClient, () => {
   it('makes a network track call via the analytics api', async () => {
     expect(client).toBeTruthy()
     const signal = createNetworkSignal({
+      requestId: '12345',
       contentType: 'application/json',
       action: 'request',
-      data: {
+      body: {
         hello: 'how are you',
       },
       method: 'POST',
@@ -59,12 +60,19 @@ describe(SignalsIngestClient, () => {
     expect(ctx!.event.properties!).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "request",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "hello": "XXX",
           },
+          "contentType": "application/json",
           "method": "POST",
           "page": {
             "hash": "",
@@ -75,15 +83,10 @@ describe(SignalsIngestClient, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": "12345",
           "url": "http://foo.com",
         },
         "index": 0,
-        "metadata": {
-          "filters": {
-            "allowed": [],
-            "disallowed": [],
-          },
-        },
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }

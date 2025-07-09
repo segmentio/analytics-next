@@ -25,10 +25,10 @@ test('network signals allow and disallow list', async ({ page }) => {
   )
   expect(allowedRequestsAndResponses).toHaveLength(2)
   const [request, response] = allowedRequestsAndResponses
-  expect(request.properties!.data.data).toEqual({
+  expect(request.properties!.data.body).toEqual({
     foo: 'bar',
   })
-  expect(response.properties!.data.data).toEqual({
+  expect(response.properties!.data.body).toEqual({
     someResponse: 'yep',
   })
 

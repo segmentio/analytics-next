@@ -1,8 +1,4 @@
-import {
-  Signal,
-  WebRuntimeConstants,
-  SignalsRuntime,
-} from '@segment/analytics-signals-runtime'
+import { Signal, SignalsRuntime } from '@segment/analytics-signals-runtime'
 
 /**
  * Types for the signals runtime
@@ -20,7 +16,7 @@ export interface AnalyticsRuntimePublicApi {
 export type ProcessSignalScope = {
   analytics: AnalyticsRuntimePublicApi
   signals: SignalsRuntime<Signal>
-} & typeof WebRuntimeConstants
+}
 
 export interface ProcessSignal {
   (signal: Signal, ctx: ProcessSignalScope): void

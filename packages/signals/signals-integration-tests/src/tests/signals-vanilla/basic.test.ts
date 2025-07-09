@@ -29,13 +29,13 @@ test('network signals fetch', async () => {
     (el) => el.properties!.data.action === 'request'
   )
   expect(requests).toHaveLength(1)
-  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+  expect(requests[0].properties!.data.body).toEqual({ foo: 'bar' })
 
   const responses = networkEvents.filter(
     (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
-  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+  expect(responses[0].properties!.data.body).toEqual({ someResponse: 'yep' })
 })
 
 test('network signals xhr', async () => {
@@ -51,13 +51,13 @@ test('network signals xhr', async () => {
     (el) => el.properties!.data.action === 'request'
   )
   expect(requests).toHaveLength(1)
-  expect(requests[0].properties!.data.data).toEqual({ foo: 'bar' })
+  expect(requests[0].properties!.data.body).toEqual({ foo: 'bar' })
 
   const responses = networkEvents.filter(
     (el) => el.properties!.data.action === 'response'
   )
   expect(responses).toHaveLength(1)
-  expect(responses[0].properties!.data.data).toEqual({ someResponse: 'yep' })
+  expect(responses[0].properties!.data.body).toEqual({ someResponse: 'yep' })
   expect(responses[0].properties!.data.page).toEqual(commonSignalData.page)
 })
 

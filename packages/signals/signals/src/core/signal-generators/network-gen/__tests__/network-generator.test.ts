@@ -98,12 +98,19 @@ describe(NetworkGenerator, () => {
     expect(first[0]).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "request",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "key": "value",
           },
+          "contentType": "application/json",
           "method": "POST",
           "page": {
             "hash": "",
@@ -114,14 +121,10 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": "cetsvycymt",
           "url": "http://localhost/test",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [],
-            "disallowed": [],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
@@ -130,12 +133,19 @@ describe(NetworkGenerator, () => {
     expect(second[0]).toMatchInlineSnapshot(`
       {
         "anonymousId": "",
+        "context": {
+          "library": {
+            "name": "@segment/analytics-next",
+            "version": "0.0.0",
+          },
+          "signalsRuntime": "",
+        },
         "data": {
           "action": "response",
-          "contentType": "application/json",
-          "data": {
+          "body": {
             "data": "test",
           },
+          "contentType": "application/json",
           "ok": true,
           "page": {
             "hash": "",
@@ -146,15 +156,11 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
+          "requestId": "cetsvycymt",
           "status": 200,
           "url": "http://localhost/test",
         },
-        "metadata": {
-          "filters": {
-            "allowed": [],
-            "disallowed": [],
-          },
-        },
+        "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }

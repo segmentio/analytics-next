@@ -43,6 +43,13 @@ describe(AnalyticsService, () => {
       expect(call).toMatchInlineSnapshot(`
         {
           "anonymousId": "",
+          "context": {
+            "library": {
+              "name": "@segment/analytics-next",
+              "version": "0.0.0",
+            },
+            "signalsRuntime": "",
+          },
           "data": {
             "rawEvent": {
               "context": {
@@ -50,7 +57,9 @@ describe(AnalyticsService, () => {
               },
               "type": "track",
             },
+            "type": "track",
           },
+          "index": undefined,
           "timestamp": <ISO Timestamp>,
           "type": "instrumentation",
         }

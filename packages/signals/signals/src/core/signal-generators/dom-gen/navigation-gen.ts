@@ -30,10 +30,8 @@ export class OnNavigationEventGenerator implements SignalGenerator {
   }
 
   register(emitter: SignalEmitter): () => void {
-    // emit navigation signal on page load
     emitter.emit(
       createNavigationSignal({
-        action: 'pageLoad',
         ...this.createCommonFields(),
       })
     )
@@ -42,8 +40,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
     this.urlChange.subscribe(({ previous, current }) =>
       emitter.emit(
         createNavigationSignal({
-          action: 'urlChange',
-          prevUrl: previous.href,
+          previousUrl: previous.href,
           changedProperties: getChangedProperties(current, previous),
           ...this.createCommonFields(),
         })
@@ -58,7 +55,7 @@ export class OnNavigationEventGenerator implements SignalGenerator {
   private createCommonFields() {
     return {
       // these fields are named after those from the page call, rather than a DOM api.
-      url: location.href,
+      currentUrl: location.href,
       path: location.pathname,
       hash: location.hash,
       search: location.search,
