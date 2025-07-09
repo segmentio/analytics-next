@@ -77,7 +77,9 @@ describe(NetworkGenerator, () => {
 
     unregister()
   })
-
+  const networkSignalMatcher = {
+    data: { requestId: expect.stringMatching(/.+/) },
+  }
   it('should register and emit signals on fetch requests and responses if on same domain', async () => {
     const mockEmitter = { emit: jest.fn() }
     const networkGenerator = new TestNetworkGenerator()
@@ -95,7 +97,9 @@ describe(NetworkGenerator, () => {
     expect(mockEmitter.emit.mock.calls.length).toBe(2)
     const [first, second] = mockEmitter.emit.mock.calls
 
-    expect(first[0]).toMatchInlineSnapshot(`
+    expect(first[0]).toMatchInlineSnapshot(
+      networkSignalMatcher,
+      `
       {
         "anonymousId": "",
         "context": {
@@ -121,16 +125,19 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
-          "requestId": "cetsvycymt",
+          "requestId": StringMatching /\\.\\+/,
           "url": "http://localhost/test",
         },
         "index": undefined,
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
-    `)
+    `
+    )
 
-    expect(second[0]).toMatchInlineSnapshot(`
+    expect(second[0]).toMatchInlineSnapshot(
+      networkSignalMatcher,
+      `
       {
         "anonymousId": "",
         "context": {
@@ -156,7 +163,7 @@ describe(NetworkGenerator, () => {
             "title": "",
             "url": "http://localhost/",
           },
-          "requestId": "cetsvycymt",
+          "requestId": StringMatching /\\.\\+/,
           "status": 200,
           "url": "http://localhost/test",
         },
@@ -164,7 +171,8 @@ describe(NetworkGenerator, () => {
         "timestamp": <ISO Timestamp>,
         "type": "network",
       }
-    `)
+    `
+    )
 
     unregister()
   })
