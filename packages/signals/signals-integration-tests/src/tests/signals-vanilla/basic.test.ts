@@ -155,8 +155,7 @@ test('navigation signals', async ({ page }) => {
     expect(ev.properties).toMatchObject({
       type: 'navigation',
       data: {
-        action: 'pageLoad',
-        url: indexPage.url,
+        currentUrl: indexPage.url,
         path: expect.any(String),
         hash: '',
         search: '',
@@ -178,9 +177,8 @@ test('navigation signals', async ({ page }) => {
       index: expect.any(Number),
       type: 'navigation',
       data: {
-        action: 'urlChange',
-        url: indexPage.url + '#foo',
-        prevUrl: indexPage.url,
+        currentUrl: indexPage.url + '#foo',
+        previousUrl: indexPage.url,
         path: expect.any(String),
         hash: '#foo',
         search: '',

@@ -4,6 +4,8 @@ import { IndexPage } from './index-page'
 
 const basicEdgeFn = `globalThis.processSignal = (signal) => {}`
 
+const NON_EMPTY_STRING = expect.stringMatching(/.+/)
+
 test.describe('network signals - fetch', () => {
   let indexPage: IndexPage
 
@@ -30,7 +32,6 @@ test.describe('network signals - fetch', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       contentType: 'multipart/form-data',
-      data: null,
       method: 'POST',
       url: 'http://localhost/upload',
       ...commonSignalData,
@@ -62,7 +63,7 @@ test.describe('network signals - fetch', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: 'http://localhost/test',
-      data: { key: 'value' },
+      body: { key: 'value' },
       ...commonSignalData,
     })
   })
@@ -92,7 +93,7 @@ test.describe('network signals - fetch', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: 'http://localhost/test',
-      data: 'hello world',
+      body: 'hello world',
       ...commonSignalData,
     })
   })
@@ -123,12 +124,13 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'request'
     )
     expect(requests).toHaveLength(1)
-    expect(requests[0].properties!.data).toEqual({
+    expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       contentType: 'application/json',
       url: 'http://localhost/test',
       method: 'POST',
-      data: { key: 'value' },
+      body: { key: 'value' },
+      requestId: NON_EMPTY_STRING,
       ...commonSignalData,
     })
 
@@ -136,13 +138,14 @@ test.describe('network signals - fetch', () => {
       (el) => el.properties!.data.action === 'response'
     )
     expect(responses).toHaveLength(1)
-    expect(responses[0].properties!.data).toEqual({
+    expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       contentType: 'application/json',
       url: 'http://localhost/test',
-      data: { foo: 'test' },
+      body: { foo: 'test' },
       status: 200,
       ok: true,
+      requestId: NON_EMPTY_STRING,
       ...commonSignalData,
     })
   })
@@ -171,7 +174,7 @@ test.describe('network signals - fetch', () => {
     expect(requests[0].properties!.data).toMatchObject({
       action: 'request',
       url: `${indexPage.origin()}/test`,
-      data: { key: 'value' },
+      body: { key: 'value' },
       ...commonSignalData,
     })
 
@@ -182,7 +185,7 @@ test.describe('network signals - fetch', () => {
     expect(responses[0].properties!.data).toMatchObject({
       action: 'response',
       url: `${indexPage.origin()}/test`,
-      data: { foo: 'test' },
+      body: { foo: 'test' },
       ...commonSignalData,
     })
   })
@@ -220,7 +223,7 @@ test.describe('network signals - fetch', () => {
       expect(responses[0].properties!.data).toMatchObject({
         action: 'response',
         url: 'http://localhost/test',
-        data: { errorMsg: 'foo' },
+        body: { errorMsg: 'foo' },
         status: 400,
         ok: false,
         page: expect.any(Object),
@@ -260,7 +263,7 @@ test.describe('network signals - fetch', () => {
       expect(responses[0].properties!.data).toMatchObject({
         action: 'response',
         url: 'http://localhost/test',
-        data: 'foo',
+        body: 'foo',
         status: 400,
         ok: false,
         ...commonSignalData,
