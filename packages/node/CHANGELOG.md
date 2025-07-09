@@ -1,5 +1,22 @@
 # @segment/analytics-node
 
+## 2.3.0
+
+### Minor Changes
+
+- [#1307](https://github.com/segmentio/analytics-next/pull/1307) [`5ae083f4`](https://github.com/segmentio/analytics-next/commit/5ae083f406066ef2a5ca701b144b1f658cb64f04) Thanks [@neelkanth-kaushik](https://github.com/neelkanth-kaushik)! - # Updated Node.js version to ^20 across the repository
+
+  ## Files modified:
+
+  1. .github/workflows/ci.yml
+  2. package.json
+  3. packages/node/package.json
+
+### Patch Changes
+
+- Updated dependencies [[`5b6bdd92`](https://github.com/segmentio/analytics-next/commit/5b6bdd9246738b3f94523c9ef9af4dd10674d71c)]:
+  - @segment/analytics-core@1.8.2
+
 ## 2.2.1
 
 ### Patch Changes
