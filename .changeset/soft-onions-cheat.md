@@ -1,5 +1,5 @@
 ---
-'@segment/analytics-node': patch
+'@segment/analytics-node': minor
 ---
 
 # Updated Node.js version to ^20 across the repository
