@@ -1,5 +1,11 @@
 # @segment/analytics-signals
 
+## 2.0.0
+
+### Major Changes
+
+- [#1311](https://github.com/segmentio/analytics-next/pull/1311) [`e329c065`](https://github.com/segmentio/analytics-next/commit/e329c0651d51cc674487f86a8fe89d4126f5f147) Thanks [@silesky](https://github.com/silesky)! - Update package to use new spec
+
 ## 1.13.1
 
 ### Patch Changes
