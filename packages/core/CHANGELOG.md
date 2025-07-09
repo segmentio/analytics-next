@@ -1,5 +1,11 @@
 # @segment/analytics-core
 
+## 1.8.2
+
+### Patch Changes
+
+- [#1306](https://github.com/segmentio/analytics-next/pull/1306) [`5b6bdd92`](https://github.com/segmentio/analytics-next/commit/5b6bdd9246738b3f94523c9ef9af4dd10674d71c) Thanks [@chenxzhang](https://github.com/chenxzhang)! - expose BaseUserTraits
+
 ## 1.8.1
 
 ### Patch Changes

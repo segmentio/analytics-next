@@ -4,6 +4,14 @@
 
 ### Patch Changes
 
+- Updated dependencies []:
+  - @segment/analytics-next@1.81.1
+  - @segment/analytics-signals@1.13.1
+
+## null
+
+### Patch Changes
+
 - Updated dependencies [[`093ecf65`](https://github.com/segmentio/analytics-next/commit/093ecf65c9327fa7ac4753e55620819841d4f43c)]:
   - @segment/analytics-signals@1.13.1
 
