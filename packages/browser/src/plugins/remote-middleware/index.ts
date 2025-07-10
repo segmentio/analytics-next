@@ -8,7 +8,7 @@ import { MiddlewareFunction } from '../middleware'
 export async function remoteMiddlewares(
   ctx: Context,
   settings: CDNSettings,
-  obfuscate?: boolean
+  options?: { obfuscate?: boolean; nonce?: string }
 ): Promise<MiddlewareFunction[]> {
   if (isServer()) {
     return []
@@ -22,13 +22,14 @@ export async function remoteMiddlewares(
   const scripts = names.map(async (name) => {
     const nonNamespaced = name.replace('@segment/', '')
     let bundleName = nonNamespaced
-    if (obfuscate) {
+    if (options?.obfuscate) {
       bundleName = btoa(nonNamespaced).replace(/=/g, '')
     }
     const fullPath = `${path}/middleware/${bundleName}/latest/${bundleName}.js.gz`
 
     try {
-      await loadScript(fullPath)
+      const nonceAttr = options?.nonce ? { nonce: options.nonce } : undefined
+      await loadScript(fullPath, nonceAttr)
       // @ts-ignore
       return window[`${nonNamespaced}Middleware`] as MiddlewareFunction
     } catch (error: any) {

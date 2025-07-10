@@ -33,7 +33,7 @@ import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 let ajsIdentifiedCSP = false
 
 const sendErrorMetrics = (tags: string[]) => {
-  // this should not be instantied at the root, or it will break ie11.
+  // this should not be instantiated at the root, or it will break ie11.
   const metrics = new RemoteMetrics()
   metrics.increment('analytics_js.invoke.error', [
     ...tags,
