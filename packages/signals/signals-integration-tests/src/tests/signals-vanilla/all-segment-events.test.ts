@@ -43,7 +43,7 @@ test('Segment events', async ({ page }) => {
         analytics.group('foo', { hello: 'world' })
         analytics.alias('john', 'johnsmith')
         analytics.track('a track call',  {foo: 'bar'})
-        analytics.page('Retail Page', 'Home', { url: 'http://my-home.com', title: 'Some Title' });
+        analytics.page('Home', 'Retail Page', { url: 'http://my-home.com', title: 'Some Title' });
     }
   }`
 
