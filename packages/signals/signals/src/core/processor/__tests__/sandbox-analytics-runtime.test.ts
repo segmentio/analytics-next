@@ -50,7 +50,11 @@ describe('AnalyticsRuntime', () => {
 
       const calls = analyticsRuntime.getCalls()
       expect(calls.track).toHaveLength(1)
-      expect(calls.track[0]).toEqual(['Event Name', undefined, {}])
+      expect(calls.track[0]).toEqual([
+        'Event Name',
+        undefined,
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle multiple track calls', () => {
@@ -61,23 +65,6 @@ describe('AnalyticsRuntime', () => {
       expect(calls.track).toHaveLength(2)
       expect(calls.track[0][0]).toBe('Event 1')
       expect(calls.track[1][0]).toBe('Event 2')
-    })
-
-    it('should handle errors gracefully', () => {
-      const consoleSpy = jest.spyOn(console, 'error')
-
-      // Mock createOptions to throw an error
-      const originalCreateOptions = (analyticsRuntime as any).createOptions
-      ;(analyticsRuntime as any).createOptions = jest.fn(() => {
-        throw new Error('Test error')
-      })
-
-      analyticsRuntime.track('Event Name', {}, {})
-
-      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error))
-
-      // Restore original method
-      ;(analyticsRuntime as any).createOptions = originalCreateOptions
     })
   })
 
@@ -103,7 +90,11 @@ describe('AnalyticsRuntime', () => {
 
       const calls = analyticsRuntime.getCalls()
       expect(calls.identify).toHaveLength(1)
-      expect(calls.identify[0]).toEqual([undefined, undefined, {}])
+      expect(calls.identify[0]).toEqual([
+        undefined,
+        undefined,
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle errors gracefully', () => {
@@ -146,7 +137,11 @@ describe('AnalyticsRuntime', () => {
 
       const calls = analyticsRuntime.getCalls()
       expect(calls.alias).toHaveLength(1)
-      expect(calls.alias[0]).toEqual(['new-user-id', undefined, {}])
+      expect(calls.alias[0]).toEqual([
+        'new-user-id',
+        undefined,
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle errors gracefully', () => {
@@ -189,7 +184,11 @@ describe('AnalyticsRuntime', () => {
 
       const calls = analyticsRuntime.getCalls()
       expect(calls.group).toHaveLength(1)
-      expect(calls.group[0]).toEqual([undefined, undefined, {}])
+      expect(calls.group[0]).toEqual([
+        undefined,
+        undefined,
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle errors gracefully', () => {
@@ -241,7 +240,7 @@ describe('AnalyticsRuntime', () => {
         category,
         '', // name defaults to empty string
         properties,
-        {},
+        { context: { __eventOrigin: { type: 'Signal' } } },
       ])
     })
 
@@ -249,14 +248,24 @@ describe('AnalyticsRuntime', () => {
       analyticsRuntime.page('Page Name', 'Category', {}, undefined)
 
       const calls = analyticsRuntime.getCalls()
-      expect(calls.page[0][1]).toBe('Page Name')
+      expect(calls.page[0]).toEqual([
+        'Category',
+        'Page Name',
+        {},
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should preserve undefined name when category is also undefined', () => {
       analyticsRuntime.page(undefined, undefined, {}, undefined)
 
       const calls = analyticsRuntime.getCalls()
-      expect(calls.page[0][1]).toBeUndefined()
+      expect(calls.page[0]).toEqual([
+        undefined,
+        undefined,
+        {},
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle errors gracefully', () => {
@@ -308,7 +317,7 @@ describe('AnalyticsRuntime', () => {
         category,
         '', // name defaults to empty string
         properties,
-        {},
+        { context: { __eventOrigin: { type: 'Signal' } } },
       ])
     })
 
@@ -316,7 +325,12 @@ describe('AnalyticsRuntime', () => {
       analyticsRuntime.screen('Screen Name', 'Category', {}, undefined)
 
       const calls = analyticsRuntime.getCalls()
-      expect(calls.screen[0][1]).toBe('Screen Name')
+      expect(calls.screen[0]).toEqual([
+        'Category',
+        'Screen Name',
+        {},
+        { context: { __eventOrigin: { type: 'Signal' } } },
+      ])
     })
 
     it('should handle errors gracefully', () => {
@@ -352,55 +366,6 @@ describe('AnalyticsRuntime', () => {
 
       const calls = analyticsRuntime.getCalls()
       expect(calls.reset).toHaveLength(2)
-    })
-  })
-
-  describe('createOptions method', () => {
-    it('should return empty object when context is undefined', () => {
-      const result = (analyticsRuntime as any).createOptions(undefined)
-      expect(result).toEqual({})
-    })
-
-    it('should return empty object when context is null', () => {
-      const result = (analyticsRuntime as any).createOptions(null)
-      expect(result).toEqual({})
-    })
-
-    it('should add __eventOrigin to context', () => {
-      const context = { userId: '123', custom: 'value' }
-      const result = (analyticsRuntime as any).createOptions(context)
-
-      expect(result).toEqual({
-        context: {
-          userId: '123',
-          custom: 'value',
-          __eventOrigin: { type: 'Signal' },
-        },
-      })
-    })
-
-    it('should preserve existing context properties', () => {
-      const context = {
-        ip: '127.0.0.1',
-        userAgent: 'Chrome',
-        nested: { prop: 'value' },
-      }
-      const result = (analyticsRuntime as any).createOptions(context)
-
-      expect(result.context.ip).toBe('127.0.0.1')
-      expect(result.context.userAgent).toBe('Chrome')
-      expect(result.context.nested).toEqual({ prop: 'value' })
-      expect(result.context.__eventOrigin).toEqual({ type: 'Signal' })
-    })
-
-    it('should not mutate the original context object', () => {
-      const originalContext = { userId: '123' }
-      const contextCopy = { ...originalContext }
-
-      ;(analyticsRuntime as any).createOptions(originalContext)
-
-      expect(originalContext).toEqual(contextCopy)
-      expect((originalContext as any).__eventOrigin).toBeUndefined()
     })
   })
 

@@ -43,9 +43,6 @@ export class AnalyticsRuntime implements AnalyticsRuntimePublicApi {
    * Stamp the context with the event origin to prevent infinite signal-event loops.
    */
   private createOptions(context?: Record<string, any>): Record<string, any> {
-    if (!context) {
-      return {}
-    }
     return {
       context: { ...context, __eventOrigin: { type: 'Signal' } },
     }
