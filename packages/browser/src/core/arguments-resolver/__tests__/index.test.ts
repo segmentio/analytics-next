@@ -235,6 +235,30 @@ describe(resolvePageArguments, () => {
     expect(cb).toEqual(undefined)
   })
 
+  it('should accept ("name")', () => {
+    const [category, name, properties, options, cb] =
+      resolvePageArguments('name')
+
+    expect(name).toEqual('name')
+    expect(category).toEqual(null)
+    expect(properties).toEqual({})
+    expect(options).toEqual({})
+    expect(cb).toEqual(undefined)
+  })
+
+  it('should accept ("", "name")', () => {
+    const [category, name, properties, options, cb] = resolvePageArguments(
+      '',
+      'name'
+    )
+
+    expect(name).toEqual('name')
+    expect(category).toEqual('')
+    expect(properties).toEqual({})
+    expect(options).toEqual({})
+    expect(cb).toEqual(undefined)
+  })
+
   it('should accept (category, name, properties, options, cb)', () => {
     const fn = jest.fn()
     const [category, name, properties, options, cb] = resolvePageArguments(
