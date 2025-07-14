@@ -1,3 +1,5 @@
+// https://github.com/segment-integrations/signals-rules-engine/blob/main/packages/rules-engine/src/types/arguments-types.ts
+
 /**
  * analytics.track("name", { prop1: "value" }, {fooCtx: '123'});
  */
