@@ -18,7 +18,6 @@ const publicPackageNames = [
   '@segment/analytics-next',
   '@segment/analytics-core',
   '@segment/analytics-node',
-  '@segment/analytics-signals',
 ]
 
 const allPublicPackageDirNames = packages

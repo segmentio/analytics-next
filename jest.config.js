@@ -17,7 +17,6 @@ module.exports = () =>
       '<rootDir>/packages/consent/consent-tools',
       '<rootDir>/packages/consent/consent-wrapper-onetrust',
       '<rootDir>/scripts',
-      '<rootDir>/packages/signals/signals',
       '<rootDir>/packages/test-helpers',
     ],
   })
