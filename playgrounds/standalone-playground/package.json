@@ -10,13 +10,11 @@
     "dev": "yarn concurrently 'yarn start' 'yarn watch'",
     "watch": "yarn concurrently 'yarn:watch:*'",
     "watch:ajs": "ASSET_PATH='/node_modules/@segment/analytics-next/dist/umd/' yarn workspace @segment/analytics-next watch",
-    "watch:signals": "yarn workspace @segment/analytics-signals watch",
     "concurrently": "yarn run -T concurrently"
   },
   "dependencies": {
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
-    "@segment/analytics-next": "workspace:^",
-    "@segment/analytics-signals": "workspace:^"
+    "@segment/analytics-next": "workspace:^"
   },
   "devDependencies": {
     "http-server": "14.1.1"
