@@ -136,12 +136,7 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
 
     const integrationSource =
       this.integrationSource ??
-      (await loadIntegration(
-        ctx,
-        this.name,
-        this.version,
-        this.options.obfuscate
-      ))
+      (await loadIntegration(ctx, this.name, this.version, this.options))
 
     this.integration = buildIntegration(
       integrationSource,
