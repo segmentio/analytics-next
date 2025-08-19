@@ -5,7 +5,8 @@ More details on plugin architecture can be found here:
 https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware
 
 
-### You can use mermaid live editor to visualize the diagram: https://mermaid.live/ or use the vscode mermaid extension
+### You can use the [vscode mermaid extension](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid), or copy and paste into mermaid live editor to visualize the diagram: https://mermaid.live.
+
 ```mermaid
 graph TD
     subgraph Event Creation
