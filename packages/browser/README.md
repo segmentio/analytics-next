@@ -187,6 +187,8 @@ declare global {
 }
 ```
 
+## Architecture
+- Plugin Architecture: [Plugin Architecture](architecture/plugin-architecture.md)
 
 ## 🐒 Development
 
