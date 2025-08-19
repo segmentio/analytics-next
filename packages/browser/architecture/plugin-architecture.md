@@ -5,7 +5,7 @@ More details on plugin architecture can be found here:
 https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware
 
 
-### You can use the [vscode mermaid extension](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid), or copy and paste into mermaid live editor to visualize the diagram: https://mermaid.live.
+### You can use the [vscode mermaid extension](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) to preview the following diagram code block inside of vscode, or copy and paste into the [mermaid live editor](https://mermaid.live/).
 
 ```mermaid
 graph TD
