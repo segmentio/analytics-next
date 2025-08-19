@@ -35,3 +35,4 @@ This library is one of Segment’s most popular Flagship libraries. It is active
 
 - Contribution guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Development instructions: [DEVELOPMENT.md](DEVELOPMENT.md)
+- Releasing (to npm): [RELEASING.md](RELEASING.md)
