@@ -7,7 +7,7 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 - [🏎️ Quickstart](#-quickstart)
   - [💡 Using with Segment](#-using-with-segment)
   - [💻 Using as an `npm` package](#-using-as-an-npm-package)
-- [🔌 Plugins](#-plugins)
+- [🔌 Architecture](#-architecture--plugins)
 - [🐒 Development](#-development)
 
 ---
@@ -187,8 +187,8 @@ declare global {
 }
 ```
 
-## Architecture
-- Plugin Architecture: [Plugin Architecture](architecture/plugin-architecture.md)
+##  🔌 Architecture & Plugins
+- See [ARCHITECTURE.md](architecture/ARCHITECTURE.md)
 
 ## 🐒 Development
 
@@ -208,57 +208,6 @@ $ yarn dev  # optional: runs analytics-next playground.
 Then, make your changes and test them out in the test app!
 
 <img src="https://user-images.githubusercontent.com/2866515/135407053-7561d522-b969-484d-8d3a-6f1c4d9c025b.gif" alt="Example of the development app" width="500px">
-
-# 🔌 Plugins
-
-When developing against Analytics Next you will likely be writing plugins, which can augment functionality and enrich data. Plugins are isolated chunks which you can build, test, version, and deploy independently of the rest of the codebase. Plugins are bounded by Analytics Next which handles things such as observability, retries, and error management.
-
-Plugins can be of two different priorities:
-
-1. **Critical**: Analytics Next should expect this plugin to be loaded before starting event delivery
-2. **Non-critical**: Analytics Next can start event delivery before this plugin has finished loading
-
-and can be of five different types:
-
-1. **Before**: Plugins that need to be run before any other plugins are run. An example of this would be validating events before passing them along to other plugins.
-2. **After**: Plugins that need to run after all other plugins have run. An example of this is the segment.io integration, which will wait for destinations to succeed or fail so that it can send its observability metrics.
-3. **Destination**: Destinations to send the event to (ie. legacy destinations). Does not modify the event and failure does not halt execution.
-4. **Enrichment**: Modifies an event, failure here could halt the event pipeline.
-5. **Utility**: Plugins that change Analytics Next functionality and don't fall into the other categories.
-
-Here is an example of a simple plugin that would convert all track events event names to lowercase before the event gets sent through the rest of the pipeline:
-
-```ts
-import type { Plugin } from '@segment/analytics-next'
-
-export const lowercase: Plugin = {
-  name: 'Lowercase Event Name',
-  type: 'before',
-  version: '1.0.0',
-
-  isLoaded: () => true,
-  load: () => Promise.resolve(),
-
-  track: (ctx) => {
-    ctx.event.event = ctx.event.event.toLowerCase()
-    return ctx
-  }
-}
-
-analytics.register(lowercase)
-```
-
-For further examples check out our [existing plugins](/packages/browser/src/plugins).
-
-## 🧪 QA
-Feature work and bug fixes should include tests. Run all [Jest](https://jestjs.io) tests:
-```
-$ yarn test
-```
-Lint all with [ESLint](https://github.com/typescript-eslint/typescript-eslint/):
-```
-$ yarn lint
-```
 
 
 
