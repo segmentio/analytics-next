@@ -143,6 +143,7 @@ analytics.register({
     if (ctx.properties.title === 'some title') {
       return null 
     }
+    return ctx
   }
 })
 ``` 
