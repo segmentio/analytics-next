@@ -175,10 +175,8 @@ analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
 ```
 or, to apply to all destinations
 ```ts
-analytics.addDestinationMiddleware('*', (ctx) => {
-  // This does not apply to the segment.io destination plugin, only device mode destinations.
-  ctx.event.properties!.hello = 'from the other side'
-  return ctx
+analytics.addDestinationMiddleware('*', ({ next, payload }) => {
+ ...
 })
 ```
 
