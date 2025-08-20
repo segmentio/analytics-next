@@ -74,24 +74,23 @@ graph TD
 
 ### Example: Plugin Implementation
 ```ts
-export const myPlugin = {
-  name: 'Do stuff'
+analytics.register({
+  name: 'My Plugin',
   type: 'before',
   isLoaded: () => true,
   load: () => Promise.resolve(),
+  // lowercase all track event names
+  track: (ctx) => {
+    ctx.event.event = ctx.event.event.toLowerCase()
+    return ctx
+  },
   // drop page events with a specific title
   page: (ctx) => {
     if (ctx.properties.title === 'some title') {
       return null 
     }
   }
-  // lowercase all track event names
-  track: (ctx) => {
-    ctx.event.event = ctx.event.event.toLowerCase()
-    return ctx
-  }
-}
-analytics.register(myPlugin)
+})
 ``` 
 ### Example: Source Middleware Implementation
 ```ts
@@ -101,7 +100,7 @@ analytics.addSourceMiddleware(({ payload, next }) => {
     // change the event name to lowercase
     event.event = event.event.toLowerCase()
   } else if (event.type === 'page') {
-    // drop any page events with no title
+    // drop any page events with a specific title
     if (event.properties.title === 'some title') {
       return null
     }
