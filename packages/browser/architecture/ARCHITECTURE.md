@@ -3,39 +3,88 @@
 > [!IMPORTANT]
 > This doc may get out-of-date. Please prefer to use and link to Segment documentation for the most up-to-date information. It would be advisable to move this doc to https://segment.com/docs/connections/sources/catalog/libraries/website/javascript, so there is a single source of truth.
 
-### Event Flow Diagram
-More details on plugin architecture can be found here:
-https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware
 
 ### You can use the [vscode mermaid extension](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) to preview the following diagram code block inside of vscode, or copy and paste into the [mermaid live editor](https://mermaid.live/).
 
+## Table of Contents
+- [Initialization Flow](#initialization-flow)
+- [Plugin Types and Middleware](#plugin-types-and-middleware)
+
+
+### Analytics.js Initialization Flow
+The following diagram illustrates how Analytics.js initializes and loads device mode destinations:
+
+```mermaid
+sequenceDiagram
+    participant Page as Web Page
+    participant AJS as Analytics.js
+    participant CDN as Segment CDN
+    participant Dest as Device Mode Destinations
+
+    Note over Page,Dest: Initialization Phase
+    Page->>AJS: Load analytics.js<br/>with writeKey
+    AJS->>CDN: Fetch settings
+    CDN-->>AJS: Return CDN settings
+    
+    Note over AJS: Block events unil all non-destination plugins and middleware are loaded
+    
+    Note over AJS: Parse device mode<br/>destinations
+    
+    Note over AJS,Dest: Begin parallel destination loading
+    par Parallel Destination Loading
+        AJS->>Dest: Load destination 1<br/>(async)
+        AJS->>Dest: Load destination 2<br/>(async)
+    end
+
+    Note over AJS,Dest: Each destination loads its own scripts
+    
+    Note over AJS: If critical plugins exist,<br/>wait for their registration
+
+    par Event Delivery (per destination)
+        AJS->>Dest: Flush buffered events to segment.io
+        AJS->>Dest: Flush buffered events to dest 1
+        AJS->>Dest: Flush buffered events to dest 2
+    end
+
+```
+
+Key Points:
+- Analytics.js is loaded with a writeKey that identifies your Segment source
+- CDN settings are fetched containing destination configurations
+- Event queue is blocked until all non-destination plugins and middleware are registered 
+- Each destination may load its own third-party scripts
+- Critical plugins (if any) must complete registration before event delivery
+- Buffered events are flushed to destinations in parallel once they're ready
+
+
+### Event Flow 
 ```mermaid
 graph TD
   subgraph Event Creation
-    A[analytics.track/page/identify] --> B[Event Factory]
-    B --> C[Event Queue]
+    UserAction[analytics.track/page/identify] --> EventCreate[Event Factory]
+    EventCreate --> Queue[Event Queue]
   end
 
   subgraph Plugin Pipeline
-    C --> D[Before Plugins e.g add page context]
-    D --> E[Enrichment Plugins]
-    E --> F[Destination Plugins e.g Segment.io]
-    F --> G[After Plugins]
+    Queue --> BeforePlugins[Before Plugins e.g add page context]
+    BeforePlugins --> EnrichPlugins[Enrichment Plugins]
+    EnrichPlugins --> DestPlugins[Destination Plugins e.g Segment.io]
+    DestPlugins --> AfterPlugins[After Plugins]
   end
 
   subgraph Plugin Types Details
-    I[Before Plugins<br/>Priority: Critical<br/>Example: Event Validation] --- D
-    J[Enrichment Plugins<br/>Priority: Critical<br/>Parallel Execution<br/>Can Modify Events<br/>Example: Add User Agent] --- E
-    K[Destination Plugins<br/>Parallel Execution<br/>Cannot Modify Events<br/>Example: Google Analytics] --- F
-    L[After Plugins<br/>Example: Metrics Collection] --- G
+    BeforeDetails[Before Plugins<br/>Priority: Critical<br/>Example: Event Validation] --- BeforePlugins
+    EnrichDetails[Enrichment Plugins<br/>Priority: Critical<br/>Parallel Execution<br/>Can Modify Events<br/>Example: Add User Agent] --- EnrichPlugins
+    DestDetails[Destination Plugins<br/>Parallel Execution<br/>Cannot Modify Events<br/>Example: Google Analytics] --- DestPlugins
+    AfterDetails[After Plugins<br/>Example: Metrics Collection] --- AfterPlugins
   end
 
   subgraph Notes
-    M[Plugin Priorities]
-    N[Critical - Must load before<br/>event delivery starts]
-    O[Non-Critical - Can load<br/>after event delivery starts]
-    M --> N
-    M --> O
+    Priorities[Plugin Priorities]
+    Critical[Critical - Must load before<br/>event delivery starts]
+    NonCritical[Non-Critical - Can load<br/>after event delivery starts]
+    Priorities --> Critical
+    Priorities --> NonCritical
   end
 ```
 
@@ -132,6 +181,7 @@ analytics.addDestinationMiddleware('*', (ctx) => {
 })
 ```
 
+
 ### Event Flow Example
 
 When `analytics.track()` is called:
@@ -149,3 +199,5 @@ When `analytics.track()` is called:
   - Example: Before plugins, Validation plugins
 - **Non-Critical Plugins**: Can load after event delivery begins
   - Example: Destination plugins
+
+
