@@ -75,6 +75,7 @@ Key Points:
    - Non-critical destinations can receive events while others are still loading
 
 
+
 ### Event Flow 
 ```mermaid
 graph TD
@@ -104,13 +105,6 @@ graph TD
     Priorities --> Critical
     Priorities --> NonCritical
   end
-
-  %% Add these style definitions at the end of the diagram
-  classDef default fill:#ffffff,stroke:#333,stroke-width:1px
-  classDef subgraph fill:#f5f5f5,stroke:#666,stroke-width:2px
-  
-  class UserAction,EventCreate,Queue,BeforePlugins,EnrichPlugins,DestPlugins,AfterPlugins default
-  class Event Creation,Plugin Pipeline,Plugin Types Details,Notes subgraph
 ```
 
 
