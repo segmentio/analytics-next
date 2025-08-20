@@ -39,7 +39,7 @@ graph TD
   end
 ```
 
-### Plugin Types Explanation
+### Plugin Types and Middleware
 [This information is also available in the Segment documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware)
 
 - **Source Middleware** (see [Example](#example-source-middleware-implementation))
@@ -73,7 +73,7 @@ graph TD
   - Do not directly process events
   - Example: some plugin that registers a bunch of analytics event listeners (e.g. analytics.on('track', ...) and reports them to an external system)
   
-- **Add Destination Middleware** (See [Example](#example-destination-middleware-implementation))
+- **Destination Middleware** (See [Example](#example-destination-middleware-implementation))
   - A special type of plugin that allows you to add a plugin that only affects a specific (device mode) destination plugin.
 
 
@@ -116,7 +116,7 @@ analytics.addSourceMiddleware(({ payload, next }) => {
 
 ### Example: Destination Middleware Implementation
 > [!NOTE]
-> It is not currently possible to add a destination middleware JUST to the segment.io destination plugin.
+> It is not currently possible to add a destination middleware to the Segment.io destination.
 ```ts
 analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
   payload.obj.properties!.hello = 'from the other side'
@@ -126,6 +126,7 @@ analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
 or, to apply to all destinations
 ```ts
 analytics.addDestinationMiddleware('*', (ctx) => {
+  // This does not apply to the segment.io destination plugin, only device mode destinations.
   ctx.event.properties!.hello = 'from the other side'
   return ctx
 })
@@ -137,10 +138,10 @@ When `analytics.track()` is called:
 
 1. Event is created via Event Factory
 2. Event enters the queue
-3. Before plugins validate/transform
-4. Enrichment plugins add data in parallel
-5. Destination plugins receive the event in parallel (including Segment.io plugin)
-6. Any after plugins handle post-processing (e.g. metrics collection)
+3. Before plugins run, in order of registration
+3. Enrichment plugins run, in order of registration
+4. Destination plugins receive the event in parallel (including Segment.io plugin)
+5. Any after plugins handle post-processing (e.g. metrics collection)
 
 ### Plugin Priorities
 
