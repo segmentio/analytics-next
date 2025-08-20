@@ -42,35 +42,40 @@ graph TD
 ### Plugin Types Explanation
 [This information is also available in the Segment documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware)
 
-1. **Before Plugins** (see [Example](#example-plugin-implementation))
+- **Source Middleware** (see [Example](#example-source-middleware-implementation))
+  - **Source Middleware is just a light API wrapper around a "Before" type plugin Plugin**
+  - Source Middleware is the legacy API (pre-analytics next). It's less verbose than the full plugin API, but a bit less powerful. It is functionally equivalent to a "Before" type plugin.
+  
+- **Before Plugins** (see [Example](#example-plugin-implementation))
   - Run before any other plugins
   - Critical priority - block event pipeline until `.load()` resolves
   - Use cases: Event validation, data transformation
   - Example: Event validation before passing to other plugins)
-   
-  A. **Source Middleware** (see [Example](#example-source-middleware-implementation))
-  - **Source Middleware is just a light API wrapper around a "Before" type plugin Plugin**
-  - Source Middleware is the legacy API (pre-analytics next). It's less verbose than the full plugin API, but a bit less powerful. It is functionally equivalent to a "Before" type plugin.
 
-2. **Enrichment Plugins**
+
+- **Enrichment Plugins**
   - Functionally Identitical to "before" plugins, but run after them. Before plugins are typically used internally (e.g adding page info), but there's no hard and fast rule.
 
-3. **Destination Plugins**
+- **Destination Plugins**
   - Run after enrichment
   - Cannot modify the event
   - Execute in parallel
   - Failures do not halt pipeline
   - Example: Segment.io, Google Analytics, Mixpanel
 
-4. **After Plugins (uncommon)**
+- **After Plugins (uncommon)**
   - Run after all other plugins complete
   - Use cases: Metrics, logging
   - Example: segment.io plugin for observability metrics
 
-5. **Utility Plugins**
+- **Utility Plugins**
   - Executes only once during the analytics.js bootstrap. Gives you access to the analytics instance using the plugin's load() method. This doesn't allow you to modify events.
   - Do not directly process events
   - Example: some plugin that registers a bunch of analytics event listeners (e.g. analytics.on('track', ...) and reports them to an external system)
+  
+- **Add Destination Middleware** (See [Example](#example-destination-middleware-implementation))
+  - A special type of plugin that allows you to add a plugin that only affects a specific (device mode) destination plugin.
+
 
 ### Example: Plugin Implementation
 ```ts
@@ -106,6 +111,23 @@ analytics.addSourceMiddleware(({ payload, next }) => {
     }
 }
   next(payload) 
+})
+```
+
+### Example: Destination Middleware Implementation
+> [!NOTE]
+> It is not currently possible to add a destination middleware JUST to the segment.io destination plugin.
+```ts
+analytics.addDestinationMiddleware('amplitude', ({ next, payload }) => {
+  payload.obj.properties!.hello = 'from the other side'
+  next(payload)
+})
+```
+or, to apply to all destinations
+```ts
+analytics.addDestinationMiddleware('*', (ctx) => {
+  ctx.event.properties!.hello = 'from the other side'
+  return ctx
 })
 ```
 
