@@ -12,48 +12,67 @@
 
 
 ### Analytics.js Initialization Flow
-The following diagram illustrates how Analytics.js initializes and loads device mode destinations:
+The following diagram illustrates how Analytics.js bootstraps and initializes:
 
 ```mermaid
-sequenceDiagram
-    participant Page as Web Page
-    participant AJS as analytics.load(...)
-    participant CDN as Segment CDN
-    participant Plugin as Plugin Registration
-
-    Note over Page,Plugin: Initialization Phase
-    Page<<->>AJS: Web Page fetches analytics.js from CDN
-    Page<<->>AJS: analytics.load(...) invoked. 
-    AJS<<->>CDN: Fetch CDN settings from cdn.segment.io
-    
-    Note over AJS: Block events until all non-destination plugins and middleware are loaded
-    
-    
-    Note over AJS,Plugin: Begin parallel destination loading from CDN settings
-    par Parallel Destination Loading
-        AJS->>Plugin: Load destination 1<br/>(async)
-        AJS->>Plugin: Load destination 2<br/>(async)
+graph TD
+    subgraph Load Phase
+        Start([Web Page Load]) --> LoadAJS[Fetch analytics.js<br/>from CDN]
+        LoadAJS --> InitAJS[analytics.load<br/>with writeKey]
+        InitAJS --> FetchSettings[Fetch settings<br/>from cdn.segment.io]
     end
 
-    Note over AJS,Plugin: Each destination loads its own scripts into the head and calls its own load() method
-    
-    Note over AJS: If critical plugins exist,<br/>wait for their registration
-
-    par Event Delivery (per destination)
-        AJS->>Plugin: Flush buffered events to segment.io
-        AJS->>Plugin: Flush buffered events to destination 1
-        AJS->>Plugin: Flush buffered events to destination 2
+    subgraph Plugin Registration Phase
+        FetchSettings --> RegisterCore[Register Core Plugins<br/>and Middleware]
+        RegisterCore --> ParseDest[Parse Device Mode<br/>Destinations]
     end
 
+    subgraph Destination Loading Phase
+        ParseDest --> LoadDests{Load Device Mode<br/>Destinations}
+        LoadDests -->|Async| Dest1[Load Destination 1<br/>+ Scripts]
+        LoadDests -->|Async| Dest2[Load Destination 2<br/>+ Scripts]
+        LoadDests -->|Async| DestN[Load Destination N<br/>+ Scripts]
+    end
+
+    subgraph Event Processing Phase
+        Dest1 --> Ready1[Destination 1<br/>Ready]
+        Dest2 --> Ready2[Destination 2<br/>Ready]
+        DestN --> ReadyN[Destination N<br/>Ready]
+        
+        Ready1 --> Flush1[Flush Events to<br/>Destination 1]
+        Ready2 --> Flush2[Flush Events to<br/>Destination 2]
+        ReadyN --> FlushN[Flush Events to<br/>Destination N]
+    end
+
+    RegisterCore -.->|Events Blocked<br/>Until Complete| ParseDest
+    LoadDests -.->|Critical Plugins<br/>Block Events| EventReady[Event Pipeline Ready]
+    
+ 
+   
+    class Dest1,Dest2,DestN,Flush1,Flush2,FlushN async
 ```
 
+
 Key Points:
-- Analytics.js is loaded with a writeKey that identifies your Segment source
-- CDN settings are fetched containing destination configurations
-- Event queue is blocked until all non-destination plugins and middleware are registered 
-- Each destination may load its own third-party scripts
-- Critical plugins (if any) must complete registration before event delivery
-- Buffered events are flushed to destinations in parallel once they're ready
+1. **Load Phase**
+   - Analytics.js is fetched from CDN
+   - Initialized with writeKey that identifies your Segment source
+   - CDN settings are fetched containing destination configurations
+
+2. **Plugin Registration Phase**
+   - Core plugins and middleware are registered synchronously
+   - Event queue is blocked until this phase completes
+   - Device mode destinations are identified from CDN settings
+
+3. **Destination Loading Phase**
+   - Device mode destinations are loaded in parallel
+   - Each destination loads its own third-party scripts
+   - Critical plugins (if any) must complete registration
+
+4. **Event Processing Phase**
+   - Destinations become ready independently
+   - Buffered events are flushed to each destination in parallel
+   - Non-critical destinations can receive events while others are still loading
 
 
 ### Event Flow 
@@ -85,7 +104,15 @@ graph TD
     Priorities --> Critical
     Priorities --> NonCritical
   end
+
+  %% Add these style definitions at the end of the diagram
+  classDef default fill:#ffffff,stroke:#333,stroke-width:1px
+  classDef subgraph fill:#f5f5f5,stroke:#666,stroke-width:2px
+  
+  class UserAction,EventCreate,Queue,BeforePlugins,EnrichPlugins,DestPlugins,AfterPlugins default
+  class Event Creation,Plugin Pipeline,Plugin Types Details,Notes subgraph
 ```
+
 
 ### Plugin Types and Middleware
 [This information is also available in the Segment documentation](https://segment.com/docs/connections/sources/catalog/libraries/website/javascript/#plugins-and-source-middleware)
