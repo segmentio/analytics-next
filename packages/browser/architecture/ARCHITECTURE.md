@@ -17,33 +17,32 @@ The following diagram illustrates how Analytics.js initializes and loads device 
 ```mermaid
 sequenceDiagram
     participant Page as Web Page
-    participant AJS as Analytics.js
+    participant AJS as analytics.load(...)
     participant CDN as Segment CDN
-    participant Dest as Device Mode Destinations
+    participant Plugin as Plugin Registration
 
-    Note over Page,Dest: Initialization Phase
-    Page->>AJS: Load analytics.js<br/>with writeKey
-    AJS->>CDN: Fetch settings
-    CDN-->>AJS: Return CDN settings
+    Note over Page,Plugin: Initialization Phase
+    Page<<->>AJS: Web Page fetches analytics.js from CDN
+    Page<<->>AJS: analytics.load(...) invoked. 
+    AJS<<->>CDN: Fetch CDN settings from cdn.segment.io
     
-    Note over AJS: Block events unil all non-destination plugins and middleware are loaded
+    Note over AJS: Block events until all non-destination plugins and middleware are loaded
     
-    Note over AJS: Parse device mode<br/>destinations
     
-    Note over AJS,Dest: Begin parallel destination loading
+    Note over AJS,Plugin: Begin parallel destination loading from CDN settings
     par Parallel Destination Loading
-        AJS->>Dest: Load destination 1<br/>(async)
-        AJS->>Dest: Load destination 2<br/>(async)
+        AJS->>Plugin: Load destination 1<br/>(async)
+        AJS->>Plugin: Load destination 2<br/>(async)
     end
 
-    Note over AJS,Dest: Each destination loads its own scripts
+    Note over AJS,Plugin: Each destination loads its own scripts into the head and calls its own load() method
     
     Note over AJS: If critical plugins exist,<br/>wait for their registration
 
     par Event Delivery (per destination)
-        AJS->>Dest: Flush buffered events to segment.io
-        AJS->>Dest: Flush buffered events to dest 1
-        AJS->>Dest: Flush buffered events to dest 2
+        AJS->>Plugin: Flush buffered events to segment.io
+        AJS->>Plugin: Flush buffered events to destination 1
+        AJS->>Plugin: Flush buffered events to destination 2
     end
 
 ```
