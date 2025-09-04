@@ -4,6 +4,6 @@ MISE_FETCH_REMOTE_VERSIONS_TIMEOUT = "30s"
 MISE_ARCH="x86_64"
 
 [tools]
-node = "18.19.0"
+node = "14.21.3"
 yarn = "3.2.1"
 python = "3.11"
