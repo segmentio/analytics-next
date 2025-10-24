@@ -1,5 +1,11 @@
 # @segment/analytics-consent-tools
 
+## 2.0.3
+
+### Patch Changes
+
+- [#1328](https://github.com/segmentio/analytics-next/pull/1328) [`1e269614`](https://github.com/segmentio/analytics-next/commit/1e2696141424942e4b89e72b42d54b682dfd026f) Thanks [@chenxzhang](https://github.com/chenxzhang)! - Fix filtering of non-consented integrations
+
 ## 2.0.2
 
 ### Patch Changes
