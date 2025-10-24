@@ -424,6 +424,68 @@ describe(createWrapper, () => {
         updatedCDNSettings
       )
     })
+
+    it('should filter ALL non-consented remote plugins when multiple integrations need to be blocked', async () => {
+      const mockCdnSettings = cdnSettingsBuilder
+        .addActionDestinationSettings(
+          {
+            creationName: 'GoogleAnalytics',
+            consentSettings: {
+              categories: ['Analytics'],
+            },
+          },
+          {
+            creationName: 'FacebookPixel',
+            consentSettings: {
+              categories: ['Advertising'],
+            },
+          },
+          {
+            creationName: 'TikTokPixel',
+            consentSettings: {
+              categories: ['Advertising'],
+            },
+          },
+          {
+            creationName: 'PinterestTag',
+            consentSettings: {
+              categories: ['Advertising'],
+            },
+          }
+        )
+        .build()
+
+      wrapTestAnalytics({
+        getCategories: () => ({ Analytics: true }), // Only Analytics consented, NOT Advertising
+      })
+
+      await analytics.load({
+        ...DEFAULT_LOAD_SETTINGS,
+        cdnSettings: mockCdnSettings,
+      })
+
+      expect(analyticsLoadSpy).toBeCalled()
+      const { updatedCDNSettings } = getAnalyticsLoadLastCall()
+
+      expect(typeof updatedCDNSettings.remotePlugins).toBe('object')
+
+      // Only GoogleAnalytics should be present - all Advertising integrations should be filtered
+      assertIntegrationsContainOnly(
+        ['GoogleAnalytics'],
+        mockCdnSettings,
+        updatedCDNSettings
+      )
+
+      const remotePluginNames = updatedCDNSettings.remotePlugins?.map(
+        (p) => p.creationName
+      )
+
+      // Explicitly verify that all Advertising integrations are blocked
+      expect(remotePluginNames).not.toContain('FacebookPixel')
+      expect(remotePluginNames).not.toContain('TikTokPixel')
+      expect(remotePluginNames).not.toContain('PinterestTag')
+      expect(remotePluginNames).toContain('GoogleAnalytics')
+    })
   })
 
   describe('shouldDisableSegment', () => {
