@@ -225,6 +225,10 @@ export interface InitOptions {
   retryQueue?: boolean
   obfuscate?: boolean
   /**
+   * Nonce to be used by the injected segment script
+   */
+  nonce?: string
+  /**
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
    * @internal
