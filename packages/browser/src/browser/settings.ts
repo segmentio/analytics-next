@@ -224,6 +224,10 @@ export interface InitOptions {
   plan?: Plan
   retryQueue?: boolean
   obfuscate?: boolean
+
+  /** Error handling function for when an integration fails */
+  onPluginReadyError?: (error: Error) => Promise<void>
+
   /**
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
