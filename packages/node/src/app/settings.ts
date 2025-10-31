@@ -53,7 +53,7 @@ export interface AnalyticsSettings {
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {
-  if (!settings.writeKey) {
+  if (!settings.writeKey && !settings.disable) {
     throw new ValidationError('writeKey', 'writeKey is missing.')
   }
 }
