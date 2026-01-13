@@ -66,7 +66,7 @@
     "@segment/analytics-browser-actions-braze": "^1.3.0",
     "@segment/analytics.js-integration": "^3.3.3",
     "@segment/analytics.js-integration-amplitude": "^3.3.3",
-    "@segment/tsub": "^2.0.0",
+    "@segment/tsub": "^2.0.1",
     "@size-limit/preset-big-lib": "^7.0.8",
     "@types/flat": "^5.0.1",
     "@types/fs-extra": "^9.0.2",
