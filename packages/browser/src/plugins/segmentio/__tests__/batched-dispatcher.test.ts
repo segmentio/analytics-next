@@ -4,7 +4,7 @@ jest.mock('unfetch', () => {
   return fetch
 })
 
-import { createSuccess } from '../../../test-helpers/factories'
+import { createError, createSuccess } from '../../../test-helpers/factories'
 import batch from '../batched-dispatcher'
 
 const fatEvent = {
@@ -326,6 +326,334 @@ describe('Batching', () => {
       window.dispatchEvent(new Event('pagehide'))
 
       expect(fetch).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('retry semantics and X-Retry-Count header', () => {
+    function createBatch(config?: Parameters<typeof batch>[1]) {
+      return batch(`https://api.segment.io`, {
+        size: 1,
+        timeout: 1000,
+        maxRetries: 2,
+        ...config,
+      })
+    }
+
+    async function dispatchOne() {
+      const { dispatch } = createBatch()
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+    }
+
+    it('T01 Success: no retry, no header', async () => {
+      fetch.mockReturnValue(createSuccess({}))
+
+      await dispatchOne()
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const headers = fetch.mock.calls[0][1].headers
+      expect(headers['X-Retry-Count']).toBeUndefined()
+    })
+
+    it('T02 Retryable 500: backoff used', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 500 }))
+        .mockReturnValueOnce(createError({ status: 500 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch()
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // First attempt happens immediately
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+
+      // Advance time to trigger first retry
+      jest.advanceTimersByTime(1000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+
+      // Advance time to trigger second retry which will succeed
+      jest.advanceTimersByTime(1000)
+      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(fetch.mock.calls[2][1].headers['X-Retry-Count']).toBe('2')
+    })
+
+    it('T03 Non-retryable 5xx: 501', async () => {
+      fetch.mockReturnValue(createError({ status: 501 }))
+
+      await dispatchOne()
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const headers = fetch.mock.calls[0][1].headers
+      expect(headers['X-Retry-Count']).toBeUndefined()
+    })
+
+    it('T04 Non-retryable 5xx: 505', async () => {
+      fetch.mockReturnValue(createError({ status: 505 }))
+
+      await dispatchOne()
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const headers = fetch.mock.calls[0][1].headers
+      expect(headers['X-Retry-Count']).toBeUndefined()
+    })
+
+    it('T05 Non-retryable 5xx: 511 (no auth)', async () => {
+      fetch.mockReturnValue(createError({ status: 511 }))
+
+      await dispatchOne()
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const headers = fetch.mock.calls[0][1].headers
+      expect(headers['X-Retry-Count']).toBeUndefined()
+    })
+
+    it('T06 Retry-After 429: delay, no backoff, no retry budget', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '2')
+
+      fetch
+        .mockReturnValueOnce(
+          createError({ status: 429, headers })
+        )
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // First attempt
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+
+      // Retry should wait exactly Retry-After seconds
+      jest.advanceTimersByTime(1000)
+      expect(fetch).toHaveBeenCalledTimes(1)
+      jest.advanceTimersByTime(1000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T07 Retry-After 408: delay, no backoff', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '2')
+
+      fetch
+        .mockReturnValueOnce(
+          createError({ status: 408, headers })
+        )
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+
+      jest.advanceTimersByTime(2000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T08 Retry-After 503: delay, no backoff', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '2')
+
+      fetch
+        .mockReturnValueOnce(
+          createError({ status: 503, headers })
+        )
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+
+      jest.advanceTimersByTime(2000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T09 429 without Retry-After: backoff retry', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 429 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+
+      jest.advanceTimersByTime(1499)
+      expect(fetch).toHaveBeenCalledTimes(1)
+      jest.advanceTimersByTime(1)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T10 Retryable 4xx: 408 without Retry-After', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 408 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      jest.advanceTimersByTime(1500)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T11 Retryable 4xx: 410', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 410 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      jest.advanceTimersByTime(1500)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T12 Retryable 4xx: 413', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 413 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      jest.advanceTimersByTime(1500)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T13 Retryable 4xx: 460', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 460 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      jest.advanceTimersByTime(1500)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T14 Non-retryable 4xx: 404', async () => {
+      fetch.mockReturnValue(createError({ status: 404 }))
+
+      await dispatchOne()
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const headers = fetch.mock.calls[0][1].headers
+      expect(headers['X-Retry-Count']).toBeUndefined()
+    })
+
+    it('T15 Network error (IO): retried with backoff', async () => {
+      fetch
+        .mockRejectedValueOnce(new Error('network error'))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1500 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      jest.advanceTimersByTime(1500)
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+    })
+
+    it('T16 Max retries exhausted (backoff)', async () => {
+      const maxRetries = 2
+
+      fetch.mockReturnValue(createError({ status: 500 }))
+
+      const { dispatch } = createBatch({ maxRetries, timeout: 1000 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // First attempt + maxRetries additional attempts
+      for (let i = 0; i < maxRetries; i++) {
+        jest.advanceTimersByTime(1000)
+      }
+
+      expect(fetch).toHaveBeenCalledTimes(maxRetries + 1)
+      const retryHeaders = fetch.mock.calls
+        .slice(1)
+        .map((c: any) => c[1].headers['X-Retry-Count'])
+      expect(retryHeaders).toEqual(['1', '2'])
+    })
+
+    it('T17 Retry-After attempts do not consume retry budget', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '1')
+
+      // First two responses are 429 with Retry-After, then 500s
+      fetch
+        .mockReturnValueOnce(createError({ status: 429, headers }))
+        .mockReturnValueOnce(createError({ status: 429, headers }))
+        .mockReturnValueOnce(createError({ status: 500 }))
+        .mockReturnValue(createError({ status: 500 }))
+
+      const { dispatch } = createBatch({ maxRetries: 1, timeout: 1000 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // Two Retry-After driven retries
+      jest.advanceTimersByTime(1000)
+      jest.advanceTimersByTime(1000)
+
+      // Now 500 responses should start consuming the single retry budget
+      jest.advanceTimersByTime(1000)
+
+      expect(fetch).toHaveBeenCalledTimes(4)
+
+      const retryCounts = fetch.mock.calls
+        .slice(1)
+        .map((c: any) => c[1].headers['X-Retry-Count'])
+      expect(retryCounts[0]).toBe('1')
+      expect(retryCounts[1]).toBe('2')
+      expect(retryCounts[2]).toBe('3')
+    })
+
+    it('T18 X-Retry-Count semantics', async () => {
+      fetch
+        .mockReturnValueOnce(createError({ status: 500 }))
+        .mockReturnValueOnce(createError({ status: 500 }))
+        .mockReturnValue(createSuccess({}))
+
+      const { dispatch } = createBatch({ maxRetries: 5, timeout: 1000 })
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      jest.advanceTimersByTime(1000)
+      jest.advanceTimersByTime(1000)
+
+      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
+      expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
+      expect(fetch.mock.calls[2][1].headers['X-Retry-Count']).toBe('2')
     })
   })
 })

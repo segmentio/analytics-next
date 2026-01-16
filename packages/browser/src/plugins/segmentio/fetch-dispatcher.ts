@@ -20,9 +20,9 @@ export default function (config?: StandardDispatcherConfig): {
         throw new Error(`Bad response from server: ${res.status}`)
       }
       if (res.status === 429) {
-        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
+        const retryTimeoutStringSecs = res.headers?.get('Retry-After')
         const retryTimeoutMS = retryTimeoutStringSecs
-          ? parseInt(retryTimeoutStringSecs) * 1000
+          ? parseInt(retryTimeoutStringSecs, 10) * 1000
           : 5000
         throw new RateLimitError(
           `Rate limit exceeded: ${res.status}`,

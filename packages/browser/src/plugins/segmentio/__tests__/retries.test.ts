@@ -48,7 +48,7 @@ describe('Segment.io retries 500s and 429', () => {
     jest.useFakeTimers({ advanceTimers: true })
     const headers = new Headers()
     const resetTime = 1234
-    headers.set('x-ratelimit-reset', resetTime.toString())
+    headers.set('Retry-After', resetTime.toString())
     fetch
       .mockReturnValueOnce(
         createError({
@@ -108,7 +108,7 @@ describe('Batches retry 500s and 429', () => {
   test('delays retry on 429', async () => {
     const headers = new Headers()
     const resetTime = 1
-    headers.set('x-ratelimit-reset', resetTime.toString())
+    headers.set('Retry-After', resetTime.toString())
     fetch.mockReturnValue(
       createError({
         status: 429,

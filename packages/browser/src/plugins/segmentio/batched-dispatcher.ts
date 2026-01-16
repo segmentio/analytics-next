@@ -62,6 +62,7 @@ export default function batch(
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
   let rateLimitTimeout = 0
+  let totalAttempts = 0 // Track all attempts for X-Retry-Count header
 
   function sendBatch(batch: object[]) {
     if (batch.length === 0) {
@@ -76,10 +77,20 @@ export default function batch(
       return newEvent
     })
 
+    // Increment total attempts for this batch series
+    totalAttempts += 1
+
+    const headers = createHeaders(config?.headers)
+    // Add X-Retry-Count header only on retries. The value is the
+    // number of previous attempts (including rate-limited ones).
+    if (totalAttempts > 1) {
+      headers['X-Retry-Count'] = String(totalAttempts - 1)
+    }
+
     return fetch(`https://${apiHost}/b`, {
       credentials: config?.credentials,
       keepalive: config?.keepalive || pageUnloaded,
-      headers: createHeaders(config?.headers),
+      headers,
       method: 'post',
       body: JSON.stringify({
         writeKey,
@@ -89,20 +100,64 @@ export default function batch(
       // @ts-ignore - not in the ts lib yet
       priority: config?.priority,
     }).then((res) => {
-      if (res.status >= 500) {
-        throw new Error(`Bad response from server: ${res.status}`)
+      const status = res.status
+
+      // Treat <400 as success (2xx/3xx)
+      if (status < 400) {
+        totalAttempts = 0
+        return
       }
-      if (res.status === 429) {
-        const retryTimeoutStringSecs = res.headers?.get('x-ratelimit-reset')
-        const retryTimeoutMS =
-          typeof retryTimeoutStringSecs == 'string'
-            ? parseInt(retryTimeoutStringSecs) * 1000
-            : timeout
+
+      const retryAfterHeader = res.headers?.get('Retry-After')
+
+      let retryAfterSeconds: number | undefined
+      let fromRetryAfterHeader = false
+
+      if (retryAfterHeader) {
+        const parsed = parseInt(retryAfterHeader, 10)
+        if (!Number.isNaN(parsed)) {
+          retryAfterSeconds = parsed
+          fromRetryAfterHeader = true
+        }
+      }
+
+      const retryAfterMs =
+        retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : undefined
+
+      // 429, 408, 503 with Retry-After header: respect header delay.
+      // These retries do NOT consume the maxRetries budget.
+      if ([429, 408, 503].includes(status) && retryAfterMs !== undefined) {
         throw new RateLimitError(
-          `Rate limit exceeded: ${res.status}`,
-          retryTimeoutMS
+          `Rate limit exceeded: ${status}`,
+          retryAfterMs,
+          fromRetryAfterHeader
         )
       }
+
+      // 5xx other than 501, 505, 511 are retryable with backoff
+      if (status >= 500) {
+        if (status === 501 || status === 505 || status === 511) {
+          // Non-retryable server errors
+          totalAttempts = 0
+          return
+        }
+
+        throw new Error(`Bad response from server: ${status}`)
+      }
+
+      // Retryable 4xx: 408, 410, 413, 429, 460
+      if (status >= 400 && status < 500) {
+        if ([408, 410, 413, 429, 460].includes(status)) {
+          throw new Error(`Retryable client error: ${status}`)
+        }
+
+        // Non-retryable 4xx
+        totalAttempts = 0
+        return
+      }
+
+      // Any other status codes are treated as non-retryable
+      totalAttempts = 0
     })
   }
 
@@ -113,22 +168,36 @@ export default function batch(
       return sendBatch(batch)?.catch((error) => {
         const ctx = Context.system()
         ctx.log('error', 'Error sending batch', error)
-        if (attempt <= (config?.maxRetries ?? 10)) {
-          if (error.name === 'RateLimitError') {
-            rateLimitTimeout = error.retryTimeout
-          }
-          buffer.push(...batch)
-          buffer.map((event) => {
-            if ('_metadata' in event) {
-              const segmentEvent = event as ReturnType<SegmentFacade['json']>
-              segmentEvent._metadata = {
-                ...segmentEvent._metadata,
-                retryCount: attempt,
-              }
-            }
-          })
-          scheduleFlush(attempt + 1)
+        const maxRetries = config?.maxRetries ?? 10
+
+        const isRateLimitError = error.name === 'RateLimitError'
+        const isRetryableWithoutCount =
+          isRateLimitError && error.isRetryableWithoutCount
+
+        const canRetry = isRetryableWithoutCount || attempt <= maxRetries
+
+        if (!canRetry) {
+          totalAttempts = 0
+          return
         }
+
+        if (isRateLimitError) {
+          rateLimitTimeout = error.retryTimeout
+        }
+
+        buffer.push(...batch)
+        buffer.map((event) => {
+          if ('_metadata' in event) {
+            const segmentEvent = event as ReturnType<SegmentFacade['json']>
+            segmentEvent._metadata = {
+              ...segmentEvent._metadata,
+              retryCount: attempt,
+            }
+          }
+        })
+
+        const nextAttempt = isRetryableWithoutCount ? attempt : attempt + 1
+        scheduleFlush(nextAttempt)
       })
     }
   }
@@ -154,7 +223,7 @@ export default function batch(
     pageUnloaded = unloaded
 
     if (pageUnloaded && buffer.length) {
-      const reqs = chunks(buffer).map(sendBatch)
+      const reqs = chunks(buffer).map((b) => sendBatch(b))
       Promise.all(reqs).catch(console.error)
     }
   })
