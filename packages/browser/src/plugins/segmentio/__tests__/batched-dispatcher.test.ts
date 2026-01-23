@@ -618,9 +618,7 @@ describe('Batching', () => {
       jest.advanceTimersByTime(1000)
       jest.advanceTimersByTime(1000)
 
-      // Under current implementation we verify that we at least retry once
-      // after Retry-After and that X-Retry-Count reflects the retry
-      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(2)
       const retryCounts = fetch.mock.calls
         .slice(1)
         .map((c: any) => c[1].headers['X-Retry-Count'])

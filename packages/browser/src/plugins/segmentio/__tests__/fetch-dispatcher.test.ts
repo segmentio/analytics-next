@@ -1,0 +1,141 @@
+const fetchMock = jest.fn()
+
+jest.mock('../../../lib/fetch', () => {
+  return {
+    fetch: (...args: any[]) => fetchMock(...args),
+  }
+})
+
+import dispatcherFactory from '../fetch-dispatcher'
+import { RateLimitError } from '../ratelimit-error'
+import { createError, createSuccess } from '../../../test-helpers/factories'
+
+describe('fetch dispatcher', () => {
+  beforeEach(() => {
+    jest.resetAllMocks()
+  })
+
+  it('adds X-Retry-Count header only when retryCountHeader > 0', async () => {
+    ;(fetchMock as jest.Mock)
+      .mockReturnValueOnce(createSuccess({}))
+      .mockReturnValueOnce(createSuccess({}))
+
+    const client = dispatcherFactory()
+
+    await client.dispatch('http://example.com', { one: 1 })
+    await client.dispatch('http://example.com', { two: 2 }, 1)
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    const firstHeaders = (fetchMock as jest.Mock).mock.calls[0][1]
+      .headers as Record<string, string>
+    const secondHeaders = (fetchMock as jest.Mock).mock.calls[1][1]
+      .headers as Record<string, string>
+
+    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(secondHeaders['X-Retry-Count']).toBe('1')
+  })
+
+  it('treats <400 as success and does not throw', async () => {
+    ;(fetchMock as jest.Mock).mockReturnValue(
+      createSuccess({}, { status: 201 })
+    )
+
+    const client = dispatcherFactory()
+
+    await expect(
+      client.dispatch('http://example.com', { ok: true })
+    ).resolves.toBeUndefined()
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('throws retryable Error for 5xx except 501, 505, 511', async () => {
+    ;(fetchMock as jest.Mock).mockReturnValue(createError({ status: 500 }))
+
+    const client = dispatcherFactory()
+
+    await expect(
+      client.dispatch('http://example.com', { test: true })
+    ).rejects.toThrow('Bad response from server: 500')
+  })
+
+  it('throws NonRetryableError for 501, 505, 511', async () => {
+    const client = dispatcherFactory()
+
+    for (const status of [501, 505, 511]) {
+      ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
+
+      await expect(
+        client.dispatch('http://example.com', { test: status })
+      ).rejects.toMatchObject({ name: 'NonRetryableError' })
+    }
+  })
+
+  it('throws retryable Error for retryable 4xx statuses', async () => {
+    const client = dispatcherFactory()
+
+    for (const status of [408, 410, 413, 429, 460]) {
+      ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
+
+      await expect(
+        client.dispatch('http://example.com', { test: status })
+      ).rejects.toThrow(/Retryable client error/)
+    }
+  })
+
+  it('throws NonRetryableError for non-retryable 4xx statuses', async () => {
+    const client = dispatcherFactory()
+
+    for (const status of [400, 401, 403, 404]) {
+      ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
+
+      await expect(
+        client.dispatch('http://example.com', { test: status })
+      ).rejects.toMatchObject({ name: 'NonRetryableError' })
+    }
+  })
+
+  it('emits RateLimitError for 429/408/503 with Retry-After header', async () => {
+    const headers = new Headers()
+    headers.set('Retry-After', '5')
+
+    const client = dispatcherFactory()
+
+    for (const status of [429, 408, 503]) {
+      ;(fetchMock as jest.Mock).mockReturnValue(
+        createError({ status, headers })
+      )
+
+      await expect(
+        client.dispatch('http://example.com', { status })
+      ).rejects.toMatchObject<Partial<RateLimitError>>({
+        name: 'RateLimitError',
+        retryTimeout: 5000,
+        isRetryableWithoutCount: true,
+      })
+    }
+  })
+
+  it('falls back to normal retryable path when Retry-After is missing or invalid', async () => {
+    const client = dispatcherFactory()
+
+    // Missing Retry-After header
+    ;(fetchMock as jest.Mock).mockReturnValueOnce(createError({ status: 429 }))
+
+    await expect(
+      client.dispatch('http://example.com', { bad: 'no-header' })
+    ).rejects.toThrow(/Retryable client error: 429/)
+
+    // Invalid Retry-After header
+    const badHeaders = new Headers()
+    badHeaders.set('Retry-After', 'not-a-number')
+    ;(fetchMock as jest.Mock).mockReturnValueOnce(
+      createError({ status: 429, headers: badHeaders })
+    )
+
+    await expect(
+      client.dispatch('http://example.com', { bad: 'invalid-header' })
+    ).rejects.toThrow(/Retryable client error: 429/)
+  })
+})
