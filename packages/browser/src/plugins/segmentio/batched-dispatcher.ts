@@ -228,7 +228,11 @@ export default function batch(
     }
   })
 
-  async function dispatch(_url: string, body: object): Promise<unknown> {
+  async function dispatch(
+    _url: string,
+    body: object,
+    _retryCountHeader?: number
+  ): Promise<unknown> {
     buffer.push(body)
 
     const bufferOverflow =

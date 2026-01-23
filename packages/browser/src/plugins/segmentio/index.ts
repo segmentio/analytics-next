@@ -112,7 +112,9 @@ export function segmentio(
       json = onAlias(analytics, json)
     }
 
-    if (buffer.getAttempts(ctx) >= buffer.maxAttempts) {
+    const attempts = buffer.getAttempts(ctx)
+
+    if (attempts >= buffer.maxAttempts) {
       inflightEvents.delete(ctx)
       return ctx
     }
@@ -120,7 +122,8 @@ export function segmentio(
     return client
       .dispatch(
         `${remote}/${path}`,
-        normalize(analytics, json, settings, integrations, ctx)
+        normalize(analytics, json, settings, integrations, ctx),
+        attempts
       )
       .then(() => ctx)
       .catch((error) => {
@@ -128,6 +131,8 @@ export function segmentio(
         if (error.name === 'RateLimitError') {
           const timeout = error.retryTimeout
           buffer.pushWithBackoff(ctx, timeout)
+        } else if (error.name === 'NonRetryableError') {
+          // Do not requeue non-retryable HTTP failures; drop the event.
         } else {
           buffer.pushWithBackoff(ctx)
         }
