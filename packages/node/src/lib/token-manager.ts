@@ -195,20 +195,36 @@ export class TokenManager implements ITokenManager {
       error: new Error(`[${response.status}] ${response.statusText}`),
     })
 
-    if (headers['x-ratelimit-reset']) {
-      const rateLimitResetTimestamp = parseInt(headers['x-ratelimit-reset'], 10)
-      if (isFinite(rateLimitResetTimestamp)) {
-        timeUntilRefreshInMs =
-          rateLimitResetTimestamp - Date.now() + this.clockSkewInSeconds * 1000
-      } else {
-        timeUntilRefreshInMs = 5 * 1000
-      }
-      // We want subsequent calls to get_token to be able to interrupt our
-      //  Timeout when it's waiting for e.g. a long normal expiration, but
-      //  not when we're waiting for a rate limit reset. Sleep instead.
-      await sleep(timeUntilRefreshInMs)
-      timeUntilRefreshInMs = 0
+    const getRateLimitWaitTime = (headerValue: string): number | null => {
+      const value = parseInt(headerValue, 10)
+      if (!isFinite(value)) return null
+
+      // If value is larger than a reasonable seconds value, treat as unix epoch
+      const MAX_SECONDS_THRESHOLD = Date.now() / 1000 - 15
+      const timeInMs = value > MAX_SECONDS_THRESHOLD ? value : value * 1000
+      return timeInMs - Date.now() + this.clockSkewInSeconds * 1000
     }
+
+    const retryAfter = headers['retry-after']
+    const rateLimitReset = headers['x-ratelimit-reset']
+    const maxWaitMs = 15 * 60 * 1000
+
+    let waitTimeMs = 5 * 1000 // default fallback
+
+    if (retryAfter) {
+      const waitTime = getRateLimitWaitTime(retryAfter)
+      if (waitTime !== null) {
+        waitTimeMs = Math.min(waitTime, maxWaitMs)
+      }
+    } else if (rateLimitReset) {
+      const waitTime = getRateLimitWaitTime(rateLimitReset)
+      if (waitTime !== null) {
+        waitTimeMs = Math.min(waitTime, maxWaitMs)
+      }
+    }
+
+    await sleep(waitTimeMs)
+    timeUntilRefreshInMs = 0
 
     this.queueNextPoll(timeUntilRefreshInMs)
   }
