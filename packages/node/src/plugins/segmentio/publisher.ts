@@ -4,6 +4,7 @@ import { tryCreateFormattedUrl } from '../../lib/create-url'
 import { createDeferred } from '@segment/analytics-generic-utils'
 import { ContextBatch } from './context-batch'
 import { NodeEmitter } from '../../app/emitter'
+import type { HTTPResponse } from '../../lib/http-client'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 import { OAuthSettings } from '../../lib/types'
 import { TokenManager } from '../../lib/token-manager'
@@ -13,6 +14,50 @@ function sleep(timeoutInMs: number): Promise<void> {
 }
 
 function noop() {}
+
+function convertHeaders(
+  headers: HTTPResponse['headers']
+): Record<string, string> {
+  const lowercaseHeaders: Record<string, string> = {}
+  if (!headers) return lowercaseHeaders
+
+  const candidate: any = headers
+
+  if (
+    typeof candidate === 'object' &&
+    candidate !== null &&
+    typeof candidate.entries === 'function'
+  ) {
+    for (const [name, value] of candidate.entries() as IterableIterator<
+      [string, any]
+    >) {
+      lowercaseHeaders[name.toLowerCase()] = String(value)
+    }
+    return lowercaseHeaders
+  }
+
+  for (const [name, value] of Object.entries(candidate)) {
+    lowercaseHeaders[name.toLowerCase()] = String(value)
+  }
+
+  return lowercaseHeaders
+}
+
+function getRetryAfterInSeconds(
+  headers: HTTPResponse['headers']
+): number | undefined {
+  if (!headers) return undefined
+  const lowercaseHeaders = convertHeaders(headers)
+  const raw = lowercaseHeaders['retry-after']
+  if (!raw) return undefined
+
+  const seconds = parseInt(raw, 10)
+  if (!Number.isFinite(seconds) || seconds < 0) {
+    return undefined
+  }
+
+  return seconds
+}
 
 interface PendingItem {
   resolver: (ctx: Context) => void
@@ -209,14 +254,19 @@ export class Publisher {
       this._flushPendingItemsCount -= batch.length
     }
     const events = batch.getEvents()
-    const maxAttempts = this._maxRetries + 1
+    const maxRetries = this._maxRetries
 
-    let currentAttempt = 0
-    while (currentAttempt < maxAttempts) {
-      currentAttempt++
+    let countedRetries = 0
+    let totalAttempts = 0
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      totalAttempts++
 
       let requestedRetryTimeout: number | undefined
       let failureReason: unknown
+      let shouldRetry = false
+      let shouldCountTowardsMaxRetries = true
       try {
         if (this._disable) {
           return batch.resolveEvents()
@@ -233,6 +283,9 @@ export class Publisher {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'User-Agent': 'analytics-node-next/latest',
+          ...(totalAttempts > 1
+            ? { 'X-Retry-Count': String(totalAttempts - 1) }
+            : {}),
           ...(authString ? { Authorization: authString } : {}),
         }
 
@@ -257,7 +310,7 @@ export class Publisher {
 
         const response = await this._httpClient.makeRequest(request)
 
-        if (response.status >= 200 && response.status < 300) {
+        if (response.status >= 100 && response.status < 300) {
           // Successfully sent events, so exit!
           batch.resolveEvents()
           return
@@ -265,62 +318,89 @@ export class Publisher {
           this._tokenManager &&
           (response.status === 400 ||
             response.status === 401 ||
-            response.status === 403)
+            response.status === 403 ||
+            response.status === 511)
         ) {
-          // Retry with a new OAuth token if we have OAuth data
+          // Clear OAuth token if we have OAuth data
           this._tokenManager.clearToken()
-          failureReason = new Error(
-            `[${response.status}] ${response.statusText}`
-          )
-        } else if (response.status === 400) {
+        }
+
+        const status = response.status
+        const statusText = response.statusText
+
+        // 400 is always non-retriable (malformed request / size exceeded)
+        if (status === 400) {
           // https://segment.com/docs/connections/sources/catalog/libraries/server/http-api/#max-request-size
           // Request either malformed or size exceeded - don't retry.
-          resolveFailedBatch(
-            batch,
-            new Error(`[${response.status}] ${response.statusText}`)
-          )
+          resolveFailedBatch(batch, new Error(`[${status}] ${statusText}`))
           return
-        } else if (response.status === 429) {
-          // Rate limited, wait for the reset time
-          if (response.headers && 'x-ratelimit-reset' in response.headers) {
-            const rateLimitResetTimestamp = parseInt(
-              response.headers['x-ratelimit-reset'],
-              10
-            )
-            if (isFinite(rateLimitResetTimestamp)) {
-              requestedRetryTimeout = rateLimitResetTimestamp - Date.now()
-            }
+        }
+
+        failureReason = new Error(`[${status}] ${statusText}`)
+
+        // Retry-After based handling for specific status codes.
+        if (status === 429 || status === 408 || status === 503) {
+          const retryAfterSeconds = getRetryAfterInSeconds(response.headers)
+          if (typeof retryAfterSeconds === 'number') {
+            requestedRetryTimeout = retryAfterSeconds * 1000
+            shouldRetry = true
+            // These retries do not count against maxRetries
+            shouldCountTowardsMaxRetries = false
           }
-          failureReason = new Error(
-            `[${response.status}] ${response.statusText}`
-          )
-        } else {
-          // Treat other errors as transient and retry.
-          failureReason = new Error(
-            `[${response.status}] ${response.statusText}`
-          )
+        }
+
+        // If we haven't already decided to retry based on Retry-After,
+        // apply the general retry policy.
+        if (!shouldRetry) {
+          if (status >= 500 && status < 600) {
+            // Retry all 5xx except 501 and 505.
+            // 511 is retried only when a token manager is configured.
+            if (status === 511 && this._tokenManager) {
+              shouldRetry = true
+            } else if (![501, 505].includes(status)) {
+              shouldRetry = true
+            }
+          } else if (status >= 400 && status < 500) {
+            // 4xx are non-retriable except a specific allowlist.
+            if ([408, 410, 429, 460].includes(status)) {
+              shouldRetry = true
+            } else {
+              resolveFailedBatch(batch, failureReason)
+              return
+            }
+          } else {
+            // Treat other status codes as transient and retry.
+            shouldRetry = true
+          }
         }
       } catch (err) {
         // Network errors get thrown, retry them.
         failureReason = err
+        shouldRetry = true
       }
 
-      // Final attempt failed, update context and resolve events.
-      if (currentAttempt === maxAttempts) {
+      if (!shouldRetry) {
         resolveFailedBatch(batch, failureReason)
         return
       }
 
-      // Retry after attempt-based backoff.
-      await sleep(
-        requestedRetryTimeout
-          ? requestedRetryTimeout
-          : backoff({
-              attempt: currentAttempt,
-              minTimeout: 25,
-              maxTimeout: 1000,
-            })
-      )
+      if (shouldCountTowardsMaxRetries) {
+        countedRetries++
+        if (countedRetries > maxRetries) {
+          resolveFailedBatch(batch, failureReason)
+          return
+        }
+      }
+
+      const delayMs =
+        requestedRetryTimeout ??
+        backoff({
+          attempt: countedRetries,
+          minTimeout: 25,
+          maxTimeout: 1000,
+        })
+
+      await sleep(delayMs)
     }
   }
 }

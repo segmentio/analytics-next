@@ -354,8 +354,8 @@ describe('error handling', () => {
   it('delays retrying 429 errors', async () => {
     jest.useRealTimers()
     const headers = new TestHeaders()
-    const resetTime = Date.now() + 350
-    headers.set('x-ratelimit-reset', resetTime.toString())
+    const delaySeconds = 1
+    headers.set('Retry-After', delaySeconds.toString())
     makeReqSpy
       .mockReturnValueOnce(
         createError({
@@ -372,20 +372,20 @@ describe('error handling', () => {
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
+    const start = Date.now()
     const pendingContext = segmentPlugin.alias(context)
     validateMakeReqInputs(context)
     expect(await pendingContext).toBe(context)
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
-    // Check that we've waited until roughly the reset time.
-    expect(Date.now()).toBeLessThanOrEqual(resetTime + 20)
-    expect(Date.now()).toBeGreaterThanOrEqual(resetTime - 20)
+    // Check that we've waited at least roughly the Retry-After duration.
+    // Allow some leeway for scheduling and execution.
+    expect(Date.now()).toBeGreaterThanOrEqual(start + delaySeconds * 1000 - 50)
   })
 
   it.each([
     { status: 500, statusText: 'Internal Server Error' },
     { status: 300, statusText: 'Multiple Choices' },
-    { status: 100, statusText: 'Continue' },
-  ])('retries non-400 errors: %p', async (response) => {
+  ])('retries non-2xx/4xx errors: %p', async (response) => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 
@@ -411,6 +411,27 @@ describe('error handling', () => {
     expect(err.message).toEqual(
       expect.stringContaining(response.status.toString())
     )
+  })
+
+  it('treats 1xx (<200) statuses as success (no retry)', async () => {
+    jest.useRealTimers()
+
+    makeReqSpy.mockReturnValue(
+      createError({ status: 100, statusText: 'Continue' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 2,
+      flushAt: 1,
+    })
+
+    const context = new Context(eventFactory.alias('to', 'from'))
+    const updatedContext = await segmentPlugin.alias(context)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    validateMakeReqInputs(context)
+    expect(updatedContext).toBe(context)
+    expect(updatedContext.failedDelivery()).toBeFalsy()
   })
   it('retries fetch errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
@@ -480,5 +501,585 @@ describe('http_request emitter event', () => {
     )
     await segmentPlugin.track(context)
     assertHttpRequestEmittedEvent(fn.mock.lastCall[0])
+  })
+})
+
+describe('retry semantics', () => {
+  const trackEvent = () =>
+    new Context(
+      eventFactory.track(
+        'test event',
+        { foo: 'bar' },
+        { userId: 'foo-user-id' }
+      )
+    )
+
+  const getAllRequests = () =>
+    makeReqSpy.mock.calls.map(([req]) => req as HTTPClientRequest)
+
+  beforeEach(() => {
+    jest.useRealTimers()
+    makeReqSpy.mockReset()
+  })
+
+  it('T01 Success: no retry, no header', async () => {
+    makeReqSpy.mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [req] = getAllRequests()
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
+  })
+
+  it('T02 Retryable 500: backoff used and headers increment on retries', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({ status: 500, statusText: 'Internal Server Error' })
+      )
+      .mockReturnValueOnce(
+        createError({ status: 500, statusText: 'Internal Server Error' })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(3)
+    const [first, second, third] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(third.headers['X-Retry-Count']).toBe('2')
+    // Ensure some delay occurred between first and last attempt
+    expect(Date.now()).toBeGreaterThan(start)
+  })
+
+  it('T03 Non-retryable 5xx: 501', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 501, statusText: 'Not Implemented' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [req] = getAllRequests()
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[501]')
+  })
+
+  it('T04 Non-retryable 5xx: 505', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 505, statusText: 'HTTP Version Not Supported' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [req] = getAllRequests()
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[505]')
+  })
+
+  it('T05 Non-retryable 5xx: 511 (no auth)', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 511,
+        statusText: 'Network Authentication Required',
+      })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 2,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    // Without auth configured, 511 is treated as a generic retryable 5xx.
+    // We should see M+1 attempts and X-Retry-Count on retries.
+    expect(makeReqSpy).toHaveBeenCalledTimes(3)
+    const [first, second, third] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(third.headers['X-Retry-Count']).toBe('2')
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[511]')
+  })
+
+  it('T05b 5xx: 511 with token manager retries and clears token', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 511,
+          statusText: 'Network Authentication Required',
+        })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const mockTokenManager = {
+      clearToken: jest.fn(),
+      getAccessToken: jest.fn().mockResolvedValue({ access_token: 'token' }),
+      stopPoller: jest.fn(),
+    }
+
+    ;(publisher as any)._tokenManager = mockTokenManager
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(mockTokenManager.clearToken).toHaveBeenCalledTimes(1)
+  })
+
+  it('T06 Retry-After 429: delay, no backoff, no retry budget', async () => {
+    const headers = new TestHeaders()
+    const retryAfterSeconds = 1
+    headers.set('Retry-After', retryAfterSeconds.toString())
+
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 429,
+          statusText: 'Too Many Requests',
+          ...headers,
+        })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 0,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
+  })
+
+  it('T07 Retry-After 408: delay, no backoff', async () => {
+    const headers = new TestHeaders()
+    const retryAfterSeconds = 1
+    headers.set('Retry-After', retryAfterSeconds.toString())
+
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 408,
+          statusText: 'Request Timeout',
+          ...headers,
+        })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 0,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
+  })
+
+  it('T08 Retry-After 503: delay, no backoff', async () => {
+    const headers = new TestHeaders()
+    const retryAfterSeconds = 1
+    headers.set('Retry-After', retryAfterSeconds.toString())
+
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 503,
+          statusText: 'Service Unavailable',
+          ...headers,
+        })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 0,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
+  })
+
+  it('T09 429 without Retry-After: backoff retry', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({ status: 429, statusText: 'Too Many Requests' })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end).toBeGreaterThan(start)
+  })
+
+  it('T10 Retryable 4xx: 408 without Retry-After', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({ status: 408, statusText: 'Request Timeout' })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end).toBeGreaterThan(start)
+  })
+
+  it('T11 Retryable 4xx: 410', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(createError({ status: 410, statusText: 'Gone' }))
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+  })
+
+  it('T12 4xx 413 follows general 4xx non-retry rule', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 413, statusText: 'Payload Too Large' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[413]')
+  })
+
+  it('T13 Retryable 4xx: 460', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({ status: 460, statusText: 'Custom Retryable' })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+  })
+
+  it('T14 Non-retryable 4xx: 404', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 404, statusText: 'Not Found' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[404]')
+  })
+
+  it('T15 Network error (IO): retried with backoff', async () => {
+    makeReqSpy
+      .mockRejectedValueOnce(new Error('Connection Error'))
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const start = Date.now()
+    const updated = await segmentPlugin.track(ctx)
+    const end = Date.now()
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    const [first, second] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(end).toBeGreaterThan(start)
+  })
+
+  it('T16 Max retries exhausted (backoff)', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 500, statusText: 'Internal Server Error' })
+    )
+
+    const maxRetries = 2
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    // M+1 total attempts
+    expect(makeReqSpy).toHaveBeenCalledTimes(maxRetries + 1)
+    const [first, second, third] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(third.headers['X-Retry-Count']).toBe('2')
+    expect(updated.failedDelivery()).toBeTruthy()
+  })
+
+  it('T17 Retry-After attempts do not consume retry budget', async () => {
+    const headers = new TestHeaders()
+    headers.set('Retry-After', '0')
+
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({
+          status: 429,
+          statusText: 'Too Many Requests',
+          ...headers,
+        })
+      )
+      .mockReturnValueOnce(
+        createError({
+          status: 429,
+          statusText: 'Too Many Requests',
+          ...headers,
+        })
+      )
+      .mockReturnValueOnce(
+        createError({ status: 500, statusText: 'Internal Server Error' })
+      )
+      .mockReturnValue(
+        createError({ status: 500, statusText: 'Internal Server Error' })
+      )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 1,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    // 2 rate-limited attempts + 2 backoff attempts
+    expect(makeReqSpy).toHaveBeenCalledTimes(4)
+    const [first, second, third, fourth] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(third.headers['X-Retry-Count']).toBe('2')
+    expect(fourth.headers['X-Retry-Count']).toBe('3')
+    expect(updated.failedDelivery()).toBeTruthy()
+  })
+
+  it('T18 X-Retry-Count semantics across mixed retries', async () => {
+    makeReqSpy
+      .mockReturnValueOnce(
+        createError({ status: 408, statusText: 'Request Timeout' })
+      )
+      .mockReturnValueOnce(
+        createError({ status: 500, statusText: 'Internal Server Error' })
+      )
+      .mockReturnValue(createSuccess())
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(updated.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(3)
+    const [first, second, third] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(second.headers['X-Retry-Count']).toBe('1')
+    expect(third.headers['X-Retry-Count']).toBe('2')
+  })
+
+  it('T19 Non-retryable 4xx: 400', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 400, statusText: 'Bad Request' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[400]')
+  })
+
+  it('T19 Non-retryable 4xx: 401', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 401, statusText: 'Unauthorized' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[401]')
+  })
+
+  it('T19 Non-retryable 4xx: 403', async () => {
+    makeReqSpy.mockReturnValue(
+      createError({ status: 403, statusText: 'Forbidden' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[403]')
   })
 })
