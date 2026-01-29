@@ -52,6 +52,26 @@ function chunks(batch: object[]): Array<object[]> {
   return result
 }
 
+function buildBatch(buffer: object[]): {
+  batch: object[]
+  remaining: object[]
+} {
+  const batch: object[] = []
+
+  for (let i = 0; i < buffer.length; i++) {
+    const event = buffer[i]
+    const candidate = [...batch, event]
+
+    if (batch.length > 0 && approachingTrackingAPILimit(candidate)) {
+      return { batch, remaining: buffer.slice(i) }
+    }
+
+    batch.push(event)
+  }
+
+  return { batch, remaining: [] }
+}
+
 export default function batch(
   apiHost: string,
   config?: BatchingDispatchConfig
@@ -145,9 +165,9 @@ export default function batch(
         throw new Error(`Bad response from server: ${status}`)
       }
 
-      // Retryable 4xx: 408, 410, 413, 429, 460
+      // Retryable 4xx: 408, 410, 429, 460
       if (status >= 400 && status < 500) {
-        if ([408, 410, 413, 429, 460].includes(status)) {
+        if ([408, 410, 429, 460].includes(status)) {
           throw new Error(`Retryable client error: ${status}`)
         }
 
@@ -163,8 +183,12 @@ export default function batch(
 
   async function flush(attempt = 1): Promise<unknown> {
     if (buffer.length) {
-      const batch = buffer
-      buffer = []
+      const { batch, remaining } = buildBatch(buffer)
+      if (batch.length === 0) {
+        return
+      }
+
+      buffer = remaining
       return sendBatch(batch)?.catch((error) => {
         const ctx = Context.system()
         ctx.log('error', 'Error sending batch', error)
@@ -185,7 +209,7 @@ export default function batch(
           rateLimitTimeout = error.retryTimeout
         }
 
-        buffer.push(...batch)
+        buffer = [...batch, ...buffer]
         buffer.map((event) => {
           if ('_metadata' in event) {
             const segmentEvent = event as ReturnType<SegmentFacade['json']>

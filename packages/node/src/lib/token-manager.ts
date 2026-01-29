@@ -174,8 +174,8 @@ export class TokenManager implements ITokenManager {
 
     const timeUntilRefreshInMs = backoff({
       attempt: this.retryCount,
-      minTimeout: 25,
-      maxTimeout: 1000,
+      minTimeout: 15 * 1000,
+      maxTimeout: 60 * 1000,
     })
     this.queueNextPoll(timeUntilRefreshInMs)
   }
@@ -199,15 +199,18 @@ export class TokenManager implements ITokenManager {
       const value = parseInt(headerValue, 10)
       if (!isFinite(value)) return null
 
-      // If value is larger than a reasonable seconds value, treat as unix epoch
-      const MAX_SECONDS_THRESHOLD = Date.now() / 1000 - 15
-      const timeInMs = value > MAX_SECONDS_THRESHOLD ? value : value * 1000
-      return timeInMs - Date.now() + this.clockSkewInSeconds * 1000
+      // Should we treat it as an epoch time or a delta?
+      const MAX_SECONDS_THRESHOLD = Date.now() / 1000 - 15 // max 15 seconds skew
+      const timeInMs =
+        value > MAX_SECONDS_THRESHOLD
+          ? (value - Date.now() / 1000) * 1000
+          : value * 1000
+      return timeInMs + this.clockSkewInSeconds * 1000
     }
 
     const retryAfter = headers['retry-after']
     const rateLimitReset = headers['x-ratelimit-reset']
-    const maxWaitMs = 15 * 60 * 1000
+    const maxWaitMs = 15 * 60 * 1000 // 15 minutes
 
     let waitTimeMs = 5 * 1000 // default fallback
 
@@ -223,6 +226,9 @@ export class TokenManager implements ITokenManager {
       }
     }
 
+    // We want subsequent calls to get_token to be able to interrupt our
+    //  Timeout when it's waiting for e.g. a long normal expiration, but
+    //  not when we're waiting for a rate limit reset. Sleep instead.
     await sleep(waitTimeMs)
     timeUntilRefreshInMs = 0
 
