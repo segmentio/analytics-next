@@ -141,12 +141,13 @@ describe('OAuth Integration Success', () => {
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
     })
-    const retryTime = Date.now() + 250
+    const retryAfterSeconds = 1
+    const notBefore = Date.now() + retryAfterSeconds * 1000
     oauthFetcher
       .mockReturnValueOnce(
         createOAuthError({
           status: 429,
-          headers: { 'X-RateLimit-Reset': retryTime },
+          headers: { 'Retry-After': retryAfterSeconds.toString() },
         })
       )
       .mockReturnValue(
@@ -162,7 +163,8 @@ describe('OAuth Integration Success', () => {
     const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
     expect(ctx1.event.type).toEqual('track')
     await analytics.closeAndFlush()
-    expect(retryTime).toBeLessThan(Date.now())
+    // Ensure we did not retry until after the Retry-After window elapsed.
+    expect(notBefore).toBeLessThan(Date.now())
   })
 })
 

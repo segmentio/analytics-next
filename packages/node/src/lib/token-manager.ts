@@ -172,9 +172,15 @@ export class TokenManager implements ITokenManager {
   }) {
     this.incrementRetries({ error, forceEmitError })
 
+    // First retry immediately, backoff the rest.
+    if (this.retryCount === 1) {
+      this.queueNextPoll(0)
+      return
+    }
+
     const timeUntilRefreshInMs = backoff({
-      attempt: this.retryCount,
-      minTimeout: 15 * 1000,
+      attempt: this.retryCount - 1,
+      minTimeout: 250,
       maxTimeout: 60 * 1000,
     })
     this.queueNextPoll(timeUntilRefreshInMs)
@@ -199,28 +205,17 @@ export class TokenManager implements ITokenManager {
       const value = parseInt(headerValue, 10)
       if (!isFinite(value)) return null
 
-      // Should we treat it as an epoch time or a delta?
-      const MAX_SECONDS_THRESHOLD = Date.now() / 1000 - 15 // max 15 seconds skew
-      const timeInMs =
-        value > MAX_SECONDS_THRESHOLD
-          ? (value - Date.now() / 1000) * 1000
-          : value * 1000
-      return timeInMs + this.clockSkewInSeconds * 1000
+      const clampedSeconds = Math.max(0, Math.min(value, 300))
+      return (clampedSeconds + this.clockSkewInSeconds) * 1000
     }
 
     const retryAfter = headers['retry-after']
-    const rateLimitReset = headers['x-ratelimit-reset']
-    const maxWaitMs = 15 * 60 * 1000 // 15 minutes
+    const maxWaitMs = 5 * 60 * 1000 // 5 minutes
 
     let waitTimeMs = 5 * 1000 // default fallback
 
     if (retryAfter) {
       const waitTime = getRateLimitWaitTime(retryAfter)
-      if (waitTime !== null) {
-        waitTimeMs = Math.min(waitTime, maxWaitMs)
-      }
-    } else if (rateLimitReset) {
-      const waitTime = getRateLimitWaitTime(rateLimitReset)
       if (waitTime !== null) {
         waitTimeMs = Math.min(waitTime, maxWaitMs)
       }
@@ -343,7 +338,7 @@ export class TokenManager implements ITokenManager {
     return (
       typeof token !== 'undefined' &&
       token !== null &&
-      token.expires_in < Date.now() / 1000
+      (token.expires_at ?? 0) > Date.now() / 1000
     )
   }
 }
