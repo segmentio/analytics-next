@@ -12,7 +12,7 @@
     "start": "node dist/cli.js"
   },
   "dependencies": {
-    "@segment/analytics-node": "workspace:*"
+    "@segment/analytics-node": "*"
   },
   "devDependencies": {
     "@types/node": "^20",

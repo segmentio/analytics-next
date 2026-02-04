@@ -6,126 +6,130 @@
  * sends events through the analytics SDK, and outputs results as JSON.
  */
 
-import { Analytics } from "@segment/analytics-node";
+import { Analytics } from '@segment/analytics-node'
 
 interface AnalyticsEvent {
-  type: "identify" | "track" | "page" | "screen" | "alias" | "group";
-  userId?: string;
-  anonymousId?: string;
-  messageId?: string;
-  timestamp?: string;
-  traits?: Record<string, unknown>;
-  event?: string;
-  properties?: Record<string, unknown>;
-  name?: string;
-  category?: string;
-  previousId?: string;
-  groupId?: string;
-  context?: Record<string, unknown>;
-  integrations?: Record<string, boolean | Record<string, unknown>>;
+  type: 'identify' | 'track' | 'page' | 'screen' | 'alias' | 'group'
+  userId?: string
+  anonymousId?: string
+  messageId?: string
+  timestamp?: string
+  traits?: Record<string, unknown>
+  event?: string
+  properties?: Record<string, unknown>
+  name?: string
+  category?: string
+  previousId?: string
+  groupId?: string
+  context?: Record<string, unknown>
+  integrations?: Record<string, boolean | Record<string, unknown>>
 }
 
 interface EventSequence {
-  delayMs: number;
-  events: AnalyticsEvent[];
+  delayMs: number
+  events: AnalyticsEvent[]
 }
 
 interface CLIInput {
-  writeKey: string;
-  apiHost: string;
-  sequences: EventSequence[];
+  writeKey: string
+  apiHost: string
+  sequences: EventSequence[]
   config?: {
-    flushAt?: number;
-    flushInterval?: number;
-    maxRetries?: number;
-    timeout?: number;
-  };
+    flushAt?: number
+    flushInterval?: number
+    maxRetries?: number
+    timeout?: number
+  }
 }
 
 interface CLIOutput {
-  success: boolean;
-  error?: string;
-  sentBatches: number;
+  success: boolean
+  error?: string
+  sentBatches: number
 }
 
 function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-async function sendEvent(analytics: Analytics, event: AnalyticsEvent): Promise<void> {
+function sendEvent(analytics: Analytics, event: AnalyticsEvent): void {
+  // SDK requires either userId or anonymousId
+  const identity = event.userId
+    ? { userId: event.userId, anonymousId: event.anonymousId }
+    : { anonymousId: event.anonymousId || 'anonymous' }
+
   const common = {
-    userId: event.userId,
-    anonymousId: event.anonymousId,
+    ...identity,
     messageId: event.messageId,
     timestamp: event.timestamp ? new Date(event.timestamp) : undefined,
     context: event.context,
     integrations: event.integrations,
-  };
+  }
 
   switch (event.type) {
-    case "identify":
+    case 'identify':
       analytics.identify({
         ...common,
         traits: event.traits,
-      });
-      break;
-    case "track":
+      })
+      break
+    case 'track':
       analytics.track({
         ...common,
         event: event.event!,
         properties: event.properties,
-      });
-      break;
-    case "page":
+      })
+      break
+    case 'page':
       analytics.page({
         ...common,
         name: event.name,
         category: event.category,
         properties: event.properties,
-      });
-      break;
-    case "screen":
+      })
+      break
+    case 'screen':
       analytics.screen({
         ...common,
         name: event.name,
         category: event.category,
         properties: event.properties,
-      });
-      break;
-    case "alias":
+      })
+      break
+    case 'alias':
       analytics.alias({
         userId: event.userId!,
         previousId: event.previousId!,
         timestamp: common.timestamp,
         context: common.context,
-      });
-      break;
-    case "group":
+      })
+      break
+    case 'group':
       analytics.group({
         ...common,
         groupId: event.groupId!,
         traits: event.traits,
-      });
-      break;
+      })
+      break
     default:
-      throw new Error(`Unknown event type: ${(event as AnalyticsEvent).type}`);
+      throw new Error(`Unknown event type: ${(event as AnalyticsEvent).type}`)
   }
 }
 
 async function main(): Promise<void> {
-  const output: CLIOutput = { success: false, sentBatches: 0 };
+  const output: CLIOutput = { success: false, sentBatches: 0 }
 
   try {
     // Parse --input argument
-    const inputIndex = process.argv.indexOf("--input");
+    const inputIndex = process.argv.indexOf('--input')
     if (inputIndex === -1 || !process.argv[inputIndex + 1]) {
-      throw new Error("Missing required --input argument");
+      throw new Error('Missing required --input argument')
     }
 
-    const inputJson = process.argv[inputIndex + 1];
-    const input: CLIInput = JSON.parse(inputJson);
+    const inputJson = process.argv[inputIndex + 1]
+    const input: CLIInput = JSON.parse(inputJson)
 
-    const { writeKey, apiHost, sequences, config = {} } = input;
+    const { writeKey, apiHost, sequences, config = {} } = input
 
     // Create analytics client
     const analytics = new Analytics({
@@ -135,30 +139,30 @@ async function main(): Promise<void> {
       flushInterval: config.flushInterval ?? 10000,
       maxRetries: config.maxRetries ?? 3,
       httpRequestTimeout: config.timeout ?? 10000,
-    });
+    })
 
     // Process event sequences
     for (const seq of sequences) {
       if (seq.delayMs > 0) {
-        await sleep(seq.delayMs);
+        await sleep(seq.delayMs)
       }
 
       for (const event of seq.events) {
-        await sendEvent(analytics, event);
+        sendEvent(analytics, event)
       }
     }
 
     // Flush and close
-    await analytics.closeAndFlush();
+    await analytics.closeAndFlush()
 
-    output.success = true;
-    output.sentBatches = 1; // Placeholder
+    output.success = true
+    output.sentBatches = 1 // Placeholder
   } catch (err) {
-    output.error = err instanceof Error ? err.message : String(err);
+    output.error = err instanceof Error ? err.message : String(err)
   }
 
-  console.log(JSON.stringify(output));
-  process.exit(output.success ? 0 : 1);
+  console.log(JSON.stringify(output))
+  process.exit(output.success ? 0 : 1)
 }
 
-main();
+void main()
