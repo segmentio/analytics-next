@@ -9,7 +9,7 @@
     "start": "node dist/cli.js"
   },
   "dependencies": {
-    "@segment/analytics-next": "^1.0.0",
+    "@segment/analytics-next": "file:..",
     "jsdom": "^19.0.0"
   },
   "devDependencies": {

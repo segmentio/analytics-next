@@ -109,6 +109,32 @@ async function main(): Promise<void> {
     // We need to dynamically import to ensure globals are set first
     const { AnalyticsBrowser } = await import('@segment/analytics-next')
 
+    // Check if batching mode is enabled via environment variable
+    const useBatching = process.env.BROWSER_BATCHING === 'true'
+    const protocol = input.apiHost.startsWith('https') ? 'https' : 'http'
+
+    // Build Segment.io integration config
+    const segmentConfig: Record<string, unknown> = {
+      protocol,
+    }
+
+    if (useBatching) {
+      // Batching mode: pass full URL (with scheme) since we patched batched-dispatcher
+      // to check for existing scheme
+      segmentConfig.apiHost = input.apiHost
+      segmentConfig.deliveryStrategy = {
+        strategy: 'batching',
+        config: {
+          size: input.config?.flushAt ?? 1, // flush immediately for testing
+          timeout: 1000,
+        },
+      }
+    } else {
+      // Standard mode: fetch-dispatcher uses the URL directly
+      const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
+      segmentConfig.apiHost = apiHostStripped + '/v1'
+    }
+
     // Initialize analytics with the provided config
     const [analytics] = await AnalyticsBrowser.load(
       {
@@ -117,10 +143,7 @@ async function main(): Promise<void> {
       },
       {
         integrations: {
-          'Segment.io': {
-            apiHost: input.apiHost.replace(/^https?:\/\//, '') + '/v1',
-            protocol: input.apiHost.startsWith('https') ? 'https' : 'http',
-          },
+          'Segment.io': segmentConfig,
         },
         disableClientPersistence: true,
       }
