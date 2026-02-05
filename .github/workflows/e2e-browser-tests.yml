@@ -1,0 +1,91 @@
+# E2E Tests for analytics-next (Browser SDK)
+# Copy this file to: analytics-next/.github/workflows/e2e-browser-tests.yml
+#
+# This workflow:
+# 1. Checks out the SDK and sdk-e2e-tests repos
+# 2. Applies HTTP patch to allow mock server testing
+# 3. Builds the SDK monorepo and browser e2e-cli
+# 4. Runs the e2e test suite in both standard and batching modes
+
+name: E2E Tests (Browser)
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mode:
+          - name: standard
+            env_batching: 'false'
+          - name: batching
+            env_batching: 'true'
+
+    name: Browser E2E (${{ matrix.mode.name }})
+
+    steps:
+      - name: Checkout SDK
+        uses: actions/checkout@v4
+        with:
+          path: sdk
+
+      - name: Checkout sdk-e2e-tests
+        uses: actions/checkout@v4
+        with:
+          repository: segmentio/sdk-e2e-tests
+          path: sdk-e2e-tests
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Apply HTTP patch for testing
+        working-directory: sdk
+        run: |
+          git apply ../sdk-e2e-tests/patches/analytics-browser-http.patch
+          echo "HTTP patch applied successfully"
+
+      - name: Install SDK dependencies
+        working-directory: sdk
+        run: yarn install
+
+      - name: Build SDK packages
+        working-directory: sdk
+        run: yarn build
+
+      - name: Install and build browser e2e-cli
+        working-directory: sdk/packages/browser/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Install sdk-e2e-tests dependencies
+        working-directory: sdk-e2e-tests
+        run: npm ci
+
+      - name: Build sdk-e2e-tests
+        working-directory: sdk-e2e-tests
+        run: npm run build
+
+      - name: Run E2E tests
+        working-directory: sdk-e2e-tests
+        env:
+          CLI_COMMAND: node ${{ github.workspace }}/sdk/packages/browser/e2e-cli/dist/cli.js
+          AUTO_SETTINGS: 'true'
+          BROWSER_BATCHING: ${{ matrix.mode.env_batching }}
+        run: npm test
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results-browser-${{ matrix.mode.name }}
+          path: sdk-e2e-tests/test-results/
+          if-no-files-found: ignore
