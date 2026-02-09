@@ -80,6 +80,8 @@ jobs:
           CLI_COMMAND: node ${{ github.workspace }}/sdk/packages/browser/e2e-cli/dist/cli.js
           AUTO_SETTINGS: 'true'
           BROWSER_BATCHING: ${{ matrix.mode.env_batching }}
+          E2E_TEST_SUITES: basic,retry
+          # E2E_TEST_SKIP: exponential-backoff  # skip specific test files if needed
         run: npm test
 
       - name: Upload test results

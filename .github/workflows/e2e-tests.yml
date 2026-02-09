@@ -62,6 +62,8 @@ jobs:
         working-directory: sdk-e2e-tests
         env:
           CLI_COMMAND: node ${{ github.workspace }}/sdk/packages/node/e2e-cli/dist/cli.js
+          E2E_TEST_SUITES: basic,retry
+          # E2E_TEST_SKIP: exponential-backoff  # skip specific test files if needed
         run: npm test
 
       - name: Upload test results
