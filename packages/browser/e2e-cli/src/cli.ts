@@ -41,7 +41,8 @@ interface EventSequence {
 
 interface CLIInput {
   writeKey: string
-  apiHost: string
+  apiHost?: string
+  cdnHost?: string
   sequences: EventSequence[]
   config?: CLIConfig
 }
@@ -111,17 +112,26 @@ async function main(): Promise<void> {
 
     // Check if batching mode is enabled via environment variable
     const useBatching = process.env.BROWSER_BATCHING === 'true'
-    const protocol = input.apiHost.startsWith('https') ? 'https' : 'http'
 
     // Build Segment.io integration config
-    const segmentConfig: Record<string, unknown> = {
-      protocol,
+    const segmentConfig: Record<string, unknown> = {}
+
+    if (input.apiHost) {
+      const protocol = input.apiHost.startsWith('https') ? 'https' : 'http'
+      segmentConfig.protocol = protocol
+
+      if (useBatching) {
+        // Batching mode: pass full URL (with scheme) since we patched batched-dispatcher
+        // to check for existing scheme
+        segmentConfig.apiHost = input.apiHost
+      } else {
+        // Standard mode: fetch-dispatcher uses the URL directly
+        const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
+        segmentConfig.apiHost = apiHostStripped + '/v1'
+      }
     }
 
     if (useBatching) {
-      // Batching mode: pass full URL (with scheme) since we patched batched-dispatcher
-      // to check for existing scheme
-      segmentConfig.apiHost = input.apiHost
       segmentConfig.deliveryStrategy = {
         strategy: 'batching',
         config: {
@@ -129,17 +139,13 @@ async function main(): Promise<void> {
           timeout: 1000,
         },
       }
-    } else {
-      // Standard mode: fetch-dispatcher uses the URL directly
-      const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
-      segmentConfig.apiHost = apiHostStripped + '/v1'
     }
 
     // Initialize analytics with the provided config
     const [analytics] = await AnalyticsBrowser.load(
       {
         writeKey: input.writeKey,
-        cdnURL: input.apiHost,
+        ...(input.cdnHost && { cdnURL: input.cdnHost }),
       },
       {
         integrations: {
