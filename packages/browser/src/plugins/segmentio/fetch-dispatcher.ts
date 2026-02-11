@@ -1,3 +1,4 @@
+import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { RateLimitError } from './ratelimit-error'
 import { createHeaders, StandardDispatcherConfig } from './shared-dispatcher'
@@ -16,8 +17,10 @@ export default function (config?: StandardDispatcherConfig): {
     retryCountHeader?: number
   ): Promise<unknown> {
     const headers = createHeaders(config?.headers)
+    const authtoken = (body as SegmentEvent)?.writeKey
+    headers['Authorization'] = `Basic ${authtoken}`
 
-    if (retryCountHeader !== undefined && retryCountHeader > 0) {
+    if (retryCountHeader !== undefined) {
       headers['X-Retry-Count'] = String(retryCountHeader)
     }
 

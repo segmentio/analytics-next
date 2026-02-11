@@ -101,11 +101,9 @@ export default function batch(
     totalAttempts += 1
 
     const headers = createHeaders(config?.headers)
-    // Add X-Retry-Count header only on retries. The value is the
-    // number of previous attempts (including rate-limited ones).
-    if (totalAttempts > 1) {
-      headers['X-Retry-Count'] = String(totalAttempts - 1)
-    }
+    headers['X-Retry-Count'] = String(totalAttempts - 1)
+    const authtoken = btoa(writeKey + ':')
+    headers['Authorization'] = `Basic ${authtoken}`
 
     return fetch(`https://${apiHost}/b`, {
       credentials: config?.credentials,

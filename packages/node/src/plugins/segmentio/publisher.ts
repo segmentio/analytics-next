@@ -8,6 +8,7 @@ import type { HTTPResponse } from '../../lib/http-client'
 import { HTTPClient, HTTPClientRequest } from '../../lib/http-client'
 import { OAuthSettings } from '../../lib/types'
 import { TokenManager } from '../../lib/token-manager'
+import { b64encode } from '../../lib/base-64-encode'
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -94,6 +95,7 @@ export class Publisher {
   private _disable: boolean
   private _httpClient: HTTPClient
   private _writeKey: string
+  private _basicAuth: string
   private _tokenManager: TokenManager | undefined
 
   constructor(
@@ -123,6 +125,7 @@ export class Publisher {
     this._disable = Boolean(disable)
     this._httpClient = httpClient
     this._writeKey = writeKey
+    this._basicAuth = b64encode(`${writeKey}:`)
 
     if (oauthSettings) {
       this._tokenManager = new TokenManager({
@@ -286,7 +289,10 @@ export class Publisher {
           ...(totalAttempts > 1
             ? { 'X-Retry-Count': String(totalAttempts - 1) }
             : {}),
-          ...(authString ? { Authorization: authString } : {}),
+          // Prefer OAuth Bearer token when available; otherwise fall back to Basic auth with write key.
+          ...(authString
+            ? { Authorization: authString }
+            : { Authorization: `Basic ${this._basicAuth}` }),
         }
 
         const request: HTTPClientRequest = {
