@@ -2,6 +2,9 @@ import { SegmentEvent } from '../../core/events'
 import { fetch } from '../../lib/fetch'
 import { RateLimitError } from './ratelimit-error'
 import { createHeaders, StandardDispatcherConfig } from './shared-dispatcher'
+
+const MAX_RETRY_AFTER_SECONDS = 300
+
 export type Dispatcher = (
   url: string,
   body: object,
@@ -17,7 +20,8 @@ export default function (config?: StandardDispatcherConfig): {
     retryCountHeader?: number
   ): Promise<unknown> {
     const headers = createHeaders(config?.headers)
-    const authtoken = (body as SegmentEvent)?.writeKey
+    const writeKey = (body as SegmentEvent)?.writeKey
+    const authtoken = btoa(writeKey + ':')
     headers['Authorization'] = `Basic ${authtoken}`
 
     if (retryCountHeader !== undefined) {
@@ -47,7 +51,8 @@ export default function (config?: StandardDispatcherConfig): {
         if (retryAfterHeader) {
           const parsed = parseInt(retryAfterHeader, 10)
           if (!Number.isNaN(parsed)) {
-            const retryAfterMs = parsed * 1000
+            const cappedSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            const retryAfterMs = cappedSeconds * 1000
             throw new RateLimitError(
               `Rate limit exceeded: ${status}`,
               retryAfterMs,
@@ -70,9 +75,9 @@ export default function (config?: StandardDispatcherConfig): {
         throw new Error(`Bad response from server: ${status}`)
       }
 
-      // 4xx: only retry 408, 410, 413, 429, 460
+      // 4xx: only retry 408, 410, 429, 460
       if (status >= 400 && status < 500) {
-        if ([408, 410, 413, 429, 460].includes(status)) {
+        if ([408, 410, 429, 460].includes(status)) {
           throw new Error(`Retryable client error: ${status}`)
         }
 

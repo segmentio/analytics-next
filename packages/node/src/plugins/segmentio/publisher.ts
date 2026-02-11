@@ -10,6 +10,8 @@ import { OAuthSettings } from '../../lib/types'
 import { TokenManager } from '../../lib/token-manager'
 import { b64encode } from '../../lib/base-64-encode'
 
+const MAX_RETRY_AFTER_SECONDS = 300
+
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
 }
@@ -57,7 +59,7 @@ function getRetryAfterInSeconds(
     return undefined
   }
 
-  return seconds
+  return Math.min(seconds, MAX_RETRY_AFTER_SECONDS)
 }
 
 interface PendingItem {

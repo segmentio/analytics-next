@@ -8,6 +8,7 @@ import { BatchingDispatchConfig, createHeaders } from './shared-dispatcher'
 
 const MAX_PAYLOAD_SIZE = 500
 const MAX_KEEPALIVE_SIZE = 64
+const MAX_RETRY_AFTER_SECONDS = 300
 
 function kilobytes(buffer: unknown): number {
   const size = encodeURI(JSON.stringify(buffer)).split(/%..|./).length - 1
@@ -134,7 +135,7 @@ export default function batch(
       if (retryAfterHeader) {
         const parsed = parseInt(retryAfterHeader, 10)
         if (!Number.isNaN(parsed)) {
-          retryAfterSeconds = parsed
+          retryAfterSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
           fromRetryAfterHeader = true
         }
       }

@@ -75,7 +75,7 @@ describe('fetch dispatcher', () => {
   it('throws retryable Error for retryable 4xx statuses', async () => {
     const client = dispatcherFactory()
 
-    for (const status of [408, 410, 413, 429, 460]) {
+    for (const status of [408, 410, 429, 460]) {
       ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
 
       await expect(
@@ -137,5 +137,49 @@ describe('fetch dispatcher', () => {
     await expect(
       client.dispatch('http://example.com', { bad: 'invalid-header' })
     ).rejects.toThrow(/Retryable client error: 429/)
+  })
+
+  it('throws NonRetryableError for 413 (Payload Too Large)', async () => {
+    const client = dispatcherFactory()
+    ;(fetchMock as jest.Mock).mockReturnValue(createError({ status: 413 }))
+
+    await expect(
+      client.dispatch('http://example.com', { test: 413 })
+    ).rejects.toMatchObject({ name: 'NonRetryableError' })
+  })
+
+  it('sends Authorization header with Basic auth', async () => {
+    ;(fetchMock as jest.Mock).mockReturnValue(createSuccess({}))
+
+    const client = dispatcherFactory()
+    await client.dispatch('http://example.com', {
+      writeKey: 'test-write-key',
+      event: 'test',
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const headers = (fetchMock as jest.Mock).mock.calls[0][1].headers as Record<
+      string,
+      string
+    >
+    expect(headers['Authorization']).toBe(`Basic ${btoa('test-write-key:')}`)
+  })
+
+  it('caps Retry-After at 300 seconds', async () => {
+    const headers = new Headers()
+    headers.set('Retry-After', '500') // Should be capped at 300
+
+    const client = dispatcherFactory()
+    ;(fetchMock as jest.Mock).mockReturnValue(
+      createError({ status: 429, headers })
+    )
+
+    await expect(
+      client.dispatch('http://example.com', { test: true })
+    ).rejects.toMatchObject<Partial<RateLimitError>>({
+      name: 'RateLimitError',
+      retryTimeout: 300000, // 300 seconds = 300000 ms, not 500000
+      isRetryableWithoutCount: true,
+    })
   })
 })
