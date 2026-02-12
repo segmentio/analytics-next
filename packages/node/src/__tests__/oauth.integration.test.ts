@@ -172,6 +172,7 @@ describe('OAuth Failure', () => {
   it('surfaces error after retries', async () => {
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
+      maxRetries: 3,
     })
 
     oauthFetcher.mockReturnValue(createOAuthError({ status: 500 }))
@@ -210,6 +211,7 @@ describe('OAuth Failure', () => {
     const logger = jest.fn()
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
+      maxRetries: 3,
     }).on('error', (err) => {
       logger(err)
     })
@@ -241,6 +243,7 @@ describe('OAuth Failure', () => {
     props.clientKey = 'Garbage'
     const analytics = createTestAnalytics({
       oauthSettings: props,
+      maxRetries: 3,
     })
 
     try {
@@ -267,6 +270,7 @@ describe('OAuth Failure', () => {
     const analytics = createTestAnalytics({
       oauthSettings: oauthSettings,
       httpClient: tapiTestClient,
+      maxRetries: 3,
     })
     tapiFetcher.mockReturnValue(createOAuthError({ status: 415 }))
 

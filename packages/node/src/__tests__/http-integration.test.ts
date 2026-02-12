@@ -81,6 +81,9 @@ describe('Method Smoke Tests', () => {
       expect(pick(headers, 'authorization', 'user-agent', 'content-type'))
         .toMatchInlineSnapshot(`
         {
+          "authorization": [
+            "Basic Zm9vOg==",
+          ],
           "content-type": [
             "application/json",
           ],
@@ -351,6 +354,7 @@ describe('Client: requestTimeout', () => {
       {
         flushAt: 1,
         httpRequestTimeout: 0,
+        maxRetries: 0,
       },
       { useRealHTTPClient: true }
     )
