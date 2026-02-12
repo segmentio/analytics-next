@@ -173,7 +173,10 @@ async function registerPlugins(
     options,
     tsubMiddleware,
     pluginSources
-  ).catch(() => [])
+  ).catch((err) => {
+    console.error('Failed to load remote plugins', err)
+    return [] as Plugin[]
+  })
 
   const basePlugins = [envEnrichment, ...legacyDestinations, ...remotePlugins]
 

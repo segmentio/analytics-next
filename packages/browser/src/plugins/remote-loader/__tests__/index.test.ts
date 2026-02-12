@@ -7,6 +7,7 @@ import { InitOptions } from '../../../core/analytics'
 import { Context } from '../../../core/context'
 import { tsubMiddleware } from '../../routing-middleware'
 import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
+import * as MetricHelpers from '../../../core/stats/metric-helpers'
 
 const pluginFactory = jest.fn()
 
@@ -965,5 +966,41 @@ describe('Remote Loader', () => {
     )
 
     expect(newCtx.event.name).toEqual('foobar')
+  })
+
+  it('records integration invoke error metric when plugin fails to load', async () => {
+    const metricSpy = jest.spyOn(MetricHelpers, 'recordIntegrationMetric')
+
+    // @ts-expect-error not gonna return a script tag sorry
+    jest.spyOn(loader, 'loadScript').mockImplementation(() => {
+      window['flaky'] = (): never => {
+        throw Error('aaay')
+      }
+      return Promise.resolve(true)
+    })
+
+    await remoteLoader(
+      {
+        ...cdnSettingsMinimal,
+        remotePlugins: [
+          {
+            name: 'flaky plugin',
+            creationName: 'Flaky Plugin',
+            url: 'cdn/path/to/flaky.js',
+            libraryName: 'flaky',
+            settings: {},
+          },
+        ],
+      },
+      {},
+      {}
+    )
+
+    expect(metricSpy).toHaveBeenCalledWith(expect.any(Context), {
+      integrationName: 'Flaky Plugin',
+      methodName: 'load',
+      type: 'action',
+      didError: true,
+    })
   })
 })
