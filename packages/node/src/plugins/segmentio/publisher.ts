@@ -402,8 +402,8 @@ export class Publisher {
         requestedRetryTimeout ??
         backoff({
           attempt: countedRetries,
-          minTimeout: 25,
-          maxTimeout: 1000,
+          minTimeout: 100,
+          maxTimeout: 60000,
         })
 
       await sleep(delayMs)
