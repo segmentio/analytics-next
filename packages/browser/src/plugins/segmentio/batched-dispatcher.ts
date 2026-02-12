@@ -191,7 +191,7 @@ export default function batch(
       return sendBatch(batch)?.catch((error) => {
         const ctx = Context.system()
         ctx.log('error', 'Error sending batch', error)
-        const maxRetries = config?.maxRetries ?? 10
+        const maxRetries = config?.maxRetries ?? 1000
 
         const isRateLimitError = error.name === 'RateLimitError'
         const isRetryableWithoutCount =
