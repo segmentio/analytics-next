@@ -103,8 +103,10 @@ export default function batch(
 
     const headers = createHeaders(config?.headers)
     headers['X-Retry-Count'] = String(totalAttempts - 1)
-    const authtoken = btoa(writeKey + ':')
-    headers['Authorization'] = `Basic ${authtoken}`
+    if (writeKey) {
+      const authtoken = btoa(writeKey + ':')
+      headers['Authorization'] = `Basic ${authtoken}`
+    }
 
     return fetch(`https://${apiHost}/b`, {
       credentials: config?.credentials,
@@ -127,30 +129,32 @@ export default function batch(
         return
       }
 
-      const retryAfterHeader = res.headers?.get('Retry-After')
-
-      let retryAfterSeconds: number | undefined
-      let fromRetryAfterHeader = false
-
-      if (retryAfterHeader) {
-        const parsed = parseInt(retryAfterHeader, 10)
-        if (!Number.isNaN(parsed)) {
-          retryAfterSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
-          fromRetryAfterHeader = true
-        }
-      }
-
-      const retryAfterMs =
-        retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : undefined
-
       // 429, 408, 503 with Retry-After header: respect header delay.
       // These retries do NOT consume the maxRetries budget.
-      if ([429, 408, 503].includes(status) && retryAfterMs !== undefined) {
-        throw new RateLimitError(
-          `Rate limit exceeded: ${status}`,
-          retryAfterMs,
-          fromRetryAfterHeader
-        )
+      if ([429, 408, 503].includes(status)) {
+        const retryAfterHeader = res.headers?.get('Retry-After')
+
+        let retryAfterSeconds: number | undefined
+        let fromRetryAfterHeader = false
+
+        if (retryAfterHeader) {
+          const parsed = parseInt(retryAfterHeader, 10)
+          if (!Number.isNaN(parsed)) {
+            retryAfterSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            fromRetryAfterHeader = true
+          }
+        }
+
+        const retryAfterMs =
+          retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : undefined
+
+        if (retryAfterMs) {
+          throw new RateLimitError(
+            `Rate limit exceeded: ${status}`,
+            retryAfterMs,
+            fromRetryAfterHeader
+          )
+        }
       }
 
       // 5xx other than 501, 505, 511 are retryable with backoff
@@ -188,40 +192,52 @@ export default function batch(
       }
 
       buffer = remaining
-      return sendBatch(batch)?.catch((error) => {
-        const ctx = Context.system()
-        ctx.log('error', 'Error sending batch', error)
-        const maxRetries = config?.maxRetries ?? 1000
-
-        const isRateLimitError = error.name === 'RateLimitError'
-        const isRetryableWithoutCount =
-          isRateLimitError && error.isRetryableWithoutCount
-
-        const canRetry = isRetryableWithoutCount || attempt <= maxRetries
-
-        if (!canRetry) {
-          totalAttempts = 0
-          return
-        }
-
-        if (isRateLimitError) {
-          rateLimitTimeout = error.retryTimeout
-        }
-
-        buffer = [...batch, ...buffer]
-        buffer.map((event) => {
-          if ('_metadata' in event) {
-            const segmentEvent = event as ReturnType<SegmentFacade['json']>
-            segmentEvent._metadata = {
-              ...segmentEvent._metadata,
-              retryCount: attempt,
-            }
+      return sendBatch(batch)
+        ?.then((result) => {
+          // If buildBatch left events due to payload size limits, schedule another flush
+          if (buffer.length > 0) {
+            scheduleFlush(1)
           }
+          return result
         })
+        .catch((error) => {
+          const ctx = Context.system()
+          ctx.log('error', 'Error sending batch', error)
+          const maxRetries = config?.maxRetries ?? 1000
 
-        const nextAttempt = isRetryableWithoutCount ? attempt : attempt + 1
-        scheduleFlush(nextAttempt)
-      })
+          const isRateLimitError = error.name === 'RateLimitError'
+          const isRetryableWithoutCount =
+            isRateLimitError && error.isRetryableWithoutCount
+
+          const canRetry = isRetryableWithoutCount || attempt <= maxRetries
+
+          if (!canRetry) {
+            totalAttempts = 0
+            // Drop the failed batch, but continue flushing any remaining events
+            if (buffer.length > 0) {
+              scheduleFlush(1)
+            }
+            return
+          }
+
+          if (isRateLimitError) {
+            rateLimitTimeout = error.retryTimeout
+          }
+
+          buffer = [...batch, ...buffer]
+          buffer.map((event) => {
+            if ('_metadata' in event) {
+              const segmentEvent = event as ReturnType<SegmentFacade['json']>
+              segmentEvent._metadata = {
+                ...segmentEvent._metadata,
+                retryCount: attempt,
+              }
+            }
+          })
+
+          const nextAttempt = isRetryableWithoutCount ? attempt : attempt + 1
+          scheduleFlush(nextAttempt)
+        })
     }
   }
 
