@@ -83,9 +83,10 @@ export default function batch(
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
   let rateLimitTimeout = 0
-  let totalAttempts = 0 // Track all attempts for X-Retry-Count header
+  let requestCount = 0 // Tracks actual network requests for X-Retry-Count header
+  let isRetrying = false
 
-  function sendBatch(batch: object[]) {
+  function sendBatch(batch: object[], retryCount: number) {
     if (batch.length === 0) {
       return
     }
@@ -98,11 +99,8 @@ export default function batch(
       return newEvent
     })
 
-    // Increment total attempts for this batch series
-    totalAttempts += 1
-
     const headers = createHeaders(config?.headers)
-    headers['X-Retry-Count'] = String(totalAttempts - 1)
+    headers['X-Retry-Count'] = String(retryCount)
     if (writeKey) {
       const authtoken = btoa(writeKey + ':')
       headers['Authorization'] = `Basic ${authtoken}`
@@ -125,7 +123,6 @@ export default function batch(
 
       // Treat <400 as success (2xx/3xx)
       if (status < 400) {
-        totalAttempts = 0
         return
       }
 
@@ -161,7 +158,6 @@ export default function batch(
       if (status >= 500) {
         if (status === 501 || status === 505 || status === 511) {
           // Non-retryable server errors
-          totalAttempts = 0
           return
         }
 
@@ -175,16 +171,18 @@ export default function batch(
         }
 
         // Non-retryable 4xx
-        totalAttempts = 0
         return
       }
 
       // Any other status codes are treated as non-retryable
-      totalAttempts = 0
     })
   }
 
   async function flush(attempt = 1): Promise<unknown> {
+    if (!isRetrying) {
+      requestCount = 0
+    }
+    isRetrying = false
     if (buffer.length) {
       const { batch, remaining } = buildBatch(buffer)
       if (batch.length === 0) {
@@ -192,7 +190,9 @@ export default function batch(
       }
 
       buffer = remaining
-      return sendBatch(batch)
+      const currentRetryCount = requestCount
+      requestCount += 1
+      return sendBatch(batch, currentRetryCount)
         ?.then((result) => {
           // If buildBatch left events due to payload size limits, schedule another flush
           if (buffer.length > 0) {
@@ -212,7 +212,6 @@ export default function batch(
           const canRetry = isRetryableWithoutCount || attempt <= maxRetries
 
           if (!canRetry) {
-            totalAttempts = 0
             // Drop the failed batch, but continue flushing any remaining events
             if (buffer.length > 0) {
               scheduleFlush(1)
@@ -236,6 +235,7 @@ export default function batch(
           })
 
           const nextAttempt = isRetryableWithoutCount ? attempt : attempt + 1
+          isRetrying = true
           scheduleFlush(nextAttempt)
         })
     }
@@ -262,7 +262,7 @@ export default function batch(
     pageUnloaded = unloaded
 
     if (pageUnloaded && buffer.length) {
-      const reqs = chunks(buffer).map((b) => sendBatch(b))
+      const reqs = chunks(buffer).map((b) => sendBatch(b, 0))
       Promise.all(reqs).catch(console.error)
     }
   })

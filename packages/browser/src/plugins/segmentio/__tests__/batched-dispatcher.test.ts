@@ -99,7 +99,6 @@ describe('Batching', () => {
           "body": "{"batch":[{"event":"first"},{"event":"second"},{"event":"third"}],"sentAt":"1993-06-09T00:00:00.000Z"}",
           "credentials": undefined,
           "headers": {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "text/plain",
             "X-Retry-Count": "0",
           },
@@ -186,7 +185,6 @@ describe('Batching', () => {
           "body": "{"batch":[{"event":"first"},{"event":"second"}],"sentAt":"1993-06-09T00:00:10.000Z"}",
           "credentials": undefined,
           "headers": {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "text/plain",
             "X-Retry-Count": "0",
           },
@@ -225,7 +223,6 @@ describe('Batching', () => {
           "body": "{"batch":[{"event":"first"}],"sentAt":"1993-06-09T00:00:10.000Z"}",
           "credentials": undefined,
           "headers": {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "text/plain",
             "X-Retry-Count": "0",
           },
@@ -243,7 +240,6 @@ describe('Batching', () => {
           "body": "{"batch":[{"event":"second"}],"sentAt":"1993-06-09T00:00:21.000Z"}",
           "credentials": undefined,
           "headers": {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "text/plain",
             "X-Retry-Count": "0",
           },
@@ -278,7 +274,6 @@ describe('Batching', () => {
           "body": "{"batch":[{"event":"first"},{"event":"second"}],"sentAt":"1993-06-09T00:00:00.000Z"}",
           "credentials": undefined,
           "headers": {
-            "Authorization": "Basic dW5kZWZpbmVkOg==",
             "Content-Type": "text/plain",
             "X-Retry-Count": "0",
           },
