@@ -383,14 +383,13 @@ describe('error handling', () => {
     expect(Date.now()).toBeGreaterThanOrEqual(start + delaySeconds * 1000 - 50)
   })
 
-  it.each([
-    { status: 500, statusText: 'Internal Server Error' },
-    { status: 300, statusText: 'Multiple Choices' },
-  ])('retries non-2xx/4xx errors: %p', async (response) => {
+  it('retries 500 errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
 
-    makeReqSpy.mockReturnValue(createError(response))
+    makeReqSpy.mockReturnValue(
+      createError({ status: 500, statusText: 'Internal Server Error' })
+    )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 2,
@@ -409,9 +408,7 @@ describe('error handling', () => {
     expect(updatedContext.failedDelivery()).toBeTruthy()
     const err = updatedContext.failedDelivery()?.reason as Error
     expect(err).toBeInstanceOf(Error)
-    expect(err.message).toEqual(
-      expect.stringContaining(response.status.toString())
-    )
+    expect(err.message).toEqual(expect.stringContaining('500'))
   })
 
   it('treats 1xx (<200) statuses as success (no retry)', async () => {

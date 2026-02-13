@@ -9,6 +9,7 @@ import { BatchingDispatchConfig, createHeaders } from './shared-dispatcher'
 const MAX_PAYLOAD_SIZE = 500
 const MAX_KEEPALIVE_SIZE = 64
 const MAX_RETRY_AFTER_SECONDS = 300
+const MAX_RETRY_AFTER_RETRIES = 20
 
 function kilobytes(buffer: unknown): number {
   const size = encodeURI(JSON.stringify(buffer)).split(/%..|./).length - 1
@@ -85,6 +86,7 @@ export default function batch(
   let rateLimitTimeout = 0
   let requestCount = 0 // Tracks actual network requests for X-Retry-Count header
   let isRetrying = false
+  let retryAfterRetries = 0
 
   function sendBatch(batch: object[], retryCount: number) {
     if (batch.length === 0) {
@@ -181,6 +183,7 @@ export default function batch(
   async function flush(attempt = 1): Promise<unknown> {
     if (!isRetrying) {
       requestCount = 0
+      retryAfterRetries = 0
     }
     isRetrying = false
     if (buffer.length) {
@@ -219,12 +222,23 @@ export default function batch(
             return
           }
 
+          // Safety cap: prevent infinite retries when server keeps returning Retry-After
+          if (isRetryableWithoutCount) {
+            retryAfterRetries++
+            if (retryAfterRetries > MAX_RETRY_AFTER_RETRIES) {
+              if (buffer.length > 0) {
+                scheduleFlush(1)
+              }
+              return
+            }
+          }
+
           if (isRateLimitError) {
             rateLimitTimeout = error.retryTimeout
           }
 
           buffer = [...batch, ...buffer]
-          buffer.map((event) => {
+          batch.forEach((event) => {
             if ('_metadata' in event) {
               const segmentEvent = event as ReturnType<SegmentFacade['json']>
               segmentEvent._metadata = {

@@ -21,8 +21,10 @@ export default function (config?: StandardDispatcherConfig): {
   ): Promise<unknown> {
     const headers = createHeaders(config?.headers)
     const writeKey = (body as SegmentEvent)?.writeKey
-    const authtoken = btoa(writeKey + ':')
-    headers['Authorization'] = `Basic ${authtoken}`
+    if (writeKey) {
+      const authtoken = btoa(writeKey + ':')
+      headers['Authorization'] = `Basic ${authtoken}`
+    }
 
     if (retryCountHeader !== undefined) {
       headers['X-Retry-Count'] = String(retryCountHeader)

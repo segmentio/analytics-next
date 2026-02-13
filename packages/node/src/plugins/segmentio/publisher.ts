@@ -11,6 +11,7 @@ import { TokenManager } from '../../lib/token-manager'
 import { b64encode } from '../../lib/base-64-encode'
 
 const MAX_RETRY_AFTER_SECONDS = 300
+const MAX_RETRY_AFTER_RETRIES = 20
 
 function sleep(timeoutInMs: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
@@ -24,22 +25,14 @@ function convertHeaders(
   const lowercaseHeaders: Record<string, string> = {}
   if (!headers) return lowercaseHeaders
 
-  const candidate: any = headers
-
-  if (
-    typeof candidate === 'object' &&
-    candidate !== null &&
-    typeof candidate.entries === 'function'
-  ) {
-    for (const [name, value] of candidate.entries() as IterableIterator<
-      [string, any]
-    >) {
+  if (typeof (headers as Record<string, unknown>).entries === 'function') {
+    for (const [name, value] of (headers as any).entries()) {
       lowercaseHeaders[name.toLowerCase()] = String(value)
     }
     return lowercaseHeaders
   }
 
-  for (const [name, value] of Object.entries(candidate)) {
+  for (const [name, value] of Object.entries(headers)) {
     lowercaseHeaders[name.toLowerCase()] = String(value)
   }
 
@@ -316,8 +309,8 @@ export class Publisher {
 
         const response = await this._httpClient.makeRequest(request)
 
-        if (response.status >= 100 && response.status < 300) {
-          // Successfully sent events, so exit!
+        if (response.status >= 100 && response.status < 400) {
+          // exit after success or 1xx/3xx (Segment should never emit these)
           batch.resolveEvents()
           return
         } else if (
@@ -396,6 +389,12 @@ export class Publisher {
           resolveFailedBatch(batch, failureReason)
           return
         }
+      }
+
+      // Safety cap: prevent infinite retries when server keeps returning Retry-After
+      if (totalAttempts > maxRetries + MAX_RETRY_AFTER_RETRIES) {
+        resolveFailedBatch(batch, failureReason)
+        return
       }
 
       const delayMs =

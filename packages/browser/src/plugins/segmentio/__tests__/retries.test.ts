@@ -57,7 +57,7 @@ describe('Segment.io retries 500s and 429', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
 
     const secondHeaders = fetch.mock.calls[1][1].headers as Record<
       string,
@@ -69,7 +69,7 @@ describe('Segment.io retries 500s and 429', () => {
   test('delays retry on 429', async () => {
     jest.useFakeTimers({ advanceTimers: true })
     const headers = new Headers()
-    const resetTime = 1234
+    const resetTime = 120
     headers.set('Retry-After', resetTime.toString())
     fetch
       .mockReturnValueOnce(
@@ -116,7 +116,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
     const headers = fetch.mock.calls[0][1].headers as Record<string, string>
-    expect(headers['X-Retry-Count']).toBeUndefined()
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T02 Retryable 500: backoff used, header increments', async () => {
@@ -140,7 +140,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string
     >
 
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
@@ -153,7 +153,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
     const headers = fetch.mock.calls[0][1].headers as Record<string, string>
-    expect(headers['X-Retry-Count']).toBeUndefined()
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T04 Non-retryable 5xx: 505', async () => {
@@ -165,7 +165,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
     const headers = fetch.mock.calls[0][1].headers as Record<string, string>
-    expect(headers['X-Retry-Count']).toBeUndefined()
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T05 Non-retryable 5xx: 511 (no auth)', async () => {
@@ -177,7 +177,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
     const headers = fetch.mock.calls[0][1].headers as Record<string, string>
-    expect(headers['X-Retry-Count']).toBeUndefined()
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T06 Retry-After 429: delay, header increments', async () => {
@@ -210,7 +210,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
   })
 
   it('T07 Retry-After 408: delay, header increments', async () => {
@@ -239,7 +239,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
   })
 
   it('T08 Retry-After 503: delay, header increments', async () => {
@@ -268,7 +268,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
   })
 
   it('T09 429 without Retry-After: backoff retry, header increments', async () => {
@@ -298,7 +298,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
@@ -321,7 +321,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
@@ -344,31 +344,20 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
-  it('T12 Retryable 4xx: 413', async () => {
+  it('T12 Non-retryable 4xx: 413', async () => {
     jest.useFakeTimers({ advanceTimers: true })
-    fetch
-      .mockReturnValueOnce(createError({ status: 413 }))
-      .mockReturnValue(createSuccess({}))
+    fetch.mockReturnValue(createError({ status: 413 }))
 
     await analytics.track('event')
     jest.runAllTimers()
 
-    expect(fetch.mock.calls.length).toBeGreaterThanOrEqual(2)
-
-    const firstHeaders = fetch.mock.calls[0][1].headers as Record<
-      string,
-      string
-    >
-    const secondHeaders = fetch.mock.calls[1][1].headers as Record<
-      string,
-      string
-    >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
-    expect(secondHeaders['X-Retry-Count']).toBe('1')
+    expect(fetch).toHaveBeenCalledTimes(1)
+    const headers = fetch.mock.calls[0][1].headers as Record<string, string>
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T13 Retryable 4xx: 460', async () => {
@@ -390,7 +379,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
@@ -403,7 +392,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
     const headers = fetch.mock.calls[0][1].headers as Record<string, string>
-    expect(headers['X-Retry-Count']).toBeUndefined()
+    expect(headers['X-Retry-Count']).toBe('0')
   })
 
   it('T15 Network error (IO): retried with backoff', async () => {
@@ -425,7 +414,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string,
       string
     >
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
@@ -450,7 +439,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       string
     >
 
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 })
