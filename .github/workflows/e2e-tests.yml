@@ -29,6 +29,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: segmentio/sdk-e2e-tests
+          token: ${{ secrets.E2E_TESTS_TOKEN }}
           path: sdk-e2e-tests
 
       - name: Setup Node.js
