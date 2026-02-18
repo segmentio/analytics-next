@@ -1,0 +1,9 @@
+{
+  "sdk": "browser",
+  "test_suites": "basic",
+  "auto_settings": true,
+  "patch": "analytics-browser-http.patch",
+  "env": {
+    "BROWSER_BATCHING": "false"
+  }
+}
