@@ -53,7 +53,10 @@ export default function (config?: StandardDispatcherConfig): {
         if (retryAfterHeader) {
           const parsed = parseInt(retryAfterHeader, 10)
           if (!Number.isNaN(parsed)) {
-            const cappedSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            const cappedSeconds = Math.max(
+              0,
+              Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            )
             const retryAfterMs = cappedSeconds * 1000
             throw new RateLimitError(
               `Rate limit exceeded: ${status}`,

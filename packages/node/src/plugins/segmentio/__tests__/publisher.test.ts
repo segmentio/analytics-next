@@ -1097,7 +1097,36 @@ describe('retry semantics', () => {
     expect(first.headers['Authorization']).toMatch(/^Basic /)
   })
 
-  it('T21 Retry-After capped at 300 seconds', async () => {
+  it('T21 Safety cap: persistent Retry-After eventually gives up', async () => {
+    const headers = new TestHeaders()
+    headers.set('Retry-After', '0')
+
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 0,
+      flushAt: 1,
+    })
+
+    const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    // MAX_RETRY_AFTER_RETRIES = 20, maxRetries = 0
+    // Safety cap fires when totalAttempts > maxRetries + 20 = 20
+    // That means 21 total attempts
+    expect(makeReqSpy).toHaveBeenCalledTimes(21)
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[429]')
+  })
+
+  it('T22 Retry-After capped at 300 seconds', async () => {
     const headers = new TestHeaders()
     const retryAfterSeconds = 2
     headers.set('Retry-After', retryAfterSeconds.toString())

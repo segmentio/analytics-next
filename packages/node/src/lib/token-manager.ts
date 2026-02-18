@@ -206,7 +206,7 @@ export class TokenManager implements ITokenManager {
       if (!isFinite(value)) return null
 
       const clampedSeconds = Math.max(0, Math.min(value, 300))
-      return (clampedSeconds + this.clockSkewInSeconds) * 1000
+      return Math.max(0, (clampedSeconds + this.clockSkewInSeconds) * 1000)
     }
 
     const retryAfter = headers['retry-after']

@@ -30,6 +30,7 @@ function approachingTrackingAPILimit(buffer: unknown): boolean {
  * requests. If keepalive is enabled we want to avoid
  * going over this to prevent data loss.
  */
+
 function passedKeepaliveLimit(buffer: unknown): boolean {
   return kilobytes(buffer) >= MAX_KEEPALIVE_SIZE - 10
 }
@@ -139,7 +140,10 @@ export default function batch(
         if (retryAfterHeader) {
           const parsed = parseInt(retryAfterHeader, 10)
           if (!Number.isNaN(parsed)) {
-            retryAfterSeconds = Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            retryAfterSeconds = Math.max(
+              0,
+              Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
+            )
             fromRetryAfterHeader = true
           }
         }
