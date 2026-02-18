@@ -709,10 +709,10 @@ describe('failedDelivery handling', () => {
   // failedDelivery without throwing (like the Node SDK Publisher on rate limiting)
   // would incorrectly log "Delivered" instead of logging a failure.
 
-  const destinationPlugin: CorePlugin = {
+  const destinationPlugin: CorePlugin<TestCtx> = {
     ...testPlugin,
     name: 'Test Destination',
-    type: 'destination',
+    type: 'destination' as PluginType,
   }
 
   test('emits delivery_failure when plugin sets failedDelivery without throwing', async () => {
