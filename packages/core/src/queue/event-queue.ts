@@ -176,6 +176,21 @@ export abstract class CoreEventQueue<
     try {
       ctx = await this.flushOne(ctx)
       const done = Date.now() - start
+
+      // Check if any plugin marked delivery as failed without throwing
+      // (e.g., the Node SDK's Publisher resolves with failedDelivery set on rate limiting)
+      const failure = ctx.failedDelivery()
+      if (failure) {
+        const error =
+          failure.reason instanceof Error
+            ? failure.reason
+            : new Error(String(failure.reason ?? 'Unknown delivery failure'))
+        ctx.log('error', 'Failed to deliver', error)
+        this.emit('delivery_failure', ctx, error)
+        ctx.stats.increment('delivery_failed')
+        return ctx
+      }
+
       this.emit('delivery_success', ctx)
       ctx.stats.gauge('delivered', done)
       ctx.log('debug', 'Delivered', ctx.event)
@@ -212,7 +227,10 @@ export abstract class CoreEventQueue<
 
     try {
       ctx = await this.deliver(ctx)
-      this.emit('flush', ctx, true)
+      // deliver() now handles failedDelivery state internally without throwing,
+      // so we check ctx.failedDelivery() to determine the correct flush status
+      const delivered = !ctx.failedDelivery()
+      this.emit('flush', ctx, delivered)
     } catch (err: any) {
       const accepted = this.enqueuRetry(err, ctx)
 
