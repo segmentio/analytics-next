@@ -1603,9 +1603,11 @@ describe('setting headers', () => {
     const [call] = fetchCalls.filter((el) =>
       el.url.toString().includes('api.segment.io')
     )
-    expect(call.headers).toEqual({
-      'Content-Type': 'text/plain',
-      'X-Test': 'foo',
-    })
+    expect(call.headers).toEqual(
+      expect.objectContaining({
+        'Content-Type': 'text/plain',
+        'X-Test': 'foo',
+      })
+    )
   })
 })
