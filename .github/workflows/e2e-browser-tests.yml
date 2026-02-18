@@ -67,23 +67,15 @@ jobs:
           npm install
           npm run build
 
-      - name: Install sdk-e2e-tests dependencies
-        working-directory: sdk-e2e-tests
-        run: npm ci
-
-      - name: Build sdk-e2e-tests
-        working-directory: sdk-e2e-tests
-        run: npm run build
-
       - name: Run E2E tests
         working-directory: sdk-e2e-tests
         env:
-          CLI_COMMAND: node ${{ github.workspace }}/sdk/packages/browser/e2e-cli/dist/cli.js
-          AUTO_SETTINGS: 'true'
           BROWSER_BATCHING: ${{ matrix.mode.env_batching }}
-          E2E_TEST_SUITES: basic,retry
-          # E2E_TEST_SKIP: exponential-backoff  # skip specific test files if needed
-        run: npm test
+        run: |
+          ./scripts/run-tests.sh \
+            --sdk-dir "${{ github.workspace }}/sdk/packages/browser/e2e-cli" \
+            --cli "node ${{ github.workspace }}/sdk/packages/browser/e2e-cli/dist/cli.js" \
+            --sdk-path "${{ github.workspace }}/sdk"
 
       - name: Upload test results
         if: always()
