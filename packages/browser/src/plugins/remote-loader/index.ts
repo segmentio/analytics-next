@@ -310,7 +310,7 @@ export async function remoteLoader(
       } catch (error) {
         console.warn('Failed to load Remote Plugin', error)
         recordIntegrationMetric(Context.system(), {
-          integrationName: remotePlugin.creationName,
+          integrationName: remotePlugin.name,
           methodName: 'load',
           type: 'action',
           didError: true,
