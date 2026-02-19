@@ -997,7 +997,7 @@ describe('Remote Loader', () => {
     )
 
     expect(metricSpy).toHaveBeenCalledWith(expect.any(Context), {
-      integrationName: 'Flaky Plugin',
+      integrationName: 'flaky plugin',
       methodName: 'load',
       type: 'action',
       didError: true,
