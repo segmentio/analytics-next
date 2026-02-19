@@ -10,7 +10,7 @@ https://www.npmjs.com/package/@segment/analytics-node
 
 
 ## Runtime Support
-- Node.js >= 18
+- Node.js >= 20
 - AWS Lambda
 - Cloudflare Workers
 - Vercel Edge Functions
