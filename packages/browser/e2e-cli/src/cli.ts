@@ -26,12 +26,17 @@ interface AnalyticsEvent {
   type: string
   userId?: string
   anonymousId?: string
+  messageId?: string
+  timestamp?: string
   event?: string
   name?: string
+  category?: string
   properties?: Record<string, unknown>
   traits?: Record<string, unknown>
   groupId?: string
   previousId?: string
+  context?: Record<string, unknown>
+  integrations?: Record<string, boolean | Record<string, unknown>>
 }
 
 interface EventSequence {
