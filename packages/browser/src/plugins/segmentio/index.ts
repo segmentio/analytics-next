@@ -12,7 +12,11 @@ import standard from './fetch-dispatcher'
 import { normalize } from './normalize'
 import { scheduleFlush } from './schedule-flush'
 import { SEGMENT_API_HOST } from '../../core/constants'
-import { DeliveryStrategy } from './shared-dispatcher'
+import {
+  DeliveryStrategy,
+  HttpConfig,
+  resolveHttpConfig,
+} from './shared-dispatcher'
 
 export type SegmentioSettings = {
   apiKey: string
@@ -27,6 +31,8 @@ export type SegmentioSettings = {
   maybeBundledConfigIds?: Record<string, string[]>
 
   deliveryStrategy?: DeliveryStrategy
+
+  httpConfig?: HttpConfig
 }
 
 type JSON = ReturnType<Facade['json']>
@@ -82,13 +88,15 @@ export function segmentio(
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
+  const resolvedHttpConfig = resolveHttpConfig(settings?.httpConfig)
+
   const deliveryStrategy = settings?.deliveryStrategy
   const client =
     deliveryStrategy &&
     'strategy' in deliveryStrategy &&
     deliveryStrategy.strategy === 'batching'
-      ? batch(apiHost, deliveryStrategy.config)
-      : standard(deliveryStrategy?.config)
+      ? batch(apiHost, deliveryStrategy.config, resolvedHttpConfig)
+      : standard(deliveryStrategy?.config, resolvedHttpConfig)
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {

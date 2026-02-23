@@ -8,7 +8,10 @@ jest.mock('../../../lib/fetch', () => {
 
 import dispatcherFactory from '../fetch-dispatcher'
 import { RateLimitError } from '../ratelimit-error'
+import { resolveHttpConfig } from '../shared-dispatcher'
 import { createError, createSuccess } from '../../../test-helpers/factories'
+
+const defaultHttpConfig = resolveHttpConfig()
 
 describe('fetch dispatcher', () => {
   beforeEach(() => {
@@ -53,15 +56,15 @@ describe('fetch dispatcher', () => {
   it('throws retryable Error for 5xx except 501, 505, 511', async () => {
     ;(fetchMock as jest.Mock).mockReturnValue(createError({ status: 500 }))
 
-    const client = dispatcherFactory()
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
 
     await expect(
       client.dispatch('http://example.com', { test: true })
-    ).rejects.toThrow('Bad response from server: 500')
+    ).rejects.toThrow('Retryable error: 500')
   })
 
-  it('throws NonRetryableError for 501, 505, 511', async () => {
-    const client = dispatcherFactory()
+  it('throws NonRetryableError for 501, 505, 511 (via statusCodeOverrides)', async () => {
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
 
     for (const status of [501, 505, 511]) {
       ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
@@ -73,19 +76,19 @@ describe('fetch dispatcher', () => {
   })
 
   it('throws retryable Error for retryable 4xx statuses', async () => {
-    const client = dispatcherFactory()
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
 
     for (const status of [408, 410, 429, 460]) {
       ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
 
       await expect(
         client.dispatch('http://example.com', { test: status })
-      ).rejects.toThrow(/Retryable client error/)
+      ).rejects.toThrow(/Retryable error/)
     }
   })
 
   it('throws NonRetryableError for non-retryable 4xx statuses', async () => {
-    const client = dispatcherFactory()
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
 
     for (const status of [400, 401, 403, 404]) {
       ;(fetchMock as jest.Mock).mockReturnValue(createError({ status }))
@@ -118,14 +121,14 @@ describe('fetch dispatcher', () => {
   })
 
   it('falls back to normal retryable path when Retry-After is missing or invalid', async () => {
-    const client = dispatcherFactory()
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
 
-    // Missing Retry-After header
+    // Missing Retry-After header — 429 is in statusCodeOverrides as 'retry'
     ;(fetchMock as jest.Mock).mockReturnValueOnce(createError({ status: 429 }))
 
     await expect(
       client.dispatch('http://example.com', { bad: 'no-header' })
-    ).rejects.toThrow(/Retryable client error: 429/)
+    ).rejects.toThrow(/Retryable error: 429/)
 
     // Invalid Retry-After header
     const badHeaders = new Headers()
@@ -136,7 +139,7 @@ describe('fetch dispatcher', () => {
 
     await expect(
       client.dispatch('http://example.com', { bad: 'invalid-header' })
-    ).rejects.toThrow(/Retryable client error: 429/)
+    ).rejects.toThrow(/Retryable error: 429/)
   })
 
   it('throws NonRetryableError for 413 (Payload Too Large)', async () => {

@@ -4,12 +4,17 @@ import { onPageChange } from '../../lib/on-page-change'
 import { SegmentFacade } from '../../lib/to-facade'
 import { RateLimitError } from './ratelimit-error'
 import { Context } from '../../core/context'
-import { BatchingDispatchConfig, createHeaders } from './shared-dispatcher'
+import {
+  BatchingDispatchConfig,
+  createHeaders,
+  getStatusBehavior,
+  parseRetryAfter,
+  resolveHttpConfig,
+  ResolvedHttpConfig,
+} from './shared-dispatcher'
 
 const MAX_PAYLOAD_SIZE = 500
 const MAX_KEEPALIVE_SIZE = 64
-const MAX_RETRY_AFTER_SECONDS = 300
-const MAX_RETRY_AFTER_RETRIES = 20
 
 function kilobytes(buffer: unknown): number {
   const size = encodeURI(JSON.stringify(buffer)).split(/%..|./).length - 1
@@ -77,7 +82,8 @@ function buildBatch(buffer: object[]): {
 
 export default function batch(
   apiHost: string,
-  config?: BatchingDispatchConfig
+  config?: BatchingDispatchConfig,
+  httpConfig?: ResolvedHttpConfig
 ) {
   let buffer: object[] = []
   let pageUnloaded = false
@@ -129,58 +135,28 @@ export default function batch(
         return
       }
 
-      // 429, 408, 503 with Retry-After header: respect header delay.
+      // Resolve config once (uses caller-supplied or built-in defaults).
+      const resolved = httpConfig ?? resolveHttpConfig()
+
+      // Check for Retry-After header on eligible statuses (429, 408, 503).
       // These retries do NOT consume the maxRetries budget.
-      if ([429, 408, 503].includes(status)) {
-        const retryAfterHeader = res.headers?.get('Retry-After')
-
-        let retryAfterSeconds: number | undefined
-        let fromRetryAfterHeader = false
-
-        if (retryAfterHeader) {
-          const parsed = parseInt(retryAfterHeader, 10)
-          if (!Number.isNaN(parsed)) {
-            retryAfterSeconds = Math.max(
-              0,
-              Math.min(parsed, MAX_RETRY_AFTER_SECONDS)
-            )
-            fromRetryAfterHeader = true
-          }
-        }
-
-        const retryAfterMs =
-          retryAfterSeconds !== undefined ? retryAfterSeconds * 1000 : undefined
-
-        if (retryAfterMs) {
-          throw new RateLimitError(
-            `Rate limit exceeded: ${status}`,
-            retryAfterMs,
-            fromRetryAfterHeader
-          )
-        }
+      const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
+      if (retryAfter) {
+        throw new RateLimitError(
+          `Rate limit exceeded: ${status}`,
+          retryAfter.retryAfterMs,
+          retryAfter.fromHeader
+        )
       }
 
-      // 5xx other than 501, 505, 511 are retryable with backoff
-      if (status >= 500) {
-        if (status === 501 || status === 505 || status === 511) {
-          // Non-retryable server errors
-          return
-        }
+      // Use config-driven behavior for all other error statuses.
+      const behavior = getStatusBehavior(status, resolved.backoffConfig)
 
-        throw new Error(`Bad response from server: ${status}`)
+      if (behavior === 'retry') {
+        throw new Error(`Retryable error: ${status}`)
       }
 
-      // Retryable 4xx: 408, 410, 429, 460
-      if (status >= 400 && status < 500) {
-        if ([408, 410, 429, 460].includes(status)) {
-          throw new Error(`Retryable client error: ${status}`)
-        }
-
-        // Non-retryable 4xx
-        return
-      }
-
-      // Any other status codes are treated as non-retryable
+      // Non-retryable: silently drop
     })
   }
 
@@ -210,7 +186,10 @@ export default function batch(
         .catch((error) => {
           const ctx = Context.system()
           ctx.log('error', 'Error sending batch', error)
-          const maxRetries = config?.maxRetries ?? 1000
+          const maxRetries =
+            config?.maxRetries ??
+            httpConfig?.backoffConfig.maxRetryCount ??
+            1000
 
           const isRateLimitError = error.name === 'RateLimitError'
           const isRetryableWithoutCount =
@@ -229,7 +208,9 @@ export default function batch(
           // Safety cap: prevent infinite retries when server keeps returning Retry-After
           if (isRetryableWithoutCount) {
             retryAfterRetries++
-            if (retryAfterRetries > MAX_RETRY_AFTER_RETRIES) {
+            const maxRetryAfterRetries =
+              httpConfig?.rateLimitConfig.maxRetryCount ?? 100
+            if (retryAfterRetries > maxRetryAfterRetries) {
               if (buffer.length > 0) {
                 scheduleFlush(1)
               }
