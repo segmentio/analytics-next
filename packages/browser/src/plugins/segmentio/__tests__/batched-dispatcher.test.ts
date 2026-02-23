@@ -6,6 +6,7 @@ jest.mock('unfetch', () => {
 
 import { createError, createSuccess } from '../../../test-helpers/factories'
 import batch from '../batched-dispatcher'
+import { resolveHttpConfig } from '../shared-dispatcher'
 
 const fatEvent = {
   _id: '609c0e91fe97b680e384d6e4',
@@ -373,15 +374,10 @@ describe('Batching', () => {
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
 
-      // Advance time to trigger first retry
-      jest.advanceTimersByTime(1000)
+      // First retry uses exponential backoff
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
-
-      // Advance time to trigger second retry which will succeed
-      jest.advanceTimersByTime(1000)
-      // Under current batching implementation we see a single backoff retry
-      expect(fetch).toHaveBeenCalledTimes(2)
     })
 
     it('T03 Non-retryable 5xx: 501', async () => {
@@ -490,9 +486,7 @@ describe('Batching', () => {
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
 
-      jest.advanceTimersByTime(1499)
-      expect(fetch).toHaveBeenCalledTimes(1)
-      jest.advanceTimersByTime(1)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
@@ -506,7 +500,7 @@ describe('Batching', () => {
 
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
-      jest.advanceTimersByTime(1500)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
@@ -533,7 +527,7 @@ describe('Batching', () => {
 
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
-      jest.advanceTimersByTime(1500)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
@@ -560,7 +554,7 @@ describe('Batching', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
 
-      jest.advanceTimersByTime(1500)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
@@ -575,9 +569,7 @@ describe('Batching', () => {
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
       // First attempt + maxRetries additional attempts
-      for (let i = 0; i < maxRetries; i++) {
-        jest.advanceTimersByTime(1000)
-      }
+      jest.runAllTimers()
 
       expect(fetch).toHaveBeenCalledTimes(maxRetries + 1)
       const retryHeaders = fetch.mock.calls
@@ -622,8 +614,7 @@ describe('Batching', () => {
 
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
-      jest.advanceTimersByTime(1000)
-      jest.advanceTimersByTime(1000)
+      jest.runAllTimers()
 
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
@@ -652,7 +643,19 @@ describe('Batching', () => {
         .mockReturnValueOnce(createError({ status: 429, headers }))
         .mockReturnValue(createSuccess({}))
 
-      const { dispatch } = createBatch({ maxRetries: 1 })
+      // Use a high maxRateLimitDuration so the 300s capped delay isn't dropped
+      const httpConfig = resolveHttpConfig({
+        rateLimitConfig: { maxRateLimitDuration: 600 },
+      })
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        {
+          size: 1,
+          timeout: 1000,
+          maxRetries: 1,
+        },
+        httpConfig
+      )
 
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 

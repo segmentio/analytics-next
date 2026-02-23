@@ -2,6 +2,7 @@ import {
   resolveHttpConfig,
   getStatusBehavior,
   parseRetryAfter,
+  computeBackoff,
   HttpConfig,
   ResolvedBackoffConfig,
   ResolvedRateLimitConfig,
@@ -15,7 +16,7 @@ describe('resolveHttpConfig', () => {
       enabled: true,
       maxRetryCount: 100,
       maxRetryInterval: 300,
-      maxTotalBackoffDuration: 43200,
+      maxRateLimitDuration: 180,
     })
 
     expect(resolved.backoffConfig).toEqual({
@@ -55,7 +56,7 @@ describe('resolveHttpConfig', () => {
         enabled: false,
         maxRetryCount: 50,
         maxRetryInterval: 120,
-        maxTotalBackoffDuration: 3600,
+        maxRateLimitDuration: 3600,
       },
       backoffConfig: {
         enabled: false,
@@ -78,7 +79,7 @@ describe('resolveHttpConfig', () => {
       enabled: false,
       maxRetryCount: 50,
       maxRetryInterval: 120,
-      maxTotalBackoffDuration: 3600,
+      maxRateLimitDuration: 3600,
     })
 
     expect(resolved.backoffConfig.enabled).toBe(false)
@@ -110,7 +111,7 @@ describe('resolveHttpConfig', () => {
     // Defaults for missing fields
     expect(resolved.rateLimitConfig.enabled).toBe(true)
     expect(resolved.rateLimitConfig.maxRetryInterval).toBe(300)
-    expect(resolved.rateLimitConfig.maxTotalBackoffDuration).toBe(43200)
+    expect(resolved.rateLimitConfig.maxRateLimitDuration).toBe(180)
     expect(resolved.backoffConfig.enabled).toBe(true)
     expect(resolved.backoffConfig.maxRetryCount).toBe(100)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
@@ -130,16 +131,16 @@ describe('resolveHttpConfig', () => {
       expect(tooLow.rateLimitConfig.maxRetryInterval).toBe(0.1)
     })
 
-    it('clamps maxTotalBackoffDuration to safe range', () => {
+    it('clamps maxRateLimitDuration to safe range', () => {
       const tooHigh = resolveHttpConfig({
-        rateLimitConfig: { maxTotalBackoffDuration: 9999999 },
+        rateLimitConfig: { maxRateLimitDuration: 9999999 },
       })
-      expect(tooHigh.rateLimitConfig.maxTotalBackoffDuration).toBe(604800)
+      expect(tooHigh.rateLimitConfig.maxRateLimitDuration).toBe(86400)
 
       const tooLow = resolveHttpConfig({
-        rateLimitConfig: { maxTotalBackoffDuration: 1 },
+        rateLimitConfig: { maxRateLimitDuration: 1 },
       })
-      expect(tooLow.rateLimitConfig.maxTotalBackoffDuration).toBe(60)
+      expect(tooLow.rateLimitConfig.maxRateLimitDuration).toBe(10)
     })
 
     it('clamps baseBackoffInterval to safe range', () => {
@@ -339,5 +340,60 @@ describe('parseRetryAfter', () => {
   it('clamps negative Retry-After values to 0', () => {
     const result = parseRetryAfter(makeRes(429, '-5'), defaults)
     expect(result).toEqual({ retryAfterMs: 0, fromHeader: true })
+  })
+})
+
+describe('computeBackoff', () => {
+  const noJitter: ResolvedBackoffConfig = {
+    ...resolveHttpConfig().backoffConfig,
+    jitterPercent: 0,
+  }
+
+  it('returns baseBackoffInterval * 1000 for attempt 1 with no jitter', () => {
+    expect(computeBackoff(1, noJitter)).toBe(500) // 0.5s * 1000
+  })
+
+  it('doubles with each attempt', () => {
+    expect(computeBackoff(1, noJitter)).toBe(500)
+    expect(computeBackoff(2, noJitter)).toBe(1000)
+    expect(computeBackoff(3, noJitter)).toBe(2000)
+    expect(computeBackoff(4, noJitter)).toBe(4000)
+  })
+
+  it('caps at maxBackoffInterval', () => {
+    const config: ResolvedBackoffConfig = {
+      ...noJitter,
+      baseBackoffInterval: 1,
+      maxBackoffInterval: 5,
+    }
+    // attempt 1: 1000, 2: 2000, 3: 4000, 4: 5000 (capped)
+    expect(computeBackoff(3, config)).toBe(4000)
+    expect(computeBackoff(4, config)).toBe(5000)
+    expect(computeBackoff(10, config)).toBe(5000)
+  })
+
+  it('applies jitter within expected range', () => {
+    const config: ResolvedBackoffConfig = {
+      ...resolveHttpConfig().backoffConfig,
+      baseBackoffInterval: 1,
+      maxBackoffInterval: 300,
+      jitterPercent: 50,
+    }
+    // With 50% jitter, attempt 1 (base 1000ms) should be in [500, 1500]
+    for (let i = 0; i < 50; i++) {
+      const result = computeBackoff(1, config)
+      expect(result).toBeGreaterThanOrEqual(500)
+      expect(result).toBeLessThanOrEqual(1500)
+    }
+  })
+
+  it('never returns negative', () => {
+    const config: ResolvedBackoffConfig = {
+      ...resolveHttpConfig().backoffConfig,
+      jitterPercent: 100,
+    }
+    for (let i = 0; i < 50; i++) {
+      expect(computeBackoff(1, config)).toBeGreaterThanOrEqual(0)
+    }
   })
 })

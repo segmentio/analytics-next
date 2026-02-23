@@ -6,6 +6,7 @@ import { RateLimitError } from './ratelimit-error'
 import { Context } from '../../core/context'
 import {
   BatchingDispatchConfig,
+  computeBackoff,
   createHeaders,
   getStatusBehavior,
   parseRetryAfter,
@@ -90,10 +91,13 @@ export default function batch(
 
   const limit = config?.size ?? 10
   const timeout = config?.timeout ?? 5000
+  const resolved = httpConfig ?? resolveHttpConfig()
   let rateLimitTimeout = 0
   let requestCount = 0 // Tracks actual network requests for X-Retry-Count header
   let isRetrying = false
   let retryAfterRetries = 0
+  let totalBackoffTime = 0
+  let totalRateLimitTime = 0
 
   function sendBatch(batch: object[], retryCount: number) {
     if (batch.length === 0) {
@@ -135,9 +139,6 @@ export default function batch(
         return
       }
 
-      // Resolve config once (uses caller-supplied or built-in defaults).
-      const resolved = httpConfig ?? resolveHttpConfig()
-
       // Check for Retry-After header on eligible statuses (429, 408, 503).
       // These retries do NOT consume the maxRetries budget.
       const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
@@ -160,10 +161,18 @@ export default function batch(
     })
   }
 
+  function dropAndContinue(): void {
+    if (buffer.length > 0) {
+      scheduleFlush(1)
+    }
+  }
+
   async function flush(attempt = 1): Promise<unknown> {
     if (!isRetrying) {
       requestCount = 0
       retryAfterRetries = 0
+      totalBackoffTime = 0
+      totalRateLimitTime = 0
     }
     isRetrying = false
     if (buffer.length) {
@@ -187,9 +196,7 @@ export default function batch(
           const ctx = Context.system()
           ctx.log('error', 'Error sending batch', error)
           const maxRetries =
-            config?.maxRetries ??
-            httpConfig?.backoffConfig.maxRetryCount ??
-            1000
+            config?.maxRetries ?? resolved.backoffConfig.maxRetryCount
 
           const isRateLimitError = error.name === 'RateLimitError'
           const isRetryableWithoutCount =
@@ -198,28 +205,35 @@ export default function batch(
           const canRetry = isRetryableWithoutCount || attempt <= maxRetries
 
           if (!canRetry) {
-            // Drop the failed batch, but continue flushing any remaining events
-            if (buffer.length > 0) {
-              scheduleFlush(1)
-            }
-            return
+            return dropAndContinue()
           }
 
-          // Safety cap: prevent infinite retries when server keeps returning Retry-After
+          // Rate-limit retries: enforce count cap and total duration cap
           if (isRetryableWithoutCount) {
             retryAfterRetries++
-            const maxRetryAfterRetries =
-              httpConfig?.rateLimitConfig.maxRetryCount ?? 100
-            if (retryAfterRetries > maxRetryAfterRetries) {
-              if (buffer.length > 0) {
-                scheduleFlush(1)
-              }
-              return
+            if (retryAfterRetries > resolved.rateLimitConfig.maxRetryCount) {
+              return dropAndContinue()
             }
+            const delay = error.retryTimeout as number
+            totalRateLimitTime += delay
+            const maxRateLimitMs =
+              resolved.rateLimitConfig.maxRateLimitDuration * 1000
+            if (totalRateLimitTime > maxRateLimitMs) {
+              return dropAndContinue()
+            }
+            rateLimitTimeout = delay
           }
 
-          if (isRateLimitError) {
-            rateLimitTimeout = error.retryTimeout
+          // Backoff retries: compute delay, enforce total duration cap
+          let retryDelay: number | undefined
+          if (!isRateLimitError) {
+            retryDelay = computeBackoff(attempt, resolved.backoffConfig)
+            totalBackoffTime += retryDelay
+            const maxBackoffMs =
+              resolved.backoffConfig.maxTotalBackoffDuration * 1000
+            if (totalBackoffTime > maxBackoffMs) {
+              return dropAndContinue()
+            }
           }
 
           buffer = [...batch, ...buffer]
@@ -235,25 +249,24 @@ export default function batch(
 
           const nextAttempt = isRetryableWithoutCount ? attempt : attempt + 1
           isRetrying = true
-          scheduleFlush(nextAttempt)
+          scheduleFlush(nextAttempt, retryDelay)
         })
     }
   }
 
   let schedule: NodeJS.Timeout | undefined
 
-  function scheduleFlush(attempt = 1): void {
+  function scheduleFlush(attempt = 1, retryDelay?: number): void {
     if (schedule) {
       return
     }
 
-    schedule = setTimeout(
-      () => {
-        schedule = undefined
-        flush(attempt).catch(console.error)
-      },
-      rateLimitTimeout ? rateLimitTimeout : timeout
-    )
+    const delay = rateLimitTimeout || retryDelay || timeout
+
+    schedule = setTimeout(() => {
+      schedule = undefined
+      flush(attempt).catch(console.error)
+    }, delay)
     rateLimitTimeout = 0
   }
 

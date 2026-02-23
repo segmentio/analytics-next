@@ -97,8 +97,8 @@ export interface RateLimitConfig {
   maxRetryCount?: number
   /** Max Retry-After interval the SDK will respect, in seconds. @default 300 */
   maxRetryInterval?: number
-  /** Max total time (seconds) a batch can remain in retry before being dropped. @default 43200 (12 hours) */
-  maxTotalBackoffDuration?: number
+  /** Max total time (seconds) rate-limited retries can continue before dropping. @default 180 (3 minutes) */
+  maxRateLimitDuration?: number
 }
 
 export interface BackoffConfig {
@@ -133,7 +133,7 @@ export interface ResolvedRateLimitConfig {
   enabled: boolean
   maxRetryCount: number
   maxRetryInterval: number
-  maxTotalBackoffDuration: number
+  maxRateLimitDuration: number
 }
 
 export interface ResolvedBackoffConfig {
@@ -228,6 +228,22 @@ export function getStatusBehavior(
 }
 
 /**
+ * Compute an exponential backoff delay in milliseconds for the given attempt.
+ * Attempt is 1-based (first retry = 1).
+ */
+export function computeBackoff(
+  attempt: number,
+  config: ResolvedBackoffConfig
+): number {
+  const baseMs = config.baseBackoffInterval * 1000
+  const maxMs = config.maxBackoffInterval * 1000
+  const exponential = baseMs * Math.pow(2, attempt - 1)
+  const capped = Math.min(exponential, maxMs)
+  const jitter = 1 + (Math.random() - 0.5) * 2 * (config.jitterPercent / 100)
+  return Math.max(0, capped * jitter)
+}
+
+/**
  * Resolve an optional HttpConfig from CDN/user settings into a fully-populated
  * config object with defaults applied and values clamped to safe ranges.
  */
@@ -240,12 +256,7 @@ export function resolveHttpConfig(config?: HttpConfig): ResolvedHttpConfig {
       enabled: rate?.enabled ?? true,
       maxRetryCount: rate?.maxRetryCount ?? 100,
       maxRetryInterval: clamp(rate?.maxRetryInterval, 300, 0.1, 86400),
-      maxTotalBackoffDuration: clamp(
-        rate?.maxTotalBackoffDuration,
-        43200,
-        60,
-        604800
-      ),
+      maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 180, 10, 86400),
     },
     backoffConfig: {
       enabled: backoff?.enabled ?? true,

@@ -477,8 +477,8 @@ describe('Batches retry 500s and 429', () => {
 
     await analytics.track('event1')
     const ctx = await analytics.track('event2')
-    // wait a bit for retries - timeout is only 1 ms
-    await new Promise((resolve) => setTimeout(resolve, 100))
+    // wait for exponential backoff retry (~500ms base + jitter)
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     expect(ctx.attempts).toBe(2)
     expect(analytics.queue.queue.getAttempts(ctx)).toBe(1)
