@@ -73,7 +73,7 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
             deliveryId: deliveryId,
             message: {
               dismiss: function () {
-                Gist.dismissMessage(message?.instanceId)
+                void Gist.dismissMessage(message?.instanceId)
               },
             },
           })
@@ -121,7 +121,7 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
             actionValue: params.action,
             message: {
               dismiss: function () {
-                Gist.dismissMessage(params.message.instanceId)
+                void Gist.dismissMessage(params.message.instanceId)
               },
             },
           })
@@ -179,7 +179,7 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
     const page: string =
       ctx.event?.properties?.name ?? ctx.event?.properties?.url
     if (typeof page === 'string' && page.length > 0) {
-      Gist.setCurrentRoute(page)
+      void Gist.setCurrentRoute(page)
     }
 
     return ctx
@@ -265,7 +265,11 @@ function _handleInboxMessageAction(
   action: string
 ) {
   const deliveryId = message?.deliveryId
-  if (action === 'opened' && typeof deliveryId !== 'undefined' && deliveryId !== '') {
+  if (
+    action === 'opened' &&
+    typeof deliveryId !== 'undefined' &&
+    deliveryId !== ''
+  ) {
     void analyticsInstance.track(JourneysEvents.Metric, {
       deliveryId: message.deliveryId,
       metric: JourneysEvents.Opened,

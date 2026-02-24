@@ -35,6 +35,7 @@ describe('Customer.io In-App Plugin', () => {
         }
       },
       off: jest.fn(),
+      dispatch: jest.fn(),
     }
 
     const options: CustomerioSettings = { apiKey: 'foo' }
