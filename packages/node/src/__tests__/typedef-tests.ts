@@ -8,7 +8,6 @@ import {
   GroupTraits,
   HTTPClient,
   FetchHTTPClient,
-  HTTPFetchFn,
   HTTPClientRequest,
 } from '../'
 
