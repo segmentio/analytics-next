@@ -180,7 +180,7 @@ export class TokenManager implements ITokenManager {
 
     const timeUntilRefreshInMs = backoff({
       attempt: this.retryCount - 1,
-      minTimeout: 250,
+      minTimeout: 100,
       maxTimeout: 60 * 1000,
     })
     this.queueNextPoll(timeUntilRefreshInMs)
