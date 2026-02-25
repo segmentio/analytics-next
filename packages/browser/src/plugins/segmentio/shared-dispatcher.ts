@@ -97,7 +97,7 @@ export interface RateLimitConfig {
   maxRetryCount?: number
   /** Max Retry-After interval the SDK will respect, in seconds. @default 300 */
   maxRetryInterval?: number
-  /** Max total time (seconds) rate-limited retries can continue before dropping. @default 180 (3 minutes) */
+  /** Max total time (seconds) rate-limited retries can continue before dropping. @default 43200 (12 hours) */
   maxRateLimitDuration?: number
 }
 
@@ -176,8 +176,8 @@ function clamp(
   return Math.min(Math.max(v, min), max)
 }
 
-/** Statuses eligible for Retry-After header handling. */
-const RETRY_AFTER_STATUSES = [429, 408, 503]
+/** Statuses eligible for Retry-After header handling. Only 429 uses Retry-After; 408/503 use exponential backoff. */
+const RETRY_AFTER_STATUSES = [429]
 
 /**
  * Parse the Retry-After header from a response, if present and applicable.
@@ -256,7 +256,7 @@ export function resolveHttpConfig(config?: HttpConfig): ResolvedHttpConfig {
       enabled: rate?.enabled ?? true,
       maxRetryCount: rate?.maxRetryCount ?? 100,
       maxRetryInterval: clamp(rate?.maxRetryInterval, 300, 0.1, 86400),
-      maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 180, 10, 86400),
+      maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 43200, 10, 86400),
     },
     backoffConfig: {
       enabled: backoff?.enabled ?? true,

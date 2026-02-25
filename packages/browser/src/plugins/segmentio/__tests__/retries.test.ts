@@ -213,11 +213,9 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
     expect(firstHeaders['X-Retry-Count']).toBe('0')
   })
 
-  it('T07 Retry-After 408: delay, header increments', async () => {
+  it('T07 408 uses backoff retry', async () => {
     jest.useFakeTimers({ advanceTimers: true })
     const headersObj = new Headers()
-    const resetTime = 3
-    headersObj.set('Retry-After', resetTime.toString())
 
     fetch
       .mockReturnValueOnce(
@@ -233,8 +231,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
     await analytics.track('event')
     jest.runAllTimers()
 
-    expect(spy).toHaveBeenLastCalledWith(expect.anything(), resetTime * 1000)
-
+    expect(spy).toHaveBeenCalled()
     const firstHeaders = fetch.mock.calls[0][1].headers as Record<
       string,
       string
@@ -242,11 +239,9 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
     expect(firstHeaders['X-Retry-Count']).toBe('0')
   })
 
-  it('T08 Retry-After 503: delay, header increments', async () => {
+  it('T08 503 uses backoff retry', async () => {
     jest.useFakeTimers({ advanceTimers: true })
     const headersObj = new Headers()
-    const resetTime = 4
-    headersObj.set('Retry-After', resetTime.toString())
 
     fetch
       .mockReturnValueOnce(
@@ -262,8 +257,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
     await analytics.track('event')
     jest.runAllTimers()
 
-    expect(spy).toHaveBeenLastCalledWith(expect.anything(), resetTime * 1000)
-
+    expect(spy).toHaveBeenCalled()
     const firstHeaders = fetch.mock.calls[0][1].headers as Record<
       string,
       string

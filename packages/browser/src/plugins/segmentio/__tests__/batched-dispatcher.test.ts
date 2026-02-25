@@ -434,7 +434,7 @@ describe('Batching', () => {
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
 
-    it('T07 Retry-After 408: delay, no backoff', async () => {
+    it('T07 408 with Retry-After: ignores Retry-After, uses exponential backoff', async () => {
       const headers = new Headers()
       headers.set('Retry-After', '2')
 
@@ -449,12 +449,12 @@ describe('Batching', () => {
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
 
-      jest.advanceTimersByTime(2000)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
 
-    it('T08 Retry-After 503: delay, no backoff', async () => {
+    it('T08 503 uses exponential backoff', async () => {
       const headers = new Headers()
       headers.set('Retry-After', '2')
 
@@ -469,7 +469,7 @@ describe('Batching', () => {
       expect(fetch).toHaveBeenCalledTimes(1)
       expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
 
-      jest.advanceTimersByTime(2000)
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
@@ -665,6 +665,133 @@ describe('Batching', () => {
       jest.advanceTimersByTime(299999)
       expect(fetch).toHaveBeenCalledTimes(1)
       jest.advanceTimersByTime(1)
+      expect(fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('T04 (SDD) 429 halts current flush iteration — remaining batches not attempted', async () => {
+      const retryAfterHeaders = new Headers()
+      retryAfterHeaders.set('Retry-After', '5')
+
+      // First request gets 429, subsequent requests succeed
+      fetch
+        .mockReturnValueOnce(
+          createError({ status: 429, headers: retryAfterHeaders })
+        )
+        .mockReturnValue(createSuccess({}))
+
+      const httpConfig = resolveHttpConfig({
+        rateLimitConfig: { maxRateLimitDuration: 600 },
+      })
+
+      // Use a large timeout so the timer-based flush won't interfere
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        {
+          size: 1,
+          timeout: 60000,
+          maxRetries: 3,
+        },
+        httpConfig
+      )
+
+      // First event triggers immediate flush (size=1)
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'a' })
+
+      // First batch sent, got 429
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // Now add another event while rate-limited
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'b' })
+
+      // Advance less than the Retry-After period — no new requests should fire
+      jest.advanceTimersByTime(3000)
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // After the Retry-After delay (5s total), the pipeline resumes
+      jest.advanceTimersByTime(2000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('T19 (SDD) Gives up after maxTotalBackoffDuration elapsed', async () => {
+      // All responses are 500 (retryable with backoff)
+      fetch.mockReturnValue(createError({ status: 500 }))
+
+      // Set a very short maxTotalBackoffDuration (10 seconds) for testing
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          maxTotalBackoffDuration: 10, // 10 seconds
+          baseBackoffInterval: 5, // 5 seconds base
+          maxBackoffInterval: 300,
+          jitterPercent: 0, // no jitter for deterministic test
+        },
+      })
+
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        {
+          size: 1,
+          timeout: 1000,
+          maxRetries: 100, // high count so we hit duration limit first
+        },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // First attempt
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // First retry after ~5s backoff
+      jest.advanceTimersByTime(5000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+
+      // Second retry would need ~10s backoff (5 * 2^1), total = 5 + 10 = 15s > 10s limit
+      // So the batch should be dropped and no further retries happen
+      jest.runAllTimers()
+
+      // Only 2 attempts total: initial + 1 retry (second retry exceeds duration limit)
+      expect(fetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('T20 (SDD) Rate-limited state drops batch after maxRateLimitDuration exceeded', async () => {
+      const retryAfterHeaders = new Headers()
+      retryAfterHeaders.set('Retry-After', '60')
+
+      // Keep returning 429
+      fetch.mockReturnValue(
+        createError({ status: 429, headers: retryAfterHeaders })
+      )
+
+      // Set a short maxRateLimitDuration for testing
+      const httpConfig = resolveHttpConfig({
+        rateLimitConfig: {
+          maxRateLimitDuration: 100, // 100 seconds
+          maxRetryCount: 1000, // high count so we hit duration limit first
+        },
+      })
+
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        {
+          size: 1,
+          timeout: 1000,
+          maxRetries: 100,
+        },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // First attempt: 429 with Retry-After: 60
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // Wait for first Retry-After (60s) — totalRateLimitTime = 60s
+      jest.advanceTimersByTime(60000)
+      expect(fetch).toHaveBeenCalledTimes(2)
+
+      // Second 429 with Retry-After: 60 — totalRateLimitTime would be 120s > 100s limit
+      // Batch should be dropped, no more retries
+      jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
     })
   })

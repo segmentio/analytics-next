@@ -61,6 +61,8 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
             ? new FetchHTTPClient(settings.httpClient)
             : settings.httpClient ?? new FetchHTTPClient(),
         oauthSettings: settings.oauthSettings,
+        maxTotalBackoffDuration: settings.maxTotalBackoffDuration,
+        maxRateLimitDuration: settings.maxRateLimitDuration,
       },
       this as NodeEmitter
     )

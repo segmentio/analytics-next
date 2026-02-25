@@ -99,24 +99,39 @@ describe('fetch dispatcher', () => {
     }
   })
 
-  it('emits RateLimitError for 429/408/503 with Retry-After header', async () => {
+  it('emits RateLimitError for 429 with Retry-After header', async () => {
     const headers = new Headers()
     headers.set('Retry-After', '5')
 
     const client = dispatcherFactory()
 
-    for (const status of [429, 408, 503]) {
+    ;(fetchMock as jest.Mock).mockReturnValue(
+      createError({ status: 429, headers })
+    )
+
+    await expect(
+      client.dispatch('http://example.com', { status: 429 })
+    ).rejects.toMatchObject<Partial<RateLimitError>>({
+      name: 'RateLimitError',
+      retryTimeout: 5000,
+      isRetryableWithoutCount: true,
+    })
+  })
+
+  it('408/503 with Retry-After header use backoff, not RateLimitError', async () => {
+    const headers = new Headers()
+    headers.set('Retry-After', '5')
+
+    const client = dispatcherFactory(undefined, defaultHttpConfig)
+
+    for (const status of [408, 503]) {
       ;(fetchMock as jest.Mock).mockReturnValue(
         createError({ status, headers })
       )
 
       await expect(
         client.dispatch('http://example.com', { status })
-      ).rejects.toMatchObject<Partial<RateLimitError>>({
-        name: 'RateLimitError',
-        retryTimeout: 5000,
-        isRetryableWithoutCount: true,
-      })
+      ).rejects.toThrow(/Retryable error/)
     }
   })
 

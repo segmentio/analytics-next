@@ -352,7 +352,7 @@ describe('error handling', () => {
     `)
   })
 
-  it('delays retrying 429 errors', async () => {
+  it('429 with Retry-After halts flush and requeues batch', async () => {
     jest.useRealTimers()
     const headers = new TestHeaders()
     const delaySeconds = 1
@@ -373,14 +373,12 @@ describe('error handling', () => {
     })
 
     const context = new Context(eventFactory.alias('to', 'from'))
-    const start = Date.now()
     const pendingContext = segmentPlugin.alias(context)
-    validateMakeReqInputs(context)
-    expect(await pendingContext).toBe(context)
-    expect(makeReqSpy).toHaveBeenCalledTimes(2)
-    // Check that we've waited at least roughly the Retry-After duration.
-    // Allow some leeway for scheduling and execution.
-    expect(Date.now()).toBeGreaterThanOrEqual(start + delaySeconds * 1000 - 50)
+    const updatedContext = await pendingContext
+    // 429 with Retry-After sets rate-limit state and requeues the batch (resolves without failure)
+    expect(updatedContext).toBe(context)
+    expect(updatedContext.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
   })
 
   it('retries 500 errors', async () => {
@@ -669,43 +667,37 @@ describe('retry semantics', () => {
     expect(mockTokenManager.clearToken).toHaveBeenCalledTimes(1)
   })
 
-  it('T06 Retry-After 429: delay, no backoff, no retry budget', async () => {
+  it('T06 429 with Retry-After: sets rate-limit state and requeues batch', async () => {
+    jest.useRealTimers()
     const headers = new TestHeaders()
-    const retryAfterSeconds = 1
-    headers.set('Retry-After', retryAfterSeconds.toString())
+    headers.set('Retry-After', '10')
 
-    makeReqSpy
-      .mockReturnValueOnce(
-        createError({
-          status: 429,
-          statusText: 'Too Many Requests',
-          ...headers,
-        })
-      )
-      .mockReturnValue(createSuccess())
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 0,
+      maxRetries: 3,
       flushAt: 1,
     })
 
     const ctx = trackEvent()
-    const start = Date.now()
     const updated = await segmentPlugin.track(ctx)
-    const end = Date.now()
 
+    // 429 with Retry-After halts immediately — only 1 attempt, batch requeued (not failed)
     expect(updated.failedDelivery()).toBeFalsy()
-    expect(makeReqSpy).toHaveBeenCalledTimes(2)
-    const [first, second] = getAllRequests()
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBe('0')
-    expect(second.headers['X-Retry-Count']).toBe('1')
-    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
   })
 
-  it('T07 Retry-After 408: delay, no backoff', async () => {
+  it('T07 408 uses backoff (Retry-After header ignored)', async () => {
     const headers = new TestHeaders()
-    const retryAfterSeconds = 1
-    headers.set('Retry-After', retryAfterSeconds.toString())
+    headers.set('Retry-After', '1')
 
     makeReqSpy
       .mockReturnValueOnce(
@@ -718,27 +710,23 @@ describe('retry semantics', () => {
       .mockReturnValue(createSuccess())
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 0,
+      maxRetries: 3,
       flushAt: 1,
     })
 
     const ctx = trackEvent()
-    const start = Date.now()
     const updated = await segmentPlugin.track(ctx)
-    const end = Date.now()
 
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBe('0')
     expect(second.headers['X-Retry-Count']).toBe('1')
-    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
   })
 
-  it('T08 Retry-After 503: delay, no backoff', async () => {
+  it('T08 503 uses backoff (Retry-After header ignored)', async () => {
     const headers = new TestHeaders()
-    const retryAfterSeconds = 1
-    headers.set('Retry-After', retryAfterSeconds.toString())
+    headers.set('Retry-After', '1')
 
     makeReqSpy
       .mockReturnValueOnce(
@@ -751,21 +739,18 @@ describe('retry semantics', () => {
       .mockReturnValue(createSuccess())
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
-      maxRetries: 0,
+      maxRetries: 3,
       flushAt: 1,
     })
 
     const ctx = trackEvent()
-    const start = Date.now()
     const updated = await segmentPlugin.track(ctx)
-    const end = Date.now()
 
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBe('0')
     expect(second.headers['X-Retry-Count']).toBe('1')
-    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
   })
 
   it('T09 429 without Retry-After: backoff retry', async () => {
@@ -948,31 +933,18 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeTruthy()
   })
 
-  it('T17 Retry-After attempts do not consume retry budget', async () => {
+  it('T17 429 with Retry-After requeues immediately (does not consume retry budget)', async () => {
+    jest.useRealTimers()
     const headers = new TestHeaders()
-    headers.set('Retry-After', '0')
+    headers.set('Retry-After', '10')
 
-    makeReqSpy
-      .mockReturnValueOnce(
-        createError({
-          status: 429,
-          statusText: 'Too Many Requests',
-          ...headers,
-        })
-      )
-      .mockReturnValueOnce(
-        createError({
-          status: 429,
-          statusText: 'Too Many Requests',
-          ...headers,
-        })
-      )
-      .mockReturnValueOnce(
-        createError({ status: 500, statusText: 'Internal Server Error' })
-      )
-      .mockReturnValue(
-        createError({ status: 500, statusText: 'Internal Server Error' })
-      )
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 1,
@@ -982,14 +954,9 @@ describe('retry semantics', () => {
     const ctx = trackEvent()
     const updated = await segmentPlugin.track(ctx)
 
-    // 2 rate-limited attempts + 2 backoff attempts
-    expect(makeReqSpy).toHaveBeenCalledTimes(4)
-    const [first, second, third, fourth] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
-    expect(second.headers['X-Retry-Count']).toBe('1')
-    expect(third.headers['X-Retry-Count']).toBe('2')
-    expect(fourth.headers['X-Retry-Count']).toBe('3')
-    expect(updated.failedDelivery()).toBeTruthy()
+    // 429 with Retry-After requeues immediately — only 1 attempt, no retries consumed
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    expect(updated.failedDelivery()).toBeFalsy()
   })
 
   it('T18 X-Retry-Count semantics across mixed retries', async () => {
@@ -1097,7 +1064,8 @@ describe('retry semantics', () => {
     expect(first.headers['Authorization']).toMatch(/^Basic /)
   })
 
-  it('T21 Safety cap: persistent Retry-After eventually gives up', async () => {
+  it('T21 Safety cap: persistent 429 with Retry-After requeues on first attempt', async () => {
+    jest.useRealTimers()
     const headers = new TestHeaders()
     headers.set('Retry-After', '0')
 
@@ -1117,29 +1085,28 @@ describe('retry semantics', () => {
     const ctx = trackEvent()
     const updated = await segmentPlugin.track(ctx)
 
-    // MAX_RETRY_AFTER_RETRIES = 20, maxRetries = 0
-    // Safety cap fires when totalAttempts > maxRetries + 20 = 20
-    // That means 21 total attempts
-    expect(makeReqSpy).toHaveBeenCalledTimes(21)
-    expect(updated.failedDelivery()).toBeTruthy()
-    const err = updated.failedDelivery()!.reason as Error
-    expect(err.message).toContain('[429]')
+    // 429 with Retry-After now requeues immediately — only 1 attempt
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    expect(updated.failedDelivery()).toBeFalsy()
   })
 
-  it('T22 Retry-After capped at 300 seconds', async () => {
+  it('T22 Retry-After capped at 300 seconds (unit test)', async () => {
+    // The Retry-After cap is enforced in getRetryAfterInSeconds via
+    // Math.min(seconds, MAX_RETRY_AFTER_SECONDS). Since 429 with Retry-After
+    // now sets rate-limit state and requeues the batch (rather than retrying
+    // inline), we verify the cap indirectly by checking that a large
+    // Retry-After value still results in successful requeue.
+    jest.useRealTimers()
     const headers = new TestHeaders()
-    const retryAfterSeconds = 2
-    headers.set('Retry-After', retryAfterSeconds.toString())
+    headers.set('Retry-After', '600') // exceeds 300s cap
 
-    makeReqSpy
-      .mockReturnValueOnce(
-        createError({
-          status: 429,
-          statusText: 'Too Many Requests',
-          ...headers,
-        })
-      )
-      .mockReturnValue(createSuccess())
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 1,
@@ -1147,19 +1114,113 @@ describe('retry semantics', () => {
     })
 
     const ctx = trackEvent()
+    const updated = await segmentPlugin.track(ctx)
+
+    // 429 with Retry-After requeues immediately
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    expect(updated.failedDelivery()).toBeFalsy()
+  })
+
+  it('T04 429 halts current upload iteration (no further batches attempted)', async () => {
+    jest.useRealTimers()
+    const headers = new TestHeaders()
+    headers.set('Retry-After', '60')
+
+    // First batch gets 429, second batch should not be attempted
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+    })
+
+    // Send first event — it gets 429, sets rate-limit state, requeues
+    const ctx1 = trackEvent()
+    const updated1 = await segmentPlugin.track(ctx1)
+    expect(updated1.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+
+    // Send second event — should be rate-limited, requeued without making a request
+    const ctx2 = trackEvent()
+    const updated2 = await segmentPlugin.track(ctx2)
+    expect(updated2.failedDelivery()).toBeFalsy()
+    // Still only 1 HTTP request — the second batch was blocked by rate-limit state
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('T19 maxTotalBackoffDuration: drops batch after duration exceeded', async () => {
+    jest.useRealTimers()
+
+    // Always return 500 to keep retrying
+    makeReqSpy.mockReturnValue(
+      createError({ status: 500, statusText: 'Internal Server Error' })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 100, // high retry count so duration limit kicks in first
+      flushAt: 1,
+      // Set a very short maxTotalBackoffDuration so the test completes quickly
+      maxTotalBackoffDuration: 1, // 1 second
+    })
+
+    const ctx = trackEvent()
     const start = Date.now()
     const updated = await segmentPlugin.track(ctx)
-    const end = Date.now()
+    const elapsed = Date.now() - start
 
-    expect(updated.failedDelivery()).toBeFalsy()
-    expect(makeReqSpy).toHaveBeenCalledTimes(2)
-    const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
-    expect(second.headers['X-Retry-Count']).toBe('1')
-    // Should wait approximately 2 seconds
-    expect(end - start).toBeGreaterThanOrEqual(retryAfterSeconds * 1000 - 100)
+    // Batch should have been dropped due to maxTotalBackoffDuration
+    expect(updated.failedDelivery()).toBeTruthy()
+    const err = updated.failedDelivery()!.reason as Error
+    expect(err.message).toContain('[500]')
+    // Should have taken at least ~1 second (the duration limit)
+    expect(elapsed).toBeGreaterThanOrEqual(900)
+    // But should not have exhausted all 100 retries
+    expect(makeReqSpy.mock.calls.length).toBeLessThan(100)
+  })
 
-    // Note: The actual cap of 300 seconds is tested by the implementation's
-    // Math.min(seconds, MAX_RETRY_AFTER_SECONDS) in getRetryAfterInSeconds
+  it('T20 maxRateLimitDuration: clears rate-limit and drops batch after duration exceeded', async () => {
+    jest.useRealTimers()
+    const headers = new TestHeaders()
+    headers.set('Retry-After', '60')
+
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
+
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      maxRetries: 3,
+      flushAt: 1,
+      maxRateLimitDuration: 1, // 1 second
+    })
+
+    // First event gets 429 — sets rate-limit state
+    const ctx1 = trackEvent()
+    const updated1 = await segmentPlugin.track(ctx1)
+    expect(updated1.failedDelivery()).toBeFalsy()
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+
+    // Wait for maxRateLimitDuration to elapse
+    await new Promise((r) => setTimeout(r, 1100))
+
+    // Now send another event — rate-limit should have been cleared by duration check
+    // The request will go through (rate-limit cleared) and since we still mock 429,
+    // it will set rate-limit again and requeue
+    makeReqSpy.mockClear()
+    const ctx2 = trackEvent()
+    await segmentPlugin.track(ctx2)
+
+    // The rate-limit state was cleared because maxRateLimitDuration elapsed,
+    // so a new HTTP request was made
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
   })
 })

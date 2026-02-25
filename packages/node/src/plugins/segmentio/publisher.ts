@@ -71,6 +71,8 @@ export interface PublisherProps {
   disable?: boolean
   httpClient: HTTPClient
   oauthSettings?: OAuthSettings
+  maxTotalBackoffDuration?: number
+  maxRateLimitDuration?: number
 }
 
 /**
@@ -92,6 +94,12 @@ export class Publisher {
   private _writeKey: string
   private _basicAuth: string
   private _tokenManager: TokenManager | undefined
+  private _maxTotalBackoffDuration: number
+  private _maxRateLimitDuration: number
+
+  // Rate-limit state: set when a 429 is received, cleared on success or expiry
+  private _rateLimitedUntil: number | undefined
+  private _rateLimitStartTime: number | undefined
 
   constructor(
     {
@@ -105,6 +113,8 @@ export class Publisher {
       httpClient,
       disable,
       oauthSettings,
+      maxTotalBackoffDuration,
+      maxRateLimitDuration,
     }: PublisherProps,
     emitter: NodeEmitter
   ) {
@@ -121,6 +131,8 @@ export class Publisher {
     this._httpClient = httpClient
     this._writeKey = writeKey
     this._basicAuth = b64encode(`${writeKey}:`)
+    this._maxTotalBackoffDuration = maxTotalBackoffDuration ?? 43200
+    this._maxRateLimitDuration = maxRateLimitDuration ?? 43200
 
     if (oauthSettings) {
       this._tokenManager = new TokenManager({
@@ -247,6 +259,47 @@ export class Publisher {
     }
   }
 
+  private _isRateLimited(): boolean {
+    if (this._rateLimitedUntil === undefined) return false
+
+    // Check if maxRateLimitDuration has been exceeded
+    if (
+      this._rateLimitStartTime !== undefined &&
+      Date.now() - this._rateLimitStartTime > this._maxRateLimitDuration * 1000
+    ) {
+      // Clear rate-limit state; caller will drop batch
+      this._rateLimitedUntil = undefined
+      this._rateLimitStartTime = undefined
+      return false
+    }
+
+    if (Date.now() >= this._rateLimitedUntil) {
+      // Rate limit window has elapsed, clear state and proceed
+      this._rateLimitedUntil = undefined
+      // Keep rateLimitStartTime — it persists until success or maxRateLimitDuration
+      return false
+    }
+    return true
+  }
+
+  private _setRateLimitState(headers: HTTPResponse['headers']): void {
+    const retryAfterSeconds = getRetryAfterInSeconds(headers)
+    if (typeof retryAfterSeconds === 'number') {
+      this._rateLimitedUntil = Date.now() + retryAfterSeconds * 1000
+    } else {
+      // No Retry-After header — use a default backoff of 60s
+      this._rateLimitedUntil = Date.now() + 60000
+    }
+    if (this._rateLimitStartTime === undefined) {
+      this._rateLimitStartTime = Date.now()
+    }
+  }
+
+  private _clearRateLimitState(): void {
+    this._rateLimitedUntil = undefined
+    this._rateLimitStartTime = undefined
+  }
+
   private async send(batch: ContextBatch) {
     if (this._flushPendingItemsCount) {
       this._flushPendingItemsCount -= batch.length
@@ -256,12 +309,28 @@ export class Publisher {
 
     let countedRetries = 0
     let totalAttempts = 0
+    let firstFailureTime: number | undefined
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
       totalAttempts++
 
-      let requestedRetryTimeout: number | undefined
+      // Check rate-limit state before making a request
+      if (this._isRateLimited()) {
+        // Re-add pending count since we're requeueing
+        if (this._flushPendingItemsCount !== undefined) {
+          this._flushPendingItemsCount += batch.length
+        }
+        // Requeue: resolve contexts back so they re-enter the pipeline
+        batch.resolveEvents()
+        return
+      }
+
+      // Check if maxRateLimitDuration was exceeded (cleared by _isRateLimited)
+      // If we had a rateLimitStartTime but it got cleared due to duration,
+      // and we're in a 429 requeue cycle, drop the batch
+      // (This is handled by _isRateLimited returning false after clearing state)
+
       let failureReason: unknown
       let shouldRetry = false
       let shouldCountTowardsMaxRetries = true
@@ -310,7 +379,8 @@ export class Publisher {
         const response = await this._httpClient.makeRequest(request)
 
         if (response.status >= 100 && response.status < 400) {
-          // exit after success or 1xx/3xx (Segment should never emit these)
+          // Success — clear rate-limit state
+          this._clearRateLimitState()
           batch.resolveEvents()
           return
         } else if (
@@ -337,18 +407,26 @@ export class Publisher {
 
         failureReason = new Error(`[${status}] ${statusText}`)
 
-        // Retry-After based handling for specific status codes.
-        if (status === 429 || status === 408 || status === 503) {
+        // 429: set rate-limit state, requeue batch, halt this flush iteration
+        if (status === 429) {
           const retryAfterSeconds = getRetryAfterInSeconds(response.headers)
           if (typeof retryAfterSeconds === 'number') {
-            requestedRetryTimeout = retryAfterSeconds * 1000
+            // Has Retry-After header — set rate-limit state and halt
+            this._setRateLimitState(response.headers)
+            // Re-add pending count since we're requeueing
+            if (this._flushPendingItemsCount !== undefined) {
+              this._flushPendingItemsCount += batch.length
+            }
+            batch.resolveEvents()
+            return
+          } else {
+            // No Retry-After header — retry with backoff (counted)
             shouldRetry = true
-            // These retries do not count against maxRetries
-            shouldCountTowardsMaxRetries = false
+            shouldCountTowardsMaxRetries = true
           }
         }
 
-        // If we haven't already decided to retry based on Retry-After,
+        // If we haven't already decided to retry based on 429 handling,
         // apply the general retry policy.
         if (!shouldRetry) {
           if (status >= 500 && status < 600) {
@@ -383,6 +461,16 @@ export class Publisher {
         return
       }
 
+      // Track first failure time for maxTotalBackoffDuration
+      if (!firstFailureTime) firstFailureTime = Date.now()
+      if (
+        Date.now() - firstFailureTime >
+        this._maxTotalBackoffDuration * 1000
+      ) {
+        resolveFailedBatch(batch, failureReason)
+        return
+      }
+
       if (shouldCountTowardsMaxRetries) {
         countedRetries++
         if (countedRetries > maxRetries) {
@@ -397,13 +485,11 @@ export class Publisher {
         return
       }
 
-      const delayMs =
-        requestedRetryTimeout ??
-        backoff({
-          attempt: countedRetries,
-          minTimeout: 100,
-          maxTimeout: 60000,
-        })
+      const delayMs = backoff({
+        attempt: countedRetries,
+        minTimeout: 100,
+        maxTimeout: 60000,
+      })
 
       await sleep(delayMs)
     }

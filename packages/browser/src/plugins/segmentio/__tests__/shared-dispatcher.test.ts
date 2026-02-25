@@ -16,7 +16,7 @@ describe('resolveHttpConfig', () => {
       enabled: true,
       maxRetryCount: 100,
       maxRetryInterval: 300,
-      maxRateLimitDuration: 180,
+      maxRateLimitDuration: 43200,
     })
 
     expect(resolved.backoffConfig).toEqual({
@@ -111,7 +111,7 @@ describe('resolveHttpConfig', () => {
     // Defaults for missing fields
     expect(resolved.rateLimitConfig.enabled).toBe(true)
     expect(resolved.rateLimitConfig.maxRetryInterval).toBe(300)
-    expect(resolved.rateLimitConfig.maxRateLimitDuration).toBe(180)
+    expect(resolved.rateLimitConfig.maxRateLimitDuration).toBe(43200)
     expect(resolved.backoffConfig.enabled).toBe(true)
     expect(resolved.backoffConfig.maxRetryCount).toBe(100)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
@@ -298,21 +298,13 @@ describe('parseRetryAfter', () => {
     expect(result).toEqual({ retryAfterMs: 5000, fromHeader: true })
   })
 
-  it('returns parsed value for 408 with valid Retry-After', () => {
-    const result = parseRetryAfter(makeRes(408, '10'), defaults)
-    expect(result).toEqual({ retryAfterMs: 10000, fromHeader: true })
-  })
-
-  it('returns parsed value for 503 with valid Retry-After', () => {
-    const result = parseRetryAfter(makeRes(503, '2'), defaults)
-    expect(result).toEqual({ retryAfterMs: 2000, fromHeader: true })
-  })
-
   it('returns null for non-eligible statuses', () => {
     expect(parseRetryAfter(makeRes(500, '5'), defaults)).toBeNull()
     expect(parseRetryAfter(makeRes(400, '5'), defaults)).toBeNull()
     expect(parseRetryAfter(makeRes(200, '5'), defaults)).toBeNull()
     expect(parseRetryAfter(makeRes(502, '5'), defaults)).toBeNull()
+    expect(parseRetryAfter(makeRes(408, '5'), defaults)).toBeNull()
+    expect(parseRetryAfter(makeRes(503, '5'), defaults)).toBeNull()
   })
 
   it('returns null when Retry-After header is missing', () => {

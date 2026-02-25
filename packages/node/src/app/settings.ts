@@ -50,6 +50,16 @@ export interface AnalyticsSettings {
    * Set up OAuth2 authentication between the client and Segment's endpoints
    */
   oauthSettings?: OAuthSettings
+  /**
+   * Maximum total time (in seconds) a batch can spend retrying transient errors
+   * before being dropped. Default: 43200 (12 hours).
+   */
+  maxTotalBackoffDuration?: number
+  /**
+   * Maximum total time (in seconds) the pipeline can stay in rate-limited state
+   * before dropping batches and resuming. Default: 43200 (12 hours).
+   */
+  maxRateLimitDuration?: number
 }
 
 export const validateSettings = (settings: AnalyticsSettings) => {

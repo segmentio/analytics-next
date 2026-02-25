@@ -286,6 +286,12 @@ export default function batch(
   ): Promise<unknown> {
     buffer.push(body)
 
+    // If a retry is pending (e.g., 429 rate-limit), don't bypass the scheduled retry.
+    // A 429 blocks the entire flush iteration until the Retry-After period elapses.
+    if (isRetrying) {
+      return
+    }
+
     const bufferOverflow =
       buffer.length >= limit ||
       approachingTrackingAPILimit(buffer) ||
