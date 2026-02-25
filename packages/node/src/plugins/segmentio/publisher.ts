@@ -439,7 +439,7 @@ export class Publisher {
             // 511 is retried only when a token manager is configured.
             if (status === 511 && this._tokenManager) {
               shouldRetry = true
-            } else if (![501, 505].includes(status)) {
+            } else if (![501, 505, 511].includes(status)) {
               shouldRetry = true
             }
           } else if (status >= 400 && status < 500) {
