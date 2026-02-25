@@ -386,6 +386,7 @@ export class Publisher {
 
         const response = await this._httpClient.makeRequest(request)
 
+        // Per SDD: status codes 100–399 are treated as successful delivery.
         if (response.status >= 100 && response.status < 400) {
           // Success — clear rate-limit state
           this._clearRateLimitState()

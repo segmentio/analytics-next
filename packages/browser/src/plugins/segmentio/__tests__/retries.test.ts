@@ -109,7 +109,7 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
     await analytics.register(segment, envEnrichment)
   })
 
-  it('T01 Success: no retry, header is 0', async () => {
+  it('T01 first attempt sends X-Retry-Count as 0', async () => {
     fetch.mockReturnValue(createSuccess({}))
 
     await analytics.track('event')

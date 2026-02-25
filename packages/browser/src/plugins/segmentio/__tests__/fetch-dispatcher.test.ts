@@ -18,7 +18,7 @@ describe('fetch dispatcher', () => {
     jest.resetAllMocks()
   })
 
-  it('adds X-Retry-Count header only when retryCountHeader > 0', async () => {
+  it('adds X-Retry-Count header only when retryCountHeader is provided', async () => {
     ;(fetchMock as jest.Mock)
       .mockReturnValueOnce(createSuccess({}))
       .mockReturnValueOnce(createSuccess({}))
