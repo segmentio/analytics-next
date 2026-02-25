@@ -16,7 +16,7 @@ export interface AnalyticsSettings {
    */
   path?: string
   /**
-   * The number of times to retry flushing a batch. Default: 3
+   * The number of times to retry flushing a batch. Default: 10
    */
   maxRetries?: number
   /**

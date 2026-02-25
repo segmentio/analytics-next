@@ -265,7 +265,7 @@ export class Publisher {
     // Check if maxRateLimitDuration has been exceeded
     if (
       this._rateLimitStartTime !== undefined &&
-      Date.now() - this._rateLimitStartTime > this._maxRateLimitDuration * 1000
+      Date.now() - this._rateLimitStartTime >= this._maxRateLimitDuration * 1000
     ) {
       // Clear rate-limit state; caller will drop batch
       this._rateLimitedUntil = undefined
@@ -317,13 +317,21 @@ export class Publisher {
 
       // Check rate-limit state before making a request
       if (this._isRateLimited()) {
-        // Re-add pending count since we're requeueing
-        if (this._flushPendingItemsCount !== undefined) {
-          this._flushPendingItemsCount += batch.length
-        }
-        // Requeue: resolve contexts back so they re-enter the pipeline
-        batch.resolveEvents()
-        return
+        const untilRetryAfter = Math.max(
+          0,
+          (this._rateLimitedUntil ?? Date.now()) - Date.now()
+        )
+        const untilDurationLimit =
+          this._rateLimitStartTime === undefined
+            ? untilRetryAfter
+            : Math.max(
+                0,
+                this._maxRateLimitDuration * 1000 -
+                  (Date.now() - this._rateLimitStartTime)
+              )
+        const waitMs = Math.min(untilRetryAfter, untilDurationLimit)
+        await sleep(waitMs)
+        continue
       }
 
       // Check if maxRateLimitDuration was exceeded (cleared by _isRateLimited)
@@ -411,14 +419,10 @@ export class Publisher {
         if (status === 429) {
           const retryAfterSeconds = getRetryAfterInSeconds(response.headers)
           if (typeof retryAfterSeconds === 'number') {
-            // Has Retry-After header — set rate-limit state and halt
+            // Has Retry-After header — set rate-limit state and retry without consuming maxRetries
             this._setRateLimitState(response.headers)
-            // Re-add pending count since we're requeueing
-            if (this._flushPendingItemsCount !== undefined) {
-              this._flushPendingItemsCount += batch.length
-            }
-            batch.resolveEvents()
-            return
+            shouldRetry = true
+            shouldCountTowardsMaxRetries = false
           } else {
             // No Retry-After header — retry with backoff (counted)
             shouldRetry = true
@@ -461,14 +465,16 @@ export class Publisher {
         return
       }
 
-      // Track first failure time for maxTotalBackoffDuration
-      if (!firstFailureTime) firstFailureTime = Date.now()
-      if (
-        Date.now() - firstFailureTime >
-        this._maxTotalBackoffDuration * 1000
-      ) {
-        resolveFailedBatch(batch, failureReason)
-        return
+      // Track first failure time for counted retries (non-rate-limit backoff path)
+      if (shouldCountTowardsMaxRetries) {
+        if (!firstFailureTime) firstFailureTime = Date.now()
+        if (
+          Date.now() - firstFailureTime >
+          this._maxTotalBackoffDuration * 1000
+        ) {
+          resolveFailedBatch(batch, failureReason)
+          return
+        }
       }
 
       if (shouldCountTowardsMaxRetries) {
@@ -485,11 +491,13 @@ export class Publisher {
         return
       }
 
-      const delayMs = backoff({
-        attempt: countedRetries,
-        minTimeout: 100,
-        maxTimeout: 60000,
-      })
+      const delayMs = shouldCountTowardsMaxRetries
+        ? backoff({
+            attempt: countedRetries,
+            minTimeout: 100,
+            maxTimeout: 60000,
+          })
+        : 0
 
       await sleep(delayMs)
     }

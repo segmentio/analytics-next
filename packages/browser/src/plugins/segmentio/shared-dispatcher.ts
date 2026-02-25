@@ -91,7 +91,11 @@ export type DeliveryStrategy =
 // --- HTTP Config (rate limiting + backoff) ---
 
 export interface RateLimitConfig {
-  /** Enable rate-limit retry logic. When false, Retry-After headers are ignored. @default true */
+  /**
+   * Kept for cross-SDK config parity (mobile/server).
+   * Browser SDK already had rate-limit handling before this config and currently keeps existing behavior.
+   * @default true
+   */
   enabled?: boolean
   /** Max retry attempts for rate-limited requests. @default 100 */
   maxRetryCount?: number
@@ -102,7 +106,11 @@ export interface RateLimitConfig {
 }
 
 export interface BackoffConfig {
-  /** Enable backoff retry logic for transient errors. When false, no exponential backoff is applied. @default true */
+  /**
+   * Kept for cross-SDK config parity (mobile/server).
+   * Browser SDK already had backoff behavior before this config and currently keeps existing behavior.
+   * @default true
+   */
   enabled?: boolean
   /** Max retry attempts per batch. @default 100 */
   maxRetryCount?: number
