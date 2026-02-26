@@ -620,13 +620,11 @@ describe('retry semantics', () => {
     const ctx = trackEvent()
     const updated = await segmentPlugin.track(ctx)
 
-    // Without auth configured, 511 is treated as a generic retryable 5xx.
-    // We should see M+1 attempts and X-Retry-Count on retries.
-    expect(makeReqSpy).toHaveBeenCalledTimes(3)
-    const [first, second, third] = getAllRequests()
+    // Without a token manager, 511 is non-retryable (like 501/505).
+    // Only one attempt should be made.
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
+    const [first] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBe('0')
-    expect(second.headers['X-Retry-Count']).toBe('1')
-    expect(third.headers['X-Retry-Count']).toBe('2')
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[511]')

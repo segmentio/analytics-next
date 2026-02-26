@@ -18,7 +18,7 @@ describe('fetch dispatcher', () => {
     jest.resetAllMocks()
   })
 
-  it('adds X-Retry-Count header only when retryCountHeader is provided', async () => {
+  it('sends X-Retry-Count as 0 by default and increments when provided', async () => {
     ;(fetchMock as jest.Mock)
       .mockReturnValueOnce(createSuccess({}))
       .mockReturnValueOnce(createSuccess({}))
@@ -35,7 +35,7 @@ describe('fetch dispatcher', () => {
     const secondHeaders = (fetchMock as jest.Mock).mock.calls[1][1]
       .headers as Record<string, string>
 
-    expect(firstHeaders['X-Retry-Count']).toBeUndefined()
+    expect(firstHeaders['X-Retry-Count']).toBe('0')
     expect(secondHeaders['X-Retry-Count']).toBe('1')
   })
 
