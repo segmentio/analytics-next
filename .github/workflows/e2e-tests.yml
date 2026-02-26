@@ -1,0 +1,67 @@
+# E2E Tests for analytics-next (Node.js SDK)
+# Copy this file to: analytics-next/.github/workflows/e2e-tests.yml
+#
+# This workflow:
+# 1. Checks out the SDK and sdk-e2e-tests repos
+# 2. Builds the SDK monorepo and e2e-cli
+# 3. Runs the e2e test suite
+
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout SDK
+        uses: actions/checkout@v4
+        with:
+          path: sdk
+
+      - name: Checkout sdk-e2e-tests
+        uses: actions/checkout@v4
+        with:
+          repository: segmentio/sdk-e2e-tests
+          token: ${{ secrets.E2E_TESTS_TOKEN }}
+          path: sdk-e2e-tests
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install SDK dependencies
+        working-directory: sdk
+        run: yarn install
+
+      - name: Build SDK packages
+        working-directory: sdk
+        run: yarn build
+
+      - name: Build e2e-cli
+        working-directory: sdk/packages/node/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Run E2E tests
+        working-directory: sdk-e2e-tests
+        run: |
+          ./scripts/run-tests.sh \
+            --sdk-dir "${{ github.workspace }}/sdk/packages/node/e2e-cli" \
+            --cli "node ${{ github.workspace }}/sdk/packages/node/e2e-cli/dist/cli.js"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: sdk-e2e-tests/test-results/
+          if-no-files-found: ignore

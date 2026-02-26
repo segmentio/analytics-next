@@ -703,3 +703,179 @@ describe('dispatchSingle', () => {
     expect(attempted.attempts).toEqual(2)
   })
 })
+
+describe('failedDelivery handling', () => {
+  // This test suite verifies the fix for the bug where plugins that set
+  // failedDelivery without throwing (like the Node SDK Publisher on rate limiting)
+  // would incorrectly log "Delivered" instead of logging a failure.
+
+  const destinationPlugin: CorePlugin<TestCtx> = {
+    ...testPlugin,
+    name: 'Test Destination',
+    type: 'destination' as PluginType,
+  }
+
+  test('emits delivery_failure when plugin sets failedDelivery without throwing', async () => {
+    const eq = new TestEventQueue()
+
+    const failingDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        // Simulate what the Node SDK Publisher does on rate limiting:
+        // set failedDelivery but resolve the promise (don't throw)
+        ctx.setFailedDelivery({ reason: new Error('Rate limited (429)') })
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), failingDestination, ajs)
+
+    const deliveryFailureSpy = jest.fn()
+    const deliverySuccessSpy = jest.fn()
+    eq.on('delivery_failure', deliveryFailureSpy)
+    eq.on('delivery_success', deliverySuccessSpy)
+
+    await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    expect(deliveryFailureSpy).toHaveBeenCalledTimes(1)
+    expect(deliverySuccessSpy).not.toHaveBeenCalled()
+  })
+
+  test('does not log "Delivered" when failedDelivery is set', async () => {
+    const eq = new TestEventQueue()
+
+    const failingDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        ctx.setFailedDelivery({ reason: new Error('Rate limited (429)') })
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), failingDestination, ajs)
+
+    const ctx = await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    const logs = ctx.logs()
+    const deliveredLog = logs.find(
+      (log) => log.message === 'Delivered' && log.level === 'debug'
+    )
+    const failedLog = logs.find(
+      (log) => log.message === 'Failed to deliver' && log.level === 'error'
+    )
+
+    expect(deliveredLog).toBeUndefined()
+    expect(failedLog).toBeDefined()
+  })
+
+  test('increments delivery_failed metric when failedDelivery is set', async () => {
+    const eq = new TestEventQueue()
+
+    const failingDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        ctx.setFailedDelivery({ reason: new Error('Rate limited (429)') })
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), failingDestination, ajs)
+
+    // Spy on the stats methods to verify the correct one is called
+    const incrementSpy = jest.spyOn(fruitBasket.stats, 'increment')
+    const gaugeSpy = jest.spyOn(fruitBasket.stats, 'gauge')
+
+    await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    // Should increment delivery_failed, not gauge delivered
+    expect(incrementSpy).toHaveBeenCalledWith('delivery_failed')
+    expect(gaugeSpy).not.toHaveBeenCalledWith('delivered', expect.any(Number))
+  })
+
+  test('flush event receives delivered=false when failedDelivery is set', async () => {
+    const eq = new TestEventQueue()
+
+    const failingDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        ctx.setFailedDelivery({ reason: new Error('Rate limited (429)') })
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), failingDestination, ajs)
+
+    const flushSpy = jest.fn()
+    eq.on('flush', flushSpy)
+
+    await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    expect(flushSpy).toHaveBeenCalledWith(
+      expect.any(TestCtx),
+      false // delivered should be false
+    )
+  })
+
+  test('handles non-Error failedDelivery reasons', async () => {
+    const eq = new TestEventQueue()
+
+    const failingDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        // Some code might set a string or other value as the reason
+        ctx.setFailedDelivery({ reason: 'Something went wrong' })
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), failingDestination, ajs)
+
+    const deliveryFailureSpy = jest.fn()
+    eq.on('delivery_failure', deliveryFailureSpy)
+
+    await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    expect(deliveryFailureSpy).toHaveBeenCalledTimes(1)
+    // The error should be wrapped in an Error object
+    expect(deliveryFailureSpy).toHaveBeenCalledWith(
+      expect.any(TestCtx),
+      expect.objectContaining({ message: 'Something went wrong' })
+    )
+  })
+
+  test('successful delivery still works correctly', async () => {
+    const eq = new TestEventQueue()
+
+    const successfulDestination = {
+      ...destinationPlugin,
+      track: (ctx: TestCtx): Promise<TestCtx> => {
+        // No failedDelivery set - should succeed normally
+        return Promise.resolve(ctx)
+      },
+    }
+
+    await eq.register(TestCtx.system(), successfulDestination, ajs)
+
+    const deliveryFailureSpy = jest.fn()
+    const deliverySuccessSpy = jest.fn()
+    eq.on('delivery_failure', deliveryFailureSpy)
+    eq.on('delivery_success', deliverySuccessSpy)
+
+    const ctx = await eq.dispatch(fruitBasket)
+    await flushAll(eq)
+
+    expect(deliverySuccessSpy).toHaveBeenCalledTimes(1)
+    expect(deliveryFailureSpy).not.toHaveBeenCalled()
+
+    const logs = ctx.logs()
+    const deliveredLog = logs.find(
+      (log) => log.message === 'Delivered' && log.level === 'debug'
+    )
+    expect(deliveredLog).toBeDefined()
+  })
+})
