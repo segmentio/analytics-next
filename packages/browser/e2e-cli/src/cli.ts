@@ -160,6 +160,16 @@ async function main(): Promise<void> {
       }
     )
 
+    const deliveryErrors: string[] = []
+    analytics.on('error', (err) => {
+      const reason = (err as any).reason
+      const msg =
+        reason instanceof Error
+          ? reason.message
+          : String(reason ?? (err as any).code)
+      deliveryErrors.push(msg)
+    })
+
     // Process event sequences
     for (const seq of input.sequences) {
       if (seq.delayMs > 0) {
@@ -174,7 +184,11 @@ async function main(): Promise<void> {
     // Wait for events to be sent (browser SDK auto-flushes)
     await delay(3000)
 
-    output = { success: true, sentBatches: 1 }
+    if (deliveryErrors.length > 0) {
+      output = { success: false, error: deliveryErrors[0], sentBatches: 0 }
+    } else {
+      output = { success: true, sentBatches: 1 }
+    }
 
     // Cleanup
     dom.window.close()
