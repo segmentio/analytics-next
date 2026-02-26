@@ -141,6 +141,14 @@ async function main(): Promise<void> {
       httpRequestTimeout: config.timeout ?? 10000,
     })
 
+    const deliveryErrors: string[] = []
+    analytics.on('error', (err) => {
+      const reason = err.reason
+      const msg =
+        reason instanceof Error ? reason.message : String(reason ?? err.code)
+      deliveryErrors.push(msg)
+    })
+
     // Process event sequences
     for (const seq of sequences) {
       if (seq.delayMs > 0) {
@@ -155,8 +163,13 @@ async function main(): Promise<void> {
     // Flush and close
     await analytics.closeAndFlush()
 
-    output.success = true
-    output.sentBatches = 1 // Placeholder
+    if (deliveryErrors.length > 0) {
+      output.success = false
+      output.error = deliveryErrors[0]
+    } else {
+      output.success = true
+      output.sentBatches = 1
+    }
   } catch (err) {
     output.error = err instanceof Error ? err.message : String(err)
   }
