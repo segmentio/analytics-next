@@ -1,0 +1,21 @@
+{
+  "name": "@segment/analytics-node-e2e-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "e2e-cli": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@segment/analytics-node": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.3.0"
+  }
+}
