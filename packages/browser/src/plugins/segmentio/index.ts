@@ -106,7 +106,7 @@ export function segmentio(
     deliveryStrategy &&
     'strategy' in deliveryStrategy &&
     deliveryStrategy.strategy === 'batching'
-      ? batch(apiHost, deliveryStrategy.config, resolvedHttpConfig)
+      ? batch(apiHost, deliveryStrategy.config, resolvedHttpConfig, protocol)
       : standard(deliveryStrategy?.config, resolvedHttpConfig)
 
   async function send(ctx: Context): Promise<Context> {

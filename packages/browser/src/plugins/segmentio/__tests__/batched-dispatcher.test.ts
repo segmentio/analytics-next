@@ -111,6 +111,18 @@ describe('Batching', () => {
     `)
   })
 
+  it('uses configured protocol when apiHost has no scheme', async () => {
+    const { dispatch } = batch(`api.segment.io`, { size: 1 }, undefined, 'http')
+
+    await dispatch(`https://api.segment.io/v1/t`, {
+      event: 'first',
+    })
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+    const [url] = fetch.mock.calls[0]
+    expect(url).toBe('http://api.segment.io/b')
+  })
+
   it('sends requests if the size of events exceeds tracking API limits', async () => {
     const { dispatch } = batch(`https://api.segment.io`, {
       size: 600,

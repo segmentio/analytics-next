@@ -54,7 +54,7 @@ export default function (
       // Resolve config once (uses caller-supplied or built-in defaults).
       const resolved = httpConfig ?? resolveHttpConfig()
 
-      // Check for Retry-After header on eligible statuses (429, 408, 503).
+      // Check for Retry-After header on eligible statuses (429).
       // These retries are treated specially by callers and don't consume the maxRetries budget.
       const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
       if (retryAfter) {

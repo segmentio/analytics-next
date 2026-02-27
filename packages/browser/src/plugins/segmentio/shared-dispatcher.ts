@@ -184,7 +184,7 @@ function clamp(
   return Math.min(Math.max(v, min), max)
 }
 
-/** Statuses eligible for Retry-After header handling. Only 429 uses Retry-After; 408/503 use exponential backoff. */
+/** Statuses eligible for Retry-After header handling.*/
 const RETRY_AFTER_STATUSES = [429]
 
 /**

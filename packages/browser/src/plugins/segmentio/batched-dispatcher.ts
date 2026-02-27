@@ -84,7 +84,8 @@ function buildBatch(buffer: object[]): {
 export default function batch(
   apiHost: string,
   config?: BatchingDispatchConfig,
-  httpConfig?: ResolvedHttpConfig
+  httpConfig?: ResolvedHttpConfig,
+  protocol: 'http' | 'https' = 'https'
 ) {
   let buffer: object[] = []
   let pageUnloaded = false
@@ -122,7 +123,7 @@ export default function batch(
     const scheme =
       apiHost.startsWith('http://') || apiHost.startsWith('https://')
         ? ''
-        : 'https://'
+        : `${protocol}://`
     return fetch(`${scheme}${apiHost}/b`, {
       credentials: config?.credentials,
       keepalive: config?.keepalive || pageUnloaded,
@@ -143,7 +144,7 @@ export default function batch(
         return
       }
 
-      // Check for Retry-After header on eligible statuses (429, 408, 503).
+      // Check for Retry-After header on eligible statuses (429).
       // These retries do NOT consume the maxRetries budget.
       const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
       if (retryAfter) {
