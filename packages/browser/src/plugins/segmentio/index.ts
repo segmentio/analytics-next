@@ -90,6 +90,17 @@ export function segmentio(
 
   const resolvedHttpConfig = resolveHttpConfig(settings?.httpConfig)
 
+  // Wire the CDN/user-configured maxRetryCount to the plugin's internal buffer.
+  // For fetch-dispatcher (standard mode), this is the only retry control —
+  // retries are managed by the plugin's PriorityQueue, not the dispatcher.
+  // For batched-dispatcher, retries are handled internally by the dispatcher
+  // (which reads maxRetryCount separately), so this mainly serves as a safety net.
+  // Only override when explicitly set; otherwise respect the PriorityQueue's
+  // maxAttempts from createDefaultQueue (which honors the retryQueue setting).
+  if (settings?.httpConfig?.backoffConfig?.maxRetryCount != null) {
+    buffer.maxAttempts = resolvedHttpConfig.backoffConfig.maxRetryCount
+  }
+
   const deliveryStrategy = settings?.deliveryStrategy
   const client =
     deliveryStrategy &&
@@ -124,6 +135,15 @@ export function segmentio(
 
     if (attempts >= buffer.maxAttempts) {
       inflightEvents.delete(ctx)
+      const error = new Error(
+        `Retry attempts exhausted (${attempts}/${buffer.maxAttempts})`
+      )
+      ctx.setFailedDelivery({ reason: error })
+      analytics.emit('error', {
+        code: 'delivery_failure',
+        reason: error,
+        ctx,
+      })
       return ctx
     }
 
@@ -141,6 +161,12 @@ export function segmentio(
           buffer.pushWithBackoff(ctx, timeout)
         } else if (error.name === 'NonRetryableError') {
           // Do not requeue non-retryable HTTP failures; drop the event.
+          ctx.setFailedDelivery({ reason: error })
+          analytics.emit('error', {
+            code: 'delivery_failure',
+            reason: error,
+            ctx,
+          })
         } else {
           buffer.pushWithBackoff(ctx)
         }

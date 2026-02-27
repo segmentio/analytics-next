@@ -95,7 +95,7 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       [
-        "https://https://api.segment.io/b",
+        "https://api.segment.io/b",
         {
           "body": "{"batch":[{"event":"first"},{"event":"second"},{"event":"third"}],"sentAt":"1993-06-09T00:00:00.000Z"}",
           "credentials": undefined,
@@ -181,7 +181,7 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       [
-        "https://https://api.segment.io/b",
+        "https://api.segment.io/b",
         {
           "body": "{"batch":[{"event":"first"},{"event":"second"}],"sentAt":"1993-06-09T00:00:10.000Z"}",
           "credentials": undefined,
@@ -219,7 +219,7 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       [
-        "https://https://api.segment.io/b",
+        "https://api.segment.io/b",
         {
           "body": "{"batch":[{"event":"first"}],"sentAt":"1993-06-09T00:00:10.000Z"}",
           "credentials": undefined,
@@ -236,7 +236,7 @@ describe('Batching', () => {
 
     expect(fetch.mock.calls[1]).toMatchInlineSnapshot(`
       [
-        "https://https://api.segment.io/b",
+        "https://api.segment.io/b",
         {
           "body": "{"batch":[{"event":"second"}],"sentAt":"1993-06-09T00:00:21.000Z"}",
           "credentials": undefined,
@@ -270,7 +270,7 @@ describe('Batching', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(fetch.mock.calls[0]).toMatchInlineSnapshot(`
       [
-        "https://https://api.segment.io/b",
+        "https://api.segment.io/b",
         {
           "body": "{"batch":[{"event":"first"},{"event":"second"}],"sentAt":"1993-06-09T00:00:00.000Z"}",
           "credentials": undefined,

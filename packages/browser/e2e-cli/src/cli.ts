@@ -110,10 +110,9 @@ function installFetchMonitor(apiHost: string): void {
 /**
  * Wait for all API delivery activity to settle.
  *
- * The browser SDK's scheduleFlush uses Math.random() * 5000 between retry
- * cycles, so we need ~6.5s of silence after an error to be confident retries
- * are done. After a success we settle faster (1.5s) since no more retries
- * are expected for that event.
+ * The browser SDK's scheduleFlush uses a small random delay (100-600ms)
+ * between retry cycles, plus exponential backoff from pushWithBackoff.
+ * We wait until no API activity for a settling period.
  */
 async function waitForDelivery(maxWaitMs = 60000): Promise<void> {
   const start = Date.now()
@@ -131,11 +130,11 @@ async function waitForDelivery(maxWaitMs = 60000): Promise<void> {
     }
 
     const elapsed = Date.now() - lastApiResponseTime
-    // The browser SDK's scheduleFlush uses Math.random() * 5000 between
-    // retry cycles. After errors we need >5s of silence for retries.
-    // After success we use a shorter settle but long enough for other
-    // events' pending dispatches.
-    const settleMs = lastApiStatus < 400 ? 3000 : 6500
+    // After success: brief settle for any remaining event dispatches.
+    // After error: longer settle to allow for retry scheduling + backoff.
+    // The fetch-dispatcher's core backoff reaches ~3200ms at attempt 5,
+    // plus schedule-flush jitter (~600ms), so we need >4s for error cases.
+    const settleMs = lastApiStatus < 400 ? 1500 : 5000
 
     if (elapsed >= settleMs) {
       return
@@ -229,6 +228,22 @@ async function main(): Promise<void> {
       }
     }
 
+    // Wire maxRetries and backoff timing through httpConfig — this controls
+    // both the plugin's PriorityQueue (fetch-dispatcher path) and the
+    // batched-dispatcher's internal retry loop.
+    {
+      const backoffConfig: Record<string, unknown> = {
+        // Use a short base interval so batched-dispatcher backoff aligns with
+        // fetch-dispatcher's core backoff (100ms base). The default 500ms base
+        // produces gaps that exceed the CLI's settle-time detection.
+        baseBackoffInterval: 0.1,
+      }
+      if (input.config?.maxRetries != null) {
+        backoffConfig.maxRetryCount = input.config.maxRetries
+      }
+      segmentConfig.httpConfig = { backoffConfig }
+    }
+
     if (useBatching) {
       segmentConfig.deliveryStrategy = {
         strategy: 'batching',
@@ -253,6 +268,17 @@ async function main(): Promise<void> {
       }
     )
 
+    // Listen for delivery errors (now emitted by the Segment.io plugin)
+    const deliveryErrors: string[] = []
+    analytics.on('error', (err) => {
+      const reason = (err as any).reason
+      const msg =
+        reason instanceof Error
+          ? reason.message
+          : String(reason ?? (err as any).code)
+      deliveryErrors.push(msg)
+    })
+
     // Process event sequences
     for (const seq of input.sequences) {
       if (seq.delayMs > 0) {
@@ -267,24 +293,19 @@ async function main(): Promise<void> {
     // Wait for all delivery activity to settle
     await waitForDelivery()
 
-    // Determine success/failure from observed fetch responses.
-    // The Segment.io plugin swallows all errors internally, so we can't
-    // rely on analytics.on('error'). Instead we use the fetch monitor.
-    if (lastApiStatus < 400 && firstApiErrorStatus === 0) {
-      // All API responses were successful
-      output = { success: true, sentBatches: 1 }
-    } else if (lastApiStatus < 400) {
-      // Last response was success (retries worked), but there were errors.
-      // If the only errors were retryable ones that eventually succeeded,
-      // this is a success.
-      output = { success: true, sentBatches: 1 }
-    } else {
-      // Last response was an error — either non-retryable or retries exhausted
+    // Determine success/failure from delivery errors (emitted by the
+    // Segment.io plugin) and observed fetch responses as fallback.
+    if (deliveryErrors.length > 0) {
+      output = { success: false, error: deliveryErrors[0], sentBatches: 0 }
+    } else if (lastApiStatus >= 400) {
+      // Fetch monitor fallback: last response was an error
       output = {
         success: false,
         error: `HTTP ${firstApiErrorStatus || lastApiStatus}`,
         sentBatches: 0,
       }
+    } else {
+      output = { success: true, sentBatches: 1 }
     }
 
     // Cleanup

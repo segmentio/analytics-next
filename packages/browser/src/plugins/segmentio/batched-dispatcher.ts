@@ -119,7 +119,11 @@ export default function batch(
       headers['Authorization'] = `Basic ${authtoken}`
     }
 
-    return fetch(`https://${apiHost}/b`, {
+    const scheme =
+      apiHost.startsWith('http://') || apiHost.startsWith('https://')
+        ? ''
+        : 'https://'
+    return fetch(`${scheme}${apiHost}/b`, {
       credentials: config?.credentials,
       keepalive: config?.keepalive || pageUnloaded,
       headers,
