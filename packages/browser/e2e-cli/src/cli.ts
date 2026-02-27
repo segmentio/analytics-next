@@ -52,6 +52,98 @@ interface CLIInput {
   config?: CLIConfig
 }
 
+// --- Fetch Monitor ---
+// The browser SDK's Segment.io plugin handles retries internally and swallows
+// all errors (never fires delivery_failure events). We monitor fetch calls to
+// detect when delivery activity has settled and to observe final HTTP statuses.
+
+let lastApiResponseTime = 0
+let inflightApiRequests = 0
+let lastApiStatus = 0
+let firstApiErrorStatus = 0
+let apiHostPattern = ''
+
+function installFetchMonitor(apiHost: string): void {
+  apiHostPattern = apiHost.replace(/^https?:\/\//, '')
+  const nativeFetch = globalThis.fetch
+
+  ;(globalThis as any).fetch = async function monitoredFetch(
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response> {
+    const url =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+        ? input.href
+        : (input as Request).url
+
+    // Only monitor API requests, not CDN settings/project requests
+    const isApi =
+      apiHostPattern &&
+      url.includes(apiHostPattern) &&
+      !url.includes('/settings') &&
+      !url.includes('/projects')
+
+    if (!isApi) {
+      return nativeFetch.call(globalThis, input, init)
+    }
+
+    inflightApiRequests++
+    try {
+      const response = await nativeFetch.call(globalThis, input, init)
+      lastApiStatus = response.status
+      lastApiResponseTime = Date.now()
+      if (response.status >= 400 && firstApiErrorStatus === 0) {
+        firstApiErrorStatus = response.status
+      }
+      return response
+    } catch (err) {
+      lastApiResponseTime = Date.now()
+      throw err
+    } finally {
+      inflightApiRequests--
+    }
+  }
+}
+
+/**
+ * Wait for all API delivery activity to settle.
+ *
+ * The browser SDK's scheduleFlush uses Math.random() * 5000 between retry
+ * cycles, so we need ~6.5s of silence after an error to be confident retries
+ * are done. After a success we settle faster (1.5s) since no more retries
+ * are expected for that event.
+ */
+async function waitForDelivery(maxWaitMs = 60000): Promise<void> {
+  const start = Date.now()
+
+  // Wait for at least one API request
+  while (lastApiResponseTime === 0 && Date.now() - start < maxWaitMs) {
+    await sleep(100)
+  }
+
+  // Wait until no in-flight requests and enough quiet time
+  while (Date.now() - start < maxWaitMs) {
+    if (inflightApiRequests > 0) {
+      await sleep(100)
+      continue
+    }
+
+    const elapsed = Date.now() - lastApiResponseTime
+    // The browser SDK's scheduleFlush uses Math.random() * 5000 between
+    // retry cycles. After errors we need >5s of silence for retries.
+    // After success we use a shorter settle but long enough for other
+    // events' pending dispatches.
+    const settleMs = lastApiStatus < 400 ? 3000 : 6500
+
+    if (elapsed >= settleMs) {
+      return
+    }
+    await sleep(200)
+  }
+}
+
 // --- Helpers ---
 
 function parseArgs(): string | null {
@@ -63,7 +155,7 @@ function parseArgs(): string | null {
   return args[inputIndex + 1]
 }
 
-function delay(ms: number): Promise<void> {
+function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -79,6 +171,11 @@ async function main(): Promise<void> {
     }
 
     const input: CLIInput = JSON.parse(inputJson)
+
+    // Install fetch monitor BEFORE importing the SDK
+    if (input.apiHost) {
+      installFetchMonitor(input.apiHost)
+    }
 
     // Create jsdom environment with the browser SDK
     const html = `
@@ -112,7 +209,6 @@ async function main(): Promise<void> {
     ;(global as any).XMLHttpRequest = window.XMLHttpRequest
 
     // Import the browser SDK after setting up globals
-    // We need to dynamically import to ensure globals are set first
     const { AnalyticsBrowser } = await import('@segment/analytics-next')
 
     // Check if batching mode is enabled via environment variable
@@ -126,11 +222,8 @@ async function main(): Promise<void> {
       segmentConfig.protocol = protocol
 
       if (useBatching) {
-        // Batching mode: pass full URL (with scheme) since we patched batched-dispatcher
-        // to check for existing scheme
         segmentConfig.apiHost = input.apiHost
       } else {
-        // Standard mode: fetch-dispatcher uses the URL directly
         const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
         segmentConfig.apiHost = apiHostStripped + '/v1'
       }
@@ -140,13 +233,13 @@ async function main(): Promise<void> {
       segmentConfig.deliveryStrategy = {
         strategy: 'batching',
         config: {
-          size: input.config?.flushAt ?? 1, // flush immediately for testing
+          size: input.config?.flushAt ?? 1,
           timeout: 1000,
         },
       }
     }
 
-    // Initialize analytics with the provided config
+    // Initialize analytics
     const [analytics] = await AnalyticsBrowser.load(
       {
         writeKey: input.writeKey,
@@ -160,20 +253,10 @@ async function main(): Promise<void> {
       }
     )
 
-    const deliveryErrors: string[] = []
-    analytics.on('error', (err) => {
-      const reason = (err as any).reason
-      const msg =
-        reason instanceof Error
-          ? reason.message
-          : String(reason ?? (err as any).code)
-      deliveryErrors.push(msg)
-    })
-
     // Process event sequences
     for (const seq of input.sequences) {
       if (seq.delayMs > 0) {
-        await delay(seq.delayMs)
+        await sleep(seq.delayMs)
       }
 
       for (const event of seq.events) {
@@ -181,13 +264,27 @@ async function main(): Promise<void> {
       }
     }
 
-    // Wait for events to be sent (browser SDK auto-flushes)
-    await delay(3000)
+    // Wait for all delivery activity to settle
+    await waitForDelivery()
 
-    if (deliveryErrors.length > 0) {
-      output = { success: false, error: deliveryErrors[0], sentBatches: 0 }
-    } else {
+    // Determine success/failure from observed fetch responses.
+    // The Segment.io plugin swallows all errors internally, so we can't
+    // rely on analytics.on('error'). Instead we use the fetch monitor.
+    if (lastApiStatus < 400 && firstApiErrorStatus === 0) {
+      // All API responses were successful
       output = { success: true, sentBatches: 1 }
+    } else if (lastApiStatus < 400) {
+      // Last response was success (retries worked), but there were errors.
+      // If the only errors were retryable ones that eventually succeeded,
+      // this is a success.
+      output = { success: true, sentBatches: 1 }
+    } else {
+      // Last response was an error — either non-retryable or retries exhausted
+      output = {
+        success: false,
+        error: `HTTP ${firstApiErrorStatus || lastApiStatus}`,
+        sentBatches: 0,
+      }
     }
 
     // Cleanup
