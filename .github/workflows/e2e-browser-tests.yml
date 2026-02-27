@@ -47,11 +47,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Apply HTTP patch for testing
-        working-directory: sdk
-        run: |
-          git apply ../sdk-e2e-tests/patches/analytics-browser-http.patch
-          echo "HTTP patch applied successfully"
+      # The batched-dispatcher double-scheme bug is fixed in the SDK source,
+      # so the HTTP patch is no longer needed. run-tests.sh will gracefully
+      # skip it via --check if the e2e-config.json still references it.
 
       - name: Install SDK dependencies
         working-directory: sdk
