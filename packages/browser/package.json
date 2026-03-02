@@ -48,7 +48,7 @@
     }
   ],
   "dependencies": {
-    "@customerio/cdp-analytics-core": "0.3.14",
+    "@customerio/cdp-analytics-core": "0.3.15",
     "@lukeed/uuid": "^2.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
