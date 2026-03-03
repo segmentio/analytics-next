@@ -25,7 +25,7 @@ describe('Customer.io In-App Plugin', () => {
     Gist.setCustomAttribute = jest.fn()
     Gist.clearCustomAttributes = jest.fn()
     Gist.events = {
-      on: (name: string, cb: Function) => {
+      on: jest.fn((name: string, cb: Function) => {
         if (name === 'messageShown') {
           gistMessageShown = cb
         } else if (name === 'messageAction') {
@@ -33,10 +33,10 @@ describe('Customer.io In-App Plugin', () => {
         } else if (name === 'eventDispatched') {
           gistEventDispatched = cb
         }
-      },
+      }),
       off: jest.fn(),
       dispatch: jest.fn(),
-    }
+    } as unknown as typeof Gist.events
 
     const options: CustomerioSettings = { apiKey: 'foo' }
     analytics = new Analytics({ writeKey: options.apiKey })
