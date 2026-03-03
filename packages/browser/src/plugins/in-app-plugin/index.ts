@@ -10,7 +10,7 @@ import {
   gistToCIO,
   ContentType,
 } from './events'
-import Gist from 'customerio-gist-web'
+import Gist, { type GistConfig } from 'customerio-gist-web'
 import type { InboxAPI, InboxMessage, GistInboxMessage } from './inbox_messages'
 import { createInboxAPI } from './inbox_messages'
 
@@ -21,8 +21,8 @@ export type InAppPluginSettings = {
   siteId: string | undefined
   events: EventListenerOrEventListenerObject | null | undefined
 
-  _env: string | undefined
-  _logging: boolean | undefined
+  _env: GistConfig['env'] | undefined
+  _logging: GistConfig['logging'] | undefined
 
   anonymousInApp: boolean | false
 }
