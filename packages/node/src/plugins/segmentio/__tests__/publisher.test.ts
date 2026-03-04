@@ -383,6 +383,7 @@ describe('error handling', () => {
   it('retries 500 errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
+    jest.setTimeout(30000)
 
     makeReqSpy.mockReturnValue(
       createError({ status: 500, statusText: 'Internal Server Error' })
@@ -431,6 +432,7 @@ describe('error handling', () => {
   it('retries fetch errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
     jest.useRealTimers()
+    jest.setTimeout(30000)
 
     makeReqSpy.mockRejectedValue(new Error('Connection Error'))
 
@@ -500,6 +502,9 @@ describe('http_request emitter event', () => {
 })
 
 describe('retry semantics', () => {
+  // With 500ms base backoff, multi-retry tests need more than the default 5s
+  jest.setTimeout(30000)
+
   const trackEvent = () =>
     new Context(
       eventFactory.track(
@@ -643,6 +648,7 @@ describe('retry semantics', () => {
     const { plugin: segmentPlugin, publisher } = createTestNodePlugin({
       maxRetries: 3,
       flushAt: 1,
+      flushInterval: 10000, // Avoid flush timer racing with backoff sleep
     })
 
     const mockTokenManager = {

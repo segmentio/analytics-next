@@ -97,7 +97,7 @@ export interface RateLimitConfig {
    * @default true
    */
   enabled?: boolean
-  /** Max retry attempts for rate-limited requests. @default 100 */
+  /** Max retry attempts for rate-limited requests. @default 10 */
   maxRetryCount?: number
   /** Max Retry-After interval the SDK will respect, in seconds. @default 300 */
   maxRetryInterval?: number
@@ -112,11 +112,11 @@ export interface BackoffConfig {
    * @default true
    */
   enabled?: boolean
-  /** Max retry attempts per batch. @default 100 */
+  /** Max retry attempts per batch. @default 10 */
   maxRetryCount?: number
   /** Initial backoff interval in seconds. @default 0.5 */
   baseBackoffInterval?: number
-  /** Max backoff interval in seconds. @default 300 */
+  /** Max backoff interval in seconds. @default 60 */
   maxBackoffInterval?: number
   /** Max total time (seconds) a batch can remain in retry before being dropped. @default 43200 (12 hours) */
   maxTotalBackoffDuration?: number
@@ -262,15 +262,15 @@ export function resolveHttpConfig(config?: HttpConfig): ResolvedHttpConfig {
   return {
     rateLimitConfig: {
       enabled: rate?.enabled ?? true,
-      maxRetryCount: rate?.maxRetryCount ?? 100,
+      maxRetryCount: rate?.maxRetryCount ?? 10,
       maxRetryInterval: clamp(rate?.maxRetryInterval, 300, 0.1, 86400),
       maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 43200, 10, 86400),
     },
     backoffConfig: {
       enabled: backoff?.enabled ?? true,
-      maxRetryCount: backoff?.maxRetryCount ?? 100,
+      maxRetryCount: backoff?.maxRetryCount ?? 10,
       baseBackoffInterval: clamp(backoff?.baseBackoffInterval, 0.5, 0.1, 300),
-      maxBackoffInterval: clamp(backoff?.maxBackoffInterval, 300, 0.1, 86400),
+      maxBackoffInterval: clamp(backoff?.maxBackoffInterval, 60, 0.1, 86400),
       maxTotalBackoffDuration: clamp(
         backoff?.maxTotalBackoffDuration,
         43200,

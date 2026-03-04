@@ -14,16 +14,16 @@ describe('resolveHttpConfig', () => {
 
     expect(resolved.rateLimitConfig).toEqual({
       enabled: true,
-      maxRetryCount: 100,
+      maxRetryCount: 10,
       maxRetryInterval: 300,
       maxRateLimitDuration: 43200,
     })
 
     expect(resolved.backoffConfig).toEqual({
       enabled: true,
-      maxRetryCount: 100,
+      maxRetryCount: 10,
       baseBackoffInterval: 0.5,
-      maxBackoffInterval: 300,
+      maxBackoffInterval: 60,
       maxTotalBackoffDuration: 43200,
       jitterPercent: 10,
       default4xxBehavior: 'drop',
@@ -44,9 +44,9 @@ describe('resolveHttpConfig', () => {
     const resolved = resolveHttpConfig({})
 
     expect(resolved.rateLimitConfig.enabled).toBe(true)
-    expect(resolved.rateLimitConfig.maxRetryCount).toBe(100)
+    expect(resolved.rateLimitConfig.maxRetryCount).toBe(10)
     expect(resolved.backoffConfig.enabled).toBe(true)
-    expect(resolved.backoffConfig.maxRetryCount).toBe(100)
+    expect(resolved.backoffConfig.maxRetryCount).toBe(10)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
   })
 
@@ -113,9 +113,9 @@ describe('resolveHttpConfig', () => {
     expect(resolved.rateLimitConfig.maxRetryInterval).toBe(300)
     expect(resolved.rateLimitConfig.maxRateLimitDuration).toBe(43200)
     expect(resolved.backoffConfig.enabled).toBe(true)
-    expect(resolved.backoffConfig.maxRetryCount).toBe(100)
+    expect(resolved.backoffConfig.maxRetryCount).toBe(10)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
-    expect(resolved.backoffConfig.maxBackoffInterval).toBe(300)
+    expect(resolved.backoffConfig.maxBackoffInterval).toBe(60)
   })
 
   describe('value clamping', () => {

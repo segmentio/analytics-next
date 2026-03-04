@@ -495,7 +495,7 @@ export class Publisher {
       const delayMs = shouldCountTowardsMaxRetries
         ? backoff({
             attempt: countedRetries,
-            minTimeout: 100,
+            minTimeout: 500,
             maxTimeout: 60000,
           })
         : 0

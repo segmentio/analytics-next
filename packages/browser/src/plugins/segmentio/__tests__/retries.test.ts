@@ -69,7 +69,7 @@ describe('Segment.io retries 500s and 429', () => {
   test('delays retry on 429', async () => {
     jest.useFakeTimers({ advanceTimers: true })
     const headers = new Headers()
-    const resetTime = 120
+    const resetTime = 30
     headers.set('Retry-After', resetTime.toString())
     fetch
       .mockReturnValueOnce(
