@@ -11,6 +11,8 @@ import { AMPLITUDE_WRITEKEY } from '../../../test-helpers/test-writekeys'
 import { PersistedPriorityQueue } from '../../../lib/priority-queue/persisted'
 import * as Factory from '../../../test-helpers/factories'
 import { cdnSettingsMinimal } from '../../../test-helpers/fixtures'
+import * as MetricHelpers from '../../../core/stats/metric-helpers'
+import * as ScriptLoader from '../../../lib/load-script'
 
 const cdnResponse: CDNSettings = {
   ...cdnSettingsMinimal,
@@ -836,5 +838,67 @@ describe('option overrides', () => {
         thirdOption: '🤠', // merged from init options
       })
     )
+  })
+})
+
+describe('load error metrics', () => {
+  let metricSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    jest.restoreAllMocks()
+    jest.resetAllMocks()
+    metricSpy = jest.spyOn(MetricHelpers, 'recordIntegrationMetric')
+  })
+
+  it('records integration invoke error metric when loadIntegration fails', async () => {
+    jest
+      .spyOn(ScriptLoader, 'loadScript')
+      .mockRejectedValue(new Error('Script load failed'))
+
+    const dest = new LegacyDestination(
+      'Broken Integration',
+      'latest',
+      'writeKey',
+      {},
+      {}
+    )
+
+    const ctx = Context.system()
+
+    await expect(dest.load(ctx, {} as Analytics)).rejects.toThrow(
+      'Script load failed'
+    )
+
+    expect(metricSpy).toHaveBeenCalledWith(ctx, {
+      integrationName: 'Broken Integration',
+      methodName: 'load',
+      type: 'classic',
+      didError: true,
+    })
+  })
+
+  it('records integration invoke error metric when buildIntegration fails', async () => {
+    // Provide an integrationSource that will cause buildIntegration to throw
+    const badSource = {} as any
+
+    const dest = new LegacyDestination(
+      'Bad Build Integration',
+      'latest',
+      'writeKey',
+      {},
+      {},
+      badSource
+    )
+
+    const ctx = Context.system()
+
+    await expect(dest.load(ctx, {} as Analytics)).rejects.toThrow()
+
+    expect(metricSpy).toHaveBeenCalledWith(ctx, {
+      integrationName: 'Bad Build Integration',
+      methodName: 'load',
+      type: 'classic',
+      didError: true,
+    })
   })
 })
