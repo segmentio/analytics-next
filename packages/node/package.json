@@ -40,7 +40,6 @@
     "@segment/analytics-generic-utils": "1.2.0",
     "buffer": "^6.0.3",
     "jose": "^5.1.0",
-    "node-fetch": "^2.6.7",
     "tslib": "^2.4.1"
   },
   "devDependencies": {

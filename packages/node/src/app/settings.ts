@@ -43,7 +43,7 @@ export interface AnalyticsSettings {
   /**
    * Supply a default http client implementation (such as one supporting proxy).
    * Accepts either an HTTPClient instance or a fetch function.
-   * Default: an HTTP client that uses globalThis.fetch, with node-fetch as a fallback.
+   * Default: an HTTP client that uses globalThis.fetch.
    */
   httpClient?: HTTPFetchFn | HTTPClient
   /**

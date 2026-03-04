@@ -8,7 +8,6 @@ import {
   GroupTraits,
   HTTPClient,
   FetchHTTPClient,
-  HTTPFetchFn,
   HTTPClientRequest,
 } from '../'
 
@@ -90,10 +89,8 @@ export default {
     console.log({} as UserTraits)
   },
 
-  'HTTPFetchFn should be compatible with standard fetch and node-fetch interface, as well as functions':
+  'HTTPFetchFn should be compatible with standard fetch interface, as well as functions':
     () => {
-      const fetch: HTTPFetchFn = require('node-fetch')
-      new Analytics({ writeKey: 'foo', httpClient: fetch })
       new Analytics({ writeKey: 'foo', httpClient: globalThis.fetch })
     },
 
