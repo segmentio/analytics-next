@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-node",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
