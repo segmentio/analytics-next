@@ -1,5 +1,11 @@
 # @segment/analytics-node
 
+## 3.0.0
+
+### Major Changes
+
+- [#1348](https://github.com/segmentio/analytics-next/pull/1348) [`99cd853b`](https://github.com/segmentio/analytics-next/commit/99cd853bddf28eb60991b79d263cb153367b093e) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Remove node-fetch dependency in favor of native globalThis.fetch (available since Node 18, package requires >= 20)
+
 ## 2.3.0
 
 ### Minor Changes

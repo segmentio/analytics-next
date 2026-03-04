@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.81.2
+
+### Patch Changes
+
+- [#1341](https://github.com/segmentio/analytics-next/pull/1341) [`6477267f`](https://github.com/segmentio/analytics-next/commit/6477267fc50887c84d475c48b3ab12493edff723) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Emit analytics_js.integration.invoke.error metric for destination load and build failures that were previously silent
+
 ## 1.81.1
 
 ### Patch Changes
