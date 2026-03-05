@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.82.0
+
+### Minor Changes
+
+- [#1350](https://github.com/segmentio/analytics-next/pull/1350) [`d41ca131`](https://github.com/segmentio/analytics-next/commit/d41ca1315af65dc5b2a97c7493f98d0cc8c1134f) Thanks [@mschasz](https://github.com/mschasz)! - Upgrade AWS SDK from v2 to v3 in browser release script.
+
 ## 1.81.2
 
 ### Patch Changes
