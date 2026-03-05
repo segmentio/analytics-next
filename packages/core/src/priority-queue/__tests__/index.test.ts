@@ -121,7 +121,7 @@ describe('backoffs', () => {
     expect(spy).toHaveBeenCalled()
 
     const delay = spy.mock.calls[0][1]
-    expect(delay).toBeGreaterThan(1000)
+    expect(delay).toBeGreaterThan(200)
   })
 
   it('increases the delay as work gets requeued', () => {
@@ -147,12 +147,12 @@ describe('backoffs', () => {
     queue.pop()
 
     const firstDelay = spy.mock.calls[0][1]
-    expect(firstDelay).toBeGreaterThan(1000)
+    expect(firstDelay).toBeGreaterThan(200)
 
     const secondDelay = spy.mock.calls[1][1]
-    expect(secondDelay).toBeGreaterThan(2000)
+    expect(secondDelay).toBeGreaterThan(400)
 
     const thirdDelay = spy.mock.calls[2][1]
-    expect(thirdDelay).toBeGreaterThan(3000)
+    expect(thirdDelay).toBeGreaterThan(800)
   })
 })

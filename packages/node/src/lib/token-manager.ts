@@ -172,10 +172,16 @@ export class TokenManager implements ITokenManager {
   }) {
     this.incrementRetries({ error, forceEmitError })
 
+    // First retry immediately, backoff the rest.
+    if (this.retryCount === 1) {
+      this.queueNextPoll(0)
+      return
+    }
+
     const timeUntilRefreshInMs = backoff({
-      attempt: this.retryCount,
-      minTimeout: 25,
-      maxTimeout: 1000,
+      attempt: this.retryCount - 1,
+      minTimeout: 100,
+      maxTimeout: 60 * 1000,
     })
     this.queueNextPoll(timeUntilRefreshInMs)
   }
@@ -195,20 +201,31 @@ export class TokenManager implements ITokenManager {
       error: new Error(`[${response.status}] ${response.statusText}`),
     })
 
-    if (headers['x-ratelimit-reset']) {
-      const rateLimitResetTimestamp = parseInt(headers['x-ratelimit-reset'], 10)
-      if (isFinite(rateLimitResetTimestamp)) {
-        timeUntilRefreshInMs =
-          rateLimitResetTimestamp - Date.now() + this.clockSkewInSeconds * 1000
-      } else {
-        timeUntilRefreshInMs = 5 * 1000
-      }
-      // We want subsequent calls to get_token to be able to interrupt our
-      //  Timeout when it's waiting for e.g. a long normal expiration, but
-      //  not when we're waiting for a rate limit reset. Sleep instead.
-      await sleep(timeUntilRefreshInMs)
-      timeUntilRefreshInMs = 0
+    const getRateLimitWaitTime = (headerValue: string): number | null => {
+      const value = parseInt(headerValue, 10)
+      if (!isFinite(value)) return null
+
+      const clampedSeconds = Math.max(0, Math.min(value, 300))
+      return Math.max(0, (clampedSeconds + this.clockSkewInSeconds) * 1000)
     }
+
+    const retryAfter = headers['retry-after']
+    const maxWaitMs = 5 * 60 * 1000 // 5 minutes
+
+    let waitTimeMs = 5 * 1000 // default fallback
+
+    if (retryAfter) {
+      const waitTime = getRateLimitWaitTime(retryAfter)
+      if (waitTime !== null) {
+        waitTimeMs = Math.min(waitTime, maxWaitMs)
+      }
+    }
+
+    // We want subsequent calls to get_token to be able to interrupt our
+    //  Timeout when it's waiting for e.g. a long normal expiration, but
+    //  not when we're waiting for a rate limit reset. Sleep instead.
+    await sleep(waitTimeMs)
+    timeUntilRefreshInMs = 0
 
     this.queueNextPoll(timeUntilRefreshInMs)
   }
@@ -321,7 +338,7 @@ export class TokenManager implements ITokenManager {
     return (
       typeof token !== 'undefined' &&
       token !== null &&
-      token.expires_in < Date.now() / 1000
+      (token.expires_at ?? 0) > Date.now() / 1000
     )
   }
 }
