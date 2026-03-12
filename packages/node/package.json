@@ -1,6 +1,6 @@
 {
   "name": "@customerio/cdp-analytics-node",
-  "version": "0.3.18",
+  "version": "0.3.19",
   "repository": {
     "type": "git",
     "url": "https://github.com/customerio/cdp-analytics-js",
@@ -33,7 +33,7 @@
     "prepublish": "yarn run -T build"
   },
   "dependencies": {
-    "@customerio/cdp-analytics-core": "0.3.18",
+    "@customerio/cdp-analytics-core": "0.3.19",
     "@lukeed/uuid": "^2.0.0",
     "buffer": "^6.0.3",
     "node-fetch": "^2.6.7",
