@@ -787,7 +787,6 @@ describe('Batching', () => {
         {
           size: 1,
           timeout: 1000,
-          maxRetries: 100,
         },
         httpConfig
       )
@@ -804,6 +803,122 @@ describe('Batching', () => {
       // Second 429 with Retry-After: 60 — totalRateLimitTime would be 120s > 100s limit
       // Batch should be dropped, no more retries
       jest.runAllTimers()
+      expect(fetch).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('CDN httpConfig: statusCodeOverrides precedence', () => {
+    it('drops 429 with Retry-After when statusCodeOverrides says drop', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '5')
+
+      fetch.mockReturnValue(createError({ status: 429, headers }))
+
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          statusCodeOverrides: { '429': 'drop' },
+        },
+      })
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        { size: 1, timeout: 1000 },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // Should not retry — override says drop
+      jest.runAllTimers()
+      expect(fetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('drops 503 when statusCodeOverrides overrides default 5xx retry', async () => {
+      fetch.mockReturnValue(createError({ status: 503 }))
+
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          statusCodeOverrides: { '503': 'drop' },
+        },
+      })
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        { size: 1, timeout: 1000 },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // Should not retry — override says drop
+      jest.runAllTimers()
+      expect(fetch).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('CDN httpConfig: maxRetryCount', () => {
+    it('uses httpConfig maxRetryCount over delivery strategy maxRetries', async () => {
+      fetch.mockReturnValue(createError({ status: 500 }))
+
+      // httpConfig says maxRetryCount=1, but the delivery strategy doesn't set
+      // maxRetries at all. The resolved httpConfig value should be used.
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          maxRetryCount: 1,
+          jitterPercent: 0,
+          baseBackoffInterval: 0.1,
+        },
+      })
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        { size: 1, timeout: 60000 },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      // Attempt 1 (initial)
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // After timers run, only 1 retry (attempt 2) should occur,
+      // then maxRetryCount=1 is exhausted (attempt <= maxRetries check
+      // fails on the catch of attempt 2).
+      jest.runAllTimers()
+      expect(fetch).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('CDN httpConfig: maxRetryInterval', () => {
+    it('caps Retry-After to custom maxRetryInterval', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '10')
+
+      fetch
+        .mockReturnValueOnce(createError({ status: 429, headers }))
+        .mockReturnValue(createSuccess({}))
+
+      const httpConfig = resolveHttpConfig({
+        rateLimitConfig: {
+          maxRetryInterval: 3, // Cap at 3 seconds
+          maxRateLimitDuration: 600,
+        },
+      })
+      const { dispatch } = batch(
+        `https://api.segment.io`,
+        { size: 1, timeout: 60000 },
+        httpConfig
+      )
+
+      await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
+
+      expect(fetch).toHaveBeenCalledTimes(1)
+
+      // Should wait 3s (capped), not 10s
+      jest.advanceTimersByTime(2999)
+      expect(fetch).toHaveBeenCalledTimes(1)
+      jest.advanceTimersByTime(1)
       expect(fetch).toHaveBeenCalledTimes(2)
     })
   })

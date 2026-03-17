@@ -144,20 +144,23 @@ export default function batch(
         return
       }
 
-      // Check for Retry-After header on eligible statuses (429).
-      // These retries do NOT consume the maxRetries budget.
-      const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
-      if (retryAfter) {
-        throw new RateLimitError(
-          `Rate limit exceeded: ${status}`,
-          retryAfter.retryAfterMs,
-          retryAfter.fromHeader
-        )
-      }
-
-      // Use config-driven behavior for all other error statuses.
+      // Determine retry/drop behavior from config (checks statusCodeOverrides first).
       const behavior = getStatusBehavior(status, resolved.backoffConfig)
 
+      // Honor Retry-After for rate limiting, unless the status is explicitly
+      // overridden to 'drop' via statusCodeOverrides.
+      if (behavior !== 'drop') {
+        const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
+        if (retryAfter) {
+          throw new RateLimitError(
+            `Rate limit exceeded: ${status}`,
+            retryAfter.retryAfterMs,
+            retryAfter.fromHeader
+          )
+        }
+      }
+
+      // Retry via backoff when the status is retryable.
       if (behavior === 'retry') {
         throw new Error(`Retryable error: ${status}`)
       }

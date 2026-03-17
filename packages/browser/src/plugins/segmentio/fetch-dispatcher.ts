@@ -54,20 +54,23 @@ export default function (
       // Resolve config once (uses caller-supplied or built-in defaults).
       const resolved = httpConfig ?? resolveHttpConfig()
 
-      // Check for Retry-After header on eligible statuses (429).
-      // These retries are treated specially by callers and don't consume the maxRetries budget.
-      const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
-      if (retryAfter) {
-        throw new RateLimitError(
-          `Rate limit exceeded: ${status}`,
-          retryAfter.retryAfterMs,
-          retryAfter.fromHeader
-        )
-      }
-
-      // Use config-driven behavior for all other error statuses.
+      // Determine retry/drop behavior from config (checks statusCodeOverrides first).
       const behavior = getStatusBehavior(status, resolved.backoffConfig)
 
+      // Honor Retry-After for rate limiting, unless the status is explicitly
+      // overridden to 'drop' via statusCodeOverrides.
+      if (behavior !== 'drop') {
+        const retryAfter = parseRetryAfter(res, resolved.rateLimitConfig)
+        if (retryAfter) {
+          throw new RateLimitError(
+            `Rate limit exceeded: ${status}`,
+            retryAfter.retryAfterMs,
+            retryAfter.fromHeader
+          )
+        }
+      }
+
+      // Retry via backoff when the status is retryable.
       if (behavior === 'retry') {
         throw new Error(`Retryable error: ${status}`)
       }

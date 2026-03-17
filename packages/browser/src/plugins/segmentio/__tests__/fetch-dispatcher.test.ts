@@ -200,4 +200,62 @@ describe('fetch dispatcher', () => {
       isRetryableWithoutCount: true,
     })
   })
+
+  describe('CDN httpConfig: statusCodeOverrides precedence', () => {
+    it('drops 429 with Retry-After when statusCodeOverrides says drop', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '5')
+
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          statusCodeOverrides: { '429': 'drop' },
+        },
+      })
+      const client = dispatcherFactory(undefined, httpConfig)
+      ;(fetchMock as jest.Mock).mockReturnValue(
+        createError({ status: 429, headers })
+      )
+
+      await expect(
+        client.dispatch('http://example.com', { test: true })
+      ).rejects.toMatchObject({ name: 'NonRetryableError' })
+    })
+
+    it('drops 503 when statusCodeOverrides overrides default 5xx retry', async () => {
+      const httpConfig = resolveHttpConfig({
+        backoffConfig: {
+          statusCodeOverrides: { '503': 'drop' },
+        },
+      })
+      const client = dispatcherFactory(undefined, httpConfig)
+      ;(fetchMock as jest.Mock).mockReturnValue(createError({ status: 503 }))
+
+      await expect(
+        client.dispatch('http://example.com', { test: true })
+      ).rejects.toMatchObject({ name: 'NonRetryableError' })
+    })
+  })
+
+  describe('CDN httpConfig: maxRetryInterval', () => {
+    it('caps Retry-After to custom maxRetryInterval from CDN', async () => {
+      const headers = new Headers()
+      headers.set('Retry-After', '10')
+
+      const httpConfig = resolveHttpConfig({
+        rateLimitConfig: { maxRetryInterval: 5 },
+      })
+      const client = dispatcherFactory(undefined, httpConfig)
+      ;(fetchMock as jest.Mock).mockReturnValue(
+        createError({ status: 429, headers })
+      )
+
+      await expect(
+        client.dispatch('http://example.com', { test: true })
+      ).rejects.toMatchObject<Partial<RateLimitError>>({
+        name: 'RateLimitError',
+        retryTimeout: 5000, // Capped to 5s, not 10s
+        isRetryableWithoutCount: true,
+      })
+    })
+  })
 })

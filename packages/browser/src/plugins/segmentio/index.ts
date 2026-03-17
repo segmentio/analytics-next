@@ -94,7 +94,7 @@ export function segmentio(
   // For fetch-dispatcher (standard mode), this is the only retry control —
   // retries are managed by the plugin's PriorityQueue, not the dispatcher.
   // For batched-dispatcher, retries are handled internally by the dispatcher
-  // (which reads maxRetryCount separately), so this mainly serves as a safety net.
+  // (which also reads maxRetryCount), so this mainly serves as a safety net.
   // Only override when explicitly set; otherwise respect the PriorityQueue's
   // maxAttempts from createDefaultQueue (which honors the retryQueue setting).
   if (settings?.httpConfig?.backoffConfig?.maxRetryCount != null) {
