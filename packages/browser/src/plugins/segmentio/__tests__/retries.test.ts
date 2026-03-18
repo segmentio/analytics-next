@@ -545,6 +545,31 @@ describe('retryQueue', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
+  it('does not override retryQueue=false with httpConfig maxRetryCount', async () => {
+    options = {
+      ...options,
+      httpConfig: {
+        backoffConfig: {
+          maxRetryCount: 10,
+        },
+      },
+    }
+    analytics = new Analytics(
+      { writeKey: options.apiKey },
+      { retryQueue: false }
+    )
+    segment = await segmentio(
+      analytics,
+      options,
+      cdnSettingsMinimal.integrations
+    )
+    await analytics.register(segment, envEnrichment)
+
+    await analytics.track('foo')
+    jest.runAllTimers()
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
   it('Attempts multiple times if retryQueue is true', async () => {
     analytics = new Analytics(
       { writeKey: options.apiKey },

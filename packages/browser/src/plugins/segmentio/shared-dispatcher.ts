@@ -255,9 +255,37 @@ export function computeBackoff(
  * Resolve an optional HttpConfig from CDN/user settings into a fully-populated
  * config object with defaults applied and values clamped to safe ranges.
  */
-export function resolveHttpConfig(config?: HttpConfig): ResolvedHttpConfig {
-  const rate = config?.rateLimitConfig
-  const backoff = config?.backoffConfig
+export function resolveHttpConfig(
+  config?: HttpConfig,
+  cdnConfig?: HttpConfig
+): ResolvedHttpConfig {
+  // Merge order and precedence:
+  // 1) `config` is the init-time base.
+  // 2) `cdnConfig` is applied second and wins on overlapping fields.
+  // 3) `statusCodeOverrides` is deep-merged so CDN can override specific
+  //    init-provided codes without replacing the whole map.
+  // This keeps precedence centralized here instead of repeating merge logic
+  // in each caller.
+  const mergedConfig: HttpConfig | undefined =
+    config || cdnConfig
+      ? {
+          rateLimitConfig: {
+            ...config?.rateLimitConfig,
+            ...cdnConfig?.rateLimitConfig,
+          },
+          backoffConfig: {
+            ...config?.backoffConfig,
+            ...cdnConfig?.backoffConfig,
+            statusCodeOverrides: {
+              ...config?.backoffConfig?.statusCodeOverrides,
+              ...cdnConfig?.backoffConfig?.statusCodeOverrides,
+            },
+          },
+        }
+      : undefined
+
+  const rate = mergedConfig?.rateLimitConfig
+  const backoff = mergedConfig?.backoffConfig
 
   return {
     rateLimitConfig: {

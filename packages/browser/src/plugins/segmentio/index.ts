@@ -89,40 +89,20 @@ export function segmentio(
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
-  // Deep-merge httpConfig: init options provide the base, CDN settings override.
-  // This lets the server control retry behavior while the client fills in gaps.
   const cdnHttpConfig = (
     integrations?.['Segment.io'] as Record<string, unknown> | undefined
   )?.httpConfig as HttpConfig | undefined
   const initHttpConfig = settings?.httpConfig
-  const mergedHttpConfig: HttpConfig | undefined =
-    cdnHttpConfig || initHttpConfig
-      ? {
-          rateLimitConfig: {
-            ...initHttpConfig?.rateLimitConfig,
-            ...cdnHttpConfig?.rateLimitConfig,
-          },
-          backoffConfig: {
-            ...initHttpConfig?.backoffConfig,
-            ...cdnHttpConfig?.backoffConfig,
-            // Deep-merge statusCodeOverrides separately so CDN adds to init, not replaces
-            statusCodeOverrides: {
-              ...initHttpConfig?.backoffConfig?.statusCodeOverrides,
-              ...cdnHttpConfig?.backoffConfig?.statusCodeOverrides,
-            },
-          },
-        }
-      : undefined
-  const resolvedHttpConfig = resolveHttpConfig(mergedHttpConfig)
+  const resolvedHttpConfig = resolveHttpConfig(initHttpConfig, cdnHttpConfig)
 
   // Wire the CDN/user-configured maxRetryCount to the plugin's internal buffer.
   // For fetch-dispatcher (standard mode), this is the only retry control —
   // retries are managed by the plugin's PriorityQueue, not the dispatcher.
   // For batched-dispatcher, retries are handled internally by the dispatcher
   // (which also reads maxRetryCount), so this mainly serves as a safety net.
-  // Only override when explicitly set; otherwise respect the PriorityQueue's
-  // maxAttempts from createDefaultQueue (which honors the retryQueue setting).
-  if (mergedHttpConfig?.backoffConfig?.maxRetryCount != null) {
+  // retryQueue controls whether retries are allowed at all.
+  // When enabled, keep buffer attempts aligned with resolved httpConfig.
+  if (analytics.options.retryQueue !== false) {
     buffer.maxAttempts = resolvedHttpConfig.backoffConfig.maxRetryCount
   }
 
