@@ -1,9 +1,12 @@
 {
   "sdk": "browser",
-  "test_suites": "basic",
+  "test_suites": "basic,retry,retry-settings",
   "auto_settings": true,
   "patch": "analytics-browser-http.patch",
   "env": {
-    "BROWSER_BATCHING": "false"
+    "BROWSER_BATCHING": "false",
+    "HTTP_CONFIG_SETTINGS": "true",
+    "SETTINGS_ERROR_FALLBACK": "false",
+    "E2E_TEST_SKIP": "settings-enabled-flag"
   }
 }
