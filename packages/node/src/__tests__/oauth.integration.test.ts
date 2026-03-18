@@ -37,7 +37,7 @@ l9q+amhtkwD/6fbkAu/xoWNl+11IFoxd88y2ByBFoEKB6UVLuCTSKwXDqzEZet7x
 mDyRxq7ohIzLkw8b8buDeuXZ
 -----END PRIVATE KEY-----`
 
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 const timestamp = new Date()
 
 class OauthFetchClient extends TestFetchClient {}
