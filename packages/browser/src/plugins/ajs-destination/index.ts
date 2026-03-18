@@ -134,20 +134,30 @@ export class LegacyDestination implements InternalPluginWithAddMiddleware {
       return
     }
 
-    const integrationSource =
-      this.integrationSource ??
-      (await loadIntegration(
-        ctx,
-        this.name,
-        this.version,
-        this.options.obfuscate
-      ))
+    try {
+      const integrationSource =
+        this.integrationSource ??
+        (await loadIntegration(
+          ctx,
+          this.name,
+          this.version,
+          this.options.obfuscate
+        ))
 
-    this.integration = buildIntegration(
-      integrationSource,
-      this.settings,
-      analyticsInstance
-    )
+      this.integration = buildIntegration(
+        integrationSource,
+        this.settings,
+        analyticsInstance
+      )
+    } catch (error) {
+      recordIntegrationMetric(ctx, {
+        integrationName: this.name,
+        methodName: 'load',
+        type: 'classic',
+        didError: true,
+      })
+      throw error
+    }
 
     this.onReady = new Promise((resolve) => {
       const onReadyFn = (): void => {

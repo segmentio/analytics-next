@@ -1,6 +1,6 @@
 {
   "sdk": "browser",
-  "test_suites": "basic,retry,retry-settings",
+  "test_suites": "basic,settings,retry,retry-settings",
   "auto_settings": true,
   "patch": "analytics-browser-http.patch",
   "env": {

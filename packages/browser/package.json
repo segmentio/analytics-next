@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.81.1",
+  "version": "1.82.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -62,6 +62,7 @@
     "unfetch": "^4.1.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.540.0",
     "@internal/config": "0.0.0",
     "@segment/analytics-browser-actions-braze": "^1.3.0",
     "@segment/analytics.js-integration": "^3.3.3",
@@ -77,7 +78,6 @@
     "@types/mime": "^2.0.3",
     "@types/node": "^20",
     "@types/serve-handler": "^6.1.0",
-    "aws-sdk": "^2.814.0",
     "circular-dependency-plugin": "^5.2.2",
     "compression-webpack-plugin": "^8.0.1",
     "ecma-version-validator-webpack-plugin": "^1.2.1",

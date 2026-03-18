@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 
 const ex = require('execa')
-const S3 = require('aws-sdk/clients/s3')
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 const fs = require('fs-extra')
 const path = require('path')
 const mime = require('mime')
@@ -62,11 +62,13 @@ async function getFiles(dir) {
 }
 
 async function upload(meta) {
-  const s3 = new S3({
-    accessKeyId,
-    secretAccessKey,
-    sessionToken,
+  const s3 = new S3Client({
     region: 'us-west-2',
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+      sessionToken,
+    },
   })
 
   const files = await getFiles(path.join(process.cwd(), './dist/umd'))
@@ -98,29 +100,29 @@ async function upload(meta) {
       options.ContentEncoding = 'gzip'
     }
 
-    const output = await s3.putObject(options).promise()
-    await s3.putObject(shadowOptions).promise() // upload build to shadow pipeline bucket as well
+    const output = await s3.send(new PutObjectCommand(options))
+    await s3.send(new PutObjectCommand(shadowOptions)) // upload build to shadow pipeline bucket as well
 
     // put latest version with only 5 minutes caching
-    await s3
-      .putObject({
+    await s3.send(
+      new PutObjectCommand({
         ...options,
         CacheControl: 'public,max-age=300,immutable',
         Key: path.join(`analytics-next`, meta.branch, 'latest', f),
       })
-      .promise()
+    )
 
     // put chunks in a separate path. Regardless of branch, version, etc.
     // there are immutable scripts that will be loaded by webpack in runtime
     if (filePath.includes('bundle')) {
       options.GrantRead = `${cloudfrontCanonicalUserId},${customDomainCanonicalUserId}`
-      await s3
-        .putObject({
+      await s3.send(
+        new PutObjectCommand({
           ...options,
           Key: path.join(`analytics-next`, 'bundles', f),
           CacheControl: 'public,max-age=31536000,immutable',
         })
-        .promise()
+      )
     }
 
     progress++

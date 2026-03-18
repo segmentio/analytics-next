@@ -1,5 +1,17 @@
 # @segment/analytics-next
 
+## 1.82.0
+
+### Minor Changes
+
+- [#1350](https://github.com/segmentio/analytics-next/pull/1350) [`d41ca131`](https://github.com/segmentio/analytics-next/commit/d41ca1315af65dc5b2a97c7493f98d0cc8c1134f) Thanks [@mschasz](https://github.com/mschasz)! - Upgrade AWS SDK from v2 to v3 in browser release script.
+
+## 1.81.2
+
+### Patch Changes
+
+- [#1341](https://github.com/segmentio/analytics-next/pull/1341) [`6477267f`](https://github.com/segmentio/analytics-next/commit/6477267fc50887c84d475c48b3ab12493edff723) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Emit analytics_js.integration.invoke.error metric for destination load and build failures that were previously silent
+
 ## 1.81.1
 
 ### Patch Changes
