@@ -82,13 +82,38 @@ export function segmentio(
       )
 
   const inflightEvents = new Set<Context>()
+  const rateLimitAttempts = new WeakMap<Context, number>()
   const flushing = false
 
   const apiHost = settings?.apiHost ?? SEGMENT_API_HOST
   const protocol = settings?.protocol ?? 'https'
   const remote = `${protocol}://${apiHost}`
 
-  const resolvedHttpConfig = resolveHttpConfig(settings?.httpConfig)
+  // Deep-merge httpConfig: init options provide the base, CDN settings override.
+  // This lets the server control retry behavior while the client fills in gaps.
+  const cdnHttpConfig = (
+    integrations?.['Segment.io'] as Record<string, unknown> | undefined
+  )?.httpConfig as HttpConfig | undefined
+  const initHttpConfig = settings?.httpConfig
+  const mergedHttpConfig: HttpConfig | undefined =
+    cdnHttpConfig || initHttpConfig
+      ? {
+          rateLimitConfig: {
+            ...initHttpConfig?.rateLimitConfig,
+            ...cdnHttpConfig?.rateLimitConfig,
+          },
+          backoffConfig: {
+            ...initHttpConfig?.backoffConfig,
+            ...cdnHttpConfig?.backoffConfig,
+            // Deep-merge statusCodeOverrides separately so CDN adds to init, not replaces
+            statusCodeOverrides: {
+              ...initHttpConfig?.backoffConfig?.statusCodeOverrides,
+              ...cdnHttpConfig?.backoffConfig?.statusCodeOverrides,
+            },
+          },
+        }
+      : undefined
+  const resolvedHttpConfig = resolveHttpConfig(mergedHttpConfig)
 
   // Wire the CDN/user-configured maxRetryCount to the plugin's internal buffer.
   // For fetch-dispatcher (standard mode), this is the only retry control —
@@ -97,7 +122,7 @@ export function segmentio(
   // (which also reads maxRetryCount), so this mainly serves as a safety net.
   // Only override when explicitly set; otherwise respect the PriorityQueue's
   // maxAttempts from createDefaultQueue (which honors the retryQueue setting).
-  if (settings?.httpConfig?.backoffConfig?.maxRetryCount != null) {
+  if (mergedHttpConfig?.backoffConfig?.maxRetryCount != null) {
     buffer.maxAttempts = resolvedHttpConfig.backoffConfig.maxRetryCount
   }
 
@@ -157,8 +182,19 @@ export function segmentio(
       .catch((error) => {
         ctx.log('error', 'Error sending event', error)
         if (error.name === 'RateLimitError') {
-          const timeout = error.retryTimeout
-          buffer.pushWithBackoff(ctx, timeout)
+          const rlAttempts = (rateLimitAttempts.get(ctx) ?? 0) + 1
+          rateLimitAttempts.set(ctx, rlAttempts)
+          if (rlAttempts > resolvedHttpConfig.rateLimitConfig.maxRetryCount) {
+            ctx.setFailedDelivery({ reason: error })
+            analytics.emit('error', {
+              code: 'delivery_failure',
+              reason: error,
+              ctx,
+            })
+          } else {
+            const timeout = error.retryTimeout
+            buffer.pushWithBackoff(ctx, timeout)
+          }
         } else if (error.name === 'NonRetryableError') {
           // Do not requeue non-retryable HTTP failures; drop the event.
           ctx.setFailedDelivery({ reason: error })
