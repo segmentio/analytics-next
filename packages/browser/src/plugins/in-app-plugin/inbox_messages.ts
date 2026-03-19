@@ -1,6 +1,8 @@
 import { Analytics } from '../../core/analytics'
 import { JourneysEvents } from './events'
 
+const CIO_TOPIC_PREFIX = '_cio'
+
 export interface GistInboxMessage {
   messageType: string
   expiry: string
@@ -143,12 +145,23 @@ async function getFilteredMessages(
   })
 
   if (topics.length === 0) {
-    return allMessages
+    return allMessages.filter((message) => {
+      const messageTopics = message.topics
+      if (!messageTopics || messageTopics.length === 0) {
+        return true
+      }
+      return !messageTopics.some((topic) => topic.startsWith(CIO_TOPIC_PREFIX))
+    })
   }
+
+  const hasCioTopic = topics.some((topic) => topic.startsWith(CIO_TOPIC_PREFIX))
 
   return allMessages.filter((message) => {
     const messageTopics = message.topics
     if (!messageTopics || messageTopics.length === 0) {
+      return false
+    }
+    if (!hasCioTopic && messageTopics.some((topic) => topic.startsWith(CIO_TOPIC_PREFIX))) {
       return false
     }
     return messageTopics.some((messageTopic) => topics.includes(messageTopic))
