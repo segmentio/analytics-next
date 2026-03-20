@@ -358,7 +358,9 @@ export class Publisher {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'User-Agent': 'analytics-node-next/latest',
-          'X-Retry-Count': String(totalAttempts - 1),
+          ...(totalAttempts > 1
+            ? { 'X-Retry-Count': String(totalAttempts - 1) }
+            : {}),
           // Prefer OAuth Bearer token when available; otherwise fall back to Basic auth with write key.
           ...(authString
             ? { Authorization: authString }

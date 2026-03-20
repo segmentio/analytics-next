@@ -101,7 +101,6 @@ describe('Batching', () => {
           "credentials": undefined,
           "headers": {
             "Content-Type": "text/plain",
-            "X-Retry-Count": "0",
           },
           "keepalive": false,
           "method": "post",
@@ -199,7 +198,6 @@ describe('Batching', () => {
           "credentials": undefined,
           "headers": {
             "Content-Type": "text/plain",
-            "X-Retry-Count": "0",
           },
           "keepalive": false,
           "method": "post",
@@ -237,7 +235,6 @@ describe('Batching', () => {
           "credentials": undefined,
           "headers": {
             "Content-Type": "text/plain",
-            "X-Retry-Count": "0",
           },
           "keepalive": false,
           "method": "post",
@@ -254,7 +251,6 @@ describe('Batching', () => {
           "credentials": undefined,
           "headers": {
             "Content-Type": "text/plain",
-            "X-Retry-Count": "0",
           },
           "keepalive": false,
           "method": "post",
@@ -288,7 +284,6 @@ describe('Batching', () => {
           "credentials": undefined,
           "headers": {
             "Content-Type": "text/plain",
-            "X-Retry-Count": "0",
           },
           "keepalive": false,
           "method": "post",
@@ -362,14 +357,14 @@ describe('Batching', () => {
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
     }
 
-    it('T01 Success: no retry, header is 0', async () => {
+    it('T01 Success: no retry, no X-Retry-Count header', async () => {
       fetch.mockReturnValue(createSuccess({}))
 
       await dispatchOne()
 
       expect(fetch).toHaveBeenCalledTimes(1)
       const headers = fetch.mock.calls[0][1].headers
-      expect(headers['X-Retry-Count']).toBe('0')
+      expect(headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T02 Retryable 500: backoff used', async () => {
@@ -384,7 +379,7 @@ describe('Batching', () => {
 
       // First attempt happens immediately
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
 
       // First retry uses exponential backoff
       jest.runAllTimers()
@@ -399,7 +394,7 @@ describe('Batching', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       const headers = fetch.mock.calls[0][1].headers
-      expect(headers['X-Retry-Count']).toBe('0')
+      expect(headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T04 Non-retryable 5xx: 505', async () => {
@@ -409,7 +404,7 @@ describe('Batching', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       const headers = fetch.mock.calls[0][1].headers
-      expect(headers['X-Retry-Count']).toBe('0')
+      expect(headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T05 Non-retryable 5xx: 511 (no auth)', async () => {
@@ -419,7 +414,7 @@ describe('Batching', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       const headers = fetch.mock.calls[0][1].headers
-      expect(headers['X-Retry-Count']).toBe('0')
+      expect(headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T06 Retry-After 429: delay, no backoff, no retry budget', async () => {
@@ -436,7 +431,7 @@ describe('Batching', () => {
 
       // First attempt
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
 
       // Retry should wait exactly Retry-After seconds
       jest.advanceTimersByTime(1000)
@@ -459,7 +454,7 @@ describe('Batching', () => {
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
 
       jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
@@ -479,7 +474,7 @@ describe('Batching', () => {
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
 
       jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
@@ -496,7 +491,7 @@ describe('Batching', () => {
       await dispatch(`https://api.segment.io/v1/t`, { event: 'test' })
 
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
 
       jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
@@ -514,7 +509,7 @@ describe('Batching', () => {
 
       jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
 
@@ -527,7 +522,7 @@ describe('Batching', () => {
 
       jest.advanceTimersByTime(1500)
       expect(fetch).toHaveBeenCalledTimes(1)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T13 Retryable 4xx: 460', async () => {
@@ -541,7 +536,7 @@ describe('Batching', () => {
 
       jest.runAllTimers()
       expect(fetch).toHaveBeenCalledTimes(2)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
 
@@ -552,7 +547,7 @@ describe('Batching', () => {
 
       expect(fetch).toHaveBeenCalledTimes(1)
       const headers = fetch.mock.calls[0][1].headers
-      expect(headers['X-Retry-Count']).toBe('0')
+      expect(headers['X-Retry-Count']).toBeUndefined()
     })
 
     it('T15 Network error (IO): retried with backoff', async () => {
@@ -629,7 +624,7 @@ describe('Batching', () => {
       jest.runAllTimers()
 
       expect(fetch).toHaveBeenCalledTimes(2)
-      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBe('0')
+      expect(fetch.mock.calls[0][1].headers['X-Retry-Count']).toBeUndefined()
       expect(fetch.mock.calls[1][1].headers['X-Retry-Count']).toBe('1')
     })
 

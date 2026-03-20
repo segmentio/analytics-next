@@ -114,7 +114,9 @@ export default function batch(
     })
 
     const headers = createHeaders(config?.headers)
-    headers['X-Retry-Count'] = String(retryCount)
+    if (retryCount > 0) {
+      headers['X-Retry-Count'] = String(retryCount)
+    }
     if (writeKey) {
       const authtoken = btoa(writeKey + ':')
       headers['Authorization'] = `Basic ${authtoken}`

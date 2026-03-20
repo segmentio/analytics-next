@@ -535,7 +535,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [req] = getAllRequests()
-    expect(req.headers['X-Retry-Count']).toBe('0')
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
   })
 
   it('T02 Retryable 500: backoff used and headers increment on retries', async () => {
@@ -560,7 +560,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(3)
     const [first, second, third] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(third.headers['X-Retry-Count']).toBe('2')
     // Ensure some delay occurred between first and last attempt
@@ -582,7 +582,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [req] = getAllRequests()
-    expect(req.headers['X-Retry-Count']).toBe('0')
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[501]')
@@ -603,7 +603,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [req] = getAllRequests()
-    expect(req.headers['X-Retry-Count']).toBe('0')
+    expect(req.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[505]')
@@ -629,7 +629,7 @@ describe('retry semantics', () => {
     // Only one attempt should be made.
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[511]')
@@ -665,7 +665,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(mockTokenManager.clearToken).toHaveBeenCalledTimes(1)
   })
@@ -696,7 +696,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('2')
   })
 
@@ -725,7 +725,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
   })
 
@@ -754,7 +754,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
   })
 
@@ -778,7 +778,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(end).toBeGreaterThan(start)
   })
@@ -803,7 +803,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(end).toBeGreaterThan(start)
   })
@@ -824,7 +824,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
   })
 
@@ -843,7 +843,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[413]')
@@ -867,7 +867,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
   })
 
@@ -886,7 +886,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[404]')
@@ -910,7 +910,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(end).toBeGreaterThan(start)
   })
@@ -932,7 +932,7 @@ describe('retry semantics', () => {
     // M+1 total attempts
     expect(makeReqSpy).toHaveBeenCalledTimes(maxRetries + 1)
     const [first, second, third] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(third.headers['X-Retry-Count']).toBe('2')
     expect(updated.failedDelivery()).toBeTruthy()
@@ -963,7 +963,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('2')
     expect(updated.failedDelivery()).toBeFalsy()
   })
@@ -989,7 +989,7 @@ describe('retry semantics', () => {
     expect(updated.failedDelivery()).toBeFalsy()
     expect(makeReqSpy).toHaveBeenCalledTimes(3)
     const [first, second, third] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(second.headers['X-Retry-Count']).toBe('1')
     expect(third.headers['X-Retry-Count']).toBe('2')
   })
@@ -1009,7 +1009,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[400]')
@@ -1030,7 +1030,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[401]')
@@ -1051,7 +1051,7 @@ describe('retry semantics', () => {
 
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
-    expect(first.headers['X-Retry-Count']).toBe('0')
+    expect(first.headers['X-Retry-Count']).toBeUndefined()
     expect(updated.failedDelivery()).toBeTruthy()
     const err = updated.failedDelivery()!.reason as Error
     expect(err.message).toContain('[403]')

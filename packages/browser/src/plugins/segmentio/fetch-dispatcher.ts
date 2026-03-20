@@ -33,7 +33,9 @@ export default function (
       const authtoken = btoa(writeKey + ':')
       headers['Authorization'] = `Basic ${authtoken}`
     }
-    headers['X-Retry-Count'] = String(retryCountHeader ?? 0)
+    if (retryCountHeader) {
+      headers['X-Retry-Count'] = String(retryCountHeader)
+    }
 
     return fetch(url, {
       credentials: config?.credentials,

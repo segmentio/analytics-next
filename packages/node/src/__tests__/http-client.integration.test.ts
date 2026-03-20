@@ -23,7 +23,6 @@ const helpers = {
       Authorization: 'Basic Zm9vOg==',
       'Content-Type': 'application/json',
       'User-Agent': 'analytics-node-next/latest',
-      'X-Retry-Count': '0',
     })
     expect(options.method).toBe('POST')
     const getLastBatch = (): object[] => {
