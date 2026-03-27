@@ -184,9 +184,6 @@ function clamp(
   return Math.min(Math.max(v, min), max)
 }
 
-/** Statuses eligible for Retry-After header handling.*/
-const RETRY_AFTER_STATUSES = [429]
-
 /**
  * Parse the Retry-After header from a response, if present and applicable.
  * Returns `{ retryAfterMs, fromHeader }` when a valid delay is found, or `null` otherwise.
@@ -195,7 +192,7 @@ export function parseRetryAfter(
   res: { status: number; headers?: { get(name: string): string | null } },
   rateLimitConfig: ResolvedRateLimitConfig
 ): { retryAfterMs: number; fromHeader: boolean } | null {
-  if (!RETRY_AFTER_STATUSES.includes(res.status)) {
+  if (res.status !== 429) {
     return null
   }
 

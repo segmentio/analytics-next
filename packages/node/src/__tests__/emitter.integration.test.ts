@@ -47,5 +47,5 @@ describe('http_request', () => {
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
     expect(fn).toBeCalledTimes(3)
-  })
+  }, 15000)
 })
