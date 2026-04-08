@@ -62,7 +62,7 @@ export interface BatchingDispatchConfig extends DispatchFetchConfig {
   size?: number
   /**
    * If strategy = 'batching', the maximum time, in milliseconds, to wait before sending a request.
-   * This won't alaways be relevant, as the request will be sent when the size is reached.
+   * This won't always be relevant, as the request will be sent when the size is reached.
    * However, if the size is never reached, the request will be sent after this time.
    * When it comes to retries, if there is a rate limit timeout header, that will be respected over the value here.
    *
