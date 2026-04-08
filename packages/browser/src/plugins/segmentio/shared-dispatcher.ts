@@ -259,6 +259,8 @@ export function resolveHttpConfig(
   // Merge order and precedence:
   // 1) `config` is the init-time base.
   // 2) `cdnConfig` is applied second and wins on overlapping fields.
+  //    The CDN will only be populated as an override when necessary to address
+  //    issues so takes precedence over init config to ensure it can do so effectively.
   // 3) `statusCodeOverrides` is deep-merged so CDN can override specific
   //    init-provided codes without replacing the whole map.
   // This keeps precedence centralized here instead of repeating merge logic

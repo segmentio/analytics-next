@@ -118,6 +118,47 @@ describe('resolveHttpConfig', () => {
     expect(resolved.backoffConfig.maxBackoffInterval).toBe(60)
   })
 
+  it('applies init config first and lets CDN overrides win on conflicts', () => {
+    const initConfig: HttpConfig = {
+      rateLimitConfig: {
+        maxRetryCount: 5,
+        maxRetryInterval: 45,
+      },
+      backoffConfig: {
+        maxRetryCount: 3,
+        statusCodeOverrides: {
+          '429': 'drop',
+          '500': 'retry',
+        },
+      },
+    }
+
+    const cdnConfig: HttpConfig = {
+      rateLimitConfig: {
+        maxRetryCount: 20,
+      },
+      backoffConfig: {
+        statusCodeOverrides: {
+          '500': 'drop',
+          '418': 'retry',
+        },
+      },
+    }
+
+    const resolved = resolveHttpConfig(initConfig, cdnConfig)
+
+    // CDN should override init config for overlapping fields.
+    expect(resolved.rateLimitConfig.maxRetryCount).toBe(20)
+    // Init values should be preserved when CDN does not provide an override.
+    expect(resolved.rateLimitConfig.maxRetryInterval).toBe(45)
+    expect(resolved.backoffConfig.maxRetryCount).toBe(3)
+
+    // statusCodeOverrides are deep-merged with CDN taking precedence on conflicts.
+    expect(resolved.backoffConfig.statusCodeOverrides['429']).toBe('drop')
+    expect(resolved.backoffConfig.statusCodeOverrides['500']).toBe('drop')
+    expect(resolved.backoffConfig.statusCodeOverrides['418']).toBe('retry')
+  })
+
   describe('value clamping', () => {
     it('clamps maxRetryInterval to safe range', () => {
       const tooHigh = resolveHttpConfig({
