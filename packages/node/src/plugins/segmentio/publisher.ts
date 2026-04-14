@@ -262,12 +262,12 @@ export class Publisher {
   private _isRateLimited(): boolean {
     if (this._rateLimitedUntil === undefined) return false
 
-    // Check if maxRateLimitDuration has been exceeded
+    // Check if maxRateLimitDuration has been exceeded.
+    // Returns false so the caller can detect the cleared state and drop the batch.
     if (
       this._rateLimitStartTime !== undefined &&
       Date.now() - this._rateLimitStartTime >= this._maxRateLimitDuration * 1000
     ) {
-      // Clear rate-limit state; caller will drop batch
       this._rateLimitedUntil = undefined
       this._rateLimitStartTime = undefined
       return false
@@ -313,9 +313,8 @@ export class Publisher {
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      totalAttempts++
-
       // Check rate-limit state before making a request
+      const wasRateLimited = this._rateLimitStartTime !== undefined
       if (this._isRateLimited()) {
         const untilRetryAfter = Math.max(
           0,
@@ -334,10 +333,12 @@ export class Publisher {
         continue
       }
 
-      // Check if maxRateLimitDuration was exceeded (cleared by _isRateLimited)
-      // If we had a rateLimitStartTime but it got cleared due to duration,
-      // and we're in a 429 requeue cycle, drop the batch
-      // (This is handled by _isRateLimited returning false after clearing state)
+      // If we were rate-limited but _isRateLimited() now returns false with
+      // cleared state, maxRateLimitDuration was exceeded — drop the batch.
+      if (wasRateLimited && this._rateLimitStartTime === undefined) {
+        resolveFailedBatch(batch, new Error('Rate limit duration exceeded'))
+        return
+      }
 
       let failureReason: unknown
       let shouldRetry = false
@@ -354,6 +355,8 @@ export class Publisher {
             authString = `Bearer ${token.access_token}`
           }
         }
+
+        totalAttempts++
 
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',

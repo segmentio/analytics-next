@@ -697,7 +697,7 @@ describe('retry semantics', () => {
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBeUndefined()
-    expect(second.headers['X-Retry-Count']).toBe('2')
+    expect(second.headers['X-Retry-Count']).toBe('1')
   })
 
   it('T07 408 uses backoff (Retry-After header ignored)', async () => {
@@ -964,7 +964,7 @@ describe('retry semantics', () => {
     expect(makeReqSpy).toHaveBeenCalledTimes(2)
     const [first, second] = getAllRequests()
     expect(first.headers['X-Retry-Count']).toBeUndefined()
-    expect(second.headers['X-Retry-Count']).toBe('2')
+    expect(second.headers['X-Retry-Count']).toBe('1')
     expect(updated.failedDelivery()).toBeFalsy()
   })
 
@@ -1204,20 +1204,18 @@ describe('retry semantics', () => {
     expect(makeReqSpy.mock.calls.length).toBeLessThan(100)
   })
 
-  it('T20 maxRateLimitDuration: clears rate-limit window and resumes send', async () => {
+  it('T20 maxRateLimitDuration: drops batch after duration exceeded', async () => {
     jest.useFakeTimers()
     const headers = new TestHeaders()
     headers.set('Retry-After', '60')
 
-    makeReqSpy
-      .mockReturnValueOnce(
-        createError({
-          status: 429,
-          statusText: 'Too Many Requests',
-          ...headers,
-        })
-      )
-      .mockReturnValue(createSuccess())
+    makeReqSpy.mockReturnValue(
+      createError({
+        status: 429,
+        statusText: 'Too Many Requests',
+        ...headers,
+      })
+    )
 
     const { plugin: segmentPlugin } = createTestNodePlugin({
       maxRetries: 3,
@@ -1225,14 +1223,18 @@ describe('retry semantics', () => {
       maxRateLimitDuration: 1, // 1 second
     })
 
-    // First event gets 429, then resumes after maxRateLimitDuration elapses.
+    // First event gets 429, rate-limit state is set
     const ctx1 = trackEvent()
     const pending = segmentPlugin.track(ctx1)
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
 
+    // Advance past maxRateLimitDuration — batch should be dropped
     await jest.advanceTimersByTimeAsync(1000)
     const updated1 = await pending
-    expect(updated1.failedDelivery()).toBeFalsy()
-    expect(makeReqSpy).toHaveBeenCalledTimes(2)
+    expect(updated1.failedDelivery()).toBeTruthy()
+    const err = updated1.failedDelivery()!.reason as Error
+    expect(err.message).toContain('Rate limit duration exceeded')
+    // Only 1 actual HTTP request — the initial 429
+    expect(makeReqSpy).toHaveBeenCalledTimes(1)
   })
 })

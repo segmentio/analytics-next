@@ -179,7 +179,7 @@ export class TokenManager implements ITokenManager {
     }
 
     const timeUntilRefreshInMs = backoff({
-      attempt: this.retryCount - 1,
+      attempt: Math.max(this.retryCount - 1, 0),
       minTimeout: 100,
       maxTimeout: 60 * 1000,
     })
