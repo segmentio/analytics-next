@@ -467,7 +467,7 @@ export class Analytics
   async addSourceMiddleware(fn: MiddlewareFunction): Promise<Analytics> {
     await this.queue.criticalTasks.run(async () => {
       const { sourceMiddlewarePlugin } = await import(
-        /* webpackChunkName: "middleware" */ '../../plugins/middleware'
+        /* webpackChunkName: "analytics-middleware" */ '../../plugins/middleware'
       )
 
       const integrations: Record<string, boolean> = {}
