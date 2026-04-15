@@ -285,7 +285,9 @@ export class Publisher {
   private _setRateLimitState(headers: HTTPResponse['headers']): void {
     const retryAfterSeconds = getRetryAfterInSeconds(headers)
     if (typeof retryAfterSeconds === 'number') {
-      this._rateLimitedUntil = Date.now() + retryAfterSeconds * 1000
+      // Enforce a minimum of 1 second to prevent tight loops on Retry-After: 0
+      this._rateLimitedUntil =
+        Date.now() + Math.max(retryAfterSeconds, 1) * 1000
     } else {
       // No Retry-After header — use a default backoff of 60s
       this._rateLimitedUntil = Date.now() + 60000
@@ -391,8 +393,8 @@ export class Publisher {
 
         const response = await this._httpClient.makeRequest(request)
 
-        // Per SDD: status codes 100–399 are treated as successful delivery.
-        if (response.status >= 100 && response.status < 400) {
+        // 2xx and 3xx are treated as successful delivery.
+        if (response.status >= 200 && response.status < 400) {
           // Success — clear rate-limit state
           this._clearRateLimitState()
           batch.resolveEvents()

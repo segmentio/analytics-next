@@ -409,7 +409,7 @@ describe('error handling', () => {
     expect(err.message).toEqual(expect.stringContaining('500'))
   })
 
-  it('treats 1xx (<200) statuses as success (no retry)', async () => {
+  it('retries 1xx (<200) statuses (not a valid final response)', async () => {
     jest.useRealTimers()
 
     makeReqSpy.mockReturnValue(
@@ -424,10 +424,9 @@ describe('error handling', () => {
     const context = new Context(eventFactory.alias('to', 'from'))
     const updatedContext = await segmentPlugin.alias(context)
 
-    expect(makeReqSpy).toHaveBeenCalledTimes(1)
-    validateMakeReqInputs(context)
-    expect(updatedContext).toBe(context)
-    expect(updatedContext.failedDelivery()).toBeFalsy()
+    // 1xx is not a valid final response — retried then failed after maxRetries
+    expect(makeReqSpy).toHaveBeenCalledTimes(3) // 1 initial + 2 retries
+    expect(updatedContext.failedDelivery()).toBeTruthy()
   })
   it('retries fetch errors', async () => {
     // Jest kept timing out when using fake timers despite advancing time.
@@ -1074,7 +1073,7 @@ describe('retry semantics', () => {
   })
 
   it('T21 Safety cap: persistent 429 with Retry-After eventually fails', async () => {
-    jest.useRealTimers()
+    jest.useFakeTimers()
     const headers = new TestHeaders()
     headers.set('Retry-After', '0')
 
@@ -1092,7 +1091,13 @@ describe('retry semantics', () => {
     })
 
     const ctx = trackEvent()
-    const updated = await segmentPlugin.track(ctx)
+    const pending = segmentPlugin.track(ctx)
+
+    // Advance past all retry-after delays (1s minimum each, up to safety cap)
+    for (let i = 0; i < 25; i++) {
+      await jest.advanceTimersByTimeAsync(1000)
+    }
+    const updated = await pending
 
     expect(makeReqSpy.mock.calls.length).toBeGreaterThan(1)
     expect(updated.failedDelivery()).toBeTruthy()

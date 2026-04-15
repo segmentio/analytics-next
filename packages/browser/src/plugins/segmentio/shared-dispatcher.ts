@@ -138,14 +138,12 @@ export interface HttpConfig {
 // --- Resolved types (all fields required, no undefined checks needed by consumers) ---
 
 export interface ResolvedRateLimitConfig {
-  enabled: boolean
   maxRetryCount: number
   maxRetryInterval: number
   maxRateLimitDuration: number
 }
 
 export interface ResolvedBackoffConfig {
-  enabled: boolean
   maxRetryCount: number
   baseBackoffInterval: number
   maxBackoffInterval: number
@@ -288,14 +286,12 @@ export function resolveHttpConfig(
 
   return {
     rateLimitConfig: {
-      enabled: rate?.enabled ?? true,
-      maxRetryCount: rate?.maxRetryCount ?? 10,
+      maxRetryCount: clamp(rate?.maxRetryCount, 10, 0, 100),
       maxRetryInterval: clamp(rate?.maxRetryInterval, 300, 0.1, 86400),
       maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 43200, 10, 86400),
     },
     backoffConfig: {
-      enabled: backoff?.enabled ?? true,
-      maxRetryCount: backoff?.maxRetryCount ?? 10,
+      maxRetryCount: clamp(backoff?.maxRetryCount, 10, 0, 100),
       baseBackoffInterval: clamp(backoff?.baseBackoffInterval, 0.5, 0.1, 300),
       maxBackoffInterval: clamp(backoff?.maxBackoffInterval, 60, 0.1, 86400),
       maxTotalBackoffDuration: clamp(

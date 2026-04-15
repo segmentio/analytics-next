@@ -13,14 +13,12 @@ describe('resolveHttpConfig', () => {
     const resolved = resolveHttpConfig(undefined)
 
     expect(resolved.rateLimitConfig).toEqual({
-      enabled: true,
       maxRetryCount: 10,
       maxRetryInterval: 300,
       maxRateLimitDuration: 43200,
     })
 
     expect(resolved.backoffConfig).toEqual({
-      enabled: true,
       maxRetryCount: 10,
       baseBackoffInterval: 0.5,
       maxBackoffInterval: 60,
@@ -43,9 +41,7 @@ describe('resolveHttpConfig', () => {
   it('applies all defaults when called with empty object', () => {
     const resolved = resolveHttpConfig({})
 
-    expect(resolved.rateLimitConfig.enabled).toBe(true)
     expect(resolved.rateLimitConfig.maxRetryCount).toBe(10)
-    expect(resolved.backoffConfig.enabled).toBe(true)
     expect(resolved.backoffConfig.maxRetryCount).toBe(10)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
   })
@@ -76,13 +72,11 @@ describe('resolveHttpConfig', () => {
     const resolved = resolveHttpConfig(config)
 
     expect(resolved.rateLimitConfig).toEqual({
-      enabled: false,
       maxRetryCount: 50,
       maxRetryInterval: 120,
       maxRateLimitDuration: 3600,
     })
 
-    expect(resolved.backoffConfig.enabled).toBe(false)
     expect(resolved.backoffConfig.maxRetryCount).toBe(25)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(1)
     expect(resolved.backoffConfig.maxBackoffInterval).toBe(60)
@@ -109,10 +103,8 @@ describe('resolveHttpConfig', () => {
     expect(resolved.backoffConfig.jitterPercent).toBe(5)
 
     // Defaults for missing fields
-    expect(resolved.rateLimitConfig.enabled).toBe(true)
     expect(resolved.rateLimitConfig.maxRetryInterval).toBe(300)
     expect(resolved.rateLimitConfig.maxRateLimitDuration).toBe(43200)
-    expect(resolved.backoffConfig.enabled).toBe(true)
     expect(resolved.backoffConfig.maxRetryCount).toBe(10)
     expect(resolved.backoffConfig.baseBackoffInterval).toBe(0.5)
     expect(resolved.backoffConfig.maxBackoffInterval).toBe(60)
