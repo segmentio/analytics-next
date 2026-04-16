@@ -80,7 +80,7 @@ describe('Segment.io retries 500s and 429', () => {
         })
       )
       .mockReturnValue(createSuccess({}))
-    const spy = jest.spyOn(PQ.PriorityQueue.prototype, 'pushWithBackoff')
+    const spy = jest.spyOn(PQ.PriorityQueue.prototype, 'pushWithDelay')
     await analytics.track('event')
     expect(spy).toHaveBeenLastCalledWith(expect.anything(), resetTime * 1000)
   })
@@ -196,11 +196,11 @@ describe('Standard dispatcher retry semantics and X-Retry-Count header', () => {
       )
       .mockReturnValue(createSuccess({}))
 
-    const spy = jest.spyOn(PQ.PriorityQueue.prototype, 'pushWithBackoff')
+    const spy = jest.spyOn(PQ.PriorityQueue.prototype, 'pushWithDelay')
     await analytics.track('event')
     jest.runAllTimers()
 
-    // Rate-limit retry scheduled with Retry-After delay
+    // Rate-limit retry scheduled with exact Retry-After delay (no backoff)
     expect(spy).toHaveBeenLastCalledWith(expect.anything(), resetTime * 1000)
 
     // First attempt has no header; retry header behavior is

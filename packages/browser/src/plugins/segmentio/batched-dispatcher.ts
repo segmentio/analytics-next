@@ -96,6 +96,7 @@ export default function batch(
   let rateLimitTimeout = 0
   let requestCount = 0 // Tracks actual network requests for X-Retry-Count header
   let isRetrying = false
+  let isFlushing = false
   let retryAfterRetries = 0
   let totalBackoffTime = 0
   let totalRateLimitTime = 0
@@ -185,9 +186,11 @@ export default function batch(
       totalRateLimitTime = 0
     }
     isRetrying = false
+    isFlushing = true
     if (buffer.length) {
       const { batch, remaining } = buildBatch(buffer)
       if (batch.length === 0) {
+        isFlushing = false
         return
       }
 
@@ -261,6 +264,11 @@ export default function batch(
           isRetrying = true
           scheduleFlush(nextAttempt, retryDelay)
         })
+        .finally(() => {
+          isFlushing = false
+        })
+    } else {
+      isFlushing = false
     }
   }
 
@@ -307,7 +315,14 @@ export default function batch(
       approachingTrackingAPILimit(buffer) ||
       (config?.keepalive && passedKeepaliveLimit(buffer))
 
-    return bufferOverflow || pageUnloaded ? flush() : scheduleFlush()
+    if (!bufferOverflow && !pageUnloaded) {
+      return scheduleFlush()
+    }
+
+    // If a flush is already in-flight, avoid concurrent flushes that would
+    // corrupt shared mutable state (requestCount, totalBackoffTime, etc.).
+    // Schedule instead so events are picked up after the current flush settles.
+    return isFlushing ? scheduleFlush() : flush()
   }
 
   return {

@@ -675,19 +675,19 @@ describe('Batching', () => {
       expect(fetch).toHaveBeenCalledTimes(2)
     })
 
-    it('handles concurrent in-flight 429 responses without dropping either batch', async () => {
+    it('prevents concurrent flushes — second dispatch deferred when flush in-flight', async () => {
       const retryAfterHeaders = new Headers()
       retryAfterHeaders.set('Retry-After', '1')
 
-      const pendingResponses: Array<(value: Response) => void> = []
+      let resolveFirstFetch: (value: Response) => void
       let callCount = 0
 
       fetch.mockImplementation(() => {
         callCount += 1
 
-        if (callCount <= 2) {
+        if (callCount === 1) {
           return new Promise<Response>((resolve) => {
-            pendingResponses.push(resolve)
+            resolveFirstFetch = resolve
           })
         }
 
@@ -710,42 +710,35 @@ describe('Batching', () => {
         httpConfig
       )
 
+      // First dispatch triggers flush (size=1), second is deferred because
+      // the first flush is still in-flight — no concurrent flush corruption.
       const dispatchA = dispatch(`https://api.segment.io/v1/t`, { event: 'a' })
-      const dispatchB = dispatch(`https://api.segment.io/v1/t`, { event: 'b' })
+      void dispatch(`https://api.segment.io/v1/t`, { event: 'b' })
 
-      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(fetch).toHaveBeenCalledTimes(1)
 
-      const rateLimitedResponse = {
+      // First flush gets 429
+      resolveFirstFetch!({
         ok: false,
         status: 429,
         statusText: 'Too Many Requests',
         headers: retryAfterHeaders,
         json: () => Promise.resolve({}),
-      } as Response
+      } as Response)
+      await dispatchA
 
-      pendingResponses[0](rateLimitedResponse)
-      pendingResponses[1](rateLimitedResponse)
-      await Promise.all([dispatchA, dispatchB])
-
-      // Both 429s should schedule retries, but no new network call until Retry-After passes.
-      expect(fetch).toHaveBeenCalledTimes(2)
-
+      // After Retry-After elapses, retry picks up both events
       jest.advanceTimersByTime(1000)
       await Promise.resolve()
-      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(fetch).toHaveBeenCalledTimes(2)
 
-      const retriedPayload = JSON.parse(fetch.mock.calls[2][1].body)
+      const retriedPayload = JSON.parse(fetch.mock.calls[1][1].body)
       expect(retriedPayload.batch).toHaveLength(2)
       expect(
         retriedPayload.batch
           .map((event: { event: string }) => event.event)
           .sort()
       ).toEqual(['a', 'b'])
-
-      // No additional request should be needed after successful combined retry.
-      jest.advanceTimersByTime(10)
-      await Promise.resolve()
-      expect(fetch).toHaveBeenCalledTimes(3)
     })
 
     it('T04 (SDD) 429 halts current flush iteration — remaining batches not attempted', async () => {
