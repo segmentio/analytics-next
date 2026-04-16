@@ -1,4 +1,4 @@
-export { Analytics } from './core/analytics'
+export { Analytics, NullAnalytics } from './core/analytics'
 export { AnalyticsBrowser } from './browser'
 export type {
   AnalyticsBrowserSettings,
