@@ -1,5 +1,15 @@
 # @segment/analytics-next
 
+## 1.83.0
+
+### Minor Changes
+
+- [#1356](https://github.com/segmentio/analytics-next/pull/1356) [`bd498512`](https://github.com/segmentio/analytics-next/commit/bd498512dd539af91cf88606496c3f2e3e312f5d) Thanks [@laksh-twilio](https://github.com/laksh-twilio)! - Fixes #1336 NullAnalytics was accidentally removed from the public exports in commit b611746 (PR #1090) when exports were changed from wildcard to explicit. This restores the export for users who need NullAnalytics in their test code.
+
+### Patch Changes
+
+- [#1357](https://github.com/segmentio/analytics-next/pull/1357) [`a70d9e69`](https://github.com/segmentio/analytics-next/commit/a70d9e694246e58fd7da965250c4cdd445038c67) Thanks [@chenxzhang](https://github.com/chenxzhang)! - Rename middleware chunk name to avoid collision with Next.js middleware entrypoint
+
 ## 1.82.0
 
 ### Minor Changes
