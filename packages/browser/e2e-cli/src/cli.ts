@@ -132,9 +132,10 @@ async function waitForDelivery(maxWaitMs = 60000): Promise<void> {
     const elapsed = Date.now() - lastApiResponseTime
     // After success: brief settle for any remaining event dispatches.
     // After error: longer settle to allow for retry scheduling + backoff.
-    // The fetch-dispatcher's core backoff reaches ~3200ms at attempt 5,
-    // plus schedule-flush jitter (~600ms), so we need >4s for error cases.
-    const settleMs = lastApiStatus < 400 ? 1500 : 5000
+    // The fetch-dispatcher's core backoff uses minTimeout=500ms with
+    // exponential growth: attempt 5 reaches ~500*2^4*random ≈ 8-16s.
+    // Use 20s settle to accommodate higher retry attempts.
+    const settleMs = lastApiStatus < 400 ? 1500 : 20000
 
     if (elapsed >= settleMs) {
       return

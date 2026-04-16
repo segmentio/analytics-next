@@ -75,6 +75,23 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
     return true
   }
 
+  pushWithDelay(item: Item, delay: number): boolean {
+    const attempt = this.updateAttempts(item)
+
+    if (attempt > this.maxAttempts || this.includes(item)) {
+      return false
+    }
+
+    setTimeout(() => {
+      this.queue.push(item)
+      this.future = this.future.filter((f) => f.id !== item.id)
+      this.emit(ON_REMOVE_FROM_FUTURE)
+    }, delay)
+
+    this.future.push(item)
+    return true
+  }
+
   public getAttempts(item: Item): number {
     return this.seen[item.id] ?? 0
   }

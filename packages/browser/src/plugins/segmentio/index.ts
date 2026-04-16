@@ -173,7 +173,7 @@ export function segmentio(
             })
           } else {
             const timeout = error.retryTimeout
-            buffer.pushWithBackoff(ctx, timeout)
+            buffer.pushWithDelay(ctx, timeout)
           }
         } else if (error.name === 'NonRetryableError') {
           // Do not requeue non-retryable HTTP failures; drop the event.
