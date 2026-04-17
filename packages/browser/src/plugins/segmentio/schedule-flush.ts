@@ -54,5 +54,5 @@ export function scheduleFlush(
     if (buffer.todo > 0) {
       scheduleFlush(isFlushing, newBuffer, xt, scheduleFlush)
     }
-  }, Math.random() * 5000)
+  }, Math.random() * 500 + 100)
 }

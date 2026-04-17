@@ -12,6 +12,7 @@ import { UserOptions } from '../core/user'
 import { HighEntropyHint } from '../lib/client-hints/interfaces'
 import { IntegrationsOptions } from '@segment/analytics-core'
 import { SegmentioSettings } from '../plugins/segmentio'
+import { HttpConfig } from '../plugins/segmentio/shared-dispatcher'
 
 interface VersionSettings {
   version?: string
@@ -74,6 +75,13 @@ export interface RemoteSegmentIOIntegrationSettings
   bundledConfigIds?: string[]
   unbundledConfigIds?: string[]
   maybeBundledConfigIds?: Record<string, string[]>
+
+  /**
+   * HTTP retry and backoff configuration.
+   * Controls rate-limit handling (429) and exponential backoff for transient errors.
+   * Fetched from CDN settings; can be overridden via init options.
+   */
+  httpConfig?: HttpConfig
 }
 
 /**
@@ -188,7 +196,7 @@ export interface AnalyticsSettings {
  */
 export type SegmentioIntegrationInitOptions = Pick<
   SegmentioSettings,
-  'apiHost' | 'protocol' | 'deliveryStrategy'
+  'apiHost' | 'protocol' | 'deliveryStrategy' | 'httpConfig'
 >
 
 /**

@@ -1,5 +1,6 @@
 import { createTestAnalytics } from './test-helpers/create-test-analytics'
 import { assertHttpRequestEmittedEvent } from './test-helpers/assert-shape'
+import { createError } from './test-helpers/factories'
 
 describe('http_request', () => {
   it('emits an http_request event if success', async () => {
@@ -32,8 +33,13 @@ describe('http_request', () => {
     const analytics = createTestAnalytics(
       {
         maxRetries: 2,
+        httpClient: (_url: string, _init: any) =>
+          createError({
+            status: 500,
+            statusText: 'Internal Server Error',
+          }),
       },
-      { withError: true }
+      { useRealHTTPClient: true }
     )
     const fn = jest.fn()
     analytics.on('http_request', fn)
@@ -41,5 +47,5 @@ describe('http_request', () => {
       analytics.track({ anonymousId: 'foo', event: 'bar' }, resolve)
     )
     expect(fn).toBeCalledTimes(3)
-  })
+  }, 15000)
 })

@@ -136,9 +136,17 @@ async function main(): Promise<void> {
       writeKey,
       host: apiHost,
       flushAt: config.flushAt ?? 15,
-      flushInterval: config.flushInterval ?? 10000,
+      flushInterval: config.flushInterval ?? 1000,
       maxRetries: config.maxRetries ?? 3,
       httpRequestTimeout: config.timeout ?? 10000,
+    })
+
+    const deliveryErrors: string[] = []
+    analytics.on('error', (err) => {
+      const reason = err.reason
+      const msg =
+        reason instanceof Error ? reason.message : String(reason ?? err.code)
+      deliveryErrors.push(msg)
     })
 
     // Process event sequences
@@ -152,11 +160,18 @@ async function main(): Promise<void> {
       }
     }
 
-    // Flush and close
-    await analytics.closeAndFlush()
+    // Flush and close — use a generous timeout so retries with exponential
+    // backoff have time to complete (default is flushInterval * 1.25)
+    const timeoutMs = (config.timeout ?? 60) * 1000
+    await analytics.closeAndFlush({ timeout: timeoutMs })
 
-    output.success = true
-    output.sentBatches = 1 // Placeholder
+    if (deliveryErrors.length > 0) {
+      output.success = false
+      output.error = deliveryErrors[0]
+    } else {
+      output.success = true
+      output.sentBatches = 1
+    }
   } catch (err) {
     output.error = err instanceof Error ? err.message : String(err)
   }

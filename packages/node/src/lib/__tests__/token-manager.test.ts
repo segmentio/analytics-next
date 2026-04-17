@@ -84,6 +84,44 @@ test(
   30 * 1000
 )
 
+test('isValidToken returns false for undefined token', () => {
+  const tokenManager = getTokenManager()
+
+  expect(tokenManager.isValidToken(undefined)).toBeFalsy()
+})
+
+test('isValidToken returns false when expires_at is missing or in the past', () => {
+  const tokenManager = getTokenManager()
+  const nowInSeconds = Math.round(Date.now() / 1000)
+
+  const tokenWithoutExpiresAt: any = {
+    access_token: 'token',
+    expires_in: 100,
+  }
+
+  const expiredToken: any = {
+    access_token: 'token',
+    expires_in: 100,
+    expires_at: nowInSeconds - 10,
+  }
+
+  expect(tokenManager.isValidToken(tokenWithoutExpiresAt)).toBeFalsy()
+  expect(tokenManager.isValidToken(expiredToken)).toBeFalsy()
+})
+
+test('isValidToken returns true when expires_at is in the future', () => {
+  const tokenManager = getTokenManager()
+  const nowInSeconds = Math.round(Date.now() / 1000)
+
+  const validToken: any = {
+    access_token: 'token',
+    expires_in: 100,
+    expires_at: nowInSeconds + 60,
+  }
+
+  expect(tokenManager.isValidToken(validToken)).toBeTruthy()
+})
+
 test('OAuth retry failure', async () => {
   fetcher.mockReturnValue(createOAuthError({ status: 425 }))
 
@@ -106,37 +144,70 @@ test('OAuth immediate failure', async () => {
   expect(fetcher).toHaveBeenCalledTimes(1)
 })
 
-test('OAuth rate limit', async () => {
+test('OAuth rate limit spaces retries using Retry-After seconds', async () => {
+  const callTimes: number[] = []
+
   fetcher
-    .mockReturnValueOnce(
-      createOAuthError({
+    .mockImplementationOnce(() => {
+      callTimes.push(Date.now())
+      return createOAuthError({
         status: 429,
-        headers: { 'X-RateLimit-Reset': Date.now() + 250 },
+        headers: { 'Retry-After': '1' },
       })
-    )
-    .mockReturnValueOnce(
-      createOAuthError({
+    })
+    .mockImplementationOnce(() => {
+      callTimes.push(Date.now())
+      return createOAuthError({
         status: 429,
-        headers: { 'X-RateLimit-Reset': Date.now() + 500 },
+        headers: { 'Retry-After': '1' },
       })
-    )
-    .mockReturnValue(
-      createOAuthSuccess({ access_token: 'token', expires_in: 100 })
-    )
+    })
+    .mockImplementationOnce(() => {
+      callTimes.push(Date.now())
+      return createOAuthSuccess({ access_token: 'token', expires_in: 100 })
+    })
 
   const tokenManager = getTokenManager()
 
   const tokenPromise = tokenManager.getAccessToken()
-  await sleep(25)
+
+  // First request should happen immediately
+  await sleep(50)
   expect(fetcher).toHaveBeenCalledTimes(1)
-  await sleep(250)
-  expect(fetcher).toHaveBeenCalledTimes(2)
-  await sleep(250)
-  expect(fetcher).toHaveBeenCalledTimes(3)
+
+  // Allow enough time for the two 1s-spaced retries to occur
+  await sleep(2500)
 
   const token = await tokenPromise
   expect(tokenManager.isValidToken(token)).toBeTruthy()
   expect(token.access_token).toBe('token')
   expect(token.expires_in).toBe(100)
   expect(fetcher).toHaveBeenCalledTimes(3)
+
+  // Validate that retries did not bunch up: at least ~1s apart
+  expect(callTimes.length).toBe(3)
+  const firstDelay = callTimes[1] - callTimes[0]
+  const secondDelay = callTimes[2] - callTimes[1]
+  expect(firstDelay).toBeGreaterThanOrEqual(900)
+  expect(secondDelay).toBeGreaterThanOrEqual(900)
+})
+
+test('OAuth schedules background refresh at half lifetime', async () => {
+  const tokenManager: any = getTokenManager()
+  const queueSpy = jest.spyOn(tokenManager as any, 'queueNextPoll')
+
+  fetcher.mockReturnValueOnce(
+    createOAuthSuccess({ access_token: 'token-1', expires_in: 100 })
+  )
+
+  const token = await tokenManager.getAccessToken()
+  expect(token.access_token).toBe('token-1')
+  expect(fetcher).toHaveBeenCalledTimes(1)
+
+  // Should schedule a refresh at half the lifetime (expires_in / 2 seconds)
+  expect(queueSpy).toHaveBeenCalled()
+  const delayMs = queueSpy.mock.calls[0][0]
+  expect(delayMs).toBe(50 * 1000)
+
+  tokenManager.stopPoller()
 })

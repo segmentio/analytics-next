@@ -52,22 +52,28 @@ export class PriorityQueue<Item extends QueueItem = QueueItem> extends Emitter {
       return this.push(item)[0]
     }
 
+    let timeout = backoff({ attempt: this.getAttempts(item) })
+    if (minTimeout > 0 && timeout < minTimeout) {
+      timeout = minTimeout
+    }
+
+    return this.scheduleItem(item, timeout)
+  }
+
+  pushWithDelay(item: Item, delay: number): boolean {
+    return this.scheduleItem(item, delay)
+  }
+
+  private scheduleItem(item: Item, timeout: number): boolean {
     const attempt = this.updateAttempts(item)
 
     if (attempt > this.maxAttempts || this.includes(item)) {
       return false
     }
 
-    let timeout = backoff({ attempt: attempt - 1 })
-    if (minTimeout > 0 && timeout < minTimeout) {
-      timeout = minTimeout
-    }
-
     setTimeout(() => {
       this.queue.push(item)
-      // remove from future list
       this.future = this.future.filter((f) => f.id !== item.id)
-      // Lets listeners know that a 'future' message is now available in the queue
       this.emit(ON_REMOVE_FROM_FUTURE)
     }, timeout)
 

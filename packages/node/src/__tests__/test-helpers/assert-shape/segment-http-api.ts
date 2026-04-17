@@ -25,10 +25,8 @@ export function assertHTTPRequestOptions(
 ) {
   expect(url).toBe('https://api.segment.io/v1/batch')
   expect(method).toBe('POST')
-  expect(headers).toEqual({
-    'Content-Type': 'application/json',
-    'User-Agent': 'analytics-node-next/latest',
-  })
+  expect(headers['Content-Type']).toBe('application/json')
+  expect(headers['User-Agent']).toBe('analytics-node-next/latest')
 
   expect(JSON.parse(body).batch).toHaveLength(contexts.length)
   let idx = 0

@@ -62,7 +62,7 @@ export interface BatchingDispatchConfig extends DispatchFetchConfig {
   size?: number
   /**
    * If strategy = 'batching', the maximum time, in milliseconds, to wait before sending a request.
-   * This won't alaways be relevant, as the request will be sent when the size is reached.
+   * This won't always be relevant, as the request will be sent when the size is reached.
    * However, if the size is never reached, the request will be sent after this time.
    * When it comes to retries, if there is a rate limit timeout header, that will be respected over the value here.
    *
@@ -87,3 +87,226 @@ export type DeliveryStrategy =
       strategy: 'batching'
       config?: BatchingDispatchConfig
     }
+
+// --- HTTP Config (rate limiting + backoff) ---
+
+export interface RateLimitConfig {
+  /**
+   * Kept for cross-SDK config parity (mobile/server).
+   * Browser SDK already had rate-limit handling before this config and currently keeps existing behavior.
+   * @default true
+   */
+  enabled?: boolean
+  /** Max retry attempts for rate-limited requests. @default 10 */
+  maxRetryCount?: number
+  /** Max Retry-After interval the SDK will respect, in seconds. @default 300 */
+  maxRetryInterval?: number
+  /** Max total time (seconds) rate-limited retries can continue before dropping. @default 43200 (12 hours) */
+  maxRateLimitDuration?: number
+}
+
+export interface BackoffConfig {
+  /**
+   * Kept for cross-SDK config parity (mobile/server).
+   * Browser SDK already had backoff behavior before this config and currently keeps existing behavior.
+   * @default true
+   */
+  enabled?: boolean
+  /** Max retry attempts per batch. @default 10 */
+  maxRetryCount?: number
+  /** Initial backoff interval in seconds. @default 0.5 */
+  baseBackoffInterval?: number
+  /** Max backoff interval in seconds. @default 60 */
+  maxBackoffInterval?: number
+  /** Max total time (seconds) a batch can remain in retry before being dropped. @default 43200 (12 hours) */
+  maxTotalBackoffDuration?: number
+  /** Jitter percentage (0-100) added to backoff calculations to prevent thundering herd. @default 10 */
+  jitterPercent?: number
+  /** Default behavior for 4xx responses. @default "drop" */
+  default4xxBehavior?: 'drop' | 'retry'
+  /** Default behavior for 5xx responses. @default "retry" */
+  default5xxBehavior?: 'drop' | 'retry'
+  /** Per-status-code behavior overrides. Keys are HTTP status codes as strings. */
+  statusCodeOverrides?: Record<string, 'drop' | 'retry'>
+}
+
+export interface HttpConfig {
+  rateLimitConfig?: RateLimitConfig
+  backoffConfig?: BackoffConfig
+}
+
+// --- Resolved types (all fields required, no undefined checks needed by consumers) ---
+
+export interface ResolvedRateLimitConfig {
+  maxRetryCount: number
+  maxRetryInterval: number
+  maxRateLimitDuration: number
+}
+
+export interface ResolvedBackoffConfig {
+  maxRetryCount: number
+  baseBackoffInterval: number
+  maxBackoffInterval: number
+  maxTotalBackoffDuration: number
+  jitterPercent: number
+  default4xxBehavior: 'drop' | 'retry'
+  default5xxBehavior: 'drop' | 'retry'
+  statusCodeOverrides: Record<string, 'drop' | 'retry'>
+}
+
+export interface ResolvedHttpConfig {
+  rateLimitConfig: ResolvedRateLimitConfig
+  backoffConfig: ResolvedBackoffConfig
+}
+
+// --- Default values ---
+
+const DEFAULT_STATUS_CODE_OVERRIDES: Record<string, 'drop' | 'retry'> = {
+  '408': 'retry',
+  '410': 'retry',
+  '429': 'retry',
+  '460': 'retry',
+  '501': 'drop',
+  '505': 'drop',
+  '511': 'drop',
+}
+
+/** Clamp a number to a range, returning the default if the value is undefined. */
+function clamp(
+  value: number | undefined,
+  defaultValue: number,
+  min: number,
+  max: number
+): number {
+  const v = value ?? defaultValue
+  return Math.min(Math.max(v, min), max)
+}
+
+/**
+ * Parse the Retry-After header from a response, if present and applicable.
+ * Returns `{ retryAfterMs, fromHeader }` when a valid delay is found, or `null` otherwise.
+ */
+export function parseRetryAfter(
+  res: { status: number; headers?: { get(name: string): string | null } },
+  rateLimitConfig: ResolvedRateLimitConfig
+): { retryAfterMs: number; fromHeader: boolean } | null {
+  if (res.status !== 429) {
+    return null
+  }
+
+  const raw = res.headers?.get('Retry-After')
+  if (!raw) {
+    return null
+  }
+
+  const parsed = parseInt(raw, 10)
+  if (Number.isNaN(parsed)) {
+    return null
+  }
+
+  const cappedSeconds = Math.max(
+    0,
+    Math.min(parsed, rateLimitConfig.maxRetryInterval)
+  )
+  return { retryAfterMs: cappedSeconds * 1000, fromHeader: true }
+}
+
+/**
+ * Determine whether a given HTTP status code should cause a retry or a drop,
+ * based on the resolved backoff configuration.
+ */
+export function getStatusBehavior(
+  status: number,
+  backoffConfig: ResolvedBackoffConfig
+): 'drop' | 'retry' {
+  const override = backoffConfig.statusCodeOverrides[String(status)]
+  if (override) {
+    return override
+  }
+
+  if (status >= 500) return backoffConfig.default5xxBehavior
+  if (status >= 400) return backoffConfig.default4xxBehavior
+
+  return 'drop'
+}
+
+/**
+ * Compute an exponential backoff delay in milliseconds for the given attempt.
+ * Attempt is 1-based (first retry = 1).
+ */
+export function computeBackoff(
+  attempt: number,
+  config: ResolvedBackoffConfig
+): number {
+  const baseMs = config.baseBackoffInterval * 1000
+  const maxMs = config.maxBackoffInterval * 1000
+  const exponential = baseMs * Math.pow(2, attempt - 1)
+  const capped = Math.min(exponential, maxMs)
+  const jitter = 1 + (Math.random() - 0.5) * 2 * (config.jitterPercent / 100)
+  return Math.max(0, capped * jitter)
+}
+
+/**
+ * Resolve an optional HttpConfig from CDN/user settings into a fully-populated
+ * config object with defaults applied and values clamped to safe ranges.
+ */
+export function resolveHttpConfig(
+  config?: HttpConfig,
+  cdnConfig?: HttpConfig
+): ResolvedHttpConfig {
+  // Merge order and precedence:
+  // 1) `config` is the init-time base.
+  // 2) `cdnConfig` is applied second and wins on overlapping fields.
+  //    The CDN will only be populated as an override when necessary to address
+  //    issues so takes precedence over init config to ensure it can do so effectively.
+  // 3) `statusCodeOverrides` is deep-merged so CDN can override specific
+  //    init-provided codes without replacing the whole map.
+  // This keeps precedence centralized here instead of repeating merge logic
+  // in each caller.
+  const mergedConfig: HttpConfig | undefined =
+    config || cdnConfig
+      ? {
+          rateLimitConfig: {
+            ...config?.rateLimitConfig,
+            ...cdnConfig?.rateLimitConfig,
+          },
+          backoffConfig: {
+            ...config?.backoffConfig,
+            ...cdnConfig?.backoffConfig,
+            statusCodeOverrides: {
+              ...config?.backoffConfig?.statusCodeOverrides,
+              ...cdnConfig?.backoffConfig?.statusCodeOverrides,
+            },
+          },
+        }
+      : undefined
+
+  const rate = mergedConfig?.rateLimitConfig
+  const backoff = mergedConfig?.backoffConfig
+
+  return {
+    rateLimitConfig: {
+      maxRetryCount: clamp(rate?.maxRetryCount, 10, 0, 100),
+      maxRetryInterval: clamp(rate?.maxRetryInterval, 300, 0.1, 86400),
+      maxRateLimitDuration: clamp(rate?.maxRateLimitDuration, 43200, 10, 86400),
+    },
+    backoffConfig: {
+      maxRetryCount: clamp(backoff?.maxRetryCount, 10, 0, 100),
+      baseBackoffInterval: clamp(backoff?.baseBackoffInterval, 0.5, 0.1, 300),
+      maxBackoffInterval: clamp(backoff?.maxBackoffInterval, 60, 0.1, 86400),
+      maxTotalBackoffDuration: clamp(
+        backoff?.maxTotalBackoffDuration,
+        43200,
+        60,
+        604800
+      ),
+      jitterPercent: clamp(backoff?.jitterPercent, 10, 0, 100),
+      default4xxBehavior: backoff?.default4xxBehavior ?? 'drop',
+      default5xxBehavior: backoff?.default5xxBehavior ?? 'retry',
+      statusCodeOverrides: {
+        ...DEFAULT_STATUS_CODE_OVERRIDES,
+        ...backoff?.statusCodeOverrides,
+      },
+    },
+  }
+}

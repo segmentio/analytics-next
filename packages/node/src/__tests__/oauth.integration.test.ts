@@ -37,7 +37,7 @@ l9q+amhtkwD/6fbkAu/xoWNl+11IFoxd88y2ByBFoEKB6UVLuCTSKwXDqzEZet7x
 mDyRxq7ohIzLkw8b8buDeuXZ
 -----END PRIVATE KEY-----`
 
-jest.setTimeout(10000)
+jest.setTimeout(30000)
 const timestamp = new Date()
 
 class OauthFetchClient extends TestFetchClient {}
@@ -141,12 +141,13 @@ describe('OAuth Integration Success', () => {
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
     })
-    const retryTime = Date.now() + 250
+    const retryAfterSeconds = 1
+    const notBefore = Date.now() + retryAfterSeconds * 1000
     oauthFetcher
       .mockReturnValueOnce(
         createOAuthError({
           status: 429,
-          headers: { 'X-RateLimit-Reset': retryTime },
+          headers: { 'Retry-After': retryAfterSeconds.toString() },
         })
       )
       .mockReturnValue(
@@ -162,7 +163,8 @@ describe('OAuth Integration Success', () => {
     const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
     expect(ctx1.event.type).toEqual('track')
     await analytics.closeAndFlush()
-    expect(retryTime).toBeLessThan(Date.now())
+    // Ensure we did not retry until after the Retry-After window elapsed.
+    expect(notBefore).toBeLessThan(Date.now())
   })
 })
 
@@ -170,6 +172,7 @@ describe('OAuth Failure', () => {
   it('surfaces error after retries', async () => {
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
+      maxRetries: 3,
     })
 
     oauthFetcher.mockReturnValue(createOAuthError({ status: 500 }))
@@ -208,6 +211,7 @@ describe('OAuth Failure', () => {
     const logger = jest.fn()
     const analytics = createTestAnalytics({
       oauthSettings: getOAuthSettings(),
+      maxRetries: 3,
     }).on('error', (err) => {
       logger(err)
     })
@@ -239,6 +243,7 @@ describe('OAuth Failure', () => {
     props.clientKey = 'Garbage'
     const analytics = createTestAnalytics({
       oauthSettings: props,
+      maxRetries: 3,
     })
 
     try {
@@ -265,6 +270,7 @@ describe('OAuth Failure', () => {
     const analytics = createTestAnalytics({
       oauthSettings: oauthSettings,
       httpClient: tapiTestClient,
+      maxRetries: 3,
     })
     tapiFetcher.mockReturnValue(createOAuthError({ status: 415 }))
 
