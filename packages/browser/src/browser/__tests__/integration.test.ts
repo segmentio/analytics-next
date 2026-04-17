@@ -1600,10 +1600,13 @@ describe('setting headers', () => {
     await ajs.track('sup')
 
     await sleep(10)
-    const [call] = fetchCalls.filter((el) =>
-      el.url.toString().includes('api.segment.io')
+    const call = fetchCalls.find(
+      (el) =>
+        el.url.toString().includes('api.segment.io') &&
+        (el.headers as Record<string, string>)?.['X-Test'] === 'foo'
     )
-    expect(call.headers).toEqual(
+    expect(call).toBeDefined()
+    expect(call!.headers).toEqual(
       expect.objectContaining({
         'Content-Type': 'text/plain',
         'X-Test': 'foo',
