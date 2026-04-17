@@ -91,12 +91,6 @@ export type DeliveryStrategy =
 // --- HTTP Config (rate limiting + backoff) ---
 
 export interface RateLimitConfig {
-  /**
-   * Kept for cross-SDK config parity (mobile/server).
-   * Browser SDK already had rate-limit handling before this config and currently keeps existing behavior.
-   * @default true
-   */
-  enabled?: boolean
   /** Max retry attempts for rate-limited requests. @default 10 */
   maxRetryCount?: number
   /** Max Retry-After interval the SDK will respect, in seconds. @default 300 */
@@ -106,12 +100,6 @@ export interface RateLimitConfig {
 }
 
 export interface BackoffConfig {
-  /**
-   * Kept for cross-SDK config parity (mobile/server).
-   * Browser SDK already had backoff behavior before this config and currently keeps existing behavior.
-   * @default true
-   */
-  enabled?: boolean
   /** Max retry attempts per batch. @default 10 */
   maxRetryCount?: number
   /** Initial backoff interval in seconds. @default 0.5 */
