@@ -1,0 +1,84 @@
+# Publish E2E CLI builds to sdk-e2e-tests cli-builds branch
+#
+# On merge to master, builds the node and browser e2e-cli tools
+# and pushes them to the cli-builds branch of sdk-e2e-tests.
+
+name: Publish E2E CLI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'packages/node/e2e-cli/**'
+      - 'packages/browser/e2e-cli/**'
+      - 'packages/node/src/**'
+      - 'packages/browser/src/**'
+      - 'packages/core/src/**'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SDK
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build SDK packages
+        run: yarn build
+
+      - name: Build node e2e-cli
+        working-directory: packages/node/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Build browser e2e-cli
+        working-directory: packages/browser/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Checkout sdk-e2e-tests (cli-builds branch)
+        uses: actions/checkout@v4
+        with:
+          repository: segmentio/sdk-e2e-tests
+          ref: cli-builds
+          token: ${{ secrets.E2E_TESTS_TOKEN }}
+          path: sdk-e2e-tests-builds
+          fetch-depth: 1
+
+      - name: Copy node CLI artifacts
+        run: |
+          rm -rf sdk-e2e-tests-builds/analytics-next-node
+          mkdir -p sdk-e2e-tests-builds/analytics-next-node
+          cp -r packages/node/e2e-cli/dist sdk-e2e-tests-builds/analytics-next-node/
+          cp packages/node/e2e-cli/package.json sdk-e2e-tests-builds/analytics-next-node/
+
+      - name: Copy browser CLI artifacts
+        run: |
+          rm -rf sdk-e2e-tests-builds/analytics-next-browser
+          mkdir -p sdk-e2e-tests-builds/analytics-next-browser
+          cp -r packages/browser/e2e-cli/dist sdk-e2e-tests-builds/analytics-next-browser/
+          cp packages/browser/e2e-cli/package.json sdk-e2e-tests-builds/analytics-next-browser/
+
+      - name: Push to cli-builds branch
+        working-directory: sdk-e2e-tests-builds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          # Only commit and push if there are changes
+          if git diff --cached --quiet; then
+            echo "No changes to CLI builds"
+          else
+            git commit -m "update analytics-next CLI builds (${GITHUB_SHA::8})"
+            git push
+          fi
