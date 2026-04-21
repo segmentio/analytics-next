@@ -1,7 +1,7 @@
-# Publish E2E CLI builds to sdk-e2e-tests cli-builds branch
+# Publish E2E CLI builds as GitHub Actions artifacts
 #
-# On merge to master, builds the node and browser e2e-cli tools
-# and pushes them to the cli-builds branch of sdk-e2e-tests.
+# On merge to master (or monthly refresh), builds the node and browser
+# e2e-cli tools and uploads them as artifacts.
 
 name: Publish E2E CLI
 
@@ -14,6 +14,8 @@ on:
       - 'packages/node/src/**'
       - 'packages/browser/src/**'
       - 'packages/core/src/**'
+  schedule:
+    - cron: '0 0 1 * *'
   workflow_dispatch:
 
 jobs:
@@ -46,39 +48,28 @@ jobs:
           npm install
           npm run build
 
-      - name: Checkout sdk-e2e-tests (cli-builds branch)
-        uses: actions/checkout@v4
+      - name: Prepare node artifact
+        run: |
+          mkdir -p artifacts/analytics-next-node
+          cp -r packages/node/e2e-cli/dist artifacts/analytics-next-node/
+          cp packages/node/e2e-cli/package.json artifacts/analytics-next-node/
+
+      - name: Prepare browser artifact
+        run: |
+          mkdir -p artifacts/analytics-next-browser
+          cp -r packages/browser/e2e-cli/dist artifacts/analytics-next-browser/
+          cp packages/browser/e2e-cli/package.json artifacts/analytics-next-browser/
+
+      - name: Upload node CLI artifact
+        uses: actions/upload-artifact@v4
         with:
-          repository: segmentio/sdk-e2e-tests
-          ref: cli-builds
-          token: ${{ secrets.E2E_TESTS_TOKEN }}
-          path: sdk-e2e-tests-builds
-          fetch-depth: 1
+          name: e2e-cli-node
+          path: artifacts/analytics-next-node/
+          retention-days: 90
 
-      - name: Copy node CLI artifacts
-        run: |
-          rm -rf sdk-e2e-tests-builds/analytics-next-node
-          mkdir -p sdk-e2e-tests-builds/analytics-next-node
-          cp -r packages/node/e2e-cli/dist sdk-e2e-tests-builds/analytics-next-node/
-          cp packages/node/e2e-cli/package.json sdk-e2e-tests-builds/analytics-next-node/
-
-      - name: Copy browser CLI artifacts
-        run: |
-          rm -rf sdk-e2e-tests-builds/analytics-next-browser
-          mkdir -p sdk-e2e-tests-builds/analytics-next-browser
-          cp -r packages/browser/e2e-cli/dist sdk-e2e-tests-builds/analytics-next-browser/
-          cp packages/browser/e2e-cli/package.json sdk-e2e-tests-builds/analytics-next-browser/
-
-      - name: Push to cli-builds branch
-        working-directory: sdk-e2e-tests-builds
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          # Only commit and push if there are changes
-          if git diff --cached --quiet; then
-            echo "No changes to CLI builds"
-          else
-            git commit -m "update analytics-next CLI builds (${GITHUB_SHA::8})"
-            git push
-          fi
+      - name: Upload browser CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-cli-browser
+          path: artifacts/analytics-next-browser/
+          retention-days: 90
