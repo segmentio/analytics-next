@@ -1,0 +1,75 @@
+# Publish E2E CLI builds as GitHub Actions artifacts
+#
+# On merge to master (or monthly refresh), builds the node and browser
+# e2e-cli tools and uploads them as artifacts.
+
+name: Publish E2E CLI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'packages/node/e2e-cli/**'
+      - 'packages/browser/e2e-cli/**'
+      - 'packages/node/src/**'
+      - 'packages/browser/src/**'
+      - 'packages/core/src/**'
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SDK
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build SDK packages
+        run: yarn build
+
+      - name: Build node e2e-cli
+        working-directory: packages/node/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Build browser e2e-cli
+        working-directory: packages/browser/e2e-cli
+        run: |
+          npm install
+          npm run build
+
+      - name: Prepare node artifact
+        run: |
+          mkdir -p artifacts/analytics-next-node
+          cp -r packages/node/e2e-cli/dist artifacts/analytics-next-node/
+          cp packages/node/e2e-cli/package.json artifacts/analytics-next-node/
+
+      - name: Prepare browser artifact
+        run: |
+          mkdir -p artifacts/analytics-next-browser
+          cp -r packages/browser/e2e-cli/dist artifacts/analytics-next-browser/
+          cp packages/browser/e2e-cli/package.json artifacts/analytics-next-browser/
+
+      - name: Upload node CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-cli-node
+          path: artifacts/analytics-next-node/
+          retention-days: 90
+
+      - name: Upload browser CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-cli-browser
+          path: artifacts/analytics-next-browser/
+          retention-days: 90
