@@ -1,5 +1,22 @@
 # @segment/analytics-next
 
+## 1.84.0
+
+### Minor Changes
+
+- [`65951526`](https://github.com/segmentio/analytics-next/commit/65951526ddd696d14ca250453ccad48d170dc60a) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Unify and harden HTTP response handling and retry behavior across browser and node SDKs.
+
+  - Browser (`@segment/analytics-next`) - Add config-driven response handling for Segment.io delivery (`httpConfig` with rate-limit/backoff controls). - Improve batching/dispatcher retry semantics for 429 and transient failures. - Use configured `protocol` for batching requests when `apiHost` has no scheme, while preserving compatibility for `apiHost` values that already include `http://` or `https://`.
+
+  - Node (`@segment/analytics-node`) - Align publisher retry/status behavior with updated response handling rules. - Add `maxTotalBackoffDuration` and `maxRateLimitDuration` settings to control retry ceilings. - Update default retry configuration to increase resilience under transient failures.
+
+  - Core (`@segment/analytics-core`) - Standardize backoff defaults used by retry queues.
+
+### Patch Changes
+
+- Updated dependencies [[`65951526`](https://github.com/segmentio/analytics-next/commit/65951526ddd696d14ca250453ccad48d170dc60a)]:
+  - @segment/analytics-core@1.8.3
+
 ## 1.83.0
 
 ### Minor Changes
