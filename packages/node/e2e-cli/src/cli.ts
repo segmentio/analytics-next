@@ -46,10 +46,31 @@ interface CLIOutput {
   success: boolean
   error?: string
   sentBatches: number
+  eventResults: EventResult[]
+  httpLog: HttpLogEntry[]
+}
+
+interface EventResult {
+  event: string
+  type: string
+  delivered: boolean
+  failureReason?: string
+}
+
+interface HttpLogEntry {
+  timestamp: string
+  status: number
+  url: string
+  retryCount?: number
+  bodyPreview: string
 }
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function elapsed(start: number): string {
+  return `${((Date.now() - start) / 1000).toFixed(1)}s`
 }
 
 function sendEvent(analytics: Analytics, event: AnalyticsEvent): void {
@@ -117,7 +138,13 @@ function sendEvent(analytics: Analytics, event: AnalyticsEvent): void {
 }
 
 async function main(): Promise<void> {
-  const output: CLIOutput = { success: false, sentBatches: 0 }
+  const startTime = Date.now()
+  const output: CLIOutput = {
+    success: false,
+    sentBatches: 0,
+    eventResults: [],
+    httpLog: [],
+  }
 
   try {
     // Parse --input argument
@@ -147,36 +174,82 @@ async function main(): Promise<void> {
       const msg =
         reason instanceof Error ? reason.message : String(reason ?? err.code)
       deliveryErrors.push(msg)
+      process.stderr.write(`[${elapsed(startTime)}] ERROR: ${msg}\n`)
+    })
+
+    analytics.on('http_request', (req) => {
+      const body =
+        typeof req.body === 'string' ? JSON.parse(req.body) : req.body
+      const events = body.batch?.map((e: any) => e.event ?? e.type) ?? []
+      const retryHeader = req.headers?.['X-Retry-Count']
+      process.stderr.write(
+        `[${elapsed(startTime)}] >> ${req.method} events=[${events.join(',')}]${
+          retryHeader ? ` retry=${retryHeader}` : ''
+        }\n`
+      )
+    })
+
+    analytics.on('http_response', (res) => {
+      const body =
+        typeof res.body === 'string' ? JSON.parse(res.body) : res.body
+      const events = body.batch?.map((e: any) => e.event ?? e.type) ?? []
+      const retryAfter = res.headers?.['retry-after']
+      process.stderr.write(
+        `[${elapsed(startTime)}] << ${res.status} events=[${events.join(',')}]${
+          retryAfter ? ` retry-after=${retryAfter}` : ''
+        }\n`
+      )
     })
 
     // Process event sequences
+    let totalEvents = 0
     for (const seq of sequences) {
       if (seq.delayMs > 0) {
+        process.stderr.write(
+          `[${elapsed(startTime)}] sleeping ${seq.delayMs}ms...\n`
+        )
         await sleep(seq.delayMs)
       }
 
       for (const event of seq.events) {
+        totalEvents++
+        const label = event.event ?? event.type
+        process.stderr.write(
+          `[${elapsed(startTime)}] enqueue #${totalEvents}: ${label}\n`
+        )
         sendEvent(analytics, event)
       }
     }
 
-    // Flush and close — use a generous timeout so retries with exponential
-    // backoff have time to complete (default is flushInterval * 1.25)
-    const timeoutMs = (config.timeout ?? 60) * 1000
+    process.stderr.write(
+      `[${elapsed(
+        startTime
+      )}] all ${totalEvents} events enqueued, calling closeAndFlush...\n`
+    )
+
+    // Flush and close
+    const timeoutMs = (config.timeout ?? 75) * 1000
     await analytics.closeAndFlush({ timeout: timeoutMs })
+
+    process.stderr.write(
+      `[${elapsed(startTime)}] closeAndFlush resolved. errors=${
+        deliveryErrors.length
+      }\n`
+    )
 
     if (deliveryErrors.length > 0) {
       output.success = false
       output.error = deliveryErrors[0]
     } else {
       output.success = true
-      output.sentBatches = 1
+      output.sentBatches = output.httpLog.length
     }
   } catch (err) {
     output.error = err instanceof Error ? err.message : String(err)
+    process.stderr.write(`[${elapsed(startTime)}] FATAL: ${output.error}\n`)
   }
 
-  console.log(JSON.stringify(output))
+  console.log(JSON.stringify(output, null, 2))
   process.exit(output.success ? 0 : 1)
 }
 
