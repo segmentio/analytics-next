@@ -13,8 +13,22 @@ import { b64encode } from '../../lib/base-64-encode'
 const MAX_RETRY_AFTER_SECONDS = 300
 const MAX_RETRY_AFTER_RETRIES = 20
 
-function sleep(timeoutInMs: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, timeoutInMs))
+function sleep(timeoutInMs: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(signal.reason)
+      return
+    }
+    const timer = setTimeout(resolve, timeoutInMs)
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        reject(signal.reason)
+      },
+      { once: true }
+    )
+  })
 }
 
 function noop() {}
@@ -101,6 +115,8 @@ export class Publisher {
   private _rateLimitedUntil: number | undefined
   private _rateLimitStartTime: number | undefined
 
+  private _abortController: AbortController = new AbortController()
+
   constructor(
     {
       host,
@@ -141,6 +157,11 @@ export class Publisher {
         maxRetries: oauthSettings.maxRetries ?? maxRetries,
       })
     }
+  }
+
+  abort(): void {
+    this._abortController.abort(new Error('Flush timeout'))
+    this._abortController = new AbortController()
   }
 
   private createBatch(): ContextBatch {
@@ -308,6 +329,7 @@ export class Publisher {
     }
     const events = batch.getEvents()
     const maxRetries = this._maxRetries
+    const signal = this._abortController.signal
 
     let countedRetries = 0
     let totalAttempts = 0
@@ -315,6 +337,11 @@ export class Publisher {
 
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      if (signal.aborted) {
+        resolveFailedBatch(batch, signal.reason)
+        return
+      }
+
       // Check rate-limit state before making a request
       const wasRateLimited = this._rateLimitStartTime !== undefined
       if (this._isRateLimited()) {
@@ -331,7 +358,12 @@ export class Publisher {
                   (Date.now() - this._rateLimitStartTime)
               )
         const waitMs = Math.min(untilRetryAfter, untilDurationLimit)
-        await sleep(waitMs)
+        try {
+          await sleep(waitMs, signal)
+        } catch {
+          resolveFailedBatch(batch, signal.reason)
+          return
+        }
         continue
       }
 
@@ -392,6 +424,14 @@ export class Publisher {
         })
 
         const response = await this._httpClient.makeRequest(request)
+
+        this._emitter.emit('http_response', {
+          status: response.status,
+          statusText: response.statusText,
+          url: request.url,
+          body: request.body,
+          headers: convertHeaders(response.headers),
+        })
 
         // 2xx and 3xx are treated as successful delivery.
         if (response.status >= 200 && response.status < 400) {
@@ -507,7 +547,12 @@ export class Publisher {
           })
         : 0
 
-      await sleep(delayMs)
+      try {
+        await sleep(delayMs, signal)
+      } catch {
+        resolveFailedBatch(batch, signal.reason)
+        return
+      }
     }
   }
 }

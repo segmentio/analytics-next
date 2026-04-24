@@ -44,7 +44,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
 
     const flushInterval = settings.flushInterval ?? 10000
 
-    this._closeAndFlushDefaultTimeout = flushInterval * 1.25 // add arbitrary multiplier in case an event is in a plugin.
+    this._closeAndFlushDefaultTimeout = Math.max(60000, flushInterval) * 1.25
 
     const { plugin, publisher } = createConfiguredNodePlugin(
       {
@@ -123,7 +123,11 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
     }).finally(() => {
       this._isFlushing = false
     })
-    return timeout ? pTimeout(promise, timeout).catch(() => undefined) : promise
+    if (!timeout) return promise
+
+    return pTimeout(promise, timeout).catch(() => {
+      this._publisher.abort()
+    })
   }
 
   private _dispatch(segmentEvent: SegmentEvent, callback?: Callback) {
