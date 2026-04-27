@@ -100,14 +100,9 @@ function installFetchMonitor(apiHost: string): void {
       }
       if (response.status === 429) {
         const ra = response.headers.get('Retry-After')
-        if (ra) {
-          lastRetryAfterSeen = Math.max(
-            lastRetryAfterSeen,
-            parseInt(ra, 10) || 60
-          )
-        } else {
-          lastRetryAfterSeen = Math.max(lastRetryAfterSeen, 60)
-        }
+        const parsed = ra !== null ? parseInt(ra, 10) : NaN
+        const retryAfterSeconds = Number.isFinite(parsed) ? parsed : 10
+        lastRetryAfterSeen = Math.max(lastRetryAfterSeen, retryAfterSeconds)
       }
       return response
     } catch (err) {
