@@ -84,15 +84,23 @@ describe('Ability for users to exit without losing events', () => {
   })
 
   describe('.closeAndFlush()', () => {
-    test('default timeout should be related to flush interval', () => {
-      const flushInterval = 500
+    test('default timeout should be at least 75 seconds', () => {
       ajs = new Analytics({
         writeKey: 'abc123',
-        flushInterval,
         httpClient: testClient,
       })
       const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
-      expect(closeAndFlushTimeout).toBe(flushInterval * 1.25)
+      expect(closeAndFlushTimeout).toBe(75000)
+    })
+
+    test('default timeout should scale with large flushInterval', () => {
+      ajs = new Analytics({
+        writeKey: 'abc123',
+        flushInterval: 120000,
+        httpClient: testClient,
+      })
+      const closeAndFlushTimeout = ajs['_closeAndFlushDefaultTimeout']
+      expect(closeAndFlushTimeout).toBe(120000 * 1.25)
     })
 
     test('should force resolve if method call execution time exceeds specified timeout', async () => {
