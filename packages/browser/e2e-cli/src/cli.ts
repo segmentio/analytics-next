@@ -61,6 +61,7 @@ let lastApiResponseTime = 0
 let inflightApiRequests = 0
 let lastApiStatus = 0
 let firstApiErrorStatus = 0
+let lastRetryAfterSeen = 0
 let apiHostPattern = ''
 
 function installFetchMonitor(apiHost: string): void {
@@ -97,6 +98,12 @@ function installFetchMonitor(apiHost: string): void {
       if (response.status >= 400 && firstApiErrorStatus === 0) {
         firstApiErrorStatus = response.status
       }
+      if (response.status === 429) {
+        const ra = response.headers.get('Retry-After')
+        const parsed = ra !== null ? parseInt(ra, 10) : NaN
+        const retryAfterSeconds = Number.isFinite(parsed) ? parsed : 10
+        lastRetryAfterSeen = Math.max(lastRetryAfterSeen, retryAfterSeconds)
+      }
       return response
     } catch (err) {
       lastApiResponseTime = Date.now()
@@ -131,11 +138,15 @@ async function waitForDelivery(maxWaitMs = 60000): Promise<void> {
 
     const elapsed = Date.now() - lastApiResponseTime
     // After success: brief settle for any remaining event dispatches.
-    // After error: longer settle to allow for retry scheduling + backoff.
-    // The fetch-dispatcher's core backoff uses minTimeout=500ms with
-    // exponential growth: attempt 5 reaches ~500*2^4*random ≈ 8-16s.
-    // Use 20s settle to accommodate higher retry attempts.
-    const settleMs = lastApiStatus < 400 ? 1500 : 20000
+    // If we've ever seen a 429 with Retry-After, use that + buffer as settle
+    // time, since a 200 after a 429 doesn't mean all retries are done.
+    // Without any 429s, a short settle is fine.
+    const settleMs =
+      lastRetryAfterSeen > 0
+        ? (lastRetryAfterSeen + 5) * 1000
+        : lastApiStatus < 400
+        ? 1500
+        : 20000
 
     if (elapsed >= settleMs) {
       return
@@ -221,12 +232,8 @@ async function main(): Promise<void> {
       const protocol = input.apiHost.startsWith('https') ? 'https' : 'http'
       segmentConfig.protocol = protocol
 
-      if (useBatching) {
-        segmentConfig.apiHost = input.apiHost
-      } else {
-        const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
-        segmentConfig.apiHost = apiHostStripped + '/v1'
-      }
+      const apiHostStripped = input.apiHost.replace(/^https?:\/\//, '')
+      segmentConfig.apiHost = apiHostStripped + '/v1'
     }
 
     // Wire maxRetries and backoff timing through httpConfig — this controls
@@ -292,7 +299,8 @@ async function main(): Promise<void> {
     }
 
     // Wait for all delivery activity to settle
-    await waitForDelivery()
+    const maxWaitMs = (input.config?.timeout ?? 60) * 1000
+    await waitForDelivery(maxWaitMs)
 
     // Determine success/failure from delivery errors (emitted by the
     // Segment.io plugin) and observed fetch responses as fallback.

@@ -246,16 +246,16 @@ describe('OAuth Failure', () => {
       maxRetries: 3,
     })
 
+    analytics.track({
+      event: 'Test Event',
+      anonymousId: 'unknown',
+      userId: 'known',
+      timestamp: timestamp,
+    })
+    const ctxPromise = resolveCtx(analytics, 'track')
+    await analytics.closeAndFlush({ timeout: 20000 })
     try {
-      analytics.track({
-        event: 'Test Event',
-        anonymousId: 'unknown',
-        userId: 'known',
-        timestamp: timestamp,
-      })
-      await analytics.closeAndFlush()
-      const ctx1 = await resolveCtx(analytics, 'track') // forces exception to be thrown
-      expect(ctx1.event.type).toEqual('track')
+      await ctxPromise
       throw new Error('fail')
     } catch (err: any) {
       expect(err.reason).toEqual(

@@ -18,6 +18,15 @@ export type NodeEmitterEvents = CoreEmitterContract<Context> & {
       body: string
     }
   ]
+  http_response: [
+    {
+      status: number
+      statusText: string
+      url: string
+      body: string
+      headers: Record<string, string>
+    }
+  ]
   drained: []
 }
 
