@@ -534,9 +534,18 @@ export class Analytics
   async ready(
     callback: Function = (res: Promise<unknown>[]): Promise<unknown>[] => res
   ): Promise<unknown> {
-    return Promise.all(
-      this.queue.plugins.map((i) => (i.ready ? i.ready() : Promise.resolve()))
-    ).then((res) => {
+    return Promise.allSettled(
+      this.queue.plugins.map((i) =>
+        i.ready
+          ? i.ready().catch(this.options.onPluginReadyError)
+          : Promise.resolve()
+      )
+    ).then((results) => {
+      const res = results.map((result) => {
+        if (result.status === 'fulfilled') {
+          return result.value
+        }
+      })
       callback(res)
       return res
     })
