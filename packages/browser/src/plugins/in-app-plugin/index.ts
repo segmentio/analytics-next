@@ -25,6 +25,7 @@ export type InAppPluginSettings = {
   _logging: GistConfig['logging'] | undefined
 
   anonymousInApp: boolean | false
+  enabled?: boolean
 }
 
 export function InAppPlugin(settings: InAppPluginSettings): Plugin {

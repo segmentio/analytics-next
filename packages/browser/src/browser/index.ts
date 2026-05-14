@@ -210,22 +210,20 @@ async function registerPlugins(
   ).catch(() => [])
 
   const inAppPluginName = 'Customer.io In-App Plugin'
-  let inAppPluginSettings = mergedSettings[
-    inAppPluginName
-  ] as InAppPluginSettings
-  if (!inAppPluginSettings) {
-    inAppPluginSettings = options.integrations?.[
-      inAppPluginName
-    ] as InAppPluginSettings
-  }
+  const inAppPluginSettings: InAppPluginSettings | undefined =
+    (mergedSettings[inAppPluginName] as InAppPluginSettings | undefined) ??
+    (options.integrations?.[inAppPluginName] as
+      | InAppPluginSettings
+      | undefined)
 
-  const inAppPlugin = inAppPluginSettings
-    ? await import(
-        /* webpackChunkName: "inAppPlugin" */ '../plugins/in-app-plugin'
-      ).then((mod) => {
-        return mod.InAppPlugin(inAppPluginSettings)
-      })
-    : undefined
+  const inAppPlugin =
+    inAppPluginSettings && inAppPluginSettings.enabled !== false
+      ? await import(
+          /* webpackChunkName: "inAppPlugin" */ '../plugins/in-app-plugin'
+        ).then((mod) => {
+          return mod.InAppPlugin(inAppPluginSettings)
+        })
+      : undefined
 
   const toRegister = [
     validation,
