@@ -28,6 +28,7 @@ import { attachInspector } from '../core/inspector'
 import { Stats } from '../core/stats'
 import { InAppPluginSettings } from '../plugins/in-app-plugin'
 import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
+import { hasQueryString } from '../core/query-string'
 
 export interface LegacyIntegrationConfiguration {
   /* @deprecated - This does not indicate browser types anymore */
@@ -291,6 +292,15 @@ async function loadAnalytics(
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
   if (settings.cdnURL) setGlobalCDNUrl(settings.cdnURL)
+
+  // Eagerly load the in-app plugin chunk when a debug session is requested so
+  // the gist-web debug overlay initialises even if the CDP settings endpoint
+  // is unreachable (the chunk is otherwise only loaded after settings succeed).
+  if (hasQueryString('cio_debug_session', 'true')) {
+    import(
+      /* webpackChunkName: "inAppPlugin" */ '../plugins/in-app-plugin'
+    ).catch(() => {})
+  }
 
   const legacySettings =
     settings.cdnSettings ??

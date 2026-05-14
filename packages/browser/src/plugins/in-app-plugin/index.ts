@@ -1,6 +1,7 @@
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { hasQueryString } from '../../core/query-string'
 
 import {
   InAppEvents,
@@ -26,6 +27,10 @@ export type InAppPluginSettings = {
 
   anonymousInApp: boolean | false
   enabled?: boolean
+}
+
+if (hasQueryString('cio_debug_session', 'true')) {
+  Gist.setupDebugOverlay?.()
 }
 
 export function InAppPlugin(settings: InAppPluginSettings): Plugin {

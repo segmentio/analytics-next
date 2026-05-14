@@ -62,3 +62,17 @@ export function queryString(
 
   return Promise.all(calls)
 }
+
+export function hasQueryString(key: string, value?: string): boolean {
+  if (typeof window == 'undefined' || window?.location?.search == null) {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search).get(key);
+  if (value === undefined) {
+    // no value provided, just check if the key exists
+    return params !== null;
+  }
+
+  return params === value;
+}
