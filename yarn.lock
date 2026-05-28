@@ -5056,7 +5056,7 @@ __metadata:
     jest-dev-server: ^6.0.3
     jest-environment-jsdom: ^28.1.1
     jquery: ^3.5.1
-    js-cookie: 3.0.7
+    js-cookie: ^3.0.7
     jsdom: ^19.0.0
     lighthouse: ^9.6.3
     log-update: ^4.0.0
@@ -16122,7 +16122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:3.0.7":
+"js-cookie@npm:^3.0.7":
   version: 3.0.7
   resolution: "js-cookie@npm:3.0.7"
   checksum: 2ce197fa171981af9b2686b49d4f4ed1ebfcec915db9d3ce42933415557726ca87135f6522ed5f5936b0d016e0f7e969344683dcd7f4e67a6fe2af9a976038d9
