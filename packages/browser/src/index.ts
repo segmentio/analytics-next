@@ -31,6 +31,7 @@ export {
   mountGptSlotEventListeners,
   normalizeIdentifyTraits,
   parsePathTaxonomy,
+  getConversionCollectorBuffer,
 } from './plugins/conversion-collector'
 export type {
   ConversionCollectorSettings,

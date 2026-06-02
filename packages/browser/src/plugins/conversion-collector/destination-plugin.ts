@@ -3,6 +3,7 @@ import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { BatchBuffer } from './batch-buffer'
 import { contextToEnvelope } from './context-to-envelope'
+import { registerConversionCollectorBuffer } from './runtime-registry'
 import type { ConversionCollectorSettings } from './types'
 
 const DEFAULT_FLUSH_INTERVAL_MS = 2000
@@ -68,6 +69,7 @@ export function conversionCollectorPlugin(
     isLoaded: (): boolean => true,
     load: (_ctx, instance) => {
       analytics = instance as Analytics
+      registerConversionCollectorBuffer(analytics, buffer)
       buffer.start()
       return Promise.resolve()
     },

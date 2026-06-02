@@ -7,6 +7,10 @@ export { sendEventsToCollect } from './send-events'
 export { contextToEnvelope } from './context-to-envelope'
 export { conversionCollectorPlugin } from './destination-plugin'
 export { conversionPipelinePlugins } from './pipeline-plugins'
+export {
+  getConversionCollectorBuffer,
+  registerConversionCollectorBuffer,
+} from './runtime-registry'
 export { conversionConsentEnrichment } from './enrichment/consent-enrichment'
 export { conversionContextEnrichment } from './enrichment/context-enrichment'
 export { conversionIdentifyEnrichment } from './enrichment/identify-enrichment'
