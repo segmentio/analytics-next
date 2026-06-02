@@ -20,6 +20,14 @@ export { getGlobalAnalytics } from './lib/global-analytics-helper'
 export { UniversalStorage, Store, StorageObject } from './core/storage'
 export { segmentio } from './plugins/segmentio'
 export {
+  conversionCollectorPlugin,
+  conversionCdnSettingsMinimal,
+} from './plugins/conversion-collector'
+export type {
+  ConversionCollectorSettings,
+  AnalyticsEventEnvelope,
+} from './plugins/conversion-collector'
+export {
   resolveAliasArguments,
   resolveArguments,
   resolvePageArguments,
