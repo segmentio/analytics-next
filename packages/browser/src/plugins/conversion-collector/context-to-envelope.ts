@@ -1,6 +1,7 @@
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { toFacade } from '../../lib/to-facade'
+import { generateUuidV4, isValidUuidV4 } from './lib/uuid'
 import type { AnalyticsEventEnvelope, ConversionEventType } from './types'
 
 type FacadeJson = ReturnType<ReturnType<typeof toFacade>['json']>
@@ -59,7 +60,10 @@ export function contextToEnvelope(
     user_id: userId || undefined,
     context: (json.context ?? {}) as Record<string, unknown>,
     integrations: json.integrations as Record<string, boolean> | undefined,
-    message_id: json.messageId ?? ctx.id,
+    message_id: (() => {
+      const id = json.messageId ?? ctx.id
+      return typeof id === 'string' && isValidUuidV4(id) ? id : generateUuidV4()
+    })(),
     original_timestamp: timestamp,
     timestamp,
     version: 2,

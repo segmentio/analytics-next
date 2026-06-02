@@ -22,6 +22,15 @@ export { segmentio } from './plugins/segmentio'
 export {
   conversionCollectorPlugin,
   conversionCdnSettingsMinimal,
+  conversionPipelinePlugins,
+  conversionConsentEnrichment,
+  conversionContextEnrichment,
+  conversionIdentifyEnrichment,
+  conversionPageEnrichment,
+  conversionGptSlotEventsPlugin,
+  mountGptSlotEventListeners,
+  normalizeIdentifyTraits,
+  parsePathTaxonomy,
 } from './plugins/conversion-collector'
 export type {
   ConversionCollectorSettings,
