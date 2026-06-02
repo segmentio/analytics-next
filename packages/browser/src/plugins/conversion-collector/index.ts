@@ -55,10 +55,9 @@ export function conversionCollectorPlugin(
       try {
         await buffer.flush()
       } catch (error) {
-        ctx.log('error', 'Conversion collector delivery failed', error)
-        ctx.setFailedDelivery({
-          reason: error instanceof Error ? error : new Error(String(error)),
-        })
+        const reason = error instanceof Error ? error : new Error(String(error))
+        ctx.log('error', 'Conversion collector delivery failed', { reason })
+        ctx.setFailedDelivery({ reason })
         analytics.emit('error', {
           code: 'delivery_failure',
           reason: error,
