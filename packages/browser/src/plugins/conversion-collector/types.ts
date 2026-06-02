@@ -26,4 +26,12 @@ export interface ConversionCollectorSettings {
   retryAttempts?: number
   flushIntervalMs?: number
   batchSize?: number
+  appName?: string
+  getContext?: () => Record<string, unknown>
+  getSessionId?: () => string
+  getVisitorCountry?: () => string | Promise<string>
+  defaultPhoneCountryCode?: string
+  isTrackingAllowed?: () => boolean
+  respectDoNotTrack?: boolean
+  enableGptSlotEvents?: boolean
 }
