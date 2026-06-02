@@ -48,7 +48,7 @@ export class CookieStorage<Data extends StorageObject = StorageObject>
 
   get<K extends keyof Data>(key: K): Data[K] | null {
     try {
-      const value = jar.get(key)
+      const value = jar.get(String(key))
 
       if (value === undefined || value === null) {
         return null
@@ -65,16 +65,17 @@ export class CookieStorage<Data extends StorageObject = StorageObject>
   }
 
   set<K extends keyof Data>(key: K, value: Data[K] | null): void {
+    const storageKey = String(key)
     if (typeof value === 'string') {
-      jar.set(key, value, this.opts())
+      jar.set(storageKey, value, this.opts())
     } else if (value === null) {
-      jar.remove(key, this.opts())
+      jar.remove(storageKey, this.opts())
     } else {
-      jar.set(key, JSON.stringify(value), this.opts())
+      jar.set(storageKey, JSON.stringify(value), this.opts())
     }
   }
 
   remove<K extends keyof Data>(key: K): void {
-    return jar.remove(key, this.opts())
+    return jar.remove(String(key), this.opts())
   }
 }
