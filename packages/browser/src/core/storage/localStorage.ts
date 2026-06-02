@@ -7,12 +7,14 @@ export class LocalStorage<Data extends StorageObject = StorageObject>
   implements Store<Data>
 {
   private localStorageWarning(key: keyof Data, state: 'full' | 'unavailable') {
-    console.warn(`Unable to access ${key}, localStorage may be ${state}`)
+    console.warn(
+      `Unable to access ${String(key)}, localStorage may be ${state}`
+    )
   }
 
   get<K extends keyof Data>(key: K): Data[K] | null {
     try {
-      const val = localStorage.getItem(key)
+      const val = localStorage.getItem(String(key))
       if (val === null) {
         return null
       }
@@ -29,7 +31,7 @@ export class LocalStorage<Data extends StorageObject = StorageObject>
 
   set<K extends keyof Data>(key: K, value: Data[K] | null): void {
     try {
-      localStorage.setItem(key, JSON.stringify(value))
+      localStorage.setItem(String(key), JSON.stringify(value))
     } catch {
       this.localStorageWarning(key, 'full')
     }
@@ -37,7 +39,7 @@ export class LocalStorage<Data extends StorageObject = StorageObject>
 
   remove<K extends keyof Data>(key: K): void {
     try {
-      return localStorage.removeItem(key)
+      return localStorage.removeItem(String(key))
     } catch (err) {
       this.localStorageWarning(key, 'unavailable')
     }

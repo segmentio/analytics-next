@@ -9,14 +9,14 @@ export class MemoryStorage<Data extends StorageObject = StorageObject>
   private cache: Record<string, unknown> = {}
 
   get<K extends keyof Data>(key: K): Data[K] | null {
-    return (this.cache[key] ?? null) as Data[K] | null
+    return (this.cache[String(key)] ?? null) as Data[K] | null
   }
 
   set<K extends keyof Data>(key: K, value: Data[K] | null): void {
-    this.cache[key] = value
+    this.cache[String(key)] = value
   }
 
   remove<K extends keyof Data>(key: K): void {
-    delete this.cache[key]
+    delete this.cache[String(key)]
   }
 }

@@ -27,12 +27,12 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
 
     for (const store of this.stores) {
       try {
-        val = store.get(key) as Data[K] | null
+        val = (store as Store<Data>).get(key) as Data[K] | null
         if (val !== undefined && val !== null) {
           return val
         }
       } catch (e) {
-        _logStoreKeyError(store, 'get', key, e)
+        _logStoreKeyError(store, 'get', String(key), e)
       }
     }
     return null
@@ -41,9 +41,9 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
   set<K extends keyof Data>(key: K, value: Data[K] | null): void {
     this.stores.forEach((store) => {
       try {
-        store.set(key, value)
+        ;(store as Store<Data>).set(key, value)
       } catch (e) {
-        _logStoreKeyError(store, 'set', key, e)
+        _logStoreKeyError(store, 'set', String(key), e)
       }
     })
   }
@@ -51,9 +51,9 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
   clear<K extends keyof Data>(key: K): void {
     this.stores.forEach((store) => {
       try {
-        store.remove(key)
+        ;(store as Store<Data>).remove(key)
       } catch (e) {
-        _logStoreKeyError(store, 'remove', key, e)
+        _logStoreKeyError(store, 'remove', String(key), e)
       }
     })
   }
