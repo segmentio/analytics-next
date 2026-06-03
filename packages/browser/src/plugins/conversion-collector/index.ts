@@ -1,6 +1,7 @@
 export type {
   ConversionCollectorSettings,
   AnalyticsEventEnvelope,
+  CollectRequestBody,
 } from './types'
 export { conversionCdnSettingsMinimal } from './cdn-settings'
 export { sendEventsToCollect } from './send-events'

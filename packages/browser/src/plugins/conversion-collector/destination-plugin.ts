@@ -1,6 +1,7 @@
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
+import { onPageChange } from '../../lib/on-page-change'
 import { BatchBuffer } from './batch-buffer'
 import { contextToEnvelope } from './context-to-envelope'
 import { registerConversionCollectorBuffer } from './runtime-registry'
@@ -22,11 +23,15 @@ export function conversionCollectorPlugin(
   })
 
   let analytics: Analytics | undefined
+  let pageChangeHandler: ((unloaded: boolean) => void) | undefined
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('pagehide', () => {
-      void buffer.flush()
-    })
+    pageChangeHandler = (unloaded: boolean) => {
+      if (unloaded) {
+        void buffer.flushAll({ unload: true })
+      }
+    }
+    onPageChange(pageChangeHandler)
   }
 
   async function deliver(
@@ -75,7 +80,7 @@ export function conversionCollectorPlugin(
     },
     unload: () => {
       buffer.stop()
-      return buffer.flush().then(() => undefined)
+      return buffer.flushAll({ unload: true }).then(() => undefined)
     },
     track: (ctx) => deliver(ctx, false),
     page: (ctx) => deliver(ctx, false),

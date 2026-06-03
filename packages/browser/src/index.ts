@@ -36,6 +36,7 @@ export {
 export type {
   ConversionCollectorSettings,
   AnalyticsEventEnvelope,
+  CollectRequestBody,
 } from './plugins/conversion-collector'
 export {
   resolveAliasArguments,
