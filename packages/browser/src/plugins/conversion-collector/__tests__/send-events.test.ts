@@ -1,6 +1,5 @@
 import {
   buildCollectRequestBody,
-  CollectDeliveryError,
   deliverCollectPayload,
   sendCollectViaBeacon,
   sendEventsToCollect,
