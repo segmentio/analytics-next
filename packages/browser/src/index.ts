@@ -36,8 +36,36 @@ export {
 export type {
   ConversionCollectorSettings,
   AnalyticsEventEnvelope,
-  CollectRequestBody,
 } from './plugins/conversion-collector'
+export {
+  getOrCreateSessionId,
+  getOrCreateAnonymousId,
+  SESSION_INACTIVITY_TTL_MS,
+} from './plugins/conversion-collector/lib/session'
+export {
+  attachToWindow,
+  bootstrapConversionAnalyticsFromWindow,
+  ConversionAnalyticsBrowser,
+  ConversionClient,
+  flush,
+  getDebugInfo,
+  getQueueSize,
+  identify,
+  init,
+  page,
+  start,
+  stop,
+  track,
+} from './conversion-sdk'
+export type {
+  AnalyticsInitConfig,
+  CollectRequestBody,
+  DebugInfo,
+  IdentifyLegacyInput,
+  IdentifyOptions,
+  TrackLegacyInput,
+  TrackOptions,
+} from './conversion-sdk'
 export {
   resolveAliasArguments,
   resolveArguments,
