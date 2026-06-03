@@ -21,9 +21,13 @@ function setCookie(name: string, value: string, maxAgeSeconds: number): void {
     return
   }
   const maxAge = Math.max(1, Math.ceil(maxAgeSeconds))
+  const secure =
+    typeof window !== 'undefined' && window.location?.protocol === 'https:'
+      ? '; Secure'
+      : ''
   document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(
     value
-  )}; path=/; max-age=${maxAge}; SameSite=Lax`
+  )}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`
 }
 
 function touchSessionCookies(sessionId: string, activityMs: number): void {
