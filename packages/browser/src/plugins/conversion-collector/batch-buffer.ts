@@ -1,49 +1,29 @@
 import type { AnalyticsEventEnvelope } from './types'
 import {
-  CollectNonRetryableError,
-  sendEventsToCollect,
-  CollectSendConfig,
-  SendEventsOptions,
-} from './send-events'
+  readPersistedEventQueue,
+  writePersistedEventQueue,
+} from './lib/event-queue-storage'
 import {
-  clearPersistedQueue,
-  DEFAULT_MAX_QUEUE_SIZE,
-  DEFAULT_QUEUE_PERSISTENCE_KEY,
-  loadPersistedQueue,
-  savePersistedQueue,
-} from './queue-persistence'
+  buildCollectRequestBody,
+  CollectDeliveryError,
+  deliverCollectPayload,
+  sendCollectViaBeacon,
+  sendEventsToCollect,
+  type CollectSendConfig,
+} from './send-events'
 
 export interface BatchBufferConfig extends CollectSendConfig {
   flushIntervalMs: number
   batchSize: number
-  maxQueueSize?: number
-  persistenceKey?: string
 }
 
 export class BatchBuffer {
   private queue: AnalyticsEventEnvelope[] = []
   private timer: ReturnType<typeof setInterval> | null = null
   private flushing = false
-  private readonly maxQueueSize: number
-  private readonly persistenceKey: string
 
   constructor(private readonly config: BatchBufferConfig) {
-    this.maxQueueSize = config.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE
-    this.persistenceKey = config.persistenceKey ?? DEFAULT_QUEUE_PERSISTENCE_KEY
-    this.rehydrate()
-  }
-
-  private rehydrate(): void {
-    const persisted = loadPersistedQueue(this.persistenceKey)
-    if (persisted.length === 0) {
-      return
-    }
-    this.queue = persisted.slice(-this.maxQueueSize)
-    this.persist()
-  }
-
-  private persist(): void {
-    savePersistedQueue(this.queue, this.maxQueueSize, this.persistenceKey)
+    this.hydrateFromStorage()
   }
 
   start(): void {
@@ -53,6 +33,7 @@ export class BatchBuffer {
     this.timer = setInterval(() => {
       void this.flush()
     }, this.config.flushIntervalMs)
+    void this.flush()
   }
 
   stop(): void {
@@ -64,10 +45,7 @@ export class BatchBuffer {
 
   enqueue(event: AnalyticsEventEnvelope): void {
     this.queue.push(event)
-    if (this.queue.length > this.maxQueueSize) {
-      this.queue = this.queue.slice(-this.maxQueueSize)
-    }
-    this.persist()
+    this.persistQueue()
     if (this.queue.length >= this.config.batchSize) {
       void this.flush()
     }
@@ -77,36 +55,94 @@ export class BatchBuffer {
     return this.queue.length
   }
 
-  async flush(options: SendEventsOptions = {}): Promise<void> {
+  private hydrateFromStorage(): void {
+    const persisted = readPersistedEventQueue()
+    if (persisted.length > 0) {
+      this.queue = [...persisted, ...this.queue]
+      this.persistQueue()
+    }
+  }
+
+  private persistQueue(): void {
+    writePersistedEventQueue(this.queue)
+  }
+
+  private takeBatch(maxSize = this.config.batchSize): AnalyticsEventEnvelope[] {
+    return this.queue.splice(0, maxSize)
+  }
+
+  private requeueFront(batch: AnalyticsEventEnvelope[]): void {
+    this.queue.unshift(...batch)
+    this.persistQueue()
+  }
+
+  async flush(): Promise<void> {
     if (this.flushing || this.queue.length === 0) {
       return
     }
 
     this.flushing = true
-    const batch = this.queue.splice(0, this.config.batchSize)
-    this.persist()
+    const batch = this.takeBatch()
 
     try {
-      await sendEventsToCollect(batch, this.config, options)
-      this.persist()
+      await sendEventsToCollect(batch, this.config)
+      this.persistQueue()
     } catch (error) {
-      if (!(error instanceof CollectNonRetryableError)) {
-        this.queue.unshift(...batch)
-        if (this.queue.length > this.maxQueueSize) {
-          this.queue = this.queue.slice(-this.maxQueueSize)
-        }
+      if (error instanceof CollectDeliveryError && !error.retryable) {
+        this.persistQueue()
+        throw error
       }
-      this.persist()
+      this.requeueFront(batch)
       throw error
     } finally {
       this.flushing = false
+      if (this.queue.length >= this.config.batchSize) {
+        void this.flush()
+      }
     }
   }
 
-  async flushAll(options: SendEventsOptions = {}): Promise<void> {
+  /**
+   * Drains the queue. Uses sendBeacon on unload when the payload fits; otherwise keepalive fetch.
+   */
+  async flushAll(options?: { unload?: boolean }): Promise<void> {
+    this.stop()
+
     while (this.queue.length > 0) {
-      await this.flush(options)
+      const batch = this.takeBatch(this.queue.length)
+      const body = buildCollectRequestBody(batch)
+
+      if (options?.unload) {
+        if (sendCollectViaBeacon(this.config.endpoint, body)) {
+          this.persistQueue()
+          continue
+        }
+
+        try {
+          await deliverCollectPayload(body, this.config, { keepalive: true })
+          this.persistQueue()
+          continue
+        } catch (error) {
+          if (error instanceof CollectDeliveryError && !error.retryable) {
+            this.persistQueue()
+            throw error
+          }
+          this.requeueFront(batch)
+          throw error
+        }
+      }
+
+      try {
+        await sendEventsToCollect(batch, this.config)
+        this.persistQueue()
+      } catch (error) {
+        if (error instanceof CollectDeliveryError && !error.retryable) {
+          this.persistQueue()
+          throw error
+        }
+        this.requeueFront(batch)
+        throw error
+      }
     }
-    clearPersistedQueue(this.persistenceKey)
   }
 }

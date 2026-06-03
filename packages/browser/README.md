@@ -1,5 +1,10 @@
 # @segment/analytics-next
 
+> **UTUA / Conversion Pipeline fork:** we ship the product SDK as a **static script bundle** only
+> (`yarn build:conversion-sdk` → `dist/umd/sdk.min.js`). See
+> [`../../docs/conversion-pipeline.md`](../../docs/conversion-pipeline.md) and
+> [`../../docs/DISTRIBUTING-STATIC-SDK.md`](../../docs/DISTRIBUTING-STATIC-SDK.md).
+
 Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScript SDK - enabling you to send your data to any tool without having to learn, test, or use a new API every time.
 
 ### Table of Contents

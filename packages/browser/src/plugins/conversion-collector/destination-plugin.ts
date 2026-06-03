@@ -1,7 +1,6 @@
 import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
-import { onPageChange } from '../../lib/on-page-change'
 import { BatchBuffer } from './batch-buffer'
 import { contextToEnvelope } from './context-to-envelope'
 import { registerConversionCollectorBuffer } from './runtime-registry'
@@ -10,6 +9,34 @@ import type { ConversionCollectorSettings } from './types'
 const DEFAULT_FLUSH_INTERVAL_MS = 2000
 const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_RETRY_ATTEMPTS = 2
+
+function registerUnloadFlush(buffer: BatchBuffer): () => void {
+  if (
+    typeof window === 'undefined' ||
+    typeof document === 'undefined' ||
+    typeof document.addEventListener !== 'function'
+  ) {
+    return () => undefined
+  }
+
+  const flushOnUnload = () => {
+    void buffer.flushAll({ unload: true })
+  }
+
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      flushOnUnload()
+    }
+  }
+
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener('pagehide', flushOnUnload)
+
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    window.removeEventListener('pagehide', flushOnUnload)
+  }
+}
 
 export function conversionCollectorPlugin(
   settings: ConversionCollectorSettings
@@ -23,16 +50,7 @@ export function conversionCollectorPlugin(
   })
 
   let analytics: Analytics | undefined
-  let pageChangeHandler: ((unloaded: boolean) => void) | undefined
-
-  if (typeof window !== 'undefined') {
-    pageChangeHandler = (unloaded: boolean) => {
-      if (unloaded) {
-        void buffer.flushAll({ unload: true })
-      }
-    }
-    onPageChange(pageChangeHandler)
-  }
+  let removeUnloadListeners: (() => void) | undefined
 
   async function deliver(
     ctx: Context,
@@ -75,11 +93,13 @@ export function conversionCollectorPlugin(
     load: (_ctx, instance) => {
       analytics = instance as Analytics
       registerConversionCollectorBuffer(analytics, buffer)
+      removeUnloadListeners = registerUnloadFlush(buffer)
       buffer.start()
       return Promise.resolve()
     },
     unload: () => {
-      buffer.stop()
+      removeUnloadListeners?.()
+      removeUnloadListeners = undefined
       return buffer.flushAll({ unload: true }).then(() => undefined)
     },
     track: (ctx) => deliver(ctx, false),

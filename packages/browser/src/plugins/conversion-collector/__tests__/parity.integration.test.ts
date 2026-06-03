@@ -1,5 +1,6 @@
 import { AnalyticsBrowser } from '../../../browser'
 import { conversionCdnSettingsMinimal, conversionPipelinePlugins } from '..'
+import { getOrCreateSessionId, SESSION_INACTIVITY_TTL_MS } from '../lib/session'
 import { isValidUuidV4 } from '../lib/uuid'
 
 const COLLECTOR_ENDPOINT = 'https://collector.test/events'
@@ -184,5 +185,28 @@ describe('Conversion pipeline parity with conversion-analytics-sdk', () => {
     expect(pageProps?.product).toBe('mastercardbuilt')
     expect(pageProps?.funnel).toBe('p1')
     expect(pageProps?.custom).toBe(true)
+  })
+
+  it('reuses session_id within inactivity window and rotates after expiry', () => {
+    document.cookie =
+      '__bg_analytics_session_id=; path=/; max-age=0; SameSite=Lax'
+    document.cookie =
+      '__bg_analytics_session_activity=; path=/; max-age=0; SameSite=Lax'
+
+    const first = getOrCreateSessionId()
+    const second = getOrCreateSessionId()
+    expect(second).toBe(first)
+
+    const staleActivity = String(Date.now() - SESSION_INACTIVITY_TTL_MS - 1000)
+    document.cookie = `__bg_analytics_session_id=${encodeURIComponent(
+      first
+    )}; path=/; max-age=3600; SameSite=Lax`
+    document.cookie = `__bg_analytics_session_activity=${encodeURIComponent(
+      staleActivity
+    )}; path=/; max-age=3600; SameSite=Lax`
+
+    const rotated = getOrCreateSessionId()
+    expect(rotated).not.toBe(first)
+    expect(isValidUuidV4(rotated)).toBe(true)
   })
 })
