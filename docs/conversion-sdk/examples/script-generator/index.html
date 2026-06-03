@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversion Analytics Script Generator</title>
+    <style>
+      body {
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        margin: 0;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .wrap {
+        max-width: 900px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      h1 {
+        margin: 0 0 8px;
+      }
+      p {
+        color: #94a3b8;
+      }
+      .card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+      label {
+        display: block;
+        margin: 10px 0 6px;
+        font-size: 13px;
+        color: #cbd5e1;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        background: #0b1220;
+        color: #e2e8f0;
+        padding: 10px 12px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      pre {
+        white-space: pre-wrap;
+        background: #0b1220;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 12px;
+        overflow: auto;
+        color: #cbd5e1;
+      }
+      button {
+        margin-top: 10px;
+        border: 1px solid #334155;
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #334155;
+      }
+      .hint {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 8px;
+        line-height: 1.5;
+      }
+      .status {
+        margin-left: 10px;
+        color: #22c55e;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Script Generator</h1>
+      <p>
+        Gere um snippet para colar no QuizBuilder/WP com
+        <code>window.ConversionAnalytics.track(...)</code> e
+        <code>window.ConversionAnalytics.identify(...)</code>.
+      </p>
+      <p class="hint">
+        Não é necessário <code>projectId</code> nem <code>sourceId</code> no projeto: só
+        <strong>endpoint</strong> (e opcionalmente <strong>appName</strong>). O collector
+        identifica origem por URL/regras de backend, se precisar.
+      </p>
+      <p class="hint">
+        Staging: API em
+        <a href="https://conversion-pipeline-collector.stg.utua.work/swagger/index.html" target="_blank" rel="noopener noreferrer">Swagger</a>.
+        O campo <strong>Endpoint</strong> abaixo é a URL de ingestão (<code>POST</code> JSON), não a página do Swagger.
+      </p>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label for="endpoint">Endpoint</label>
+            <input
+              id="endpoint"
+              value="https://conversion-pipeline-collector.stg.utua.work/v1/conversion/collect"
+            />
+          </div>
+          <div>
+            <label for="appName">App Name (opcional)</label>
+            <input id="appName" value="quizbuilder-frontend" />
+          </div>
+        </div>
+
+        <label for="scriptUrl">Script URL (CDN)</label>
+            <input
+              id="scriptUrl"
+              value="/assets/sdk.min.js"
+            />
+        <p class="hint">
+          Same-domain path to <code>packages/browser/dist/umd/sdk.min.js</code> after
+          <code>yarn build:conversion-sdk</code>. Use your CDN/origin URL in production.
+        </p>
+
+        <label for="snippet">Snippet gerado</label>
+        <pre id="snippet"></pre>
+        <button id="copyBtn">Copiar snippet</button><span class="status" id="status"></span>
+      </div>
+    </div>
+
+    <script>
+      const endpoint = document.getElementById("endpoint");
+      const appName = document.getElementById("appName");
+      const scriptUrl = document.getElementById("scriptUrl");
+      const snippet = document.getElementById("snippet");
+      const copyBtn = document.getElementById("copyBtn");
+      const status = document.getElementById("status");
+
+      function esc(s) {
+        return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+      }
+
+      const buildSnippet = () => {
+        const closeScript = "<" + "/script>";
+        return (
+          `<script async>` +
+          `
+  !function(e,t,r,n,o,a){if(!e[o]){var c=e[o]=function(){c.queue.push({type:arguments[0],arguments:Array.prototype.slice.call(arguments).slice(1)})};c.queue=[],c.push=c,c.track=function(){c.queue.push({type:"track",arguments:Array.prototype.slice.call(arguments)})},c.identify=function(){c.queue.push({type:"identify",arguments:Array.prototype.slice.call(arguments)})},c.page=function(){c.queue.push({type:"page",arguments:Array.prototype.slice.call(arguments)})},c.config={
+    endpoint: "${esc(endpoint.value)}",
+    appName: "${esc(appName.value)}",
+    debug: false
+  },c.version="1.0",c.loaded=!0,e["_"+o]||(e["_"+o]=c),c.start=function(){var e=t.createElement(r);e.src="${esc(
+    scriptUrl.value
+  )}",e.async=!0;var n=t.getElementsByTagName(r)[0];n.parentNode.insertBefore(e,n)}}}(window,document,"script",0,"ConversionAnalytics");
+
+  window.ConversionAnalytics.start();
+` +
+          closeScript
+        );
+      };
+
+      const render = () => {
+        snippet.textContent = buildSnippet();
+      };
+
+      [endpoint, appName].forEach((input) => {
+        input.addEventListener("input", render);
+      });
+      scriptUrl.addEventListener("input", render);
+
+      copyBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(buildSnippet());
+        status.textContent = "Copiado!";
+        setTimeout(() => {
+          status.textContent = "";
+        }, 1200);
+      });
+
+      render();
+    </script>
+  </body>
+</html>

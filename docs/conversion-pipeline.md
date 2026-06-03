@@ -1,89 +1,108 @@
 # Conversion pipeline (UTUA collector)
 
-npm-only integration with the UTUA conversion collector on top of `@segment/analytics-next`, without Segment CDN settings fetch or the `Segment.io` destination.
+Browser SDK for the UTUA conversion collector — **static script tag only** (same-domain).
+Built on the analytics-next fork with custom `conversion-collector` plugins; no Segment CDN or `Segment.io` destination.
 
-## Quick start
+## Quick start (2 lines)
 
-```ts
-import {
-  AnalyticsBrowser,
-  conversionCdnSettingsMinimal,
-  conversionPipelinePlugins,
-} from '@segment/analytics-next'
+Host `sdk.min.js` on the same domain as `/collect`:
 
-const [analytics] = await AnalyticsBrowser.load(
-  {
-    writeKey: 'conversion-pipeline',
-    cdnSettings: conversionCdnSettingsMinimal,
-    plugins: conversionPipelinePlugins({
-      endpoint: 'https://your-collector.example/collect',
-      appName: 'quiz-static',
-    }),
-  },
-  {
-    integrations: { 'Segment.io': false },
-    globalAnalyticsKey: 'ConversionAnalytics',
-  }
-)
-
-await analytics.track('quiz_started', { quizId: 'q1' })
+```html
+<script src="/assets/sdk.min.js"></script>
+<script>
+  ConversionAnalytics.init({
+    endpoint: '/collect',
+    appName: 'my-landing-page',
+  });
+</script>
 ```
 
-## Defaults
+The IIFE auto-bootstraps `window.ConversionAnalytics`, replays stub queue calls, and sends an initial `page` event unless the host queued one.
 
-| Setting | Default |
-|---------|---------|
-| `flushIntervalMs` | `2000` |
-| `batchSize` | `10` |
-| `retryAttempts` | `2` |
-| `respectDoNotTrack` | `true` (honours browser DNT) |
-| `enableGptSlotEvents` | `false` (set `true` to register GPT slot listeners) |
+## Stub snippet (load async, queue early events)
 
-## Required load options
+Use this pattern when the script loads after inline calls:
 
-- **`cdnSettings`**: use `conversionCdnSettingsMinimal` (or equivalent inline settings) so the library does not call the Segment CDN.
-- **`integrations: { 'Segment.io': false }`**: disables the Segment.io destination plugin.
+```html
+<script async>
+!function(e,t,r,n,o,a){if(!e[o]){var c=e[o]=function(){c.queue.push({type:arguments[0],arguments:Array.prototype.slice.call(arguments).slice(1)})};c.queue=[],c.track=function(){c.queue.push({type:"track",arguments:Array.prototype.slice.call(arguments)})},c.identify=function(){c.queue.push({type:"identify",arguments:Array.prototype.slice.call(arguments)})},c.page=function(){c.queue.push({type:"page",arguments:Array.prototype.slice.call(arguments)})},c.config={endpoint:"/collect",appName:"my-lp"},c.version="1.0",c.loaded=!0,e["_"+o]||(e["_"+o]=c),c.start=function(){var e=t.createElement(r);e.src="/assets/sdk.min.js",e.async=!0;var n=t.getElementsByTagName(r)[0];n.parentNode.insertBefore(e,n)}}}(window,document,"script",0,"ConversionAnalytics");
+ConversionAnalytics.start();
+</script>
+```
 
-## Pipeline plugins (order)
+Swap `/assets/sdk.min.js` for your CDN path or a GitHub Pages URL from `script/sdk.min.js` after build.
 
-1. **Conversion Consent** — drops events when `isTrackingAllowed()` is false or DNT is set.
-2. **Conversion Context** — `session_id`, `app`, `library`, page context, BG `anonymous_id` storage.
-3. **Conversion Identify PII** — SHA-256 traits on `identify` (email, phone, name).
-4. **Conversion Page Properties** — path taxonomy, query params, `visitor_country` on page/track.
-5. **Conversion Collector** — batched `POST` `{ events: [...] }` to your endpoint.
-6. **Conversion GPT Slot Events** (optional) — canonical GPT slot `track` events.
+## Build artifacts
 
-Register individual plugins instead of `conversionPipelinePlugins()` if you need a slimmer bundle.
+After `yarn build:conversion-sdk` in `packages/browser`:
+
+| File | Use |
+|------|-----|
+| `dist/umd/sdk.min.js` | Production — deploy to LP |
+| `dist/umd/conversion-analytics.build.js` | Debug (readable) |
+| `script/sdk.min.js` | Versioned mirror in repo (see [DISTRIBUTING-STATIC-SDK.md](./DISTRIBUTING-STATIC-SDK.md)) |
+
+## Instrumentation
+
+```javascript
+ConversionAnalytics.track('impression', {
+  block_id: 'top_father',
+  block_position: 1,
+});
+
+ConversionAnalytics.track('ad_request', {
+  block_id: 'top_father',
+  ad_request_id: 'req_abc123',
+});
+
+ConversionAnalytics.identify('user-id', { email: 'user@example.com' });
+```
+
+Global API: `window.ConversionAnalytics` — methods `init`, `track`, `page`, `identify`, `flush`, `getDebugInfo`, `getQueueSize`.
+
+## Init options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `endpoint` | `/collector` | Collector POST URL (same origin recommended) |
+| `appName` | — | App name in event context |
+| `debug` | `false` | On-page debug panel |
+| `flushIntervalMs` | `2000` | Batch flush interval |
+| `batchSize` | `10` | Events per batch |
+| `retryAttempts` | `2` | Network retries per batch |
+| `isTrackingAllowed` | — | Consent hook; return `false` to drop events |
+| `respectDoNotTrack` | `false` | Honor browser DNT |
+| `enableGptSlotEvents` | `true` | GPT slot listeners |
+
+## Pipeline (internal)
+
+1. **Conversion Consent** — drops events when tracking not allowed
+2. **Conversion Context** — `session_id`, anonymous id, page context
+3. **Conversion Identify PII** — SHA-256 on email/phone
+4. **Conversion Page Properties** — UTMs, click IDs, path taxonomy
+5. **Conversion Collector** — batched `POST` `{ events: [...] }`
+6. **Conversion GPT Slot Events** (optional)
 
 ## Collector contract
 
 - **Method:** `POST`
 - **Body:** `{ "events": [ /* AnalyticsEventEnvelope */ ] }`
-- **Envelope:** `version: 2`, snake_case fields (`anonymous_id`, `event_name`, …)
+- **Envelope:** `version: 2`, snake_case fields
 
-`alias` and `group` are not sent until the collector supports them.
+See [conversion-sdk/backend-contract.md](./conversion-sdk/backend-contract.md).
 
-## Optional settings
+## Docs
 
-```ts
-conversionPipelinePlugins({
-  endpoint: '/collector',
-  appName: 'my-app',
-  headers: { 'X-Api-Key': '…' },
-  getContext: () => ({ experiment: 'a' }),
-  getSessionId: () => customSessionId,
-  getVisitorCountry: async () => 'BR',
-  defaultPhoneCountryCode: '55',
-  isTrackingAllowed: () => consentGranted,
-  respectDoNotTrack: true,
-  enableGptSlotEvents: false,
-})
-```
+- [Static distribution / CI](./DISTRIBUTING-STATIC-SDK.md)
+- [Backend contract](./conversion-sdk/backend-contract.md)
+- [Page taxonomy](./conversion-sdk/page-taxonomy.md)
+- [PII and consent](./conversion-sdk/pii-and-consent.md)
+- [Examples](./conversion-sdk/examples/)
 
-## Snippet / UMD
+## Bundle size
 
-Use the standard browser UMD build with the same `load` options, or a thin wrapper package (`conversion-analytics-sdk`) in a later release phase.
+`sdk.min.js` is ~38 KB gzip today (target ≤ 30 KB tracked separately).
 
 ## Upstream merges
 
-Periodically merge `upstream/master` (segmentio/analytics-next) into your integration branch and resolve conflicts under `packages/browser/`.
+Merge `upstream/master` (segmentio/analytics-next) periodically; resolve conflicts under `packages/browser/`.
