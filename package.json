@@ -18,7 +18,6 @@
     "lint": "yarn constraints && turbo run lint --continue",
     "typecheck": "turbo run tsc --filter='./packages/**'",
     "build": "turbo run build --filter='./packages/**'",
-    "publish:gh": "yarn workspace @segment/analytics-next build && node scripts/publish-github-package.cjs",
     "watch": "turbo run watch --filter='./packages/**'",
     "dev": "yarn workspace @playground/next-playground run dev",
     "prepush": "turbo run tsc --affected",
