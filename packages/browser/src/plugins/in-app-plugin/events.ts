@@ -5,7 +5,13 @@ export enum InAppEvents {
     MessageAction = 'in-app:message-action',
 }
 
-export const allEvents:string[] = Object.values(InAppEvents);
+export enum InboxEvents {
+    MessageOpened = 'in-app-inbox:message-opened',
+    MessageDismissed = 'in-app-inbox:message-dismissed',
+    MessageAction = 'in-app-inbox:message-action',
+}
+
+export const allEvents:string[] = [...Object.values(InAppEvents), ...Object.values(InboxEvents)];
 
 export enum JourneysEvents {
     Metric = 'Report Delivery Event',

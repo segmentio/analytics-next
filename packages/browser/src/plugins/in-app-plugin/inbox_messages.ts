@@ -17,6 +17,22 @@ export interface GistInboxMessage {
   opened: boolean
 }
 
+export type InboxActionBehavior = 'openUrl' | 'dismiss' | 'openDeeplink' | 'performAction'
+
+export interface InboxActionConfig {
+  behavior: InboxActionBehavior
+  action?: string
+  name?: string
+  dismiss?: boolean
+  newTab?: boolean
+}
+
+export interface InboxMessageActionParams {
+  message: GistInboxMessage
+  action: 'opened' | 'dismissed' | 'clicked' | 'unopened'
+  actionConfig?: InboxActionConfig
+}
+
 export interface InboxMessage {
   // Unique identifier for this messeage
   readonly messageId: string

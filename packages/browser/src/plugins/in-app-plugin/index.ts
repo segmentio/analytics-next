@@ -5,6 +5,7 @@ import { hasQueryString } from '../../core/query-string'
 
 import {
   InAppEvents,
+  InboxEvents,
   JourneysEvents,
   newEvent,
   allEvents,
@@ -12,10 +13,10 @@ import {
   ContentType,
 } from './events'
 import Gist, { type GistConfig } from 'customerio-gist-web'
-import type { InboxAPI, InboxMessage, GistInboxMessage } from './inbox_messages'
+import type { InboxAPI, InboxMessage, GistInboxMessage, InboxActionConfig, InboxMessageActionParams } from './inbox_messages'
 import { createInboxAPI } from './inbox_messages'
 
-export { InAppEvents }
+export { InAppEvents, InboxEvents }
 export type { InboxAPI, InboxMessage }
 
 export type InAppPluginSettings = {
@@ -108,9 +109,45 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
       }
     })
 
-    Gist.events.on('inboxMessageAction', (params: any) => {
-      if (params?.message && params?.action !== '') {
-        _handleInboxMessageAction(_analytics, params.message, params.action)
+    Gist.events.on('inboxMessageAction', (event: unknown) => {
+      const params = event as InboxMessageActionParams
+      if (params?.message && params?.action) {
+        if (settings.events) {
+          const { message, action, actionConfig } = params
+          if (action === 'opened') {
+            _eventTarget.dispatchEvent(
+              newEvent(InboxEvents.MessageOpened, {
+                messageId: message.queueId,
+                deliveryId: message.deliveryId,
+              })
+            )
+          } else if (action === 'dismissed') {
+            _eventTarget.dispatchEvent(
+              newEvent(InboxEvents.MessageDismissed, {
+                messageId: message.queueId,
+                deliveryId: message.deliveryId,
+              })
+            )
+          } else if (action === 'clicked') {
+            _eventTarget.dispatchEvent(
+              newEvent(InboxEvents.MessageAction, {
+                messageId: message.queueId,
+                deliveryId: message.deliveryId,
+                action: actionConfig?.action,
+                name: actionConfig?.name,
+                actionName: actionConfig?.name,
+                actionValue: actionConfig?.action,
+              })
+            )
+          }
+        }
+
+        _handleInboxMessageAction(
+          _analytics,
+          params.message,
+          params.action,
+          params.actionConfig
+        )
       }
     })
 
@@ -268,17 +305,31 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
 function _handleInboxMessageAction(
   analyticsInstance: Analytics,
   message: GistInboxMessage,
-  action: string
+  action: InboxMessageActionParams['action'],
+  actionConfig?: InboxActionConfig
 ) {
   const deliveryId = message?.deliveryId
-  if (
-    action === 'opened' &&
-    typeof deliveryId !== 'undefined' &&
-    deliveryId !== ''
-  ) {
+  if (typeof deliveryId === 'undefined' || deliveryId === '') {
+    return
+  }
+
+  if (action === 'opened') {
     void analyticsInstance.track(JourneysEvents.Metric, {
-      deliveryId: message.deliveryId,
+      deliveryId: deliveryId,
       metric: JourneysEvents.Opened,
+    })
+    return
+  }
+
+  if (action === 'clicked') {
+    if (actionConfig?.behavior === 'dismiss' && !actionConfig?.name) {
+      return
+    }
+    void analyticsInstance.track(JourneysEvents.Metric, {
+      deliveryId: deliveryId,
+      metric: JourneysEvents.Clicked,
+      actionName: actionConfig?.name,
+      actionValue: actionConfig?.action,
     })
   }
 }

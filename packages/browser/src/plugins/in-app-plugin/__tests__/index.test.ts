@@ -1,13 +1,14 @@
 import { Analytics } from '../../../core/analytics'
 import { pageEnrichment } from '../../page-enrichment'
 import { CustomerioSettings } from '../../customerio'
-import { InAppPlugin, InAppPluginSettings } from '../'
+import { InAppPlugin, InAppPluginSettings, InboxEvents } from '../'
 import Gist from 'customerio-gist-web'
 
 describe('Customer.io In-App Plugin', () => {
   let analytics: Analytics
   let gistMessageShown: Function
   let gistMessageAction: Function
+  let gistInboxMessageAction: Function
   let gistEventDispatched: Function
 
   beforeEach(async () => {
@@ -30,6 +31,8 @@ describe('Customer.io In-App Plugin', () => {
           gistMessageShown = cb
         } else if (name === 'messageAction') {
           gistMessageAction = cb
+        } else if (name === 'inboxMessageAction') {
+          gistInboxMessageAction = cb
         } else if (name === 'eventDispatched') {
           gistEventDispatched = cb
         }
@@ -193,6 +196,229 @@ describe('Customer.io In-App Plugin', () => {
       },
       undefined
     )
+  })
+
+  describe('Inbox message actions', () => {
+    it('should trigger journey opened event for inbox message open', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'opened',
+      })
+      expect(spy).toBeCalledWith('Report Delivery Event', {
+        deliveryId: 'test-delivery',
+        metric: 'opened',
+      })
+    })
+
+    it('should trigger journey clicked event for inbox message click', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'openUrl',
+          name: 'button-name',
+          action: 'https://example.com',
+        },
+      })
+      expect(spy).toBeCalledWith('Report Delivery Event', {
+        deliveryId: 'test-delivery',
+        metric: 'clicked',
+        actionName: 'button-name',
+        actionValue: 'https://example.com',
+      })
+    })
+
+    it('should trigger journey clicked event for inbox dismiss click with name', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'dismiss',
+          name: 'close-button',
+        },
+      })
+      expect(spy).toBeCalledWith('Report Delivery Event', {
+        deliveryId: 'test-delivery',
+        metric: 'clicked',
+        actionName: 'close-button',
+        actionValue: undefined,
+      })
+    })
+
+    it('should trigger journey clicked event for inbox click without name', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'openUrl',
+          action: 'https://example.com',
+        },
+      })
+      expect(spy).toBeCalledWith('Report Delivery Event', {
+        deliveryId: 'test-delivery',
+        metric: 'clicked',
+        actionName: undefined,
+        actionValue: 'https://example.com',
+      })
+    })
+
+    it('should not trigger journey event for inbox dismiss without name', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'dismiss',
+        },
+      })
+      expect(spy).toHaveBeenCalledTimes(0)
+    })
+
+    it('should trigger journey clicked event for inbox click without actionConfig', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+      })
+      expect(spy).toBeCalledWith('Report Delivery Event', {
+        deliveryId: 'test-delivery',
+        metric: 'clicked',
+        actionName: undefined,
+        actionValue: undefined,
+      })
+    })
+
+    it('should not trigger journey event for inbox click without deliveryId', async () => {
+      const spy = jest.spyOn(analytics, 'track')
+      gistInboxMessageAction({
+        message: {
+          deliveryId: '',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'openUrl',
+          name: 'button-name',
+          action: 'https://example.com',
+        },
+      })
+      expect(spy).toHaveBeenCalledTimes(0)
+    })
+  })
+
+  describe('Inbox message events', () => {
+    let eventListener: jest.Mock
+    let gistInboxMessageActionWithEvents: Function
+
+    beforeEach(async () => {
+      eventListener = jest.fn()
+
+      const options: CustomerioSettings = { apiKey: 'foo' }
+      const eventsAnalytics = new Analytics({ writeKey: options.apiKey })
+
+      Gist.events = {
+        on: jest.fn((name: string, cb: Function) => {
+          if (name === 'inboxMessageAction') {
+            gistInboxMessageActionWithEvents = cb
+          }
+        }),
+        off: jest.fn(),
+        dispatch: jest.fn(),
+      } as unknown as typeof Gist.events
+
+      await eventsAnalytics.register(
+        InAppPlugin({
+          siteId: 'siteid',
+          events: eventListener,
+        } as InAppPluginSettings),
+        pageEnrichment
+      )
+    })
+
+    it('should dispatch in-app-inbox:message-opened on inbox message open', () => {
+      gistInboxMessageActionWithEvents({
+        message: {
+          queueId: 'inbox-msg-1',
+          deliveryId: 'test-delivery',
+        },
+        action: 'opened',
+      })
+
+      expect(eventListener).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: InboxEvents.MessageOpened,
+          detail: {
+            messageId: 'inbox-msg-1',
+            deliveryId: 'test-delivery',
+          },
+        })
+      )
+    })
+
+    it('should dispatch in-app-inbox:message-dismissed on inbox message dismissed', () => {
+      gistInboxMessageActionWithEvents({
+        message: {
+          queueId: 'inbox-msg-1',
+          deliveryId: 'test-delivery',
+        },
+        action: 'dismissed',
+      })
+
+      expect(eventListener).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: InboxEvents.MessageDismissed,
+          detail: {
+            messageId: 'inbox-msg-1',
+            deliveryId: 'test-delivery',
+          },
+        })
+      )
+    })
+
+    it('should dispatch in-app-inbox:message-action on inbox click', () => {
+      gistInboxMessageActionWithEvents({
+        message: {
+          queueId: 'inbox-msg-1',
+          deliveryId: 'test-delivery',
+        },
+        action: 'clicked',
+        actionConfig: {
+          behavior: 'openUrl',
+          name: 'button-name',
+          action: 'https://example.com',
+        },
+      })
+
+      expect(eventListener).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: InboxEvents.MessageAction,
+          detail: {
+            messageId: 'inbox-msg-1',
+            deliveryId: 'test-delivery',
+            action: 'https://example.com',
+            name: 'button-name',
+            actionName: 'button-name',
+            actionValue: 'https://example.com',
+          },
+        })
+      )
+    })
+
   })
 
   describe('Anonymous', () => {

@@ -777,7 +777,7 @@ __metadata:
     aws-sdk: ^2.814.0
     circular-dependency-plugin: ^5.2.2
     compression-webpack-plugin: ^8.0.1
-    customerio-gist-web: 3.21.19
+    customerio-gist-web: 3.22.4
     dset: ^3.1.2
     execa: ^4.1.0
     flat: ^5.0.2
@@ -833,6 +833,13 @@ __metadata:
     uuid: ^9.0.0
   languageName: unknown
   linkType: soft
+
+"@customerio/jist@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "@customerio/jist@npm:0.1.6"
+  checksum: 986a2603c1a5784552a99d18d6be23966a65176a0006bf8ab6f759f03d338bd20bbcbf262c4e54b5e15cb101ddcab531239f432a1802b5b5c215ba3af9ec45e9
+  languageName: node
+  linkType: hard
 
 "@discoveryjs/json-ext@npm:^0.5.0":
   version: 0.5.2
@@ -5632,12 +5639,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"customerio-gist-web@npm:3.21.19":
-  version: 3.21.19
-  resolution: "customerio-gist-web@npm:3.21.19"
+"customerio-gist-web@npm:3.22.4":
+  version: 3.22.4
+  resolution: "customerio-gist-web@npm:3.22.4"
   dependencies:
-    uuid: ^8.3.2
-  checksum: a65a8d34795725a5e0ca889346af04d60bc45d54b6ac5907d95a5885b20d0a5c878823b3fd3481980a50b077203fbcb66abaa6f6557ea9edab4ea0093c4e03d5
+    "@customerio/jist": ^0.1.6
+    uuid: ^14.0.0
+  checksum: b6140591f07930656c58d518d8ddcd3a51438aeba0fe43329a246bf45cecc5dd16dc11239f06fb822d5a930e3884135438734582f58b35d14430feda3d2d7be3
   languageName: node
   linkType: hard
 
@@ -12708,6 +12716,15 @@ __metadata:
   bin:
     uuid: ./bin/uuid
   checksum: 8793629d2799f500aeea9fcd0aec6c4e9fbcc4d62ed42159ad96be345c3fffac1bbf61a23e18e2782600884fee05e6d4012ce4b70d0037c8e987533ae6a77870
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "uuid@npm:14.0.0"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 08608584a79e987cdae000fa8eb724fa51dd8aafc136cd9fa9a8c87d07b246c56eec5fd9027fdb3e49a863eedf758bc19e325909ce281955c7a027fed67dc89e
   languageName: node
   linkType: hard
 
