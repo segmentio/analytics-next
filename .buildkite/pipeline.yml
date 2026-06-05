@@ -1,7 +1,15 @@
+agents:
+  queue: general-039
+
 env:
   SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
   SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
   COVERAGE: true
+  GIT_CONFIG_COUNT: "1"
+  GIT_CONFIG_KEY_0: "url.ssh://git@github.com/.insteadOf"
+  GIT_CONFIG_VALUE_0: "https://github.com/"
+  ECR_REGISTRY: 018537234677.dkr.ecr.us-east-1.amazonaws.com
+  SEGMENT_ECR_REGISTRY: 528451384384.dkr.ecr.us-west-2.amazonaws.com
 steps:
   - block: Allow this build to run?
     prompt: ':rotating_light: Review the PR for concerning changes before unblocking'
@@ -10,7 +18,7 @@ steps:
 
   - label: Log Environment
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - echo "+++ Node Version"
       - echo $(node -v)
@@ -19,7 +27,7 @@ steps:
   - label: '[Monorepo] QA'
     key: monorepo
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -37,7 +45,7 @@ steps:
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
     agents:
-      queue: v1
+      queue: general-039
     env:
       SEGMENT_CODECOV_FLAGS: 'browser'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
@@ -55,7 +63,7 @@ steps:
   - label: '[Browser] QA / E2E :perfection:'
     key: qa
     agents:
-      queue: v1
+      queue: general-039
     env:
       COVERAGE: false
     commands:
@@ -76,7 +84,7 @@ steps:
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
     agents:
-      queue: v1
+      queue: general-039
     env:
       COVERAGE: false
     commands:
@@ -98,7 +106,7 @@ steps:
       SEGMENT_CODECOV_FLAGS: 'core'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/core/coverage'
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -116,7 +124,7 @@ steps:
 
   - label: '[Misc Utils] Lint + Test'
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -135,7 +143,7 @@ steps:
 
   - label: '[Consent] Lint + Test'
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -152,7 +160,7 @@ steps:
           
   - label: '[Consent] Integration Tests'
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -167,7 +175,7 @@ steps:
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
     key: destinations
     agents:
-      queue: v1
+      queue: general-039
     env:
       COVERAGE: false
     commands:
@@ -186,7 +194,7 @@ steps:
   - label: '[Browser] Release to CDN :rocket:'
     branches: '!v* !@segment/* !publish-test'
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -201,7 +209,7 @@ steps:
   - label: '[Playgrounds] Lint + Test :hammer:'
     key: playgrounds
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - echo "--- Install dependencies"
@@ -225,7 +233,7 @@ steps:
       build.branch == "master" &&
       build.message !~ /\[skip\]/i
     agents:
-      queue: v1
+      queue: general-039
     commands:
       - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
       - git config --global user.name "buildkite-agent"
@@ -243,5 +251,5 @@ steps:
 
   - label: 'Snyk :lock:'
     agents:
-      queue: v1
+      queue: general-039
     command: 'bk-snyk'
