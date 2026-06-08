@@ -1,7 +1,4 @@
-import type {
-  AnalyticsEventEnvelope,
-  ConversionCollectorSettings,
-} from './types'
+import type { CollectEvent, ConversionCollectorSettings } from './types'
 
 export type CollectSendConfig = Pick<
   ConversionCollectorSettings,
@@ -50,6 +47,20 @@ function parseRetryAfterMs(header: string | null): number | undefined {
   return undefined
 }
 
+function parseRateLimitResetMs(header: string | null): number | undefined {
+  if (!header) {
+    return undefined
+  }
+  const value = Number(header)
+  if (Number.isNaN(value) || value <= 0) {
+    return undefined
+  }
+  if (value > 1_000_000_000 && value < 100_000_000_000) {
+    return Math.max(0, value * 1000 - Date.now())
+  }
+  return value
+}
+
 function classifyHttpFailure(
   status: number,
   headers?: Headers
@@ -57,7 +68,9 @@ function classifyHttpFailure(
   if (status === 429) {
     return {
       retryable: true,
-      retryAfterMs: parseRetryAfterMs(headers?.get('Retry-After') ?? null),
+      retryAfterMs:
+        parseRetryAfterMs(headers?.get('Retry-After') ?? null) ??
+        parseRateLimitResetMs(headers?.get('x-ratelimit-reset') ?? null),
     }
   }
   if (status >= 500) {
@@ -69,16 +82,24 @@ function classifyHttpFailure(
   return { retryable: false }
 }
 
-export function buildCollectRequestBody(
-  events: AnalyticsEventEnvelope[]
-): string {
+export function buildCollectRequestBody(events: CollectEvent[]): string {
   const sentAt = new Date().toISOString()
-  return JSON.stringify({
-    events: events.map((event) => ({
-      ...event,
-      sent_at: sentAt,
-    })),
-  })
+  return JSON.stringify(
+    events.map((event) => {
+      const retryCount = event._retryCount ?? event._metadata?.retryCount ?? 0
+      const { _retryCount: _rc, ...rest } = event
+      return {
+        ...rest,
+        sentAt,
+        _metadata: {
+          ...(typeof rest._metadata === 'object' && rest._metadata
+            ? rest._metadata
+            : {}),
+          retryCount,
+        },
+      }
+    })
+  )
 }
 
 export function sendCollectViaBeacon(endpoint: string, body: string): boolean {
@@ -145,7 +166,7 @@ function computeBackoffMs(attempt: number, retryAfterMs?: number): number {
 }
 
 export async function sendEventsToCollect(
-  events: AnalyticsEventEnvelope[],
+  events: CollectEvent[],
   config: CollectSendConfig,
   transport: CollectTransportOptions = {}
 ): Promise<void> {
@@ -175,6 +196,11 @@ export async function sendEventsToCollect(
       if (!deliveryError.retryable || attempt >= maxAttempts) {
         throw deliveryError
       }
+
+      console.warn(
+        `[utua] collect retry ${attempt + 1}/${maxAttempts + 1}:`,
+        deliveryError.message
+      )
 
       await wait(computeBackoffMs(attempt, deliveryError.retryAfterMs))
     } finally {

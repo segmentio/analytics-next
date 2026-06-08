@@ -23,12 +23,14 @@ export function conversionContextEnrichment(
     ctx.updateEvent('anonymousId', bgAnonymousId)
 
     const sessionId = settings.getSessionId?.() ?? getOrCreateSessionId()
-    const resolved = resolveContext(settings, { session_id: sessionId })
+    const resolved = resolveContext(settings)
 
     const evtCtx = ctx.event.context ?? {}
     ctx.updateEvent('context', {
       ...evtCtx,
       ...resolved,
+      sessionId,
+      session_id: sessionId,
     })
 
     const traits = analytics.user().traits()

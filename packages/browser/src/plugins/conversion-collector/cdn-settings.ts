@@ -5,9 +5,5 @@ import { CDNSettings } from '../../browser/settings'
  * Pair with `integrations: { 'Segment.io': false }` and a custom collector plugin.
  */
 export const conversionCdnSettingsMinimal: CDNSettings = {
-  integrations: {
-    'Segment.io': {
-      apiKey: 'conversion-pipeline',
-    },
-  },
+  integrations: {},
 }

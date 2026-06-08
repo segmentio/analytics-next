@@ -1,4 +1,4 @@
-import type { AnalyticsEventEnvelope } from './types'
+import type { CollectEvent } from './types'
 import {
   readPersistedEventQueue,
   writePersistedEventQueue,
@@ -17,8 +17,13 @@ export interface BatchBufferConfig extends CollectSendConfig {
   batchSize: number
 }
 
+function incrementRetryCount(event: CollectEvent): CollectEvent {
+  const retryCount = (event._retryCount ?? 0) + 1
+  return { ...event, _retryCount: retryCount }
+}
+
 export class BatchBuffer {
-  private queue: AnalyticsEventEnvelope[] = []
+  private queue: CollectEvent[] = []
   private timer: ReturnType<typeof setInterval> | null = null
   private flushing = false
 
@@ -43,7 +48,7 @@ export class BatchBuffer {
     }
   }
 
-  enqueue(event: AnalyticsEventEnvelope): void {
+  enqueue(event: CollectEvent): void {
     this.queue.push(event)
     this.persistQueue()
     if (this.queue.length >= this.config.batchSize) {
@@ -67,12 +72,12 @@ export class BatchBuffer {
     writePersistedEventQueue(this.queue)
   }
 
-  private takeBatch(maxSize = this.config.batchSize): AnalyticsEventEnvelope[] {
+  private takeBatch(maxSize = this.config.batchSize): CollectEvent[] {
     return this.queue.splice(0, maxSize)
   }
 
-  private requeueFront(batch: AnalyticsEventEnvelope[]): void {
-    this.queue.unshift(...batch)
+  private requeueFront(batch: CollectEvent[]): void {
+    this.queue.unshift(...batch.map(incrementRetryCount))
     this.persistQueue()
   }
 
