@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test'
-import {
-  assertSdkBundleExists,
-  findEvent,
-  gotoTestLp,
-  setupCollectMock,
-} from './helpers'
+import { assertSdkBundleExists, gotoTestLp, setupCollectMock } from './helpers'
 
 test.beforeAll(() => {
   assertSdkBundleExists()
