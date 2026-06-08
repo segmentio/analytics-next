@@ -70,7 +70,11 @@ const config: PlaywrightTestConfig = {
   },
 
   /* Configure projects for major browsers */
-  projects: process.env.CI ? ciProjects : localProjects,
+  projects: process.env.CI
+    ? ciProjects
+    : process.env.PW_CHROMIUM_ONLY
+    ? ciProjects
+    : localProjects,
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   // outputDir: 'test-results/',
