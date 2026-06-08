@@ -8319,6 +8319,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@utua/conversion-pipeline-collector@workspace:packages/conversion-pipeline-collector":
+  version: 0.0.0-use.local
+  resolution: "@utua/conversion-pipeline-collector@workspace:packages/conversion-pipeline-collector"
+  dependencies:
+    tslib: ^2.4.1
+  languageName: unknown
+  linkType: soft
+
 "@vitejs/plugin-react@npm:^1.3.0":
   version: 1.3.2
   resolution: "@vitejs/plugin-react@npm:1.3.2"

@@ -18,5 +18,6 @@ module.exports = () =>
       '<rootDir>/packages/consent/consent-wrapper-onetrust',
       '<rootDir>/scripts',
       '<rootDir>/packages/test-helpers',
+      '<rootDir>/packages/conversion-pipeline-collector',
     ],
   })

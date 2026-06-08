@@ -1,0 +1,26 @@
+{
+  "name": "@utua/conversion-pipeline-collector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Collector ingest + normalize() for Conversion Analytics SDK (native analytics-next payload)",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "!**/__tests__/**"
+  ],
+  "scripts": {
+    "test": "yarn jest",
+    "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",
+    "build:esm": "yarn tsc -p tsconfig.build.json",
+    "build:cjs": "yarn tsc -p tsconfig.build.json --outDir ./dist/cjs --module commonjs",
+    "tsc": "yarn run -T tsc",
+    "jest": "yarn run -T jest",
+    "concurrently": "yarn run -T concurrently"
+  },
+  "dependencies": {
+    "tslib": "^2.4.1"
+  }
+}
