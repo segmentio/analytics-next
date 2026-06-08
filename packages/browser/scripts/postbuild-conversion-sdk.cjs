@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 
@@ -12,5 +13,12 @@ if (!fs.existsSync(minBundle)) {
   process.exit(1)
 }
 
+const content = fs.readFileSync(minBundle)
+const hash = crypto.createHash('sha256').update(content).digest('hex').slice(0, 8)
+const hashedBundle = path.join(distDir, `sdk.${hash}.min.js`)
+
 fs.copyFileSync(minBundle, sdkAlias)
-console.log(`Copied ${path.basename(minBundle)} -> ${path.basename(sdkAlias)}`)
+fs.copyFileSync(minBundle, hashedBundle)
+console.log(
+  `Copied ${path.basename(minBundle)} -> ${path.basename(sdkAlias)} and ${path.basename(hashedBundle)}`
+)

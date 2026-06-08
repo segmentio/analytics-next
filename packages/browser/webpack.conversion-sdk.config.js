@@ -5,6 +5,7 @@ const CompressionPlugin = require('compression-webpack-plugin')
 const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
+const includeGpt = process.env.CONVERSION_INCLUDE_GPT === '1'
 
 /** @type { import('webpack').Configuration } */
 const config = {
@@ -73,6 +74,14 @@ const config = {
     new CircularDependencyPlugin({
       failOnError: true,
     }),
+    ...(includeGpt
+      ? []
+      : [
+          new webpack.NormalModuleReplacementPlugin(
+            /conversion-sdk[\\/]gpt-plugin(\.ts)?$/,
+            path.resolve(__dirname, 'src/conversion-sdk/stubs/gpt-stub.ts')
+          ),
+        ]),
     ...(isProd ? [new CompressionPlugin({})] : []),
   ],
 }

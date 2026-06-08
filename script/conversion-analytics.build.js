@@ -2011,37 +2011,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   resolveCollectorBuffer: () => (/* binding */ resolveCollectorBuffer),
 /* harmony export */   stopCollectorQueue: () => (/* binding */ stopCollectorQueue)
 /* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../plugins/conversion-collector/runtime-registry */ 1322);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../plugins/conversion-collector/runtime-registry */ 1322);
 
 
 function resolveCollectorBuffer(analytics) {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
-            return [2 /*return*/, (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_1__.getConversionCollectorBuffer)(analytics)];
-        });
-    });
+    return (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_0__.getConversionCollectorBuffer)(analytics);
 }
 function flushCollectorQueue(analytics) {
-    var _a;
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
-            switch (_b.label) {
-                case 0: return [4 /*yield*/, ((_a = (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_1__.getConversionCollectorBuffer)(analytics)) === null || _a === void 0 ? void 0 : _a.flush())];
-                case 1:
-                    _b.sent();
-                    return [2 /*return*/];
-            }
-        });
-    });
+    var _a, _b;
+    return (_b = (_a = (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_0__.getConversionCollectorBuffer)(analytics)) === null || _a === void 0 ? void 0 : _a.flush()) !== null && _b !== void 0 ? _b : Promise.resolve();
 }
 function stopCollectorQueue(analytics) {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
         var buffer;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    buffer = (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_1__.getConversionCollectorBuffer)(analytics);
+                    buffer = (0,_plugins_conversion_collector_runtime_registry__WEBPACK_IMPORTED_MODULE_0__.getConversionCollectorBuffer)(analytics);
                     buffer === null || buffer === void 0 ? void 0 : buffer.stop();
                     if (!(buffer === null || buffer === void 0 ? void 0 : buffer.flushAll)) return [3 /*break*/, 2];
                     return [4 /*yield*/, buffer.flushAll()];
@@ -2321,10 +2308,10 @@ var ConversionClient = /** @class */ (function () {
     };
     ConversionClient.prototype.bootstrap = function (generation) {
         return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-            var collectorSettings, useGpt, plugins, analytics, _a;
+            var collectorSettings, useGpt, plugins, analytics;
             var _this = this;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
-                switch (_b.label) {
+            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         collectorSettings = (0,_config__WEBPACK_IMPORTED_MODULE_1__.toCollectorSettings)(this.config);
                         useGpt = this.config.enableGptSlotEvents !== false;
@@ -2338,28 +2325,24 @@ var ConversionClient = /** @class */ (function () {
                                 integrations: { 'Segment.io': false },
                             })];
                     case 1:
-                        analytics = (_b.sent())[0];
+                        analytics = (_a.sent())[0];
                         if (!(generation !== this.bootstrapGeneration)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.stopAnalyticsInstance(analytics)];
                     case 2:
-                        _b.sent();
+                        _a.sent();
                         return [2 /*return*/, analytics];
                     case 3:
                         analytics.on('error', function (payload) {
                             var _a, _b, _c;
                             var reason = (_a = payload === null || payload === void 0 ? void 0 : payload.reason) !== null && _a !== void 0 ? _a : payload;
-                            _this.lastError =
-                                reason instanceof Error ? reason.message : String(reason);
+                            _this.lastError = reason instanceof Error ? reason.message : String(reason);
                             (_c = (_b = _this.config).onError) === null || _c === void 0 ? void 0 : _c.call(_b, reason);
                         });
                         if (this.config.debug) {
                             (0,_debug__WEBPACK_IMPORTED_MODULE_7__.mountDebugPanel)(function () { return _this.getDebugInfo(); });
                         }
                         this.analytics = analytics;
-                        _a = this;
-                        return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics)];
-                    case 4:
-                        _a.collectorBuffer = _b.sent();
+                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics);
                         return [2 /*return*/, analytics];
                 }
             });
@@ -2454,19 +2437,16 @@ var ConversionClient = /** @class */ (function () {
     };
     ConversionClient.prototype.flush = function () {
         return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-            var analytics, _a;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
-                switch (_b.label) {
+            var analytics;
+            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
+                switch (_a.label) {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
-                        analytics = _b.sent();
+                        analytics = _a.sent();
                         return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.flushCollectorQueue)(analytics)];
                     case 2:
-                        _b.sent();
-                        _a = this;
-                        return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics)];
-                    case 3:
-                        _a.collectorBuffer = _b.sent();
+                        _a.sent();
+                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics);
                         return [2 /*return*/];
                 }
             });
@@ -5975,8 +5955,7 @@ var BatchBuffer = /** @class */ (function () {
                         return [3 /*break*/, 1];
                     case 4:
                         error_2 = _a.sent();
-                        if (error_2 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError &&
-                            !error_2.retryable) {
+                        if (error_2 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError && !error_2.retryable) {
                             this.persistQueue();
                             throw error_2;
                         }
