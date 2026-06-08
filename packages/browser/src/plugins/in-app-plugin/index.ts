@@ -12,12 +12,12 @@ import {
   gistToCIO,
   ContentType,
 } from './events'
-import Gist, { type GistConfig } from 'customerio-gist-web'
+import Gist, { type GistConfig, type ColorScheme } from 'customerio-gist-web'
 import type { InboxAPI, InboxMessage, GistInboxMessage, InboxActionConfig, InboxMessageActionParams } from './inbox_messages'
 import { createInboxAPI } from './inbox_messages'
 
 export { InAppEvents, InboxEvents }
-export type { InboxAPI, InboxMessage }
+export type { InboxAPI, InboxMessage, ColorScheme }
 
 export type InAppPluginSettings = {
   siteId: string | undefined
@@ -28,6 +28,15 @@ export type InAppPluginSettings = {
 
   anonymousInApp: boolean | false
   enabled?: boolean
+  /**
+   * Controls the color scheme for in-app messages.
+   * - `'default'` — always use light mode
+   * - `'system'` — follow the user's OS-level color scheme preference
+   * - `'auto'` — detect the color scheme from the page and react to live changes
+   *
+   * Defaults to `'default'` (light) when not specified.
+   */
+  colorScheme?: GistConfig['colorScheme']
 }
 
 if (hasQueryString('cio_debug_session', 'true')) {
@@ -267,6 +276,7 @@ export function InAppPlugin(settings: InAppPluginSettings): Plugin {
         env: settings._env ? settings._env : 'prod',
         logging: settings._logging,
         useAnonymousSession: settings.anonymousInApp,
+        colorScheme: settings.colorScheme,
       })
       _gistLoaded = true
 
