@@ -1,14 +1,4 @@
-import {
-  flush,
-  getDebugInfo,
-  getQueueSize,
-  identify,
-  init,
-  page,
-  start,
-  stop,
-  track,
-} from './singleton'
+import { identify, init, page, track } from './singleton'
 
 export {
   flush,

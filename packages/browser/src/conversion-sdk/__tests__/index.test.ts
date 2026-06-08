@@ -22,6 +22,7 @@ type CollectPayload = Array<{
   userId?: string
   traits?: Record<string, unknown>
   messageId: string
+  timestamp?: string
   originalTimestamp?: string
   original_timestamp?: string
   sentAt?: string

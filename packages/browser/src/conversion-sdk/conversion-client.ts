@@ -1,12 +1,11 @@
 import type { Analytics } from '../core/analytics'
-import { conversionPipelinePlugins } from '../plugins/conversion-collector'
 import { getCurrentSessionId } from '../plugins/conversion-collector/lib/session'
 import {
   flushCollectorQueue,
   resolveCollectorBuffer,
   stopCollectorQueue,
 } from './collector-runtime'
-import { DEFAULT_INIT_CONFIG, toCollectorSettings } from './config'
+import { DEFAULT_INIT_CONFIG } from './config'
 import { conversionGptSlotEventsPlugin } from './gpt-plugin'
 import { loadLeanConversionAnalytics } from './lean-load'
 import { normalizeIdentifyCall, normalizeTrackCall } from './legacy-args'
