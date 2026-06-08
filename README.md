@@ -1,38 +1,114 @@
-## 🎉 Flagship 🎉
-This library is one of Segment’s most popular Flagship libraries. It is actively maintained by Segment, benefitting from new feature releases and ongoing support.
+# Conversion Analytics SDK (analytics-next)
 
+Fork do [Segment analytics-next](https://github.com/segmentio/analytics-next) mantido pela UTUA para o **Conversion Pipeline**: captura eventos de comportamento em landing pages (page views, impressões, cliques, identify) e envia em batch para o **Collector** via HTTP.
 
-<div style="display:flex;margin-bottom:5px">
-  <span style="margin: 0 5px 5px">
-    <a href="https://buildkite.com/segment/analytics-next">
-    <img src="https://badge.buildkite.com/87e30d62ada044b6fe404b17cd16aa6e3b52d89f40c9f44675.svg?branch=master">
-  </a>
+O produto entregue é um **script estático** (`sdk.min.js`, ≤ 30 KB gzip) — não é um pacote npm publicado para as LPs. O monorepo reutiliza a base analytics-next (pipeline de plugins, batching, retry) com plugins customizados em `conversion-collector`.
 
-  </span>
-  <span style="margin:0 5px 5px">
-    <a href="http://www.typescriptlang.org/">
-    <img src="https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg">
-  </span>
-</div>
-<br />
+## Para que serve
 
-<p align="center">
-  <a href="https://segment.com">
-    <img src="img/twilio-segment-logo-2x.png" width="300">
-  </a>
-  <br />
-  <caption>Welcome to the monorepo for Segment's latest Javascript / Typescript SDKs</caption>
-</p>
+- Instrumentar LPs com eventos de **ad-tech** (`impression`, `ad_request`, `viewability`, `click`, etc.)
+- Gerenciar **sessão** do visitante (UUID, cookies `_utua_*`, TTL de inatividade 5 min)
+- Capturar **atribuição** (UTMs e click-ids em `context.campaign`)
+- Enviar eventos em **batch** com persistência offline, retry e flush no unload
+- Identificar usuários (`identify`) — PII em texto plano na lib; hash no Collector
 
-# analytics.js (analytics-next)
+## Uso na landing page
 
-## Packages
+Hospede `sdk.min.js` no **mesmo domínio** do endpoint de coleta (recomendado: proxy `/collect` → Collector).
 
-- [@segment/analytics-next](packages/browser#readme): Analytics.js SDK for **web browsers**
-- [@segment/analytics-node](packages/node#readme): Analytics.js SDK for **Node.js**
+```html
+<script src="/assets/sdk.min.js"></script>
+<script>
+  analytics.init('conversion-pipeline', {
+    endpoint: '/collect',
+    appName: 'minha-lp',
+  });
 
-## Contributing
+  analytics.track('impression', {
+    block_id: 'top_father',
+    block_position: 1,
+  });
+</script>
+```
 
-- Contribution guidelines: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Development instructions: [DEVELOPMENT.md](DEVELOPMENT.md)
-- Releasing (to npm): [RELEASING.md](RELEASING.md)
+| API (MVP) | Descrição |
+|-----------|-----------|
+| `init(writeKey, options?)` | Inicializa o SDK (`writeKey` ou objeto de config) |
+| `track(event, properties?)` | Evento customizado |
+| `page(properties?)` | Page view |
+| `identify(userOrTraits, traits?)` | Identificação do usuário |
+
+`window.ConversionAnalytics` é alias de `window.analytics`. Um `page` automático é enviado no bootstrap, salvo se o host já enfileirou um.
+
+Para carregamento assíncrono com fila de eventos antes do script carregar, use o stub em [docs/conversion-pipeline.md](docs/conversion-pipeline.md).
+
+## Build do SDK
+
+```bash
+yarn install
+cd packages/browser
+yarn build:conversion-sdk
+```
+
+| Artefato | Uso |
+|----------|-----|
+| `packages/browser/dist/umd/sdk.min.js` | Produção — deploy na LP |
+| `packages/browser/dist/umd/sdk.{hash}.min.js` | Versão com hash de conteúdo |
+| `script/sdk.min.js` | Espelho versionado no repositório |
+
+Detalhes de deploy same-domain: [docs/DISTRIBUTING-STATIC-SDK.md](docs/DISTRIBUTING-STATIC-SDK.md).
+
+## Desenvolvimento e testes
+
+```bash
+# Testes unitários (SDK + collector plugins)
+yarn jest --testPathPattern="conversion-sdk|conversion-collector"
+
+# Typecheck
+yarn typecheck
+
+# E2E (Playwright)
+cd packages/browser-integration-tests
+yarn pretest:conversion-sdk   # copia sdk.min.js
+yarn test:conversion-sdk
+```
+
+## Contrato com o Collector
+
+A SDK envia payload **analytics-next nativo**:
+
+```
+POST {endpoint}  →  [ CollectEvent, ... ]
+```
+
+- `context.sessionId` — UUID v4 da sessão
+- `context.campaign` — UTMs + click-ids (`gclid`, `fbclid`, …)
+- camelCase (`anonymousId`, `messageId`, `event`, …)
+
+O Collector em produção ([conversion-pipeline-collector.utua.work](https://conversion-pipeline-collector.utua.work/)) ainda espera `{ events: [...] }` em snake_case — ver gap e plano de migração em [docs/conversion-sdk/collector-prod-api.md](docs/conversion-sdk/collector-prod-api.md).
+
+## Estrutura do repositório
+
+| Caminho | Conteúdo |
+|---------|----------|
+| `packages/browser/src/conversion-sdk/` | API pública, bootstrap, `init(writeKey)` |
+| `packages/browser/src/plugins/conversion-collector/` | Pipeline: session, click-ids, batch, POST |
+| `packages/conversion-pipeline-collector/` | Referência TypeScript do `normalize()` (portar para Go) |
+| `packages/browser-integration-tests/` | Testes E2E Playwright |
+| `docs/conversion-sdk/` | PRD, arquitetura, contrato backend, schema de eventos |
+
+## Documentação
+
+- [Quick start e instrumentação](docs/conversion-pipeline.md)
+- [Índice da documentação do SDK](docs/conversion-sdk/README.md)
+- [Contrato SDK ↔ Collector](docs/conversion-sdk/backend-contract.md)
+
+## Monorepo (upstream Segment)
+
+Este repositório ainda contém os pacotes originais do analytics-next, usados como base interna:
+
+- `@segment/analytics-next` — SDK browser (fork + Conversion SDK)
+- `@segment/analytics-node` — SDK Node.js
+- `@segment/analytics-core` — núcleo compartilhado
+
+Para contribuir no fork: [CONTRIBUTING.md](CONTRIBUTING.md) · [DEVELOPMENT.md](DEVELOPMENT.md)
