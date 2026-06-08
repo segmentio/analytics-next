@@ -1,17 +1,30 @@
 import type { AnalyticsInitConfig } from './types'
 import { ConversionAnalyticsBrowser } from './conversion-analytics-browser'
+import { resolveInitConfig } from './write-key-config'
+import { getCurrentSessionId } from '../plugins/conversion-collector/lib/session'
 
 type StubQueuedCall = { type: string; arguments: unknown[] }
 type StubAnalytics = {
   queue?: StubQueuedCall[]
   config?: Partial<AnalyticsInitConfig>
+  writeKey?: string
 }
 
-/** Snippet stub lives here so `window.Analytics` stays free for other tools. */
+const STUB_GLOBALS = [
+  'analytics',
+  '_analytics',
+  'ConversionAnalytics',
+  '_ConversionAnalytics',
+] as const
+
 function resolveStub(w: Record<string, unknown>): StubAnalytics | undefined {
-  return (w._ConversionAnalytics ?? w.ConversionAnalytics) as
-    | StubAnalytics
-    | undefined
+  for (const key of STUB_GLOBALS) {
+    const candidate = w[key]
+    if (candidate && typeof candidate === 'object') {
+      return candidate as StubAnalytics
+    }
+  }
+  return undefined
 }
 
 function hydrateStub(
@@ -21,47 +34,62 @@ function hydrateStub(
   Object.assign(stub, {
     instance: api.instance,
     init: api.init,
-    start: api.start,
-    stop: api.stop,
-    flush: api.flush,
     track: api.track,
     identify: api.identify,
     page: api.page,
-    getDebugInfo: api.getDebugInfo,
-    getQueueSize: api.getQueueSize,
     config: api.config,
+    writeKey: api.writeKey,
     version: api.version,
     loaded: api.loaded,
+    get _sessionId() {
+      return getCurrentSessionId()
+    },
   })
 }
 
-function attachGlobal(
+function attachGlobals(
   w: Record<string, unknown>,
-  api: Record<string, unknown>
+  api: Record<string, unknown>,
+  globalName: string
 ): void {
+  w[globalName] = api
+  if (globalName !== 'analytics') {
+    w.analytics = api
+  }
+  w._analytics = api
   w.ConversionAnalytics = api
   w._ConversionAnalytics = api
 }
 
-function toConfig(stub: StubAnalytics | undefined): AnalyticsInitConfig {
-  const cfg = stub?.config ?? {}
-  return {
-    endpoint: cfg.endpoint,
-    appName: cfg.appName,
-    debug: cfg.debug,
-    flushIntervalMs: cfg.flushIntervalMs,
-    batchSize: cfg.batchSize,
-    retryAttempts: cfg.retryAttempts,
-    headers: cfg.headers,
-    getContext: cfg.getContext,
-    getSessionId: cfg.getSessionId,
-    getVisitorCountry: cfg.getVisitorCountry,
-    isTrackingAllowed: cfg.isTrackingAllowed,
-    respectDoNotTrack: cfg.respectDoNotTrack,
-    onError: cfg.onError,
-    defaultPhoneCountryCode: cfg.defaultPhoneCountryCode,
-    enableGptSlotEvents: cfg.enableGptSlotEvents,
+function toBootstrapConfig(
+  stub: StubAnalytics | undefined
+): AnalyticsInitConfig {
+  if (stub?.writeKey) {
+    return resolveInitConfig(stub.writeKey, stub.config)
   }
+  if (stub?.config?.writeKey) {
+    return resolveInitConfig(stub.config.writeKey, stub.config)
+  }
+  return resolveInitConfig(stub?.config ?? {})
+}
+
+function parseInitCall(args: unknown[]): {
+  writeKeyOrConfig: string | AnalyticsInitConfig
+  options?: Partial<AnalyticsInitConfig>
+} {
+  const arg0 = args[0]
+  if (typeof arg0 === 'string') {
+    return {
+      writeKeyOrConfig: arg0,
+      options: (args[1] ?? undefined) as
+        | Partial<AnalyticsInitConfig>
+        | undefined,
+    }
+  }
+  if (arg0 && typeof arg0 === 'object') {
+    return { writeKeyOrConfig: arg0 as AnalyticsInitConfig }
+  }
+  return { writeKeyOrConfig: {} }
 }
 
 export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
@@ -71,16 +99,16 @@ export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
 
   const w = window as unknown as Record<string, unknown>
   const stub = resolveStub(w)
-  const config = toConfig(stub)
+  const config = toBootstrapConfig(stub)
 
   const analytics = await ConversionAnalyticsBrowser.load(config)
 
   const api = {
     instance: analytics,
-    init: (next: AnalyticsInitConfig) => analytics.init(next),
-    start: () => analytics.start(),
-    stop: () => analytics.stop(),
-    flush: () => analytics.flush(),
+    init: (
+      writeKeyOrConfig: string | AnalyticsInitConfig,
+      options?: Partial<AnalyticsInitConfig>
+    ) => analytics.init(writeKeyOrConfig, options),
     track: (event: unknown, payload?: unknown, options?: unknown) =>
       analytics.track(event as never, payload as never, options as never),
     identify: (user: unknown, traits?: unknown, options?: unknown) =>
@@ -102,22 +130,30 @@ export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
 
       return analytics.page(props as Record<string, unknown>, options as never)
     },
-    getDebugInfo: () => analytics.getDebugInfo(),
-    getQueueSize: () => analytics.getQueueSize(),
     config,
+    writeKey: config.writeKey,
     version: '1.0',
     loaded: true,
+    get _sessionId() {
+      return getCurrentSessionId()
+    },
   }
 
+  const globalName = config.globalName ?? 'analytics'
   const apiRecord = api as unknown as Record<string, unknown>
   const queuedSnapshot = stub?.queue?.length ? stub.queue.slice() : []
 
   if (stub != null) {
     hydrateStub(stub as StubAnalytics & Record<string, unknown>, apiRecord)
+    w[globalName] = stub
+    if (globalName !== 'analytics') {
+      w.analytics = stub
+    }
+    w._analytics = stub
     w.ConversionAnalytics = stub
     w._ConversionAnalytics = stub
   } else {
-    attachGlobal(w, apiRecord)
+    attachGlobals(w, apiRecord, globalName)
   }
 
   for (const call of queuedSnapshot) {
@@ -133,12 +169,8 @@ export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
       } else if (call.type === 'page') {
         await api.page(call.arguments[0], call.arguments[1], call.arguments[2])
       } else if (call.type === 'init') {
-        const arg0 = call.arguments[0]
-        if (arg0 && typeof arg0 === 'object') {
-          api.init(arg0 as AnalyticsInitConfig)
-        }
-      } else if (call.type === 'flush') {
-        await api.flush()
+        const parsed = parseInitCall(call.arguments)
+        api.init(parsed.writeKeyOrConfig, parsed.options)
       }
     } catch (error) {
       config.onError?.(error)

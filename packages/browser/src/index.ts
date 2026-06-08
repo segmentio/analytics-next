@@ -35,7 +35,7 @@ export {
 } from './plugins/conversion-collector'
 export type {
   ConversionCollectorSettings,
-  AnalyticsEventEnvelope,
+  CollectEvent,
 } from './plugins/conversion-collector'
 export {
   getOrCreateSessionId,

@@ -1,16 +1,14 @@
 import type {
-  AnalyticsEventEnvelope,
+  CollectEvent,
   ConversionCollectorSettings,
 } from '../plugins/conversion-collector/types'
 
-export type { AnalyticsEventEnvelope, ConversionCollectorSettings }
+export type { CollectEvent, ConversionCollectorSettings }
 
-/** POST body for the collector. */
-export interface CollectRequestBody {
-  events: AnalyticsEventEnvelope[]
-}
+/** POST body: native analytics-next event array. */
+export type CollectRequestBody = CollectEvent[]
 
-export type AnalyticsMethod = AnalyticsEventEnvelope['type']
+export type AnalyticsMethod = 'track' | 'page' | 'identify'
 
 export interface TrackOptions {
   context?: Record<string, unknown>
@@ -25,8 +23,10 @@ export interface IdentifyOptions {
 }
 
 export interface AnalyticsInitConfig {
+  writeKey?: string
   endpoint?: string
   appName?: string
+  globalName?: string
   debug?: boolean
   flushIntervalMs?: number
   batchSize?: number
@@ -40,6 +40,10 @@ export interface AnalyticsInitConfig {
   onError?: (error: unknown) => void
   defaultPhoneCountryCode?: string
   enableGptSlotEvents?: boolean
+  enableConsentEnrichment?: boolean
+  enableContextEnrichment?: boolean
+  enableIdentifyHashing?: boolean
+  enablePageTaxonomy?: boolean
 }
 
 export interface DebugInfo {

@@ -13,15 +13,21 @@ export function getAnalyticsSingleton(): ConversionClient {
   return singleton
 }
 
-export function resetAnalyticsSingleton(config?: AnalyticsInitConfig): void {
+export function resetAnalyticsSingleton(
+  writeKeyOrConfig?: string | AnalyticsInitConfig,
+  options?: Partial<AnalyticsInitConfig>
+): void {
   singleton = new ConversionClient()
-  if (config) {
-    singleton.init(config)
+  if (writeKeyOrConfig !== undefined) {
+    singleton.init(writeKeyOrConfig, options)
   }
 }
 
-export function init(config: AnalyticsInitConfig): void {
-  singleton.init(config)
+export function init(
+  writeKeyOrConfig: string | AnalyticsInitConfig,
+  options?: Partial<AnalyticsInitConfig>
+): void {
+  singleton.init(writeKeyOrConfig, options)
 }
 
 export function start(): void {

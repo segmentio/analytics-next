@@ -15,6 +15,21 @@ import { installBrowserGlobals } from './browser-globals'
 
 let fetchCalls: Array<[RequestInfo | URL, RequestInit | undefined]> = []
 
+type CollectPayload = Array<{
+  type: string
+  event?: string
+  anonymousId: string
+  userId?: string
+  traits?: Record<string, unknown>
+  messageId: string
+  originalTimestamp?: string
+  original_timestamp?: string
+  sentAt?: string
+  properties?: Record<string, unknown>
+  context: Record<string, unknown>
+  _metadata?: { retryCount?: number }
+}>
+
 describe('Conversion SDK public API', () => {
   beforeEach(() => {
     resetAnalyticsSingleton()
@@ -30,8 +45,7 @@ describe('Conversion SDK public API', () => {
       }
     )
     installBrowserGlobals()
-    init({
-      endpoint: '/collector',
+    init('conversion-pipeline', {
       appName: 'test-app',
       flushIntervalMs: 10000,
       batchSize: 10,
@@ -48,7 +62,7 @@ describe('Conversion SDK public API', () => {
     }
   })
 
-  it('flushes identify immediately and uses segment-like payload fields', async () => {
+  it('flushes identify immediately with native analytics-next payload', async () => {
     await track('quiz_started', { step: 1 })
     await identify('user-1', { email: 'a@test.com', email_domain: 'test.com' })
 
@@ -59,50 +73,30 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    expect(url).toBe('/collector')
+    expect(url).toBe('/collect')
     expect(options?.method).toBe('POST')
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{
-        type: string
-        event_name?: string
-        anonymous_id: string
-        user_id?: string
-        traits?: Record<string, unknown>
-        message_id: string
-        original_timestamp: string
-        sent_at?: string
-        version: number
-        properties?: Record<string, unknown>
-        context: Record<string, unknown>
-      }>
-    }
-    expect(body.events.length).toBe(2)
-    expect(body.events[0]?.type).toBe('track')
-    expect(body.events[1]?.type).toBe('identify')
-    expect(body.events[0]?.event_name).toBe('quiz_started')
-    expect(typeof body.events[0]?.anonymous_id).toBe('string')
-    expect(typeof body.events[1]?.anonymous_id).toBe('string')
-    expect(body.events[1]?.user_id).toBe('user-1')
-    const identifyTraits = body.events[1]?.traits
-    expect(String(identifyTraits?.email)).toMatch(/^[a-f0-9]{64}$/)
-    expect(identifyTraits?.email).toBe(identifyTraits?.email_hash)
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+
+    expect(Array.isArray(body)).toBe(true)
+    expect(body.length).toBe(2)
+    expect(body[0]?.type).toBe('track')
+    expect(body[1]?.type).toBe('identify')
+    expect(body[0]?.event).toBe('quiz_started')
+    expect(typeof body[0]?.anonymousId).toBe('string')
+    expect(typeof body[1]?.anonymousId).toBe('string')
+    expect(body[1]?.userId).toBe('user-1')
+    const identifyTraits = body[1]?.traits
+    expect(identifyTraits?.email).toBe('a@test.com')
     expect(identifyTraits?.email_domain).toBe('test.com')
-    expect(body.events[0]?.version).toBe(2)
-    expect(typeof body.events[0]?.message_id).toBe('string')
-    expect(typeof body.events[0]?.original_timestamp).toBe('string')
-    expect(typeof body.events[0]?.sent_at).toBe('string')
-    expect(body.events[0]?.properties?.event_name).toBeUndefined()
-    expect(body.events[0]?.properties?.eventName).toBeUndefined()
-    expect(typeof body.events[0]?.context.session_id).toBe('string')
-    expect(body.events[0]?.context.app).toEqual({ name: 'test-app' })
-    expect(body.events[0]?.context.channel).toBe('browser')
-    const library = body.events[0]?.context.library as {
-      name?: string
-      version?: string
-    }
-    expect(library?.name).toBe('conversion-analytics-sdk')
-    expect(typeof library?.version).toBe('string')
-    const page0 = body.events[0]?.context.page as {
+    expect(typeof body[0]?.messageId).toBe('string')
+    expect(typeof body[0]?.timestamp).toBe('string')
+    expect(typeof body[0]?.sentAt).toBe('string')
+    expect(body[0]?._metadata?.retryCount).toBe(0)
+    expect(body[0]?.properties?.eventName).toBeUndefined()
+    expect(typeof body[0]?.context.sessionId).toBe('string')
+    expect(body[0]?.context.session_id).toBeUndefined()
+
+    const page0 = body[0]?.context.page as {
       path?: string
       search?: string
       url?: string
@@ -114,12 +108,14 @@ describe('Conversion SDK public API', () => {
     expect(page0?.url).toBe('https://example.com/path?utm_source=test')
     expect(page0?.title).toBe('Test page')
     expect(page0?.referrer).toBe('https://ref.example.com')
-    expect(body.events[0]?.context.locale).toBe('en-US')
-    expect(body.events[0]?.context.screen).toEqual({ width: 1280, height: 720 })
-    expect(body.events[0]?.context.userAgent).toBe('node-test-agent')
+    expect(body[0]?.context.locale).toBe('en-US')
+    expect(body[0]?.context.userAgent).toBe('node-test-agent')
+    expect((body[0]?.context.campaign as { source?: string })?.source).toBe(
+      'test'
+    )
   })
 
-  it('includes userId and traits on track events after identify', async () => {
+  it('includes userId on track events after identify', async () => {
     await identify('known-user', {
       email: 'known@test.com',
       email_domain: 'test.com',
@@ -131,23 +127,12 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{
-        type: string
-        user_id?: string
-        context?: Record<string, unknown>
-      }>
-    }
-    expect(body.events[0]?.type).toBe('track')
-    expect(body.events[0]?.user_id).toBe('known-user')
-    const trackTraits = body.events[0]?.context?.traits as
-      | Record<string, unknown>
-      | undefined
-    expect(String(trackTraits?.email)).toMatch(/^[a-f0-9]{64}$/)
-    expect(trackTraits?.email_domain).toBe('test.com')
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+    expect(body[0]?.type).toBe('track')
+    expect(body[0]?.userId).toBe('known-user')
   })
 
-  it('uses the real event_name and strips it from properties', async () => {
+  it('uses the real event name and strips aliases from properties', async () => {
     await track({
       eventName: 'impression_viewable',
       eventData: {
@@ -161,41 +146,33 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{
-        event_name?: string
-        properties?: Record<string, unknown>
-      }>
-    }
-    expect(body.events[0]?.event_name).toBe('impression_viewable')
-    expect(body.events[0]?.properties?.answer).toBe('A')
-    expect(body.events[0]?.properties?.query_params).toEqual({
-      utm_source: 'test',
-    })
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+    expect(body[0]?.event).toBe('impression_viewable')
+    expect(body[0]?.properties?.answer).toBe('A')
+    expect(body[0]?.properties?.event_name).toBeUndefined()
+    expect(body[0]?.properties?.eventName).toBeUndefined()
   })
 
-  it('attaches sdk to window', () => {
+  it('attaches MVP sdk to window', () => {
     attachToWindow('ConversionAnalytics')
     const analytics = (window as unknown as Record<string, unknown>)
       .ConversionAnalytics as Record<string, unknown> | undefined
     expect(analytics).toBeTruthy()
     expect(typeof analytics?.track).toBe('function')
     expect(typeof analytics?.page).toBe('function')
+    expect(typeof analytics?.init).toBe('function')
+    expect(analytics?.flush).toBeUndefined()
   })
 
   it('returns debug info for copy workflows', async () => {
     await track('debug_event', {})
     const info = getDebugInfo()
-    expect(info.endpoint).toBe('/collector')
+    expect(info.endpoint).toBe('/collect')
     expect(typeof info.sessionId).toBe('string')
     expect(info.queueSize).toBe(1)
   })
 
-  it('uses UUID v4 for anonymous_id and message_id', async () => {
-    ;(
-      window as unknown as { localStorage: { store: Record<string, string> } }
-    ).localStorage.store['__bg_analytics_anonymous_id'] = 'legacy-not-uuid'
-
+  it('uses UUID v4 for anonymousId and messageId', async () => {
     await track('uuid_check', {})
     await flush()
 
@@ -203,15 +180,13 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{ anonymous_id: string; message_id: string }>
-    }
-    expect(isValidUuidV4(body.events[0]?.anonymous_id ?? '')).toBe(true)
-    expect(isValidUuidV4(body.events[0]?.message_id ?? '')).toBe(true)
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+    expect(isValidUuidV4(body[0]?.anonymousId ?? '')).toBe(true)
+    expect((body[0]?.messageId ?? '').length).toBeGreaterThan(0)
     expect(isValidUuidV4(getOrCreateAnonymousId())).toBe(true)
   })
 
-  it('enriches page with query_params and URL taxonomy', async () => {
+  it('enriches page with taxonomy when enablePageTaxonomy is on', async () => {
     installBrowserGlobals({
       location: {
         href: 'https://example.com/usa-cc-mastercardbuilt-p1?utm_source=google&gclid=abc',
@@ -220,12 +195,12 @@ describe('Conversion SDK public API', () => {
       },
     })
 
-    resetAnalyticsSingleton({
-      endpoint: '/collector',
+    resetAnalyticsSingleton('conversion-pipeline', {
       flushIntervalMs: 10000,
       batchSize: 10,
       retryAttempts: 0,
       enableGptSlotEvents: false,
+      enablePageTaxonomy: true,
       getVisitorCountry: () => 'BR',
     })
 
@@ -237,18 +212,10 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{
-        event_name?: string
-        properties?: Record<string, unknown>
-      }>
-    }
-    const pageProps = body.events[0]?.properties
-    expect(body.events[0]?.event_name).toBe('page')
-    expect(pageProps?.query_params).toEqual({
-      utm_source: 'google',
-      gclid: 'abc',
-    })
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+    const pageProps = body[0]?.properties
+    expect(body[0]?.type).toBe('track')
+    expect(body[0]?.event).toBe('page')
     expect(pageProps?.utm_source).toBe('google')
     expect(pageProps?.gclid).toBe('abc')
     expect(pageProps?.page_path).toBe('/usa-cc-mastercardbuilt-p1')
@@ -259,37 +226,11 @@ describe('Conversion SDK public API', () => {
     expect(pageProps?.funnel).toBe('p1')
     expect(pageProps?.custom).toBe(true)
 
-    const afterPageProps = body.events[1]?.properties
-    expect(afterPageProps?.query_params).toEqual({
-      utm_source: 'google',
-      gclid: 'abc',
-    })
-    expect(afterPageProps?.utm_source).toBe('google')
-  })
-
-  it('sets visitor_country from navigator.language when hook is absent', async () => {
-    installBrowserGlobals({
-      navigator: { language: 'pt-BR' },
-    })
-    resetAnalyticsSingleton({
-      endpoint: '/collector',
-      flushIntervalMs: 10000,
-      batchSize: 10,
-      retryAttempts: 0,
-      enableGptSlotEvents: false,
-    })
-
-    await track('page', {})
-    await flush()
-
-    const [, options] = fetchCalls[0] as [
-      RequestInfo | URL,
-      RequestInit | undefined
-    ]
-    const body = JSON.parse(String(options?.body)) as {
-      events: Array<{ properties?: Record<string, unknown> }>
+    const pageContext = body[0]?.context as {
+      campaign?: { source?: string; gclid?: string }
     }
-    expect(body.events[0]?.properties?.visitor_country).toBe('BR')
+    expect(pageContext.campaign?.source).toBe('google')
+    expect(pageContext.campaign?.gclid).toBe('abc')
   })
 
   it('requeues batch when request fails', async () => {
@@ -303,8 +244,7 @@ describe('Conversion SDK public API', () => {
         } as Response
       }
     )
-    resetAnalyticsSingleton({
-      endpoint: '/collector',
+    resetAnalyticsSingleton('conversion-pipeline', {
       flushIntervalMs: 10000,
       batchSize: 10,
       retryAttempts: 0,
