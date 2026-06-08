@@ -35,7 +35,7 @@ yarn sync:script
 ## Deploy na landing page (same-domain)
 
 1. Copie `dist/umd/sdk.min.js` para o CDN/origin da LP, ex.: `/assets/sdk.min.js`
-2. Configure o reverse proxy de `/collect` (ou endpoint configurado) para o Collector
+2. Configure o reverse proxy do endpoint de coleta (default `/collector`, configurável via `init({ endpoint })`) para o Collector
 3. Cole o snippet na LP (ver [conversion-pipeline.md](./conversion-pipeline.md))
 
 **Requisito:** script e endpoint de coleta no **mesmo domínio** (evita ad blockers e ITP).
@@ -66,7 +66,8 @@ Exemplo mínimo:
 
 ## O que não usamos
 
-- GitHub Packages / `@be-growth/analytics-next` npm install
-- Segment CDN / `writeKey` remoto
+- GitHub Packages / npm público para distribuição do SDK de produção
+- Segment CDN / destination `Segment.io` em runtime
 
-O monorepo mantém `@segment/analytics-next` apenas como workspace interno para desenvolvimento e testes.
+O monorepo mantém `@segment/analytics-next` como workspace interno. O SDK de produção é o bundle
+`sdk.min.js` com plugins `conversion-collector` — ver [conversion-sdk/README.md](./conversion-sdk/README.md).

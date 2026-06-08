@@ -1,171 +1,280 @@
-# Contrato SDK ↔ Backend (Collector)
+# Contrato SDK ↔ Collector (Backend)
 
-Este documento descreve o que o **backend do Conversion Pipeline** deve expor e o que a **SDK browser** envia. Assim o time do collector pode implementar validação (ex.: Zod) alinhada ao cliente.
+Especificação canônica do que a SDK envia e o que o Collector deve implementar.
+Contrato alinhado ao payload **analytics-next nativo** enviado pela SDK MVP.
 
 ## Endpoint
 
-- **Método:** `POST`
-- **Path:** configurável no front via `init({ endpoint })`. Valor padrão da SDK: **`/collector`** (path relativo ao origin) ou URL absoluta, ex.: `https://api.exemplo.com/collector`.
-- **Content-Type:** `application/json`
-- **Corpo:** objeto com uma única chave `events` (array, mínimo 1 item após flush em lote).
+| Campo | Valor |
+|-------|-------|
+| Método | `POST` |
+| Path default | `/collect` |
+| Path configurável | `init({ endpoint: '/collect' })` — same origin recomendado |
+| Content-Type | `application/json` |
+| CORS | `POST` + `Content-Type: application/json` nos domínios das LPs |
 
-Headers extras podem ser enviados pelo front com `init({ headers: { ... } })` (ex.: API key interna, se vocês decidirem).
+Headers extras via `init({ headers: { ... } })`.
 
-## Corpo da requisição (`CollectRequestBody`)
+## Corpo da requisição
 
 ```ts
-interface CollectRequestBody {
-  events: AnalyticsEventEnvelope[];
-}
+type CollectRequestBody = CollectEvent[] // mínimo 1 após flush
 ```
 
-### `AnalyticsEventEnvelope`
+### `CollectEvent` (analytics-next nativo, camelCase)
 
 | Campo | Tipo | Obrigatório | Observação |
-|--------|------|-------------|------------|
-| `type` | `"track" \| "identify"` | sim | |
-| `event_name` | `string` | para `track` | Nome real do evento |
-| `anonymous_id` | `string` | sim | UUID v4 válido (persistido em `localStorage`; regenerado se inválido) |
-| `user_id` | `string` | opcional | Em `identify`; em `track` repetido após um `identify` bem-sucedido (mesmo id) |
-| `traits` | `object` | opcional | Comum em `identify` |
-| `properties` | `object` | opcional | Comum em `track` |
-| `context` | `object` | sim | Ver tabela abaixo; `getContext()` pode acrescentar campos |
-| `integrations` | `object` | opcional | Overrides por destino no formato Segment |
-| `message_id` | `string` | sim | ID único por mensagem |
-| `original_timestamp` | `string` (ISO 8601) | sim | Momento original da criação do evento |
-| `sent_at` | `string` (ISO 8601) | sim | Momento em que o lote foi enviado |
-| `timestamp` | `string` (ISO 8601) | sim | |
-| `version` | `2` | sim | Compatível com o envelope comum da Segment |
+|-------|------|-------------|------------|
+| `type` | `"track" \| "page" \| "identify" \| "screen"` | sim | |
+| `event` | `string` | para `track` | Nome do evento (`impression`, etc.) |
+| `anonymousId` | `string` | sim | UUID v4 (env-enrichment / user store) |
+| `userId` | `string` | opcional | Após `identify` |
+| `traits` | `object` | opcional | `identify` — PII em texto; hash no Collector |
+| `properties` | `object` | opcional | `track` / `page` — ad-tech |
+| `context` | `object` | sim | Ver tabela abaixo |
+| `integrations` | `object` | opcional | Overrides Segment |
+| `messageId` | `string` | sim | UUID v4, estável em retries |
+| `originalTimestamp` | ISO 8601 | sim | Criação do evento |
+| `sentAt` | ISO 8601 | sim | Momento do envio do lote |
+| `timestamp` | ISO 8601 | sim | |
+| `_metadata` | `{ retryCount: number }` | sim | Contagem de retries do lote |
 
-### `context` (formato enviado pela SDK)
+### `context`
 
 | Campo | Tipo | Observação |
-|--------|------|------------|
-| `session_id` | `string` | Identificador de sessão browser |
-| `app` | `object` | Hoje envia `{ name }` a partir de `init({ appName })` |
-| `library` | `object` | `{ name, version }` da SDK |
+|-------|------|------------|
+| `sessionId` | `string` | **UUID v4** — chave primária para `normalize()` / Redis |
+| `app` | `{ name: string }` | De `init({ appName })` |
+| `library` | `{ name, version }` | `conversion-analytics-sdk` |
 | `channel` | `string` | `"browser"` |
 | `page` | `object` | `path`, `search`, `url`, `title`, `referrer` |
 | `locale` | `string` | `navigator.language` |
-| `screen` | `object` | `{ width, height }` |
-| `traits` | `object` | Repetido em `track` após `identify`, quando disponível |
-| `timezone` | `string` | `Intl.DateTimeFormat().resolvedOptions().timeZone` |
-| `userAgent` | `string` | `navigator.userAgent` |
+| `screen` | `{ width, height }` | |
+| `traits` | `object` | Repetido em `track` após `identify` |
+| `timezone` | `string` | |
+| `userAgent` | `string` | |
+| `campaign` | `object` | UTMs (`source`, `medium`, `name`, …) + click-ids (`gclid`, `fbclid`, …) |
 
-### Exemplo mínimo (`track`)
+### `properties` — atribuição e ad-tech
 
-```json
-{
-  "events": [
-    {
-      "type": "track",
-      "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
-      "event_name": "quiz_started",
-      "properties": { "quizId": "q1" },
-      "message_id": "550e8400-e29b-41d4-a716-446655440002",
-      "original_timestamp": "2026-03-23T12:00:00.000Z",
-      "sent_at": "2026-03-23T12:00:01.000Z",
-      "context": {
-        "session_id": "550e8400-e29b-41d4-a716-446655440000",
-        "app": { "name": "quiz-static" },
-        "library": { "name": "conversion-analytics-sdk", "version": "0.1.0" },
-        "channel": "browser",
-        "page": {
-          "path": "/quiz",
-          "search": "",
-          "url": "https://exemplo.com/quiz",
-          "title": "Quiz",
-          "referrer": "https://google.com/"
-        },
-        "locale": "pt-BR",
-        "screen": { "width": 1920, "height": 1080 },
-        "timezone": "America/Sao_Paulo",
-        "userAgent": "Mozilla/5.0 ..."
-      },
-      "timestamp": "2026-03-23T12:00:00.000Z",
-      "version": 2
-    }
-  ]
+| Campo | Origem | Coluna ClickHouse sugerida |
+|-------|--------|---------------------------|
+| `query_params` | Auto (primeira página da sessão) | JSON ou flatten |
+| `utm_source` | Auto | `utm_source` |
+| `utm_medium` | Auto | `utm_medium` |
+| `utm_campaign` | Auto | `utm_campaign` |
+| `utm_content` | Auto | `utm_content` |
+| `utm_term` | Auto | `utm_term` |
+| `gclid` | Auto | `gclid` |
+| `fbclid` | Auto | `fbclid` |
+| `ttclid` / `tt_clid` | Auto | `ttclid` |
+| `msclkid` | Auto | `msclkid` |
+| `twclid` | Auto | `twclid` |
+| `block_id` | Dev (`track`) | `block_id` |
+| `block_position` | Dev (`track`) | `block_position` |
+| `ad_request_id` | Dev (`track`) | `ad_request_id` |
+| `viewable` | Dev (`track`) | `viewable` |
+| `page_path` | Auto (`page`) | `page_path` |
+| `visitor_country` | Auto | `visitor_country` |
+| `country`, `vertical`, `product`, `funnel` | Auto (taxonomy) | respectivos |
+
+Ver [event-schema.md](./event-schema.md) para campos obrigatórios por tipo de evento.
+
+---
+
+## `normalize()` — spec para o Collector
+
+O Collector recebe `CollectRequestBody` e produz registros flat para ClickHouse + chaves Redis.
+
+### Pseudocódigo
+
+```typescript
+function normalize(envelope: AnalyticsEventEnvelope): FlatEvent {
+  const ctx = envelope.context ?? {}
+  const props = envelope.properties ?? {}
+
+  return {
+    // Identidade
+    message_id: envelope.message_id,
+    anonymous_id: envelope.anonymous_id,
+    user_id: envelope.user_id ?? null,
+    session_id: ctx.sessionId ?? ctx.session_id, // UUID v4 — obrigatório
+    event_type: envelope.type === 'identify'
+      ? 'identify'
+      : envelope.event_name,
+
+    // Timestamps
+    timestamp: envelope.timestamp,
+    original_timestamp: envelope.original_timestamp,
+    sent_at: envelope.sent_at,
+
+    // Page context
+    page_url: ctx.page?.url,
+    page_path: props.page_path ?? ctx.page?.path,
+    page_title: ctx.page?.title,
+    referrer: ctx.page?.referrer,
+
+    // Atribuição (de properties, NÃO de context.campaign)
+    utm_source: props.utm_source ?? props.query_params?.utm_source,
+    utm_medium: props.utm_medium ?? props.query_params?.utm_medium,
+    utm_campaign: props.utm_campaign ?? props.query_params?.utm_campaign,
+    utm_content: props.utm_content ?? props.query_params?.utm_content,
+    utm_term: props.utm_term ?? props.query_params?.utm_term,
+    gclid: props.gclid ?? props.query_params?.gclid,
+    fbclid: props.fbclid ?? props.query_params?.fbclid,
+    ttclid: props.ttclid ?? props.tt_clid ?? props.query_params?.ttclid,
+
+    // Ad-tech (de properties)
+    block_id: props.block_id,
+    block_position: props.block_position,
+    ad_request_id: props.ad_request_id,
+    viewable: props.viewable,
+
+    // Taxonomia
+    visitor_country: props.visitor_country,
+    country: props.country,
+    vertical: props.vertical,
+    product: props.product,
+    funnel: props.funnel,
+
+    // PII (identify — já hasheado pela SDK)
+    email_hash: envelope.traits?.email ?? envelope.traits?.email_hash,
+    phone_hash: envelope.traits?.phone ?? envelope.traits?.phone_hash,
+    email_domain: envelope.traits?.email_domain,
+
+    // Raw payload (opcional, para debug)
+    properties_json: JSON.stringify(props),
+    context_json: JSON.stringify(ctx),
+  }
 }
 ```
 
-### Exemplo (`identify`)
+### Validações recomendadas
+
+| Regra | Ação |
+|-------|------|
+| `session_id` ausente ou não UUID v4 | Rejeitar evento (4xx) ou alertar + quarentena |
+| `impression`/`viewability`/`click` sem `block_id` | Aceitar mas marcar `quality_flag: incomplete` |
+| `ad_request` sem `ad_request_id` | Idem |
+| `message_id` duplicado | Dedup server-side (idempotência) |
+
+### Redis session key
+
+O `session_id` do envelope é o **mesmo** usado pelo Redis/Collector para agregação.
+Formato UUID v4, sem transformação. TTL server-side alinhado com inatividade de 5min
+(+ margem para flush atrasado).
+
+---
+
+## Resposta HTTP
+
+A SDK considera sucesso qualquer **2xx** (`response.ok`).
+
+Resposta recomendada:
+
+```http
+HTTP/1.1 202 Accepted
+Content-Type: application/json
+
+{ "ok": true, "accepted": 3 }
+```
+
+| Status | SDK behavior |
+|--------|--------------|
+| 2xx | Sucesso, remove da fila |
+| 429 | Retry com `Retry-After` |
+| 5xx | Retry com backoff |
+| 4xx (exceto 429) | Descarta batch (não retenta) |
+
+Corpo de erro padronizado ajuda debug:
+
+```json
+{ "ok": false, "error": "invalid_session_id", "detail": "..." }
+```
+
+---
+
+## Exemplos
+
+### `track` — impression
 
 ```json
 {
-  "events": [
-    {
-      "type": "identify",
-      "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
-      "user_id": "user-123",
-      "traits": { "email": "a@b.com" },
-      "message_id": "550e8400-e29b-41d4-a716-446655440002",
-      "original_timestamp": "2026-03-23T12:00:01.000Z",
-      "sent_at": "2026-03-23T12:00:01.050Z",
-      "context": { "session_id": "...", "page": { "url": "https://...", "title": "...", "referrer": "" } },
-      "timestamp": "2026-03-23T12:00:01.000Z",
-      "version": 2
-    }
-  ]
+  "events": [{
+    "type": "track",
+    "event_name": "impression",
+    "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
+    "message_id": "550e8400-e29b-41d4-a716-446655440002",
+    "properties": {
+      "block_id": "top_father",
+      "block_position": 1,
+      "utm_source": "google",
+      "gclid": "abc123",
+      "query_params": { "utm_source": "google", "gclid": "abc123" }
+    },
+    "context": {
+      "session_id": "660e8400-e29b-41d4-a716-446655440000",
+      "page": { "url": "https://lp.example.com/usa-cc-p1", "path": "/usa-cc-p1" },
+      "library": { "name": "conversion-analytics-sdk", "version": "1.0.0" },
+      "channel": "browser"
+    },
+    "original_timestamp": "2026-06-08T12:00:00.000Z",
+    "sent_at": "2026-06-08T12:00:01.000Z",
+    "timestamp": "2026-06-08T12:00:00.000Z",
+    "version": 2
+  }]
 }
 ```
 
-### `page` e atribuição (FE-3 / FE-4)
+### `identify`
 
-Eventos `track` com `event_name: "page"` incluem em `properties`:
+```json
+{
+  "events": [{
+    "type": "identify",
+    "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
+    "user_id": "user-123",
+    "traits": {
+      "email": "a1b2c3...",
+      "email_hash": "a1b2c3...",
+      "email_domain": "example.com"
+    },
+    "context": { "session_id": "660e8400-e29b-41d4-a716-446655440000" },
+    "message_id": "...",
+    "original_timestamp": "...",
+    "sent_at": "...",
+    "timestamp": "...",
+    "version": 2
+  }]
+}
+```
 
-| Campo | Observação |
-| --- | --- |
-| `query_params` | Objeto com **todos** os parâmetros da query da landing (primeira captura da sessão) |
-| `utm_*`, `gclid`, `fbclid`, `tt_clid`, `ttclid`, `msclkid`, `twclid`, `to`, `p`, `ref` | Repetidos no top-level quando presentes (colunas dedicadas BE) |
-| `page_path` | `pathname` atual no envio do `page` |
-| `visitor_country` | `getVisitorCountry()` ou região de `navigator.language` |
-| `country`, `vertical`, `product`, `funnel` | Taxonomia do primeiro segmento do path — ver [page-taxonomy.md](./page-taxonomy.md) |
-
-`query_params` e colunas dedicadas são reutilizados em `track` / `identify` da mesma sessão (`sessionStorage`: `__bg_analytics_query_params`).
-
-### `identify` — PII (FE-2)
-
-Ver [pii-and-consent.md](./pii-and-consent.md). Resumo: `email` / `phone` hasheados (SHA-256); aliases `email_hash` / `phone_hash`; `email_domain` em claro.
-
-### Eventos GPT (FE-5 / FE-6)
-
-`event_name` canônicos (sem wrapper `ads`): `slotRequested`, `slotResponseReceived`, `slotRenderEnded`, `slotOnload`, `impressionViewable`, `slotEmpty`.
-
-Propriedades comuns: `slot_id`, `slot_element_id`, `ad_unit_path`, `is_empty`, `width`, `height`, `size_rendered`, `is_backfill`, `creative_id`, `line_item_id`, `event_timestamp_ms`. Em `slotRenderEnded`: `scroll_y_at_render`, `slot_top_offset`, `slot_visible_on_render`.
-
-## QA manual (`anonymous_id`, FE-1)
-
-1. Abra o site com a SDK, dispare um `track` ou aguarde o `page` automático do bootstrap.
-2. No DevTools → **Network**, filtre pelo `POST` do collector e inspecione o corpo JSON.
-3. Confirme que `events[].anonymous_id` e `events[].message_id` são **UUID v4** (formato `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`, `y` ∈ `8|9|a|b`).
-4. Recarregue a página: o mesmo `anonymous_id` deve persistir (chave `localStorage`: `__bg_analytics_anonymous_id`).
-5. Se o valor salvo não for UUID v4, a SDK substitui por um novo na próxima leitura.
+---
 
 ## Comportamento da SDK (relevante para o backend)
 
-- Eventos são **enfileirados** e enviados em **lotes** (`batchSize`, default 10) e/ou no intervalo `flushIntervalMs` (default 2000 ms).
-- Chamadas de **`identify`** também forçam um **flush imediato** para reduzir perda em páginas que navegam logo após a identificação.
-- Um único `POST` pode conter **vários** itens em `events`.
-- Em falha de rede/5xx, a SDK faz **retry** com backoff (`retryAttempts`, default 2) e pode **recolocar** o lote na fila.
+- Batching: default 10 eventos ou 2s (configurável)
+- `identify` força flush imediato
+- Um `POST` pode conter múltiplos eventos
+- `sendBeacon` no unload não espera resposta — tratar como at-least-once
+- `message_id` estável permite dedup em reentregas
 
-## Resposta sugerida (referência)
+## Tipos TypeScript de referência
 
-A SDK hoje considera sucesso qualquer resposta com `response.ok` (2xx). Exemplo alinhado ao collector dev:
-
-- **`202 Accepted`** com corpo JSON opcional, ex.: `{ "ok": true, "accepted": <number> }`
-
-Erros **`4xx`** com corpo JSON padronizado ajudam o debug no front (a SDK hoje só registra falha e re-enfileira conforme config).
-
-## CORS
-
-O collector em produção deve enviar headers CORS adequados para os domínios dos fronts que usam a SDK (`POST` + `Content-Type: application/json`).
-
-## Tipos TypeScript
-
-Definições de referência no fork (`packages/browser/src/plugins/conversion-collector/types.ts`):
+`packages/browser/src/plugins/conversion-collector/types.ts`:
 
 - `AnalyticsEventEnvelope`
 - `CollectRequestBody`
+- `ConversionCollectorSettings`
 
-Para consumo via script tag, use JSDoc ou copie os tipos do contrato acima — não há package npm publicado.
+## Migração do contrato anterior
+
+Se o Collector foi implementado para o contrato Segment nativo, atualizar:
+
+| Antes (legado) | Agora (v2) |
+|----------------|------------|
+| Body: `[event, event]` (array) | Body: `{ events: [...] }` |
+| `context.sessionId` | `context.session_id` |
+| UTMs em `context.campaign.*` | UTMs em `properties.utm_*` |
+| Endpoint `/collect` | Endpoint `/collector` (configurável) |
+| Payload sem transformação | Envelope v2 com snake_case |

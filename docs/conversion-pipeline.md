@@ -1,48 +1,51 @@
-# Conversion pipeline (UTUA collector)
+# Conversion Analytics SDK
 
-Browser SDK for the UTUA conversion collector — **static script tag only** (same-domain).
-Built on the analytics-next fork with custom `conversion-collector` plugins; no Segment CDN or `Segment.io` destination.
+Browser SDK para o Conversion Pipeline — **script tag only** (same-domain).
+Construído sobre o fork analytics-next com plugins `conversion-collector`.
 
-## Quick start (2 lines)
+> Documentação completa: [conversion-sdk/README.md](./conversion-sdk/README.md)
 
-Host `sdk.min.js` on the same domain as `/collect`:
+## Quick start (2 linhas)
+
+Hospede `sdk.min.js` no mesmo domínio do Collector:
 
 ```html
 <script src="/assets/sdk.min.js"></script>
 <script>
-  ConversionAnalytics.init({
-    endpoint: '/collect',
-    appName: 'my-landing-page',
-  });
+  analytics.init('conversion-pipeline');
 </script>
 ```
 
-The IIFE auto-bootstraps `window.ConversionAnalytics`, replays stub queue calls, and sends an initial `page` event unless the host queued one.
+`ConversionAnalytics` permanece como alias de `window.analytics` para compatibilidade.
+
+O IIFE auto-bootstrapa `window.ConversionAnalytics`, reprocessa chamadas do stub e envia
+um `page` inicial (salvo se o host enfileirou um).
 
 ## Stub snippet (load async, queue early events)
 
-Use this pattern when the script loads after inline calls:
-
 ```html
 <script async>
-!function(e,t,r,n,o,a){if(!e[o]){var c=e[o]=function(){c.queue.push({type:arguments[0],arguments:Array.prototype.slice.call(arguments).slice(1)})};c.queue=[],c.track=function(){c.queue.push({type:"track",arguments:Array.prototype.slice.call(arguments)})},c.identify=function(){c.queue.push({type:"identify",arguments:Array.prototype.slice.call(arguments)})},c.page=function(){c.queue.push({type:"page",arguments:Array.prototype.slice.call(arguments)})},c.config={endpoint:"/collect",appName:"my-lp"},c.version="1.0",c.loaded=!0,e["_"+o]||(e["_"+o]=c),c.start=function(){var e=t.createElement(r);e.src="/assets/sdk.min.js",e.async=!0;var n=t.getElementsByTagName(r)[0];n.parentNode.insertBefore(e,n)}}}(window,document,"script",0,"ConversionAnalytics");
+!function(e,t,r,n,o,a){if(!e[o]){var c=e[o]=function(){c.queue.push({type:arguments[0],arguments:Array.prototype.slice.call(arguments).slice(1)})};c.queue=[],c.track=function(){c.queue.push({type:"track",arguments:Array.prototype.slice.call(arguments)})},c.identify=function(){c.queue.push({type:"identify",arguments:Array.prototype.slice.call(arguments)})},c.page=function(){c.queue.push({type:"page",arguments:Array.prototype.slice.call(arguments)})},c.config={endpoint:"/collector",appName:"my-lp"},c.version="1.0",c.loaded=!0,e["_"+o]||(e["_"+o]=c),c.start=function(){var e=t.createElement(r);e.src="/assets/sdk.min.js",e.async=!0;var n=t.getElementsByTagName(r)[0];n.parentNode.insertBefore(e,n)}}}(window,document,"script",0,"ConversionAnalytics");
 ConversionAnalytics.start();
 </script>
 ```
 
-Swap `/assets/sdk.min.js` for your CDN path or a GitHub Pages URL from `script/sdk.min.js` after build.
+## Build
 
-## Build artifacts
+```bash
+cd packages/browser
+yarn build:conversion-sdk
+```
 
-After `yarn build:conversion-sdk` in `packages/browser`:
+| Artefato | Uso |
+|----------|-----|
+| `dist/umd/sdk.min.js` | Produção — deploy na LP |
+| `dist/umd/conversion-analytics.build.js` | Debug |
+| `script/sdk.min.js` | Espelho versionado no repo |
 
-| File | Use |
-|------|-----|
-| `dist/umd/sdk.min.js` | Production — deploy to LP |
-| `dist/umd/conversion-analytics.build.js` | Debug (readable) |
-| `script/sdk.min.js` | Versioned mirror in repo (see [DISTRIBUTING-STATIC-SDK.md](./DISTRIBUTING-STATIC-SDK.md)) |
+Ver [DISTRIBUTING-STATIC-SDK.md](./DISTRIBUTING-STATIC-SDK.md).
 
-## Instrumentation
+## Instrumentação ad-tech
 
 ```javascript
 ConversionAnalytics.track('impression', {
@@ -55,54 +58,92 @@ ConversionAnalytics.track('ad_request', {
   ad_request_id: 'req_abc123',
 });
 
-ConversionAnalytics.identify('user-id', { email: 'user@example.com' });
+ConversionAnalytics.track('viewability', {
+  block_id: 'top_father',
+  block_position: 1,
+  viewable: true,
+});
+
+ConversionAnalytics.identify({ email: 'user@example.com' });
 ```
 
-Global API: `window.ConversionAnalytics` — methods `init`, `track`, `page`, `identify`, `flush`, `getDebugInfo`, `getQueueSize`.
+Campos obrigatórios por evento: [conversion-sdk/event-schema.md](./conversion-sdk/event-schema.md).
+
+## API pública
+
+**Global:** `window.ConversionAnalytics`
+
+| Método | Descrição |
+|--------|-----------|
+| `init(config)` | Inicializa SDK |
+| `track(event, properties?)` | Evento customizado |
+| `page(properties?)` | Page view |
+| `identify(userOrTraits, traits?)` | Identificação + PII hasheada |
+| `flush()` | Flush manual |
+| `getDebugInfo()` | Debug: sessionId, endpoint, queueSize |
+| `getQueueSize()` | Tamanho da fila |
 
 ## Init options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `endpoint` | `/collector` | Collector POST URL (same origin recommended) |
-| `appName` | — | App name in event context |
-| `debug` | `false` | On-page debug panel |
-| `flushIntervalMs` | `2000` | Batch flush interval |
-| `batchSize` | `10` | Events per batch |
-| `retryAttempts` | `2` | Network retries per batch |
-| `isTrackingAllowed` | — | Consent hook; return `false` to drop events |
-| `respectDoNotTrack` | `false` | Honor browser DNT |
-| `enableGptSlotEvents` | `true` | GPT slot listeners |
+| `endpoint` | `/collector` | URL POST do Collector (same origin) |
+| `appName` | — | Nome no `context.app` |
+| `debug` | `false` | Painel de debug on-page |
+| `flushIntervalMs` | `2000` | Intervalo de flush |
+| `batchSize` | `10` | Eventos por batch |
+| `retryAttempts` | `2` | Retries por batch |
+| `isTrackingAllowed` | — | Hook de consentimento |
+| `respectDoNotTrack` | `false` | Honrar DNT do browser |
+| `enableGptSlotEvents` | `true` | Listeners GPT slot |
 
-## Pipeline (internal)
+## Pipeline interno
 
-1. **Conversion Consent** — drops events when tracking not allowed
-2. **Conversion Context** — `session_id`, anonymous id, page context
-3. **Conversion Identify PII** — SHA-256 on email/phone
-4. **Conversion Page Properties** — UTMs, click IDs, path taxonomy
-5. **Conversion Collector** — batched `POST` `{ events: [...] }`
-6. **Conversion GPT Slot Events** (optional)
+1. **env-enrichment** (built-in) — `context.page`, `context.campaign`
+2. **Conversion Consent** — drop se tracking não permitido
+3. **Conversion Context** — `session_id`, `anonymous_id`, page context
+4. **Conversion Identify PII** — SHA-256 email/phone
+5. **Conversion Page Properties** — UTMs, click-ids, taxonomy
+6. **Conversion Collector** — batch POST `{ events: [...] }`
+7. **Conversion GPT Slot Events** (opcional)
 
-## Collector contract
+## Contrato com o Collector
 
 - **Method:** `POST`
-- **Body:** `{ "events": [ /* AnalyticsEventEnvelope */ ] }`
-- **Envelope:** `version: 2`, snake_case fields
+- **Body:** `[ CollectEvent, ... ]` (array nativo analytics-next, camelCase)
+- **Session:** `context.session_id` (UUID v4)
+- **Atribuição:** `properties.utm_*`, `properties.gclid`, etc.
 
-See [conversion-sdk/backend-contract.md](./conversion-sdk/backend-contract.md).
+Spec completa: [conversion-sdk/backend-contract.md](./conversion-sdk/backend-contract.md).
 
-## Docs
+## Documentação
 
-- [Static distribution / CI](./DISTRIBUTING-STATIC-SDK.md)
-- [Backend contract](./conversion-sdk/backend-contract.md)
-- [Page taxonomy](./conversion-sdk/page-taxonomy.md)
-- [PII and consent](./conversion-sdk/pii-and-consent.md)
-- [Examples](./conversion-sdk/examples/)
+| Doc | Conteúdo |
+|-----|----------|
+| [conversion-sdk/prd.md](./conversion-sdk/prd.md) | Requisitos funcionais |
+| [conversion-sdk/architecture.md](./conversion-sdk/architecture.md) | Arquitetura e data flow |
+| [conversion-sdk/event-schema.md](./conversion-sdk/event-schema.md) | Schema por tipo de evento |
+| [conversion-sdk/pii-and-consent.md](./conversion-sdk/pii-and-consent.md) | PII e consentimento |
+| [conversion-sdk/migration-rollout.md](./conversion-sdk/migration-rollout.md) | Rollout |
 
 ## Bundle size
 
-`sdk.min.js` is ~38 KB gzip today (target ≤ 30 KB tracked separately).
+`sdk.min.js` ≈ 38 KB gzip (target ≤ 30 KB — tracked no CI com limite 39 KB).
 
-## Upstream merges
+## Next.js
 
-Merge `upstream/master` (segmentio/analytics-next) periodically; resolve conflicts under `packages/browser/`.
+```tsx
+'use client';
+import { useEffect } from 'react';
+
+export function Analytics({ appName }: { appName: string }) {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = '/assets/sdk.min.js';
+    script.onload = () =>
+      window.ConversionAnalytics.init({ endpoint: '/collector', appName });
+    document.head.appendChild(script);
+  }, [appName]);
+  return null;
+}
+```

@@ -39,7 +39,12 @@ Se houver regressão:
 
 ## Checklist de validação por etapa
 
-- [ ] `track` e `identify` chegam ao `/collector`
-- [ ] `session_id` presente no contexto dos eventos
+- [ ] `track` e `identify` chegam ao endpoint configurado (default `/collector`)
+- [ ] Body no formato `{ events: [...] }` com envelope `version: 2`
+- [ ] `context.session_id` presente e é UUID v4
+- [ ] UTMs/click-ids em `properties` (não só em `context.campaign`)
+- [ ] `impression` com `properties.block_id`
 - [ ] sem aumento anormal de erros de rede
 - [ ] sem impacto perceptível na performance da página
+
+Ver [backend-contract.md](./backend-contract.md) para spec do `normalize()` do Collector.
