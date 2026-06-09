@@ -54,6 +54,7 @@ export type FlatEvent = {
   session_id: string
   event_type: string
   timestamp: string | null
+  /** Legacy envelope v2 only; null for native SDK traffic. */
   original_timestamp: string | null
   sent_at: string | null
   retry_count: number

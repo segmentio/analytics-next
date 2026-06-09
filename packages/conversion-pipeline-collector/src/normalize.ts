@@ -150,9 +150,10 @@ export function normalizeCollectEvent(event: CollectEvent): FlatEvent {
     session_id: sessionId,
     event_type: eventType,
     timestamp: asString(event.timestamp),
+    // Legacy envelope v2 only — native SDK events never emit originalTimestamp.
     original_timestamp:
-      asString(event.originalTimestamp) ??
-      asString(event.original_timestamp),
+      asString((event as { original_timestamp?: string }).original_timestamp) ??
+      asString(event.originalTimestamp),
     sent_at: asString(event.sentAt) ?? asString((event as { sent_at?: string }).sent_at),
     retry_count: event._metadata?.retryCount ?? 0,
     page_url: asString(page.url),
