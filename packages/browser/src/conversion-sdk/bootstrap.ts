@@ -41,9 +41,12 @@ function hydrateStub(
     writeKey: api.writeKey,
     version: api.version,
     loaded: api.loaded,
-    get _sessionId() {
-      return getCurrentSessionId()
-    },
+  })
+  // Object.assign would snapshot a getter as a plain string — keep live read-only access.
+  Object.defineProperty(stub, '_sessionId', {
+    get: () => getCurrentSessionId(),
+    configurable: true,
+    enumerable: true,
   })
 }
 
@@ -71,25 +74,6 @@ function toBootstrapConfig(
     return resolveInitConfig(stub.config.writeKey, stub.config)
   }
   return resolveInitConfig(stub?.config ?? {})
-}
-
-function parseInitCall(args: unknown[]): {
-  writeKeyOrConfig: string | AnalyticsInitConfig
-  options?: Partial<AnalyticsInitConfig>
-} {
-  const arg0 = args[0]
-  if (typeof arg0 === 'string') {
-    return {
-      writeKeyOrConfig: arg0,
-      options: (args[1] ?? undefined) as
-        | Partial<AnalyticsInitConfig>
-        | undefined,
-    }
-  }
-  if (arg0 && typeof arg0 === 'object') {
-    return { writeKeyOrConfig: arg0 as AnalyticsInitConfig }
-  }
-  return { writeKeyOrConfig: {} }
 }
 
 export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
@@ -168,10 +152,9 @@ export async function bootstrapConversionAnalyticsFromWindow(): Promise<void> {
         )
       } else if (call.type === 'page') {
         await api.page(call.arguments[0], call.arguments[1], call.arguments[2])
-      } else if (call.type === 'init') {
-        const parsed = parseInitCall(call.arguments)
-        api.init(parsed.writeKeyOrConfig, parsed.options)
       }
+      // init is intentionally not replayed: bootstrap already applied stub config and
+      // re-init would not rebind the hydrated stub methods/globals.
     } catch (error) {
       config.onError?.(error)
     }
