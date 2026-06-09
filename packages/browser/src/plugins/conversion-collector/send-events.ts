@@ -47,6 +47,12 @@ function parseRetryAfterMs(header: string | null): number | undefined {
   return undefined
 }
 
+/**
+ * x-ratelimit-reset from our collector:
+ * - >= 1e12: Unix epoch in milliseconds
+ * - >= 1e9:  Unix epoch in seconds
+ * - otherwise: delay in seconds until reset
+ */
 function parseRateLimitResetMs(header: string | null): number | undefined {
   if (!header) {
     return undefined
@@ -55,10 +61,13 @@ function parseRateLimitResetMs(header: string | null): number | undefined {
   if (Number.isNaN(value) || value <= 0) {
     return undefined
   }
-  if (value > 1_000_000_000 && value < 100_000_000_000) {
+  if (value >= 1_000_000_000_000) {
+    return Math.max(0, value - Date.now())
+  }
+  if (value >= 1_000_000_000) {
     return Math.max(0, value * 1000 - Date.now())
   }
-  return value
+  return value * 1000
 }
 
 function classifyHttpFailure(
@@ -156,7 +165,7 @@ export async function deliverCollectPayload(
 
 function computeBackoffMs(attempt: number, retryAfterMs?: number): number {
   if (retryAfterMs != null) {
-    return retryAfterMs
+    return Math.min(retryAfterMs, MAX_RETRY_MS)
   }
   const exponential = Math.min(
     BASE_RETRY_MS * 2 ** attempt + Math.random() * 1000,

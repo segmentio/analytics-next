@@ -84,13 +84,13 @@ describe('sendEventsToCollect', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('respects x-ratelimit-reset on 429', async () => {
+  it('respects x-ratelimit-reset delay in seconds on 429', async () => {
     const fetchMock = jest
       .fn()
       .mockResolvedValueOnce({
         ok: false,
         status: 429,
-        headers: new Headers({ 'x-ratelimit-reset': '0' }),
+        headers: new Headers({ 'x-ratelimit-reset': '1' }),
       })
       .mockResolvedValueOnce({
         ok: true,
