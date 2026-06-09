@@ -85,11 +85,6 @@ export class BatchBuffer {
     this.queue.splice(0, count)
   }
 
-  private requeueFront(batch: CollectEvent[]): void {
-    this.queue.unshift(...batch.map(incrementRetryCount))
-    this.persistQueue()
-  }
-
   private bumpRetryInPlace(count: number, sync = false): void {
     for (let i = 0; i < count && i < this.queue.length; i += 1) {
       this.queue[i] = incrementRetryCount(this.queue[i]!)
