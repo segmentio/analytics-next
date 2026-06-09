@@ -25,23 +25,23 @@ test.describe('Conversion SDK — landing page', () => {
     const api = await page.evaluate(() => {
       const w = window as unknown as {
         analytics?: {
-          writeKey?: string
+          loaded?: boolean
           _sessionId?: string
         }
       }
       return {
-        hasAnalytics: typeof w.analytics?.writeKey === 'string',
-        writeKey: w.analytics?.writeKey,
+        loaded: w.analytics?.loaded === true,
         sessionId: w.analytics?._sessionId,
       }
     })
 
-    expect(api.hasAnalytics).toBe(true)
-    expect(api.writeKey).toBe('conversion-pipeline')
+    expect(api.loaded).toBe(true)
     expect(typeof api.sessionId).toBe('string')
 
     expectNormalizeReadyEvent(bodies[0]!, 'page')
     const pageEvent = findEvent(bodies[0]!, 'page')
+    const app = pageEvent?.context?.app as { name?: string } | undefined
+    expect(app?.name).toBe('e2e-lp')
     const campaign = pageEvent?.context?.campaign as
       | { source?: string; name?: string }
       | undefined
