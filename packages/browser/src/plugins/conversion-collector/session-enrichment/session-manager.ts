@@ -57,6 +57,25 @@ function touchSessionStorage(sessionId: string, activityMs: number): void {
   writeLs(ACTIVITY_LS_KEY, String(activityMs))
 }
 
+function readSessionPair(): {
+  sessionId: string | null
+  lastActivity: number
+} {
+  const cookieId = getCookie(SESSION_COOKIE)
+  const cookieActivity = getCookie(ACTIVITY_COOKIE)
+  if (cookieId && cookieActivity) {
+    return { sessionId: cookieId, lastActivity: Number(cookieActivity) }
+  }
+
+  const lsId = readLs(SESSION_LS_KEY)
+  const lsActivity = readLs(ACTIVITY_LS_KEY)
+  if (lsId && lsActivity) {
+    return { sessionId: lsId, lastActivity: Number(lsActivity) }
+  }
+
+  return { sessionId: null, lastActivity: 0 }
+}
+
 export function getCurrentSessionId(): string | undefined {
   if (typeof window === 'undefined') {
     return undefined
@@ -85,10 +104,7 @@ export function getOrCreateSessionId(custom?: () => string): string {
   const now = Date.now()
 
   try {
-    const existingId = getCookie(SESSION_COOKIE) ?? readLs(SESSION_LS_KEY)
-    const lastActivityRaw =
-      getCookie(ACTIVITY_COOKIE) ?? readLs(ACTIVITY_LS_KEY)
-    const lastActivity = lastActivityRaw ? Number(lastActivityRaw) : 0
+    const { sessionId: existingId, lastActivity } = readSessionPair()
 
     if (
       existingId &&

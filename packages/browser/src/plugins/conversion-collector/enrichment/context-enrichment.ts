@@ -30,7 +30,6 @@ export function conversionContextEnrichment(
       ...evtCtx,
       ...resolved,
       sessionId,
-      session_id: sessionId,
     })
 
     const traits = analytics.user().traits()
