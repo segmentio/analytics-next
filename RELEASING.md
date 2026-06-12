@@ -12,8 +12,9 @@ Read: [An introduction to using changesets](https://github.com/changesets/change
 
 To see what changes are going into the next release, run:
 ```
-yarn changeset info
+yarn changeset status
 ```
+(use `yarn changeset status --verbose` for a per-package breakdown)
 To test what the changelog will look like beforehand (locally), you can run:
 ```bash
 export GITHUB_TOKEN="???"
@@ -29,9 +30,9 @@ Once you have tested your changes and they have been approved for a new release,
 1. As PRs are merged into master, we use a [special GitHub action](https://github.com/changesets/action) to updates the package versions and changelogs, automatically creating a `Versions Packages` PR.
 2. Once we're ready to publish a new release, we can look at the `Version Packages` PR. If we like the way the Changelog looks, we can merge it in right there. If we want to edit the generated changelog, we can edit the changelog directly on that PR and then merge. If we aren't ready to merge things in and we want to add more detail to a changeset, we can always edit the changeset in .changesets/* and merge those in. Changesets are just text files, and are meant to be human-editable.
 
-### Creating a Changelog and releasse is handled for us by the [Release GitHub Action](https://github.com/changesets/action).
+### Creating a Changelog and release is handled for us by the [Release GitHub Action](https://github.com/changesets/action).
 
-As PRs are opened against `master`, this action will open and update a PR which generates the appropriate `CHANGELOG.md` entries and `package.json` version bumps.
+As changesets are merged into `master` (the action is triggered on push to `master`, paths `.changeset/**` or `packages/**`), it will open and update a PR which generates the appropriate `CHANGELOG.md` entries and `package.json` version bumps.
 The generated PR has the title "Version Packages"
 
 Once ready for a release, approve the "Version Packages" PR and merge it into `master`.
@@ -50,9 +51,12 @@ Information is in the [@changesets automation instructions](https://github.com/c
 [Check out the @changesets automation instructions](https://github.com/changesets/changesets/blob/main/docs/automating-changesets.md#automating-changesets)
 
 ### What does `yarn release` do?
-1. Run prepare scripts
-2. Publish all packages to npm, pushes _all_ tags to github (e.g. "@segment/analytics-next@1.7.0", "@segment/analytics-node@1.2.3", etc) (Buildkite)
-3. Triggets an update of the github releases page (Github Actions)
+`yarn release` runs (see the `release` script in the root `package.json`):
+1. `yarn clean && yarn build --force` — clean and force-rebuild all packages.
+2. `changeset publish` — publish all packages to npm, then `git push origin HEAD:master --follow-tags` pushes the release tags to github (e.g. "@segment/analytics-next@1.7.0", "@segment/analytics-node@1.2.3", etc).
+3. `yarn scripts purge-cdn-cache` — purge the CDN cache.
+
+The GitHub releases page is updated separately: the Buildkite publish step runs `yarn scripts create-release-from-tags` immediately after `yarn release` (see `.buildkite/pipeline.yml`). This is a Buildkite step, **not** a GitHub Action.
 
 ### How do I fix the repo if all the packages were published, but the CI Failed to update the [github releases page](https://github.com/segmentio/analytics-next/releases)?
 ```bash
@@ -85,7 +89,7 @@ Feature branches are automatically released under:
 
 ### How to Rotate/Update NPM Tokens
 
-The repository uses an NPM token stored in GitHub Actions secrets (`NPM_TOKEN`) to publish packages automatically. Due to npm's security updates, tokens now have a maximum 90-day lifetime and classic tokens will be revoked. You should use **Granular Access Tokens** for better security.
+Packages are published to npm by the Buildkite step **"[Browser] Publish Packages to NPM"** (see `.buildkite/pipeline.yml`), which runs `yarn release` (→ `changeset publish`). The npm token is provided to Buildkite via the `npm-publish` secrets context (see `SEGMENT_CONTEXTS` in the pipeline) and consumed as `$NPM_TOKEN`; it is **not** stored in GitHub Actions secrets, and no GitHub Actions workflow publishes to npm. Rotate the token in Segment's Buildkite secrets tooling, not in GitHub. Due to npm's security updates, tokens now have a maximum 90-day lifetime and classic tokens will be revoked. You should use **Granular Access Tokens** for better security.
 
 #### Creating a New NPM Token
 
@@ -116,6 +120,6 @@ The repository uses an NPM token stored in GitHub Actions secrets (`NPM_TOKEN`) 
    cd ../node && npm publish --dry-run
    ```
 
-3. **Update GitHub Actions Secret**:
-   - Go to: https://github.com/segmentio/analytics-next/settings/secrets/actions
-   - Update secret for `NPM_TOKEN`
+3. **Update the Buildkite secret**:
+   - Update the `NPM_TOKEN` provided by the `npm-publish` secrets context using Segment's internal Buildkite secrets tooling (the same context referenced by `SEGMENT_CONTEXTS` in `.buildkite/pipeline.yml`).
+   - Note: there is no `NPM_TOKEN` in GitHub Actions secrets; updating one there would have no effect on publishing.
