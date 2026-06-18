@@ -1,9 +1,23 @@
-import type { AnalyticsEventEnvelope } from '../types'
+import type { CollectEvent } from '../types'
 
 export const EVENT_QUEUE_STORAGE_KEY = 'utua_event_queue'
 export const MAX_PERSISTED_EVENTS = 100
 export const MAX_PERSISTED_BYTES = 1024 * 1024
 
+const QUEUE_MUTEX_KEY = 'utua_event_queue:lock'
+const LOCK_TIMEOUT_MS = 50
+const MAX_LOCK_ATTEMPTS = 3
+const TAB_LOCK_OWNER = `${Date.now()}-${Math.random()}`
+
+type StorageLock = {
+  expires: number
+  owner: string
+}
+
+/**
+ * Best-effort cross-tab mutex via localStorage. Not a true CAS lock — two tabs
+ * can still race — but each tab only releases locks it owns.
+ */
 function isBrowserStorageAvailable(): boolean {
   if (typeof window === 'undefined') {
     return false
@@ -18,22 +32,80 @@ function isBrowserStorageAvailable(): boolean {
   }
 }
 
-function isValidEnvelope(value: unknown): value is AnalyticsEventEnvelope {
+function tryAcquireLock(now: number): boolean {
+  const rawLock = window.localStorage.getItem(QUEUE_MUTEX_KEY)
+  const lock = rawLock ? (JSON.parse(rawLock) as StorageLock) : null
+  if (lock !== null && now <= lock.expires) {
+    return false
+  }
+  window.localStorage.setItem(
+    QUEUE_MUTEX_KEY,
+    JSON.stringify({ expires: now + LOCK_TIMEOUT_MS, owner: TAB_LOCK_OWNER })
+  )
+  return true
+}
+
+function releaseOwnedLock(): void {
+  const rawLock = window.localStorage.getItem(QUEUE_MUTEX_KEY)
+  if (!rawLock) {
+    return
+  }
+  try {
+    const lock = JSON.parse(rawLock) as StorageLock
+    if (lock.owner === TAB_LOCK_OWNER) {
+      window.localStorage.removeItem(QUEUE_MUTEX_KEY)
+    }
+  } catch {
+    // ignore malformed lock
+  }
+}
+
+function withStorageMutex(fn: () => void, attempt = 0): void {
+  if (!isBrowserStorageAvailable()) {
+    fn()
+    return
+  }
+
+  const now = Date.now()
+  if (tryAcquireLock(now)) {
+    try {
+      fn()
+    } finally {
+      releaseOwnedLock()
+    }
+    return
+  }
+
+  if (attempt < MAX_LOCK_ATTEMPTS) {
+    setTimeout(() => withStorageMutex(fn, attempt + 1), LOCK_TIMEOUT_MS)
+  } else {
+    console.warn('[utua] queue lock timeout')
+    fn()
+  }
+}
+
+function isValidCollectEvent(value: unknown): value is CollectEvent {
   if (!value || typeof value !== 'object') {
     return false
   }
-  const envelope = value as AnalyticsEventEnvelope
+  const event = value as CollectEvent
+  const type = event.type
+  if (
+    type !== 'track' &&
+    type !== 'page' &&
+    type !== 'identify' &&
+    type !== 'screen'
+  ) {
+    return false
+  }
   return (
-    (envelope.type === 'track' || envelope.type === 'identify') &&
-    typeof envelope.anonymous_id === 'string' &&
-    typeof envelope.message_id === 'string' &&
-    typeof envelope.timestamp === 'string' &&
-    envelope.version === 2 &&
-    typeof envelope.context === 'object'
+    typeof event.messageId === 'string' &&
+    typeof event.anonymousId === 'string' &&
+    typeof event.timestamp === 'string'
   )
 }
 
-function trimQueue(events: AnalyticsEventEnvelope[]): AnalyticsEventEnvelope[] {
+function trimQueue(events: CollectEvent[]): CollectEvent[] {
   let trimmed = events.slice(-MAX_PERSISTED_EVENTS)
   while (trimmed.length > 0) {
     const serialized = JSON.stringify(trimmed)
@@ -45,29 +117,7 @@ function trimQueue(events: AnalyticsEventEnvelope[]): AnalyticsEventEnvelope[] {
   return []
 }
 
-export function readPersistedEventQueue(): AnalyticsEventEnvelope[] {
-  if (!isBrowserStorageAvailable()) {
-    return []
-  }
-
-  try {
-    const raw = window.localStorage.getItem(EVENT_QUEUE_STORAGE_KEY)
-    if (!raw) {
-      return []
-    }
-    const parsed = JSON.parse(raw) as unknown
-    if (!Array.isArray(parsed)) {
-      return []
-    }
-    return parsed.filter(isValidEnvelope)
-  } catch {
-    return []
-  }
-}
-
-export function writePersistedEventQueue(
-  events: AnalyticsEventEnvelope[]
-): void {
+function writeQueueToStorage(events: CollectEvent[]): void {
   if (!isBrowserStorageAvailable()) {
     return
   }
@@ -93,14 +143,71 @@ export function writePersistedEventQueue(
   }
 }
 
+export function readPersistedEventQueue(): CollectEvent[] {
+  if (!isBrowserStorageAvailable()) {
+    return []
+  }
+
+  let result: CollectEvent[] = []
+  withStorageMutex(() => {
+    try {
+      const raw = window.localStorage.getItem(EVENT_QUEUE_STORAGE_KEY)
+      if (!raw) {
+        result = []
+        return
+      }
+      const parsed = JSON.parse(raw) as unknown
+      if (!Array.isArray(parsed)) {
+        result = []
+        return
+      }
+      result = parsed.filter(isValidCollectEvent)
+    } catch {
+      result = []
+    }
+  })
+  return result
+}
+
+export function writePersistedEventQueue(events: CollectEvent[]): void {
+  if (!isBrowserStorageAvailable()) {
+    return
+  }
+
+  withStorageMutex(() => {
+    writeQueueToStorage(events)
+  })
+}
+
+/** Synchronous write for page unload — avoids deferred mutex retries. */
+export function writePersistedEventQueueSync(events: CollectEvent[]): void {
+  if (!isBrowserStorageAvailable()) {
+    return
+  }
+
+  const now = Date.now()
+  if (tryAcquireLock(now)) {
+    try {
+      writeQueueToStorage(events)
+    } finally {
+      releaseOwnedLock()
+    }
+    return
+  }
+
+  writeQueueToStorage(events)
+}
+
 export function clearPersistedEventQueue(): void {
   if (!isBrowserStorageAvailable()) {
     return
   }
 
-  try {
-    window.localStorage.removeItem(EVENT_QUEUE_STORAGE_KEY)
-  } catch {
-    // ignore
-  }
+  withStorageMutex(() => {
+    try {
+      window.localStorage.removeItem(EVENT_QUEUE_STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+  })
 }

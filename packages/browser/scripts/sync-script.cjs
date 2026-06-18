@@ -3,6 +3,10 @@ const path = require('path')
 
 const distDir = path.resolve(__dirname, '../dist/umd')
 const scriptDir = path.resolve(__dirname, '../../../script')
+const e2eSdkDir = path.resolve(
+  __dirname,
+  '../../browser-integration-tests/conversion-sdk'
+)
 
 const copies = [
   ['sdk.min.js', 'sdk.min.js'],
@@ -40,4 +44,11 @@ if (copied === 0) {
   process.exit(1)
 }
 
-console.log(`Synced ${copied} file(s) to ${scriptDir}`)
+const e2eSdk = path.join(distDir, 'sdk.min.js')
+if (fs.existsSync(e2eSdk)) {
+  fs.mkdirSync(e2eSdkDir, { recursive: true })
+  fs.copyFileSync(e2eSdk, path.join(e2eSdkDir, 'sdk.min.js'))
+  copied += 1
+}
+
+console.log(`Synced ${copied} file(s) to ${scriptDir} (+ E2E conversion-sdk)`)

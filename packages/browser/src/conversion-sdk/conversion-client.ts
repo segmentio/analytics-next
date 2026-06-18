@@ -1,18 +1,13 @@
-import { AnalyticsBrowser } from '../browser'
 import type { Analytics } from '../core/analytics'
-import {
-  conversionCdnSettingsMinimal,
-  conversionGptSlotEventsPlugin,
-  conversionPipelinePlugins,
-} from '../plugins/conversion-collector'
-import { getOrCreateSessionId } from '../plugins/conversion-collector/lib/session'
-import { mountDebugPanel } from './debug'
+import { getCurrentSessionId } from '../plugins/conversion-collector/lib/session'
 import {
   flushCollectorQueue,
   resolveCollectorBuffer,
   stopCollectorQueue,
 } from './collector-runtime'
-import { DEFAULT_INIT_CONFIG, toCollectorSettings } from './config'
+import { DEFAULT_INIT_CONFIG } from './config'
+import { conversionGptSlotEventsPlugin } from './gpt-plugin'
+import { loadLeanConversionAnalytics } from './lean-load'
 import { normalizeIdentifyCall, normalizeTrackCall } from './legacy-args'
 import type {
   AnalyticsInitConfig,
@@ -22,6 +17,7 @@ import type {
   TrackLegacyInput,
   TrackOptions,
 } from './types'
+import { resolveInitConfig } from './write-key-config'
 import type { BatchBuffer } from '../plugins/conversion-collector/batch-buffer'
 
 const CONVERSION_COLLECTOR_PLUGIN = 'Conversion Collector'
@@ -34,11 +30,11 @@ export class ConversionClient {
   private collectorBuffer: BatchBuffer | undefined
   private bootstrapGeneration = 0
 
-  init(config: AnalyticsInitConfig): void {
-    this.config = {
-      ...DEFAULT_INIT_CONFIG,
-      ...config,
-    }
+  init(
+    writeKeyOrConfig: string | AnalyticsInitConfig,
+    options?: Partial<AnalyticsInitConfig>
+  ): void {
+    this.config = resolveInitConfig(writeKeyOrConfig, options)
     this.lastError = undefined
     const previousAnalytics = this.analytics
     const previousLoadPromise = this.loadPromise
@@ -83,26 +79,13 @@ export class ConversionClient {
   }
 
   private async bootstrap(generation: number): Promise<Analytics> {
-    const collectorSettings = toCollectorSettings(this.config)
-    const useGpt = this.config.enableGptSlotEvents !== false
-    const plugins = [
-      ...conversionPipelinePlugins({
-        ...collectorSettings,
-        enableGptSlotEvents: false,
-      }),
-      ...(useGpt ? [conversionGptSlotEventsPlugin()] : []),
-    ]
+    const extraPlugins = this.config.enableGptSlotEvents
+      ? [conversionGptSlotEventsPlugin()]
+      : []
 
-    const [analytics] = await AnalyticsBrowser.load(
-      {
-        writeKey: 'conversion-pipeline',
-        cdnSettings: conversionCdnSettingsMinimal,
-        cdnURL: 'https://cdn.conversion-pipeline.local',
-        plugins,
-      },
-      {
-        integrations: { 'Segment.io': false },
-      }
+    const analytics = await loadLeanConversionAnalytics(
+      this.config,
+      extraPlugins
     )
 
     if (generation !== this.bootstrapGeneration) {
@@ -117,6 +100,7 @@ export class ConversionClient {
     })
 
     if (this.config.debug) {
+      const { mountDebugPanel } = await import('./debug')
       mountDebugPanel(() => this.getDebugInfo())
     }
 
@@ -194,7 +178,7 @@ export class ConversionClient {
   getDebugInfo(): DebugInfo {
     return {
       endpoint: this.config.endpoint ?? DEFAULT_INIT_CONFIG.endpoint,
-      sessionId: this.config.getSessionId?.() ?? getOrCreateSessionId(),
+      sessionId: this.config.getSessionId?.() ?? getCurrentSessionId(),
       queueSize: this.getQueueSize(),
       lastError: this.lastError,
     }

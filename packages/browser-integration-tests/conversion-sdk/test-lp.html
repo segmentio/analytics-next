@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Conversion SDK E2E LP</title>
+  </head>
+  <body>
+    <h1>Conversion SDK test LP</h1>
+    <button id="track-impression" type="button">Track impression</button>
+    <script>
+      window.analytics = window.analytics || { queue: [] }
+      window.analytics.writeKey = 'conversion-pipeline'
+      window.analytics.config = {
+        endpoint: '/collect',
+        appName: 'e2e-lp',
+        flushIntervalMs: 2000,
+        batchSize: 10,
+        retryAttempts: 1,
+        enableContextEnrichment: true,
+        enableGptSlotEvents: false,
+      }
+    </script>
+    <script src="/conversion-sdk/sdk.min.js"></script>
+    <script>
+      document
+        .getElementById('track-impression')
+        .addEventListener('click', function () {
+          analytics.track('impression', {
+            block_id: 'top_father',
+            block_position: 1,
+          })
+        })
+    </script>
+  </body>
+</html>

@@ -12,8 +12,8 @@ export const DEFAULT_INIT_CONFIG: Required<
     | 'respectDoNotTrack'
   >
 > = {
-  endpoint: '/collector',
-  flushIntervalMs: 2000,
+  endpoint: '/collect',
+  flushIntervalMs: 3000,
   batchSize: 10,
   retryAttempts: 2,
   debug: false,
@@ -38,6 +38,10 @@ export function toCollectorSettings(
     isTrackingAllowed: config.isTrackingAllowed,
     respectDoNotTrack:
       config.respectDoNotTrack ?? DEFAULT_INIT_CONFIG.respectDoNotTrack,
-    enableGptSlotEvents: config.enableGptSlotEvents !== false,
+    enableGptSlotEvents: config.enableGptSlotEvents === true,
+    enableConsentEnrichment: config.enableConsentEnrichment === true,
+    enableContextEnrichment: config.enableContextEnrichment === true,
+    enableIdentifyHashing: config.enableIdentifyHashing === true,
+    enablePageTaxonomy: config.enablePageTaxonomy === true,
   }
 }

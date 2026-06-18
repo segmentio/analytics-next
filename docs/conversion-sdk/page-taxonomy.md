@@ -1,6 +1,6 @@
 # URL taxonomy (`page` event)
 
-Espelha a lógica em `src/context/page-taxonomy.ts` para Eng Dados (fallback em ED-3).
+Espelha a lógica em `packages/browser/src/plugins/conversion-collector/lib/page-taxonomy.ts`.
 
 ## Padrão
 

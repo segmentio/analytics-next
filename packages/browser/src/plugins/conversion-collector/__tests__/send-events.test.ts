@@ -4,21 +4,23 @@ import {
   sendCollectViaBeacon,
   sendEventsToCollect,
 } from '../send-events'
-import type { AnalyticsEventEnvelope } from '../types'
+import type { CollectEvent } from '../types'
 
-const sampleEvent = (): AnalyticsEventEnvelope => ({
+const sampleEvent = (): CollectEvent => ({
   type: 'track',
-  event_name: 'test',
-  anonymous_id: '550e8400-e29b-41d4-a716-446655440001',
+  event: 'test',
+  anonymousId: '550e8400-e29b-41d4-a716-446655440001',
   context: {},
-  message_id: '550e8400-e29b-41d4-a716-446655440002',
-  original_timestamp: '2026-03-23T12:00:00.000Z',
+  messageId: '550e8400-e29b-41d4-a716-446655440002',
+  originalTimestamp: '2026-03-23T12:00:00.000Z',
   timestamp: '2026-03-23T12:00:00.000Z',
-  version: 2,
 })
 
 describe('sendEventsToCollect', () => {
   it('retries failed requests with backoff', async () => {
+    const warnSpy = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined)
     const fetchMock = jest
       .fn()
       .mockResolvedValueOnce({ ok: false, status: 500, headers: new Headers() })
@@ -31,8 +33,14 @@ describe('sendEventsToCollect', () => {
     })
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
-    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))
-    expect(body.events[0].sent_at).toBeDefined()
+    const body = JSON.parse(
+      String(fetchMock.mock.calls[0]?.[1]?.body)
+    ) as CollectEvent[]
+    expect(Array.isArray(body)).toBe(true)
+    expect(body[0]?.sentAt).toBeDefined()
+    expect(body[0]?._metadata?.retryCount).toBe(0)
+    expect(warnSpy).toHaveBeenCalled()
+    warnSpy.mockRestore()
   })
 
   it('does not retry permanent 4xx errors', async () => {
@@ -76,6 +84,29 @@ describe('sendEventsToCollect', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
+  it('respects x-ratelimit-reset delay in seconds on 429', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'x-ratelimit-reset': '1' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+      })
+    global.fetch = fetchMock
+
+    await sendEventsToCollect([sampleEvent()], {
+      endpoint: '/collector',
+      retryAttempts: 1,
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('uses keepalive on deliverCollectPayload when requested', async () => {
     const fetchMock = jest.fn().mockResolvedValue({
       ok: true,
@@ -93,6 +124,13 @@ describe('sendEventsToCollect', () => {
 
     expect(fetchMock.mock.calls[0]?.[1]?.keepalive).toBe(true)
   })
+
+  it('builds native array payload with retry metadata', () => {
+    const body = buildCollectRequestBody([{ ...sampleEvent(), _retryCount: 2 }])
+    const parsed = JSON.parse(body) as CollectEvent[]
+    expect(parsed).toHaveLength(1)
+    expect(parsed[0]?._metadata?.retryCount).toBe(2)
+  })
 })
 
 describe('sendCollectViaBeacon', () => {
@@ -102,7 +140,7 @@ describe('sendCollectViaBeacon', () => {
       value: undefined,
       configurable: true,
     })
-    expect(sendCollectViaBeacon('/collector', '{}')).toBe(false)
+    expect(sendCollectViaBeacon('/collector', '[]')).toBe(false)
     Object.defineProperty(navigator, 'sendBeacon', {
       value: original,
       configurable: true,

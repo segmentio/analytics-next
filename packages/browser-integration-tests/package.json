@@ -7,6 +7,8 @@
   },
   "scripts": {
     "test:int": "playwright test",
+    "test:conversion-sdk": "playwright test src/conversion-sdk",
+    "pretest:conversion-sdk": "mkdir -p conversion-sdk && cp ../browser/dist/umd/sdk.min.js conversion-sdk/sdk.min.js",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "concurrently": "yarn run -T concurrently",
     "watch:test": "yarn test --watch",

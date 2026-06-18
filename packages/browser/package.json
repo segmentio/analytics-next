@@ -53,7 +53,7 @@
     },
     {
       "path": "dist/umd/sdk.min.js",
-      "limit": "39 KB",
+      "limit": "30 KB",
       "gzip": true
     }
   ],

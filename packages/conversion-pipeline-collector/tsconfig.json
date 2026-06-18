@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json",
+  "exclude": ["node_modules", "dist"],
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "es2022",
+    "moduleResolution": "node",
+    "lib": ["es2022"]
+  }
+}

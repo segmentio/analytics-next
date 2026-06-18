@@ -1,5 +1,10 @@
 import { AnalyticsBrowser } from '../../../browser'
-import { conversionCdnSettingsMinimal, conversionCollectorPlugin } from '..'
+import { envEnrichment } from '../../env-enrichment'
+import {
+  conversionCdnSettingsMinimal,
+  conversionCollectorPlugin,
+  sessionEnrichment,
+} from '..'
 
 const COLLECTOR_ENDPOINT = 'https://collector.test/events'
 
@@ -16,7 +21,7 @@ describe('Conversion Collector plugin', () => {
     jest.restoreAllMocks()
   })
 
-  it('posts batched track and identify to the collector without calling Segment.io', async () => {
+  it('posts batched track and identify as native array without calling Segment.io', async () => {
     const collector = conversionCollectorPlugin({
       endpoint: COLLECTOR_ENDPOINT,
       retryAttempts: 0,
@@ -28,7 +33,11 @@ describe('Conversion Collector plugin', () => {
       {
         writeKey: 'conversion-pipeline',
         cdnSettings: conversionCdnSettingsMinimal,
-        plugins: [collector],
+        plugins: [
+          envEnrichment,
+          sessionEnrichment({ endpoint: COLLECTOR_ENDPOINT }),
+          collector,
+        ],
       },
       {
         integrations: { 'Segment.io': false },
@@ -44,25 +53,26 @@ describe('Conversion Collector plugin', () => {
     expect(init.method).toBe('POST')
     expect(init.headers).toMatchObject({ 'Content-Type': 'application/json' })
 
-    const body = JSON.parse(String(init.body)) as {
-      events: Array<{
-        type: string
-        event_name?: string
-        anonymous_id: string
-        user_id?: string
-        version: number
-        sent_at?: string
-      }>
-    }
+    const body = JSON.parse(String(init.body)) as Array<{
+      type: string
+      event?: string
+      anonymousId: string
+      userId?: string
+      sentAt?: string
+      context: { sessionId?: string }
+      _metadata?: { retryCount?: number }
+    }>
 
-    expect(body.events).toHaveLength(2)
-    expect(body.events[0]?.type).toBe('track')
-    expect(body.events[0]?.event_name).toBe('quiz_started')
-    expect(body.events[1]?.type).toBe('identify')
-    expect(body.events[1]?.user_id).toBe('user-1')
-    expect(body.events[0]?.version).toBe(2)
-    expect(typeof body.events[0]?.anonymous_id).toBe('string')
-    expect(typeof body.events[0]?.sent_at).toBe('string')
+    expect(Array.isArray(body)).toBe(true)
+    expect(body).toHaveLength(2)
+    expect(body[0]?.type).toBe('track')
+    expect(body[0]?.event).toBe('quiz_started')
+    expect(body[1]?.type).toBe('identify')
+    expect(body[1]?.userId).toBe('user-1')
+    expect(typeof body[0]?.anonymousId).toBe('string')
+    expect(typeof body[0]?.sentAt).toBe('string')
+    expect(typeof body[0]?.context.sessionId).toBe('string')
+    expect(body[0]?._metadata?.retryCount).toBe(0)
 
     const segmentCalls = fetchMock.mock.calls.filter(([callUrl]) =>
       String(callUrl).includes('api.segment.io')

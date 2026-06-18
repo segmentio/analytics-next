@@ -1,4 +1,4 @@
-import type { AnalyticsEventEnvelope } from '../../types'
+import type { CollectEvent } from '../../types'
 import {
   clearPersistedEventQueue,
   EVENT_QUEUE_STORAGE_KEY,
@@ -7,15 +7,14 @@ import {
   writePersistedEventQueue,
 } from '../event-queue-storage'
 
-const sampleEvent = (id: string): AnalyticsEventEnvelope => ({
+const sampleEvent = (id: string): CollectEvent => ({
   type: 'track',
-  event_name: 'test',
-  anonymous_id: '550e8400-e29b-41d4-a716-446655440001',
+  event: 'test',
+  anonymousId: '550e8400-e29b-41d4-a716-446655440001',
   context: {},
-  message_id: id,
-  original_timestamp: '2026-03-23T12:00:00.000Z',
+  messageId: id,
+  originalTimestamp: '2026-03-23T12:00:00.000Z',
   timestamp: '2026-03-23T12:00:00.000Z',
-  version: 2,
 })
 
 describe('event-queue-storage', () => {
@@ -52,8 +51,8 @@ describe('event-queue-storage', () => {
     writePersistedEventQueue(events)
     const persisted = readPersistedEventQueue()
     expect(persisted).toHaveLength(MAX_PERSISTED_EVENTS)
-    expect(persisted[0]?.message_id).toBe('5')
-    expect(persisted[persisted.length - 1]?.message_id).toBe(
+    expect(persisted[0]?.messageId).toBe('5')
+    expect(persisted[persisted.length - 1]?.messageId).toBe(
       String(MAX_PERSISTED_EVENTS + 4)
     )
   })

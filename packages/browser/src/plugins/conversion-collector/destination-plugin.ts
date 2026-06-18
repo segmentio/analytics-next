@@ -2,11 +2,11 @@ import { Analytics } from '../../core/analytics'
 import { Context } from '../../core/context'
 import { Plugin } from '../../core/plugin'
 import { BatchBuffer } from './batch-buffer'
-import { contextToEnvelope } from './context-to-envelope'
+import { contextToCollectEvent } from './context-to-collect-event'
 import { registerConversionCollectorBuffer } from './runtime-registry'
 import type { ConversionCollectorSettings } from './types'
 
-const DEFAULT_FLUSH_INTERVAL_MS = 2000
+const DEFAULT_FLUSH_INTERVAL_MS = 3000
 const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_RETRY_ATTEMPTS = 2
 
@@ -60,12 +60,12 @@ export function conversionCollectorPlugin(
       return ctx
     }
 
-    const envelope = contextToEnvelope(ctx, analytics)
-    if (!envelope) {
+    const collectEvent = contextToCollectEvent(ctx, analytics)
+    if (!collectEvent) {
       return ctx
     }
 
-    buffer.enqueue(envelope)
+    buffer.enqueue(collectEvent)
 
     if (flushImmediately) {
       try {

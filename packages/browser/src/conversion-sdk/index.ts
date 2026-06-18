@@ -1,14 +1,4 @@
-import {
-  flush,
-  getDebugInfo,
-  getQueueSize,
-  identify,
-  init,
-  page,
-  start,
-  stop,
-  track,
-} from './singleton'
+import { identify, init, page, track } from './singleton'
 
 export {
   flush,
@@ -25,7 +15,7 @@ export { bootstrapConversionAnalyticsFromWindow } from './bootstrap'
 export { ConversionAnalyticsBrowser } from './conversion-analytics-browser'
 export { ConversionClient } from './conversion-client'
 export type {
-  AnalyticsEventEnvelope,
+  CollectEvent,
   AnalyticsInitConfig,
   CollectRequestBody,
   DebugInfo,
@@ -35,21 +25,18 @@ export type {
   TrackOptions,
 } from './types'
 
-export function attachToWindow(globalName = 'ConversionAnalytics'): void {
+export { resolveInitConfig } from './write-key-config'
+
+export function attachToWindow(globalName = 'analytics'): void {
   if (typeof window === 'undefined') {
     return
   }
 
   const sdk = {
     init,
-    start,
-    stop,
     track,
     identify,
     page,
-    flush,
-    getQueueSize,
-    getDebugInfo,
   }
 
   ;(window as unknown as Record<string, unknown>)[globalName] = sdk

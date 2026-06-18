@@ -1,7 +1,8 @@
-import type { AnalyticsEventEnvelope } from './types'
+import type { CollectEvent } from './types'
 import {
   readPersistedEventQueue,
   writePersistedEventQueue,
+  writePersistedEventQueueSync,
 } from './lib/event-queue-storage'
 import {
   buildCollectRequestBody,
@@ -17,8 +18,13 @@ export interface BatchBufferConfig extends CollectSendConfig {
   batchSize: number
 }
 
+function incrementRetryCount(event: CollectEvent): CollectEvent {
+  const retryCount = (event._retryCount ?? 0) + 1
+  return { ...event, _retryCount: retryCount }
+}
+
 export class BatchBuffer {
-  private queue: AnalyticsEventEnvelope[] = []
+  private queue: CollectEvent[] = []
   private timer: ReturnType<typeof setInterval> | null = null
   private flushing = false
 
@@ -43,7 +49,7 @@ export class BatchBuffer {
     }
   }
 
-  enqueue(event: AnalyticsEventEnvelope): void {
+  enqueue(event: CollectEvent): void {
     this.queue.push(event)
     this.persistQueue()
     if (this.queue.length >= this.config.batchSize) {
@@ -67,13 +73,27 @@ export class BatchBuffer {
     writePersistedEventQueue(this.queue)
   }
 
-  private takeBatch(maxSize = this.config.batchSize): AnalyticsEventEnvelope[] {
-    return this.queue.splice(0, maxSize)
+  private persistQueueSync(): void {
+    writePersistedEventQueueSync(this.queue)
   }
 
-  private requeueFront(batch: AnalyticsEventEnvelope[]): void {
-    this.queue.unshift(...batch)
-    this.persistQueue()
+  private peekBatch(maxSize = this.config.batchSize): CollectEvent[] {
+    return this.queue.slice(0, maxSize)
+  }
+
+  private removeBatch(count: number): void {
+    this.queue.splice(0, count)
+  }
+
+  private bumpRetryInPlace(count: number, sync = false): void {
+    for (let i = 0; i < count && i < this.queue.length; i += 1) {
+      this.queue[i] = incrementRetryCount(this.queue[i]!)
+    }
+    if (sync) {
+      this.persistQueueSync()
+    } else {
+      this.persistQueue()
+    }
   }
 
   async flush(): Promise<void> {
@@ -82,17 +102,19 @@ export class BatchBuffer {
     }
 
     this.flushing = true
-    const batch = this.takeBatch()
+    const batch = this.peekBatch()
+    const batchSize = batch.length
 
     try {
       await sendEventsToCollect(batch, this.config)
+      this.removeBatch(batchSize)
       this.persistQueue()
     } catch (error) {
       if (error instanceof CollectDeliveryError && !error.retryable) {
         this.persistQueue()
         throw error
       }
-      this.requeueFront(batch)
+      this.bumpRetryInPlace(batchSize)
       throw error
     } finally {
       this.flushing = false
@@ -107,40 +129,63 @@ export class BatchBuffer {
    */
   async flushAll(options?: { unload?: boolean }): Promise<void> {
     this.stop()
+    const syncPersist = options?.unload === true
 
     while (this.queue.length > 0) {
-      const batch = this.takeBatch(this.queue.length)
+      const batch = this.peekBatch(this.queue.length)
+      const batchSize = batch.length
       const body = buildCollectRequestBody(batch)
+
+      const onSuccess = () => {
+        this.removeBatch(batchSize)
+        if (syncPersist) {
+          this.persistQueueSync()
+        } else {
+          this.persistQueue()
+        }
+      }
+
+      const onRetryableFailure = () => {
+        this.bumpRetryInPlace(batchSize, syncPersist)
+      }
 
       if (options?.unload) {
         if (sendCollectViaBeacon(this.config.endpoint, body)) {
-          this.persistQueue()
+          onSuccess()
           continue
         }
 
         try {
           await deliverCollectPayload(body, this.config, { keepalive: true })
-          this.persistQueue()
+          onSuccess()
           continue
         } catch (error) {
           if (error instanceof CollectDeliveryError && !error.retryable) {
-            this.persistQueue()
+            if (syncPersist) {
+              this.persistQueueSync()
+            } else {
+              this.persistQueue()
+            }
             throw error
           }
-          this.requeueFront(batch)
+          onRetryableFailure()
           throw error
         }
       }
 
       try {
         await sendEventsToCollect(batch, this.config)
-        this.persistQueue()
+        onSuccess()
       } catch (error) {
         if (error instanceof CollectDeliveryError && !error.retryable) {
-          this.persistQueue()
+          if (syncPersist) {
+            this.persistQueueSync()
+          } else {
+            this.persistQueue()
+          }
           throw error
         }
-        this.requeueFront(batch)
+        onRetryableFailure()
         throw error
       }
     }

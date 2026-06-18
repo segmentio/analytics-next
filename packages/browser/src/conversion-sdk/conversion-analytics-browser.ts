@@ -12,16 +12,20 @@ export class ConversionAnalyticsBrowser {
   private readonly client = new ConversionClient()
 
   static async load(
-    config: AnalyticsInitConfig
+    writeKeyOrConfig: string | AnalyticsInitConfig,
+    options?: Partial<AnalyticsInitConfig>
   ): Promise<ConversionAnalyticsBrowser> {
     const analytics = new ConversionAnalyticsBrowser()
-    analytics.init(config)
+    analytics.init(writeKeyOrConfig, options)
     await analytics.client.getAnalyticsInstance()
     return analytics
   }
 
-  init(config: AnalyticsInitConfig): void {
-    this.client.init(config)
+  init(
+    writeKeyOrConfig: string | AnalyticsInitConfig,
+    options?: Partial<AnalyticsInitConfig>
+  ): void {
+    this.client.init(writeKeyOrConfig, options)
   }
 
   start(): void {
