@@ -768,7 +768,7 @@ __metadata:
     "@types/fs-extra": ^9.0.2
     "@types/jest-dev-server": ^5.0.0
     "@types/jquery": ^3.5.4
-    "@types/js-cookie": 3.0.1
+    "@types/js-cookie": ^3.0.6
     "@types/jsdom": ^16.2.14
     "@types/mime": ^2.0.3
     "@types/node": ^12.12.14
@@ -785,7 +785,7 @@ __metadata:
     jest-dev-server: ^6.0.3
     jest-environment-jsdom: ^28.1.1
     jquery: ^3.5.1
-    js-cookie: 3.0.1
+    js-cookie: ^3.0.6
     jsdom: ^19.0.0
     lighthouse: ^9.6.3
     log-update: ^4.0.0
@@ -3292,10 +3292,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-cookie@npm:3.0.1":
-  version: 3.0.1
-  resolution: "@types/js-cookie@npm:3.0.1"
-  checksum: 134abb4a3f139ae791bdef3735ab14c4c098cb564b34363cc8f0aa6210a715e5e4f25b53717b32acb18099d53221e4f13776917e65ac54b3a60ee676a943abdc
+"@types/js-cookie@npm:^3.0.6":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 272d551687547445cb210213c73e72e0e5d58ad73e2e444a65d688b8ff9425529779ee0cd6492aaa1f070161916d4254ef2b1a76d64179100437f60749d094ef
   languageName: node
   linkType: hard
 
@@ -8878,10 +8878,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:3.0.1":
-  version: 3.0.1
-  resolution: "js-cookie@npm:3.0.1"
-  checksum: bb48de67e2a6bd1ae3dfd6b2d5a167c33dd0c5a37e909206161eb0358c98f17cb55acd55827a58e9eea3630d89444e7479f7938ef4420dda443218b8c434a4c3
+"js-cookie@npm:^3.0.6":
+  version: 3.0.8
+  resolution: "js-cookie@npm:3.0.8"
+  checksum: 73ce2e57d352caf01b4ff40406fd474e7e2edd545a6fdcecbe8fb1d764ef761db99b40a2ca990473064f0519a6af0f2cfae30410c93fcb8bf2a4bc4215c5395d
   languageName: node
   linkType: hard
 
