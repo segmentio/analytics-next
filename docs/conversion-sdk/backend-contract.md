@@ -29,7 +29,7 @@ type CollectRequestBody = CollectEvent[] // mínimo 1 após flush
 | `event` | `string` | para `track` | Nome do evento (`impression`, etc.) |
 | `anonymousId` | `string` | sim | UUID v4 (env-enrichment / user store) |
 | `userId` | `string` | opcional | Após `identify` |
-| `traits` | `object` | opcional | `identify` — PII em texto; hash no Collector |
+| `traits` | `object` | opcional | `identify` — PII em texto por default; hash no Collector ou enrichment opcional |
 | `properties` | `object` | opcional | `track` / `page` — ad-tech |
 | `context` | `object` | sim | Ver tabela abaixo |
 | `integrations` | `object` | opcional | Overrides Segment |
@@ -89,24 +89,28 @@ O Collector recebe `CollectRequestBody` e produz registros flat para ClickHouse 
 ### Pseudocódigo
 
 ```typescript
-function normalize(envelope: AnalyticsEventEnvelope): FlatEvent {
-  const ctx = envelope.context ?? {}
-  const props = envelope.properties ?? {}
+function normalize(event: CollectEvent): FlatEvent {
+  const ctx = event.context ?? {}
+  const props = event.properties ?? {}
+  const traits = event.traits ?? {}
+  const campaign = ctx.campaign ?? {}
 
   return {
     // Identidade
-    message_id: envelope.message_id,
-    anonymous_id: envelope.anonymous_id,
-    user_id: envelope.user_id ?? null,
-    session_id: ctx.sessionId ?? ctx.session_id, // UUID v4 — obrigatório
-    event_type: envelope.type === 'identify'
+    message_id: event.messageId,
+    anonymous_id: event.anonymousId,
+    user_id: event.userId ?? null,
+    session_id: ctx.sessionId, // UUID v4 — obrigatório
+    event_type: event.type === 'identify'
       ? 'identify'
-      : envelope.event_name,
+      : event.type === 'page'
+      ? 'page'
+      : event.event,
 
     // Timestamps
-    timestamp: envelope.timestamp,
-    original_timestamp: envelope.original_timestamp,
-    sent_at: envelope.sent_at,
+    timestamp: event.timestamp,
+    original_timestamp: event.originalTimestamp,
+    sent_at: event.sentAt,
 
     // Page context
     page_url: ctx.page?.url,
@@ -114,15 +118,15 @@ function normalize(envelope: AnalyticsEventEnvelope): FlatEvent {
     page_title: ctx.page?.title,
     referrer: ctx.page?.referrer,
 
-    // Atribuição (de properties, NÃO de context.campaign)
-    utm_source: props.utm_source ?? props.query_params?.utm_source,
-    utm_medium: props.utm_medium ?? props.query_params?.utm_medium,
-    utm_campaign: props.utm_campaign ?? props.query_params?.utm_campaign,
-    utm_content: props.utm_content ?? props.query_params?.utm_content,
-    utm_term: props.utm_term ?? props.query_params?.utm_term,
-    gclid: props.gclid ?? props.query_params?.gclid,
-    fbclid: props.fbclid ?? props.query_params?.fbclid,
-    ttclid: props.ttclid ?? props.tt_clid ?? props.query_params?.ttclid,
+    // Atribuição: context.campaign é a fonte canônica; properties/query_params são fallback
+    utm_source: campaign.source ?? props.utm_source ?? props.query_params?.utm_source,
+    utm_medium: campaign.medium ?? props.utm_medium ?? props.query_params?.utm_medium,
+    utm_campaign: campaign.name ?? campaign.campaign ?? props.utm_campaign ?? props.query_params?.utm_campaign,
+    utm_content: campaign.content ?? props.utm_content ?? props.query_params?.utm_content,
+    utm_term: campaign.term ?? props.utm_term ?? props.query_params?.utm_term,
+    gclid: campaign.gclid ?? props.gclid ?? props.query_params?.gclid,
+    fbclid: campaign.fbclid ?? props.fbclid ?? props.query_params?.fbclid,
+    ttclid: campaign.ttclid ?? campaign.tt_clid ?? props.ttclid ?? props.tt_clid ?? props.query_params?.ttclid,
 
     // Ad-tech (de properties)
     block_id: props.block_id,
@@ -137,10 +141,10 @@ function normalize(envelope: AnalyticsEventEnvelope): FlatEvent {
     product: props.product,
     funnel: props.funnel,
 
-    // PII (identify — já hasheado pela SDK)
-    email_hash: envelope.traits?.email ?? envelope.traits?.email_hash,
-    phone_hash: envelope.traits?.phone ?? envelope.traits?.phone_hash,
-    email_domain: envelope.traits?.email_domain,
+    // PII
+    email_hash: hashPiiField(traits.email ?? traits.email_hash),
+    phone_hash: hashPiiField(traits.phone ?? traits.phone_hash),
+    email_domain: traits.email_domain,
 
     // Raw payload (opcional, para debug)
     properties_json: JSON.stringify(props),
@@ -153,14 +157,14 @@ function normalize(envelope: AnalyticsEventEnvelope): FlatEvent {
 
 | Regra | Ação |
 |-------|------|
-| `session_id` ausente ou não UUID v4 | Rejeitar evento (4xx) ou alertar + quarentena |
+| `context.sessionId` ausente ou não UUID v4 | Rejeitar evento (4xx) ou alertar + quarentena |
 | `impression`/`viewability`/`click` sem `block_id` | Aceitar mas marcar `quality_flag: incomplete` |
 | `ad_request` sem `ad_request_id` | Idem |
 | `message_id` duplicado | Dedup server-side (idempotência) |
 
 ### Redis session key
 
-O `session_id` do envelope é o **mesmo** usado pelo Redis/Collector para agregação.
+O `context.sessionId` do evento é o **mesmo** usado pelo Redis/Collector para agregação.
 Formato UUID v4, sem transformação. TTL server-side alinhado com inatividade de 5min
 (+ margem para flush atrasado).
 
@@ -176,7 +180,7 @@ Resposta recomendada:
 HTTP/1.1 202 Accepted
 Content-Type: application/json
 
-{ "ok": true, "accepted": 3 }
+{ "ok": true, "queued": 3 }
 ```
 
 | Status | SDK behavior |
@@ -199,61 +203,61 @@ Corpo de erro padronizado ajuda debug:
 ### `track` — impression
 
 ```json
-{
-  "events": [{
+[
+  {
     "type": "track",
-    "event_name": "impression",
-    "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
-    "message_id": "550e8400-e29b-41d4-a716-446655440002",
+    "event": "impression",
+    "anonymousId": "550e8400-e29b-41d4-a716-446655440001",
+    "messageId": "550e8400-e29b-41d4-a716-446655440002",
     "properties": {
       "block_id": "top_father",
-      "block_position": 1,
-      "utm_source": "google",
-      "gclid": "abc123",
-      "query_params": { "utm_source": "google", "gclid": "abc123" }
+      "block_position": 1
     },
     "context": {
-      "session_id": "660e8400-e29b-41d4-a716-446655440000",
+      "sessionId": "660e8400-e29b-41d4-a716-446655440000",
+      "campaign": {
+        "source": "google",
+        "gclid": "abc123"
+      },
       "page": { "url": "https://lp.example.com/usa-cc-p1", "path": "/usa-cc-p1" },
       "library": { "name": "conversion-analytics-sdk", "version": "1.0.0" },
       "channel": "browser"
     },
-    "original_timestamp": "2026-06-08T12:00:00.000Z",
-    "sent_at": "2026-06-08T12:00:01.000Z",
+    "originalTimestamp": "2026-06-08T12:00:00.000Z",
+    "sentAt": "2026-06-08T12:00:01.000Z",
     "timestamp": "2026-06-08T12:00:00.000Z",
-    "version": 2
-  }]
-}
+    "_metadata": { "retryCount": 0 }
+  }
+]
 ```
 
 ### `identify`
 
 ```json
-{
-  "events": [{
+[
+  {
     "type": "identify",
-    "anonymous_id": "550e8400-e29b-41d4-a716-446655440001",
-    "user_id": "user-123",
+    "anonymousId": "550e8400-e29b-41d4-a716-446655440001",
+    "userId": "user-123",
     "traits": {
-      "email": "a1b2c3...",
-      "email_hash": "a1b2c3...",
+      "email": "user@example.com",
       "email_domain": "example.com"
     },
-    "context": { "session_id": "660e8400-e29b-41d4-a716-446655440000" },
-    "message_id": "...",
-    "original_timestamp": "...",
-    "sent_at": "...",
+    "context": { "sessionId": "660e8400-e29b-41d4-a716-446655440000" },
+    "messageId": "...",
+    "originalTimestamp": "...",
+    "sentAt": "...",
     "timestamp": "...",
-    "version": 2
-  }]
-}
+    "_metadata": { "retryCount": 0 }
+  }
+]
 ```
 
 ---
 
 ## Comportamento da SDK (relevante para o backend)
 
-- Batching: default 10 eventos ou 2s (configurável)
+- Batching: default 10 eventos ou 3s (configurável)
 - `identify` força flush imediato
 - Um `POST` pode conter múltiplos eventos
 - `sendBeacon` no unload não espera resposta — tratar como at-least-once
@@ -263,18 +267,19 @@ Corpo de erro padronizado ajuda debug:
 
 `packages/browser/src/plugins/conversion-collector/types.ts`:
 
-- `AnalyticsEventEnvelope`
+- `CollectEvent`
 - `CollectRequestBody`
 - `ConversionCollectorSettings`
 
 ## Migração do contrato anterior
 
-Se o Collector foi implementado para o contrato Segment nativo, atualizar:
+Se o Collector foi implementado para o contrato antigo em envelope v2/snake_case, atualizar:
 
-| Antes (legado) | Agora (v2) |
-|----------------|------------|
-| Body: `[event, event]` (array) | Body: `{ events: [...] }` |
-| `context.sessionId` | `context.session_id` |
-| UTMs em `context.campaign.*` | UTMs em `properties.utm_*` |
-| Endpoint `/collect` | Endpoint `/collector` (configurável) |
-| Payload sem transformação | Envelope v2 com snake_case |
+| Antes (legado) | Agora (SDK atual) |
+|----------------|-------------------|
+| Body: `{ events: [...] }` | Body: `[event, event]` (array nativo) |
+| `context.session_id` | `context.sessionId` |
+| `anonymous_id`, `message_id`, `event_name` | `anonymousId`, `messageId`, `event` |
+| UTMs apenas em `properties.utm_*` | `context.campaign.*` como fonte canônica, `properties` como fallback |
+| Endpoint `/collector` ou `/v1/conversion/collect` direto | Endpoint same-origin `/collect` com proxy/rewrite para o Collector |
+| Envelope v2 com snake_case | Payload analytics-next nativo camelCase |

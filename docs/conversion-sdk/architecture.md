@@ -1,7 +1,7 @@
 # Architecture — Conversion Analytics SDK
 
 **Status:** Alinhado à implementação  
-**Última revisão:** 2026-06-08  
+**Última revisão:** 2026-06-24  
 **Substitui:** `architecture_lib_analytics.md` (planejamento com contrato Segment nativo)
 
 ## Visão geral
@@ -9,10 +9,10 @@
 ```
 [LP Browser]
     │
-    ├── ConversionAnalytics.init({ endpoint, appName, ... })
+    ├── analytics.init({ endpoint, appName, ... })
     │   └── AnalyticsBrowser.load() → plugins → auto page
     │
-    ├── ConversionAnalytics.track('impression', { block_id, block_position })
+    ├── analytics.track('impression', { block_id, block_position })
     │   │
     │   ▼ Pipeline analytics-next: before → enrichment → destination
     │   │
@@ -22,27 +22,24 @@
     │   ├── [Conversion Consent] (before)
     │   │   └── Drop se isTrackingAllowed() === false ou DNT
     │   │
-    │   ├── [Conversion Context] (before)
-    │   │   ├── session_id (cookie + TTL 5min)
-    │   │   ├── anonymous_id (localStorage)
-    │   │   └── page context (url, path, referrer, UA, etc.)
+    │   ├── [click-id-enrichment] (before)
+    │   │   └── gclid/fbclid/ttclid/msclkid → context.campaign
     │   │
-    │   ├── [Conversion Identify PII] (before)
-    │   │   └── SHA-256 em email/phone antes do envio
+    │   ├── [session-enrichment] (enrichment)
+    │   │   └── context.sessionId (cookie/localStorage + TTL 5min)
     │   │
-    │   ├── [Conversion Page Properties] (before)
-    │   │   ├── query_params + UTMs + click-ids → properties
-    │   │   └── page taxonomy (country, vertical, product, funnel)
+    │   ├── [Optional enrichments] (before/enrichment)
+    │   │   └── consent, context, identify hashing, page taxonomy e GPT
     │   │
     │   └── [Conversion Collector] (destination)
-    │       ├── contextToEnvelope() → envelope v2
+    │       ├── contextToCollectEvent() → evento analytics-next nativo
     │       ├── BatchBuffer (size + interval + localStorage persist)
-    │       ├── fetch POST { events: [...] }
+    │       ├── fetch POST [ CollectEvent, ... ]
     │       ├── retry com backoff (3 tentativas max)
     │       └── visibilitychange/pagehide → sendBeacon
     │
     ▼
-[POST /collector] → Collector normalize() → ClickHouse + Redis
+[POST /collect] → Collector normalize() → ClickHouse + Redis
 ```
 
 ## Decisões arquiteturais
@@ -54,13 +51,21 @@
 - Build: `webpack.conversion-sdk.config.js` → `dist/umd/sdk.min.js`
 - `AnalyticsBrowser.load()` com `integrations: { 'Segment.io': false }` — sem destination Segment
 
-### Contrato de payload (decisão v2)
+### Contrato de payload
 
-O SDK **não** envia o array nativo analytics-next. Transforma cada evento em
-`AnalyticsEventEnvelope` (version 2, snake_case) e envia `{ events: [...] }`.
+O SDK envia o **array nativo da analytics-next**, em camelCase, sem flatten ou envelope
+proprietário:
 
-**Justificativa:** contrato explícito com o Collector UTUA, campos dedicados para atribuição
-em `properties`, compatível com envelope Segment mas com paths estáveis para `normalize()`.
+```ts
+POST /collect
+Content-Type: application/json
+
+[CollectEvent, ...]
+```
+
+O Collector é responsável por normalizar esse payload para o schema flat do ClickHouse. Os
+paths relevantes para o contrato são `context.sessionId`, `context.campaign.*` e
+`properties.*`.
 
 Ver [backend-contract.md](./backend-contract.md) para spec completa.
 
@@ -68,13 +73,13 @@ Ver [backend-contract.md](./backend-contract.md) para spec completa.
 
 | Dado | Storage | Key / Cookie |
 |------|---------|--------------|
-| `session_id` | Cookie | `__bg_analytics_session_id` |
-| `last_activity` | Cookie | `__bg_analytics_session_activity` |
-| `anonymous_id` | localStorage | `__bg_analytics_anonymous_id` |
-| `query_params` (sessão) | sessionStorage | `__bg_analytics_query_params` |
+| `sessionId` | Cookie + localStorage fallback | `_utua_session` / `utua_session` |
+| `lastActivity` | Cookie + localStorage fallback | `_utua_last_activity` / `utua_last_activity` |
+| `anonymousId` | localStorage | storage nativo analytics-next |
+| `query_params` (opcional) | sessionStorage | chaves do plugin de page properties |
 | Fila de eventos | localStorage | `utua_event_queue` |
 
-- **TTL inatividade:** 5 minutos (`SESSION_INACTIVITY_TTL_MS`)
+- **TTL inatividade:** 5 minutos (`SESSION_INACTIVITY_MS`)
 - **Cookie flags:** `SameSite=Lax`, `Secure` (HTTPS), `path=/`
 - **Verificação de expiração:** a cada event handler (sem timer)
 
@@ -103,15 +108,17 @@ Após esgotar retries, eventos voltam para fila persistida em localStorage.
 
 | Plugin | Tipo | Modifica evento? | Acessa rede? |
 |--------|------|------------------|--------------|
+| click-id-enrichment | before | `context.campaign.*` | Não |
+| session-enrichment | enrichment | `context.sessionId` | Não |
 | Conversion Consent | before | Cancela | Não |
 | Conversion Context | before | `context.*` | Não |
-| Conversion Identify PII | before | `traits` | Não |
+| Conversion Identify PII | enrichment | `traits` | Não |
 | Conversion Page Properties | before | `properties` | Não |
-| Conversion Collector | destination | Não (envelope na entrega) | Sim |
+| Conversion Collector | destination | Não | Sim |
 | Conversion GPT Slot Events | utility | `track` automático | Não |
 
 Erros em destination são capturados internamente (não propagam). Erros em enrichment
-de session propagam — melhor falhar que enviar sem `session_id`.
+de session propagam — melhor falhar que enviar sem `sessionId`.
 
 ### Entry point
 
@@ -144,7 +151,7 @@ packages/browser/src/
     ├── destination-plugin.ts
     ├── batch-buffer.ts
     ├── send-events.ts
-    ├── context-to-envelope.ts
+    ├── context-to-collect-event.ts
     ├── enrichment/
     │   ├── consent-enrichment.ts
     │   ├── context-enrichment.ts
@@ -163,7 +170,7 @@ packages/browser/src/
 
 - **Same-domain obrigatório:** script + endpoint no mesmo origin
 - **Distribuição:** arquivo estático (`sdk.min.js`), sem npm público
-- **Endpoint default:** `/collector` (configurável)
+- **Endpoint default:** `/collect` (configurável)
 - Ver [../DISTRIBUTING-STATIC-SDK.md](../DISTRIBUTING-STATIC-SDK.md)
 
 ## Testes
@@ -173,24 +180,26 @@ packages/browser/src/
 | Unitário | `plugins/conversion-collector/**/__tests__/` | session, fila, send-events, parity |
 | Unitário | `conversion-sdk/__tests__/` | bootstrap, globals |
 | Integração | `parity.integration.test.ts` | pipeline end-to-end com mock fetch |
-| E2E Playwright | — | ⚠️ Planejado (flush on unload, offline, LP real) |
+| E2E Playwright | `packages/browser-integration-tests/src/conversion-sdk/` | LP real, session flow, offline recovery e flush on unload |
 
 ## Divergências vs planejamento original
 
 | Planejamento original | Implementação atual |
 |-----------------------|---------------------|
-| `window.analytics.init(writeKey)` | `ConversionAnalytics.init(config)` |
-| `context.sessionId` (camelCase) | `context.session_id` (snake_case) |
-| UTMs em `context.campaign.*` | UTMs em `properties` + `query_params` |
-| POST `/collect` array nativo | POST `/collector` com `{ events: [...] }` |
-| 2 plugins (session + collector) | 5 plugins (+ GPT opcional) |
 | `packages/sdk/` no monorepo pipeline | Embutido no fork analytics-next |
+| Apenas `window.analytics.init(writeKey)` | `window.analytics` + aliases `ConversionAnalytics`, com writeKey ou objeto de config |
+| Apenas UTMs nativas | UTMs em `context.campaign.*`; click-ids adicionados em `context.campaign.*` |
+| 2 plugins (session + collector) | 5 plugins (+ GPT opcional) |
 
 Estas divergências são **intencionais** e documentadas. O Collector deve implementar
-`normalize()` conforme [backend-contract.md](./backend-contract.md).
+`normalize()` conforme [backend-contract.md](./backend-contract.md). A principal pendência
+externa é alinhar o Collector Go em produção ao contrato nativo ou manter um proxy de tradução
+same-origin durante a migração.
 
 ## Phase 2 (deferred)
 
 - Configuration Server dinâmico
-- `globalName` configurável
-- Consent management plugin (LGPD/GDPR)
+- Config por domínio/país
+- Toggle de plugins via config remota
+- Métricas de delivery do SDK
+- Wrapper oficial Next.js / React

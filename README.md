@@ -2,7 +2,7 @@
 
 Fork do [Segment analytics-next](https://github.com/segmentio/analytics-next) mantido pela UTUA para o **Conversion Pipeline**: captura eventos de comportamento em landing pages (page views, impressões, cliques, identify) e envia em batch para o **Collector** via HTTP.
 
-O produto entregue é um **script estático** (`sdk.min.js`, ≤ 30 KB gzip) — não é um pacote npm publicado para as LPs. O monorepo reutiliza a base analytics-next (pipeline de plugins, batching, retry) com plugins customizados em `conversion-collector`.
+O produto entregue é um **script estático** (`sdk.min.js`, alvo ≤ 30 KB gzip) — não é um pacote npm publicado para as LPs. O monorepo reutiliza a base analytics-next (pipeline de plugins, batching, retry) com plugins customizados em `conversion-collector`.
 
 ## Para que serve
 
@@ -55,6 +55,8 @@ yarn build:conversion-sdk
 | `packages/browser/dist/umd/sdk.min.js` | Produção — deploy na LP |
 | `packages/browser/dist/umd/sdk.{hash}.min.js` | Versão com hash de conteúdo |
 | `script/sdk.min.js` | Espelho versionado no repositório |
+
+Medição atual: `packages/browser/dist/umd/sdk.min.js` ~30,1 KiB gzip e `script/sdk.min.js` ~29,8 KiB gzip. O bundle está no limite do budget.
 
 Detalhes de deploy same-domain: [docs/DISTRIBUTING-STATIC-SDK.md](docs/DISTRIBUTING-STATIC-SDK.md).
 
