@@ -5,10 +5,10 @@ estão marcados com **BE**.
 
 ## Convenções gerais
 
-- Todos os eventos incluem `context.session_id` automaticamente — **não** passe manualmente.
-- UTMs e click-ids são capturados na primeira página da sessão e replicados em eventos
-  subsequentes via `properties.query_params` e colunas dedicadas.
-- Campos ad-tech vão em `properties` (top-level do envelope), não em `context`.
+- Todos os eventos incluem `context.sessionId` automaticamente — **não** passe manualmente.
+- UTMs e click-ids são capturados em `context.campaign`; quando o page enrichment está ativo,
+  também podem aparecer em `properties.query_params` e campos dedicados.
+- Campos ad-tech vão em `properties` do evento, não em `context`.
 
 ## `page` (automático no bootstrap)
 
@@ -55,7 +55,7 @@ ConversionAnalytics.track('impression', {
 |-------|-------------|-----|-----------|
 | `block_id` | **sim** | ✅ | Identificador do bloco publicitário |
 | `block_position` | recomendado | ✅ | Posição ordinal do bloco na página |
-| `query_params` + UTMs | auto | ✅ | Herdados da sessão |
+| `context.campaign` + UTMs | auto | ✅ | Herdados do contexto da sessão |
 
 Sem `block_id`, o session profile no pipeline não terá `blocks_viewed` — regras de conversão
 não disparam.
@@ -115,16 +115,16 @@ ConversionAnalytics.identify({ email: 'user@example.com', phone: '+5511999999999
 
 | Campo | Obrigatório | BE | Descrição |
 |-------|-------------|-----|-----------|
-| `user_id` | opcional | ✅ | Envelope `user_id` |
-| `traits.email` | opcional | ✅ | Hasheado SHA-256 antes do envio — ver [pii-and-consent.md](./pii-and-consent.md) |
-| `traits.phone` | opcional | ✅ | Normalizado E.164 + SHA-256 |
+| `userId` | opcional | ✅ | Campo nativo analytics-next |
+| `traits.email` | opcional | ✅ | Hash feito no Collector ou no enrichment opcional — ver [pii-and-consent.md](./pii-and-consent.md) |
+| `traits.phone` | opcional | ✅ | Normalizado/hasheado no Collector ou no enrichment opcional |
 | `traits.email_domain` | auto | ✅ | Mantido em claro |
 
 `identify` força flush imediato para reduzir perda em navegação rápida pós-formulário.
 
 ## Eventos GPT (opcional, `enableGptSlotEvents: true`)
 
-| `event_name` | Descrição |
+| `event` | Descrição |
 |--------------|-----------|
 | `slotRequested` | Slot solicitado ao GPT |
 | `slotResponseReceived` | Resposta recebida |
@@ -140,7 +140,7 @@ Propriedades comuns: `slot_id`, `slot_element_id`, `ad_unit_path`, `is_empty`, `
 
 O Collector deve logar/alertar quando:
 
-- `context.session_id` ausente ou inválido (não UUID v4)
+- `context.sessionId` ausente ou inválido (não UUID v4)
 - `impression` / `viewability` / `click` sem `properties.block_id`
 - `ad_request` sem `properties.ad_request_id`
 - Queda > 40% de volume por `utm_campaign` + `page_path` (monitoramento AdOps)

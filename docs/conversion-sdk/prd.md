@@ -1,7 +1,7 @@
 # Product Requirements Document — Conversion Analytics SDK
 
 **Status:** Alinhado à implementação (fork analytics-next)  
-**Última revisão:** 2026-06-08  
+**Última revisão:** 2026-06-24  
 **Substitui:** `prd_lib_analytics.md` (planejamento original com contrato Segment nativo)
 
 ## Executive Summary
@@ -19,7 +19,7 @@ eventos GPT.
 ### Público-alvo
 
 - **Dev de LP** — integra o script em < 5 minutos
-- **AdOps** — monitora qualidade dos dados (session_id, block_id, UTMs)
+- **AdOps** — monitora qualidade dos dados (sessionId, block_id, UTMs)
 - **Media buyers** — dependem dos dados para regras de conversão no pipeline
 
 ### O que torna especial
@@ -38,23 +38,24 @@ eventos GPT.
 |---------|--------|------------|
 | Taxa de captura | ≥ 97% | Eventos enviados vs recebidos pelo Collector (amostra por session) |
 | Tempo de instalação | < 5 min | Teste com dev novo no SDK |
-| Bundle size | ≤ 30 KB gzip | `size-limit` no CI (atual: ~38 KB — ver NFR1) |
+| Bundle size | ≤ 30 KB gzip | `size-limit` no CI (atual medido: `dist/umd/sdk.min.js` ~30,1 KiB gzip; `script/sdk.min.js` ~29,8 KiB gzip) |
 | Impacto no LCP | < 50 ms | Lighthouse antes/depois |
-| Session coverage | ≥ 99% | % eventos com `context.session_id` não-vazio |
+| Session coverage | ≥ 99% | % eventos com `context.sessionId` não-vazio |
 | Retry success | ≥ 95% | Reentregas após falha inicial |
 
 ---
 
 ## API Pública
 
-**Global:** `window.ConversionAnalytics` (deixa `window.Analytics` livre para GTM/legado)
+**Global principal:** `window.analytics`. `window.ConversionAnalytics`, `_analytics` e
+`_ConversionAnalytics` permanecem como aliases para compatibilidade.
 
 | Método | Assinatura | Descrição |
 |--------|-----------|-----------|
 | `init` | `init(config: AnalyticsInitConfig)` | Inicializa SDK, registra plugins, inicia fila |
 | `track` | `track(event, properties?, options?)` | Evento customizado |
 | `page` | `page(properties?, options?)` | Page view |
-| `identify` | `identify(userOrTraits, traits?, options?)` | Associa usuário / PII hasheada |
+| `identify` | `identify(userOrTraits, traits?, options?)` | Associa usuário; PII hasheada no Collector ou enrichment opcional |
 | `flush` | `flush()` | Flush manual da fila |
 | `start` | `start()` | Carrega bundle async (stub pattern) |
 | `getDebugInfo` | `getDebugInfo()` | `sessionId`, `endpoint`, `queueSize`, `lastError` |
@@ -75,8 +76,8 @@ eventos GPT.
 ```html
 <script src="/assets/sdk.min.js"></script>
 <script>
-  ConversionAnalytics.init({
-    endpoint: '/collector',
+  analytics.init({
+    endpoint: '/collect',
     appName: 'my-landing-page',
   });
 </script>
@@ -104,20 +105,20 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 | FR5 | `track()` para eventos ad-tech com propriedades | ✅ |
 | FR6 | `page()` para page views | ✅ |
 | FR7 | Auto `page` na inicialização | ✅ |
-| FR8 | UTMs extraídos e promovidos a `properties` + `query_params` | ✅ |
-| FR9 | Click-ids (`gclid`, `fbclid`, `ttclid`, etc.) capturados | ✅ |
-| FR10 | `identify()` com PII hasheada (SHA-256) | ✅ |
+| FR8 | UTMs extraídos em `context.campaign`; promoção para `properties`/`query_params` quando page enrichment está ativo | ✅ |
+| FR9 | Click-ids (`gclid`, `fbclid`, `ttclid`, etc.) capturados em `context.campaign` | ✅ |
+| FR10 | `identify()` envia traits; hash ocorre no Collector ou no enrichment opcional | ✅ |
 | FR11 | Campos ad-tech em `properties` quando fornecidos | ✅ |
 
 ### Session Management
 
 | ID | Requisito | Status |
 |----|-----------|--------|
-| FR12 | `session_id` UUID v4 gerado client-side | ✅ |
-| FR13 | Persistido em cookie (`__bg_analytics_session_id`) | ✅ |
+| FR12 | `sessionId` UUID v4 gerado client-side | ✅ |
+| FR13 | Persistido em cookie (`_utua_session`) com fallback em localStorage (`utua_session`) | ✅ |
 | FR14 | Renovado enquanto houver atividade dentro de 5min | ✅ |
 | FR15 | Nova sessão após expiração por inatividade | ✅ |
-| FR16 | Injetado em `context.session_id` de todos os eventos | ✅ |
+| FR16 | Injetado em `context.sessionId` de todos os eventos | ✅ |
 
 ### Transporte & Entrega
 
@@ -127,8 +128,8 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 | FR18 | Flush on unload (`visibilitychange` + `pagehide`) | ✅ |
 | FR19 | Persistência em localStorage em falha | ✅ |
 | FR20 | Retry com backoff exponencial | ✅ |
-| FR21 | POST para endpoint configurável (default `/collector`) | ✅ |
-| FR22 | Payload envelope v2 — ver [backend-contract.md](./backend-contract.md) | ✅ |
+| FR21 | POST para endpoint configurável (default `/collect`) | ✅ |
+| FR22 | Payload array nativo analytics-next — ver [backend-contract.md](./backend-contract.md) | ✅ |
 
 ### Distribuição & Build
 
@@ -154,7 +155,7 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 
 | ID | Requisito | Status |
 |----|-----------|--------|
-| NFR1 | Bundle ≤ 30 KB gzip | ⚠️ ~38 KB (limite CI: 39 KB) |
+| NFR1 | Bundle ≤ 30 KB gzip | ⚠️ No limite: `dist/umd/sdk.min.js` ~30,1 KiB gzip; `script/sdk.min.js` ~29,8 KiB gzip |
 | NFR2 | LCP impact < 50 ms | ⚠️ Não medido no CI |
 | NFR3 | `track()` / `page()` < 1 ms (fire-and-forget) | ✅ |
 | NFR4 | Flush on unload via `sendBeacon` (+ keepalive fallback) | ✅ |
@@ -174,7 +175,7 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 
 | ID | Requisito | Status |
 |----|-----------|--------|
-| NFR11 | PII não logada no console; hasheada antes do envio | ✅ |
+| NFR11 | PII não logada no console; hash feito no Collector ou no enrichment opcional | ✅ |
 | NFR12 | Envio apenas para endpoint configurado | ✅ |
 | NFR13 | Cookie session com `SameSite=Lax` + `Secure` (HTTPS) | ✅ |
 
@@ -185,7 +186,7 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 | NFR14 | Payload compatível com `normalize()` do Collector | ✅ — ver backend-contract |
 | NFR15 | Plugin pipeline analytics-next sem monkey-patch | ✅ |
 | NFR16 | Sem conflitos com GTM / pixels | ✅ |
-| NFR17 | `session_id` UUID v4 sem transformação server-side | ✅ |
+| NFR17 | `sessionId` UUID v4 sem transformação server-side | ✅ |
 
 ---
 
@@ -197,6 +198,13 @@ Ver [../conversion-pipeline.md](../conversion-pipeline.md) para stub async.
 - Métricas de delivery do SDK (meta-eventos)
 - Wrapper oficial Next.js / React
 - Namespace configurável (`globalName`)
+
+## Known gaps antes de chamar de 100%
+
+- Métricas de produção ainda precisam comprovar captura ≥97%, session coverage ≥99%, retry success ≥95% e impacto no LCP <50ms.
+- O bundle está sem folga real contra o alvo de 30KB gzip; qualquer feature nova precisa vir com otimização ou medição.
+- O Collector Go em produção precisa aceitar o contrato nativo (`[CollectEvent, ...]`, camelCase, `context.sessionId`) ou receber tradução por proxy same-origin durante a migração.
+- Testes ainda podem cobrir melhor persistência offline após reload, sucesso real de `sendBeacon`, `visibilitychange`, todos os click-ids e contrato completo do global exposto.
 
 ## Phase 3
 

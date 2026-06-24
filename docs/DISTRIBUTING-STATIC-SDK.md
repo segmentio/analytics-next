@@ -35,10 +35,24 @@ yarn sync:script
 ## Deploy na landing page (same-domain)
 
 1. Copie `dist/umd/sdk.min.js` para o CDN/origin da LP, ex.: `/assets/sdk.min.js`
-2. Configure o reverse proxy do endpoint de coleta (default `/collector`, configurável via `init({ endpoint })`) para o Collector
+2. Configure o reverse proxy do endpoint de coleta (default `/collect`, configurável via `init({ endpoint })`) para o Collector
 3. Cole o snippet na LP (ver [conversion-pipeline.md](./conversion-pipeline.md))
 
 **Requisito:** script e endpoint de coleta no **mesmo domínio** (evita ad blockers e ITP).
+
+O endpoint same-origin `/collect` pode encaminhar para o Collector real em outro path/host, desde
+que preserve o contrato da SDK: `POST` com body `[ CollectEvent, ... ]`, camelCase e
+`context.sessionId`.
+
+## Bundle size
+
+O alvo do SDK continua sendo **≤ 30 KB gzip**. Na medição atual:
+
+- `packages/browser/dist/umd/sdk.min.js`: ~30,1 KiB gzip
+- `script/sdk.min.js`: ~29,8 KiB gzip
+
+Trate esse número como budget de release: qualquer mudança que adicione peso deve vir com
+medição e, idealmente, otimização equivalente.
 
 ## GitHub Pages (opcional)
 

@@ -19,8 +19,8 @@ Migrar gradualmente do oneControl/growthcontrol para a nova SDK sem risco de per
    - Ativar inicialmente em 5-10% dos projetos.
 
 3. **Canary no QuizBuilder**
-   - Trocar wrapper para usar `window.ConversionAnalytics` da nova SDK (deixar `window.Analytics` livre para oneControl/outras libs).
-   - Monitorar taxa de sucesso do `/collector` e tamanho médio da fila local.
+   - Trocar wrapper para usar `window.analytics` da nova SDK (`window.ConversionAnalytics` segue como alias de compatibilidade).
+   - Monitorar taxa de sucesso do `/collect` e tamanho médio da fila local.
 
 4. **Expansão para WordPress**
    - Publicar snippet padrão com `init + attachToWindow`.
@@ -39,10 +39,10 @@ Se houver regressão:
 
 ## Checklist de validação por etapa
 
-- [ ] `track` e `identify` chegam ao endpoint configurado (default `/collector`)
-- [ ] Body no formato `{ events: [...] }` com envelope `version: 2`
-- [ ] `context.session_id` presente e é UUID v4
-- [ ] UTMs/click-ids em `properties` (não só em `context.campaign`)
+- [ ] `track` e `identify` chegam ao endpoint configurado (default `/collect`)
+- [ ] Body no formato `[ CollectEvent, ... ]` (array nativo analytics-next, camelCase)
+- [ ] `context.sessionId` presente e é UUID v4
+- [ ] UTMs/click-ids em `context.campaign`; `properties` usado para campos ad-tech e fallbacks
 - [ ] `impression` com `properties.block_id`
 - [ ] sem aumento anormal de erros de rede
 - [ ] sem impacto perceptível na performance da página
