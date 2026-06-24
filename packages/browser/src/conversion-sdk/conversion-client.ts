@@ -7,6 +7,7 @@ import {
 } from './collector-runtime'
 import { DEFAULT_INIT_CONFIG } from './config'
 import { conversionGptSlotEventsPlugin } from './gpt-plugin'
+import { lotameAnalytics } from '../plugins/lotame-analytics'
 import { loadLeanConversionAnalytics } from './lean-load'
 import { normalizeIdentifyCall, normalizeTrackCall } from './legacy-args'
 import type {
@@ -79,9 +80,19 @@ export class ConversionClient {
   }
 
   private async bootstrap(generation: number): Promise<Analytics> {
-    const extraPlugins = this.config.enableGptSlotEvents
-      ? [conversionGptSlotEventsPlugin()]
-      : []
+    const extraPlugins = [
+      ...(this.config.enableGptSlotEvents
+        ? [conversionGptSlotEventsPlugin()]
+        : []),
+      ...(this.config.lotameClientId
+        ? [
+            lotameAnalytics({
+              clientId: this.config.lotameClientId,
+              ...this.config.lotameConfig,
+            }),
+          ]
+        : []),
+    ]
 
     const analytics = await loadLeanConversionAnalytics(
       this.config,

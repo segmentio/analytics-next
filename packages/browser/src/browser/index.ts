@@ -25,6 +25,16 @@ import { setGlobalAnalyticsKey } from '../lib/global-analytics-helper'
 import { CDNSettings, AnalyticsBrowserSettings, InitOptions } from './settings'
 import { fetch } from '../lib/fetch'
 
+export { Analytics, NullAnalytics }
+export {
+  lotameAnalytics,
+  LotameAnalyticsPlugin,
+} from '../plugins/lotame-analytics'
+export type {
+  LotameAnalyticsConfig,
+  LotameProfile,
+} from '../plugins/lotame-analytics'
+
 export type { CDNSettings, AnalyticsBrowserSettings }
 
 export function loadCDNSettings(

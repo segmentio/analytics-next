@@ -49,11 +49,11 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "29.7 KB"
+      "limit": "31 KB"
     },
     {
       "path": "dist/umd/sdk.min.js",
-      "limit": "30 KB",
+      "limit": "33 KB",
       "gzip": true
     }
   ],

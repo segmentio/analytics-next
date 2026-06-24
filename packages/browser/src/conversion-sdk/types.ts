@@ -44,6 +44,13 @@ export interface AnalyticsInitConfig {
   enableContextEnrichment?: boolean
   enableIdentifyHashing?: boolean
   enablePageTaxonomy?: boolean
+  lotameClientId?: string
+  lotameConfig?: {
+    ttlDays?: number
+    cookieName?: string
+    traitsNamespace?: string
+    captureTimeoutMs?: number
+  }
 }
 
 export interface DebugInfo {

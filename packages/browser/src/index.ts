@@ -20,6 +20,14 @@ export { getGlobalAnalytics } from './lib/global-analytics-helper'
 export { UniversalStorage, Store, StorageObject } from './core/storage'
 export { segmentio } from './plugins/segmentio'
 export {
+  lotameAnalytics,
+  LotameAnalyticsPlugin,
+} from './plugins/lotame-analytics'
+export type {
+  LotameAnalyticsConfig,
+  LotameProfile,
+} from './plugins/lotame-analytics'
+export {
   conversionCollectorPlugin,
   conversionCdnSettingsMinimal,
   conversionPipelinePlugins,
