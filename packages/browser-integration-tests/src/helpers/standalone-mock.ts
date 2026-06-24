@@ -1,9 +1,9 @@
 import { join as joinPath } from 'path'
-import { test } from '@playwright/test'
+import type { BrowserContext, Request, Route } from '@playwright/test'
 
-type BeforeEachFn = Parameters<typeof test['beforeEach']>[0]
+type BeforeEachArgs = { context: BrowserContext }
 
-export const standaloneMock: BeforeEachFn = async ({ context }) => {
+export const standaloneMock = async ({ context }: BeforeEachArgs) => {
   // Setup routing to monorepo
   const ajsBasePath = joinPath(
     __dirname,
@@ -17,7 +17,7 @@ export const standaloneMock: BeforeEachFn = async ({ context }) => {
   )
   await context.route(
     'https://cdn.segment.com/analytics.js/v1/*/analytics.min.js',
-    (route, request) => {
+    (route: Route, request: Request) => {
       if (request.method().toLowerCase() !== 'get') {
         return route.continue()
       }
@@ -34,7 +34,7 @@ export const standaloneMock: BeforeEachFn = async ({ context }) => {
 
   await context.route(
     'https://cdn.segment.com/analytics-next/bundles/*',
-    (route, request) => {
+    (route: Route, request: Request) => {
       if (request.method().toLowerCase() !== 'get') {
         return route.continue()
       }

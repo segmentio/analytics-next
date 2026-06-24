@@ -53,7 +53,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate((name) => {
     document.cookie = name + '=; path=/; max-age=0'
     window.localStorage.removeItem(name)
-    delete (window as Record<string, unknown>)['lotame_' + 'lt-999']
+    delete (window as unknown as Record<string, unknown>)['lotame_' + 'lt-999']
   }, COOKIE_NAME)
 })
 
@@ -280,7 +280,7 @@ test.describe('Lotame Analytics — browser smoke', () => {
 
     await loadAnalyticsNext(page)
 
-    const { loadCount, eventCount } = await page.evaluate(
+    const { eventCount } = await page.evaluate(
       ({ clientId, cookieName }) => {
         return new Promise<{ loadCount: number; eventCount: number }>(
           (resolve) => {
