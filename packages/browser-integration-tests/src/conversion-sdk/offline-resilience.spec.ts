@@ -49,7 +49,6 @@ test.describe('Conversion SDK — offline resilience', () => {
 
   test('persists queue in localStorage and recovers after page reload', async ({
     page,
-    browser,
   }) => {
     let failCollect = true
     const messageIdsBeforeReload: string[] = []

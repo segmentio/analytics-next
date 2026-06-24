@@ -36,9 +36,6 @@ test.describe('Conversion SDK — flush on unload', () => {
   })
 
   test('uses real sendBeacon on pagehide when available', async ({ page }) => {
-    const beaconCalled = false
-    const beaconBody: string | null = null
-
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'sendBeacon', {
         value: (url: string, data: BodyInit) => {
@@ -51,12 +48,7 @@ test.describe('Conversion SDK — flush on unload', () => {
       })
     })
 
-    // Also intercept fetch so we can distinguish beacon from fetch delivery
-    let fetchCount = 0
     await page.route('**/collect', async (route) => {
-      if (route.request().method() === 'POST') {
-        fetchCount++
-      }
       return route.fulfill({ status: 202, body: JSON.stringify({ ok: true }) })
     })
 
