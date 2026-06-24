@@ -256,4 +256,38 @@ describe('Conversion SDK public API', () => {
     await flush().catch(() => undefined)
     expect(getQueueSize()).toBe(1)
   })
+
+  it('enriches events with lotame traits when lotameClientId is configured', async () => {
+    const profile = {
+      audiences: ['aud-wiring-1'],
+      panoramaId: 'pan-wiring-1',
+      capturedAt: new Date().toISOString(),
+    }
+    localStorage.setItem('lotame_profile', JSON.stringify(profile))
+
+    resetAnalyticsSingleton('conversion-pipeline', {
+      flushIntervalMs: 10000,
+      batchSize: 10,
+      retryAttempts: 0,
+      enableGptSlotEvents: false,
+      lotameClientId: 'test-lotame',
+    })
+
+    await track('lotame_wiring_test', {})
+    await flush()
+
+    expect(fetchCalls.length).toBeGreaterThanOrEqual(1)
+    const [, options] = fetchCalls[0] as [
+      RequestInfo | URL,
+      RequestInit | undefined
+    ]
+    const body = JSON.parse(String(options?.body)) as CollectPayload
+    const lotameTraits = body[0]?.context?.traits as
+      | { lotame?: { audiences?: unknown[]; panoramaId?: string } }
+      | undefined
+    expect(lotameTraits?.lotame?.audiences).toEqual(['aud-wiring-1'])
+    expect(lotameTraits?.lotame?.panoramaId).toBe('pan-wiring-1')
+
+    localStorage.removeItem('lotame_profile')
+  })
 })
