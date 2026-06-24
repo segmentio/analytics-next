@@ -107,6 +107,22 @@ describe('Lotame Analytics plugin', () => {
     expect(trackSpy).toHaveBeenCalledWith('Lotame Enhanced Profile', cached)
   })
 
+  it('keeps oversized profiles out of cookies and caches them in localStorage', async () => {
+    await analytics.register(lotameAnalytics({ clientId: '123' }))
+    const trackSpy = jest.spyOn(analytics, 'track')
+
+    lotameCallback()(nativeProfile(['a'.repeat(4000)], 'panorama-1'))
+    await trackSpy.mock.results[0].value
+
+    expect(cookie.get('lotame_profile')).toBeUndefined()
+    const cached = JSON.parse(
+      window.localStorage.getItem('lotame_profile') as string
+    )
+    expect(cached.audiences[0]).toHaveLength(4000)
+    expect(cached.panoramaId).toBe('panorama-1')
+    expect(trackSpy).toHaveBeenCalledWith('Lotame Enhanced Profile', cached)
+  })
+
   it('enriches events after async capture returns', async () => {
     await analytics.register(lotameAnalytics({ clientId: '123' }))
 

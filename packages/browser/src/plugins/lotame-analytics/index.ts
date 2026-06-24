@@ -16,6 +16,7 @@ const DEFAULT_TTL_DAYS = 7
 const DEFAULT_COOKIE_NAME = 'lotame_profile'
 const DEFAULT_TRAITS_NAMESPACE = 'lotame'
 const DEFAULT_CAPTURE_TIMEOUT_MS = 10_000
+const MAX_COOKIE_VALUE_LENGTH = 3800
 const PRECONNECT_ORIGINS = [
   'https://tags.crwdcntrl.net',
   'https://bcp.crwdcntrl.net',
@@ -40,6 +41,11 @@ export interface LotameAnalyticsConfig {
 
 type LotameStorage = Record<string, LotameProfile>
 
+interface LotameProfileCache {
+  get(key: string): LotameProfile | null
+  set(key: string, profile: LotameProfile): void
+}
+
 interface LotameNativeProfile {
   getAudiences?: () => Audience[]
   getPanorama?: () => {
@@ -55,7 +61,7 @@ const captureFlights: Record<string, Promise<LotameProfile> | undefined> = {}
 
 const millisecondsInDay = 24 * 60 * 60 * 1000
 
-function buildStorage(ttlDays: number) {
+function buildStorage(ttlDays: number): LotameProfileCache {
   const domain = tld(window.location.href)
   const cookie = new CookieStorage<LotameStorage>({
     domain,
@@ -64,11 +70,27 @@ function buildStorage(ttlDays: number) {
     sameSite: 'Lax',
   })
 
-  return new UniversalStorage<LotameStorage>([
+  const fallback = new UniversalStorage<LotameStorage>([
+    new LocalStorage(),
+    new MemoryStorage(),
+  ])
+  const storage = new UniversalStorage<LotameStorage>([
     cookie,
     new LocalStorage(),
     new MemoryStorage(),
   ])
+
+  return {
+    get: (key) => storage.get(key),
+    set: (key, profile) => {
+      if (JSON.stringify(profile).length > MAX_COOKIE_VALUE_LENGTH) {
+        fallback.set(key, profile)
+        return
+      }
+
+      storage.set(key, profile)
+    },
+  }
 }
 
 function validProfile(profile: LotameProfile | null, ttlDays: number) {
@@ -142,7 +164,7 @@ export class LotameAnalyticsPlugin implements Plugin {
   private readonly traitsNamespace: string
   private readonly captureTimeoutMs: number
   private profile: LotameProfile | null = null
-  private storage: UniversalStorage<LotameStorage> | undefined
+  private storage: LotameProfileCache | undefined
 
   constructor(config: LotameAnalyticsConfig) {
     this.clientId = config.clientId
