@@ -2,7 +2,14 @@ import { PluginType } from '@segment/analytics-core'
 import { Context } from '../../../core/context'
 import { Plugin } from '../../../core/plugin'
 
-const CLICK_KEYS = ['gclid', 'fbclid', 'ttclid', 'tt_clid', 'msclkid'] as const
+const CLICK_KEYS = [
+  'gclid',
+  'fbclid',
+  'ttclid',
+  'tt_clid',
+  'msclkid',
+  'twclid',
+] as const
 
 export function clickIdEnrichment(): Plugin {
   const enrich = (ctx: Context): Context => {

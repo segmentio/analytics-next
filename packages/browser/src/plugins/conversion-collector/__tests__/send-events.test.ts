@@ -146,4 +146,30 @@ describe('sendCollectViaBeacon', () => {
       configurable: true,
     })
   })
+
+  it('returns true when sendBeacon succeeds with small payload', () => {
+    const sendBeaconMock = jest.fn(() => true)
+    Object.defineProperty(navigator, 'sendBeacon', {
+      value: sendBeaconMock,
+      configurable: true,
+    })
+    const body = JSON.stringify([sampleEvent()])
+    const result = sendCollectViaBeacon('/collector', body)
+    expect(result).toBe(true)
+    expect(sendBeaconMock).toHaveBeenCalledWith('/collector', expect.any(Blob))
+    jest.restoreAllMocks()
+  })
+
+  it('returns false when payload exceeds 64KB beacon limit', () => {
+    const sendBeaconMock = jest.fn(() => true)
+    Object.defineProperty(navigator, 'sendBeacon', {
+      value: sendBeaconMock,
+      configurable: true,
+    })
+    const largeBody = '[' + 'x'.repeat(64 * 1024) + ']'
+    const result = sendCollectViaBeacon('/collector', largeBody)
+    expect(result).toBe(false)
+    expect(sendBeaconMock).not.toHaveBeenCalled()
+    jest.restoreAllMocks()
+  })
 })
