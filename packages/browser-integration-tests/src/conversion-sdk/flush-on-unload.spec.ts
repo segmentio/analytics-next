@@ -48,10 +48,6 @@ test.describe('Conversion SDK — flush on unload', () => {
       })
     })
 
-    await page.route('**/collect', async (route) => {
-      return route.fulfill({ status: 202, body: JSON.stringify({ ok: true }) })
-    })
-
     await gotoTestLp(page)
     await page.click('#track-impression')
 

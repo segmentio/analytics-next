@@ -34,7 +34,15 @@ test.describe('Conversion SDK — offline resilience', () => {
     await gotoTestLp(page)
     await page.click('#track-impression')
 
-    await page.waitForTimeout(2000)
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => window.localStorage.getItem('utua_event_queue') !== null
+          ),
+        { timeout: 5000 }
+      )
+      .toBe(true)
 
     failCollect = false
 
@@ -78,7 +86,15 @@ test.describe('Conversion SDK — offline resilience', () => {
     await gotoTestLp(page)
 
     await page.click('#track-impression')
-    await page.waitForTimeout(3000)
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => window.localStorage.getItem('utua_event_queue') !== null
+          ),
+        { timeout: 5000 }
+      )
+      .toBe(true)
 
     // Collect messageIds from localStorage before reload
     messageIdsBeforeReload.push(
@@ -100,7 +116,21 @@ test.describe('Conversion SDK — offline resilience', () => {
 
     // Reload the page — collector still failing, queue persists in localStorage
     await page.reload()
-    await page.waitForTimeout(2000)
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            try {
+              const raw = window.localStorage.getItem('utua_event_queue')
+              if (!raw) return false
+              return JSON.parse(raw).length > 0
+            } catch {
+              return false
+            }
+          }),
+        { timeout: 5000 }
+      )
+      .toBe(true)
 
     const messageIdsAfterReload = await page.evaluate(() => {
       try {
@@ -124,10 +154,17 @@ test.describe('Conversion SDK — offline resilience', () => {
     // Recover collector and verify delivery
     failCollect = false
     await page.reload()
-    await page.waitForTimeout(2000)
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () => window.localStorage.getItem('utua_event_queue') !== null
+          ),
+        { timeout: 5000 }
+      )
+      .toBe(true)
 
     await page.click('#track-impression')
-    await page.waitForTimeout(3000)
 
     // After collector recovers, the reloaded page should deliver the persisted events
     await expect
