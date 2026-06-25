@@ -79,4 +79,54 @@ describe('Conversion Collector plugin', () => {
     )
     expect(segmentCalls).toHaveLength(0)
   })
+
+  it('flushes pending events when visibilitychange moves to hidden', async () => {
+    Object.defineProperty(navigator, 'sendBeacon', {
+      value: () => false,
+      configurable: true,
+    })
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      configurable: true,
+    })
+
+    const collector = conversionCollectorPlugin({
+      endpoint: COLLECTOR_ENDPOINT,
+      retryAttempts: 0,
+      flushIntervalMs: 60_000,
+      batchSize: 10,
+    })
+
+    const [analytics] = await AnalyticsBrowser.load(
+      {
+        writeKey: 'conversion-pipeline',
+        cdnSettings: conversionCdnSettingsMinimal,
+        plugins: [
+          envEnrichment,
+          sessionEnrichment({ endpoint: COLLECTOR_ENDPOINT }),
+          collector,
+        ],
+      },
+      {
+        integrations: { 'Segment.io': false },
+      }
+    )
+
+    await analytics.track('hidden_flush', {})
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    document.dispatchEvent(new Event('visibilitychange'))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      COLLECTOR_ENDPOINT,
+      expect.objectContaining({ keepalive: true })
+    )
+    const body = JSON.parse(
+      String(fetchMock.mock.calls[0]?.[1]?.body)
+    ) as Array<{
+      event?: string
+    }>
+    expect(body[0]?.event).toBe('hidden_flush')
+  })
 })

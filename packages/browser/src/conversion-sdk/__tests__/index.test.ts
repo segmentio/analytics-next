@@ -2,6 +2,7 @@ import { getOrCreateAnonymousId } from '../../plugins/conversion-collector/lib/s
 import { isValidUuidV4 } from '../../plugins/conversion-collector/lib/uuid'
 import {
   attachToWindow,
+  bootstrapConversionAnalyticsFromWindow,
   flush,
   getDebugInfo,
   getQueueSize,
@@ -165,6 +166,36 @@ describe('Conversion SDK public API', () => {
     expect(analytics?.flush).toBeUndefined()
   })
 
+  it('bootstraps the full global contract on window.analytics and aliases', async () => {
+    resetAnalyticsSingleton()
+    ;(window as unknown as Record<string, unknown>).analytics = {
+      writeKey: 'conversion-pipeline',
+      config: {
+        appName: 'test-app',
+        flushIntervalMs: 10000,
+        batchSize: 10,
+        retryAttempts: 0,
+        enableGptSlotEvents: false,
+      },
+      queue: [],
+    }
+
+    await bootstrapConversionAnalyticsFromWindow()
+
+    const w = window as unknown as Record<string, Record<string, unknown>>
+    const analytics = w.analytics
+    expect(analytics).toBe(w._analytics)
+    expect(analytics).toBe(w.ConversionAnalytics)
+    expect(analytics).toBe(w._ConversionAnalytics)
+    expect(typeof analytics?.init).toBe('function')
+    expect(typeof analytics?.track).toBe('function')
+    expect(typeof analytics?.identify).toBe('function')
+    expect(typeof analytics?.page).toBe('function')
+    expect(analytics?.loaded).toBe(true)
+    expect(analytics?.writeKey).toBe('conversion-pipeline')
+    expect(typeof analytics?._sessionId).toBe('string')
+  })
+
   it('returns debug info for copy workflows', async () => {
     await track('debug_event', {})
     const info = getDebugInfo()
@@ -190,9 +221,10 @@ describe('Conversion SDK public API', () => {
   it('enriches page with taxonomy when enablePageTaxonomy is on', async () => {
     installBrowserGlobals({
       location: {
-        href: 'https://example.com/usa-cc-mastercardbuilt-p1?utm_source=google&gclid=abc',
+        href: 'https://example.com/usa-cc-mastercardbuilt-p1?utm_source=google&gclid=abc&fbclid=fb&ttclid=tt&msclkid=ms&twclid=tw',
         pathname: '/usa-cc-mastercardbuilt-p1',
-        search: '?utm_source=google&gclid=abc',
+        search:
+          '?utm_source=google&gclid=abc&fbclid=fb&ttclid=tt&msclkid=ms&twclid=tw',
       },
     })
 
@@ -228,10 +260,21 @@ describe('Conversion SDK public API', () => {
     expect(pageProps?.custom).toBe(true)
 
     const pageContext = body[0]?.context as {
-      campaign?: { source?: string; gclid?: string }
+      campaign?: {
+        source?: string
+        gclid?: string
+        fbclid?: string
+        ttclid?: string
+        msclkid?: string
+        twclid?: string
+      }
     }
     expect(pageContext.campaign?.source).toBe('google')
     expect(pageContext.campaign?.gclid).toBe('abc')
+    expect(pageContext.campaign?.fbclid).toBe('fb')
+    expect(pageContext.campaign?.ttclid).toBe('tt')
+    expect(pageContext.campaign?.msclkid).toBe('ms')
+    expect(pageContext.campaign?.twclid).toBe('tw')
   })
 
   it('requeues batch when request fails', async () => {
@@ -256,6 +299,43 @@ describe('Conversion SDK public API', () => {
     await flush().catch(() => undefined)
     expect(getQueueSize()).toBe(1)
   })
+
+  it.each([
+    ['gclid', 'gclid'],
+    ['fbclid', 'fbclid'],
+    ['ttclid', 'ttclid'],
+    ['tt_clid', 'ttclid'],
+    ['msclkid', 'msclkid'],
+    ['twclid', 'twclid'],
+  ])(
+    'enriches context.campaign with %s click-id',
+    async (paramKey, campaignKey) => {
+      resetAnalyticsSingleton('conversion-pipeline', {
+        flushIntervalMs: 10000,
+        batchSize: 10,
+        retryAttempts: 0,
+        enableGptSlotEvents: false,
+      })
+      installBrowserGlobals({
+        location: {
+          href: `https://example.com/?${paramKey}=test-val`,
+          pathname: '/',
+          search: `?${paramKey}=test-val`,
+        },
+      })
+
+      await track('click_test', {})
+      await flush()
+
+      const [, options] = fetchCalls[0] as [
+        RequestInfo | URL,
+        RequestInit | undefined
+      ]
+      const body = JSON.parse(String(options?.body)) as CollectPayload
+      const campaign = body[0]?.context?.campaign as Record<string, string>
+      expect(campaign[campaignKey]).toBe('test-val')
+    }
+  )
 
   it('enriches events with lotame traits when lotameClientId is configured', async () => {
     const profile = {

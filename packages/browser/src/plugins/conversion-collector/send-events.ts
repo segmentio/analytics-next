@@ -118,7 +118,7 @@ export function sendCollectViaBeacon(endpoint: string, body: string): boolean {
   ) {
     return false
   }
-  if (body.length > BEACON_PAYLOAD_LIMIT_BYTES) {
+  if (new Blob([body]).size > BEACON_PAYLOAD_LIMIT_BYTES) {
     return false
   }
   const blob = new Blob([body], { type: 'application/json' })
