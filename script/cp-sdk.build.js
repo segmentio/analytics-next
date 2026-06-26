@@ -1468,9 +1468,12 @@ var PREFERRED_STUB_GLOBALS = [
     'analytics',
     '_analytics',
 ];
-function isConfiguredStub(candidate) {
+function isStubContainer(candidate) {
     return (candidate != null &&
-        typeof candidate === 'object' &&
+        (typeof candidate === 'object' || typeof candidate === 'function'));
+}
+function isConfiguredStub(candidate) {
+    return (isStubContainer(candidate) &&
         ('config' in candidate || 'queue' in candidate || 'writeKey' in candidate));
 }
 function resolveStub(w) {
@@ -1484,7 +1487,7 @@ function resolveStub(w) {
     for (var _a = 0, STUB_GLOBALS_1 = STUB_GLOBALS; _a < STUB_GLOBALS_1.length; _a++) {
         var key = STUB_GLOBALS_1[_a];
         var candidate = w[key];
-        if (candidate && typeof candidate === 'object') {
+        if (isStubContainer(candidate)) {
             return candidate;
         }
     }
