@@ -1437,381 +1437,6 @@ function isFunction(val) {
 
 /***/ }),
 
-/***/ 5177:
-/*!******************************!*\
-  !*** ./src/browser/index.ts ***!
-  \******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   AnalyticsBrowser: () => (/* binding */ AnalyticsBrowser),
-/* harmony export */   loadCDNSettings: () => (/* binding */ loadCDNSettings)
-/* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _lib_get_process_env__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lib/get-process-env */ 6340);
-/* harmony import */ var _lib_parse_cdn__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../lib/parse-cdn */ 2911);
-/* harmony import */ var _core_analytics__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../core/analytics */ 8339);
-/* harmony import */ var _core_context__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../core/context */ 8456);
-/* harmony import */ var _lib_merged_options__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../lib/merged-options */ 5835);
-/* harmony import */ var _segment_analytics_generic_utils__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @segment/analytics-generic-utils */ 8115);
-/* harmony import */ var _plugins_env_enrichment__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../plugins/env-enrichment */ 6761);
-/* harmony import */ var _plugins_remote_loader__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../plugins/remote-loader */ 2016);
-/* harmony import */ var _plugins_segmentio__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../plugins/segmentio */ 9099);
-/* harmony import */ var _core_buffer__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../core/buffer */ 8347);
-/* harmony import */ var _core_inspector__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ../core/inspector */ 4077);
-/* harmony import */ var _core_stats__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../core/stats */ 8900);
-/* harmony import */ var _lib_global_analytics_helper__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../lib/global-analytics-helper */ 6091);
-/* harmony import */ var _lib_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../lib/fetch */ 8970);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function loadCDNSettings(writeKey, baseUrl) {
-    return (0,_lib_fetch__WEBPACK_IMPORTED_MODULE_0__.fetch)("".concat(baseUrl, "/v1/projects/").concat(writeKey, "/settings"))
-        .then(function (res) {
-        if (!res.ok) {
-            return res.text().then(function (errorResponseMessage) {
-                throw new Error(errorResponseMessage);
-            });
-        }
-        return res.json();
-    })
-        .catch(function (err) {
-        console.error(err.message);
-        throw err;
-    });
-}
-function hasLegacyDestinations(settings) {
-    return ((0,_lib_get_process_env__WEBPACK_IMPORTED_MODULE_1__.getProcessEnv)().NODE_ENV !== 'test' &&
-        // just one integration means segmentio
-        Object.keys(settings.integrations).length > 1);
-}
-function hasTsubMiddleware(settings) {
-    var _a, _b, _c;
-    return ((0,_lib_get_process_env__WEBPACK_IMPORTED_MODULE_1__.getProcessEnv)().NODE_ENV !== 'test' &&
-        ((_c = (_b = (_a = settings.middlewareSettings) === null || _a === void 0 ? void 0 : _a.routingRules) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0) > 0);
-}
-/**
- * With AJS classic, we allow users to call setAnonymousId before the library initialization.
- * This is important because some of the destinations will use the anonymousId during the initialization,
- * and if we set anonId afterwards, that wouldn’t impact the destination.
- *
- * Also Ensures events can be registered before library initialization.
- * This is important so users can register to 'initialize' and any events that may fire early during setup.
- */
-function flushPreBuffer(analytics, buffer) {
-    (0,_core_buffer__WEBPACK_IMPORTED_MODULE_2__.flushSetAnonymousID)(analytics, buffer);
-    (0,_core_buffer__WEBPACK_IMPORTED_MODULE_2__.flushOn)(analytics, buffer);
-}
-/**
- * Finish flushing buffer and cleanup.
- */
-function flushFinalBuffer(analytics, queryString, buffer) {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__awaiter)(this, void 0, Promise, function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__generator)(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, flushQueryString(analytics, queryString)];
-                case 1:
-                    _a.sent();
-                    (0,_core_buffer__WEBPACK_IMPORTED_MODULE_2__.flushAnalyticsCallsInNewTask)(analytics, buffer);
-                    return [2 /*return*/];
-            }
-        });
-    });
-}
-var getQueryString = function () {
-    var _a, _b;
-    var hash = (_a = window.location.hash) !== null && _a !== void 0 ? _a : '';
-    var search = (_b = window.location.search) !== null && _b !== void 0 ? _b : '';
-    var term = search.length ? search : hash.replace(/(?=#).*(?=\?)/, '');
-    return term;
-};
-var flushQueryString = function (analytics, queryString) { return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__awaiter)(void 0, void 0, Promise, function () {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__generator)(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                if (!queryString.includes('ajs_')) return [3 /*break*/, 2];
-                return [4 /*yield*/, analytics.queryString(queryString).catch(console.error)];
-            case 1:
-                _a.sent();
-                _a.label = 2;
-            case 2: return [2 /*return*/];
-        }
-    });
-}); };
-function registerPlugins(writeKey, cdnSettings, analytics, options, pluginLikes, legacyIntegrationSources, preInitBuffer) {
-    var _a, _b, _c;
-    if (pluginLikes === void 0) { pluginLikes = []; }
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__awaiter)(this, void 0, Promise, function () {
-        var pluginsFromSettings, pluginSources, tsubMiddleware, _d, legacyDestinations, _e, schemaFilter, _f, mergedSettings, remotePlugins, basePlugins, shouldIgnoreSegmentio, _g, _h, ctx;
-        var _this = this;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__generator)(this, function (_j) {
-            switch (_j.label) {
-                case 0:
-                    flushPreBuffer(analytics, preInitBuffer);
-                    pluginsFromSettings = pluginLikes === null || pluginLikes === void 0 ? void 0 : pluginLikes.filter(function (pluginLike) { return typeof pluginLike === 'object'; });
-                    pluginSources = pluginLikes === null || pluginLikes === void 0 ? void 0 : pluginLikes.filter(function (pluginLike) {
-                        return typeof pluginLike === 'function' &&
-                            typeof pluginLike.pluginName === 'string';
-                    });
-                    if (!hasTsubMiddleware(cdnSettings)) return [3 /*break*/, 2];
-                    return [4 /*yield*/, __webpack_require__.e(/*! import() | tsub-middleware */ "tsub-middleware").then(__webpack_require__.bind(__webpack_require__, /*! ../plugins/routing-middleware */ 31)).then(function (mod) {
-                            return mod.tsubMiddleware(cdnSettings.middlewareSettings.routingRules);
-                        })];
-                case 1:
-                    _d = _j.sent();
-                    return [3 /*break*/, 3];
-                case 2:
-                    _d = undefined;
-                    _j.label = 3;
-                case 3:
-                    tsubMiddleware = _d;
-                    if (!(hasLegacyDestinations(cdnSettings) || legacyIntegrationSources.length > 0)) return [3 /*break*/, 5];
-                    return [4 /*yield*/, __webpack_require__.e(/*! import() | ajs-destination */ "ajs-destination").then(__webpack_require__.bind(__webpack_require__, /*! ../plugins/ajs-destination */ 6555)).then(function (mod) {
-                            return mod.ajsDestinations(writeKey, cdnSettings, analytics.integrations, options, tsubMiddleware, legacyIntegrationSources);
-                        })];
-                case 4:
-                    _e = _j.sent();
-                    return [3 /*break*/, 6];
-                case 5:
-                    _e = [];
-                    _j.label = 6;
-                case 6:
-                    legacyDestinations = _e;
-                    if (!cdnSettings.legacyVideoPluginsEnabled) return [3 /*break*/, 8];
-                    return [4 /*yield*/, __webpack_require__.e(/*! import() | legacyVideos */ "legacyVideos").then(__webpack_require__.bind(__webpack_require__, /*! ../plugins/legacy-video-plugins */ 8162)).then(function (mod) {
-                            return mod.loadLegacyVideoPlugins(analytics);
-                        })];
-                case 7:
-                    _j.sent();
-                    _j.label = 8;
-                case 8:
-                    if (!((_a = options.plan) === null || _a === void 0 ? void 0 : _a.track)) return [3 /*break*/, 10];
-                    return [4 /*yield*/, __webpack_require__.e(/*! import() | schemaFilter */ "schemaFilter").then(__webpack_require__.bind(__webpack_require__, /*! ../plugins/schema-filter */ 3542)).then(function (mod) {
-                            var _a;
-                            return mod.schemaFilter((_a = options.plan) === null || _a === void 0 ? void 0 : _a.track, cdnSettings);
-                        })];
-                case 9:
-                    _f = _j.sent();
-                    return [3 /*break*/, 11];
-                case 10:
-                    _f = undefined;
-                    _j.label = 11;
-                case 11:
-                    schemaFilter = _f;
-                    mergedSettings = (0,_lib_merged_options__WEBPACK_IMPORTED_MODULE_4__.mergedOptions)(cdnSettings, options);
-                    return [4 /*yield*/, (0,_plugins_remote_loader__WEBPACK_IMPORTED_MODULE_5__.remoteLoader)(cdnSettings, analytics.integrations, mergedSettings, options, tsubMiddleware, pluginSources).catch(function (err) {
-                            console.error('Failed to load remote plugins', err);
-                            return [];
-                        })];
-                case 12:
-                    remotePlugins = _j.sent();
-                    basePlugins = (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__spreadArray)([_plugins_env_enrichment__WEBPACK_IMPORTED_MODULE_6__.envEnrichment], legacyDestinations, true), remotePlugins, true);
-                    if (schemaFilter) {
-                        basePlugins.push(schemaFilter);
-                    }
-                    shouldIgnoreSegmentio = (((_b = options.integrations) === null || _b === void 0 ? void 0 : _b.All) === false &&
-                        !options.integrations['Segment.io']) ||
-                        (options.integrations && options.integrations['Segment.io'] === false);
-                    if (!!shouldIgnoreSegmentio) return [3 /*break*/, 14];
-                    _h = (_g = basePlugins).push;
-                    return [4 /*yield*/, (0,_plugins_segmentio__WEBPACK_IMPORTED_MODULE_7__.segmentio)(analytics, mergedSettings['Segment.io'], cdnSettings.integrations)];
-                case 13:
-                    _h.apply(_g, [_j.sent()]);
-                    _j.label = 14;
-                case 14: return [4 /*yield*/, analytics.register.apply(analytics, (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__spreadArray)([], basePlugins, false), pluginsFromSettings, false))];
-                case 15:
-                    ctx = _j.sent();
-                    // register user-defined plugins registered via analytics.register()
-                    return [4 /*yield*/, (0,_core_buffer__WEBPACK_IMPORTED_MODULE_2__.flushRegister)(analytics, preInitBuffer)];
-                case 16:
-                    // register user-defined plugins registered via analytics.register()
-                    _j.sent();
-                    if (!Object.entries((_c = cdnSettings.enabledMiddleware) !== null && _c !== void 0 ? _c : {}).some(function (_a) {
-                        var enabled = _a[1];
-                        return enabled;
-                    })) return [3 /*break*/, 18];
-                    return [4 /*yield*/, __webpack_require__.e(/*! import() | remoteMiddleware */ "remoteMiddleware").then(__webpack_require__.bind(__webpack_require__, /*! ../plugins/remote-middleware */ 9231)).then(function (_a) {
-                            var remoteMiddlewares = _a.remoteMiddlewares;
-                            return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__awaiter)(_this, void 0, void 0, function () {
-                                var middleware, promises;
-                                return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__generator)(this, function (_b) {
-                                    switch (_b.label) {
-                                        case 0: return [4 /*yield*/, remoteMiddlewares(ctx, cdnSettings, options.obfuscate)];
-                                        case 1:
-                                            middleware = _b.sent();
-                                            promises = middleware.map(function (mdw) {
-                                                return analytics.addSourceMiddleware(mdw);
-                                            });
-                                            return [2 /*return*/, Promise.all(promises)];
-                                    }
-                                });
-                            });
-                        })];
-                case 17:
-                    _j.sent();
-                    _j.label = 18;
-                case 18: 
-                // register any user-defined plugins added via analytics.addSourceMiddleware()
-                return [4 /*yield*/, (0,_core_buffer__WEBPACK_IMPORTED_MODULE_2__.flushAddSourceMiddleware)(analytics, preInitBuffer)];
-                case 19:
-                    // register any user-defined plugins added via analytics.addSourceMiddleware()
-                    _j.sent();
-                    return [2 /*return*/, ctx];
-            }
-        });
-    });
-}
-function loadAnalytics(settings, options, preInitBuffer) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-    if (options === void 0) { options = {}; }
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__awaiter)(this, void 0, Promise, function () {
-        var queryString, cdnURL, cdnSettings, _k, disabled, retryQueue, analytics, plugins, classicIntegrations, segmentLoadOptions, ctx;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__generator)(this, function (_l) {
-            switch (_l.label) {
-                case 0:
-                    // return no-op analytics instance if disabled
-                    if (options.disable === true) {
-                        return [2 /*return*/, [new _core_analytics__WEBPACK_IMPORTED_MODULE_8__.NullAnalytics(), _core_context__WEBPACK_IMPORTED_MODULE_9__.Context.system()]];
-                    }
-                    if (options.globalAnalyticsKey)
-                        (0,_lib_global_analytics_helper__WEBPACK_IMPORTED_MODULE_10__.setGlobalAnalyticsKey)(options.globalAnalyticsKey);
-                    // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
-                    if (settings.cdnURL)
-                        (0,_lib_parse_cdn__WEBPACK_IMPORTED_MODULE_11__.setGlobalCDNUrl)(settings.cdnURL);
-                    if (options.initialPageview) {
-                        // capture the page context early, so it's always up-to-date
-                        preInitBuffer.add(new _core_buffer__WEBPACK_IMPORTED_MODULE_2__.PreInitMethodCall('page', []));
-                    }
-                    queryString = getQueryString();
-                    cdnURL = (_a = settings.cdnURL) !== null && _a !== void 0 ? _a : (0,_lib_parse_cdn__WEBPACK_IMPORTED_MODULE_11__.getCDN)();
-                    if (!((_b = settings.cdnSettings) !== null && _b !== void 0)) return [3 /*break*/, 1];
-                    _k = _b;
-                    return [3 /*break*/, 3];
-                case 1: return [4 /*yield*/, loadCDNSettings(settings.writeKey, cdnURL)];
-                case 2:
-                    _k = (_l.sent());
-                    _l.label = 3;
-                case 3:
-                    cdnSettings = _k;
-                    if (options.updateCDNSettings) {
-                        cdnSettings = options.updateCDNSettings(cdnSettings);
-                    }
-                    if (!(typeof options.disable === 'function')) return [3 /*break*/, 5];
-                    return [4 /*yield*/, options.disable(cdnSettings)];
-                case 4:
-                    disabled = _l.sent();
-                    if (disabled) {
-                        return [2 /*return*/, [new _core_analytics__WEBPACK_IMPORTED_MODULE_8__.NullAnalytics(), _core_context__WEBPACK_IMPORTED_MODULE_9__.Context.system()]];
-                    }
-                    _l.label = 5;
-                case 5:
-                    retryQueue = (_d = (_c = cdnSettings.integrations['Segment.io']) === null || _c === void 0 ? void 0 : _c.retryQueue) !== null && _d !== void 0 ? _d : true;
-                    options = (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)({ retryQueue: retryQueue }, options);
-                    analytics = new _core_analytics__WEBPACK_IMPORTED_MODULE_8__.Analytics((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)({}, settings), { cdnSettings: cdnSettings, cdnURL: cdnURL }), options);
-                    (0,_core_inspector__WEBPACK_IMPORTED_MODULE_12__.attachInspector)(analytics);
-                    plugins = (_e = settings.plugins) !== null && _e !== void 0 ? _e : [];
-                    classicIntegrations = (_f = settings.classicIntegrations) !== null && _f !== void 0 ? _f : [];
-                    segmentLoadOptions = (_g = options.integrations) === null || _g === void 0 ? void 0 : _g['Segment.io'];
-                    _core_stats__WEBPACK_IMPORTED_MODULE_13__.Stats.initRemoteMetrics((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)({}, cdnSettings.metrics), { host: (_h = segmentLoadOptions === null || segmentLoadOptions === void 0 ? void 0 : segmentLoadOptions.apiHost) !== null && _h !== void 0 ? _h : (_j = cdnSettings.metrics) === null || _j === void 0 ? void 0 : _j.host, protocol: segmentLoadOptions === null || segmentLoadOptions === void 0 ? void 0 : segmentLoadOptions.protocol }));
-                    return [4 /*yield*/, registerPlugins(settings.writeKey, cdnSettings, analytics, options, plugins, classicIntegrations, preInitBuffer)];
-                case 6:
-                    ctx = _l.sent();
-                    analytics.initialized = true;
-                    analytics.emit('initialize', settings, options);
-                    return [4 /*yield*/, flushFinalBuffer(analytics, queryString, preInitBuffer)];
-                case 7:
-                    _l.sent();
-                    return [2 /*return*/, [analytics, ctx]];
-            }
-        });
-    });
-}
-/**
- * The public browser interface for Segment Analytics
- *
- * @example
- * ```ts
- *  export const analytics = new AnalyticsBrowser()
- *  analytics.load({ writeKey: 'foo' })
- * ```
- * @link https://github.com/segmentio/analytics-next/#readme
- */
-var AnalyticsBrowser = /** @class */ (function (_super) {
-    (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__extends)(AnalyticsBrowser, _super);
-    function AnalyticsBrowser() {
-        var _this = this;
-        var _a = (0,_segment_analytics_generic_utils__WEBPACK_IMPORTED_MODULE_14__.createDeferred)(), loadStart = _a.promise, resolveLoadStart = _a.resolve;
-        _this = _super.call(this, function (buffer) {
-            return loadStart.then(function (_a) {
-                var settings = _a[0], options = _a[1];
-                return loadAnalytics(settings, options, buffer);
-            });
-        }) || this;
-        _this._resolveLoadStart = function (settings, options) {
-            return resolveLoadStart([settings, options]);
-        };
-        return _this;
-    }
-    /**
-     * Fully initialize an analytics instance, including:
-     *
-     * * Fetching settings from the segment CDN (by default).
-     * * Fetching all remote destinations configured by the user (if applicable).
-     * * Flushing buffered analytics events.
-     * * Loading all middleware.
-     *
-     * Note:️  This method should only be called *once* in your application.
-     *
-     * @example
-     * ```ts
-     * export const analytics = new AnalyticsBrowser()
-     * analytics.load({ writeKey: 'foo' })
-     * ```
-     */
-    AnalyticsBrowser.prototype.load = function (settings, options) {
-        if (options === void 0) { options = {}; }
-        this._resolveLoadStart(settings, options);
-        return this;
-    };
-    /**
-     * Instantiates an object exposing Analytics methods.
-     *
-     * @example
-     * ```ts
-     * const ajs = AnalyticsBrowser.load({ writeKey: '<YOUR_WRITE_KEY>' })
-     *
-     * ajs.track("foo")
-     * ...
-     * ```
-     */
-    AnalyticsBrowser.load = function (settings, options) {
-        if (options === void 0) { options = {}; }
-        return new AnalyticsBrowser().load(settings, options);
-    };
-    AnalyticsBrowser.standalone = function (writeKey, options) {
-        return AnalyticsBrowser.load({ writeKey: writeKey }, options).then(function (res) { return res[0]; });
-    };
-    return AnalyticsBrowser;
-}(_core_buffer__WEBPACK_IMPORTED_MODULE_2__.AnalyticsBuffered));
-
-
-
-/***/ }),
-
 /***/ 2720:
 /*!*****************************************!*\
   !*** ./src/conversion-sdk/bootstrap.ts ***!
@@ -1823,79 +1448,87 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   bootstrapConversionAnalyticsFromWindow: () => (/* binding */ bootstrapConversionAnalyticsFromWindow)
 /* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _conversion_analytics_browser__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./conversion-analytics-browser */ 7316);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _conversion_analytics_browser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./conversion-analytics-browser */ 7316);
+/* harmony import */ var _write_key_config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./write-key-config */ 6270);
+/* harmony import */ var _plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../plugins/conversion-collector/lib/session */ 6217);
 
 
-/** Snippet stub lives here so `window.Analytics` stays free for other tools. */
+
+
+var STUB_GLOBALS = [
+    'analytics',
+    '_analytics',
+    'ConversionAnalytics',
+    '_ConversionAnalytics',
+];
 function resolveStub(w) {
-    var _a;
-    return ((_a = w._ConversionAnalytics) !== null && _a !== void 0 ? _a : w.ConversionAnalytics);
+    for (var _i = 0, STUB_GLOBALS_1 = STUB_GLOBALS; _i < STUB_GLOBALS_1.length; _i++) {
+        var key = STUB_GLOBALS_1[_i];
+        var candidate = w[key];
+        if (candidate && typeof candidate === 'object') {
+            return candidate;
+        }
+    }
+    return undefined;
 }
 function hydrateStub(stub, api) {
     Object.assign(stub, {
         instance: api.instance,
         init: api.init,
-        start: api.start,
-        stop: api.stop,
-        flush: api.flush,
         track: api.track,
         identify: api.identify,
         page: api.page,
-        getDebugInfo: api.getDebugInfo,
-        getQueueSize: api.getQueueSize,
         config: api.config,
+        writeKey: api.writeKey,
         version: api.version,
         loaded: api.loaded,
     });
+    // Object.assign would snapshot a getter as a plain string — keep live read-only access.
+    Object.defineProperty(stub, '_sessionId', {
+        get: function () { return (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_0__.getCurrentSessionId)(); },
+        configurable: true,
+        enumerable: true,
+    });
 }
-function attachGlobal(w, api) {
+function attachGlobals(w, api, globalName) {
+    w[globalName] = api;
+    if (globalName !== 'analytics') {
+        w.analytics = api;
+    }
+    w._analytics = api;
     w.ConversionAnalytics = api;
     w._ConversionAnalytics = api;
 }
-function toConfig(stub) {
-    var _a;
-    var cfg = (_a = stub === null || stub === void 0 ? void 0 : stub.config) !== null && _a !== void 0 ? _a : {};
-    return {
-        endpoint: cfg.endpoint,
-        appName: cfg.appName,
-        debug: cfg.debug,
-        flushIntervalMs: cfg.flushIntervalMs,
-        batchSize: cfg.batchSize,
-        retryAttempts: cfg.retryAttempts,
-        headers: cfg.headers,
-        getContext: cfg.getContext,
-        getSessionId: cfg.getSessionId,
-        getVisitorCountry: cfg.getVisitorCountry,
-        isTrackingAllowed: cfg.isTrackingAllowed,
-        respectDoNotTrack: cfg.respectDoNotTrack,
-        onError: cfg.onError,
-        defaultPhoneCountryCode: cfg.defaultPhoneCountryCode,
-        enableGptSlotEvents: cfg.enableGptSlotEvents,
-    };
+function toBootstrapConfig(stub) {
+    var _a, _b;
+    if (stub === null || stub === void 0 ? void 0 : stub.writeKey) {
+        return (0,_write_key_config__WEBPACK_IMPORTED_MODULE_1__.resolveInitConfig)(stub.writeKey, stub.config);
+    }
+    if ((_a = stub === null || stub === void 0 ? void 0 : stub.config) === null || _a === void 0 ? void 0 : _a.writeKey) {
+        return (0,_write_key_config__WEBPACK_IMPORTED_MODULE_1__.resolveInitConfig)(stub.config.writeKey, stub.config);
+    }
+    return (0,_write_key_config__WEBPACK_IMPORTED_MODULE_1__.resolveInitConfig)((_b = stub === null || stub === void 0 ? void 0 : stub.config) !== null && _b !== void 0 ? _b : {});
 }
 function bootstrapConversionAnalyticsFromWindow() {
-    var _a, _b, _c;
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-        var w, stub, config, analytics, api, apiRecord, queuedSnapshot, _i, queuedSnapshot_1, call, arg0, error_1, hostQueuedPage, error_2;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_d) {
-            switch (_d.label) {
+    var _a, _b, _c, _d;
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__awaiter)(this, void 0, Promise, function () {
+        var w, stub, config, analytics, api, globalName, apiRecord, queuedSnapshot, _i, queuedSnapshot_1, call, error_1, hostQueuedPage, error_2;
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__generator)(this, function (_e) {
+            switch (_e.label) {
                 case 0:
                     if (typeof window === 'undefined') {
                         return [2 /*return*/];
                     }
                     w = window;
                     stub = resolveStub(w);
-                    config = toConfig(stub);
-                    return [4 /*yield*/, _conversion_analytics_browser__WEBPACK_IMPORTED_MODULE_1__.ConversionAnalyticsBrowser.load(config)];
+                    config = toBootstrapConfig(stub);
+                    return [4 /*yield*/, _conversion_analytics_browser__WEBPACK_IMPORTED_MODULE_3__.ConversionAnalyticsBrowser.load(config)];
                 case 1:
-                    analytics = _d.sent();
+                    analytics = _e.sent();
                     api = {
                         instance: analytics,
-                        init: function (next) { return analytics.init(next); },
-                        start: function () { return analytics.start(); },
-                        stop: function () { return analytics.stop(); },
-                        flush: function () { return analytics.flush(); },
+                        init: function (writeKeyOrConfig, options) { return analytics.init(writeKeyOrConfig, options); },
                         track: function (event, payload, options) {
                             return analytics.track(event, payload, options);
                         },
@@ -1904,7 +1537,7 @@ function bootstrapConversionAnalyticsFromWindow() {
                         },
                         page: function (name, properties, options) {
                             var props = typeof name === 'string'
-                                ? (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({ name: name }, (typeof properties === 'object' && properties
+                                ? (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)({ name: name }, (typeof properties === 'object' && properties
                                     ? properties
                                     : {})) : typeof name === 'object' && name
                                 ? name
@@ -1913,83 +1546,78 @@ function bootstrapConversionAnalyticsFromWindow() {
                                     : {};
                             return analytics.page(props, options);
                         },
-                        getDebugInfo: function () { return analytics.getDebugInfo(); },
-                        getQueueSize: function () { return analytics.getQueueSize(); },
                         config: config,
+                        writeKey: config.writeKey,
                         version: '1.0',
                         loaded: true,
+                        get _sessionId() {
+                            return (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_0__.getCurrentSessionId)();
+                        },
                     };
+                    globalName = (_a = config.globalName) !== null && _a !== void 0 ? _a : 'analytics';
                     apiRecord = api;
-                    queuedSnapshot = ((_a = stub === null || stub === void 0 ? void 0 : stub.queue) === null || _a === void 0 ? void 0 : _a.length) ? stub.queue.slice() : [];
+                    queuedSnapshot = ((_b = stub === null || stub === void 0 ? void 0 : stub.queue) === null || _b === void 0 ? void 0 : _b.length) ? stub.queue.slice() : [];
                     if (stub != null) {
                         hydrateStub(stub, apiRecord);
+                        w[globalName] = stub;
+                        if (globalName !== 'analytics') {
+                            w.analytics = stub;
+                        }
+                        w._analytics = stub;
                         w.ConversionAnalytics = stub;
                         w._ConversionAnalytics = stub;
                     }
                     else {
-                        attachGlobal(w, apiRecord);
+                        attachGlobals(w, apiRecord, globalName);
                     }
                     _i = 0, queuedSnapshot_1 = queuedSnapshot;
-                    _d.label = 2;
+                    _e.label = 2;
                 case 2:
-                    if (!(_i < queuedSnapshot_1.length)) return [3 /*break*/, 15];
+                    if (!(_i < queuedSnapshot_1.length)) return [3 /*break*/, 12];
                     call = queuedSnapshot_1[_i];
-                    _d.label = 3;
+                    _e.label = 3;
                 case 3:
-                    _d.trys.push([3, 13, , 14]);
+                    _e.trys.push([3, 10, , 11]);
                     if (!(call.type === 'track')) return [3 /*break*/, 5];
                     return [4 /*yield*/, api.track(call.arguments[0], call.arguments[1], call.arguments[2])];
                 case 4:
-                    _d.sent();
-                    return [3 /*break*/, 12];
+                    _e.sent();
+                    return [3 /*break*/, 9];
                 case 5:
                     if (!(call.type === 'identify')) return [3 /*break*/, 7];
                     return [4 /*yield*/, api.identify(call.arguments[0], call.arguments[1], call.arguments[2])];
                 case 6:
-                    _d.sent();
-                    return [3 /*break*/, 12];
+                    _e.sent();
+                    return [3 /*break*/, 9];
                 case 7:
                     if (!(call.type === 'page')) return [3 /*break*/, 9];
                     return [4 /*yield*/, api.page(call.arguments[0], call.arguments[1], call.arguments[2])];
                 case 8:
-                    _d.sent();
-                    return [3 /*break*/, 12];
-                case 9:
-                    if (!(call.type === 'init')) return [3 /*break*/, 10];
-                    arg0 = call.arguments[0];
-                    if (arg0 && typeof arg0 === 'object') {
-                        api.init(arg0);
-                    }
-                    return [3 /*break*/, 12];
+                    _e.sent();
+                    _e.label = 9;
+                case 9: return [3 /*break*/, 11];
                 case 10:
-                    if (!(call.type === 'flush')) return [3 /*break*/, 12];
-                    return [4 /*yield*/, api.flush()];
+                    error_1 = _e.sent();
+                    (_c = config.onError) === null || _c === void 0 ? void 0 : _c.call(config, error_1);
+                    return [3 /*break*/, 11];
                 case 11:
-                    _d.sent();
-                    _d.label = 12;
-                case 12: return [3 /*break*/, 14];
-                case 13:
-                    error_1 = _d.sent();
-                    (_b = config.onError) === null || _b === void 0 ? void 0 : _b.call(config, error_1);
-                    return [3 /*break*/, 14];
-                case 14:
                     _i++;
                     return [3 /*break*/, 2];
-                case 15:
+                case 12:
                     hostQueuedPage = queuedSnapshot.some(function (call) { return call.type === 'page'; });
-                    if (!!hostQueuedPage) return [3 /*break*/, 19];
-                    _d.label = 16;
-                case 16:
-                    _d.trys.push([16, 18, , 19]);
+                    if (!!hostQueuedPage) return [3 /*break*/, 16];
+                    _e.label = 13;
+                case 13:
+                    _e.trys.push([13, 15, , 16]);
                     return [4 /*yield*/, api.page()];
-                case 17:
-                    _d.sent();
-                    return [3 /*break*/, 19];
-                case 18:
-                    error_2 = _d.sent();
-                    (_c = config.onError) === null || _c === void 0 ? void 0 : _c.call(config, error_2);
-                    return [3 /*break*/, 19];
-                case 19: return [2 /*return*/];
+                case 14:
+                    _e.sent();
+                    return [3 /*break*/, 16];
+                case 15:
+                    error_2 = _e.sent();
+                    (_d = config.onError) === null || _d === void 0 ? void 0 : _d.call(config, error_2);
+                    return [3 /*break*/, 16];
+                case 16: return [2 /*return*/];
             }
         });
     });
@@ -2060,8 +1688,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   toCollectorSettings: () => (/* binding */ toCollectorSettings)
 /* harmony export */ });
 var DEFAULT_INIT_CONFIG = {
-    endpoint: '/collector',
-    flushIntervalMs: 2000,
+    endpoint: '/collect',
+    flushIntervalMs: 3000,
     batchSize: 10,
     retryAttempts: 2,
     debug: false,
@@ -2082,7 +1710,11 @@ function toCollectorSettings(config) {
         defaultPhoneCountryCode: config.defaultPhoneCountryCode,
         isTrackingAllowed: config.isTrackingAllowed,
         respectDoNotTrack: (_e = config.respectDoNotTrack) !== null && _e !== void 0 ? _e : DEFAULT_INIT_CONFIG.respectDoNotTrack,
-        enableGptSlotEvents: config.enableGptSlotEvents !== false,
+        enableGptSlotEvents: config.enableGptSlotEvents === true,
+        enableConsentEnrichment: config.enableConsentEnrichment === true,
+        enableContextEnrichment: config.enableContextEnrichment === true,
+        enableIdentifyHashing: config.enableIdentifyHashing === true,
+        enablePageTaxonomy: config.enablePageTaxonomy === true,
     };
 }
 
@@ -2108,14 +1740,14 @@ var ConversionAnalyticsBrowser = /** @class */ (function () {
     function ConversionAnalyticsBrowser() {
         this.client = new _conversion_client__WEBPACK_IMPORTED_MODULE_0__.ConversionClient();
     }
-    ConversionAnalyticsBrowser.load = function (config) {
+    ConversionAnalyticsBrowser.load = function (writeKeyOrConfig, options) {
         return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
             var analytics;
             return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         analytics = new ConversionAnalyticsBrowser();
-                        analytics.init(config);
+                        analytics.init(writeKeyOrConfig, options);
                         return [4 /*yield*/, analytics.client.getAnalyticsInstance()];
                     case 1:
                         _a.sent();
@@ -2124,8 +1756,8 @@ var ConversionAnalyticsBrowser = /** @class */ (function () {
             });
         });
     };
-    ConversionAnalyticsBrowser.prototype.init = function (config) {
-        this.client.init(config);
+    ConversionAnalyticsBrowser.prototype.init = function (writeKeyOrConfig, options) {
+        this.client.init(writeKeyOrConfig, options);
     };
     ConversionAnalyticsBrowser.prototype.start = function () {
         this.client.start();
@@ -2215,15 +1847,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ConversionClient: () => (/* binding */ ConversionClient)
 /* harmony export */ });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _browser__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../browser */ 5177);
-/* harmony import */ var _plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../plugins/conversion-collector */ 3093);
-/* harmony import */ var _plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../plugins/conversion-collector */ 7234);
-/* harmony import */ var _plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../plugins/conversion-collector */ 9721);
-/* harmony import */ var _plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../plugins/conversion-collector/lib/session */ 1644);
-/* harmony import */ var _debug__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./debug */ 1522);
-/* harmony import */ var _collector_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./collector-runtime */ 4504);
+/* harmony import */ var _plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../plugins/conversion-collector/lib/session */ 6217);
+/* harmony import */ var _collector_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./collector-runtime */ 4504);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ 398);
-/* harmony import */ var _legacy_args__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./legacy-args */ 3753);
+/* harmony import */ var _gpt_plugin__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gpt-plugin */ 603);
+/* harmony import */ var _lean_load__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./lean-load */ 9245);
+/* harmony import */ var _legacy_args__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./legacy-args */ 3753);
+/* harmony import */ var _write_key_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./write-key-config */ 6270);
 
 
 
@@ -2240,8 +1870,8 @@ var ConversionClient = /** @class */ (function () {
         this.analytics = null;
         this.bootstrapGeneration = 0;
     }
-    ConversionClient.prototype.init = function (config) {
-        this.config = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, _config__WEBPACK_IMPORTED_MODULE_1__.DEFAULT_INIT_CONFIG), config);
+    ConversionClient.prototype.init = function (writeKeyOrConfig, options) {
+        this.config = (0,_write_key_config__WEBPACK_IMPORTED_MODULE_2__.resolveInitConfig)(writeKeyOrConfig, options);
         this.lastError = undefined;
         var previousAnalytics = this.analytics;
         var previousLoadPromise = this.loadPromise;
@@ -2255,7 +1885,7 @@ var ConversionClient = /** @class */ (function () {
             var _a;
             return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
                 switch (_b.label) {
-                    case 0: return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.stopCollectorQueue)(analytics)];
+                    case 0: return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_3__.stopCollectorQueue)(analytics)];
                     case 1:
                         _b.sent();
                         _b.label = 2;
@@ -2308,24 +1938,17 @@ var ConversionClient = /** @class */ (function () {
     };
     ConversionClient.prototype.bootstrap = function (generation) {
         return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-            var collectorSettings, useGpt, plugins, analytics;
+            var extraPlugins, analytics, mountDebugPanel;
             var _this = this;
             return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        collectorSettings = (0,_config__WEBPACK_IMPORTED_MODULE_1__.toCollectorSettings)(this.config);
-                        useGpt = this.config.enableGptSlotEvents !== false;
-                        plugins = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)([], (0,_plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_3__.conversionPipelinePlugins)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, collectorSettings), { enableGptSlotEvents: false })), true), (useGpt ? [(0,_plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_4__.conversionGptSlotEventsPlugin)()] : []), true);
-                        return [4 /*yield*/, _browser__WEBPACK_IMPORTED_MODULE_5__.AnalyticsBrowser.load({
-                                writeKey: 'conversion-pipeline',
-                                cdnSettings: _plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_6__.conversionCdnSettingsMinimal,
-                                cdnURL: 'https://cdn.conversion-pipeline.local',
-                                plugins: plugins,
-                            }, {
-                                integrations: { 'Segment.io': false },
-                            })];
+                        extraPlugins = this.config.enableGptSlotEvents
+                            ? [(0,_gpt_plugin__WEBPACK_IMPORTED_MODULE_4__.conversionGptSlotEventsPlugin)()]
+                            : [];
+                        return [4 /*yield*/, (0,_lean_load__WEBPACK_IMPORTED_MODULE_5__.loadLeanConversionAnalytics)(this.config, extraPlugins)];
                     case 1:
-                        analytics = (_a.sent())[0];
+                        analytics = _a.sent();
                         if (!(generation !== this.bootstrapGeneration)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.stopAnalyticsInstance(analytics)];
                     case 2:
@@ -2338,11 +1961,15 @@ var ConversionClient = /** @class */ (function () {
                             _this.lastError = reason instanceof Error ? reason.message : String(reason);
                             (_c = (_b = _this.config).onError) === null || _c === void 0 ? void 0 : _c.call(_b, reason);
                         });
-                        if (this.config.debug) {
-                            (0,_debug__WEBPACK_IMPORTED_MODULE_7__.mountDebugPanel)(function () { return _this.getDebugInfo(); });
-                        }
+                        if (!this.config.debug) return [3 /*break*/, 5];
+                        return [4 /*yield*/, __webpack_require__.e(/*! import() */ "src_conversion-sdk_debug_index_ts").then(__webpack_require__.bind(__webpack_require__, /*! ./debug */ 1522))];
+                    case 4:
+                        mountDebugPanel = (_a.sent()).mountDebugPanel;
+                        mountDebugPanel(function () { return _this.getDebugInfo(); });
+                        _a.label = 5;
+                    case 5:
                         this.analytics = analytics;
-                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics);
+                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_3__.resolveCollectorBuffer)(analytics);
                         return [2 /*return*/, analytics];
                 }
             });
@@ -2388,7 +2015,7 @@ var ConversionClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
                         analytics = _b.sent();
-                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_8__.normalizeTrackCall)(event, payload), eventName = _a.eventName, properties = _a.properties;
+                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_6__.normalizeTrackCall)(event, payload), eventName = _a.eventName, properties = _a.properties;
                         return [4 /*yield*/, analytics.track(eventName, properties, options)];
                     case 2:
                         _b.sent();
@@ -2421,7 +2048,7 @@ var ConversionClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
                         analytics = _b.sent();
-                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_8__.normalizeIdentifyCall)(userOrEvent, traits), userId = _a.userId, normalizedTraits = _a.traits;
+                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_6__.normalizeIdentifyCall)(userOrEvent, traits), userId = _a.userId, normalizedTraits = _a.traits;
                         if (!userId) return [3 /*break*/, 3];
                         return [4 /*yield*/, analytics.identify(userId, normalizedTraits, options)];
                     case 2:
@@ -2443,10 +2070,10 @@ var ConversionClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
                         analytics = _a.sent();
-                        return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.flushCollectorQueue)(analytics)];
+                        return [4 /*yield*/, (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_3__.flushCollectorQueue)(analytics)];
                     case 2:
                         _a.sent();
-                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_2__.resolveCollectorBuffer)(analytics);
+                        this.collectorBuffer = (0,_collector_runtime__WEBPACK_IMPORTED_MODULE_3__.resolveCollectorBuffer)(analytics);
                         return [2 /*return*/];
                 }
             });
@@ -2460,7 +2087,7 @@ var ConversionClient = /** @class */ (function () {
         var _a, _b, _c, _d;
         return {
             endpoint: (_a = this.config.endpoint) !== null && _a !== void 0 ? _a : _config__WEBPACK_IMPORTED_MODULE_1__.DEFAULT_INIT_CONFIG.endpoint,
-            sessionId: (_d = (_c = (_b = this.config).getSessionId) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_9__.getOrCreateSessionId)(),
+            sessionId: (_d = (_c = (_b = this.config).getSessionId) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_7__.getCurrentSessionId)(),
             queueSize: this.getQueueSize(),
             lastError: this.lastError,
         };
@@ -2479,89 +2106,77 @@ var ConversionClient = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 1522:
-/*!*******************************************!*\
-  !*** ./src/conversion-sdk/debug/index.ts ***!
-  \*******************************************/
+/***/ 603:
+/*!******************************************!*\
+  !*** ./src/conversion-sdk/gpt-plugin.ts ***!
+  \******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   copyToClipboard: () => (/* binding */ copyToClipboard),
-/* harmony export */   mountDebugPanel: () => (/* binding */ mountDebugPanel)
+/* harmony export */   conversionGptSlotEventsPlugin: () => (/* binding */ conversionGptSlotEventsPlugin)
+/* harmony export */ });
+/** No-op GPT plugin — replaced at build time when CONVERSION_INCLUDE_GPT=1. */
+function conversionGptSlotEventsPlugin() {
+    return {
+        name: 'Conversion GPT Slot Events (disabled)',
+        type: 'utility',
+        version: '0.0.0',
+        isLoaded: function () { return true; },
+        load: function () { return Promise.resolve(); },
+    };
+}
+
+
+/***/ }),
+
+/***/ 9245:
+/*!*****************************************!*\
+  !*** ./src/conversion-sdk/lean-load.ts ***!
+  \*****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadLeanConversionAnalytics: () => (/* binding */ loadLeanConversionAnalytics)
 /* harmony export */ });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _core_analytics__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../core/analytics */ 8339);
+/* harmony import */ var _plugins_env_enrichment__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../plugins/env-enrichment */ 6761);
+/* harmony import */ var _plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../plugins/conversion-collector */ 3093);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ 398);
 
-var PANEL_ID = 'bg-analytics-debug-panel';
-function copyToClipboard(content) {
+
+
+
+
+/**
+ * Minimal Analytics bootstrap — skips AnalyticsBrowser.load (remote-loader, CDN, segmentio).
+ */
+function loadLeanConversionAnalytics(config, extraPlugins) {
     var _a;
-    if (typeof navigator !== 'undefined' && ((_a = navigator.clipboard) === null || _a === void 0 ? void 0 : _a.writeText)) {
-        return navigator.clipboard.writeText(content);
-    }
-    return Promise.resolve();
-}
-function mountDebugPanel(getInfo) {
-    var _this = this;
-    if (typeof document === 'undefined') {
-        return;
-    }
-    var existing = document.getElementById(PANEL_ID);
-    if (existing) {
-        return;
-    }
-    var panel = document.createElement('div');
-    panel.id = PANEL_ID;
-    panel.style.position = 'fixed';
-    panel.style.bottom = '16px';
-    panel.style.right = '16px';
-    panel.style.zIndex = '99999';
-    panel.style.padding = '10px';
-    panel.style.background = '#111827';
-    panel.style.color = '#f9fafb';
-    panel.style.borderRadius = '8px';
-    panel.style.font = '12px monospace';
-    panel.style.maxWidth = '320px';
-    panel.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-    var title = document.createElement('div');
-    title.textContent = 'Bg Analytics Debug';
-    title.style.fontWeight = '700';
-    title.style.marginBottom = '8px';
-    var pre = document.createElement('pre');
-    pre.style.margin = '0 0 8px 0';
-    pre.style.whiteSpace = 'pre-wrap';
-    var copyButton = document.createElement('button');
-    copyButton.textContent = 'Copy debug JSON';
-    copyButton.style.width = '100%';
-    copyButton.style.border = '1px solid #374151';
-    copyButton.style.background = '#1f2937';
-    copyButton.style.color = '#f9fafb';
-    copyButton.style.padding = '6px 8px';
-    copyButton.style.borderRadius = '6px';
-    copyButton.style.cursor = 'pointer';
-    var render = function () {
-        pre.textContent = JSON.stringify(getInfo(), null, 2);
-    };
-    copyButton.addEventListener('click', function () { return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(_this, void 0, void 0, function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, copyToClipboard(JSON.stringify(getInfo(), null, 2))];
+    if (extraPlugins === void 0) { extraPlugins = []; }
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
+        var writeKey, collectorSettings, analytics, pipeline;
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    writeKey = (_a = config.writeKey) !== null && _a !== void 0 ? _a : 'conversion-pipeline';
+                    collectorSettings = (0,_config__WEBPACK_IMPORTED_MODULE_1__.toCollectorSettings)(config);
+                    analytics = new _core_analytics__WEBPACK_IMPORTED_MODULE_2__.Analytics({
+                        writeKey: writeKey,
+                        cdnURL: 'https://cdn.conversion-pipeline.local',
+                    });
+                    pipeline = (0,_plugins_conversion_collector__WEBPACK_IMPORTED_MODULE_3__.conversionPipelinePlugins)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, collectorSettings), { enableGptSlotEvents: false }));
+                    return [4 /*yield*/, analytics.register.apply(analytics, (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)([_plugins_env_enrichment__WEBPACK_IMPORTED_MODULE_4__.envEnrichment], pipeline, false), extraPlugins, false))];
                 case 1:
-                    _a.sent();
-                    copyButton.textContent = 'Copied!';
-                    setTimeout(function () {
-                        copyButton.textContent = 'Copy debug JSON';
-                    }, 1200);
-                    return [2 /*return*/];
+                    _b.sent();
+                    return [2 /*return*/, analytics];
             }
         });
-    }); });
-    panel.appendChild(title);
-    panel.appendChild(pre);
-    panel.appendChild(copyButton);
-    document.body.appendChild(panel);
-    render();
-    setInterval(render, 1000);
+    });
 }
 
 
@@ -2608,6 +2223,51 @@ function normalizeIdentifyCall(userOrEvent, traits) {
         };
     }
     return { traits: userOrEvent };
+}
+
+
+/***/ }),
+
+/***/ 6270:
+/*!************************************************!*\
+  !*** ./src/conversion-sdk/write-key-config.ts ***!
+  \************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   isWriteKey: () => (/* binding */ isWriteKey),
+/* harmony export */   resolveInitConfig: () => (/* binding */ resolveInitConfig)
+/* harmony export */ });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./config */ 398);
+
+
+/** Hardcoded config per writeKey (MVP). Phase 2: remote Configuration Server. */
+var WRITE_KEY_REGISTRY = {
+    'conversion-pipeline': {
+        writeKey: 'conversion-pipeline',
+        endpoint: '/collect',
+        appName: 'conversion-pipeline',
+        enableGptSlotEvents: false,
+    },
+};
+function isWriteKey(value) {
+    return value.length > 0 && !value.startsWith('{');
+}
+function resolveInitConfig(writeKeyOrConfig, options) {
+    var _a, _b;
+    if (typeof writeKeyOrConfig === 'string') {
+        var base = (_a = WRITE_KEY_REGISTRY[writeKeyOrConfig]) !== null && _a !== void 0 ? _a : {
+            writeKey: writeKeyOrConfig,
+            endpoint: _config__WEBPACK_IMPORTED_MODULE_0__.DEFAULT_INIT_CONFIG.endpoint,
+            appName: writeKeyOrConfig,
+            enableGptSlotEvents: false,
+        };
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)({}, _config__WEBPACK_IMPORTED_MODULE_0__.DEFAULT_INIT_CONFIG), base), options), { writeKey: writeKeyOrConfig });
+    }
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)({}, _config__WEBPACK_IMPORTED_MODULE_0__.DEFAULT_INIT_CONFIG), writeKeyOrConfig), options), { writeKey: (_b = writeKeyOrConfig.writeKey) !== null && _b !== void 0 ? _b : 'conversion-pipeline' });
 }
 
 
@@ -3075,7 +2735,7 @@ var Analytics = /** @class */ (function (_super) {
                             var sourceMiddlewarePlugin, integrations, plugin;
                             return (0,tslib__WEBPACK_IMPORTED_MODULE_5__.__generator)(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! ../../plugins/middleware */ 1418))];
+                                    case 0: return [4 /*yield*/, __webpack_require__.e(/*! import() | analytics-middleware */ "analytics-middleware").then(__webpack_require__.bind(__webpack_require__, /*! ../../plugins/middleware */ 1418))];
                                     case 1:
                                         sourceMiddlewarePlugin = (_a.sent()).sourceMiddlewarePlugin;
                                         integrations = {};
@@ -4020,31 +3680,6 @@ var EventFactory = /** @class */ (function (_super) {
 
 /***/ }),
 
-/***/ 4077:
-/*!*************************************!*\
-  !*** ./src/core/inspector/index.ts ***!
-  \*************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   attachInspector: () => (/* binding */ attachInspector)
-/* harmony export */ });
-/* harmony import */ var _lib_get_global__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../lib/get-global */ 5120);
-var _a;
-var _b;
-
-var env = (0,_lib_get_global__WEBPACK_IMPORTED_MODULE_0__.getGlobal)();
-// The code below assumes the inspector extension will use Object.assign
-// to add the inspect interface on to this object reference (unless the
-// extension code ran first and has already set up the variable)
-var inspectorHost = ((_a = (_b = env)['__SEGMENT_INSPECTOR__']) !== null && _a !== void 0 ? _a : (_b['__SEGMENT_INSPECTOR__'] = {}));
-var attachInspector = function (analytics) { var _a; return (_a = inspectorHost.attach) === null || _a === void 0 ? void 0 : _a.call(inspectorHost, analytics); };
-
-
-/***/ }),
-
 /***/ 7579:
 /*!*******************************************!*\
   !*** ./src/core/page/add-page-context.ts ***!
@@ -4207,29 +3842,6 @@ var Stats = /** @class */ (function (_super) {
     return Stats;
 }(_segment_analytics_core__WEBPACK_IMPORTED_MODULE_2__.CoreStats));
 
-
-
-/***/ }),
-
-/***/ 2822:
-/*!******************************************!*\
-  !*** ./src/core/stats/metric-helpers.ts ***!
-  \******************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   recordIntegrationMetric: () => (/* binding */ recordIntegrationMetric)
-/* harmony export */ });
-function recordIntegrationMetric(ctx, _a) {
-    var methodName = _a.methodName, integrationName = _a.integrationName, type = _a.type, _b = _a.didError, didError = _b === void 0 ? false : _b;
-    ctx.stats.increment("analytics_js.integration.invoke".concat(didError ? '.error' : ''), 1, [
-        "method:".concat(methodName),
-        "integration_name:".concat(integrationName),
-        "type:".concat(type),
-    ]);
-}
 
 
 /***/ }),
@@ -5119,38 +4731,6 @@ function clientHints(hints) {
 
 /***/ }),
 
-/***/ 7610:
-/*!***************************************!*\
-  !*** ./src/lib/embedded-write-key.ts ***!
-  \***************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   embeddedWriteKey: () => (/* binding */ embeddedWriteKey)
-/* harmony export */ });
-// This variable is used as an optional fallback for when customers
-// host or proxy their own analytics.js.
-try {
-    window.analyticsWriteKey = '__WRITE_KEY__';
-}
-catch (_) {
-    // @ eslint-disable-next-line
-}
-function embeddedWriteKey() {
-    if (window.analyticsWriteKey === undefined) {
-        return undefined;
-    }
-    // this is done so that we don't accidentally override every reference to __write_key__
-    return window.analyticsWriteKey !== ['__', 'WRITE', '_', 'KEY', '__'].join('')
-        ? window.analyticsWriteKey
-        : undefined;
-}
-
-
-/***/ }),
-
 /***/ 8970:
 /*!**************************!*\
   !*** ./src/lib/fetch.ts ***!
@@ -5208,31 +4788,6 @@ var getGlobal = function () {
     }
     return null;
 };
-
-
-/***/ }),
-
-/***/ 6340:
-/*!************************************!*\
-  !*** ./src/lib/get-process-env.ts ***!
-  \************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getProcessEnv: () => (/* binding */ getProcessEnv)
-/* harmony export */ });
-/**
- * Returns `process.env` if it is available in the environment.
- * Always returns an object make it similarly easy to use as `process.env`.
- */
-function getProcessEnv() {
-    if (typeof process === 'undefined' || !process.env) {
-        return {};
-    }
-    return process.env;
-}
 
 
 /***/ }),
@@ -5302,122 +4857,6 @@ var isThenable = function (value) {
         'then' in value &&
         typeof value.then === 'function';
 };
-
-
-/***/ }),
-
-/***/ 6238:
-/*!********************************!*\
-  !*** ./src/lib/load-script.ts ***!
-  \********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   loadScript: () => (/* binding */ loadScript),
-/* harmony export */   unloadScript: () => (/* binding */ unloadScript)
-/* harmony export */ });
-function findScript(src) {
-    var scripts = Array.prototype.slice.call(window.document.querySelectorAll('script'));
-    return scripts.find(function (s) { return s.src === src; });
-}
-/**
- * Load a script from a URL and append it to the document.
- */
-function loadScript(src, attributes) {
-    var found = findScript(src);
-    if (found !== undefined) {
-        var status = found === null || found === void 0 ? void 0 : found.getAttribute('status');
-        if (status === 'loaded') {
-            return Promise.resolve(found);
-        }
-        if (status === 'loading') {
-            return new Promise(function (resolve, reject) {
-                found.addEventListener('load', function () { return resolve(found); });
-                found.addEventListener('error', function (err) { return reject(err); });
-            });
-        }
-    }
-    return new Promise(function (resolve, reject) {
-        var _a;
-        var script = window.document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = src;
-        script.async = true;
-        script.setAttribute('status', 'loading');
-        for (var _i = 0, _b = Object.entries(attributes !== null && attributes !== void 0 ? attributes : {}); _i < _b.length; _i++) {
-            var _c = _b[_i], k = _c[0], v = _c[1];
-            script.setAttribute(k, v);
-        }
-        script.onload = function () {
-            script.onerror = script.onload = null;
-            script.setAttribute('status', 'loaded');
-            resolve(script);
-        };
-        script.onerror = function () {
-            script.onerror = script.onload = null;
-            script.setAttribute('status', 'error');
-            reject(new Error("Failed to load ".concat(src)));
-        };
-        var firstExistingScript = window.document.querySelector('script');
-        if (!firstExistingScript) {
-            window.document.head.appendChild(script);
-        }
-        else {
-            (_a = firstExistingScript.parentElement) === null || _a === void 0 ? void 0 : _a.insertBefore(script, firstExistingScript);
-        }
-    });
-}
-function unloadScript(src) {
-    var found = findScript(src);
-    if (found !== undefined) {
-        found.remove();
-    }
-    return Promise.resolve();
-}
-
-
-/***/ }),
-
-/***/ 5835:
-/*!***********************************!*\
-  !*** ./src/lib/merged-options.ts ***!
-  \***********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   mergedOptions: () => (/* binding */ mergedOptions)
-/* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-
-/**
- * Merge legacy settings and initialized Integration option overrides.
- *
- * This will merge any options that were passed from initialization into
- * overrides for settings that are returned by the Segment CDN.
- *
- * i.e. this allows for passing options directly into destinations from
- * the Analytics constructor.
- */
-function mergedOptions(cdnSettings, options) {
-    var _a;
-    var optionOverrides = Object.entries((_a = options.integrations) !== null && _a !== void 0 ? _a : {}).reduce(function (overrides, _a) {
-        var _b, _c;
-        var integration = _a[0], options = _a[1];
-        if (typeof options === 'object') {
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, overrides), (_b = {}, _b[integration] = options, _b));
-        }
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, overrides), (_c = {}, _c[integration] = {}, _c));
-    }, {});
-    return Object.entries(cdnSettings.integrations).reduce(function (integrationSettings, _a) {
-        var _b;
-        var integration = _a[0], settings = _a[1];
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, integrationSettings), (_b = {}, _b[integration] = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, settings), optionOverrides[integration]), _b));
-    }, {});
-}
 
 
 /***/ }),
@@ -5499,99 +4938,6 @@ var pWhile = function (condition, action) { return (0,tslib__WEBPACK_IMPORTED_MO
         return [2 /*return*/, loop(undefined)];
     });
 }); };
-
-
-/***/ }),
-
-/***/ 2911:
-/*!******************************!*\
-  !*** ./src/lib/parse-cdn.ts ***!
-  \******************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   getCDN: () => (/* binding */ getCDN),
-/* harmony export */   getLegacyAJSPath: () => (/* binding */ getLegacyAJSPath),
-/* harmony export */   getNextIntegrationsURL: () => (/* binding */ getNextIntegrationsURL),
-/* harmony export */   setGlobalCDNUrl: () => (/* binding */ setGlobalCDNUrl)
-/* harmony export */ });
-/* harmony import */ var _global_analytics_helper__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./global-analytics-helper */ 6091);
-/* harmony import */ var _embedded_write_key__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./embedded-write-key */ 7610);
-
-
-var analyticsScriptRegex = /(https:\/\/.*)\/analytics\.js\/v1\/(?:.*?)\/(?:platform|analytics.*)?/;
-var getCDNUrlFromScriptTag = function () {
-    var cdn;
-    var scripts = Array.prototype.slice.call(document.querySelectorAll('script'));
-    scripts.forEach(function (s) {
-        var _a;
-        var src = (_a = s.getAttribute('src')) !== null && _a !== void 0 ? _a : '';
-        var result = analyticsScriptRegex.exec(src);
-        if (result && result[1]) {
-            cdn = result[1];
-        }
-    });
-    return cdn;
-};
-var _globalCDN; // set globalCDN as in-memory singleton
-var getGlobalCDNUrl = function () {
-    var _a;
-    var result = _globalCDN !== null && _globalCDN !== void 0 ? _globalCDN : (_a = (0,_global_analytics_helper__WEBPACK_IMPORTED_MODULE_0__.getGlobalAnalytics)()) === null || _a === void 0 ? void 0 : _a._cdn;
-    return result;
-};
-var setGlobalCDNUrl = function (cdn) {
-    var globalAnalytics = (0,_global_analytics_helper__WEBPACK_IMPORTED_MODULE_0__.getGlobalAnalytics)();
-    if (globalAnalytics) {
-        globalAnalytics._cdn = cdn;
-    }
-    _globalCDN = cdn;
-};
-var getCDN = function () {
-    var globalCdnUrl = getGlobalCDNUrl();
-    if (globalCdnUrl)
-        return globalCdnUrl;
-    var cdnFromScriptTag = getCDNUrlFromScriptTag();
-    if (cdnFromScriptTag) {
-        return cdnFromScriptTag;
-    }
-    else {
-        // it's possible that the CDN is not found in the page because:
-        // - the script is loaded through a proxy
-        // - the script is removed after execution
-        // in this case, we fall back to the default Segment CDN
-        return "https://cdn.segment.com";
-    }
-};
-var getNextIntegrationsURL = function () {
-    var cdn = getCDN();
-    return "".concat(cdn, "/next-integrations");
-};
-/**
- * Replaces the CDN URL in the script tag with the one from Analytics.js 1.0
- *
- * @returns the path to Analytics JS 1.0
- **/
-function getLegacyAJSPath() {
-    var _a, _b, _c;
-    var writeKey = (_a = (0,_embedded_write_key__WEBPACK_IMPORTED_MODULE_1__.embeddedWriteKey)()) !== null && _a !== void 0 ? _a : (_b = (0,_global_analytics_helper__WEBPACK_IMPORTED_MODULE_0__.getGlobalAnalytics)()) === null || _b === void 0 ? void 0 : _b._writeKey;
-    var scripts = Array.prototype.slice.call(document.querySelectorAll('script'));
-    var path = undefined;
-    for (var _i = 0, scripts_1 = scripts; _i < scripts_1.length; _i++) {
-        var s = scripts_1[_i];
-        var src = (_c = s.getAttribute('src')) !== null && _c !== void 0 ? _c : '';
-        var result = analyticsScriptRegex.exec(src);
-        if (result && result[1]) {
-            path = src;
-            break;
-        }
-    }
-    if (path) {
-        return path.replace('analytics.min.js', 'analytics.classic.js');
-    }
-    return "https://cdn.segment.com/analytics.js/v1/".concat(writeKey, "/analytics.classic.js");
-}
 
 
 /***/ }),
@@ -5828,12 +5174,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   BatchBuffer: () => (/* binding */ BatchBuffer)
 /* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./lib/event-queue-storage */ 4358);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./lib/event-queue-storage */ 4358);
 /* harmony import */ var _send_events__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./send-events */ 2860);
 
 
 
+function incrementRetryCount(event) {
+    var _a;
+    var retryCount = ((_a = event._retryCount) !== null && _a !== void 0 ? _a : 0) + 1;
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, event), { _retryCount: retryCount });
+}
 var BatchBuffer = /** @class */ (function () {
     function BatchBuffer(config) {
         this.config = config;
@@ -5869,41 +5220,56 @@ var BatchBuffer = /** @class */ (function () {
         return this.queue.length;
     };
     BatchBuffer.prototype.hydrateFromStorage = function () {
-        var persisted = (0,_lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_0__.readPersistedEventQueue)();
+        var persisted = (0,_lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_1__.readPersistedEventQueue)();
         if (persisted.length > 0) {
-            this.queue = (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__spreadArray)([], persisted, true), this.queue, true);
+            this.queue = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)([], persisted, true), this.queue, true);
             this.persistQueue();
         }
     };
     BatchBuffer.prototype.persistQueue = function () {
-        (0,_lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_0__.writePersistedEventQueue)(this.queue);
+        (0,_lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_1__.writePersistedEventQueue)(this.queue);
     };
-    BatchBuffer.prototype.takeBatch = function (maxSize) {
+    BatchBuffer.prototype.persistQueueSync = function () {
+        (0,_lib_event_queue_storage__WEBPACK_IMPORTED_MODULE_1__.writePersistedEventQueueSync)(this.queue);
+    };
+    BatchBuffer.prototype.peekBatch = function (maxSize) {
         if (maxSize === void 0) { maxSize = this.config.batchSize; }
-        return this.queue.splice(0, maxSize);
+        return this.queue.slice(0, maxSize);
     };
-    BatchBuffer.prototype.requeueFront = function (batch) {
-        var _a;
-        (_a = this.queue).unshift.apply(_a, batch);
-        this.persistQueue();
+    BatchBuffer.prototype.removeBatch = function (count) {
+        this.queue.splice(0, count);
+    };
+    BatchBuffer.prototype.bumpRetryInPlace = function (count, sync) {
+        if (sync === void 0) { sync = false; }
+        for (var i = 0; i < count && i < this.queue.length; i += 1) {
+            this.queue[i] = incrementRetryCount(this.queue[i]);
+        }
+        if (sync) {
+            this.persistQueueSync();
+        }
+        else {
+            this.persistQueue();
+        }
     };
     BatchBuffer.prototype.flush = function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var batch, error_1;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
+            var batch, batchSize, error_1;
+            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (this.flushing || this.queue.length === 0) {
                             return [2 /*return*/];
                         }
                         this.flushing = true;
-                        batch = this.takeBatch();
+                        batch = this.peekBatch();
+                        batchSize = batch.length;
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, 4, 5]);
                         return [4 /*yield*/, (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.sendEventsToCollect)(batch, this.config)];
                     case 2:
                         _a.sent();
+                        this.removeBatch(batchSize);
                         this.persistQueue();
                         return [3 /*break*/, 5];
                     case 3:
@@ -5912,7 +5278,7 @@ var BatchBuffer = /** @class */ (function () {
                             this.persistQueue();
                             throw error_1;
                         }
-                        this.requeueFront(batch);
+                        this.bumpRetryInPlace(batchSize);
                         throw error_1;
                     case 4:
                         this.flushing = false;
@@ -5929,55 +5295,93 @@ var BatchBuffer = /** @class */ (function () {
      * Drains the queue. Uses sendBeacon on unload when the payload fits; otherwise keepalive fetch.
      */
     BatchBuffer.prototype.flushAll = function (options) {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var batch, body, error_2, error_3;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
+            var syncPersist, _loop_1, this_1;
+            var _this = this;
+            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         this.stop();
+                        syncPersist = (options === null || options === void 0 ? void 0 : options.unload) === true;
+                        _loop_1 = function () {
+                            var batch, batchSize, body, onSuccess, onRetryableFailure, error_2, error_3;
+                            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        batch = this_1.peekBatch(this_1.queue.length);
+                                        batchSize = batch.length;
+                                        body = (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.buildCollectRequestBody)(batch);
+                                        onSuccess = function () {
+                                            _this.removeBatch(batchSize);
+                                            if (syncPersist) {
+                                                _this.persistQueueSync();
+                                            }
+                                            else {
+                                                _this.persistQueue();
+                                            }
+                                        };
+                                        onRetryableFailure = function () {
+                                            _this.bumpRetryInPlace(batchSize, syncPersist);
+                                        };
+                                        if (!(options === null || options === void 0 ? void 0 : options.unload)) return [3 /*break*/, 4];
+                                        if ((0,_send_events__WEBPACK_IMPORTED_MODULE_2__.sendCollectViaBeacon)(this_1.config.endpoint, body)) {
+                                            onSuccess();
+                                            return [2 /*return*/, "continue"];
+                                        }
+                                        _b.label = 1;
+                                    case 1:
+                                        _b.trys.push([1, 3, , 4]);
+                                        return [4 /*yield*/, (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.deliverCollectPayload)(body, this_1.config, { keepalive: true })];
+                                    case 2:
+                                        _b.sent();
+                                        onSuccess();
+                                        return [2 /*return*/, "continue"];
+                                    case 3:
+                                        error_2 = _b.sent();
+                                        if (error_2 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError && !error_2.retryable) {
+                                            if (syncPersist) {
+                                                this_1.persistQueueSync();
+                                            }
+                                            else {
+                                                this_1.persistQueue();
+                                            }
+                                            throw error_2;
+                                        }
+                                        onRetryableFailure();
+                                        throw error_2;
+                                    case 4:
+                                        _b.trys.push([4, 6, , 7]);
+                                        return [4 /*yield*/, (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.sendEventsToCollect)(batch, this_1.config)];
+                                    case 5:
+                                        _b.sent();
+                                        onSuccess();
+                                        return [3 /*break*/, 7];
+                                    case 6:
+                                        error_3 = _b.sent();
+                                        if (error_3 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError && !error_3.retryable) {
+                                            if (syncPersist) {
+                                                this_1.persistQueueSync();
+                                            }
+                                            else {
+                                                this_1.persistQueue();
+                                            }
+                                            throw error_3;
+                                        }
+                                        onRetryableFailure();
+                                        throw error_3;
+                                    case 7: return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
                         _a.label = 1;
                     case 1:
-                        if (!(this.queue.length > 0)) return [3 /*break*/, 9];
-                        batch = this.takeBatch(this.queue.length);
-                        body = (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.buildCollectRequestBody)(batch);
-                        if (!(options === null || options === void 0 ? void 0 : options.unload)) return [3 /*break*/, 5];
-                        if ((0,_send_events__WEBPACK_IMPORTED_MODULE_2__.sendCollectViaBeacon)(this.config.endpoint, body)) {
-                            this.persistQueue();
-                            return [3 /*break*/, 1];
-                        }
-                        _a.label = 2;
+                        if (!(this.queue.length > 0)) return [3 /*break*/, 3];
+                        return [5 /*yield**/, _loop_1()];
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.deliverCollectPayload)(body, this.config, { keepalive: true })];
-                    case 3:
                         _a.sent();
-                        this.persistQueue();
                         return [3 /*break*/, 1];
-                    case 4:
-                        error_2 = _a.sent();
-                        if (error_2 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError && !error_2.retryable) {
-                            this.persistQueue();
-                            throw error_2;
-                        }
-                        this.requeueFront(batch);
-                        throw error_2;
-                    case 5:
-                        _a.trys.push([5, 7, , 8]);
-                        return [4 /*yield*/, (0,_send_events__WEBPACK_IMPORTED_MODULE_2__.sendEventsToCollect)(batch, this.config)];
-                    case 6:
-                        _a.sent();
-                        this.persistQueue();
-                        return [3 /*break*/, 8];
-                    case 7:
-                        error_3 = _a.sent();
-                        if (error_3 instanceof _send_events__WEBPACK_IMPORTED_MODULE_2__.CollectDeliveryError && !error_3.retryable) {
-                            this.persistQueue();
-                            throw error_3;
-                        }
-                        this.requeueFront(batch);
-                        throw error_3;
-                    case 8: return [3 /*break*/, 1];
-                    case 9: return [2 /*return*/];
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -5989,121 +5393,31 @@ var BatchBuffer = /** @class */ (function () {
 
 /***/ }),
 
-/***/ 9721:
-/*!**********************************************************!*\
-  !*** ./src/plugins/conversion-collector/cdn-settings.ts ***!
-  \**********************************************************/
+/***/ 8799:
+/*!**********************************************************************!*\
+  !*** ./src/plugins/conversion-collector/context-to-collect-event.ts ***!
+  \**********************************************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   conversionCdnSettingsMinimal: () => (/* binding */ conversionCdnSettingsMinimal)
+/* harmony export */   contextToCollectEvent: () => (/* binding */ contextToCollectEvent)
 /* harmony export */ });
-/**
- * Minimal CDN settings for npm-only loads without calling the Segment CDN.
- * Pair with `integrations: { 'Segment.io': false }` and a custom collector plugin.
- */
-var conversionCdnSettingsMinimal = {
-    integrations: {
-        'Segment.io': {
-            apiKey: 'conversion-pipeline',
-        },
-    },
-};
-
-
-/***/ }),
-
-/***/ 3986:
-/*!*****************************************************************!*\
-  !*** ./src/plugins/conversion-collector/context-to-envelope.ts ***!
-  \*****************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   contextToEnvelope: () => (/* binding */ contextToEnvelope)
-/* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
 /* harmony import */ var _lib_to_facade__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../lib/to-facade */ 7536);
-/* harmony import */ var _lib_uuid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./lib/uuid */ 5129);
 
 
-
-function toIsoString(value) {
-    if (value instanceof Date) {
-        return value.toISOString();
-    }
-    if (typeof value === 'string' && value.length > 0) {
-        return value;
-    }
-    return new Date().toISOString();
-}
-function resolveEventName(json) {
-    if (typeof json.event === 'string' && json.event.length > 0) {
-        return json.event;
-    }
-    if (typeof json.name === 'string' && json.name.length > 0) {
-        return json.name;
-    }
-    return 'page';
-}
-function resolveEnvelopeType(json) {
-    if (json.type === 'identify') {
-        return 'identify';
-    }
-    if (json.type === 'track' || json.type === 'page' || json.type === 'screen') {
-        return 'track';
-    }
-    return null;
-}
+var SUPPORTED_TYPES = new Set(['track', 'page', 'identify', 'screen']);
 /**
- * Maps an analytics-next context to the UTUA collector envelope (`version: 2`).
+ * Maps an analytics-next context to the native Segment collect payload (no SDK-side flatten).
  */
-function contextToEnvelope(ctx, analytics) {
-    var _a, _b, _c, _d, _e, _f, _g;
+function contextToCollectEvent(ctx, _analytics) {
     var json = (0,_lib_to_facade__WEBPACK_IMPORTED_MODULE_0__.toFacade)(ctx.event).json();
-    var type = resolveEnvelopeType(json);
-    if (!type) {
+    if (!json.type || !SUPPORTED_TYPES.has(String(json.type))) {
         return null;
     }
-    var user = analytics.user();
-    var timestamp = toIsoString(json.timestamp);
-    var anonymousId = (_a = json.anonymousId) !== null && _a !== void 0 ? _a : user.anonymousId();
-    var userId = (_c = (_b = json.userId) !== null && _b !== void 0 ? _b : user.id()) !== null && _c !== void 0 ? _c : undefined;
-    var envelope = {
-        type: type,
-        anonymous_id: anonymousId,
-        user_id: userId || undefined,
-        context: ((_d = json.context) !== null && _d !== void 0 ? _d : {}),
-        integrations: json.integrations,
-        message_id: (function () {
-            var _a;
-            var id = (_a = json.messageId) !== null && _a !== void 0 ? _a : ctx.id;
-            return typeof id === 'string' && (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_1__.isValidUuidV4)(id) ? id : (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_1__.generateUuidV4)();
-        })(),
-        original_timestamp: timestamp,
-        timestamp: timestamp,
-        version: 2,
-    };
-    if (type === 'track') {
-        envelope.event_name = resolveEventName(json);
-        var properties = (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)({}, ((_e = json.properties) !== null && _e !== void 0 ? _e : {}));
-        delete properties.event_name;
-        delete properties.eventName;
-        envelope.properties =
-            Object.keys(properties).length > 0 ? properties : undefined;
-    }
-    if (type === 'identify') {
-        var traits = (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)({}, ((_f = json.traits) !== null && _f !== void 0 ? _f : {}));
-        envelope.traits = Object.keys(traits).length > 0 ? traits : undefined;
-        var properties = (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)({}, ((_g = json.properties) !== null && _g !== void 0 ? _g : {}));
-        envelope.properties =
-            Object.keys(properties).length > 0 ? properties : undefined;
-    }
-    return envelope;
+    return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)({}, json);
 }
 
 
@@ -6122,13 +5436,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
 /* harmony import */ var _batch_buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./batch-buffer */ 2455);
-/* harmony import */ var _context_to_envelope__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./context-to-envelope */ 3986);
+/* harmony import */ var _context_to_collect_event__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./context-to-collect-event */ 8799);
 /* harmony import */ var _runtime_registry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./runtime-registry */ 1322);
 
 
 
 
-var DEFAULT_FLUSH_INTERVAL_MS = 2000;
+var DEFAULT_FLUSH_INTERVAL_MS = 3000;
 var DEFAULT_BATCH_SIZE = 10;
 var DEFAULT_RETRY_ATTEMPTS = 2;
 function registerUnloadFlush(buffer) {
@@ -6165,18 +5479,18 @@ function conversionCollectorPlugin(settings) {
     var removeUnloadListeners;
     function deliver(ctx, flushImmediately) {
         return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var envelope, error_1, reason;
+            var collectEvent, error_1, reason;
             return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!analytics) {
                             return [2 /*return*/, ctx];
                         }
-                        envelope = (0,_context_to_envelope__WEBPACK_IMPORTED_MODULE_2__.contextToEnvelope)(ctx, analytics);
-                        if (!envelope) {
+                        collectEvent = (0,_context_to_collect_event__WEBPACK_IMPORTED_MODULE_2__.contextToCollectEvent)(ctx, analytics);
+                        if (!collectEvent) {
                             return [2 /*return*/, ctx];
                         }
-                        buffer.enqueue(envelope);
+                        buffer.enqueue(collectEvent);
                         if (!flushImmediately) return [3 /*break*/, 4];
                         _a.label = 1;
                     case 1:
@@ -6224,6 +5538,61 @@ function conversionCollectorPlugin(settings) {
         identify: function (ctx) { return deliver(ctx, true); },
         alias: function (ctx) { return Promise.resolve(ctx); },
         group: function (ctx) { return Promise.resolve(ctx); },
+    };
+}
+
+
+/***/ }),
+
+/***/ 9964:
+/*!****************************************************************************!*\
+  !*** ./src/plugins/conversion-collector/enrichment/click-id-enrichment.ts ***!
+  \****************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   clickIdEnrichment: () => (/* binding */ clickIdEnrichment)
+/* harmony export */ });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
+
+var CLICK_KEYS = ['gclid', 'fbclid', 'ttclid', 'tt_clid', 'msclkid'];
+function clickIdEnrichment() {
+    var enrich = function (ctx) {
+        var _a, _b;
+        var evtCtx = (_a = ctx.event.context) !== null && _a !== void 0 ? _a : {};
+        var search = typeof ((_b = evtCtx.page) === null || _b === void 0 ? void 0 : _b.search) === 'string' ? evtCtx.page.search : '';
+        if (!search) {
+            return ctx;
+        }
+        var usp = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+        var clickIds = {};
+        for (var _i = 0, CLICK_KEYS_1 = CLICK_KEYS; _i < CLICK_KEYS_1.length; _i++) {
+            var key = CLICK_KEYS_1[_i];
+            var v = usp.get(key);
+            if (v) {
+                clickIds[key === 'tt_clid' ? 'ttclid' : key] = v;
+            }
+        }
+        if (Object.keys(clickIds).length === 0) {
+            return ctx;
+        }
+        ctx.updateEvent('context', (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, evtCtx), { campaign: (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, evtCtx.campaign), clickIds) }));
+        return ctx;
+    };
+    return {
+        name: 'click-id-enrichment',
+        type: 'before',
+        version: '0.1.0',
+        isLoaded: function () { return true; },
+        load: function () { return Promise.resolve(); },
+        track: enrich,
+        identify: enrich,
+        page: enrich,
+        screen: enrich,
+        alias: enrich,
+        group: enrich,
     };
 }
 
@@ -6296,9 +5665,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   conversionContextEnrichment: () => (/* binding */ conversionContextEnrichment)
 /* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _lib_resolve_context__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lib/resolve-context */ 2754);
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _lib_resolve_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../lib/resolve-context */ 2754);
 /* harmony import */ var _lib_session__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../lib/session */ 1644);
+/* harmony import */ var _lib_session__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lib/session */ 6217);
 
 
 
@@ -6314,10 +5684,10 @@ function conversionContextEnrichment(settings) {
             analytics.user().anonymousId(bgAnonymousId);
         }
         ctx.updateEvent('anonymousId', bgAnonymousId);
-        var sessionId = (_b = (_a = settings.getSessionId) === null || _a === void 0 ? void 0 : _a.call(settings)) !== null && _b !== void 0 ? _b : (0,_lib_session__WEBPACK_IMPORTED_MODULE_0__.getOrCreateSessionId)();
-        var resolved = (0,_lib_resolve_context__WEBPACK_IMPORTED_MODULE_1__.resolveContext)(settings, { session_id: sessionId });
+        var sessionId = (_b = (_a = settings.getSessionId) === null || _a === void 0 ? void 0 : _a.call(settings)) !== null && _b !== void 0 ? _b : (0,_lib_session__WEBPACK_IMPORTED_MODULE_1__.getOrCreateSessionId)();
+        var resolved = (0,_lib_resolve_context__WEBPACK_IMPORTED_MODULE_2__.resolveContext)(settings);
         var evtCtx = (_c = ctx.event.context) !== null && _c !== void 0 ? _c : {};
-        ctx.updateEvent('context', (0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_2__.__assign)({}, evtCtx), resolved));
+        ctx.updateEvent('context', (0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_3__.__assign)({}, evtCtx), resolved), { sessionId: sessionId }));
         var traits = analytics.user().traits();
         if (traits && Object.keys(traits).length > 0) {
             ctx.updateEvent('context.traits', traits);
@@ -6931,11 +6301,20 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   MAX_PERSISTED_EVENTS: () => (/* binding */ MAX_PERSISTED_EVENTS),
 /* harmony export */   clearPersistedEventQueue: () => (/* binding */ clearPersistedEventQueue),
 /* harmony export */   readPersistedEventQueue: () => (/* binding */ readPersistedEventQueue),
-/* harmony export */   writePersistedEventQueue: () => (/* binding */ writePersistedEventQueue)
+/* harmony export */   writePersistedEventQueue: () => (/* binding */ writePersistedEventQueue),
+/* harmony export */   writePersistedEventQueueSync: () => (/* binding */ writePersistedEventQueueSync)
 /* harmony export */ });
 var EVENT_QUEUE_STORAGE_KEY = 'utua_event_queue';
 var MAX_PERSISTED_EVENTS = 100;
 var MAX_PERSISTED_BYTES = 1024 * 1024;
+var QUEUE_MUTEX_KEY = 'utua_event_queue:lock';
+var LOCK_TIMEOUT_MS = 50;
+var MAX_LOCK_ATTEMPTS = 3;
+var TAB_LOCK_OWNER = "".concat(Date.now(), "-").concat(Math.random());
+/**
+ * Best-effort cross-tab mutex via localStorage. Not a true CAS lock — two tabs
+ * can still race — but each tab only releases locks it owns.
+ */
 function isBrowserStorageAvailable() {
     if (typeof window === 'undefined') {
         return false;
@@ -6950,17 +6329,69 @@ function isBrowserStorageAvailable() {
         return false;
     }
 }
-function isValidEnvelope(value) {
+function tryAcquireLock(now) {
+    var rawLock = window.localStorage.getItem(QUEUE_MUTEX_KEY);
+    var lock = rawLock ? JSON.parse(rawLock) : null;
+    if (lock !== null && now <= lock.expires) {
+        return false;
+    }
+    window.localStorage.setItem(QUEUE_MUTEX_KEY, JSON.stringify({ expires: now + LOCK_TIMEOUT_MS, owner: TAB_LOCK_OWNER }));
+    return true;
+}
+function releaseOwnedLock() {
+    var rawLock = window.localStorage.getItem(QUEUE_MUTEX_KEY);
+    if (!rawLock) {
+        return;
+    }
+    try {
+        var lock = JSON.parse(rawLock);
+        if (lock.owner === TAB_LOCK_OWNER) {
+            window.localStorage.removeItem(QUEUE_MUTEX_KEY);
+        }
+    }
+    catch (_a) {
+        // ignore malformed lock
+    }
+}
+function withStorageMutex(fn, attempt) {
+    if (attempt === void 0) { attempt = 0; }
+    if (!isBrowserStorageAvailable()) {
+        fn();
+        return;
+    }
+    var now = Date.now();
+    if (tryAcquireLock(now)) {
+        try {
+            fn();
+        }
+        finally {
+            releaseOwnedLock();
+        }
+        return;
+    }
+    if (attempt < MAX_LOCK_ATTEMPTS) {
+        setTimeout(function () { return withStorageMutex(fn, attempt + 1); }, LOCK_TIMEOUT_MS);
+    }
+    else {
+        console.warn('[utua] queue lock timeout');
+        fn();
+    }
+}
+function isValidCollectEvent(value) {
     if (!value || typeof value !== 'object') {
         return false;
     }
-    var envelope = value;
-    return ((envelope.type === 'track' || envelope.type === 'identify') &&
-        typeof envelope.anonymous_id === 'string' &&
-        typeof envelope.message_id === 'string' &&
-        typeof envelope.timestamp === 'string' &&
-        envelope.version === 2 &&
-        typeof envelope.context === 'object');
+    var event = value;
+    var type = event.type;
+    if (type !== 'track' &&
+        type !== 'page' &&
+        type !== 'identify' &&
+        type !== 'screen') {
+        return false;
+    }
+    return (typeof event.messageId === 'string' &&
+        typeof event.anonymousId === 'string' &&
+        typeof event.timestamp === 'string');
 }
 function trimQueue(events) {
     var trimmed = events.slice(-MAX_PERSISTED_EVENTS);
@@ -6973,26 +6404,7 @@ function trimQueue(events) {
     }
     return [];
 }
-function readPersistedEventQueue() {
-    if (!isBrowserStorageAvailable()) {
-        return [];
-    }
-    try {
-        var raw = window.localStorage.getItem(EVENT_QUEUE_STORAGE_KEY);
-        if (!raw) {
-            return [];
-        }
-        var parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-        return parsed.filter(isValidEnvelope);
-    }
-    catch (_a) {
-        return [];
-    }
-}
-function writePersistedEventQueue(events) {
+function writeQueueToStorage(events) {
     if (!isBrowserStorageAvailable()) {
         return;
     }
@@ -7012,16 +6424,68 @@ function writePersistedEventQueue(events) {
         // Quota exceeded or storage blocked — drop persistence silently.
     }
 }
+function readPersistedEventQueue() {
+    if (!isBrowserStorageAvailable()) {
+        return [];
+    }
+    var result = [];
+    withStorageMutex(function () {
+        try {
+            var raw = window.localStorage.getItem(EVENT_QUEUE_STORAGE_KEY);
+            if (!raw) {
+                result = [];
+                return;
+            }
+            var parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) {
+                result = [];
+                return;
+            }
+            result = parsed.filter(isValidCollectEvent);
+        }
+        catch (_a) {
+            result = [];
+        }
+    });
+    return result;
+}
+function writePersistedEventQueue(events) {
+    if (!isBrowserStorageAvailable()) {
+        return;
+    }
+    withStorageMutex(function () {
+        writeQueueToStorage(events);
+    });
+}
+/** Synchronous write for page unload — avoids deferred mutex retries. */
+function writePersistedEventQueueSync(events) {
+    if (!isBrowserStorageAvailable()) {
+        return;
+    }
+    var now = Date.now();
+    if (tryAcquireLock(now)) {
+        try {
+            writeQueueToStorage(events);
+        }
+        finally {
+            releaseOwnedLock();
+        }
+        return;
+    }
+    writeQueueToStorage(events);
+}
 function clearPersistedEventQueue() {
     if (!isBrowserStorageAvailable()) {
         return;
     }
-    try {
-        window.localStorage.removeItem(EVENT_QUEUE_STORAGE_KEY);
-    }
-    catch (_a) {
-        // ignore
-    }
+    withStorageMutex(function () {
+        try {
+            window.localStorage.removeItem(EVENT_QUEUE_STORAGE_KEY);
+        }
+        catch (_a) {
+            // ignore
+        }
+    });
 }
 
 
@@ -7301,86 +6765,36 @@ function resolveContext(config, extraContext) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   SESSION_INACTIVITY_TTL_MS: () => (/* binding */ SESSION_INACTIVITY_TTL_MS),
+/* harmony export */   ACTIVITY_COOKIE: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.ACTIVITY_COOKIE),
+/* harmony export */   SESSION_COOKIE: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.SESSION_COOKIE),
+/* harmony export */   SESSION_INACTIVITY_MS: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.SESSION_INACTIVITY_MS),
+/* harmony export */   SESSION_INACTIVITY_TTL_MS: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.SESSION_INACTIVITY_MS),
+/* harmony export */   getCurrentSessionId: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.getCurrentSessionId),
 /* harmony export */   getOrCreateAnonymousId: () => (/* binding */ getOrCreateAnonymousId),
-/* harmony export */   getOrCreateSessionId: () => (/* binding */ getOrCreateSessionId)
+/* harmony export */   getOrCreateSessionId: () => (/* reexport safe */ _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__.getOrCreateSessionId)
 /* harmony export */ });
-/* harmony import */ var _uuid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./uuid */ 5129);
+/* harmony import */ var _uuid__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./uuid */ 5129);
+/* harmony import */ var _session_enrichment_session_manager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../session-enrichment/session-manager */ 6217);
 
-var SESSION_ID_COOKIE = '__bg_analytics_session_id';
-var SESSION_ACTIVITY_COOKIE = '__bg_analytics_session_activity';
-var ANONYMOUS_ID_KEY = '__bg_analytics_anonymous_id';
-/** Inactivity window aligned with PRD / Redis finalizer (5 minutes). */
-var SESSION_INACTIVITY_TTL_MS = 5 * 60 * 1000;
-function getCookie(name) {
-    if (typeof document === 'undefined') {
-        return null;
-    }
-    var escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    var match = document.cookie.match(new RegExp("(?:^|; )".concat(escaped, "=([^;]*)")));
-    return (match === null || match === void 0 ? void 0 : match[1]) != null ? decodeURIComponent(match[1]) : null;
-}
-function setCookie(name, value, maxAgeSeconds) {
-    var _a;
-    if (typeof document === 'undefined') {
-        return;
-    }
-    var maxAge = Math.max(1, Math.ceil(maxAgeSeconds));
-    var secure = typeof window !== 'undefined' && ((_a = window.location) === null || _a === void 0 ? void 0 : _a.protocol) === 'https:'
-        ? '; Secure'
-        : '';
-    document.cookie = "".concat(encodeURIComponent(name), "=").concat(encodeURIComponent(value), "; path=/; max-age=").concat(maxAge, "; SameSite=Lax").concat(secure);
-}
-function touchSessionCookies(sessionId, activityMs) {
-    var maxAgeSec = SESSION_INACTIVITY_TTL_MS / 1000;
-    setCookie(SESSION_ID_COOKIE, sessionId, maxAgeSec);
-    setCookie(SESSION_ACTIVITY_COOKIE, String(activityMs), maxAgeSec);
-}
-function getOrCreateSessionId() {
-    if (typeof window === 'undefined') {
-        return (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
-    }
-    var now = Date.now();
-    try {
-        var existingId = getCookie(SESSION_ID_COOKIE);
-        var lastActivityRaw = getCookie(SESSION_ACTIVITY_COOKIE);
-        var lastActivity = lastActivityRaw ? Number(lastActivityRaw) : 0;
-        if (existingId &&
-            (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.isValidUuidV4)(existingId) &&
-            lastActivity > 0 &&
-            now - lastActivity <= SESSION_INACTIVITY_TTL_MS) {
-            touchSessionCookies(existingId, now);
-            return existingId;
-        }
-    }
-    catch (_a) {
-        // fall through to new session
-    }
-    var nextId = (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
-    try {
-        touchSessionCookies(nextId, now);
-    }
-    catch (_b) {
-        // cookie unavailable
-    }
-    return nextId;
-}
+
+
+var ANONYMOUS_ID_KEY = 'utua_anonymous_id';
 function getOrCreateAnonymousId() {
     var _a, _b;
     if (typeof window === 'undefined') {
-        return (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
+        return (0,_uuid__WEBPACK_IMPORTED_MODULE_1__.generateUuidV4)();
     }
     try {
         var existing = (_a = window.localStorage) === null || _a === void 0 ? void 0 : _a.getItem(ANONYMOUS_ID_KEY);
-        if (existing && (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.isValidUuidV4)(existing)) {
+        if (existing && (0,_uuid__WEBPACK_IMPORTED_MODULE_1__.isValidUuidV4)(existing)) {
             return existing;
         }
-        var nextId = (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
+        var nextId = (0,_uuid__WEBPACK_IMPORTED_MODULE_1__.generateUuidV4)();
         (_b = window.localStorage) === null || _b === void 0 ? void 0 : _b.setItem(ANONYMOUS_ID_KEY, nextId);
         return nextId;
     }
     catch (_c) {
-        return (0,_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
+        return (0,_uuid__WEBPACK_IMPORTED_MODULE_1__.generateUuidV4)();
     }
 }
 
@@ -7501,12 +6915,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   conversionPipelinePlugins: () => (/* binding */ conversionPipelinePlugins)
 /* harmony export */ });
-/* harmony import */ var _enrichment_consent_enrichment__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enrichment/consent-enrichment */ 6406);
-/* harmony import */ var _enrichment_context_enrichment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./enrichment/context-enrichment */ 7141);
-/* harmony import */ var _enrichment_identify_enrichment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./enrichment/identify-enrichment */ 2998);
-/* harmony import */ var _enrichment_page_enrichment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./enrichment/page-enrichment */ 2407);
-/* harmony import */ var _gpt_slot_events__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./gpt-slot-events */ 7234);
-/* harmony import */ var _destination_plugin__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./destination-plugin */ 2674);
+/* harmony import */ var _enrichment_click_id_enrichment__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./enrichment/click-id-enrichment */ 9964);
+/* harmony import */ var _enrichment_consent_enrichment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./enrichment/consent-enrichment */ 6406);
+/* harmony import */ var _enrichment_context_enrichment__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./enrichment/context-enrichment */ 7141);
+/* harmony import */ var _enrichment_identify_enrichment__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./enrichment/identify-enrichment */ 2998);
+/* harmony import */ var _enrichment_page_enrichment__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./enrichment/page-enrichment */ 2407);
+/* harmony import */ var _gpt_slot_events__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./gpt-slot-events */ 7234);
+/* harmony import */ var _destination_plugin__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./destination-plugin */ 2674);
+/* harmony import */ var _session_enrichment__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./session-enrichment */ 9399);
+
+
 
 
 
@@ -7514,19 +6932,33 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /**
- * Registers the full UTUA conversion pipeline: consent → context → PII → page → collector (+ optional GPT).
- * Pass the returned array as `plugins` in `AnalyticsBrowser.load`.
+ * MVP UTUA pipeline: click-ids (before) → session (enrichment) → collector.
+ * Register together with `envEnrichment` in lean bootstrap.
+ * Optional legacy enrichments are off unless explicitly enabled.
  */
 function conversionPipelinePlugins(settings) {
     var plugins = [
-        (0,_enrichment_consent_enrichment__WEBPACK_IMPORTED_MODULE_0__.conversionConsentEnrichment)(settings),
-        (0,_enrichment_context_enrichment__WEBPACK_IMPORTED_MODULE_1__.conversionContextEnrichment)(settings),
-        (0,_enrichment_identify_enrichment__WEBPACK_IMPORTED_MODULE_2__.conversionIdentifyEnrichment)(settings),
-        (0,_enrichment_page_enrichment__WEBPACK_IMPORTED_MODULE_3__.conversionPageEnrichment)(settings),
-        (0,_destination_plugin__WEBPACK_IMPORTED_MODULE_4__.conversionCollectorPlugin)(settings),
+        (0,_enrichment_click_id_enrichment__WEBPACK_IMPORTED_MODULE_0__.clickIdEnrichment)(),
+        (0,_session_enrichment__WEBPACK_IMPORTED_MODULE_1__.sessionEnrichment)(settings),
+        (0,_destination_plugin__WEBPACK_IMPORTED_MODULE_2__.conversionCollectorPlugin)(settings),
     ];
+    if (settings.enableConsentEnrichment === true ||
+        typeof settings.isTrackingAllowed === 'function') {
+        plugins.unshift((0,_enrichment_consent_enrichment__WEBPACK_IMPORTED_MODULE_3__.conversionConsentEnrichment)(settings));
+    }
+    if (settings.enableContextEnrichment === true) {
+        plugins.unshift((0,_enrichment_context_enrichment__WEBPACK_IMPORTED_MODULE_4__.conversionContextEnrichment)(settings));
+    }
+    if (settings.enableIdentifyHashing === true) {
+        var collectorIndex = plugins.findIndex(function (p) { return p.name === 'Conversion Collector'; });
+        plugins.splice(collectorIndex >= 0 ? collectorIndex : plugins.length, 0, (0,_enrichment_identify_enrichment__WEBPACK_IMPORTED_MODULE_5__.conversionIdentifyEnrichment)(settings));
+    }
+    if (settings.enablePageTaxonomy === true) {
+        var collectorIndex = plugins.findIndex(function (p) { return p.name === 'Conversion Collector'; });
+        plugins.splice(collectorIndex >= 0 ? collectorIndex : plugins.length, 0, (0,_enrichment_page_enrichment__WEBPACK_IMPORTED_MODULE_6__.conversionPageEnrichment)(settings));
+    }
     if (settings.enableGptSlotEvents === true) {
-        plugins.push((0,_gpt_slot_events__WEBPACK_IMPORTED_MODULE_5__.conversionGptSlotEventsPlugin)());
+        plugins.push((0,_gpt_slot_events__WEBPACK_IMPORTED_MODULE_7__.conversionGptSlotEventsPlugin)());
     }
     return plugins;
 }
@@ -7611,12 +7043,34 @@ function parseRetryAfterMs(header) {
     }
     return undefined;
 }
+/**
+ * x-ratelimit-reset from our collector:
+ * - >= 1e12: Unix epoch in milliseconds
+ * - >= 1e9:  Unix epoch in seconds
+ * - otherwise: delay in seconds until reset
+ */
+function parseRateLimitResetMs(header) {
+    if (!header) {
+        return undefined;
+    }
+    var value = Number(header);
+    if (Number.isNaN(value) || value <= 0) {
+        return undefined;
+    }
+    if (value >= 1000000000000) {
+        return Math.max(0, value - Date.now());
+    }
+    if (value >= 1000000000) {
+        return Math.max(0, value * 1000 - Date.now());
+    }
+    return value * 1000;
+}
 function classifyHttpFailure(status, headers) {
-    var _a;
+    var _a, _b, _c;
     if (status === 429) {
         return {
             retryable: true,
-            retryAfterMs: parseRetryAfterMs((_a = headers === null || headers === void 0 ? void 0 : headers.get('Retry-After')) !== null && _a !== void 0 ? _a : null),
+            retryAfterMs: (_b = parseRetryAfterMs((_a = headers === null || headers === void 0 ? void 0 : headers.get('Retry-After')) !== null && _a !== void 0 ? _a : null)) !== null && _b !== void 0 ? _b : parseRateLimitResetMs((_c = headers === null || headers === void 0 ? void 0 : headers.get('x-ratelimit-reset')) !== null && _c !== void 0 ? _c : null),
         };
     }
     if (status >= 500) {
@@ -7629,9 +7083,14 @@ function classifyHttpFailure(status, headers) {
 }
 function buildCollectRequestBody(events) {
     var sentAt = new Date().toISOString();
-    return JSON.stringify({
-        events: events.map(function (event) { return ((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, event), { sent_at: sentAt })); }),
-    });
+    return JSON.stringify(events.map(function (event) {
+        var _a, _b, _c;
+        var retryCount = (_c = (_a = event._retryCount) !== null && _a !== void 0 ? _a : (_b = event._metadata) === null || _b === void 0 ? void 0 : _b.retryCount) !== null && _c !== void 0 ? _c : 0;
+        var _rc = event._retryCount, rest = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__rest)(event, ["_retryCount"]);
+        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, rest), { sentAt: sentAt, _metadata: (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, (typeof rest._metadata === 'object' && rest._metadata
+                ? rest._metadata
+                : {})), { retryCount: retryCount }) });
+    }));
 }
 function sendCollectViaBeacon(endpoint, body) {
     if (typeof navigator === 'undefined' ||
@@ -7676,7 +7135,7 @@ function deliverCollectPayload(body, config, transport) {
 }
 function computeBackoffMs(attempt, retryAfterMs) {
     if (retryAfterMs != null) {
-        return retryAfterMs;
+        return Math.min(retryAfterMs, MAX_RETRY_MS);
     }
     var exponential = Math.min(BASE_RETRY_MS * Math.pow(2, attempt) + Math.random() * 1000, MAX_RETRY_MS);
     return exponential;
@@ -7714,6 +7173,7 @@ function sendEventsToCollect(events, config, transport) {
                     if (!deliveryError.retryable || attempt >= maxAttempts) {
                         throw deliveryError;
                     }
+                    console.warn("[utua] collect retry ".concat(attempt + 1, "/").concat(maxAttempts + 1, ":"), deliveryError.message);
                     return [4 /*yield*/, wait(computeBackoffMs(attempt, deliveryError.retryAfterMs))];
                 case 5:
                     _b.sent();
@@ -7728,6 +7188,188 @@ function sendEventsToCollect(events, config, transport) {
             }
         });
     });
+}
+
+
+/***/ }),
+
+/***/ 9399:
+/*!**********************************************************************!*\
+  !*** ./src/plugins/conversion-collector/session-enrichment/index.ts ***!
+  \**********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ACTIVITY_COOKIE: () => (/* reexport safe */ _session_manager__WEBPACK_IMPORTED_MODULE_0__.ACTIVITY_COOKIE),
+/* harmony export */   SESSION_COOKIE: () => (/* reexport safe */ _session_manager__WEBPACK_IMPORTED_MODULE_0__.SESSION_COOKIE),
+/* harmony export */   SESSION_INACTIVITY_MS: () => (/* reexport safe */ _session_manager__WEBPACK_IMPORTED_MODULE_0__.SESSION_INACTIVITY_MS),
+/* harmony export */   getOrCreateSessionId: () => (/* reexport safe */ _session_manager__WEBPACK_IMPORTED_MODULE_0__.getOrCreateSessionId),
+/* harmony export */   sessionEnrichment: () => (/* binding */ sessionEnrichment)
+/* harmony export */ });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _session_manager__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./session-manager */ 6217);
+
+
+function sessionEnrichment(settings) {
+    var currentSessionId = '';
+    var enrich = function (ctx) {
+        var _a, _b, _c;
+        currentSessionId = (_b = (_a = settings.getSessionId) === null || _a === void 0 ? void 0 : _a.call(settings)) !== null && _b !== void 0 ? _b : (0,_session_manager__WEBPACK_IMPORTED_MODULE_0__.getOrCreateSessionId)();
+        var evtCtx = (_c = ctx.event.context) !== null && _c !== void 0 ? _c : {};
+        ctx.updateEvent('context', (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)({}, evtCtx), { sessionId: currentSessionId }));
+        return ctx;
+    };
+    return {
+        name: 'session-enrichment',
+        type: 'enrichment',
+        version: '0.1.0',
+        isLoaded: function () { return true; },
+        load: function () { return Promise.resolve(); },
+        track: enrich,
+        identify: enrich,
+        page: enrich,
+        screen: enrich,
+        alias: enrich,
+        group: enrich,
+    };
+}
+
+
+
+
+/***/ }),
+
+/***/ 6217:
+/*!********************************************************************************!*\
+  !*** ./src/plugins/conversion-collector/session-enrichment/session-manager.ts ***!
+  \********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   ACTIVITY_COOKIE: () => (/* binding */ ACTIVITY_COOKIE),
+/* harmony export */   ACTIVITY_LS_KEY: () => (/* binding */ ACTIVITY_LS_KEY),
+/* harmony export */   SESSION_COOKIE: () => (/* binding */ SESSION_COOKIE),
+/* harmony export */   SESSION_COOKIE_MAX_AGE_SEC: () => (/* binding */ SESSION_COOKIE_MAX_AGE_SEC),
+/* harmony export */   SESSION_INACTIVITY_MS: () => (/* binding */ SESSION_INACTIVITY_MS),
+/* harmony export */   SESSION_LS_KEY: () => (/* binding */ SESSION_LS_KEY),
+/* harmony export */   getCurrentSessionId: () => (/* binding */ getCurrentSessionId),
+/* harmony export */   getOrCreateSessionId: () => (/* binding */ getOrCreateSessionId)
+/* harmony export */ });
+/* harmony import */ var _lib_uuid__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../lib/uuid */ 5129);
+
+var SESSION_COOKIE = '_utua_session';
+var ACTIVITY_COOKIE = '_utua_last_activity';
+var SESSION_LS_KEY = 'utua_session';
+var ACTIVITY_LS_KEY = 'utua_last_activity';
+/** Inactivity window — aligned with PRD / Redis finalizer (5 minutes). */
+var SESSION_INACTIVITY_MS = 5 * 60 * 1000;
+/** Cookie max-age safety net (30 minutes). Real expiry is inactivity logic. */
+var SESSION_COOKIE_MAX_AGE_SEC = 30 * 60;
+function getCookie(name) {
+    if (typeof document === 'undefined') {
+        return null;
+    }
+    var escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var match = document.cookie.match(new RegExp("(?:^|; )".concat(escaped, "=([^;]*)")));
+    return (match === null || match === void 0 ? void 0 : match[1]) != null ? decodeURIComponent(match[1]) : null;
+}
+function setCookie(name, value, maxAgeSeconds) {
+    var _a;
+    if (typeof document === 'undefined') {
+        return;
+    }
+    var maxAge = Math.max(1, Math.ceil(maxAgeSeconds));
+    var secure = typeof window !== 'undefined' && ((_a = window.location) === null || _a === void 0 ? void 0 : _a.protocol) === 'https:'
+        ? '; Secure'
+        : '';
+    document.cookie = "".concat(encodeURIComponent(name), "=").concat(encodeURIComponent(value), "; path=/; max-age=").concat(maxAge, "; SameSite=Lax").concat(secure);
+}
+function readLs(key) {
+    var _a, _b;
+    try {
+        return (_b = (_a = window.localStorage) === null || _a === void 0 ? void 0 : _a.getItem(key)) !== null && _b !== void 0 ? _b : null;
+    }
+    catch (_c) {
+        return null;
+    }
+}
+function writeLs(key, value) {
+    var _a;
+    try {
+        (_a = window.localStorage) === null || _a === void 0 ? void 0 : _a.setItem(key, value);
+    }
+    catch (_b) {
+        // storage blocked
+    }
+}
+function touchSessionStorage(sessionId, activityMs) {
+    setCookie(SESSION_COOKIE, sessionId, SESSION_COOKIE_MAX_AGE_SEC);
+    setCookie(ACTIVITY_COOKIE, String(activityMs), SESSION_COOKIE_MAX_AGE_SEC);
+    writeLs(SESSION_LS_KEY, sessionId);
+    writeLs(ACTIVITY_LS_KEY, String(activityMs));
+}
+function readSessionPair() {
+    var cookieId = getCookie(SESSION_COOKIE);
+    var cookieActivity = getCookie(ACTIVITY_COOKIE);
+    if (cookieId && cookieActivity) {
+        return { sessionId: cookieId, lastActivity: Number(cookieActivity) };
+    }
+    var lsId = readLs(SESSION_LS_KEY);
+    var lsActivity = readLs(ACTIVITY_LS_KEY);
+    if (lsId && lsActivity) {
+        return { sessionId: lsId, lastActivity: Number(lsActivity) };
+    }
+    return { sessionId: null, lastActivity: 0 };
+}
+function getCurrentSessionId() {
+    var _a;
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+    try {
+        var existingId = (_a = getCookie(SESSION_COOKIE)) !== null && _a !== void 0 ? _a : readLs(SESSION_LS_KEY);
+        if (existingId && (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_0__.isValidUuidV4)(existingId)) {
+            return existingId;
+        }
+    }
+    catch (_b) {
+        // ignore
+    }
+    return undefined;
+}
+function getOrCreateSessionId(custom) {
+    if (custom) {
+        return custom();
+    }
+    if (typeof window === 'undefined') {
+        return (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
+    }
+    var now = Date.now();
+    try {
+        var _a = readSessionPair(), existingId = _a.sessionId, lastActivity = _a.lastActivity;
+        if (existingId &&
+            (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_0__.isValidUuidV4)(existingId) &&
+            lastActivity > 0 &&
+            now - lastActivity <= SESSION_INACTIVITY_MS) {
+            touchSessionStorage(existingId, now);
+            return existingId;
+        }
+    }
+    catch (_b) {
+        // fall through
+    }
+    var nextId = (0,_lib_uuid__WEBPACK_IMPORTED_MODULE_0__.generateUuidV4)();
+    try {
+        touchSessionStorage(nextId, now);
+    }
+    catch (_c) {
+        // storage unavailable
+    }
+    return nextId;
 }
 
 
@@ -7930,486 +7572,6 @@ var EnvironmentEnrichmentPlugin = /** @class */ (function () {
     return EnvironmentEnrichmentPlugin;
 }());
 var envEnrichment = new EnvironmentEnrichmentPlugin();
-
-
-/***/ }),
-
-/***/ 1418:
-/*!*****************************************!*\
-  !*** ./src/plugins/middleware/index.ts ***!
-  \*****************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   applyDestinationMiddleware: () => (/* binding */ applyDestinationMiddleware),
-/* harmony export */   sourceMiddlewarePlugin: () => (/* binding */ sourceMiddlewarePlugin)
-/* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _core_context__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../core/context */ 7070);
-/* harmony import */ var _lib_to_facade__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../lib/to-facade */ 7536);
-
-
-
-function applyDestinationMiddleware(destination, evt, middleware) {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-        function applyMiddleware(event, fn) {
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-                var nextCalled, returnedEvent;
-                var _a;
-                return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            nextCalled = false;
-                            returnedEvent = null;
-                            return [4 /*yield*/, fn({
-                                    payload: (0,_lib_to_facade__WEBPACK_IMPORTED_MODULE_1__.toFacade)(event, {
-                                        clone: true,
-                                        traverse: false,
-                                    }),
-                                    integration: destination,
-                                    next: function (evt) {
-                                        nextCalled = true;
-                                        if (evt === null) {
-                                            returnedEvent = null;
-                                        }
-                                        if (evt) {
-                                            returnedEvent = evt.obj;
-                                        }
-                                    },
-                                })];
-                        case 1:
-                            _b.sent();
-                            if (!nextCalled && returnedEvent !== null) {
-                                returnedEvent = returnedEvent;
-                                returnedEvent.integrations = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({}, event.integrations), (_a = {}, _a[destination] = false, _a));
-                            }
-                            return [2 /*return*/, returnedEvent];
-                    }
-                });
-            });
-        }
-        var modifiedEvent, _i, middleware_1, md, result;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    modifiedEvent = (0,_lib_to_facade__WEBPACK_IMPORTED_MODULE_1__.toFacade)(evt, {
-                        clone: true,
-                        traverse: false,
-                    }).rawEvent();
-                    _i = 0, middleware_1 = middleware;
-                    _a.label = 1;
-                case 1:
-                    if (!(_i < middleware_1.length)) return [3 /*break*/, 4];
-                    md = middleware_1[_i];
-                    return [4 /*yield*/, applyMiddleware(modifiedEvent, md)];
-                case 2:
-                    result = _a.sent();
-                    if (result === null) {
-                        return [2 /*return*/, null];
-                    }
-                    modifiedEvent = result;
-                    _a.label = 3;
-                case 3:
-                    _i++;
-                    return [3 /*break*/, 1];
-                case 4: return [2 /*return*/, modifiedEvent];
-            }
-        });
-    });
-}
-function sourceMiddlewarePlugin(fn, integrations) {
-    function apply(ctx) {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__awaiter)(this, void 0, Promise, function () {
-            var nextCalled;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        nextCalled = false;
-                        return [4 /*yield*/, fn({
-                                payload: (0,_lib_to_facade__WEBPACK_IMPORTED_MODULE_1__.toFacade)(ctx.event, {
-                                    clone: true,
-                                    traverse: false,
-                                }),
-                                integrations: integrations !== null && integrations !== void 0 ? integrations : {},
-                                next: function (evt) {
-                                    nextCalled = true;
-                                    if (evt) {
-                                        ctx.event = evt.obj;
-                                    }
-                                },
-                            })];
-                    case 1:
-                        _a.sent();
-                        if (!nextCalled) {
-                            throw new _core_context__WEBPACK_IMPORTED_MODULE_2__.ContextCancelation({
-                                retry: false,
-                                type: 'middleware_cancellation',
-                                reason: 'Middleware `next` function skipped',
-                            });
-                        }
-                        return [2 /*return*/, ctx];
-                }
-            });
-        });
-    }
-    return {
-        name: "Source Middleware ".concat(fn.name),
-        type: 'before',
-        version: '0.1.0',
-        isLoaded: function () { return true; },
-        load: function (ctx) { return Promise.resolve(ctx); },
-        track: apply,
-        page: apply,
-        screen: apply,
-        identify: apply,
-        alias: apply,
-        group: apply,
-    };
-}
-
-
-/***/ }),
-
-/***/ 2016:
-/*!********************************************!*\
-  !*** ./src/plugins/remote-loader/index.ts ***!
-  \********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ActionDestination: () => (/* binding */ ActionDestination),
-/* harmony export */   remoteLoader: () => (/* binding */ remoteLoader)
-/* harmony export */ });
-/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _lib_load_script__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../lib/load-script */ 6238);
-/* harmony import */ var _lib_parse_cdn__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lib/parse-cdn */ 2911);
-/* harmony import */ var _middleware__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../middleware */ 1418);
-/* harmony import */ var _core_context__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../core/context */ 7070);
-/* harmony import */ var _core_context__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../core/context */ 8456);
-/* harmony import */ var _core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../core/stats/metric-helpers */ 2822);
-/* harmony import */ var _segment_analytics_generic_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @segment/analytics-generic-utils */ 8115);
-
-
-
-
-
-
-
-var ActionDestination = /** @class */ (function () {
-    function ActionDestination(name, action) {
-        this.version = '1.0.0';
-        this.alternativeNames = [];
-        this.loadPromise = (0,_segment_analytics_generic_utils__WEBPACK_IMPORTED_MODULE_0__.createDeferred)();
-        this.middleware = [];
-        this.alias = this._createMethod('alias');
-        this.group = this._createMethod('group');
-        this.identify = this._createMethod('identify');
-        this.page = this._createMethod('page');
-        this.screen = this._createMethod('screen');
-        this.track = this._createMethod('track');
-        this.action = action;
-        this.name = name;
-        this.type = action.type;
-        this.alternativeNames.push(action.name);
-    }
-    ActionDestination.prototype.addMiddleware = function () {
-        var _a;
-        var fn = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            fn[_i] = arguments[_i];
-        }
-        /** Make sure we only apply destination filters to actions of the "destination" type to avoid causing issues for hybrid destinations */
-        if (this.type === 'destination') {
-            (_a = this.middleware).push.apply(_a, fn);
-        }
-    };
-    ActionDestination.prototype.transform = function (ctx) {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var modifiedEvent;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0,_middleware__WEBPACK_IMPORTED_MODULE_2__.applyDestinationMiddleware)(this.name, ctx.event, this.middleware)];
-                    case 1:
-                        modifiedEvent = _a.sent();
-                        if (modifiedEvent === null) {
-                            ctx.cancel(new _core_context__WEBPACK_IMPORTED_MODULE_3__.ContextCancelation({
-                                retry: false,
-                                reason: 'dropped by destination middleware',
-                            }));
-                        }
-                        return [2 /*return*/, new _core_context__WEBPACK_IMPORTED_MODULE_4__.Context(modifiedEvent)];
-                }
-            });
-        });
-    };
-    ActionDestination.prototype._createMethod = function (methodName) {
-        var _this = this;
-        return function (ctx) { return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(_this, void 0, Promise, function () {
-            var transformedContext, error_1;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!this.action[methodName])
-                            return [2 /*return*/, ctx];
-                        transformedContext = ctx;
-                        if (!(this.type === 'destination')) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.transform(ctx)];
-                    case 1:
-                        transformedContext = _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        _a.trys.push([2, 5, , 6]);
-                        return [4 /*yield*/, this.ready()];
-                    case 3:
-                        if (!(_a.sent())) {
-                            throw new Error('Something prevented the destination from getting ready');
-                        }
-                        (0,_core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__.recordIntegrationMetric)(ctx, {
-                            integrationName: this.action.name,
-                            methodName: methodName,
-                            type: 'action',
-                        });
-                        return [4 /*yield*/, this.action[methodName](transformedContext)];
-                    case 4:
-                        _a.sent();
-                        return [3 /*break*/, 6];
-                    case 5:
-                        error_1 = _a.sent();
-                        (0,_core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__.recordIntegrationMetric)(ctx, {
-                            integrationName: this.action.name,
-                            methodName: methodName,
-                            type: 'action',
-                            didError: true,
-                        });
-                        throw error_1;
-                    case 6: return [2 /*return*/, ctx];
-                }
-            });
-        }); };
-    };
-    /* --- PASSTHROUGH METHODS --- */
-    ActionDestination.prototype.isLoaded = function () {
-        return this.action.isLoaded();
-    };
-    ActionDestination.prototype.ready = function () {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var _a;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _b.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, this.loadPromise.promise];
-                    case 1:
-                        _b.sent();
-                        return [2 /*return*/, true];
-                    case 2:
-                        _a = _b.sent();
-                        return [2 /*return*/, false];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    ActionDestination.prototype.load = function (ctx, analytics) {
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-            var loadP, _a, _b, error_2;
-            return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        if (this.loadPromise.isSettled()) {
-                            return [2 /*return*/, this.loadPromise.promise];
-                        }
-                        _c.label = 1;
-                    case 1:
-                        _c.trys.push([1, 3, , 4]);
-                        (0,_core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__.recordIntegrationMetric)(ctx, {
-                            integrationName: this.action.name,
-                            methodName: 'load',
-                            type: 'action',
-                        });
-                        loadP = this.action.load(ctx, analytics);
-                        _b = (_a = this.loadPromise).resolve;
-                        return [4 /*yield*/, loadP];
-                    case 2:
-                        _b.apply(_a, [_c.sent()]);
-                        return [2 /*return*/, loadP];
-                    case 3:
-                        error_2 = _c.sent();
-                        (0,_core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__.recordIntegrationMetric)(ctx, {
-                            integrationName: this.action.name,
-                            methodName: 'load',
-                            type: 'action',
-                            didError: true,
-                        });
-                        this.loadPromise.reject(error_2);
-                        throw error_2;
-                    case 4: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    ActionDestination.prototype.unload = function (ctx, analytics) {
-        var _a, _b;
-        return (_b = (_a = this.action).unload) === null || _b === void 0 ? void 0 : _b.call(_a, ctx, analytics);
-    };
-    return ActionDestination;
-}());
-
-function validate(pluginLike) {
-    if (!Array.isArray(pluginLike)) {
-        throw new Error('Not a valid list of plugins');
-    }
-    var required = ['load', 'isLoaded', 'name', 'version', 'type'];
-    pluginLike.forEach(function (plugin) {
-        required.forEach(function (method) {
-            var _a;
-            if (plugin[method] === undefined) {
-                throw new Error("Plugin: ".concat((_a = plugin.name) !== null && _a !== void 0 ? _a : 'unknown', " missing required function ").concat(method));
-            }
-        });
-    });
-    return true;
-}
-function isPluginDisabled(userIntegrations, remotePlugin) {
-    var creationNameEnabled = userIntegrations[remotePlugin.creationName];
-    var currentNameEnabled = userIntegrations[remotePlugin.name];
-    // Check that the plugin isn't explicitly enabled when All: false
-    if (userIntegrations.All === false &&
-        !creationNameEnabled &&
-        !currentNameEnabled) {
-        return true;
-    }
-    // Check that the plugin isn't explicitly disabled
-    if (creationNameEnabled === false || currentNameEnabled === false) {
-        return true;
-    }
-    return false;
-}
-function loadPluginFactory(remotePlugin, obfuscate) {
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-        var defaultCdn, cdn, urlSplit, name, obfuscatedURL, error_3, err_1;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 9, , 10]);
-                    defaultCdn = new RegExp('https://cdn.segment.(com|build)');
-                    cdn = (0,_lib_parse_cdn__WEBPACK_IMPORTED_MODULE_6__.getCDN)();
-                    if (!obfuscate) return [3 /*break*/, 6];
-                    urlSplit = remotePlugin.url.split('/');
-                    name = urlSplit[urlSplit.length - 2];
-                    obfuscatedURL = remotePlugin.url.replace(name, btoa(name).replace(/=/g, ''));
-                    _a.label = 1;
-                case 1:
-                    _a.trys.push([1, 3, , 5]);
-                    return [4 /*yield*/, (0,_lib_load_script__WEBPACK_IMPORTED_MODULE_7__.loadScript)(obfuscatedURL.replace(defaultCdn, cdn))];
-                case 2:
-                    _a.sent();
-                    return [3 /*break*/, 5];
-                case 3:
-                    error_3 = _a.sent();
-                    // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
-                    // We should use the unobfuscated version as a fallback.
-                    return [4 /*yield*/, (0,_lib_load_script__WEBPACK_IMPORTED_MODULE_7__.loadScript)(remotePlugin.url.replace(defaultCdn, cdn))];
-                case 4:
-                    // Due to syncing concerns it is possible that the obfuscated action destination (or requested version) might not exist.
-                    // We should use the unobfuscated version as a fallback.
-                    _a.sent();
-                    return [3 /*break*/, 5];
-                case 5: return [3 /*break*/, 8];
-                case 6: return [4 /*yield*/, (0,_lib_load_script__WEBPACK_IMPORTED_MODULE_7__.loadScript)(remotePlugin.url.replace(defaultCdn, cdn))];
-                case 7:
-                    _a.sent();
-                    _a.label = 8;
-                case 8:
-                    // @ts-expect-error
-                    if (typeof window[remotePlugin.libraryName] === 'function') {
-                        // @ts-expect-error
-                        return [2 /*return*/, window[remotePlugin.libraryName]];
-                    }
-                    return [3 /*break*/, 10];
-                case 9:
-                    err_1 = _a.sent();
-                    console.error('Failed to create PluginFactory', remotePlugin);
-                    throw err_1;
-                case 10: return [2 /*return*/];
-            }
-        });
-    });
-}
-function remoteLoader(settings, integrations, mergedIntegrations, options, routingMiddleware, pluginSources) {
-    var _a, _b, _c;
-    return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(this, void 0, Promise, function () {
-        var allPlugins, routingRules, pluginPromises;
-        var _this = this;
-        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_d) {
-            switch (_d.label) {
-                case 0:
-                    allPlugins = [];
-                    routingRules = (_b = (_a = settings.middlewareSettings) === null || _a === void 0 ? void 0 : _a.routingRules) !== null && _b !== void 0 ? _b : [];
-                    pluginPromises = ((_c = settings.remotePlugins) !== null && _c !== void 0 ? _c : []).map(function (remotePlugin) { return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__awaiter)(_this, void 0, void 0, function () {
-                        var pluginFactory, _a, intg, plugin, plugins, routing_1, error_4;
-                        return (0,tslib__WEBPACK_IMPORTED_MODULE_1__.__generator)(this, function (_b) {
-                            switch (_b.label) {
-                                case 0:
-                                    if (isPluginDisabled(integrations, remotePlugin))
-                                        return [2 /*return*/];
-                                    _b.label = 1;
-                                case 1:
-                                    _b.trys.push([1, 6, , 7]);
-                                    _a = (pluginSources === null || pluginSources === void 0 ? void 0 : pluginSources.find(function (_a) {
-                                        var pluginName = _a.pluginName;
-                                        return pluginName === remotePlugin.name;
-                                    }));
-                                    if (_a) return [3 /*break*/, 3];
-                                    return [4 /*yield*/, loadPluginFactory(remotePlugin, options === null || options === void 0 ? void 0 : options.obfuscate)];
-                                case 2:
-                                    _a = (_b.sent());
-                                    _b.label = 3;
-                                case 3:
-                                    pluginFactory = _a;
-                                    if (!pluginFactory) return [3 /*break*/, 5];
-                                    intg = mergedIntegrations[remotePlugin.name];
-                                    return [4 /*yield*/, pluginFactory((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_1__.__assign)({}, remotePlugin.settings), intg))];
-                                case 4:
-                                    plugin = _b.sent();
-                                    plugins = Array.isArray(plugin) ? plugin : [plugin];
-                                    validate(plugins);
-                                    routing_1 = routingRules.filter(function (rule) { return rule.destinationName === remotePlugin.creationName; });
-                                    plugins.forEach(function (plugin) {
-                                        var wrapper = new ActionDestination(remotePlugin.creationName, plugin);
-                                        if (routing_1.length && routingMiddleware) {
-                                            wrapper.addMiddleware(routingMiddleware);
-                                        }
-                                        allPlugins.push(wrapper);
-                                    });
-                                    _b.label = 5;
-                                case 5: return [3 /*break*/, 7];
-                                case 6:
-                                    error_4 = _b.sent();
-                                    console.warn('Failed to load Remote Plugin', error_4);
-                                    (0,_core_stats_metric_helpers__WEBPACK_IMPORTED_MODULE_5__.recordIntegrationMetric)(_core_context__WEBPACK_IMPORTED_MODULE_4__.Context.system(), {
-                                        integrationName: remotePlugin.name,
-                                        methodName: 'load',
-                                        type: 'action',
-                                        didError: true,
-                                    });
-                                    return [3 /*break*/, 7];
-                                case 7: return [2 /*return*/];
-                            }
-                        });
-                    }); });
-                    return [4 /*yield*/, Promise.all(pluginPromises)];
-                case 1:
-                    _d.sent();
-                    return [2 /*return*/, allPlugins.filter(Boolean)];
-            }
-        });
-    });
-}
 
 
 /***/ }),
@@ -11012,53 +10174,6 @@ function isPlainObject(obj) {
 
 /***/ }),
 
-/***/ 8115:
-/*!********************************************************************!*\
-  !*** ../generic-utils/dist/esm/create-deferred/create-deferred.js ***!
-  \********************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   createDeferred: () => (/* binding */ createDeferred)
-/* harmony export */ });
-/**
- * Return a promise that can be externally resolved
- */
-var createDeferred = function () {
-    var resolve;
-    var reject;
-    var settled = false;
-    var promise = new Promise(function (_resolve, _reject) {
-        resolve = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            settled = true;
-            _resolve.apply(void 0, args);
-        };
-        reject = function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            settled = true;
-            _reject.apply(void 0, args);
-        };
-    });
-    return {
-        resolve: resolve,
-        reject: reject,
-        promise: promise,
-        isSettled: function () { return settled; },
-    };
-};
-//# sourceMappingURL=create-deferred.js.map
-
-/***/ }),
-
 /***/ 3255:
 /*!****************************************************!*\
   !*** ../generic-utils/dist/esm/emitter/emitter.js ***!
@@ -11499,36 +10614,6 @@ var getDefaultPageContext = function() {
 /******/ 				() => (module);
 /******/ 			__webpack_require__.d(getter, { a: getter });
 /******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/create fake namespace object */
-/******/ 	(() => {
-/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 		var leafPrototypes;
-/******/ 		// create a fake namespace object
-/******/ 		// mode & 1: value is a module id, require it
-/******/ 		// mode & 2: merge all properties of value into the ns
-/******/ 		// mode & 4: return value when already ns object
-/******/ 		// mode & 16: return value when it's Promise-like
-/******/ 		// mode & 8|1: behave like require
-/******/ 		__webpack_require__.t = function(value, mode) {
-/******/ 			if(mode & 1) value = this(value);
-/******/ 			if(mode & 8) return value;
-/******/ 			if(typeof value === 'object' && value) {
-/******/ 				if((mode & 4) && value.__esModule) return value;
-/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
-/******/ 			}
-/******/ 			var ns = Object.create(null);
-/******/ 			__webpack_require__.r(ns);
-/******/ 			var def = {};
-/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
-/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
-/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
-/******/ 			}
-/******/ 			def['default'] = () => (value);
-/******/ 			__webpack_require__.d(ns, def);
-/******/ 			return ns;
 /******/ 		};
 /******/ 	})();
 /******/ 	
