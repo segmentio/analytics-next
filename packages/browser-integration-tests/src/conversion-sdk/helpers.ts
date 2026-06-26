@@ -48,7 +48,7 @@ export async function setupCollectMock(
 ): Promise<{ bodies: CollectBody[] }> {
   const bodies: CollectBody[] = []
 
-  await page.route('**/collect', async (route: Route) => {
+  await page.route('**/collector', async (route: Route) => {
     const request = route.request()
     if (request.method() !== 'POST') {
       return route.continue()

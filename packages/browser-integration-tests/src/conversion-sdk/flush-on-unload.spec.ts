@@ -58,7 +58,7 @@ test.describe('Conversion SDK — flush on unload', () => {
       data: (window as any).__beaconData as Blob | null,
     }))
 
-    expect(beacon.url).toBe('/collect')
+    expect(beacon.url).toBe('/collector')
     expect(beacon.data).toBeTruthy()
     expect(beacon.data instanceof Blob).toBe(true)
   })

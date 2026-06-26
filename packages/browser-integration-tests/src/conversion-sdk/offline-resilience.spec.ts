@@ -10,7 +10,7 @@ test.describe('Conversion SDK — offline resilience', () => {
     let failCollect = true
     const bodies: ReturnType<typeof parseCollectBody>[] = []
 
-    await page.route('**/collect', async (route) => {
+    await page.route('**/collector', async (route) => {
       const request = route.request()
       if (request.method() !== 'POST') {
         return route.continue()
@@ -62,7 +62,7 @@ test.describe('Conversion SDK — offline resilience', () => {
     const messageIdsBeforeReload: string[] = []
     const bodiesAfterRecovery: ReturnType<typeof parseCollectBody>[] = []
 
-    await page.route('**/collect', async (route) => {
+    await page.route('**/collector', async (route) => {
       const request = route.request()
       if (request.method() !== 'POST') {
         return route.continue()

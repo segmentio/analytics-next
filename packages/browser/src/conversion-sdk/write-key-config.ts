@@ -5,7 +5,7 @@ import { DEFAULT_INIT_CONFIG } from './config'
 const WRITE_KEY_REGISTRY: Record<string, AnalyticsInitConfig> = {
   'conversion-pipeline': {
     writeKey: 'conversion-pipeline',
-    endpoint: '/collect',
+    endpoint: '/collector',
     appName: 'conversion-pipeline',
     enableGptSlotEvents: false,
   },

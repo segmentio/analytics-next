@@ -1462,9 +1462,27 @@ var STUB_GLOBALS = [
     'ConversionAnalytics',
     '_ConversionAnalytics',
 ];
+var PREFERRED_STUB_GLOBALS = [
+    'ConversionAnalytics',
+    '_ConversionAnalytics',
+    'analytics',
+    '_analytics',
+];
+function isConfiguredStub(candidate) {
+    return (candidate != null &&
+        typeof candidate === 'object' &&
+        ('config' in candidate || 'queue' in candidate || 'writeKey' in candidate));
+}
 function resolveStub(w) {
-    for (var _i = 0, STUB_GLOBALS_1 = STUB_GLOBALS; _i < STUB_GLOBALS_1.length; _i++) {
-        var key = STUB_GLOBALS_1[_i];
+    for (var _i = 0, PREFERRED_STUB_GLOBALS_1 = PREFERRED_STUB_GLOBALS; _i < PREFERRED_STUB_GLOBALS_1.length; _i++) {
+        var key = PREFERRED_STUB_GLOBALS_1[_i];
+        var candidate = w[key];
+        if (isConfiguredStub(candidate)) {
+            return candidate;
+        }
+    }
+    for (var _a = 0, STUB_GLOBALS_1 = STUB_GLOBALS; _a < STUB_GLOBALS_1.length; _a++) {
+        var key = STUB_GLOBALS_1[_a];
         var candidate = w[key];
         if (candidate && typeof candidate === 'object') {
             return candidate;
@@ -1688,7 +1706,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   toCollectorSettings: () => (/* binding */ toCollectorSettings)
 /* harmony export */ });
 var DEFAULT_INIT_CONFIG = {
-    endpoint: '/collect',
+    endpoint: '/collector',
     flushIntervalMs: 3000,
     batchSize: 10,
     retryAttempts: 2,
@@ -1847,13 +1865,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   ConversionClient: () => (/* binding */ ConversionClient)
 /* harmony export */ });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
-/* harmony import */ var _plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../plugins/conversion-collector/lib/session */ 6217);
+/* harmony import */ var _plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../plugins/conversion-collector/lib/session */ 6217);
 /* harmony import */ var _collector_runtime__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./collector-runtime */ 4504);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./config */ 398);
 /* harmony import */ var _gpt_plugin__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./gpt-plugin */ 603);
-/* harmony import */ var _lean_load__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./lean-load */ 9245);
-/* harmony import */ var _legacy_args__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./legacy-args */ 3753);
+/* harmony import */ var _plugins_lotame_analytics__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../plugins/lotame-analytics */ 7643);
+/* harmony import */ var _lean_load__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./lean-load */ 9245);
+/* harmony import */ var _legacy_args__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./legacy-args */ 3753);
 /* harmony import */ var _write_key_config__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./write-key-config */ 6270);
+
 
 
 
@@ -1943,10 +1963,14 @@ var ConversionClient = /** @class */ (function () {
             return (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__generator)(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        extraPlugins = this.config.enableGptSlotEvents
+                        extraPlugins = (0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__spreadArray)([], (this.config.enableGptSlotEvents
                             ? [(0,_gpt_plugin__WEBPACK_IMPORTED_MODULE_4__.conversionGptSlotEventsPlugin)()]
-                            : [];
-                        return [4 /*yield*/, (0,_lean_load__WEBPACK_IMPORTED_MODULE_5__.loadLeanConversionAnalytics)(this.config, extraPlugins)];
+                            : []), true), (this.config.lotameClientId
+                            ? [
+                                (0,_plugins_lotame_analytics__WEBPACK_IMPORTED_MODULE_5__.lotameAnalytics)((0,tslib__WEBPACK_IMPORTED_MODULE_0__.__assign)({ clientId: this.config.lotameClientId }, this.config.lotameConfig)),
+                            ]
+                            : []), true);
+                        return [4 /*yield*/, (0,_lean_load__WEBPACK_IMPORTED_MODULE_6__.loadLeanConversionAnalytics)(this.config, extraPlugins)];
                     case 1:
                         analytics = _a.sent();
                         if (!(generation !== this.bootstrapGeneration)) return [3 /*break*/, 3];
@@ -2015,7 +2039,7 @@ var ConversionClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
                         analytics = _b.sent();
-                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_6__.normalizeTrackCall)(event, payload), eventName = _a.eventName, properties = _a.properties;
+                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_7__.normalizeTrackCall)(event, payload), eventName = _a.eventName, properties = _a.properties;
                         return [4 /*yield*/, analytics.track(eventName, properties, options)];
                     case 2:
                         _b.sent();
@@ -2048,7 +2072,7 @@ var ConversionClient = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready()];
                     case 1:
                         analytics = _b.sent();
-                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_6__.normalizeIdentifyCall)(userOrEvent, traits), userId = _a.userId, normalizedTraits = _a.traits;
+                        _a = (0,_legacy_args__WEBPACK_IMPORTED_MODULE_7__.normalizeIdentifyCall)(userOrEvent, traits), userId = _a.userId, normalizedTraits = _a.traits;
                         if (!userId) return [3 /*break*/, 3];
                         return [4 /*yield*/, analytics.identify(userId, normalizedTraits, options)];
                     case 2:
@@ -2087,7 +2111,7 @@ var ConversionClient = /** @class */ (function () {
         var _a, _b, _c, _d;
         return {
             endpoint: (_a = this.config.endpoint) !== null && _a !== void 0 ? _a : _config__WEBPACK_IMPORTED_MODULE_1__.DEFAULT_INIT_CONFIG.endpoint,
-            sessionId: (_d = (_c = (_b = this.config).getSessionId) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_7__.getCurrentSessionId)(),
+            sessionId: (_d = (_c = (_b = this.config).getSessionId) === null || _c === void 0 ? void 0 : _c.call(_b)) !== null && _d !== void 0 ? _d : (0,_plugins_conversion_collector_lib_session__WEBPACK_IMPORTED_MODULE_8__.getCurrentSessionId)(),
             queueSize: this.getQueueSize(),
             lastError: this.lastError,
         };
@@ -2248,7 +2272,7 @@ __webpack_require__.r(__webpack_exports__);
 var WRITE_KEY_REGISTRY = {
     'conversion-pipeline': {
         writeKey: 'conversion-pipeline',
-        endpoint: '/collect',
+        endpoint: '/collector',
         appName: 'conversion-pipeline',
         enableGptSlotEvents: false,
     },
@@ -4861,6 +4885,80 @@ var isThenable = function (value) {
 
 /***/ }),
 
+/***/ 6238:
+/*!********************************!*\
+  !*** ./src/lib/load-script.ts ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   loadScript: () => (/* binding */ loadScript),
+/* harmony export */   unloadScript: () => (/* binding */ unloadScript)
+/* harmony export */ });
+function findScript(src) {
+    var scripts = Array.prototype.slice.call(window.document.querySelectorAll('script'));
+    return scripts.find(function (s) { return s.src === src; });
+}
+/**
+ * Load a script from a URL and append it to the document.
+ */
+function loadScript(src, attributes) {
+    var found = findScript(src);
+    if (found !== undefined) {
+        var status = found === null || found === void 0 ? void 0 : found.getAttribute('status');
+        if (status === 'loaded') {
+            return Promise.resolve(found);
+        }
+        if (status === 'loading') {
+            return new Promise(function (resolve, reject) {
+                found.addEventListener('load', function () { return resolve(found); });
+                found.addEventListener('error', function (err) { return reject(err); });
+            });
+        }
+    }
+    return new Promise(function (resolve, reject) {
+        var _a;
+        var script = window.document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = src;
+        script.async = true;
+        script.setAttribute('status', 'loading');
+        for (var _i = 0, _b = Object.entries(attributes !== null && attributes !== void 0 ? attributes : {}); _i < _b.length; _i++) {
+            var _c = _b[_i], k = _c[0], v = _c[1];
+            script.setAttribute(k, v);
+        }
+        script.onload = function () {
+            script.onerror = script.onload = null;
+            script.setAttribute('status', 'loaded');
+            resolve(script);
+        };
+        script.onerror = function () {
+            script.onerror = script.onload = null;
+            script.setAttribute('status', 'error');
+            reject(new Error("Failed to load ".concat(src)));
+        };
+        var firstExistingScript = window.document.querySelector('script');
+        if (!firstExistingScript) {
+            window.document.head.appendChild(script);
+        }
+        else {
+            (_a = firstExistingScript.parentElement) === null || _a === void 0 ? void 0 : _a.insertBefore(script, firstExistingScript);
+        }
+    });
+}
+function unloadScript(src) {
+    var found = findScript(src);
+    if (found !== undefined) {
+        found.remove();
+    }
+    return Promise.resolve();
+}
+
+
+/***/ }),
+
 /***/ 1934:
 /*!***********************************!*\
   !*** ./src/lib/on-page-change.ts ***!
@@ -5557,7 +5655,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ 5478);
 
-var CLICK_KEYS = ['gclid', 'fbclid', 'ttclid', 'tt_clid', 'msclkid'];
+var CLICK_KEYS = [
+    'gclid',
+    'fbclid',
+    'ttclid',
+    'tt_clid',
+    'msclkid',
+    'twclid',
+];
 function clickIdEnrichment() {
     var enrich = function (ctx) {
         var _a, _b;
@@ -7097,7 +7202,7 @@ function sendCollectViaBeacon(endpoint, body) {
         typeof navigator.sendBeacon !== 'function') {
         return false;
     }
-    if (body.length > BEACON_PAYLOAD_LIMIT_BYTES) {
+    if (new Blob([body]).size > BEACON_PAYLOAD_LIMIT_BYTES) {
         return false;
     }
     var blob = new Blob([body], { type: 'application/json' });
@@ -7572,6 +7677,231 @@ var EnvironmentEnrichmentPlugin = /** @class */ (function () {
     return EnvironmentEnrichmentPlugin;
 }());
 var envEnrichment = new EnvironmentEnrichmentPlugin();
+
+
+/***/ }),
+
+/***/ 7643:
+/*!***********************************************!*\
+  !*** ./src/plugins/lotame-analytics/index.ts ***!
+  \***********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   LotameAnalyticsPlugin: () => (/* binding */ LotameAnalyticsPlugin),
+/* harmony export */   lotameAnalytics: () => (/* binding */ lotameAnalytics)
+/* harmony export */ });
+/* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! tslib */ 5478);
+/* harmony import */ var _core_storage__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../core/storage */ 7601);
+/* harmony import */ var _core_storage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../core/storage */ 2890);
+/* harmony import */ var _core_storage__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../core/storage */ 6948);
+/* harmony import */ var _core_storage__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../core/storage */ 6054);
+/* harmony import */ var _core_user_tld__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../core/user/tld */ 9894);
+/* harmony import */ var _lib_load_script__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../lib/load-script */ 6238);
+
+
+
+
+var EVENT_NAME = 'Lotame Enhanced Profile';
+var DEFAULT_TTL_DAYS = 7;
+var DEFAULT_COOKIE_NAME = 'lotame_profile';
+var DEFAULT_TRAITS_NAMESPACE = 'lotame';
+var DEFAULT_CAPTURE_TIMEOUT_MS = 10000;
+var MAX_COOKIE_VALUE_LENGTH = 3800;
+var PRECONNECT_ORIGINS = [
+    'https://tags.crwdcntrl.net',
+    'https://bcp.crwdcntrl.net',
+    'https://c.ltmsphrcl.net',
+];
+var captureFlights = {};
+var millisecondsInDay = 24 * 60 * 60 * 1000;
+function buildStorage(ttlDays) {
+    var domain = (0,_core_user_tld__WEBPACK_IMPORTED_MODULE_0__.tld)(window.location.href);
+    var cookie = new _core_storage__WEBPACK_IMPORTED_MODULE_1__.CookieStorage({
+        domain: domain,
+        maxage: ttlDays,
+        path: '/',
+        sameSite: 'Lax',
+    });
+    var fallback = new _core_storage__WEBPACK_IMPORTED_MODULE_2__.UniversalStorage([
+        new _core_storage__WEBPACK_IMPORTED_MODULE_3__.LocalStorage(),
+        new _core_storage__WEBPACK_IMPORTED_MODULE_4__.MemoryStorage(),
+    ]);
+    var storage = new _core_storage__WEBPACK_IMPORTED_MODULE_2__.UniversalStorage([
+        cookie,
+        new _core_storage__WEBPACK_IMPORTED_MODULE_3__.LocalStorage(),
+        new _core_storage__WEBPACK_IMPORTED_MODULE_4__.MemoryStorage(),
+    ]);
+    return {
+        get: function (key) { return storage.get(key); },
+        set: function (key, profile) {
+            if (JSON.stringify(profile).length > MAX_COOKIE_VALUE_LENGTH) {
+                fallback.set(key, profile);
+                return;
+            }
+            storage.set(key, profile);
+        },
+    };
+}
+function validProfile(profile, ttlDays) {
+    if (!profile || !Array.isArray(profile.audiences) || !profile.capturedAt) {
+        return null;
+    }
+    var capturedAt = Date.parse(profile.capturedAt);
+    if (!Number.isFinite(capturedAt)) {
+        return null;
+    }
+    if (Date.now() - capturedAt > ttlDays * millisecondsInDay) {
+        return null;
+    }
+    return profile;
+}
+function extractProfile(profile) {
+    var _a, _b, _c, _d, _e, _f;
+    var audiences = (_b = (_a = profile.getAudiences) === null || _a === void 0 ? void 0 : _a.call(profile)) !== null && _b !== void 0 ? _b : [];
+    var panoramaId = (_f = (_e = (_d = (_c = profile.getPanorama) === null || _c === void 0 ? void 0 : _c.call(profile)) === null || _d === void 0 ? void 0 : _d.getId) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : '';
+    return {
+        audiences: Array.isArray(audiences) ? audiences : [],
+        panoramaId: panoramaId,
+        capturedAt: new Date().toISOString(),
+    };
+}
+function getNativeNamespace(clientId) {
+    return "lotame_".concat(clientId);
+}
+function injectPreconnectHints() {
+    var head = document.head;
+    if (!head) {
+        return;
+    }
+    for (var _i = 0, PRECONNECT_ORIGINS_1 = PRECONNECT_ORIGINS; _i < PRECONNECT_ORIGINS_1.length; _i++) {
+        var origin = PRECONNECT_ORIGINS_1[_i];
+        var existing = head.querySelector("link[rel=\"preconnect\"][href=\"".concat(origin, "\"], link[rel=\"dns-prefetch\"][href=\"").concat(origin, "\"]"));
+        if (existing) {
+            continue;
+        }
+        var preconnect = document.createElement('link');
+        preconnect.rel = 'preconnect';
+        preconnect.href = origin;
+        preconnect.crossOrigin = 'anonymous';
+        head.appendChild(preconnect);
+        var dnsPrefetch = document.createElement('link');
+        dnsPrefetch.rel = 'dns-prefetch';
+        dnsPrefetch.href = origin;
+        head.appendChild(dnsPrefetch);
+    }
+}
+var LotameAnalyticsPlugin = /** @class */ (function () {
+    function LotameAnalyticsPlugin(config) {
+        var _this = this;
+        var _a, _b, _c, _d;
+        this.name = 'Lotame Analytics';
+        this.type = 'enrichment';
+        this.version = '0.1.0';
+        this.isLoaded = function () { return true; };
+        this.profile = null;
+        this.load = function (_ctx, instance) {
+            var _a;
+            if (!_this.clientId) {
+                console.warn('Lotame Analytics: clientId is required');
+                return Promise.resolve();
+            }
+            _this.storage = buildStorage(_this.ttlDays);
+            _this.profile = validProfile(_this.storage.get(_this.cookieName), _this.ttlDays);
+            if (_this.profile) {
+                return Promise.resolve();
+            }
+            injectPreconnectHints();
+            var flightKey = "".concat(_this.cookieName, ":").concat(_this.clientId);
+            if (!captureFlights[flightKey]) {
+                captureFlights[flightKey] = _this.capture(instance).finally(function () {
+                    captureFlights[flightKey] = undefined;
+                });
+            }
+            void ((_a = captureFlights[flightKey]) === null || _a === void 0 ? void 0 : _a.then(function (profile) {
+                _this.profile = profile;
+            }).catch(function () { return undefined; }));
+            return Promise.resolve();
+        };
+        this.enrich = function (ctx) {
+            var _a;
+            var _b;
+            if (!_this.profile) {
+                return ctx;
+            }
+            var eventContext = (_b = ctx.event.context) !== null && _b !== void 0 ? _b : {};
+            eventContext.traits = (0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)({}, eventContext.traits), (_a = {}, _a[_this.traitsNamespace] = _this.profile, _a));
+            ctx.event.context = eventContext;
+            return ctx;
+        };
+        this.track = this.enrich;
+        this.identify = this.enrich;
+        this.page = this.enrich;
+        this.group = this.enrich;
+        this.alias = this.enrich;
+        this.screen = this.enrich;
+        this.clientId = config.clientId;
+        this.ttlDays = (_a = config.ttlDays) !== null && _a !== void 0 ? _a : DEFAULT_TTL_DAYS;
+        this.cookieName = (_b = config.cookieName) !== null && _b !== void 0 ? _b : DEFAULT_COOKIE_NAME;
+        this.traitsNamespace = (_c = config.traitsNamespace) !== null && _c !== void 0 ? _c : DEFAULT_TRAITS_NAMESPACE;
+        this.captureTimeoutMs =
+            (_d = config.captureTimeoutMs) !== null && _d !== void 0 ? _d : DEFAULT_CAPTURE_TIMEOUT_MS;
+    }
+    LotameAnalyticsPlugin.prototype.capture = function (instance) {
+        var _this = this;
+        var timeoutMs = this.captureTimeoutMs;
+        return new Promise(function (resolve, reject) {
+            var _a, _b, _c, _d;
+            var settled = false;
+            var done = function (fn) {
+                if (!settled) {
+                    settled = true;
+                    fn();
+                }
+            };
+            var timer = setTimeout(function () {
+                done(function () {
+                    return reject(new Error("Lotame capture timed out after ".concat(timeoutMs, "ms \u2014 no onProfileReady callback")));
+                });
+            }, timeoutMs);
+            var namespace = getNativeNamespace(_this.clientId);
+            var win = window;
+            var existing = ((_a = win[namespace]) !== null && _a !== void 0 ? _a : {});
+            var config = ((_b = existing.config) !== null && _b !== void 0 ? _b : {});
+            win[namespace] = (0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)({}, existing), { config: (0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)((0,tslib__WEBPACK_IMPORTED_MODULE_5__.__assign)({}, config), { onProfileReady: function (lotameProfile) {
+                        done(function () {
+                            var _a;
+                            clearTimeout(timer);
+                            try {
+                                var profile = extractProfile(lotameProfile);
+                                _this.profile = profile;
+                                (_a = _this.storage) === null || _a === void 0 ? void 0 : _a.set(_this.cookieName, profile);
+                                void instance.track(EVENT_NAME, profile).catch(function () { return undefined; });
+                                resolve(profile);
+                            }
+                            catch (err) {
+                                reject(err);
+                            }
+                        });
+                    } }), data: (_c = existing.data) !== null && _c !== void 0 ? _c : {}, cmd: (_d = existing.cmd) !== null && _d !== void 0 ? _d : [] });
+            (0,_lib_load_script__WEBPACK_IMPORTED_MODULE_6__.loadScript)("https://tags.crwdcntrl.net/lt/c/".concat(_this.clientId, "/lt.min.js"))
+                .then(function () { return undefined; })
+                .catch(function (err) {
+                done(function () {
+                    clearTimeout(timer);
+                    reject(err);
+                });
+            });
+        });
+    };
+    return LotameAnalyticsPlugin;
+}());
+
+function lotameAnalytics(config) {
+    return new LotameAnalyticsPlugin(config);
+}
 
 
 /***/ }),

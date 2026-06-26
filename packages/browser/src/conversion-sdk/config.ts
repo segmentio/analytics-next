@@ -12,7 +12,7 @@ export const DEFAULT_INIT_CONFIG: Required<
     | 'respectDoNotTrack'
   >
 > = {
-  endpoint: '/collect',
+  endpoint: '/collector',
   flushIntervalMs: 3000,
   batchSize: 10,
   retryAttempts: 2,
