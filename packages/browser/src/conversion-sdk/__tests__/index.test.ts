@@ -75,7 +75,7 @@ describe('Conversion SDK public API', () => {
       RequestInfo | URL,
       RequestInit | undefined
     ]
-    expect(url).toBe('/collect')
+    expect(url).toBe('/collector')
     expect(options?.method).toBe('POST')
     const body = JSON.parse(String(options?.body)) as CollectPayload
 
@@ -235,7 +235,7 @@ describe('Conversion SDK public API', () => {
   it('returns debug info for copy workflows', async () => {
     await track('debug_event', {})
     const info = getDebugInfo()
-    expect(info.endpoint).toBe('/collect')
+    expect(info.endpoint).toBe('/collector')
     expect(typeof info.sessionId).toBe('string')
     expect(info.queueSize).toBe(1)
   })

@@ -4,7 +4,7 @@ describe('resolveInitConfig', () => {
   it('loads hardcoded config from writeKey', () => {
     const config = resolveInitConfig('conversion-pipeline')
     expect(config.writeKey).toBe('conversion-pipeline')
-    expect(config.endpoint).toBe('/collect')
+    expect(config.endpoint).toBe('/collector')
     expect(config.appName).toBe('conversion-pipeline')
     expect(config.enableGptSlotEvents).toBe(false)
   })
@@ -16,7 +16,7 @@ describe('resolveInitConfig', () => {
     })
     expect(config.appName).toBe('custom-lp')
     expect(config.debug).toBe(true)
-    expect(config.endpoint).toBe('/collect')
+    expect(config.endpoint).toBe('/collector')
   })
 
   it('accepts legacy object config', () => {
