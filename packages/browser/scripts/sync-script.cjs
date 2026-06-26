@@ -14,6 +14,8 @@ const copies = [
   ['conversion-analytics.build.js', 'conversion-analytics.build.js'],
   ['sdk.min.js', 'conversion-analytics-sdk.build.min.js'],
   ['conversion-analytics.build.js', 'conversion-analytics-sdk.build.js'],
+  ['sdk.min.js', 'cp-sdk.build.min.js'],
+  ['conversion-analytics.build.js', 'cp-sdk.build.js'],
 ]
 
 if (!fs.existsSync(distDir)) {
