@@ -24,10 +24,16 @@ const PREFERRED_STUB_GLOBALS = [
   '_analytics',
 ] as const
 
-function isConfiguredStub(candidate: unknown): candidate is StubAnalytics {
+function isStubContainer(candidate: unknown): candidate is StubAnalytics {
   return (
     candidate != null &&
-    typeof candidate === 'object' &&
+    (typeof candidate === 'object' || typeof candidate === 'function')
+  )
+}
+
+function isConfiguredStub(candidate: unknown): candidate is StubAnalytics {
+  return (
+    isStubContainer(candidate) &&
     ('config' in candidate || 'queue' in candidate || 'writeKey' in candidate)
   )
 }
@@ -42,8 +48,8 @@ function resolveStub(w: Record<string, unknown>): StubAnalytics | undefined {
 
   for (const key of STUB_GLOBALS) {
     const candidate = w[key]
-    if (candidate && typeof candidate === 'object') {
-      return candidate as StubAnalytics
+    if (isStubContainer(candidate)) {
+      return candidate
     }
   }
   return undefined

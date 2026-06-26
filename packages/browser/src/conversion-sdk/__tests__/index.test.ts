@@ -232,6 +232,46 @@ describe('Conversion SDK public API', () => {
     })
   })
 
+  it('hydrates legacy function stubs with configured endpoint', async () => {
+    resetAnalyticsSingleton()
+    ;(window as unknown as Record<string, unknown>).analytics = {
+      existing: true,
+    }
+
+    const stub = function () {
+      // Legacy snippet command function; calls are queued through explicit methods.
+    } as unknown as Record<string, unknown>
+    stub.config = {
+      endpoint: 'https://pipeline.utua.africa/collector',
+      appName: 'wordpress-africa',
+      flushIntervalMs: 10000,
+      batchSize: 1,
+      retryAttempts: 0,
+    }
+    stub.queue = [
+      { type: 'page', arguments: [] },
+      { type: 'track', arguments: ['ad_rendered', { slot: 'top' }] },
+    ]
+    ;(window as unknown as Record<string, unknown>).ConversionAnalytics = stub
+
+    await bootstrapConversionAnalyticsFromWindow()
+
+    expect(fetchCalls.length).toBeGreaterThan(0)
+    expect(
+      fetchCalls.every(
+        ([url]) => url === 'https://pipeline.utua.africa/collector'
+      )
+    ).toBe(true)
+    const analytics = (
+      window as unknown as Record<string, Record<string, unknown>>
+    ).ConversionAnalytics
+    expect(typeof analytics).toBe('function')
+    expect(analytics?.config).toMatchObject({
+      endpoint: 'https://pipeline.utua.africa/collector',
+      appName: 'wordpress-africa',
+    })
+  })
+
   it('returns debug info for copy workflows', async () => {
     await track('debug_event', {})
     const info = getDebugInfo()
