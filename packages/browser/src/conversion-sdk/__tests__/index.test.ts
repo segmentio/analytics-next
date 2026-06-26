@@ -196,6 +196,42 @@ describe('Conversion SDK public API', () => {
     expect(typeof analytics?._sessionId).toBe('string')
   })
 
+  it('prefers configured ConversionAnalytics stub over existing analytics global', async () => {
+    resetAnalyticsSingleton()
+    ;(window as unknown as Record<string, unknown>).analytics = {
+      existing: true,
+    }
+    ;(window as unknown as Record<string, unknown>).ConversionAnalytics = {
+      config: {
+        endpoint: 'https://pipeline.utua.africa',
+        appName: 'strapi-quiz',
+        flushIntervalMs: 10000,
+        batchSize: 1,
+        retryAttempts: 0,
+      },
+      queue: [
+        { type: 'track', arguments: ['quiz_started', { quizId: 'quiz' }] },
+      ],
+    }
+
+    await bootstrapConversionAnalyticsFromWindow()
+
+    expect(fetchCalls.length).toBeGreaterThan(0)
+    expect(fetchCalls.map(([url]) => url)).toEqual(
+      expect.arrayContaining(['https://pipeline.utua.africa'])
+    )
+    expect(
+      fetchCalls.every(([url]) => url === 'https://pipeline.utua.africa')
+    ).toBe(true)
+    const analytics = (
+      window as unknown as Record<string, Record<string, unknown>>
+    ).ConversionAnalytics
+    expect(analytics?.config).toMatchObject({
+      endpoint: 'https://pipeline.utua.africa',
+      appName: 'strapi-quiz',
+    })
+  })
+
   it('returns debug info for copy workflows', async () => {
     await track('debug_event', {})
     const info = getDebugInfo()
