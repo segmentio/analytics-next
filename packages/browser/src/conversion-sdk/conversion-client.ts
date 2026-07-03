@@ -8,6 +8,7 @@ import {
 import { DEFAULT_INIT_CONFIG } from './config'
 import { conversionGptSlotEventsPlugin } from './gpt-plugin'
 import { lotameAnalytics } from '../plugins/lotame-analytics'
+import { deriveUserIdFromTraits, withOriginMarkers } from './identity'
 import { loadLeanConversionAnalytics } from './lean-load'
 import { normalizeIdentifyCall, normalizeTrackCall } from './legacy-args'
 import type {
@@ -169,11 +170,17 @@ export class ConversionClient {
       userOrEvent,
       traits
     )
-    if (userId) {
-      await analytics.identify(userId, normalizedTraits, options)
+    const taggedTraits = withOriginMarkers(normalizedTraits, this.config)
+    // Fix for the "identify with empty user_id" bug: when the caller omits userId,
+    // derive it from BGID (if present in traits) or SHA-256(email) instead of
+    // sending the event unidentified.
+    const resolvedUserId =
+      userId || (await deriveUserIdFromTraits(taggedTraits))
+    if (resolvedUserId) {
+      await analytics.identify(resolvedUserId, taggedTraits, options)
       return
     }
-    await analytics.identify(normalizedTraits, options)
+    await analytics.identify(taggedTraits, options)
   }
 
   async flush(): Promise<void> {

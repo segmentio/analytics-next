@@ -44,6 +44,8 @@ export interface AnalyticsInitConfig {
   enableContextEnrichment?: boolean
   enableIdentifyHashing?: boolean
   enablePageTaxonomy?: boolean
+  /** Overrides the `traits.navec.source` marker injected on every identify() call. */
+  navecSource?: string
   lotameClientId?: string
   lotameConfig?: {
     ttlDays?: number
