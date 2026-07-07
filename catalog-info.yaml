@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-next
+  description: Analytics.js 2.0 — Segment's browser & Node analytics SDK monorepo (@segment/analytics-next, analytics-core, analytics-node, consent).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - javascript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-next
+      url: https://www.npmjs.com/package/@segment/analytics-next
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
