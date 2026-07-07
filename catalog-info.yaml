@@ -1,0 +1,152 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-next
+  description: Analytics.js 2.0 — Segment's browser analytics SDK (@segment/analytics-next).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - javascript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-next
+      url: https://www.npmjs.com/package/@segment/analytics-next
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-core
+  description: Shared core used by Segment's analytics SDKs (@segment/analytics-core).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-core
+      url: https://www.npmjs.com/package/@segment/analytics-core
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-node
+  description: Server-side Node analytics SDK (@segment/analytics-node).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-node
+      url: https://www.npmjs.com/package/@segment/analytics-node
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-consent-tools
+  description: Consent-management tooling for Analytics.js (@segment/analytics-consent-tools).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-consent-tools
+      url: https://www.npmjs.com/package/@segment/analytics-consent-tools
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-consent-wrapper-onetrust
+  description: OneTrust consent wrapper for Analytics.js (@segment/analytics-consent-wrapper-onetrust).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+    - sdk
+  links:
+    - title: npm — @segment/analytics-consent-wrapper-onetrust
+      url: https://www.npmjs.com/package/@segment/analytics-consent-wrapper-onetrust
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-generic-utils
+  description: Shared generic utilities for Segment analytics SDKs (@segment/analytics-generic-utils).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+  links:
+    - title: npm — @segment/analytics-generic-utils
+      url: https://www.npmjs.com/package/@segment/analytics-generic-utils
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: analytics-page-tools
+  description: Page/URL helper utilities for Analytics.js (@segment/analytics-page-tools).
+  annotations:
+    github.com/project-slug: segmentio/analytics-next
+    github.com/team-slug: segmentio/data-collection
+    jira/project-key: LIBRARIES
+    pagerduty.com/service-id: POJL6ZQ
+    twilio.com/slack-id: integrations-libs
+  tags:
+    - typescript
+  links:
+    - title: npm — @segment/analytics-page-tools
+      url: https://www.npmjs.com/package/@segment/analytics-page-tools
+spec:
+  type: library
+  lifecycle: production
+  owner: group:default/sup-org-1996
