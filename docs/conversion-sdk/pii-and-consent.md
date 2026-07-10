@@ -1,5 +1,31 @@
 # PII hashing e consentimento
 
+## `user_id` no `identify` (BGID / SHA-256 do email)
+
+`ConversionClient.identify()` (`packages/browser/src/conversion-sdk/conversion-client.ts`) sempre
+resolve um `user_id` antes de enviar o evento, mesmo quando o chamador não passa um explícito:
+
+1. Se o chamador passar `userId` (ex.: BGID vindo de `arbgid.com.br`/`id.utua.com.br`), ele é usado.
+2. Senão, se `traits.bgid` (ou `bgId`/`BGID`) estiver presente, ele é usado.
+3. Senão, deriva `user_id = SHA-256(trim(lowercase(traits.email)))` — sem secret, determinístico
+   entre devices/sessões diferentes.
+4. Se não houver nenhuma das opções acima, o evento vai sem `user_id` (não há PII para derivar).
+
+A lógica vive em `packages/browser/src/conversion-sdk/identity.ts` (`deriveUserIdFromTraits`).
+Isso corrige o bug em que `identify` com email nas traits mas sem `userId` explícito chegava ao
+Collector com `user_id` vazio.
+
+## `traits.navec` (origem dos dados)
+
+Todo `identify()` marca as traits com `traits.navec = { source: "<navecSource>" }` (default
+`"conversion-pipeline-sdk"`, configurável via `init({ navecSource })`), a menos que o chamador já
+tenha passado `traits.navec` explicitamente. Quando `lotameClientId` está configurado, um marcador
+equivalente `traits.lotame = { source: "lotame", clientId }` também é adicionado. Isso chega ao
+ClickHouse dentro da coluna `traits` (JSON), sem necessidade de mudança no backend.
+
+> A estrutura `{ source }` é um placeholder — o schema exato ainda precisa ser confirmado com o
+> Misságia (pedido original não especificou o formato).
+
 ## O que acontece no `identify`
 
 Por default, a SDK envia os `traits` no payload nativo analytics-next e o Collector normaliza/hasheia
