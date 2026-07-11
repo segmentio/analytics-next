@@ -42,7 +42,7 @@
       ]
     },
     "test:int": {
-      "env": ["PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH", "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "COVERAGE"],
+      "env": ["CI", "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH", "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD", "COVERAGE"],
       "dependsOn": [
         "build"
       ]

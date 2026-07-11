@@ -107,6 +107,7 @@ steps:
     depends_on: 'build-agent-image'
     allow_dependency_failure: true
     soft_fail: true
+    timeout_in_minutes: 15
     commands:
       - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
       - make -C .buildkite agent-login-ci
@@ -123,6 +124,12 @@ steps:
           limit: 2
 
   # See the manual-login note on [Browser] Lint + Test above.
+  # Build #23: this step timed out ~3x30min -- `playwright.config.ts` picks
+  # ciProjects (chromium-only) vs localProjects (chromium+firefox+webkit) based on
+  # process.env.CI, but CI wasn't forwarded into the container/turbo task, so it ran
+  # all three engines against an image that only has Chromium; firefox/webkit hung
+  # until each test's own 30s timeout. Fixed by forwarding CI + adding it to turbo's
+  # test:int env allowlist. timeout_in_minutes is a backstop against a repeat.
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
     env:
@@ -130,6 +137,7 @@ steps:
     depends_on: 'build-agent-image'
     allow_dependency_failure: true
     soft_fail: true
+    timeout_in_minutes: 15
     commands:
       - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
       - make -C .buildkite agent-login-ci
@@ -137,7 +145,7 @@ steps:
       - |
         docker run --rm --init \
           --volume "$$PWD:/workdir" --workdir /workdir \
-          -e COVERAGE -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          -e CI -e COVERAGE -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
           "${PLAYWRIGHT_IMAGE}" \
           sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable && yarn turbo run --filter=@internal/browser-integration-tests test:int'
     retry:
@@ -201,6 +209,7 @@ steps:
     depends_on: 'build-agent-image'
     allow_dependency_failure: true
     soft_fail: true
+    timeout_in_minutes: 15
     commands:
       - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
       - make -C .buildkite agent-login-ci
@@ -208,9 +217,9 @@ steps:
       - |
         docker run --rm --init \
           --volume "$$PWD:/workdir" --workdir /workdir \
-          -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          -e CI -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
           "${PLAYWRIGHT_IMAGE}" \
-          sh -c 'echo "DEBUG PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" && ls -la /usr/bin/chromium* 2>&1; unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable && yarn turbo run --filter="./packages/consent/consent-tools-integration-tests" test:int'
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable && yarn turbo run --filter="./packages/consent/consent-tools-integration-tests" test:int'
 
   # See the manual-login note on [Browser] Lint + Test above.
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
@@ -221,6 +230,7 @@ steps:
     allow_dependency_failure: true
     soft_fail:
       - exit_status: '*'
+    timeout_in_minutes: 15
     commands:
       - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
       - make -C .buildkite agent-login-ci
