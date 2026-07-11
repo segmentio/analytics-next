@@ -12,6 +12,11 @@ RUN apk update && apk add --no-cache \
       freetype \
       harfbuzz \
       ca-certificates \
-      ttf-freefont
+      ttf-freefont \
+      git \
+      openssh-client \
+      python3 \
+      g++ \
+      make
 
 ENTRYPOINT []

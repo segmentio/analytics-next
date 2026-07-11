@@ -210,7 +210,7 @@ steps:
           --volume "$$PWD:/workdir" --workdir /workdir \
           -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
           "${PLAYWRIGHT_IMAGE}" \
-          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable && yarn turbo run --filter="./packages/consent/consent-tools-integration-tests" test:int'
+          sh -c 'echo "DEBUG PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$$PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH" && ls -la /usr/bin/chromium* 2>&1; unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable && yarn turbo run --filter="./packages/consent/consent-tools-integration-tests" test:int'
 
   # See the manual-login note on [Browser] Lint + Test above.
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
