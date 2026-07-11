@@ -1,9 +1,17 @@
-ARG NODE_IMAGE=018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm
-FROM ${NODE_IMAGE}
+# Chromium comes from the OS package manager (apk), not Playwright's own installer --
+# `playwright install` fetches the browser binary from playwright.azureedge.net
+# (and estimo/size-limit separately fetches from storage.googleapis.com), both
+# unreachable from locked-down Buildkite agents. apk's Alpine package repos are
+# reachable. Matches the working pattern in segmentio/analytics.js-integrations
+# .buildkite/Dockerfile.ci.
+FROM registry.twilio.com/library/base-node/22:22
 
-# Pin to the version pinned repo-wide (packages/browser, browser-integration-tests,
-# consent-tools-integration-tests all declare ^1.28.1) so the baked-in browser binary
-# matches whatever `yarn install` resolves at test time.
-RUN npx --yes playwright@1.28.1 install --with-deps chromium
+RUN apk update && apk add --no-cache \
+      chromium \
+      nss \
+      freetype \
+      harfbuzz \
+      ca-certificates \
+      ttf-freefont
 
 ENTRYPOINT []

@@ -37,6 +37,13 @@ const config: PlaywrightTestConfig = {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     baseURL: `http://127.0.0.1:5432`,
     trace: 'on',
+
+    /* In CI, use the apk-installed system Chromium (.buildkite/Dockerfile.agent)
+     * instead of a Playwright-downloaded binary -- unreachable from locked-down
+     * agents. Undefined locally, so local dev keeps Playwright's managed browser. */
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+    },
   },
 
   /* Configure projects for major browsers */

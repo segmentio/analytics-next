@@ -6,10 +6,17 @@ env:
   ECR_REGISTRY: '018537234677.dkr.ecr.us-east-1.amazonaws.com'
   NODE_IMAGE: '018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm'
   SEGMENT_ECR_REGISTRY: '528451384384.dkr.ecr.us-west-2.amazonaws.com'
-  # Built by the ":docker: Build CI Agent Image" step below from .buildkite/Dockerfile.agent
-  # (NODE_IMAGE + Playwright chromium baked in). Only steps that run real browser tests use
-  # this instead of the plain NODE_IMAGE.
+  # Built by the ":docker: Build CI Agent Image" step below from .buildkite/Dockerfile.agent --
+  # Alpine base-node + apk-installed chromium (matching segmentio/analytics.js-integrations'
+  # Dockerfile.ci pattern), NOT a Playwright-downloaded binary. Steps that run real browser
+  # tests use this instead of the plain NODE_IMAGE.
   PLAYWRIGHT_IMAGE: '528451384384.dkr.ecr.us-west-2.amazonaws.com/analytics-next-ci-agent:latest'
+  # Consumed by qa/lib/browser.ts and the two playwright.config.ts files (via
+  # launchOptions.executablePath) to point Playwright at the system Chromium above
+  # instead of trying to download its own. CHROME_PATH is the convention find-chrome-bin
+  # (estimo/size-limit's browser locator) checks, for the same reason.
+  PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
+  CHROME_PATH: '/usr/bin/chromium-browser'
 
 steps:
   - block: Allow this build to run?
@@ -17,13 +24,13 @@ steps:
     if: build.pull_request.repository.fork
     blocked_state: running
 
-  # KNOWN BLOCKED (confirmed build #16, not guessed): `playwright install --with-deps`
-  # can't fetch the Chromium binary from locked-down general-039 agents -- both direct
-  # registry.npmjs.org and every playwright.azureedge.net CDN mirror (akamai, verizon)
-  # time out / ECONNRESET. This needs either an internal Artifactory mirror for
-  # Playwright browser binaries or confirmation from the platform team that a different
-  # egress path should be opened. soft_fail until that's resolved; the four steps below
-  # that depend on this image are soft_fail'd too for the same reason.
+  # Build #16 confirmed `playwright install --with-deps` can't fetch the Chromium binary
+  # from locked-down general-039 agents (registry.npmjs.org direct + every
+  # playwright.azureedge.net CDN mirror all ECONNRESET/timeout). Switched to apk-installing
+  # chromium from an Alpine base image instead -- matches the working pattern in
+  # segmentio/analytics.js-integrations' .buildkite/Dockerfile.ci. soft_fail retained until
+  # this is validated by an actual green build; remove once confirmed. The four steps below
+  # that depend on this image are soft_fail'd/allow_dependency_failure'd for the same reason.
   - label: ':docker: Build CI Agent Image (Playwright)'
     key: build-agent-image
     soft_fail: true
@@ -63,14 +70,15 @@ steps:
 
   # Confirmed build #17: `make ci`'s test-integration target runs jsdom, not a real
   # browser, but a *different* step in scripts/ci.sh ("--- Check Size" / size-limit's
-  # `estimo` dependency) downloads its own headless Chrome from storage.googleapis.com
-  # to benchmark bundle run time -- also unreachable from locked-down agents (same
-  # ECONNRESET signature as the Playwright CDN below, third distinct tool hitting the
-  # identical gap). soft_fail until that's resolved; build/lint/unit-test still run and
-  # their output is visible in the log even though the step is marked non-blocking.
+  # `estimo` dependency, via find-chrome-bin) needs a real Chromium to benchmark bundle
+  # run time. Now runs on PLAYWRIGHT_IMAGE (apk chromium) instead of plain NODE_IMAGE;
+  # CHROME_PATH (set at top) points find-chrome-bin at it instead of downloading one.
+  # soft_fail retained until validated by a green build.
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
     soft_fail: true
+    depends_on: 'build-agent-image'
+    allow_dependency_failure: true
     env:
       SEGMENT_CODECOV_FLAGS: 'browser'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
@@ -81,7 +89,7 @@ steps:
       - yarn run -T browser exec make ci
     plugins:
       - docker#v5.13.0:
-          image: '${NODE_IMAGE}'
+          image: '${PLAYWRIGHT_IMAGE}'
           propagate-environment: true
 
   # Blocked on build-agent-image (see comment there -- Playwright CDN unreachable).
@@ -95,7 +103,7 @@ steps:
     commands:
       - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - echo "+++ Run QA Tests :pray:"
       - yarn run -T browser exec make test-qa
     retry:
@@ -118,7 +126,7 @@ steps:
     commands:
       - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
       - yarn turbo run --filter=@internal/browser-integration-tests test:int
     retry:
@@ -189,7 +197,7 @@ steps:
     commands:
       - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
-      - HUSKY=0 yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build + Test"
       - yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
     plugins:
@@ -209,7 +217,7 @@ steps:
     commands:
       - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
-      - yarn install --immutable
+      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
       - yarn run -T browser exec make test-qa-destinations
     plugins:
