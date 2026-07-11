@@ -1,5 +1,9 @@
-FROM 528451384384.dkr.ecr.us-west-2.amazonaws.com/buildkite-agent-node20
+ARG NODE_IMAGE=018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm
+FROM ${NODE_IMAGE}
 
-RUN npx playwright install-deps 
+# Pin to the version pinned repo-wide (packages/browser, browser-integration-tests,
+# consent-tools-integration-tests all declare ^1.28.1) so the baked-in browser binary
+# matches whatever `yarn install` resolves at test time.
+RUN npx --yes playwright@1.28.1 install --with-deps chromium
 
 ENTRYPOINT []

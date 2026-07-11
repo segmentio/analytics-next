@@ -1,27 +1,46 @@
+agents:
+  queue: general-039
+
 env:
-  SEGMENT_CONTEXTS: 'snyk,npm,aws-credentials,ecr,npm-publish'
-  SEGMENT_BUILDKITE_IMAGE: 'analytics-next-ci-agent'
   COVERAGE: true
+  ECR_REGISTRY: '018537234677.dkr.ecr.us-east-1.amazonaws.com'
+  NODE_IMAGE: '018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm'
+  SEGMENT_ECR_REGISTRY: '528451384384.dkr.ecr.us-west-2.amazonaws.com'
+  # Built by the ":docker: Build CI Agent Image" step below from .buildkite/Dockerfile.agent
+  # (NODE_IMAGE + Playwright chromium baked in). Only steps that run real browser tests use
+  # this instead of the plain NODE_IMAGE.
+  PLAYWRIGHT_IMAGE: '528451384384.dkr.ecr.us-west-2.amazonaws.com/analytics-next-ci-agent:latest'
+
 steps:
   - block: Allow this build to run?
     prompt: ':rotating_light: Review the PR for concerning changes before unblocking'
     if: build.pull_request.repository.fork
     blocked_state: running
 
-  - label: Log Environment
-    agents:
-      queue: v1
+  - label: ':docker: Build CI Agent Image (Playwright)'
+    key: build-agent-image
     commands:
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Build + push agent image"
+      - make -C .buildkite agent
+
+  - label: Log Environment
+    commands:
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "+++ Node Version"
       - echo $(node -v)
       - echo "+++ MiscVariables"
       - echo "CI -> $CI"
+    plugins:
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
+
   - label: '[Monorepo] QA'
     key: monorepo
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Run tests"
@@ -30,36 +49,32 @@ steps:
       - yarn scripts lint
       - yarn run test:check-dts
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
-    agents:
-      queue: v1
     env:
       SEGMENT_CODECOV_FLAGS: 'browser'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - yarn install --immutable
       - yarn run -T browser exec make ci
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
-          save: true
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: '[Browser] QA / E2E :perfection:'
     key: qa
-    agents:
-      queue: v1
     env:
       COVERAGE: false
+    depends_on: 'build-agent-image'
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run QA Tests :pray:"
@@ -69,17 +84,17 @@ steps:
         - exit_status: '*'
           limit: 2
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${PLAYWRIGHT_IMAGE}'
+          propagate-environment: true
 
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
-    agents:
-      queue: v1
     env:
       COVERAGE: false
+    depends_on: 'build-agent-image'
     commands:
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run Browser integration tests :pray:"
@@ -89,18 +104,16 @@ steps:
         - exit_status: '*'
           limit: 2
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${PLAYWRIGHT_IMAGE}'
+          propagate-environment: true
 
   - label: '[Core] Lint + Test'
     env:
       SEGMENT_CODECOV_FLAGS: 'core'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/core/coverage'
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
@@ -110,15 +123,13 @@ steps:
       - yarn run -T core test
       - yarn turbo run --filter=@internal/core-integration-tests lint
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: '[Misc Utils] Lint + Test'
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Run QA for generic-utils"
@@ -128,16 +139,13 @@ steps:
       - yarn turbo run --filter=@segment/analytics-page-tools lint
       - yarn turbo run --filter=@segment/analytics-page-tools test
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
-          
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: '[Consent] Lint + Test'
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
@@ -147,63 +155,67 @@ steps:
       - echo "+++ Run Tests"
       - yarn turbo run --filter='./packages/consent/*' test
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
+
   - label: '[Consent] Integration Tests'
-    agents:
-      queue: v1
+    depends_on: 'build-agent-image'
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - HUSKY=0 yarn install --immutable
       - echo "--- Build + Test"
       - yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
-
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          
+      - docker#v5.13.0:
+          image: '${PLAYWRIGHT_IMAGE}'
+          propagate-environment: true
+
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
     key: destinations
-    agents:
-      queue: v1
     env:
       COVERAGE: false
+    depends_on: 'build-agent-image'
+    soft_fail:
+      - exit_status: '*'
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - yarn install --immutable
       - echo "+++ Run Destinations QA Tests :pray:"
       - yarn run -T browser exec make test-qa-destinations
-    soft_fail:
-      - exit_status: '*'
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${PLAYWRIGHT_IMAGE}'
+          propagate-environment: true
 
+  # NOTE: branches tightened to `master` only (was `!v* !@segment/* !publish-test`,
+  # i.e. "run on everything except release branches") while credential wiring below
+  # is unvalidated -- a broad deny-list would fire a real CDN publish from this
+  # repair/test branch. Relax back to the original gate once the secret below is
+  # confirmed to exist and the step has gone green on master.
   - label: '[Browser] Release to CDN :rocket:'
-    branches: '!v* !@segment/* !publish-test'
-    agents:
-      queue: v1
+    branches: 'master'
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
+      # TODO(vic): confirm this is the actual provisioned cluster secret name --
+      # guessed placeholder, will fail loudly with "secret not found" if wrong.
+      - echo "--- Fetch CDN publish credentials"
+      - eval "$(buildkite-agent secret get "analytics-next-cdn-deploy" --format env)"
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "+++ Release to CDN"
       - yarn run -T browser release:cdn
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: '[Playgrounds] Lint + Test :hammer:'
     key: playgrounds
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
       - echo "--- Install dependencies"
       - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
       - echo "--- Build bundles"
@@ -211,23 +223,25 @@ steps:
       - echo "+++ Run tests"
       - yarn turbo run --filter='./playgrounds/*' lint
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   # Deploy and NPM publish releases
   - label: '[Browser] Publish Packages to NPM :rocket:'
-    env:
-      SEGMENT_GITHUB_APP: release-writer # allow creation of github release 
     if: |
       // Only run when Version Packages PR is merged in
       build.message =~ /^Version Packages/ &&
       build.branch == "master" &&
       build.message !~ /\[skip\]/i
-    agents:
-      queue: v1
     commands:
-      - npm config set "//registry.npmjs.org/:_authToken" $${NPM_TOKEN}
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
+      # TODO(vic): confirm the provisioned secret names -- real npmjs.org publish
+      # token (not the Artifactory install-only mirror) and a scoped GitHub token
+      # for release creation (was SEGMENT_GITHUB_APP: release-writer on Segment BK).
+      - echo "--- Fetch npmjs.org publish + GitHub release credentials"
+      - npm config set "//registry.npmjs.org/:_authToken" "$(buildkite-agent secret get "analytics-next-npm-publish-token")"
+      - export GH_TOKEN=$(buildkite-agent secret get "analytics-next-github-release-token")
       - git config --global user.name "buildkite-agent"
       - git config --global user.email "buildkite-agent@segment.com"
       - gh repo set-default segmentio/analytics-next
@@ -237,11 +251,20 @@ steps:
       - yarn release
       - yarn scripts create-release-from-tags
     plugins:
-      - ssh://git@github.com/segmentio/cache-buildkite-plugin#v2.0.0:
-          key: "v1.1-cache-dev-{{ checksum 'yarn.lock' }}"
-          paths: ['.yarn/cache/']
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
 
   - label: 'Snyk :lock:'
-    agents:
-      queue: v1
-    command: 'bk-snyk'
+    # bk-snyk was a Segment-Buildkite-only CLI wrapper (injected via the old
+    # SEGMENT_CONTEXTS: snyk context); no Twilio equivalent exists yet -- neither
+    # control-plane nor debugger-service run Snyk in CI. soft_fail so this doesn't
+    # block the build until a real replacement is identified.
+    soft_fail: true
+    commands:
+      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
+      - bk-snyk
+    plugins:
+      - docker#v5.13.0:
+          image: '${NODE_IMAGE}'
+          propagate-environment: true
