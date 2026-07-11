@@ -74,6 +74,11 @@ steps:
   # run time. Now runs on PLAYWRIGHT_IMAGE (apk chromium) instead of plain NODE_IMAGE;
   # CHROME_PATH (set at top) points find-chrome-bin at it instead of downloading one.
   # soft_fail retained until validated by a green build.
+  # The docker#v5.13.0 plugin pulls its image BEFORE this step's commands run, on
+  # whichever fresh agent the job lands on -- the login done in build-agent-image
+  # doesn't carry over. So for PLAYWRIGHT_IMAGE steps, login + `docker run` are both
+  # done here manually instead of via the plugin (matches control-plane's host-level
+  # docker run pattern for the same cross-account-pull problem).
   - label: '[Browser] Lint + Test'
     key: browser-lint-test
     soft_fail: true
@@ -83,16 +88,18 @@ steps:
       SEGMENT_CODECOV_FLAGS: 'browser'
       SEGMENT_CODECOV_ARGS: '--dir=./packages/browser/coverage'
     commands:
-      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - yarn run -T browser exec make ci
-    plugins:
-      - docker#v5.13.0:
-          image: '${PLAYWRIGHT_IMAGE}'
-          propagate-environment: true
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Install dependencies + run tests"
+      - |
+        docker run --rm --init \
+          --volume "$$PWD:/workdir" --workdir /workdir \
+          -e COVERAGE -e SEGMENT_CODECOV_FLAGS -e SEGMENT_CODECOV_ARGS -e CHROME_PATH \
+          -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          "${PLAYWRIGHT_IMAGE}" \
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable && yarn run -T browser exec make ci'
 
-  # Blocked on build-agent-image (see comment there -- Playwright CDN unreachable).
+  # See the manual-login note on [Browser] Lint + Test above.
   - label: '[Browser] QA / E2E :perfection:'
     key: qa
     env:
@@ -101,21 +108,21 @@ steps:
     allow_dependency_failure: true
     soft_fail: true
     commands:
-      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - echo "+++ Run QA Tests :pray:"
-      - yarn run -T browser exec make test-qa
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Install dependencies + run tests"
+      - |
+        docker run --rm --init \
+          --volume "$$PWD:/workdir" --workdir /workdir \
+          -e COVERAGE -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          "${PLAYWRIGHT_IMAGE}" \
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable && yarn run -T browser exec make test-qa'
     retry:
       automatic:
         - exit_status: '*'
           limit: 2
-    plugins:
-      - docker#v5.13.0:
-          image: '${PLAYWRIGHT_IMAGE}'
-          propagate-environment: true
 
-  # Blocked on build-agent-image (see comment there -- Playwright CDN unreachable).
+  # See the manual-login note on [Browser] Lint + Test above.
   - label: '[Browser] Integration Tests :perfection:'
     key: browser-integ
     env:
@@ -124,19 +131,19 @@ steps:
     allow_dependency_failure: true
     soft_fail: true
     commands:
-      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - echo "+++ Run Browser integration tests :pray:"
-      - yarn turbo run --filter=@internal/browser-integration-tests test:int
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Install dependencies + run tests"
+      - |
+        docker run --rm --init \
+          --volume "$$PWD:/workdir" --workdir /workdir \
+          -e COVERAGE -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          "${PLAYWRIGHT_IMAGE}" \
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable && yarn turbo run --filter=@internal/browser-integration-tests test:int'
     retry:
       automatic:
         - exit_status: '*'
           limit: 2
-    plugins:
-      - docker#v5.13.0:
-          image: '${PLAYWRIGHT_IMAGE}'
-          propagate-environment: true
 
   - label: '[Core] Lint + Test'
     env:
@@ -189,23 +196,23 @@ steps:
           image: '${NODE_IMAGE}'
           propagate-environment: true
 
-  # Blocked on build-agent-image (see comment there -- Playwright CDN unreachable).
+  # See the manual-login note on [Browser] Lint + Test above.
   - label: '[Consent] Integration Tests'
     depends_on: 'build-agent-image'
     allow_dependency_failure: true
     soft_fail: true
     commands:
-      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
-      - echo "--- Build + Test"
-      - yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
-    plugins:
-      - docker#v5.13.0:
-          image: '${PLAYWRIGHT_IMAGE}'
-          propagate-environment: true
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Install dependencies + run tests"
+      - |
+        docker run --rm --init \
+          --volume "$$PWD:/workdir" --workdir /workdir \
+          -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          "${PLAYWRIGHT_IMAGE}" \
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable && yarn turbo run --filter="./packages/consent/consent-tools-integration-tests" test:int'
 
-  # Blocked on build-agent-image (see comment there -- Playwright CDN unreachable).
+  # See the manual-login note on [Browser] Lint + Test above.
   - label: ':thisisfine: [Browser] Destinations QA / E2E'
     key: destinations
     env:
@@ -215,15 +222,15 @@ steps:
     soft_fail:
       - exit_status: '*'
     commands:
-      - unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER
-      - echo "--- Install dependencies"
-      - PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - echo "+++ Run Destinations QA Tests :pray:"
-      - yarn run -T browser exec make test-qa-destinations
-    plugins:
-      - docker#v5.13.0:
-          image: '${PLAYWRIGHT_IMAGE}'
-          propagate-environment: true
+      - echo "--- Cross-account ECR login (Segment ECR, buildkite-agent role)"
+      - make -C .buildkite agent-login-ci
+      - echo "--- Install dependencies + run tests"
+      - |
+        docker run --rm --init \
+          --volume "$$PWD:/workdir" --workdir /workdir \
+          -e COVERAGE -e CHROME_PATH -e PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH \
+          "${PLAYWRIGHT_IMAGE}" \
+          sh -c 'unset YARN_REGISTRY YARN_NPM_REGISTRY_SERVER && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable && yarn run -T browser exec make test-qa-destinations'
 
   # NOTE: branches tightened to `master` only (was `!v* !@segment/* !publish-test`,
   # i.e. "run on everything except release branches") while credential wiring below
