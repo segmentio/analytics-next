@@ -848,7 +848,7 @@ __metadata:
     "@segment/analytics.js-integration": ^3.3.3
     "@segment/analytics.js-integration-amplitude": ^3.3.3
     "@segment/analytics.js-video-plugins": ^0.2.1
-    "@segment/facade": ^3.4.9
+    "@segment/facade": ^3.4.10
     "@segment/tsub": ^2.0.0
     "@size-limit/preset-big-lib": ^7.0.8
     "@types/flat": ^5.0.1
@@ -1671,15 +1671,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/facade@npm:^3.4.9":
-  version: 3.4.9
-  resolution: "@segment/facade@npm:3.4.9"
+"@segment/facade@npm:^3.4.10":
+  version: 3.4.10
+  resolution: "@segment/facade@npm:3.4.10"
   dependencies:
     "@segment/isodate-traverse": ^1.1.1
     inherits: ^2.0.4
     new-date: ^1.0.3
     obj-case: 0.2.1
-  checksum: c6e139fd16464a1adb204bc13b958c95c96e5fa82c7281a4e71be4589b1a50a1d072f41d2bd8533c5fe1891e5a124af8c856ce26c493a0c5f548dff80c5ce572
+  checksum: 5d10861f586ecebe3a71b25c9f37b3c922298188965047efcfd5b7e6f7147dc6967c3760726c43db99f33ef285191498e0726fc8d2556d5bdd82312a5f647ef2
   languageName: node
   linkType: hard
 
@@ -9501,12 +9501,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:3.1.2, minimatch@npm:^3.1.1":
-  version: 3.1.2
-  resolution: "minimatch@npm:3.1.2"
+"minimatch@npm:3.1.5":
+  version: 3.1.5
+  resolution: "minimatch@npm:3.1.5"
   dependencies:
     brace-expansion: ^1.1.7
-  checksum: c154e566406683e7bcb746e000b84d74465b3a832c45d59912b9b55cd50dee66e5c4b1e5566dba26154040e51672f9aa450a9aef0c97cfc7336b78b7afb9540a
+  checksum: 47ef6f412c08be045a7291d11b1c40777925accf7252dc6d3caa39b1bfbb3a7ea390ba7aba464d762d783265c644143d2c8a204e6b5763145024d52ee65a1941
   languageName: node
   linkType: hard
 

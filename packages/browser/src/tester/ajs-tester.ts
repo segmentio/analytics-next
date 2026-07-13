@@ -73,7 +73,6 @@ export const getBrowser = mem(
   async (browserType?: BrowserType, remoteDebug?: boolean) => {
     const browser = await playwright[browserType ?? 'chromium'].launch({
       headless: true,
-      devtools: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
