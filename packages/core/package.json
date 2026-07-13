@@ -33,7 +33,7 @@
   "packageManager": "yarn@3.2.1",
   "dependencies": {
     "@lukeed/uuid": "^2.0.0",
-    "dset": "^3.1.2",
+    "dset": "^3.1.4",
     "tslib": "^2.4.1"
   }
 }

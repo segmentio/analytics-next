@@ -19,7 +19,7 @@
   "devDependencies": {
     "@customerio/cdp-analytics-browser": "workspace:^",
     "@internal/config": "workspace:^",
-    "@playwright/test": "^1.28.1",
+    "@playwright/test": "^1.55.1",
     "http-server": "14.1.1",
     "nock": "^13.2.9",
     "tslib": "^2.4.1"
