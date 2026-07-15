@@ -14,8 +14,11 @@
 #     `analytics-next-ci-agent:latest` in Segment ECR — reachable from
 #     general-039 via an ordinary `docker login` against that registry, no
 #     assume-role needed for pulls). The image already bundles Node 20 +
-#     `playwright install-deps`, so no per-step `apk`/`apt` install is
-#     needed.
+#     `playwright install-deps`. It's Alpine-based (confirmed by the
+#     `-musl` native binaries yarn fetches on-agent), so some steps still
+#     need a per-step `apk add` — e.g. `[Browser] Lint + Test` needs `bash`
+#     because `packages/browser/Makefile`'s `ci` target hardcodes
+#     `bash ./scripts/ci.sh` even though the script itself is POSIX `sh`.
 #   * npm resolves from Twilio Artifactory (`virtual-npm-twilio`, tokenless)
 #     via the `YARN_NPM_REGISTRY_SERVER` env var forwarded into each
 #     container — registry.npmjs.org is egress-blocked on general-039. Set
@@ -136,6 +139,7 @@ steps:
         ${NODE_IMAGE} \
         sh -c '
           unset YARN_REGISTRY
+          apk add --no-cache bash >/dev/null
           echo "--- Install dependencies"
           yarn install --immutable
           yarn run -T browser exec make ci
