@@ -141,7 +141,7 @@ steps:
           unset YARN_REGISTRY
           apk add --no-cache bash >/dev/null
           echo "--- Install dependencies"
-          yarn install --immutable
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
           yarn run -T browser exec make ci
         '
     retry:
