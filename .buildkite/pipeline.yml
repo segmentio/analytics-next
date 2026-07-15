@@ -41,22 +41,36 @@
 #     configuration settings found: registry") and refuses to run at all.
 #     Confirmed live on general-039 build #27 (https://buildkite.com/twilio/cdp-analytics-next/builds/27).
 #
-# Known gaps — NOT validated on a live Twilio agent, flagged for the PR
-# reviewer rather than guessed at:
-#   * [Browser] QA/E2E, Destinations QA/E2E, and Integration Tests don't set
-#     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 — they need real Playwright browser
-#     binaries, which download from a public CDN. That's blocked on
-#     general-039 unless/until there's an Artifactory mirror for Playwright
-#     browsers (no evidence one exists yet). Likely the next real blocker.
-#   * [Browser] Release to CDN and [Browser] Publish Packages to NPM rely on
-#     SEGMENT_CONTEXTS ("aws-credentials", "npm-publish") and
-#     SEGMENT_GITHUB_APP — Segment-Buildkite agent-hook conventions that,
-#     like SEGMENT_BUILDKITE_IMAGE, are very likely inert on Twilio agents
-#     (no such hook runs there). These two steps need a real credential path
-#     (e.g. explicit `aws sts assume-role` the way ajs-renderer's deploy step
-#     does, and a Twilio-side GH App token) before they'll actually work —
-#     left as-is structurally so the diff stays reviewable; do not rely on
-#     them until validated on-agent.
+# Known gaps — confirmed live on general-039 (build history:
+# https://buildkite.com/twilio/cdp-analytics-next/builds), left for a human
+# decision rather than guessed at:
+#   * [Browser] Release to CDN fails: `SEGMENT_LIB_PATH: is a required
+#     environment variable`. This step (and [Browser] Publish Packages to
+#     NPM, gated separately) relied on SEGMENT_CONTEXTS
+#     ("aws-credentials", "npm-publish") and SEGMENT_GITHUB_APP —
+#     Segment-Buildkite agent-hook conventions that don't run on Twilio
+#     agents, same as SEGMENT_BUILDKITE_IMAGE. These need a real credential
+#     path (explicit `aws sts assume-role`, a Twilio-side GH App token) and
+#     whatever SEGMENT_LIB_PATH should point to — don't guess the value,
+#     a wrong S3/CDN path could ship a release to the wrong place.
+#   * [Consent] Integration Tests: 3 real Playwright assertion failures
+#     (not a download/env issue — the browser launches and runs fine).
+#     Needs human triage: genuine bug vs. flaky vs. environment-specific.
+#   * [Browser] Lint + Test's `test-unit`/`test-integration` (Jest) include
+#     several suites that make real network calls to fetch destination
+#     integration bundles (e.g. Amplitude) rather than mocking them —
+#     these hang/timeout under general-039's locked-down egress exactly
+#     like ajs-renderer's documented failure mode. Confirmed: 4 suites /
+#     43 tests fail this way (ajs-destination, schema-filter, the two
+#     integration.test.ts files). Fixing this means mocking the network
+#     calls in test code or getting an Artifactory mirror for whatever
+#     CDN they hit — both out of scope for this pipeline-only PR.
+#   * [Browser] QA/E2E, Destinations QA/E2E (soft_fail), and [Browser]
+#     Integration Tests (the @internal/browser-integration-tests
+#     workspace) need real Playwright browser binaries, which download
+#     from a public CDN — blocked on general-039 unless there's an
+#     Artifactory mirror for Playwright browsers (no evidence one exists
+#     yet).
 
 agents:
   queue: general-039
