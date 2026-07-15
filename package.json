@@ -73,6 +73,7 @@
   "resolutions": {
     "@segment/analytics-next": "workspace:*",
     "@segment/analytics-node": "workspace:*",
-    "@segment/analytics-core": "workspace:*"
+    "@segment/analytics-core": "workspace:*",
+    "js-cookie@^3.0.7": "patch:js-cookie@npm%3A3.0.7#./.yarn/patches/js-cookie-npm-3.0.7-a7a36a5505.patch"
   }
 }

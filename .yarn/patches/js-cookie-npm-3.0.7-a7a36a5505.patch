@@ -1,0 +1,26 @@
+diff --git a/dist/js.cookie.js b/dist/js.cookie.js
+index eb30307754705c01cb3e149374565e8c17314f2d..7961e3970ba8e83931d7e31f2e8de98f899a9a1a 100644
+--- a/dist/js.cookie.js
++++ b/dist/js.cookie.js
+@@ -100,7 +100,7 @@
+           if (name === found) {
+             break
+           }
+-        } catch {
++        } catch (e) {
+           // Do nothing...
+         }
+       }
+diff --git a/dist/js.cookie.mjs b/dist/js.cookie.mjs
+index 452c2e9c8ca6a3530a2d0015c93e2fbdf65d6a98..d94a6cf9d7e803115f6d328b9192fd5fcf785805 100644
+--- a/dist/js.cookie.mjs
++++ b/dist/js.cookie.mjs
+@@ -89,7 +89,7 @@ function init(converter, defaultAttributes) {
+         if (name === found) {
+           break
+         }
+-      } catch {
++      } catch (e) {
+         // Do nothing...
+       }
+     }
