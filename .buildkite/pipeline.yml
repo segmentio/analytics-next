@@ -184,7 +184,7 @@ steps:
     # of this writing). Previously only ever covered by the Segment v1
     # pipeline (open internet); no replacement pipeline stood up yet — see
     # the header comment's Known Gaps.
-    skip: 'needs a real Playwright browser; blocked by general-039 egress lockdown'
+    skip: 'needs a real Playwright browser; blocked by egress lockdown'
     agents:
       queue: general-039
     env:
@@ -213,7 +213,7 @@ steps:
     # Disabled on general-039: @internal/browser-integration-tests is a
     # Playwright suite — same real-browser-binary-download blocker as
     # [Browser] QA/E2E above. See the header comment's Known Gaps.
-    skip: 'needs a real Playwright browser; blocked by general-039 egress lockdown'
+    skip: 'needs a real Playwright browser; blocked by egress lockdown'
     agents:
       queue: general-039
     env:
@@ -325,7 +325,7 @@ steps:
     # [Browser] QA/E2E above (confirmed: `browserType.launch: Executable
     # doesn't exist`, not a test logic bug). See the header comment's
     # Known Gaps.
-    skip: 'needs a real Playwright browser; blocked by general-039 egress lockdown'
+    skip: 'needs a real Playwright browser; blocked by egress lockdown'
     agents:
       queue: general-039
     commands: |
@@ -352,7 +352,7 @@ steps:
     # Disabled on general-039 (was soft_fail; now skipped outright to avoid
     # burning agent time on a hang): same real-browser-binary-download
     # blocker as [Browser] QA/E2E above. See the header comment's Known Gaps.
-    skip: 'needs a real Playwright browser; blocked by general-039 egress lockdown'
+    skip: 'needs a real Playwright browser; blocked by egress lockdown'
     agents:
       queue: general-039
     env:
