@@ -188,11 +188,13 @@ jobs:
   browser-qa-e2e:
     name: '[Browser] QA / E2E'
     runs-on: ubuntu-latest-large
-    # Non-blocking until QA_SOURCES/QA_SAMPLES/STATS_WRITEKEY exist as repo
-    # secrets (see packages/browser/qa/README.md) - without them this job
-    # fails on startup with "no process.env.QA_SOURCES", not a real test
-    # failure. Remove continue-on-error once the secrets are added.
-    continue-on-error: true
+    # Disabled pending a real plan for this suite: it needs
+    # QA_SOURCES/QA_SAMPLES/STATS_WRITEKEY as repo secrets (see
+    # packages/browser/qa/README.md), and without them it just fails on
+    # startup with "no process.env.QA_SOURCES" - not a real test result.
+    # Flip this back to `true` (or remove the line) once there's a secrets
+    # plan and this should run again.
+    if: false
     env:
       COVERAGE: false
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
@@ -216,12 +218,12 @@ jobs:
   browser-destinations-qa-e2e:
     name: '[Browser] Destinations QA / E2E'
     runs-on: ubuntu-latest-large
-    # Non-blocking for two independent reasons: it matches the old
-    # pipeline's soft_fail for this job, and it also needs
+    # Disabled pending a real plan for this suite: it needs
     # QA_SOURCES/QA_SAMPLES/STATS_WRITEKEY as repo secrets (see
-    # packages/browser/qa/README.md) - without them it fails on startup
-    # with "no process.env.QA_SAMPLES", not a real test failure.
-    continue-on-error: true
+    # packages/browser/qa/README.md), and without them it just fails on
+    # startup with "no process.env.QA_SAMPLES" - not a real test result.
+    # Flip this back on once there's a secrets plan.
+    if: false
     env:
       COVERAGE: false
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
