@@ -11,10 +11,8 @@ env:
 
 jobs:
   # Only proceeds past this gate when master's HEAD is a "Version Packages"
-  # merge - the same convention the old Buildkite [Browser] Publish Packages
-  # to NPM step used (`build.message =~ /^Version Packages/`). Any other
-  # push to master (a regular PR merge) just no-ops here; release-creator.yml
-  # is what opens/updates the Version Packages PR itself.
+  # merge. Any other push to master (a regular PR merge) just no-ops here;
+  # release-creator.yml is what opens/updates the Version Packages PR itself.
   should-release:
     name: Check for Version Packages merge
     runs-on: ubuntu-latest-large
@@ -22,12 +20,15 @@ jobs:
       release: ${{ steps.check.outputs.release }}
     steps:
       - id: check
+        # Commit message is passed via env, not interpolated into the script
+        # body - it's attacker-controllable (anyone who can push a commit
+        # controls it), and inlining it directly into a run: step would let
+        # a crafted message break out of the script and execute arbitrary
+        # shell.
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          MESSAGE=$(cat <<'EOF'
-          ${{ github.event.head_commit.message }}
-          EOF
-          )
-          if [[ "$MESSAGE" == "Version Packages"* ]] && [[ "$MESSAGE" != *"[skip]"* ]]; then
+          if [[ "$COMMIT_MESSAGE" == "Version Packages"* ]] && [[ "$COMMIT_MESSAGE" != *"[skip]"* ]]; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -59,7 +60,7 @@ jobs:
     needs: [should-release, test]
     if: needs.should-release.outputs.release == 'true'
     runs-on: ubuntu-latest-large
-    environment: production # manual-approval gate, per docs/publishing-oss-packages/setup-npm-publishing.md
+    environment: production # manual-approval gate before publish
     permissions:
       contents: write # git push --follow-tags
       id-token: write # npm OIDC trusted publishing + Artifactory OIDC

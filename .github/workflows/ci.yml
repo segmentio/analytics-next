@@ -32,9 +32,8 @@ jobs:
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: COVERAGE=true yarn turbo run --filter='./packages/node*' test
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
-      # Codecov's own GitHub Action isn't on the org's Actions allowlist
-      # (allowed_actions: "selected", github-owned only) - upload via the
-      # CLI (a plain `run:` step, not a `uses:` action) instead.
+      # Using the Codecov CLI (a plain `run:` step) instead of the
+      # marketplace action to upload coverage.
       - if: ${{ !github.event.pull_request.head.repo.fork }}
         run: pip install --quiet codecov-cli
       - if: ${{ !github.event.pull_request.head.repo.fork }}

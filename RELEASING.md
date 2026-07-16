@@ -84,14 +84,10 @@ Feature branches are automatically released under:
 ## NPM Publishing
 
 Publishing runs on GitHub Actions (`.github/workflows/release.yml`), triggered by a
-"Version Packages" merge to `master`, per Twilio's
-[Set Up npm Publishing for a Public SDK](https://internal-product-docs.twilio.com/docs/publishing-oss-packages/setup-npm-publishing)
-guide. There is **no stored `NPM_TOKEN` secret** — publish authenticates via npm's
-**OIDC trusted publishing**, a short-lived, per-run token minted automatically for
-the `production`-environment-gated `publish` job. Dependency resolution during
-build/test goes through curated Artifactory via the `artifactory-oidc` composite
-action (`.github/actions/artifactory-oidc`), which similarly uses GitHub's OIDC
-token — no stored Artifactory credential either.
+"Version Packages" merge to `master`. There is **no stored `NPM_TOKEN` secret** —
+publish authenticates via npm's **OIDC trusted publishing**, a short-lived,
+per-run token minted automatically for the `production`-environment-gated
+`publish` job.
 
 Each of the 7 published `@segment/*` packages has its own npm **trusted publisher**
 registration (repo + `release.yml` + `production` environment) — set up once on
