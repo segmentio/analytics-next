@@ -2,6 +2,7 @@ import spawn from '@npmcli/promise-spawn'
 import getPackages from 'get-monorepo-packages'
 import path from 'path'
 import fs from 'fs'
+import os from 'os'
 import { exists } from '../utils/exists'
 import { yarnWorkspaceRootSync } from '@node-kit/yarn-workspace-root'
 
@@ -87,12 +88,14 @@ export const getChangelogPath = (packageName: string): string | undefined => {
  */
 const createGithubRelease = async (
   tag: string,
-  releaseNotes?: string
+  releaseNotes?: string,
+  assets: string[] = []
 ): Promise<void> => {
   const { stderr, code } = await spawn('gh', [
     'release',
     'create',
     tag,
+    ...assets,
     '--title',
     tag,
     '--notes',
@@ -101,6 +104,61 @@ const createGithubRelease = async (
   if (code !== 0) {
     throw new Error(stderr.toString())
   }
+}
+
+/**
+ * `npm pack`s the package for the given tag into a scratch dir and returns
+ * the resulting tarball's path, so it can be attached to the GitHub release
+ * as a downloadable artifact. Returns undefined (and logs) rather than
+ * throwing - a packing failure shouldn't block the release itself.
+ */
+const packTarball = async (tag: Tag): Promise<string | undefined> => {
+  const result = packages.find((p) => p.package.name === tag.name)
+  if (!result) {
+    console.log(
+      `could not find package location for ${tag.name}, skipping tarball.`
+    )
+    return undefined
+  }
+
+  const destDir = await fs.promises.mkdtemp(
+    path.join(os.tmpdir(), 'release-artifacts-')
+  )
+
+  const { stderr, code } = await spawn(
+    'npm',
+    ['pack', '--pack-destination', destDir],
+    { cwd: result.location }
+  )
+  if (code !== 0) {
+    console.log(`npm pack failed for ${tag.name}, skipping tarball: ${stderr}`)
+    return undefined
+  }
+
+  const [tarballName] = await fs.promises.readdir(destDir)
+  return tarballName ? path.join(destDir, tarballName) : undefined
+}
+
+/**
+ * For @segment/analytics-next specifically, also attach the built browser
+ * UMD/standalone bundles - the CDN-loadable <script> artifacts, distinct
+ * from the npm tarball, that consumers commonly want a direct download link
+ * for pinned to a specific tagged release.
+ */
+const getBrowserBundleAssets = (tag: Tag): string[] => {
+  if (tag.name !== '@segment/analytics-next') return []
+
+  const result = packages.find((p) => p.package.name === tag.name)
+  if (!result) return []
+
+  const umdDir = path.join(result.location, 'dist/umd')
+  const wanted = [
+    'index.js',
+    'index.js.gz',
+    'standalone.js',
+    'standalone.js.gz',
+  ]
+  return wanted.map((f) => path.join(umdDir, f)).filter((f) => fs.existsSync(f))
 }
 
 /**
@@ -190,7 +248,10 @@ const createGithubReleaseFromTag = async (
     return undefined
   }
 
-  await createGithubRelease(tag.raw, notes)
+  const tarball = await packTarball(tag)
+  const assets = [...(tarball ? [tarball] : []), ...getBrowserBundleAssets(tag)]
+
+  await createGithubRelease(tag.raw, notes, assets)
   return undefined
 }
 

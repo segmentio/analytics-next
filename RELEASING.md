@@ -81,41 +81,20 @@ Feature branches are automatically released under:
 
 - `http://cdn.segment.com/analytics-next/br/<branch>/<latest|sha>/standalone.js.gz`
 
-## NPM Token Management
+## NPM Publishing
 
-### How to Rotate/Update NPM Tokens
+Publishing runs on GitHub Actions (`.github/workflows/release.yml`), triggered by a
+"Version Packages" merge to `master`, per Twilio's
+[Set Up npm Publishing for a Public SDK](https://internal-product-docs.twilio.com/docs/publishing-oss-packages/setup-npm-publishing)
+guide. There is **no stored `NPM_TOKEN` secret** — publish authenticates via npm's
+**OIDC trusted publishing**, a short-lived, per-run token minted automatically for
+the `production`-environment-gated `publish` job. Dependency resolution during
+build/test goes through curated Artifactory via the `artifactory-oidc` composite
+action (`.github/actions/artifactory-oidc`), which similarly uses GitHub's OIDC
+token — no stored Artifactory credential either.
 
-The repository uses an NPM token stored in GitHub Actions secrets (`NPM_TOKEN`) to publish packages automatically. Due to npm's security updates, tokens now have a maximum 90-day lifetime and classic tokens will be revoked. You should use **Granular Access Tokens** for better security.
-
-#### Creating a New NPM Token
-
-1. **Generate a new token at npm**:
-   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Click "Generate New Token" → "Granular Access Token"
-   - Configure the token:
-     - **Token Name**: Something descriptive like "analytics-next-ci"
-     - **Expiration**: 90 days (maximum)
-     - **Permissions**: Select "Read and write"
-     - **Packages and scopes**: Select packages in `@segment` organization
-   - Copy the token (starts with `npm_`)
-
-2. **Test the token locally**:
-   ```bash
-   # Add token to your ~/.npmrc
-   echo "//registry.npmjs.org/:_authToken=YOUR_NEW_TOKEN" > ~/.npmrc
-
-   # Verify authentication
-   npm whoami
-
-   # Build packages
-   yarn build
-
-   # Test dry-run publish (doesn't actually publish)
-   cd packages/core && npm publish --dry-run
-   cd ../browser && npm publish --dry-run
-   cd ../node && npm publish --dry-run
-   ```
-
-3. **Update GitHub Actions Secret**:
-   - Go to: https://github.com/segmentio/analytics-next/settings/secrets/actions
-   - Update secret for `NPM_TOKEN`
+Each of the 7 published `@segment/*` packages has its own npm **trusted publisher**
+registration (repo + `release.yml` + `production` environment) — set up once on
+npmjs.org per package, not something rotated. If npm ever requires re-registering a
+trusted publisher (e.g. the workflow filename changes), do it in the npmjs.org UI
+for each package under Settings → Trusted Publisher.
