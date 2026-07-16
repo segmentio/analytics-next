@@ -16122,10 +16122,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-cookie@npm:^3.0.7":
+"js-cookie@npm:3.0.7":
   version: 3.0.7
   resolution: "js-cookie@npm:3.0.7"
   checksum: 2ce197fa171981af9b2686b49d4f4ed1ebfcec915db9d3ce42933415557726ca87135f6522ed5f5936b0d016e0f7e969344683dcd7f4e67a6fe2af9a976038d9
+  languageName: node
+  linkType: hard
+
+"js-cookie@patch:js-cookie@npm%3A3.0.7#./.yarn/patches/js-cookie-npm-3.0.7-a7a36a5505.patch::locator=analytics-monorepo%40workspace%3A.":
+  version: 3.0.7
+  resolution: "js-cookie@patch:js-cookie@npm%3A3.0.7#./.yarn/patches/js-cookie-npm-3.0.7-a7a36a5505.patch::version=3.0.7&hash=3d39b7&locator=analytics-monorepo%40workspace%3A."
+  checksum: ed16f90446a3f29a5645404c012029ce22f5578a4cbda349e5e475bff30c23cd22ff4004ca426227c2d16e61324dc2c609948fc60811ac64e77b8cb0139412af
   languageName: node
   linkType: hard
 

@@ -1,0 +1,97 @@
+name: Release
+on:
+  push:
+    branches: [master]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  HUSKY: 0
+  ARTIFACTORY_URL: ${{ vars.ARTIFACTORY_URL }}
+
+jobs:
+  # Only proceeds past this gate when master's HEAD is a "Version Packages"
+  # merge. Any other push to master (a regular PR merge) just no-ops here;
+  # release-creator.yml is what opens/updates the Version Packages PR itself.
+  should-release:
+    name: Check for Version Packages merge
+    runs-on: ubuntu-latest-large
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+    steps:
+      - id: check
+        # Commit message is passed via env, not interpolated into the script
+        # body - it's attacker-controllable (anyone who can push a commit
+        # controls it), and inlining it directly into a run: step would let
+        # a crafted message break out of the script and execute arbitrary
+        # shell.
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ "$COMMIT_MESSAGE" == "Version Packages"* ]] && [[ "$COMMIT_MESSAGE" != *"[skip]"* ]]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Test before release
+    needs: [should-release]
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest-large
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - run: yarn build
+      - run: yarn scripts lint
+      - run: yarn scripts test
+
+  publish:
+    name: Publish to npm
+    needs: [should-release, test]
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest-large
+    environment: production # manual-approval gate before publish
+    permissions:
+      contents: write # git push --follow-tags
+      id-token: write # npm OIDC trusted publishing + Artifactory OIDC
+    env:
+      # npm reads npm_config_<key> env vars the same as the equivalent CLI
+      # flag. `changeset publish` shells out to plain `npm publish` (it only
+      # special-cases pnpm, so a yarn-managed repo still gets npm here) with
+      # no way to inject extra CLI flags directly, so this is how
+      # --provenance / --ignore-scripts reach it.
+      NPM_CONFIG_PROVENANCE: 'true'
+      NPM_CONFIG_IGNORE_SCRIPTS: 'true'
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+        with:
+          fetch-depth: 0 # changesets needs full history + existing tags
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      # Node 24+ required for npm OIDC trusted-publisher support (npm >= 11.5.1).
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 24
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - name: Configure git for tag push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Publish packages + push tags
+        run: yarn release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub releases from tags
+        run: yarn scripts create-release-from-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
