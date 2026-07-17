@@ -57,9 +57,19 @@ runs:
         # config keys: npmRegistryServer -> YARN_NPM_REGISTRY_SERVER,
         # npmAuthToken -> YARN_NPM_AUTH_TOKEN). Exported to GITHUB_ENV so every
         # later step in the job (not just this one) picks them up.
+        #
+        # npmAlwaysAuth (YARN_NPM_ALWAYS_AUTH) is required too: without it,
+        # Yarn only attaches the token to packages it already suspects need
+        # auth (scoped/private), so ordinary public-looking dependencies get
+        # fetched with no auth header at all and Artifactory 401s them as
+        # anonymous. npm's classic ~/.npmrc `_authToken` line (what the
+        # reference action in the npm-publishing guide uses) doesn't have
+        # this ambiguity - this is the one place the Yarn Berry adaptation
+        # diverges from that reference and needs its own explicit setting.
         REGISTRY="${BASE_URL}/artifactory/api/npm/virtual-npm-thirdparty/"
         {
           echo "YARN_NPM_REGISTRY_SERVER=${REGISTRY}"
           echo "YARN_NPM_AUTH_TOKEN=${ART_TOKEN}"
+          echo "YARN_NPM_ALWAYS_AUTH=true"
         } >> "$GITHUB_ENV"
         echo "::notice::Yarn configured to use Artifactory registry"
