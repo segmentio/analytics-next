@@ -37,7 +37,7 @@ runs:
           -d "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",
                \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\",
                \"subject_token\":\"${GITHUB_JWT}\",
-               \"provider_name\":\"github-actions\"}")
+               \"provider_name\":\"github-actions-segmentio\"}")
         ART_TOKEN=$(echo "$RESP" | jq -r '.access_token // empty')
 
         if [ -z "$ART_TOKEN" ]; then
