@@ -52,10 +52,24 @@ jobs:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
       - name: Artifactory OIDC Auth
         uses: ./.github/actions/artifactory-oidc
+      # TEMPORARY DIAGNOSTIC - remove once root-caused. Checking what this
+      # step (the NEXT step after the composite action, so GITHUB_ENV has
+      # actually propagated) sees for the vars the composite action set.
+      - name: Debug env after Artifactory OIDC Auth
+        run: |
+          echo "YARN_NPM_REGISTRY_SERVER=$YARN_NPM_REGISTRY_SERVER"
+          echo "YARN_NPM_ALWAYS_AUTH=$YARN_NPM_ALWAYS_AUTH"
+          echo "YARN_NPM_AUTH_TOKEN is set: $([ -n "$YARN_NPM_AUTH_TOKEN" ] && echo yes || echo no)"
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
         with:
           node-version: 20
-          cache: 'yarn'
+      - name: Debug yarn config after setup-node
+        run: |
+          yarn config get npmRegistryServer || true
+          yarn config get npmAlwaysAuth || true
+          yarn config get npmAuthToken > /tmp/tok.txt 2>&1 || true
+          if [ -n "$YARN_NPM_AUTH_TOKEN" ]; then sed -i "s/${YARN_NPM_AUTH_TOKEN}/<redacted>/g" /tmp/tok.txt; fi
+          cat /tmp/tok.txt
       - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
       - run: yarn build
       - run: yarn scripts lint
