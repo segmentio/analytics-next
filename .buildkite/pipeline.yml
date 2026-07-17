@@ -35,8 +35,17 @@
 #       PROD_SHADOW / STAGE_SHADOW
 #       PROD_CDN_OAI / STAGE_CDN_OAI
 #       PROD_CUSTOM_DOMAIN_OAI / STAGE_CUSTOM_DOMAIN_OAI
-#   * This pipeline object + its GitHub webhook still need to be created in
-#     Buildkite and connected to this repo — this file alone doesn't do that.
+#
+# Triggering: this pipeline has no GitHub webhook and never builds off a
+# generic push. The only thing that ever creates a build here is
+# release.yml's `publish` job (GitHub Actions), which calls the Buildkite
+# REST API right after a successful npm publish - see the "Trigger CDN
+# release build" step there. That's deliberate: npm publish and the CDN
+# release must never happen independently of each other, so GHA is the
+# single place that decides "a release is happening" and kicks off both.
+# A manual build created by hand (Buildkite UI/API) still works and will
+# run this same step - the branch check below is just a defense-in-depth
+# sanity check, not the trigger mechanism.
 
 agents:
   queue: general-039
@@ -49,18 +58,8 @@ env:
   NODE_IMAGE: '018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm'
 
 steps:
-  - block: Allow this build to run?
-    prompt: ':rotating_light: Review the PR for concerning changes before unblocking'
-    if: build.pull_request.repository.fork
-    blocked_state: running
-
   - label: '[Browser] Release to CDN :rocket:'
-    # Same release gate as npm publish (release.yml on GitHub Actions) —
-    # only fires on the "Version Packages" merge, not on every branch push.
-    if: |
-      build.branch == "master" &&
-      build.message =~ /^Version Packages/ &&
-      build.message !~ /\[skip\]/i
+    if: build.branch == "master"
     commands: |
       echo "--- Fetch CDN release config"
       eval "$(buildkite-agent secret get analytics-next-cdn-release --format env)"
