@@ -51,6 +51,17 @@ runs:
         fi
         echo "::add-mask::$ART_TOKEN"
 
+        # TEMPORARY DIAGNOSTIC - remove once root-caused. Direct metadata/
+        # tarball requests with this exact token succeed immediately after
+        # mint, and yarn's own resolved config (npmRegistryServer/
+        # npmAlwaysAuth/npmAuthToken) is confirmed correct right before
+        # install - yet every real fetch during install still fails as
+        # anonymous. Checking whether the token's TTL is short enough to
+        # expire mid-install (fetch step runs 30-70s+ for ~2000 packages).
+        echo "::group::Diagnostic: token expiry"
+        echo "$RESP" | jq 'with_entries(if (.key | test("token"; "i")) then .value = "<redacted>" else . end)'
+        echo "::endgroup::"
+
         # 3. Point Yarn Berry at the curated Artifactory registry for this job.
         # Yarn Berry doesn't read npm's ~/.npmrc for its own resolution — it
         # reads .yarnrc.yml or these env vars (same naming convention as the
