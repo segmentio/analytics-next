@@ -1,3 +1,11 @@
+/**
+ * @jest-environment node
+ */
+// This drives a real browser via Playwright - it doesn't touch the DOM
+// jsdom simulates, and jsdom's global doesn't provide the Fetch API
+// globals a newer playwright-core now expects at import time (it bundles
+// @hono/node-server, which does `class Request extends global.Request`).
+// Node's own environment has these natively; jsdom's doesn't.
 import { tester, testerTeardown } from '../../src/tester/ajs-tester'
 import {
   gatherLighthouseMetrics,

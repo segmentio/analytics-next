@@ -53,23 +53,29 @@ runs:
 
         # 3. Point Yarn Berry at the curated Artifactory registry for this job.
         # Yarn Berry doesn't read npm's ~/.npmrc for its own resolution — it
-        # reads .yarnrc.yml or these env vars (same naming convention as the
-        # config keys: npmRegistryServer -> YARN_NPM_REGISTRY_SERVER,
-        # npmAuthToken -> YARN_NPM_AUTH_TOKEN). Exported to GITHUB_ENV so every
-        # later step in the job (not just this one) picks them up.
-        #
-        # npmAlwaysAuth (YARN_NPM_ALWAYS_AUTH) is required too: without it,
-        # Yarn only attaches the token to packages it already suspects need
-        # auth (scoped/private), so ordinary public-looking dependencies get
-        # fetched with no auth header at all and Artifactory 401s them as
-        # anonymous. npm's classic ~/.npmrc `_authToken` line (what the
-        # reference action in the npm-publishing guide uses) doesn't have
-        # this ambiguity - this is the one place the Yarn Berry adaptation
-        # diverges from that reference and needs its own explicit setting.
+        # reads .yarnrc.yml. The top-level npmRegistryServer/npmAuthToken/
+        # npmAlwaysAuth env vars (YARN_NPM_*) are enough for the Resolution
+        # step (package metadata), but Yarn Berry's tarball fetcher looks up
+        # credentials from a per-registry npmRegistries entry, keyed by
+        # registry URL, not from those top-level defaults - relying on the
+        # env vars alone left every real tarball fetch unauthenticated
+        # (confirmed: direct requests with this exact token succeed, and
+        # yarn's own resolved npmAuthToken/npmAlwaysAuth were confirmed
+        # correct right before install, yet every fetch still 401'd as
+        # anonymous). Writing an explicit npmRegistries block covers both
+        # paths. This edits the working tree only, never committed.
         REGISTRY="${BASE_URL}/artifactory/api/npm/virtual-npm-thirdparty/"
         {
           echo "YARN_NPM_REGISTRY_SERVER=${REGISTRY}"
           echo "YARN_NPM_AUTH_TOKEN=${ART_TOKEN}"
           echo "YARN_NPM_ALWAYS_AUTH=true"
         } >> "$GITHUB_ENV"
+
+        cat >> .yarnrc.yml <<YAML
+        npmRegistries:
+          "${REGISTRY}":
+            npmAuthToken: "${ART_TOKEN}"
+            npmAlwaysAuth: true
+        YAML
+
         echo "::notice::Yarn configured to use Artifactory registry"
