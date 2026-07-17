@@ -10,31 +10,42 @@
 # docs/scm/twilio-internal/guides/github-actions-acceptable-use.md: "Deploy
 # code / infra ... Never GHA").
 #
-# Auth mirrors the pattern confirmed working on segmentio/ajs-renderer's
-# Twilio Buildkite migration (same queue, same cross-account shape into the
-# same Segment AWS account, 528451384384): SEGMENT_CONTEXTS: aws-credentials
-# gives the agent an ambient identity in Twilio's own account; that identity
-# then assumes a role that lives IN Segment's account via a plain
-# `aws sts assume-role` call. No OIDC federation, and no dependency on
-# segmentio/buildkite-system's cloned hooks/lib (SEGMENT_LIB_PATH) — that
-# convention doesn't exist on Twilio agents, which is why the old
-# release.sh (run-with-role) never worked here.
+# Auth follows the same shape confirmed working on segmentio/ajs-renderer's
+# Twilio Buildkite migration: SEGMENT_CONTEXTS: aws-credentials gives the
+# agent an ambient identity in Twilio's own account; that identity then
+# assumes a role via a plain `aws sts assume-role` call. No OIDC federation,
+# and no dependency on segmentio/buildkite-system's cloned hooks/lib
+# (SEGMENT_LIB_PATH) — that convention doesn't exist on Twilio agents, which
+# is why the old release.sh (run-with-role) never worked here.
+#
+# The role ARN below (account 812113486725, NOT the 528451384384 account
+# ajs-renderer's own buildkite-agent role lives in - two different Segment
+# accounts) was recovered from the last real, successful legacy Buildkite
+# build of this exact step (segment/analytics-next build #51166, job
+# "[Browser] Release to CDN"), not guessed - the role ARN itself isn't a
+# secret, only the credentials it hands out are.
 #
 # NOT YET CONFIRMED — validate before relying on this in production:
-#   * That AJS_PRIVATE_ASSETS_UPLOAD's trust policy (in Segment's account)
-#     actually permits assumption from this same ambient Twilio identity.
-#     ajs-renderer's `buildkite-agent` role does; this one hasn't been
-#     checked and may need a trust-policy update on Segment's side.
+#   * That this role's trust policy actually permits assumption from the
+#     ambient Twilio identity SEGMENT_CONTEXTS: aws-credentials provides.
+#     Two human roles (dev-write, ops-write in account 528451384384) were
+#     both confirmed NOT able to assume it directly (AccessDenied) - it was
+#     historically only ever assumed by Segment's own legacy Buildkite v1
+#     CI identity. Whether Twilio's ambient identity (or the buildkite-agent
+#     role in 528451384384, which Twilio Buildkite CAN already assume) is
+#     also trusted here is untested. If not, this step will fail with
+#     AccessDenied at the assume-role call below, and the trust policy needs
+#     a Segment-account-side update to add whichever principal Twilio
+#     Buildkite actually presents.
 #   * The actual secret name/contents below (`analytics-next-cdn-release`)
-#     is a guess at the convention, not a confirmed-provisioned name. It
-#     needs to exist as a Buildkite cluster secret whose value is a
-#     dotenv-style blob with these keys (values from wherever they were
-#     chamber-stored before, e.g. `buildkite-analytics-next`):
-#       AJS_PRIVATE_ASSETS_UPLOAD (an IAM role ARN in account 528451384384)
-#       PROD_BUCKET / STAGE_BUCKET
-#       PROD_SHADOW / STAGE_SHADOW
-#       PROD_CDN_OAI / STAGE_CDN_OAI
-#       PROD_CUSTOM_DOMAIN_OAI / STAGE_CUSTOM_DOMAIN_OAI
+#     is a guess at the convention, not a confirmed-provisioned name. The
+#     bucket/OAI values ARE confirmed real (via chamber read analytics-next
+#     <key>, and cross-checked against the same legacy build log), just not
+#     yet placed into this specific Buildkite secret:
+#       PROD_BUCKET = segment-ajs-renderer-compiled-production (confirmed)
+#       STAGE_BUCKET / PROD_SHADOW / STAGE_SHADOW / PROD_CDN_OAI /
+#       STAGE_CDN_OAI / PROD_CUSTOM_DOMAIN_OAI / STAGE_CUSTOM_DOMAIN_OAI
+#       (readable the same way: chamber read analytics-next <key>)
 #
 # Triggering: this pipeline has no GitHub webhook and never builds off a
 # generic push. The only thing that ever creates a build here is
@@ -56,6 +67,11 @@ env:
   # so no cross-account login needed to pull it (unlike the Segment-account
   # role assumption below, which is only for the CDN upload step itself).
   NODE_IMAGE: '018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm'
+  # Recovered from segment/analytics-next build #51166's last successful
+  # CDN release, not guessed - see the header comment for how. Not a
+  # secret, just a resource identifier; the trust policy (unconfirmed for
+  # this identity, see header) is what actually gates who can use it.
+  AJS_PRIVATE_ASSETS_UPLOAD: 'arn:aws:iam::812113486725:role/ajs-private-assets-upload'
 
 steps:
   - label: '[Browser] Release to CDN :rocket:'
