@@ -73,3 +73,13 @@ runs:
           echo "YARN_NPM_ALWAYS_AUTH=true"
         } >> "$GITHUB_ENV"
         echo "::notice::Yarn configured to use Artifactory registry"
+
+        # TEMPORARY DIAGNOSTIC - remove once the "Invalid authentication"
+        # fetch failures are root-caused. Hits the registry directly with the
+        # exact same token, bypassing Yarn entirely, so we see Artifactory's
+        # real HTTP status/body instead of Yarn's generic error text.
+        echo "::group::Diagnostic: direct request to Artifactory with this token"
+        curl -sS -i "${REGISTRY}is-buffer" -H "Authorization: Bearer ${ART_TOKEN}" \
+          | sed "s/${ART_TOKEN}/<redacted>/g" || true
+        echo ""
+        echo "::endgroup::"
