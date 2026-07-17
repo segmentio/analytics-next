@@ -92,3 +92,9 @@ runs:
         echo "--- tarball request (no auth header, for comparison) ---"
         curl -sS -i "${TARBALL_URL}" -o /dev/null -w "HTTP status: %{http_code}\n" || true
         echo "::endgroup::"
+
+        echo "::group::Diagnostic: yarn's own resolved config"
+        yarn config get npmRegistryServer || true
+        yarn config get npmAlwaysAuth || true
+        yarn config get npmAuthToken 2>&1 | sed "s/${ART_TOKEN}/<redacted>/g" || true
+        echo "::endgroup::"
