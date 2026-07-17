@@ -101,16 +101,6 @@ jobs:
         run: yarn scripts create-release-from-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # CDN release runs on Buildkite, not GHA (writing to the CDN's S3
-      # buckets is an infra deploy - Twilio's GitHub Actions acceptable-use
-      # policy is explicit that never runs here). This is the only thing
-      # that ever triggers a build on that pipeline - it has no GitHub
-      # webhook of its own - specifically so npm publish and the CDN
-      # release can never happen independently of each other. If this step
-      # fails, npm has already published but the CDN release has NOT been
-      # triggered - that needs a human to manually trigger a build on
-      # cdp-analytics-next (or re-run this step) rather than being silently
-      # left out of sync.
       - name: Trigger CDN release build
         run: |
           curl -sS -f -X POST \

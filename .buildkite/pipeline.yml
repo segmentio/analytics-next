@@ -1,86 +1,16 @@
-# analytics-next — Twilio Buildkite pipeline, CDN release only.
-#
-# Deliberately narrow scope: this does NOT cover CI/test (moved to GitHub
-# Actions — see .github/workflows/ci.yml) or npm publish (also GitHub
-# Actions, release.yml — npm's OIDC trusted publishing only trusts GitHub
-# Actions as an issuer, Buildkite isn't an option there). This pipeline
-# exists solely to push built browser bundles to the CDN's S3 buckets,
-# which live in Segment's own AWS account — internal policy requires that
-# kind of infra write to run on Buildkite, not GitHub Actions (see
-# docs/scm/twilio-internal/guides/github-actions-acceptable-use.md: "Deploy
-# code / infra ... Never GHA").
-#
-# Auth follows the same shape confirmed working on segmentio/ajs-renderer's
-# Twilio Buildkite migration: SEGMENT_CONTEXTS: aws-credentials gives the
-# agent an ambient identity in Twilio's own account; that identity then
-# assumes a role via a plain `aws sts assume-role` call. No OIDC federation,
-# and no dependency on segmentio/buildkite-system's cloned hooks/lib
-# (SEGMENT_LIB_PATH) — that convention doesn't exist on Twilio agents, which
-# is why the old release.sh (run-with-role) never worked here.
-#
-# The role ARN below (account 812113486725, NOT the 528451384384 account
-# ajs-renderer's own buildkite-agent role lives in - two different Segment
-# accounts) was recovered from the last real, successful legacy Buildkite
-# build of this exact step (segment/analytics-next build #51166, job
-# "[Browser] Release to CDN"), not guessed - the role ARN itself isn't a
-# secret, only the credentials it hands out are.
-#
-# NOT YET CONFIRMED — validate before relying on this in production:
-#   * That this role's trust policy actually permits assumption from the
-#     ambient Twilio identity SEGMENT_CONTEXTS: aws-credentials provides.
-#     Two human roles (dev-write, ops-write in account 528451384384) were
-#     both confirmed NOT able to assume it directly (AccessDenied) - it was
-#     historically only ever assumed by Segment's own legacy Buildkite v1
-#     CI identity. Whether Twilio's ambient identity (or the buildkite-agent
-#     role in 528451384384, which Twilio Buildkite CAN already assume) is
-#     also trusted here is untested. If not, this step will fail with
-#     AccessDenied at the assume-role call below, and the trust policy needs
-#     a Segment-account-side update to add whichever principal Twilio
-#     Buildkite actually presents.
-#   * The actual secret name/contents below (`analytics-next-cdn-release`)
-#     is a guess at the convention, not a confirmed-provisioned name. The
-#     bucket/OAI values ARE confirmed real (via chamber read analytics-next
-#     <key>, and cross-checked against the same legacy build log), just not
-#     yet placed into this specific Buildkite secret:
-#       PROD_BUCKET = segment-ajs-renderer-compiled-production (confirmed)
-#       STAGE_BUCKET / PROD_SHADOW / STAGE_SHADOW / PROD_CDN_OAI /
-#       STAGE_CDN_OAI / PROD_CUSTOM_DOMAIN_OAI / STAGE_CUSTOM_DOMAIN_OAI
-#       (readable the same way: chamber read analytics-next <key>)
-#
-# Triggering: this pipeline has no GitHub webhook and never builds off a
-# generic push. The only thing that ever creates a build here is
-# release.yml's `publish` job (GitHub Actions), which calls the Buildkite
-# REST API right after a successful npm publish - see the "Trigger CDN
-# release build" step there. That's deliberate: npm publish and the CDN
-# release must never happen independently of each other, so GHA is the
-# single place that decides "a release is happening" and kicks off both.
-# A manual build created by hand (Buildkite UI/API) still works and will
-# run this same step - the branch check below is just a defense-in-depth
-# sanity check, not the trigger mechanism.
-
 agents:
   queue: general-039
 
 env:
   SEGMENT_CONTEXTS: 'aws-credentials'
-  # Twilio's own ECR mirror — same account as the agent's ambient identity,
-  # so no cross-account login needed to pull it (unlike the Segment-account
-  # role assumption below, which is only for the CDN upload step itself).
   NODE_IMAGE: '018537234677.dkr.ecr.us-east-1.amazonaws.com/docker.io/library/node:20.19.4-bookworm'
-  # Recovered from segment/analytics-next build #51166's last successful
-  # CDN release, not guessed - see the header comment for how. Not a
-  # secret, just a resource identifier; the trust policy (unconfirmed for
-  # this identity, see header) is what actually gates who can use it.
-  AJS_PRIVATE_ASSETS_UPLOAD: 'arn:aws:iam::812113486725:role/ajs-private-assets-upload'
 
 steps:
   - label: '[Browser] Release to CDN :rocket:'
     if: build.branch == "master"
     commands: |
-      echo "--- Fetch CDN release config"
       eval "$(buildkite-agent secret get analytics-next-cdn-release --format env)"
 
-      echo "--- Assume Segment CDN upload role"
       CREDS=$(aws sts assume-role \
         --role-arn "$AJS_PRIVATE_ASSETS_UPLOAD" \
         --role-session-name "buildkite-$BUILDKITE_PIPELINE_SLUG-$BUILDKITE_BUILD_NUMBER-cdn" \
@@ -89,7 +19,6 @@ steps:
       export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .SecretAccessKey)
       export AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .SessionToken)
 
-      echo "+++ Release to CDN"
       docker run --rm \
         -v "$$PWD:/workdir" -w /workdir \
         -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN \
@@ -97,8 +26,6 @@ steps:
         -e PROD_CDN_OAI -e STAGE_CDN_OAI -e PROD_CUSTOM_DOMAIN_OAI -e STAGE_CUSTOM_DOMAIN_OAI \
         ${NODE_IMAGE} \
         sh -c '
-          echo "--- Install dependencies"
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
-          echo "+++ Build and release to CDN"
           yarn run -T browser release:cdn
         '
