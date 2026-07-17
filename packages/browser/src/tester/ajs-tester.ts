@@ -2,6 +2,7 @@ import { Analytics } from '../core/analytics'
 import { SerializedContext } from '../core/context'
 import mem from 'micro-memoize'
 import playwright from 'playwright'
+import { join as joinPath } from 'path'
 
 type BrowserType = 'chromium' | 'firefox' | 'webkit'
 
@@ -100,6 +101,28 @@ export async function tester(
 ): Promise<ReturnType<typeof makeStub>> {
   const browser = await getBrowser(browserType, remoteDebug)
   const page = await browser.newPage()
+
+  // The built bundle's runtime CDN resolution (getCDN()) falls back to the
+  // real production CDN for any chunk it lazy-loads (e.g. tsub-middleware),
+  // regardless of where the main script itself was served from. Left
+  // unmocked, this test would depend on whatever's currently live in
+  // production matching this local build's exact chunk hash - true right
+  // after a release, false the moment anything changes the build output
+  // (a source change, or even just a bundler version bump). Serve those
+  // requests from the local dist instead, matching the same pattern used
+  // in browser-integration-tests/src/helpers/standalone-mock.ts.
+  await page.route(
+    'https://cdn.segment.com/analytics-next/bundles/*',
+    (route, request) => {
+      if (request.method().toLowerCase() !== 'get') {
+        return route.continue()
+      }
+      const filename = request.url().split('/').pop()!
+      return route.fulfill({
+        path: joinPath(process.cwd(), 'dist', 'umd', filename),
+      })
+    }
+  )
 
   await page.goto(
     url || `file://${process.cwd()}/src/tester/__fixtures__/index.html`
