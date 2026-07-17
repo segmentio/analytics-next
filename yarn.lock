@@ -14636,10 +14636,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-email@npm:^0.1.1":
-  version: 0.1.1
-  resolution: "is-email@npm:0.1.1"
-  checksum: da0e9fbae446abca26f12dd3c88f8f23414f9ad8f99c7a84f34d29efecfe13c08a8ff828407d1fc56aca85d16ac0a2c09e03fa1cb1a52f813d9a11a82ade9c40
+"is-email@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "is-email@npm:1.0.2"
+  checksum: 6aae2cd492b8d0f6cf0d386122c72c6a37e270b9f89abd610166048e1dad99786bb4ef7c90175cb3e11bba6df235b6b13911fcdeaec6d36dc0dadf0b679a3c03
   languageName: node
   linkType: hard
 
