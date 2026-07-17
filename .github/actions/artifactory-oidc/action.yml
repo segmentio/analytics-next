@@ -79,7 +79,16 @@ runs:
         # exact same token, bypassing Yarn entirely, so we see Artifactory's
         # real HTTP status/body instead of Yarn's generic error text.
         echo "::group::Diagnostic: direct request to Artifactory with this token"
+        echo "--- metadata request ---"
         curl -sS -i "${REGISTRY}is-buffer" -H "Authorization: Bearer ${ART_TOKEN}" \
-          | sed "s/${ART_TOKEN}/<redacted>/g" || true
+          | sed "s/${ART_TOKEN}/<redacted>/g" | head -20 || true
         echo ""
+        echo "--- resolving tarball URL from metadata ---"
+        TARBALL_URL=$(curl -sS "${REGISTRY}is-buffer" -H "Authorization: Bearer ${ART_TOKEN}" | jq -r '.versions["1.1.6"].dist.tarball')
+        echo "tarball URL: ${TARBALL_URL}"
+        echo "--- tarball request (with auth header) ---"
+        curl -sS -i "${TARBALL_URL}" -H "Authorization: Bearer ${ART_TOKEN}" -o /dev/null \
+          -w "HTTP status: %{http_code}\n" || true
+        echo "--- tarball request (no auth header, for comparison) ---"
+        curl -sS -i "${TARBALL_URL}" -o /dev/null -w "HTTP status: %{http_code}\n" || true
         echo "::endgroup::"
