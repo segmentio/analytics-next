@@ -6,7 +6,6 @@ let br: Browser
 export async function browser(): Promise<Browser> {
   if (!br) {
     br = await playwright.chromium.launch({
-      devtools: true,
       headless: !debug,
       args: [
         '--no-sandbox',
@@ -15,6 +14,7 @@ export async function browser(): Promise<Browser> {
         '--disable-accelerated-2d-canvas',
         '--no-zygote',
         '--disable-gpu',
+        ...(debug ? ['--auto-open-devtools-for-tabs'] : []),
       ],
     })
   }
