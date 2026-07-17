@@ -2,6 +2,7 @@ name: Release
 on:
   push:
     branches: [master]
+  workflow_dispatch: {}
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -13,6 +14,10 @@ jobs:
   # Only proceeds past this gate when master's HEAD is a "Version Packages"
   # merge. Any other push to master (a regular PR merge) just no-ops here;
   # release-creator.yml is what opens/updates the Version Packages PR itself.
+  # A manual workflow_dispatch run always passes this gate - there's no
+  # head_commit on that event, and choosing to run it by hand is itself the
+  # signal; the production environment's approval gate downstream still
+  # applies before anything actually publishes.
   should-release:
     name: Check for Version Packages merge
     runs-on: ubuntu-latest-large
@@ -28,7 +33,8 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ "$COMMIT_MESSAGE" == "Version Packages"* ]] && [[ "$COMMIT_MESSAGE" != *"[skip]"* ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
+             [[ "$COMMIT_MESSAGE" == "Version Packages"* && "$COMMIT_MESSAGE" != *"[skip]"* ]]; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "release=false" >> "$GITHUB_OUTPUT"
