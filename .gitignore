@@ -36,3 +36,4 @@ playwright-report/
 playwright/.cache/
 tmp.tsconfig.json
 .env
+.wrangler/
