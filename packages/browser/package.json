@@ -1,6 +1,6 @@
 {
   "name": "@segment/analytics-next",
-  "version": "1.84.0",
+  "version": "1.84.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/segmentio/analytics-next",
@@ -45,7 +45,7 @@
   "size-limit": [
     {
       "path": "dist/umd/index.js",
-      "limit": "29.7 KB"
+      "limit": "29.8 KB"
     }
   ],
   "dependencies": {
@@ -55,7 +55,7 @@
     "@segment/analytics-page-tools": "1.0.0",
     "@segment/analytics.js-video-plugins": "^0.2.1",
     "@segment/facade": "^3.4.9",
-    "js-cookie": "3.0.1",
+    "js-cookie": "^3.0.7",
     "node-fetch": "^2.6.7",
     "tslib": "^2.4.1",
     "unfetch": "^4.1.0"
@@ -92,7 +92,7 @@
     "micro-memoize": "^4.0.9",
     "mime": "^2.4.6",
     "node-gyp": "^9.0.0",
-    "playwright": "^1.28.1",
+    "playwright": "1.61.1",
     "serve-handler": "^6.1.3",
     "size-limit": "^7.0.8",
     "terser-webpack-plugin": "^5.1.4",

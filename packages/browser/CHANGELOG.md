@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.84.1
+
+### Patch Changes
+
+- [#1368](https://github.com/segmentio/analytics-next/pull/1368) [`3c92e372`](https://github.com/segmentio/analytics-next/commit/3c92e3725ece3bcd747d5ee07d403aa189c0532e) Thanks [@samjoffe](https://github.com/samjoffe)! - Bump js-cookie from 3.0.1 to 3.0.7 to fix CVE-2026-46625 (cookie-attribute injection via prototype hijack)
+
 ## 1.84.0
 
 ### Minor Changes

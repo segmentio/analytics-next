@@ -8,20 +8,20 @@ on:
 jobs:
   create_jira:
     name: Create Jira Ticket
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-large
     environment: IssueTracker
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@61b9e3751b92087fd0b06925ba6dd6314e06f089  # master
       - name: Login
-        uses: atlassian/gajira-login@master
+        uses: atlassian/gajira-login@c22a5debd482401472b285de4f6deedf70ddbb92  # master
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_TOKEN }}
       - name: Create
         id: create
-        uses: atlassian/gajira-create@master
+        uses: atlassian/gajira-create@1c54357fdde9dab6273a0e26d67cb175ffffe498  # master
         with:
           project: ${{ secrets.JIRA_PROJECT }}
           issuetype: Bug

@@ -1,25 +1,29 @@
 name: CI
 on:
   push:
+  pull_request:
 env:
   HUSKY: 0
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+  # Matches the old Buildkite pipeline's global default (jobs that don't
+  # need coverage - the QA/E2E-style ones - override to false per-job).
+  COVERAGE: true
 jobs:
   analytics-node:
     name: 'analytics-node QA (Node.js v${{ matrix.node-version }})'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-large
     strategy:
       matrix:
         node-version: [20]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
       - run: yarn install --immutable
       - name: Turbo cache
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c  # v3
         with:
           path: node_modules/.cache/turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
@@ -28,30 +32,250 @@ jobs:
       - run: yarn turbo run --filter='./packages/node*' lint
       - run: COVERAGE=true yarn turbo run --filter='./packages/node*' test
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:perf-and-durability
-      - uses: codecov/codecov-action@v5
-        with:
-          fail_ci_if_error: true
-          flags: node
-          directory: ./packages/node/coverage
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # Using the Codecov CLI (a plain `run:` step) instead of the
+      # marketplace action to upload coverage.
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: pip install --quiet codecov-cli
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          codecovcli upload-process -s ./packages/node/coverage \
+            --flag node --commit-sha ${{ github.sha }} --fail-on-error \
+            --token ${{ secrets.CODECOV_TOKEN }}
+
   analytics-node-cf-workers:
     name: 'analytics-node QA (Cloudflare Workers)'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-large
     strategy:
       matrix:
         node-version: [20]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
       - run: yarn install --immutable
       - name: Turbo cache
-        uses: actions/cache@v3
+        uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c  # v3
         with:
           path: node_modules/.cache/turbo
           key: ${{ runner.os }}-turbo-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-turbo-
       - run: yarn turbo run --filter='./packages/node-integration-tests' test:cloudflare-workers
+
+  monorepo-qa:
+    name: '[Monorepo] QA'
+    runs-on: ubuntu-latest-large
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn constraints
+      - run: yarn scripts test
+      - run: yarn scripts lint
+      - run: yarn run test:check-dts
+
+  browser-lint-test:
+    name: '[Browser] Lint + Test'
+    runs-on: ubuntu-latest-large
+    env:
+      # Real Playwright browser + full network access: unlike the locked-down
+      # Buildkite queue this replaces, GH-hosted runners have open egress, so
+      # every suite (including the network-dependent Jest destination-bundle
+      # tests and the lighthouse perf test under test-integration) can run.
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      # Playwright 1.28.1 (pinned across this monorepo) predates Ubuntu
+      # 24.04's libasound2 -> libasound2t64 rename: its --with-deps apt list
+      # names the old package by exact name, and apt won't resolve that to
+      # an already-installed provider for a direct install (only for
+      # dependency resolution), so pre-installing libasound2t64 doesn't
+      # help. ubuntu-latest-large already ships most Chromium runtime libs,
+      # so skip --with-deps and only fetch the browser binary.
+      - run: npx playwright install chromium
+      - run: yarn run -T browser exec make ci
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: pip install --quiet codecov-cli
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          codecovcli upload-process -s ./packages/browser/coverage \
+            --flag browser --commit-sha ${{ github.sha }} \
+            --token ${{ secrets.CODECOV_TOKEN }}
+
+  core-lint-test:
+    name: '[Core] Lint + Test'
+    runs-on: ubuntu-latest-large
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn run -T core . build
+      - run: yarn run -T core lint
+      - run: yarn run -T core test
+      - run: yarn turbo run --filter=@internal/core-integration-tests lint
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: pip install --quiet codecov-cli
+      - if: ${{ !github.event.pull_request.head.repo.fork }}
+        run: |
+          codecovcli upload-process -s ./packages/core/coverage \
+            --flag core --commit-sha ${{ github.sha }} \
+            --token ${{ secrets.CODECOV_TOKEN }}
+
+  misc-utils-lint-test:
+    name: '[Misc Utils] Lint + Test'
+    runs-on: ubuntu-latest-large
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn turbo run --filter=@segment/analytics-generic-utils lint
+      - run: yarn turbo run --filter=@segment/analytics-generic-utils test
+      - run: yarn turbo run --filter=@segment/analytics-page-tools lint
+      - run: yarn turbo run --filter=@segment/analytics-page-tools test
+
+  consent-lint-test:
+    name: '[Consent] Lint + Test'
+    runs-on: ubuntu-latest-large
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn turbo run --filter='./packages/consent/*' build
+      - run: yarn turbo run --filter='./packages/consent/*' lint
+      - run: yarn turbo run --filter='./packages/consent/*' test
+
+  consent-integration-tests:
+    name: '[Consent] Integration Tests'
+    runs-on: ubuntu-latest-large
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      # Playwright 1.28.1 (pinned across this monorepo) predates Ubuntu
+      # 24.04's libasound2 -> libasound2t64 rename: its --with-deps apt list
+      # names the old package by exact name, and apt won't resolve that to
+      # an already-installed provider for a direct install (only for
+      # dependency resolution), so pre-installing libasound2t64 doesn't
+      # help. ubuntu-latest-large already ships most Chromium runtime libs,
+      # so skip --with-deps and only fetch the browser binary.
+      - run: npx playwright install chromium
+      - run: yarn turbo run --filter='./packages/consent/consent-tools-integration-tests' test:int
+
+  browser-qa-e2e:
+    name: '[Browser] QA / E2E'
+    runs-on: ubuntu-latest-large
+    # Disabled pending a real plan for this suite: it needs
+    # QA_SOURCES/QA_SAMPLES/STATS_WRITEKEY as repo secrets (see
+    # packages/browser/qa/README.md), and without them it just fails on
+    # startup with "no process.env.QA_SOURCES" - not a real test result.
+    # Flip this back to `true` (or remove the line) once there's a secrets
+    # plan and this should run again.
+    if: false
+    env:
+      COVERAGE: false
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      # Playwright 1.28.1 (pinned across this monorepo) predates Ubuntu
+      # 24.04's libasound2 -> libasound2t64 rename: its --with-deps apt list
+      # names the old package by exact name, and apt won't resolve that to
+      # an already-installed provider for a direct install (only for
+      # dependency resolution), so pre-installing libasound2t64 doesn't
+      # help. ubuntu-latest-large already ships most Chromium runtime libs,
+      # so skip --with-deps and only fetch the browser binary.
+      - run: npx playwright install chromium
+      - run: yarn run -T browser exec make test-qa
+
+  browser-destinations-qa-e2e:
+    name: '[Browser] Destinations QA / E2E'
+    runs-on: ubuntu-latest-large
+    # Disabled pending a real plan for this suite: it needs
+    # QA_SOURCES/QA_SAMPLES/STATS_WRITEKEY as repo secrets (see
+    # packages/browser/qa/README.md), and without them it just fails on
+    # startup with "no process.env.QA_SAMPLES" - not a real test result.
+    # Flip this back on once there's a secrets plan.
+    if: false
+    env:
+      COVERAGE: false
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      # Playwright 1.28.1 (pinned across this monorepo) predates Ubuntu
+      # 24.04's libasound2 -> libasound2t64 rename: its --with-deps apt list
+      # names the old package by exact name, and apt won't resolve that to
+      # an already-installed provider for a direct install (only for
+      # dependency resolution), so pre-installing libasound2t64 doesn't
+      # help. ubuntu-latest-large already ships most Chromium runtime libs,
+      # so skip --with-deps and only fetch the browser binary.
+      - run: npx playwright install chromium
+      - run: yarn run -T browser exec make test-qa-destinations
+
+  browser-integration-tests:
+    name: '[Browser] Integration Tests'
+    runs-on: ubuntu-latest-large
+    env:
+      COVERAGE: false
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      # Playwright 1.28.1 (pinned across this monorepo) predates Ubuntu
+      # 24.04's libasound2 -> libasound2t64 rename: its --with-deps apt list
+      # names the old package by exact name, and apt won't resolve that to
+      # an already-installed provider for a direct install (only for
+      # dependency resolution), so pre-installing libasound2t64 doesn't
+      # help. ubuntu-latest-large already ships most Chromium runtime libs,
+      # so skip --with-deps and only fetch the browser binary.
+      - run: npx playwright install chromium
+      - run: yarn turbo run --filter=@internal/browser-integration-tests test:int
+
+  playgrounds-lint-test:
+    name: '[Playgrounds] Lint + Test'
+    runs-on: ubuntu-latest-large
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+          cache: 'yarn'
+      - run: yarn install --immutable
+      - run: yarn turbo run --filter='./playgrounds/*' build
+      - run: yarn turbo run --filter='./playgrounds/*' lint
