@@ -83,14 +83,15 @@ Feature branches are automatically released under:
 
 ## NPM Publishing
 
-Publishing runs on GitHub Actions (`.github/workflows/release.yml`), triggered by a
+Publishing runs on GitHub Actions (`.github/workflows/publish.yml`), triggered by a
 "Version Packages" merge to `master`. There is **no stored `NPM_TOKEN` secret** —
 publish authenticates via npm's **OIDC trusted publishing**, a short-lived,
 per-run token minted automatically for the `production`-environment-gated
 `publish` job.
 
 Each of the 7 published `@segment/*` packages has its own npm **trusted publisher**
-registration (repo + `release.yml` + `production` environment) — set up once on
-npmjs.org per package, not something rotated. If npm ever requires re-registering a
-trusted publisher (e.g. the workflow filename changes), do it in the npmjs.org UI
-for each package under Settings → Trusted Publisher.
+registration (repo + `publish.yml` + `production` environment) — set up once on
+npmjs.org per package, not something rotated. If the workflow filename ever changes
+again, either rename the workflow to match the existing registration, or
+re-register the trusted publisher in the npmjs.org UI for each package under
+Settings → Trusted Publisher — whichever is already correct is the one to keep.
