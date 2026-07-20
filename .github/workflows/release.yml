@@ -101,3 +101,13 @@ jobs:
         run: yarn scripts create-release-from-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Trigger CDN release build
+        run: |
+          curl -sS -f -X POST \
+            "https://api.buildkite.com/v2/organizations/twilio/pipelines/cdp-analytics-next/builds" \
+            -H "Authorization: Bearer ${BUILDKITE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"commit\":\"${GITHUB_SHA}\",\"branch\":\"master\",\"message\":\"CDN release for ${GITHUB_SHA}\"}"
+        env:
+          BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
