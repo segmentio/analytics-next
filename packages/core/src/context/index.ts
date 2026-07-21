@@ -1,9 +1,9 @@
 import { CoreSegmentEvent } from '../events/interfaces'
 
 import { v4 as uuid } from '@lukeed/uuid'
-import { dset } from 'dset'
 import { CoreLogger, LogLevel, LogMessage } from '../logger'
 import { CoreStats, CoreMetric, NullStats } from '../stats'
+import { dset } from '../utils/dset'
 
 export interface SerializedContext {
   id: string
