@@ -4,8 +4,8 @@ This library is one of Segment’s most popular Flagship libraries. It is active
 
 <div style="display:flex;margin-bottom:5px">
   <span style="margin: 0 5px 5px">
-    <a href="https://buildkite.com/segment/analytics-next">
-    <img src="https://badge.buildkite.com/87e30d62ada044b6fe404b17cd16aa6e3b52d89f40c9f44675.svg?branch=master">
+    <a href="https://github.com/segmentio/analytics-next/actions/workflows/ci.yml">
+    <img src="https://github.com/segmentio/analytics-next/actions/workflows/ci.yml/badge.svg?branch=master">
   </a>
 
   </span>
