@@ -1,0 +1,37 @@
+name: Test Artifactory Install (sandbox)
+# Manual-only, no publish step, no should-release gate - safe to run on any
+# branch to check whether `yarn install --immutable` resolves cleanly
+# through curated Artifactory (catches curation-policy 403s on specific
+# package versions) without touching master or arming a real release.
+# Usage: gh workflow run test-artifactory-install.yml --ref <branch>
+on:
+  workflow_dispatch: {}
+
+env:
+  HUSKY: 0
+  ARTIFACTORY_URL: ${{ vars.ARTIFACTORY_URL }}
+
+jobs:
+  test-install:
+    name: Test yarn install through curated Artifactory (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest-large
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        # Different Node versions can resolve different optional/platform
+        # dependencies (confirmed: is-email and axios showed up blocked
+        # under one version's dependency tree but not the other's) -
+        # matches the two versions release.yml's test/publish jobs
+        # actually use.
+        node-version: [20, 24]
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
