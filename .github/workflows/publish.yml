@@ -101,13 +101,38 @@ jobs:
         run: yarn scripts create-release-from-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Trigger CDN release build
-        run: |
-          curl -sS -f -X POST \
-            "https://api.buildkite.com/v2/organizations/twilio/pipelines/cdp-analytics-next/builds" \
-            -H "Authorization: Bearer ${BUILDKITE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "{\"commit\":\"${GITHUB_SHA}\",\"branch\":\"master\",\"message\":\"CDN release for ${GITHUB_SHA}\"}"
-        env:
-          BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
-          GITHUB_SHA: ${{ github.sha }}
+
+  deploy-cdn:
+    name: Deploy to CDN
+    needs: [should-release, test, publish]
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest-large
+    environment: production # same manual-approval gate as npm publish
+    permissions:
+      contents: read
+      id-token: write # AWS OIDC + Artifactory OIDC
+    env:
+      PROD_BUCKET: 'segment-ajs-renderer-compiled-production'
+      # TODO(cdp-infra trust-policy PRs pending): confirm/fill in before first real run.
+      STAGE_BUCKET: 'TODO'
+      PROD_CDN_OAI: 'TODO'
+      STAGE_CDN_OAI: 'TODO'
+      PROD_CUSTOM_DOMAIN_OAI: 'TODO'
+      STAGE_CUSTOM_DOMAIN_OAI: 'TODO'
+      PROD_SHADOW: 'TODO'
+      STAGE_SHADOW: 'TODO'
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: arn:aws:iam::812113486725:role/ajs-private-assets-upload
+          role-session-name: gha-analytics-next-cdn-deploy
+          aws-region: us-west-2
+      - run: yarn run -T browser release:cdn
