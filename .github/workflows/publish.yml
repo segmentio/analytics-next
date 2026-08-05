@@ -112,6 +112,12 @@ jobs:
       contents: read
       id-token: write # AWS OIDC + Artifactory OIDC
     env:
+      # release.js resolves the branch via `BUILDKITE_BRANCH || git branch
+      # --show-current` - actions/checkout leaves the repo in detached HEAD,
+      # so the git fallback would silently resolve to an empty string
+      # instead of erroring. Set this explicitly instead of touching the
+      # script itself.
+      BUILDKITE_BRANCH: ${{ github.ref_name }}
       PROD_BUCKET: 'segment-ajs-renderer-compiled-production'
       # TODO(cdp-infra trust-policy PRs pending): confirm/fill in before first real run.
       STAGE_BUCKET: 'TODO'
