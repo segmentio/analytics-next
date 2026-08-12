@@ -18,19 +18,12 @@ runs:
     - name: Assume AWS role via OIDC
       shell: bash
       env:
-        # Passed through env, not interpolated directly into the script body
-        # below (${{ inputs.x }} inline in a run: step is a shell-injection
-        # risk - a malicious input value becomes literal script text before
-        # the shell ever runs it, rather than being treated as data).
         INPUT_ROLE_ARN: ${{ inputs.role-arn }}
         INPUT_ROLE_SESSION_NAME: ${{ inputs.role-session-name }}
         INPUT_AWS_REGION: ${{ inputs.aws-region }}
       run: |
         set -euo pipefail
 
-        # jq and the AWS CLI are present on ubuntu-latest(-large) today, but
-        # not guaranteed on every runner - fail early with a clear message
-        # rather than a confusing parse error further down.
         if ! command -v jq >/dev/null 2>&1; then
           echo "::error::jq is required by the aws-oidc-assume-role action but was not found on the runner."
           exit 1
@@ -40,8 +33,6 @@ runs:
           exit 1
         fi
 
-        # 1. Request a GitHub OIDC JWT scoped to sts.amazonaws.com - AWS's
-        #    documented audience for OIDC federation from GitHub Actions.
         GITHUB_JWT=$(curl -sS \
           -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
           "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
@@ -52,9 +43,6 @@ runs:
           exit 1
         fi
 
-        # 2. Exchange it for short-lived AWS credentials. No third-party
-        #    Action involved - just the OIDC token and the AWS CLI, both
-        #    already present on the runner.
         CREDS=$(aws sts assume-role-with-web-identity \
           --role-arn "$INPUT_ROLE_ARN" \
           --role-session-name "$INPUT_ROLE_SESSION_NAME" \
