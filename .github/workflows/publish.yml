@@ -82,13 +82,21 @@ jobs:
       # here and shared via artifact, rather than each job rebuilding
       # independently (which cost double the build time and risked the two
       # destinations ending up with subtly different bits).
+      #
+      # Archived into a single tarball (tar preserves exact relative paths)
+      # rather than handing upload-artifact multiple glob patterns directly:
+      # with >1 pattern it computes a shared least-common-ancestor root and
+      # strips it, which - since packages/consent/*/dist sits one directory
+      # deeper than packages/*/dist - stripped an inconsistent number of
+      # leading path segments per pattern and silently dropped dist/umd from
+      # where deploy-cdn and purge-cdn-cache expected it after download.
+      - name: Archive build output
+        run: tar -czf release-dist.tar.gz packages/*/dist packages/consent/*/dist
       - name: Upload build artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: release-build-${{ github.run_id }}
-          path: |
-            packages/*/dist
-            packages/consent/*/dist
+          path: release-dist.tar.gz
           retention-days: 1
           if-no-files-found: error
 
@@ -125,6 +133,7 @@ jobs:
         with:
           name: release-build-${{ github.run_id }}
           path: .
+      - run: tar -xzf release-dist.tar.gz && rm release-dist.tar.gz
       - name: Configure git for tag push
         run: |
           git config --global user.name "github-actions[bot]"
@@ -184,6 +193,7 @@ jobs:
         with:
           name: release-build-${{ github.run_id }}
           path: .
+      - run: tar -xzf release-dist.tar.gz && rm release-dist.tar.gz
       - name: Assume AWS role via OIDC
         # aws-actions/configure-aws-credentials isn't on segmentio/analytics-next's
         # allowed-actions list (third-party, not enterprise-owned/GitHub-created) -
