@@ -93,6 +93,29 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Version pending changesets (manual release only)
+        # release-creator.yml is normally what versions changesets, via a
+        # "Version Packages" PR someone reviews and merges. A manual
+        # workflow_dispatch run has no such PR to merge - if there's a
+        # pending changeset, version it directly here instead so a manual
+        # release actually cuts a new version rather than silently no-op'ing
+        # downstream. If there's nothing pending, this just no-ops: the
+        # existing (already-published) version still gets re-published
+        # (harmless - changeset publish skips versions already on the
+        # registry) and re-deployed to the CDN by the steps below.
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          CHANGESET_FILES=$(find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md')
+          if [ -n "$CHANGESET_FILES" ]; then
+            echo "Pending changesets found - versioning now:"
+            echo "$CHANGESET_FILES"
+            yarn update-versions-and-changelogs
+            git add -A
+            git commit -m "Version Packages"
+            git push origin HEAD:master --no-verify
+          else
+            echo "No pending changesets - nothing to version."
+          fi
       - name: Publish packages + push tags
         run: yarn release
         env:
