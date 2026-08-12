@@ -17,6 +17,14 @@ runs:
   steps:
     - name: Assume AWS role via OIDC
       shell: bash
+      env:
+        # Passed through env, not interpolated directly into the script body
+        # below (${{ inputs.x }} inline in a run: step is a shell-injection
+        # risk - a malicious input value becomes literal script text before
+        # the shell ever runs it, rather than being treated as data).
+        INPUT_ROLE_ARN: ${{ inputs.role-arn }}
+        INPUT_ROLE_SESSION_NAME: ${{ inputs.role-session-name }}
+        INPUT_AWS_REGION: ${{ inputs.aws-region }}
       run: |
         set -euo pipefail
 
@@ -48,8 +56,8 @@ runs:
         #    Action involved - just the OIDC token and the AWS CLI, both
         #    already present on the runner.
         CREDS=$(aws sts assume-role-with-web-identity \
-          --role-arn "${{ inputs.role-arn }}" \
-          --role-session-name "${{ inputs.role-session-name }}" \
+          --role-arn "$INPUT_ROLE_ARN" \
+          --role-session-name "$INPUT_ROLE_SESSION_NAME" \
           --web-identity-token "$GITHUB_JWT" \
           --query 'Credentials' --output json)
 
@@ -70,8 +78,8 @@ runs:
           echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
           echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
           echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
-          echo "AWS_REGION=${{ inputs.aws-region }}"
-          echo "AWS_DEFAULT_REGION=${{ inputs.aws-region }}"
+          echo "AWS_REGION=${INPUT_AWS_REGION}"
+          echo "AWS_DEFAULT_REGION=${INPUT_AWS_REGION}"
         } >> "$GITHUB_ENV"
 
-        echo "::notice::Assumed AWS role ${{ inputs.role-arn }}"
+        echo "::notice::Assumed AWS role ${INPUT_ROLE_ARN}"
