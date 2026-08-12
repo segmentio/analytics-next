@@ -101,3 +101,49 @@ jobs:
         run: yarn scripts create-release-from-tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-cdn:
+    name: Deploy to CDN
+    needs: [should-release, test, publish]
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest-large
+    environment: production # same manual-approval gate as npm publish
+    permissions:
+      contents: read
+      id-token: write # AWS OIDC + Artifactory OIDC
+    env:
+      # release.js resolves the branch via `BUILDKITE_BRANCH || git branch
+      # --show-current` - actions/checkout leaves the repo in detached HEAD,
+      # so the git fallback would silently resolve to an empty string
+      # instead of erroring. Set this explicitly instead of touching the
+      # script itself.
+      BUILDKITE_BRANCH: ${{ github.ref_name }}
+      # All of these live as variables on the `production` GitHub Environment
+      # (not secrets - bucket names and CloudFront OAI canonical-user-ids are
+      # not sensitive - but keeping infra config out of the YAML either way).
+      PROD_BUCKET: ${{ vars.PROD_BUCKET }}
+      STAGE_BUCKET: ${{ vars.STAGE_BUCKET }}
+      # release.js passes these straight through as S3 PutObject's GrantRead -
+      # the id=<canonical-user-id> form each variable holds is the literal
+      # value S3's grant header expects, not a prefix to strip.
+      PROD_CDN_OAI: ${{ vars.PROD_CDN_OAI }}
+      STAGE_CDN_OAI: ${{ vars.STAGE_CDN_OAI }}
+      PROD_CUSTOM_DOMAIN_OAI: ${{ vars.PROD_CUSTOM_DOMAIN_OAI }}
+      STAGE_CUSTOM_DOMAIN_OAI: ${{ vars.STAGE_CUSTOM_DOMAIN_OAI }}
+      PROD_SHADOW: ${{ vars.PROD_SHADOW }}
+      STAGE_SHADOW: ${{ vars.STAGE_SHADOW }}
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+        with:
+          role-to-assume: arn:aws:iam::812113486725:role/ajs-private-assets-upload
+          role-session-name: gha-analytics-next-cdn-deploy
+          aws-region: us-west-2
+      - run: yarn run -T browser release:cdn
