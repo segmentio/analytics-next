@@ -61,9 +61,40 @@ jobs:
       - run: yarn scripts lint
       - run: yarn scripts test
 
+  build:
+    name: Build release artifacts
+    needs: [should-release, test]
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest-large
+    permissions:
+      contents: read
+      id-token: write # Artifactory OIDC
+    steps:
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
+      - name: Artifactory OIDC Auth
+        uses: ./.github/actions/artifactory-oidc
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
+        with:
+          node-version: 20
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - run: yarn build --force
+      # publish (npm) and deploy-cdn need the exact same build - built once
+      # here and shared via artifact, rather than each job rebuilding
+      # independently (which cost double the build time and risked the two
+      # destinations ending up with subtly different bits).
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: release-build-${{ github.run_id }}
+          path: |
+            packages/*/dist
+            packages/consent/*/dist
+          retention-days: 1
+          if-no-files-found: error
+
   publish:
     name: Publish to npm
-    needs: [should-release, test]
+    needs: [should-release, build]
     if: needs.should-release.outputs.release == 'true'
     runs-on: ubuntu-latest-large
     environment: production # manual-approval gate before publish
@@ -89,12 +120,20 @@ jobs:
         with:
           node-version: 24
       - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          name: release-build-${{ github.run_id }}
+          path: .
       - name: Configure git for tag push
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Publish packages + push tags
-        run: yarn release
+        # release:publish-only skips the clean+build the plain `release`
+        # script does - build already happened once in the build job above,
+        # and its output was just restored from the artifact.
+        run: yarn release:publish-only
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create GitHub releases from tags
@@ -104,7 +143,7 @@ jobs:
 
   deploy-cdn:
     name: Deploy to CDN
-    needs: [should-release, test, publish]
+    needs: [should-release, build]
     if: needs.should-release.outputs.release == 'true'
     runs-on: ubuntu-latest-large
     environment: production # same manual-approval gate as npm publish
@@ -140,6 +179,11 @@ jobs:
         with:
           node-version: 20
       - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
+      - name: Download build artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
+        with:
+          name: release-build-${{ github.run_id }}
+          path: .
       - name: Assume AWS role via OIDC
         # aws-actions/configure-aws-credentials isn't on segmentio/analytics-next's
         # allowed-actions list (third-party, not enterprise-owned/GitHub-created) -
@@ -150,4 +194,7 @@ jobs:
           role-arn: arn:aws:iam::812113486725:role/ajs-private-assets-upload
           role-session-name: gha-analytics-next-cdn-deploy
           aws-region: us-west-2
-      - run: yarn run -T browser release:cdn
+      # release:cdn:no-build skips the `yarn . build` the plain release:cdn
+      # script does - build already happened once in the build job above,
+      # and its output was just restored from the artifact.
+      - run: yarn run -T browser release:cdn:no-build
