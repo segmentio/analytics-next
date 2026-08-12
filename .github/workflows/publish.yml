@@ -140,10 +140,14 @@ jobs:
         with:
           node-version: 20
       - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 yarn install --immutable
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
+      - name: Assume AWS role via OIDC
+        # aws-actions/configure-aws-credentials isn't on segmentio/analytics-next's
+        # allowed-actions list (third-party, not enterprise-owned/GitHub-created) -
+        # this local composite action does the same OIDC token exchange by hand,
+        # mirroring the artifactory-oidc action above.
+        uses: ./.github/actions/aws-oidc-assume-role
         with:
-          role-to-assume: arn:aws:iam::812113486725:role/ajs-private-assets-upload
+          role-arn: arn:aws:iam::812113486725:role/ajs-private-assets-upload
           role-session-name: gha-analytics-next-cdn-deploy
           aws-region: us-west-2
       - run: yarn run -T browser release:cdn

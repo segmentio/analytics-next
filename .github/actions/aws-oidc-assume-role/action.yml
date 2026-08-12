@@ -1,0 +1,85 @@
+name: 'AWS OIDC Assume Role'
+description: 'Exchange the GitHub OIDC token for short-lived AWS credentials via sts:AssumeRoleWithWebIdentity, without a third-party Action'
+
+inputs:
+  role-arn:
+    description: 'ARN of the AWS IAM role to assume'
+    required: true
+  role-session-name:
+    description: 'Session name for the assumed-role credentials'
+    required: true
+  aws-region:
+    description: 'AWS region to export for subsequent AWS CLI/SDK calls'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Assume AWS role via OIDC
+      shell: bash
+      env:
+        # Passed through env, not interpolated directly into the script body
+        # below (${{ inputs.x }} inline in a run: step is a shell-injection
+        # risk - a malicious input value becomes literal script text before
+        # the shell ever runs it, rather than being treated as data).
+        INPUT_ROLE_ARN: ${{ inputs.role-arn }}
+        INPUT_ROLE_SESSION_NAME: ${{ inputs.role-session-name }}
+        INPUT_AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        set -euo pipefail
+
+        # jq and the AWS CLI are present on ubuntu-latest(-large) today, but
+        # not guaranteed on every runner - fail early with a clear message
+        # rather than a confusing parse error further down.
+        if ! command -v jq >/dev/null 2>&1; then
+          echo "::error::jq is required by the aws-oidc-assume-role action but was not found on the runner."
+          exit 1
+        fi
+        if ! command -v aws >/dev/null 2>&1; then
+          echo "::error::aws CLI is required by the aws-oidc-assume-role action but was not found on the runner."
+          exit 1
+        fi
+
+        # 1. Request a GitHub OIDC JWT scoped to sts.amazonaws.com - AWS's
+        #    documented audience for OIDC federation from GitHub Actions.
+        GITHUB_JWT=$(curl -sS \
+          -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+          | jq -r '.value')
+
+        if [ -z "$GITHUB_JWT" ] || [ "$GITHUB_JWT" = "null" ]; then
+          echo "::error::Failed to obtain a GitHub OIDC token."
+          exit 1
+        fi
+
+        # 2. Exchange it for short-lived AWS credentials. No third-party
+        #    Action involved - just the OIDC token and the AWS CLI, both
+        #    already present on the runner.
+        CREDS=$(aws sts assume-role-with-web-identity \
+          --role-arn "$INPUT_ROLE_ARN" \
+          --role-session-name "$INPUT_ROLE_SESSION_NAME" \
+          --web-identity-token "$GITHUB_JWT" \
+          --query 'Credentials' --output json)
+
+        AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r '.AccessKeyId')
+        AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r '.SecretAccessKey')
+        AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r '.SessionToken')
+
+        if [ -z "$AWS_ACCESS_KEY_ID" ] || [ "$AWS_ACCESS_KEY_ID" = "null" ]; then
+          echo "::error::sts assume-role-with-web-identity did not return credentials."
+          exit 1
+        fi
+
+        echo "::add-mask::$AWS_ACCESS_KEY_ID"
+        echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
+        echo "::add-mask::$AWS_SESSION_TOKEN"
+
+        {
+          echo "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}"
+          echo "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}"
+          echo "AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}"
+          echo "AWS_REGION=${INPUT_AWS_REGION}"
+          echo "AWS_DEFAULT_REGION=${INPUT_AWS_REGION}"
+        } >> "$GITHUB_ENV"
+
+        echo "::notice::Assumed AWS role ${INPUT_ROLE_ARN}"
