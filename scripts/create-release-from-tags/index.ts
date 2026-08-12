@@ -40,9 +40,10 @@ export const getConfig = async (): Promise<Config> => {
   const isDryRun = Boolean(DRY_RUN)
   const tags = TAGS ? parseRawTags(TAGS) : await getCurrentGitTags()
 
-  if (!tags.length) {
-    throw new Error('No git tags found.')
-  }
+  // No tags at HEAD is expected, not exceptional: a manual release run with
+  // no pending changesets publishes nothing new, so `changeset publish`
+  // correctly creates no tags. Let createReleaseFromTags no-op on this
+  // rather than treating it as a hard failure.
   return {
     isDryRun,
     tags,
@@ -256,6 +257,11 @@ const createGithubReleaseFromTag = async (
 }
 
 export const createReleaseFromTags = async (config: Config) => {
+  if (!config.tags.length) {
+    console.log('No git tags at HEAD - nothing new to release. Skipping.')
+    return
+  }
+
   console.log('Processing tags:', config.tags, '\n')
 
   for (const tag of config.tags) {
