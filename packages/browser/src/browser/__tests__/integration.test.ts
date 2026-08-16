@@ -207,6 +207,57 @@ describe('Initialization', () => {
     expect(ready).toHaveBeenCalled()
   })
 
+  it('ready method is called even when plugin errors on ready, and calls `onPluginReadyError`', async () => {
+    const ready = jest.fn()
+    const onPluginReadyError = jest.fn()
+
+    const lazyPlugin1: Plugin = {
+      name: 'Test 2',
+      type: 'destination',
+      version: '1.0',
+
+      load: async (_ctx) => {},
+      ready: async () => {
+        return new Promise((resolve) => setTimeout(resolve, 100))
+      },
+      isLoaded: () => true,
+    }
+
+    const lazyPlugin2: Plugin = {
+      name: 'Test 2',
+      type: 'destination',
+      version: '1.0',
+
+      load: async (_ctx) => {},
+      ready: () => Promise.reject('failed readying'),
+      isLoaded: () => true,
+    }
+
+    jest.spyOn(lazyPlugin1, 'load')
+    jest.spyOn(lazyPlugin2, 'load')
+    const [analytics] = await AnalyticsBrowser.load(
+      {
+        writeKey,
+        plugins: [lazyPlugin1, lazyPlugin2, xt],
+      },
+      {
+        onPluginReadyError,
+      }
+    )
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    const promise = analytics.ready(ready)
+    expect(lazyPlugin1.load).toHaveBeenCalled()
+    expect(lazyPlugin2.load).toHaveBeenCalled()
+    expect(ready).not.toHaveBeenCalled()
+
+    await sleep(100)
+    expect(ready).toHaveBeenCalled()
+    expect(onPluginReadyError).toHaveBeenCalledTimes(1)
+
+    return promise
+  })
+
   describe('cdn', () => {
     it('should get the correct CDN in plugins if the CDN overridden', async () => {
       const overriddenCDNUrl = 'http://cdn.segment.com' // http instead of https
