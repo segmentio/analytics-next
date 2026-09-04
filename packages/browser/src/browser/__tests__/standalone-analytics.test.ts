@@ -91,6 +91,17 @@ describe('standalone bundle', () => {
     documentSpy.mockImplementation(
       () => jsd.window.document as unknown as Document
     )
+
+    // SECOPS-25767: the SDK now derives the write key / CDN only from the tag
+    // that loaded it. Point document.currentScript at the analytics.min.js tag
+    // the snippet inserted, as the browser would during the bundle's boot.
+    const loaderTag = jsd.window.document.querySelector(
+      'script[src*="/analytics.js/v1/"]'
+    )
+    Object.defineProperty(jsd.window.document, 'currentScript', {
+      configurable: true,
+      get: () => loaderTag,
+    })
   })
 
   it('detects embedded write keys', async () => {
