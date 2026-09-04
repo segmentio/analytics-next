@@ -5,6 +5,7 @@ import {
   getGlobalAnalytics,
   setGlobalAnalytics,
 } from '../lib/global-analytics-helper'
+import { getTrustedScriptSrc } from '../lib/parse-cdn'
 
 function getWriteKey(): string | undefined {
   if (embeddedWriteKey()) {
@@ -16,34 +17,22 @@ function getWriteKey(): string | undefined {
     return analytics._writeKey
   }
 
+  // SECOPS-25767: resolve the write key only from a trusted tag - the one that
+  // actually loaded us (document.currentScript, snapshotted at boot so this
+  // also works from polyfill onload / deferred contexts where currentScript is
+  // null), or failing that a tag on a known public Segment CDN. Never from an
+  // arbitrary <script> in the DOM: a sniffed write key could redirect a
+  // customer's event stream to an attacker-owned workspace.
   const regex = /http.*\/analytics\.js\/v1\/([^/]*)(\/platform)?\/analytics.*/
-  const scripts = Array.prototype.slice.call(
-    document.querySelectorAll('script')
-  )
-  let writeKey: string | undefined = undefined
-
-  for (const s of scripts) {
-    const src = s.getAttribute('src') ?? ''
+  const src = getTrustedScriptSrc()
+  if (src) {
     const result = regex.exec(src)
-
     if (result && result[1]) {
-      writeKey = result[1]
-      break
+      return result[1]
     }
   }
 
-  if (!writeKey && document.currentScript) {
-    const script = document.currentScript as HTMLScriptElement
-    const src = script.src
-
-    const result = regex.exec(src)
-
-    if (result && result[1]) {
-      writeKey = result[1]
-    }
-  }
-
-  return writeKey
+  return undefined
 }
 
 export async function install(): Promise<void> {
