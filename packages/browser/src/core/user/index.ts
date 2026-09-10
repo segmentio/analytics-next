@@ -151,7 +151,7 @@ export class User implements WithId {
 
     if (id === undefined) {
       const val =
-        this.identityStore.getAndSync(this.anonKey) ?? this.legacySIO()?.[0]
+        this.identityStore.getConsistent(this.anonKey) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
@@ -160,11 +160,11 @@ export class User implements WithId {
 
     if (id === null) {
       this.identityStore.set(this.anonKey, null)
-      return this.identityStore.getAndSync(this.anonKey)
+      return this.identityStore.getConsistent(this.anonKey)
     }
 
     this.identityStore.set(this.anonKey, id ?? uuid())
-    return this.identityStore.getAndSync(this.anonKey)
+    return this.identityStore.getConsistent(this.anonKey)
   }
 
   traits = (traits?: Traits | null): Traits | undefined => {

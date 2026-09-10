@@ -77,6 +77,23 @@ describe('user', () => {
       jar.set('ajs_anonymous_id', 'anonymous')
       expect(new User().anonymousId()).toEqual('anonymous')
     })
+
+    it('should prefer the cookie over a diverged localStorage value, and resync localStorage to match', () => {
+      // simulates the scenario in segmentio/analytics-next#706: localStorage (per-origin) and
+      // the cookie (shared cross-subdomain) have drifted apart, e.g. because localStorage was
+      // cleared on this origin only while the shared cookie survived.
+      jar.set('ajs_anonymous_id', 'from-cookie')
+      localStorage.setItem(
+        'ajs_anonymous_id',
+        JSON.stringify('from-local-storage')
+      )
+
+      const user = new User()
+      expect(user.anonymousId()).toEqual('from-cookie')
+      expect(localStorage.getItem('ajs_anonymous_id')).toEqual(
+        JSON.stringify('from-cookie')
+      )
+    })
   })
 
   describe('#id', () => {
