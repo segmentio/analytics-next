@@ -39,27 +39,52 @@ function parseUrl(url: string): URL | undefined {
   }
 }
 
+// Resolving the tld requires a live set/get/remove cookie round-trip, and analytics-next
+// creates several CookieStorage instances per page load (identity + legacy stores, x2 for
+// Group). Caching by hostname means that dance only happens once per page, which removes a
+// source of intermittent, per-instance failures that could otherwise leave some stores sharing
+// the resolved domain and others silently falling back to a host-only cookie (see #706).
+const domainCache = new Map<string, string | undefined>()
+
 export function tld(url: string): string | undefined {
   const parsedUrl = parseUrl(url)
   if (!parsedUrl) return
 
+  const hostname = parsedUrl.hostname
+  if (domainCache.has(hostname)) {
+    return domainCache.get(hostname)
+  }
+
   const lvls = levels(parsedUrl)
+  let domain: string | undefined
 
   // Lookup the real top level one.
   for (let i = 0; i < lvls.length; ++i) {
     const cname = '__tld__'
-    const domain = lvls[i]
-    const opts = { domain: '.' + domain }
+    const candidate = lvls[i]
+    const opts = { domain: '.' + candidate }
 
     try {
       // cookie access throw an error if the library is ran inside a sandboxed environment (e.g. sandboxed iframe)
       cookie.set(cname, '1', opts)
       if (cookie.get(cname)) {
         cookie.remove(cname, opts)
-        return domain
+        domain = candidate
+        break
       }
     } catch (_) {
-      return
+      break
     }
   }
+
+  // lvls.length === 0 means this is an IP address or localhost -- an undefined domain there is
+  // expected, not a failure, so only warn when we actually attempted and failed to resolve one.
+  if (domain === undefined && lvls.length > 0) {
+    console.warn(
+      `Unable to determine a top-level domain for "${hostname}". Falling back to a host-only cookie, which will not be shared across subdomains.`
+    )
+  }
+
+  domainCache.set(hostname, domain)
+  return domain
 }
