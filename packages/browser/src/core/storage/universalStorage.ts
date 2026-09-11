@@ -77,6 +77,18 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     return coercedValue
   }
 
+  private safeGet<K extends keyof Data>(
+    store: Store,
+    key: K
+  ): Data[K] | null | undefined {
+    try {
+      return store.get(key) as Data[K] | null
+    } catch (e) {
+      _logStoreKeyError(store, 'get', key, e)
+      return undefined
+    }
+  }
+
   /*
     Like getAndSync, but for stores that are expected to be kept in sync across origins (e.g.
     a cookie shared cross-subdomain via its `domain` attribute vs. a per-origin localStorage
@@ -87,38 +99,18 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     no disagreement, this returns the exact same value getAndSync would.
   */
   getConsistent<K extends keyof Data>(key: K): Data[K] | null {
-    let winner: Data[K] | null = null
-    let winnerIsCookie = false
+    // an empty string is treated the same as no value: a cookie that was blanked out rather
+    // than deleted (e.g. `document.cookie = 'ajs_anonymous_id=;path=/'` with no expiry, which
+    // some third-party consent scripts do) should not be able to win a disagreement and wipe
+    // out a real id in another store.
+    const present = this.stores
+      .map((store) => ({ store, val: this.safeGet<K>(store, key) }))
+      .filter(({ val }) => val !== undefined && val !== null && val !== '')
 
-    for (const store of this.stores) {
-      let val: Data[K] | null
-      try {
-        val = store.get(key) as Data[K] | null
-      } catch (e) {
-        _logStoreKeyError(store, 'get', key, e)
-        continue
-      }
-
-      // an empty string is treated the same as no value: a cookie that was blanked out rather
-      // than deleted (e.g. `document.cookie = 'ajs_anonymous_id=;path=/'` with no expiry, which
-      // some third-party consent scripts do) should not be able to win a disagreement and wipe
-      // out a real id in another store.
-      if (val === undefined || val === null || val === '') {
-        continue
-      }
-
-      if (winner === null) {
-        winner = val
-        winnerIsCookie = store instanceof CookieStorage
-      } else if (
-        !winnerIsCookie &&
-        store instanceof CookieStorage &&
-        val !== winner
-      ) {
-        winner = val
-        winnerIsCookie = true
-      }
-    }
+    const winner =
+      present.find(({ store }) => store instanceof CookieStorage)?.val ??
+      present[0]?.val ??
+      null
 
     // legacy behavior, matches getAndSync: can change the type of a value from number to string
     // (AJS 1.0 stores numerical values as a number)
