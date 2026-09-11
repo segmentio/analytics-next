@@ -39,11 +39,7 @@ function parseUrl(url: string): URL | undefined {
   }
 }
 
-// Resolving the tld requires a live set/get/remove cookie round-trip, and analytics-next
-// creates several CookieStorage instances per page load (identity + legacy stores, x2 for
-// Group). Caching by hostname means that dance only happens once per page, which removes a
-// source of intermittent, per-instance failures that could otherwise leave some stores sharing
-// the resolved domain and others silently falling back to a host-only cookie (see #706).
+// memoized per hostname, since resolving this is a live cookie round-trip per CookieStorage instance (see #706)
 const domainCache = new Map<string, string | undefined>()
 
 export function tld(url: string): string | undefined {
@@ -77,8 +73,7 @@ export function tld(url: string): string | undefined {
     }
   }
 
-  // lvls.length === 0 means this is an IP address or localhost -- an undefined domain there is
-  // expected, not a failure, so only warn when we actually attempted and failed to resolve one.
+  // only warn on a real failure to resolve; lvls.length === 0 (IP/localhost) is expected to be undefined
   if (domain === undefined && lvls.length > 0) {
     console.warn(
       `Unable to determine a top-level domain for "${hostname}". Falling back to a host-only cookie, which will not be shared across subdomains.`

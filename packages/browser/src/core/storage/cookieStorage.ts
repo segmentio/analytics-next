@@ -81,10 +81,7 @@ export class CookieStorage<Data extends StorageObject = StorageObject>
   private removeCookie<K extends keyof Data>(key: K): void {
     jar.remove(key, this.opts())
 
-    // If a prior tld() resolution ever failed (e.g. transient cookie-jar pressure), a
-    // host-only duplicate of this cookie may have been written alongside the shared one --
-    // jar.remove() above only targets the currently-configured domain, so that duplicate would
-    // otherwise be permanently unreachable, even via reset(). Clear it too, just in case.
+    // also clears a possible host-only duplicate left by a past tld() failure, otherwise unreachable
     if (this.options.domain) {
       jar.remove(key, { path: this.options.path })
     }
