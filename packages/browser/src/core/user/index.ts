@@ -37,11 +37,6 @@ export interface UserOptions {
    * @example stores: [StoreType.Cookie, StoreType.Memory]
    */
   storage?: StorageSettings
-
-  /**
-   * Opt-in fix for anonymousId diverging between subdomains (see segmentio/analytics-next#706): when the cookie and localStorage disagree, prefer the cookie and resync localStorage to it, instead of localStorage's value winning permanently. Defaults to false.
-   */
-  resolveAnonymousIdConflicts?: boolean
 }
 
 const defaults = {
@@ -149,19 +144,14 @@ export class User implements WithId {
     return [anon, user]
   }
 
-  private readAnonymousId(): ID {
-    return this.options.resolveAnonymousIdConflicts
-      ? this.identityStore.getConsistent(this.anonKey)
-      : this.identityStore.getAndSync(this.anonKey)
-  }
-
   anonymousId = (id?: ID): ID => {
     if (this.options.disable) {
       return null
     }
 
     if (id === undefined) {
-      const val = this.readAnonymousId() ?? this.legacySIO()?.[0]
+      const val =
+        this.identityStore.getConsistent(this.anonKey) ?? this.legacySIO()?.[0]
 
       if (val) {
         return val
@@ -170,11 +160,11 @@ export class User implements WithId {
 
     if (id === null) {
       this.identityStore.set(this.anonKey, null)
-      return this.readAnonymousId()
+      return this.identityStore.getConsistent(this.anonKey)
     }
 
     this.identityStore.set(this.anonKey, id ?? uuid())
-    return this.readAnonymousId()
+    return this.identityStore.getConsistent(this.anonKey)
   }
 
   traits = (traits?: Traits | null): Traits | undefined => {
