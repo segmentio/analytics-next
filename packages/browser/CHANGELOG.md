@@ -1,5 +1,13 @@
 # @segment/analytics-next
 
+## 1.84.3
+
+### Patch Changes
+
+- [#1400](https://github.com/segmentio/analytics-next/pull/1400) [`d49e05f7`](https://github.com/segmentio/analytics-next/commit/d49e05f7ed9dce6f2239c0e3687dd7ef1f247c72) Thanks [@abueide](https://github.com/abueide)! - Removed the `resolveAnonymousIdConflicts` option, added in the previous release, and made its behavior the unconditional default: when the cookie and localStorage disagree on `anonymousId`, the cookie always wins and every store is resynced to it, instead of localStorage's value winning permanently (see #706).
+
+  **Behavior change:** this is no longer opt-in. It only changes behavior for sources where the cookie and localStorage already disagree -- when they agree (the common case), the result is unchanged. If any customer explicitly set `resolveAnonymousIdConflicts: false` in their load options, that field is now ignored (harmless); the option was only in the previous release, so no meaningful adoption window existed for anyone relying on its absence.
+
 ## 1.84.2
 
 ### Patch Changes
