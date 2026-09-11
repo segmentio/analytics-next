@@ -78,8 +78,7 @@ describe('user', () => {
       expect(new User().anonymousId()).toEqual('anonymous')
     })
 
-    it('should prefer the cookie over a diverged localStorage value, and resync localStorage to match', () => {
-      // reproduces #706: localStorage (per-origin) has drifted from the shared cookie
+    it('keeps the diverged localStorage value by default (resolveAnonymousIdConflicts opt-in is off)', () => {
       jar.set('ajs_anonymous_id', 'from-cookie')
       localStorage.setItem(
         'ajs_anonymous_id',
@@ -87,6 +86,18 @@ describe('user', () => {
       )
 
       const user = new User()
+      expect(user.anonymousId()).toEqual('from-local-storage')
+    })
+
+    it('with resolveAnonymousIdConflicts: prefers the cookie over a diverged localStorage value, and resyncs localStorage to match', () => {
+      // reproduces #706: localStorage (per-origin) has drifted from the shared cookie
+      jar.set('ajs_anonymous_id', 'from-cookie')
+      localStorage.setItem(
+        'ajs_anonymous_id',
+        JSON.stringify('from-local-storage')
+      )
+
+      const user = new User({ resolveAnonymousIdConflicts: true })
       expect(user.anonymousId()).toEqual('from-cookie')
       expect(localStorage.getItem('ajs_anonymous_id')).toEqual(
         JSON.stringify('from-cookie')
