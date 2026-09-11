@@ -72,6 +72,74 @@ describe('UniversalStorage', function () {
     })
   })
 
+  describe('#getConsistent', function () {
+    it('returns the same value as get when stores agree', function () {
+      jar.set('ajs_test_key', 'match')
+      localStorage.setItem('ajs_test_key', 'match')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+      expect(us.getConsistent('ajs_test_key')).toEqual('match')
+    })
+
+    it('prefers the cookie value over an earlier-priority store when they disagree', function () {
+      jar.set('ajs_test_key', 'from-cookie')
+      localStorage.setItem('ajs_test_key', 'from-local-storage')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      expect(us.getConsistent('ajs_test_key')).toEqual('from-cookie')
+    })
+
+    it('self-heals the losing store to match the cookie', function () {
+      jar.set('ajs_test_key', 'from-cookie')
+      localStorage.setItem('ajs_test_key', 'from-local-storage')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      us.getConsistent('ajs_test_key')
+      expect(getFromLS('ajs_test_key')).toEqual('from-cookie')
+    })
+
+    it('falls back to normal priority order when no cookie store is present', function () {
+      localStorage.setItem('ajs_test_key', 'from-local-storage')
+      const us = new UniversalStorage([new LocalStorage(), new MemoryStorage()])
+      expect(us.getConsistent('ajs_test_key')).toEqual('from-local-storage')
+    })
+
+    it('does not let an empty-string cookie (blanked out, not deleted) clobber a real value', function () {
+      jar.set('ajs_test_key', '')
+      localStorage.setItem('ajs_test_key', 'from-local-storage')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      expect(us.getConsistent('ajs_test_key')).toEqual('from-local-storage')
+      expect(getFromLS('ajs_test_key')).toEqual('from-local-storage')
+    })
+
+    it('treats an empty-string value as absent even when it is the only value present', function () {
+      jar.set('ajs_test_key', '')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      expect(us.getConsistent('ajs_test_key')).toBeNull()
+    })
+  })
+
   describe('#set', function () {
     it('sets the data in all storage types', function () {
       const us = new UniversalStorage<{ ajs_test_key: string }>(defaultTargets)

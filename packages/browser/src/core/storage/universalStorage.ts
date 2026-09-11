@@ -1,4 +1,5 @@
 import { Store, StorageObject } from './types'
+import { CookieStorage } from './cookieStorage'
 
 // not adding to private method because those method names do not get minified atm, and does not use 'this'
 const _logStoreKeyError = (
@@ -70,6 +71,40 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     const coercedValue = (typeof val === 'number' ? val.toString() : val) as
       | Data[K]
       | null
+
+    this.set(key, coercedValue)
+
+    return coercedValue
+  }
+
+  private safeGet<K extends keyof Data>(
+    store: Store,
+    key: K
+  ): Data[K] | null | undefined {
+    try {
+      return store.get(key) as Data[K] | null
+    } catch (e) {
+      _logStoreKeyError(store, 'get', key, e)
+      return undefined
+    }
+  }
+
+  // like getAndSync, but a CookieStorage value wins a disagreement, since only it can carry a value across subdomains (see #706)
+  getConsistent<K extends keyof Data>(key: K): Data[K] | null {
+    // an empty string counts as absent too, so a blanked-but-not-deleted cookie can't win
+    const present = this.stores
+      .map((store) => ({ store, val: this.safeGet<K>(store, key) }))
+      .filter(({ val }) => val !== undefined && val !== null && val !== '')
+
+    const winner =
+      present.find(({ store }) => store instanceof CookieStorage)?.val ??
+      present[0]?.val ??
+      null
+
+    // legacy behavior, matches getAndSync: coerces AJS 1.0's numeric values to a string
+    const coercedValue = (
+      typeof winner === 'number' ? winner.toString() : winner
+    ) as Data[K] | null
 
     this.set(key, coercedValue)
 
