@@ -99,7 +99,11 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
         continue
       }
 
-      if (val === undefined || val === null) {
+      // an empty string is treated the same as no value: a cookie that was blanked out rather
+      // than deleted (e.g. `document.cookie = 'ajs_anonymous_id=;path=/'` with no expiry, which
+      // some third-party consent scripts do) should not be able to win a disagreement and wipe
+      // out a real id in another store.
+      if (val === undefined || val === null || val === '') {
         continue
       }
 

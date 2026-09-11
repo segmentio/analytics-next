@@ -114,6 +114,30 @@ describe('UniversalStorage', function () {
       const us = new UniversalStorage([new LocalStorage(), new MemoryStorage()])
       expect(us.getConsistent('ajs_test_key')).toEqual('from-local-storage')
     })
+
+    it('does not let an empty-string cookie (blanked out, not deleted) clobber a real value', function () {
+      jar.set('ajs_test_key', '')
+      localStorage.setItem('ajs_test_key', 'from-local-storage')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      expect(us.getConsistent('ajs_test_key')).toEqual('from-local-storage')
+      expect(getFromLS('ajs_test_key')).toEqual('from-local-storage')
+    })
+
+    it('treats an empty-string value as absent even when it is the only value present', function () {
+      jar.set('ajs_test_key', '')
+      const us = new UniversalStorage([
+        new LocalStorage(),
+        new CookieStorage(),
+        new MemoryStorage(),
+      ])
+
+      expect(us.getConsistent('ajs_test_key')).toBeNull()
+    })
   })
 
   describe('#set', function () {
