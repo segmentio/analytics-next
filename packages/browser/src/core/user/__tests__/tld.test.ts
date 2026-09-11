@@ -33,4 +33,43 @@ describe('topDomain', function () {
     assert.strictEqual(tld('http://app.jut.io'), 'jut.io')
     assert.strictEqual(tld('http://app.segment.io'), 'segment.io')
   })
+
+  it('memoizes the resolved domain per hostname, instead of re-probing cookies every call', function () {
+    const setSpy = jest.spyOn(cookie, 'set')
+
+    assert.strictEqual(
+      tld('http://sub.memoize-example.com/path-a'),
+      'memoize-example.com'
+    )
+    const callsAfterFirst = setSpy.mock.calls.length
+
+    assert.strictEqual(
+      tld('http://sub.memoize-example.com/path-b'),
+      'memoize-example.com'
+    )
+    assert.strictEqual(setSpy.mock.calls.length, callsAfterFirst)
+  })
+
+  it('warns and does not throw when a domain cannot be resolved (e.g. sandboxed cookie access)', function () {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(cookie, 'set').mockImplementation(() => {
+      throw new Error('cookie access blocked')
+    })
+
+    assert.strictEqual(tld('http://app.blocked-example.com'), undefined)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toContain('app.blocked-example.com')
+
+    warnSpy.mockRestore()
+  })
+
+  it('does not warn for localhost or IP hosts, since undefined is expected there', function () {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+    tld('http://localhost:3000')
+    tld('http://192.168.0.1:3000')
+
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
+  })
 })

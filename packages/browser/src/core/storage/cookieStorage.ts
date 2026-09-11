@@ -68,13 +68,22 @@ export class CookieStorage<Data extends StorageObject = StorageObject>
     if (typeof value === 'string') {
       jar.set(key, value, this.opts())
     } else if (value === null) {
-      jar.remove(key, this.opts())
+      this.removeCookie(key)
     } else {
       jar.set(key, JSON.stringify(value), this.opts())
     }
   }
 
   remove<K extends keyof Data>(key: K): void {
-    return jar.remove(key, this.opts())
+    this.removeCookie(key)
+  }
+
+  private removeCookie<K extends keyof Data>(key: K): void {
+    jar.remove(key, this.opts())
+
+    // also clears a possible host-only duplicate left by a past tld() failure, otherwise unreachable
+    if (this.options.domain) {
+      jar.remove(key, { path: this.options.path })
+    }
   }
 }
