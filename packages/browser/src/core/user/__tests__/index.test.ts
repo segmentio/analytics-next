@@ -79,9 +79,7 @@ describe('user', () => {
     })
 
     it('should prefer the cookie over a diverged localStorage value, and resync localStorage to match', () => {
-      // simulates the scenario in segmentio/analytics-next#706: localStorage (per-origin) and
-      // the cookie (shared cross-subdomain) have drifted apart, e.g. because localStorage was
-      // cleared on this origin only while the shared cookie survived.
+      // reproduces #706: localStorage (per-origin) has drifted from the shared cookie
       jar.set('ajs_anonymous_id', 'from-cookie')
       localStorage.setItem(
         'ajs_anonymous_id',

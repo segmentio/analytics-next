@@ -89,20 +89,9 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
     }
   }
 
-  /*
-    Like getAndSync, but for stores that are expected to be kept in sync across origins (e.g.
-    a cookie shared cross-subdomain via its `domain` attribute vs. a per-origin localStorage
-    entry). If the stores disagree, a CookieStorage value wins over the rest, since a shared
-    cookie is the only store here that can actually carry a value across subdomains -- a
-    per-origin store that outranks it in priority order would otherwise win the disagreement
-    forever, with no way for the two to ever resync (segmentio/analytics-next#706). When there's
-    no disagreement, this returns the exact same value getAndSync would.
-  */
+  // like getAndSync, but a CookieStorage value wins a disagreement, since only it can carry a value across subdomains (see #706)
   getConsistent<K extends keyof Data>(key: K): Data[K] | null {
-    // an empty string is treated the same as no value: a cookie that was blanked out rather
-    // than deleted (e.g. `document.cookie = 'ajs_anonymous_id=;path=/'` with no expiry, which
-    // some third-party consent scripts do) should not be able to win a disagreement and wipe
-    // out a real id in another store.
+    // an empty string counts as absent too, so a blanked-but-not-deleted cookie can't win
     const present = this.stores
       .map((store) => ({ store, val: this.safeGet<K>(store, key) }))
       .filter(({ val }) => val !== undefined && val !== null && val !== '')
@@ -112,8 +101,7 @@ export class UniversalStorage<Data extends StorageObject = StorageObject> {
       present[0]?.val ??
       null
 
-    // legacy behavior, matches getAndSync: can change the type of a value from number to string
-    // (AJS 1.0 stores numerical values as a number)
+    // legacy behavior, matches getAndSync: coerces AJS 1.0's numeric values to a string
     const coercedValue = (
       typeof winner === 'number' ? winner.toString() : winner
     ) as Data[K] | null
