@@ -12,13 +12,12 @@ const SUBDOMAIN_B = `http://b.${PARENT_DOMAIN}/`
 
 const getAnonymousId = () => window.analytics.user().anonymousId() as string
 
-async function loadAnalytics(page: Page, resolveAnonymousIdConflicts: boolean) {
-  await page.evaluate((resolveAnonymousIdConflicts) => {
+async function loadAnalytics(page: Page) {
+  await page.evaluate(() => {
     window.analytics.load('fake-key', {
       cookie: { domain: '.ajs-repro.test' },
-      user: { resolveAnonymousIdConflicts },
     })
-  }, resolveAnonymousIdConflicts)
+  })
   await page.waitForFunction(() => window.analytics.initialized)
 }
 
@@ -54,20 +53,17 @@ test.describe(
       )
     })
 
-    // reproduces the #706 sequence: a user clears cookies + site data on subdomain A only,
-    // leaving subdomain B's localStorage stale -- the two subdomains disagree from then on.
-    async function reproduceDivergence(
-      context: import('@playwright/test').BrowserContext,
-      resolveAnonymousIdConflicts: boolean
-    ) {
+    test('subdomains converge and stay converged after diverging (segmentio/analytics-next#706)', async ({
+      context,
+    }) => {
       const pageA = await context.newPage()
       await pageA.goto(SUBDOMAIN_A)
-      await loadAnalytics(pageA, resolveAnonymousIdConflicts)
+      await loadAnalytics(pageA)
       const original = await pageA.evaluate(getAnonymousId)
 
       const pageB = await context.newPage()
       await pageB.goto(SUBDOMAIN_B)
-      await loadAnalytics(pageB, resolveAnonymousIdConflicts)
+      await loadAnalytics(pageB)
       // sanity check: B picked up the same id via the shared cookie before anything diverges
       expect(await pageB.evaluate(getAnonymousId)).toEqual(original)
 
@@ -76,46 +72,29 @@ test.describe(
       await context.clearCookies()
       await pageA.evaluate(() => localStorage.clear())
       await pageA.reload()
-      await loadAnalytics(pageA, resolveAnonymousIdConflicts)
+      await loadAnalytics(pageA)
       const freshId = await pageA.evaluate(getAnonymousId)
       expect(freshId).not.toEqual(original)
 
-      // B still has the stale pre-clear id in its own localStorage
-      await pageB.reload()
-      await loadAnalytics(pageB, resolveAnonymousIdConflicts)
-      const idB = await pageB.evaluate(getAnonymousId)
-
-      // back to A again, after B's read above may have overwritten the shared cookie
+      // A re-agrees with the now-updated shared cookie
       await pageA.reload()
-      await loadAnalytics(pageA, resolveAnonymousIdConflicts)
+      await loadAnalytics(pageA)
       const idA = await pageA.evaluate(getAnonymousId)
 
-      return { pageA, pageB, idA, idB, freshId, original }
-    }
+      // B still has the stale pre-clear id in its own localStorage, but resolves to the cookie
+      await pageB.reload()
+      await loadAnalytics(pageB)
+      const idB = await pageB.evaluate(getAnonymousId)
 
-    test('without resolveAnonymousIdConflicts (default): subdomains stay diverged', async ({
-      context,
-    }) => {
-      const { idA, idB } = await reproduceDivergence(context, false)
-      expect(idA).not.toEqual(idB)
-    })
-
-    test('with resolveAnonymousIdConflicts: subdomains converge and stay converged', async ({
-      context,
-    }) => {
-      const { pageA, pageB, idA, idB } = await reproduceDivergence(
-        context,
-        true
-      )
       expect(idA).toEqual(idB)
 
       // stays converged on further navigation, doesn't start ping-ponging again
       await pageB.reload()
-      await loadAnalytics(pageB, true)
+      await loadAnalytics(pageB)
       expect(await pageB.evaluate(getAnonymousId)).toEqual(idA)
 
       await pageA.reload()
-      await loadAnalytics(pageA, true)
+      await loadAnalytics(pageA)
       expect(await pageA.evaluate(getAnonymousId)).toEqual(idA)
     })
   }
