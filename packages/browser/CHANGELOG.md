@@ -1,5 +1,21 @@
 # @segment/analytics-next
 
+## 1.84.2
+
+### Patch Changes
+
+- [#1398](https://github.com/segmentio/analytics-next/pull/1398) [`e7592fb8`](https://github.com/segmentio/analytics-next/commit/e7592fb84f6778530fe63704309cc60bb0bda85e) Thanks [@abueide](https://github.com/abueide)! - Added an opt-in `resolveAnonymousIdConflicts` option (`user: { resolveAnonymousIdConflicts: true }` in load options), off by default, that fixes `anonymousId` diverging between subdomains of the same site (see #706).
+
+  `localStorage` is per-origin, but sits ahead of the shared, cross-subdomain cookie in the default store priority. Once the two disagree -- e.g. a per-origin `localStorage` entry drifts from the shared cookie -- whichever store sits first in priority order wins permanently, with no way for the two to resync. With this option enabled, the cookie's value wins a disagreement instead, and every store is resynced to it.
+
+  This ships off by default: with it disabled (the default), behavior is unchanged. Enabling it only changes behavior in the already-broken case where stores disagree; when they already agree, it returns the exact same value as before.
+
+* [#1388](https://github.com/segmentio/analytics-next/pull/1388) [`b4fd75d4`](https://github.com/segmentio/analytics-next/commit/b4fd75d40e2f8ddf0b72de7f9864ee08e95beba0) Thanks [@abueide](https://github.com/abueide)! - Bump the transitive `is-email` dependency (pulled in via `@segment/facade`) from 0.1.1 to 1.0.2.
+
+  This was forced because 0.1.1 (and every other 0.x release) is blocked by our npm registry's curation policy, which would otherwise prevent any release from installing.
+
+  **Behavior change:** `@segment/facade`'s internal email-format detection (used when processing `identify`/`track`/`page`/`group` calls) becomes stricter as a result. `is-email@0.1.1` used a very loose pattern (`/.+@.+\..+/`, matching almost anything shaped like `x@y.z`); `is-email@1.0.2` uses a proper RFC-5321-style pattern and caps input at 320 characters. In the rare case where a trait value was being loosely classified as an email-shaped string before, it may no longer be after this change (or vice versa, in edge cases the old pattern rejected that the stricter one accepts, like values containing `+`, `.`, or other pattern-valid characters outside the old pattern's assumptions). If you depend on this classification (directly or indirectly), verify your integration continues to see the values you expect.
+
 ## 1.84.1
 
 ### Patch Changes
