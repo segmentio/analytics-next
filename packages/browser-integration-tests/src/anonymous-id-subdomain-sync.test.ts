@@ -1,51 +1,10 @@
+import { join as joinPath } from 'path'
 import { test, expect, Page } from '@playwright/test'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { standaloneMock } from './helpers/standalone-mock'
 
-// Same minimal AJS 1.0-style loader snippet as ./standalone.html, inlined so it can be served
-// from two different (mocked) same-site origins without needing new static fixture files.
-const SNIPPET_HTML = `<!DOCTYPE html>
-<html>
-  <head>
-    <script>
-      !(function () {
-        var analytics = (window.analytics = window.analytics || [])
-        if (!analytics.initialize) {
-          if (analytics.invoked) {
-            window.console && console.error && console.error('Segment snippet included twice.')
-          } else {
-            analytics.invoked = !0
-            analytics.methods = ['trackSubmit','trackClick','trackLink','trackForm','pageview','identify','reset','group','track','ready','alias','debug','page','once','off','on','addSourceMiddleware','addIntegrationMiddleware','setAnonymousId','addDestinationMiddleware']
-            analytics.factory = function (e) {
-              return function () {
-                var t = Array.prototype.slice.call(arguments)
-                t.unshift(e)
-                analytics.push(t)
-                return analytics
-              }
-            }
-            for (var e = 0; e < analytics.methods.length; e++) {
-              var key = analytics.methods[e]
-              analytics[key] = analytics.factory(key)
-            }
-            analytics.load = function (key, e) {
-              var t = document.createElement('script')
-              t.type = 'text/javascript'
-              t.async = !0
-              t.src = 'https://cdn.segment.com/analytics.js/v1/' + key + '/analytics.min.js'
-              var n = document.getElementsByTagName('script')[0]
-              n.parentNode.insertBefore(t, n)
-              analytics._loadOptions = e
-              analytics._writeKey = key
-            }
-            analytics.SNIPPET_VERSION = '4.15.3'
-          }
-        }
-      })()
-    </script>
-  </head>
-  <body></body>
-</html>`
+// same fixture the other tests load via page.goto('/standalone.html'), served directly since these fake subdomains aren't behind the real http-server
+const STANDALONE_HTML_PATH = joinPath(__dirname, '..', 'standalone.html')
 
 const PARENT_DOMAIN = 'ajs-repro.test'
 const SUBDOMAIN_A = `http://a.${PARENT_DOMAIN}/`
@@ -70,18 +29,10 @@ test.describe(
 
     test.beforeEach(async ({ context }) => {
       await context.route(`${SUBDOMAIN_A}**`, (route) =>
-        route.fulfill({
-          status: 200,
-          contentType: 'text/html',
-          body: SNIPPET_HTML,
-        })
+        route.fulfill({ status: 200, path: STANDALONE_HTML_PATH })
       )
       await context.route(`${SUBDOMAIN_B}**`, (route) =>
-        route.fulfill({
-          status: 200,
-          contentType: 'text/html',
-          body: SNIPPET_HTML,
-        })
+        route.fulfill({ status: 200, path: STANDALONE_HTML_PATH })
       )
       await context.route(
         'https://cdn.segment.com/v1/projects/*/settings',
