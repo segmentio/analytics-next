@@ -5,6 +5,7 @@ import {
   flushAnalyticsCallsInNewTask,
   PreInitMethodCallBuffer,
   PreInitMethodName,
+  popPageContext,
 } from '..'
 import { Analytics } from '../../analytics'
 import { Context } from '../../context'
@@ -13,6 +14,7 @@ import { User } from '../../user'
 import { getBufferedPageCtxFixture } from '../../../test-helpers/fixtures'
 import * as GlobalAnalytics from '../../../lib/global-analytics-helper'
 import { setVersionType } from '../../../lib/version-type'
+import { BufferedPageContextDiscriminant } from '../../page'
 
 describe(PreInitMethodCallBuffer, () => {
   beforeEach(() => {
@@ -355,6 +357,47 @@ describe(AnalyticsBuffered, () => {
       expect(thenCb).not.toBeCalled()
       expect.assertions(2)
       return p
+    })
+  })
+})
+
+describe(popPageContext, () => {
+  const makeBPC = (referrer: string) => ({
+    __t: BufferedPageContextDiscriminant,
+    c: undefined,
+    p: '/',
+    u: 'https://example.com/',
+    s: '',
+    t: 'Test',
+    r: referrer,
+  })
+
+  function withDocumentReferrer(value: string, fn: () => void) {
+    const original = document.referrer
+    Object.defineProperty(document, 'referrer', { value, configurable: true })
+    try {
+      fn()
+    } finally {
+      Object.defineProperty(document, 'referrer', {
+        value: original,
+        configurable: true,
+      })
+    }
+  }
+
+  it('should use fresh document.referrer when buffered referrer is empty', () => {
+    withDocumentReferrer('https://www.google.com/', () => {
+      const args: unknown[] = [makeBPC('')]
+      const result = popPageContext(args)
+      expect(result!.referrer).toBe('https://www.google.com/')
+    })
+  })
+
+  it('should not override when both buffered and document.referrer are empty', () => {
+    withDocumentReferrer('', () => {
+      const args: unknown[] = [makeBPC('')]
+      const result = popPageContext(args)
+      expect(result!.referrer).toBe('')
     })
   })
 })

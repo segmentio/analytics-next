@@ -107,7 +107,16 @@ export const flushAnalyticsCallsInNewTask = (
 export const popPageContext = (args: unknown[]): PageContext | undefined => {
   if (hasBufferedPageContextAsLastArg(args)) {
     const ctx = args.pop() as BufferedPageContext
-    return createPageContext(ctx)
+    const pageCtx = createPageContext(ctx)
+    // Re-read referrer if the buffered value is empty (iOS Safari timing issue)
+    if (
+      !pageCtx.referrer &&
+      typeof document !== 'undefined' &&
+      document.referrer
+    ) {
+      return { ...pageCtx, referrer: document.referrer }
+    }
+    return pageCtx
   }
 }
 
