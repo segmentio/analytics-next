@@ -145,6 +145,41 @@ export default defineComponent({
 </script>
 ```
 
+### Expo Web
+Expo web leverages Metro as it's bundler. Since Analytics.js ships as a precompiled library we will want to ignore any transformations to avoid running into an error on build.
+
+1. Setup the custom transformer in `metro.config.js`
+
+```js
+module.exports = {
+  ...config,
+  transformer: {
+    ...transformer,
+    babelTransformerPath: require.resolve('./metroTransformer.cjs'),
+  }
+  // Your other metro config options
+}
+```
+
+2. Create a new `metroTransformer.js`
+
+```js
+
+const { transform } = require('metro-babel-transformer')
+
+module.exports.transform = async function customTransform(props) {
+  // Skipping transformation for precompiled file
+  if (
+    props.filename.includes('node_modules/@segment/analytics-next')
+  ) {
+    return { code: props.src, map: null }
+  }
+
+  return await transform(props)
+}
+```
+
+
 ## Support for Web Workers (Experimental)
  While this package does not support web workers out of the box, there are options:
 
