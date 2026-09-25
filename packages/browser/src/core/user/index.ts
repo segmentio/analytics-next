@@ -104,7 +104,9 @@ export class User implements WithId {
       (s) => s !== StoreType.Cookie
     )
 
-    const legacyUser = this.legacyUserStore.get(defaults.cookie.oldKey)
+    const legacyUser = this.legacyUserStore.get(
+      options.cookie?.oldKey ?? defaults.cookie.oldKey
+    )
     if (legacyUser && typeof legacyUser === 'object') {
       legacyUser.id && this.id(legacyUser.id)
       legacyUser.traits && this.traits(legacyUser.traits)
@@ -131,7 +133,9 @@ export class User implements WithId {
     const retId = this.identityStore.getAndSync(this.idKey)
     if (retId) return retId
 
-    const retLeg = this.legacyUserStore.get(defaults.cookie.oldKey)
+    const retLeg = this.legacyUserStore.get(
+      this.options.cookie?.oldKey ?? defaults.cookie.oldKey
+    )
     return retLeg ? (typeof retLeg === 'object' ? retLeg.id : retLeg) : null
   }
 
