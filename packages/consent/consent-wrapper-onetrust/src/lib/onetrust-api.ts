@@ -114,12 +114,10 @@ export const getNormalizedCategories = (
   groupIdMap?: Record<string, string>
 ): Categories => {
   return getAllGroups().reduce<Categories>((acc, group) => {
-    const groupId = groupIdMap?.[group.groupId] ?? group.groupId;
+    const groupId = groupIdMap?.[group.groupId] ?? group.groupId
     return {
       ...acc,
-      [groupId]: activeGroupIds.includes(
-        group.groupId
-      ),
+      [groupId]: activeGroupIds.includes(group.groupId),
     }
   }, {})
 }
