@@ -203,4 +203,30 @@ describe(getNormalizedCategories, () => {
       SOME_OTHER_GROUP: false,
     })
   })
+
+  it('should remap group ids with a groupIdMap', () => {
+    window.OneTrust = {
+      ...OneTrustMockGlobal,
+      GetDomainData: () => ({
+        ...domainDataMock,
+        Groups: ['1', '2', '3', '4', '5'].map((CustomGroupId) => ({
+          CustomGroupId,
+        })),
+      }),
+    }
+    const categories = getNormalizedCategories(['1', '2'], {
+      '1': 'necessary',
+      '2': 'performance',
+      '3': 'functional',
+      '4': 'targeting',
+      '5': 'other',
+    })
+    expect(categories).toEqual({
+      necessary: true,
+      performance: true,
+      functional: false,
+      targeting: false,
+      other: false,
+    })
+  })
 })
