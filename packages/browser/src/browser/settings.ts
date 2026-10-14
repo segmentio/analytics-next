@@ -22,6 +22,7 @@ interface VersionSettings {
 
 export interface RemoteIntegrationSettings {
   /* @deprecated - This does not indicate browser types anymore */
+
   type?: string
 
   versionSettings?: VersionSettings
