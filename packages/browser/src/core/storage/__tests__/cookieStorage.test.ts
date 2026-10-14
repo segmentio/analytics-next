@@ -55,4 +55,25 @@ describe('cookieStorage', () => {
       })
     })
   })
+
+  describe('numeric-looking string values', () => {
+    it('does not round a string beyond Number.MAX_SAFE_INTEGER', () => {
+      const cookie = new CookieStorage()
+      cookie.set('id', '7689174720735493772')
+      expect(cookie.get('id')).toBe('7689174720735493772')
+    })
+
+    it.each(['1e3', '1.50', '123456789012345678901234567890'])(
+      'does not mangle %s',
+      (value) => {
+        jar.set('id', value)
+        expect(new CookieStorage().get('id')).toBe(value)
+      }
+    )
+
+    it('still parses numbers that round-trip exactly', () => {
+      jar.set('id', '12345')
+      expect(new CookieStorage().get('id')).toBe(12345)
+    })
+  })
 })

@@ -40,6 +40,20 @@ beforeEach(function () {
 })
 
 describe('user', () => {
+  describe('numeric anonymous ids larger than Number.MAX_SAFE_INTEGER', () => {
+    const aid = '7689174720735493772'
+
+    it('survives a round trip through the cookie', () => {
+      new User().anonymousId(aid)
+      expect(new User().anonymousId()).toBe(aid)
+    })
+
+    it('is read back unchanged from a pre-existing cookie', () => {
+      jar.set('ajs_anonymous_id', aid)
+      expect(new User().anonymousId()).toBe(aid)
+    })
+  })
+
   const cookieKey = User.defaults.cookie.key
   const localStorageKey = User.defaults.localStorage.key
 

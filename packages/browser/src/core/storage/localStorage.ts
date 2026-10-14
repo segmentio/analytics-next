@@ -1,4 +1,5 @@
 import { StorageObject, Store } from './types'
+import { parseStoredValue } from './parseStoredValue'
 
 /**
  * Data storage using browser's localStorage
@@ -16,11 +17,7 @@ export class LocalStorage<Data extends StorageObject = StorageObject>
       if (val === null) {
         return null
       }
-      try {
-        return JSON.parse(val) ?? null
-      } catch (e) {
-        return (val ?? null) as unknown as Data[K] | null
-      }
+      return parseStoredValue(val) as Data[K] | null
     } catch (err) {
       this.localStorageWarning(key, 'unavailable')
       return null
