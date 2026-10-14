@@ -1,4 +1,4 @@
-import type { AnalyticsSnippet } from '@segment/analytics-next'
+import type { AnalyticsSnippet } from '@fernohq/analytics-next'
 
 declare global {
   interface Window {

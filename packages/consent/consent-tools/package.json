@@ -27,24 +27,24 @@
     "jest": "yarn run -T jest"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.67.0"
+    "@fernohq/analytics-next": ">=1.67.0"
   },
   "peerDependenciesMeta": {
-    "@segment/analytics-next": {
+    "@fernohq/analytics-next": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@fernohq/analytics-next": "workspace:^",
     "@internal/config": "workspace:^",
-    "@internal/test-helpers": "workspace:^",
-    "@segment/analytics-next": "workspace:^"
+    "@internal/test-helpers": "workspace:^"
   },
   "packageManager": "yarn@3.4.1",
   "license": "MIT",
   "repository": {
     "directory": "packages/consent/consent-tools",
     "type": "git",
-    "url": "https://github.com/segmentio/analytics-next"
+    "url": "https://github.com/fernohq/sdk"
   },
   "dependencies": {
     "tslib": "^2.4.1"

@@ -1,5 +1,5 @@
 import { createConsentStampingMiddleware } from '../consent-stamping'
-import { Context } from '@segment/analytics-next'
+import { Context } from '@fernohq/analytics-next'
 import { SourceMiddlewareFunction } from '../../types'
 
 describe(createConsentStampingMiddleware, () => {

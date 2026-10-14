@@ -1,5 +1,5 @@
-import { default as AnalyticsDefaultImport } from '@segment/analytics-node'
-import { Analytics as AnalyticsNamedImport } from '@segment/analytics-node'
+import { default as AnalyticsDefaultImport } from '@fernohq/analytics-node'
+import { Analytics as AnalyticsNamedImport } from '@fernohq/analytics-node'
 
 {
   // test named imports vs default imports

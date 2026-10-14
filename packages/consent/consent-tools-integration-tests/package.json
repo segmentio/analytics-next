@@ -17,11 +17,11 @@
     "hoistingLimits": "workspaces"
   },
   "devDependencies": {
+    "@fernohq/analytics-next": "workspace:^",
     "@internal/test-helpers": "workspace:^",
     "@playwright/test": "1.61.1",
     "@segment/analytics-consent-tools": "workspace:^",
     "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
-    "@segment/analytics-next": "workspace:^",
     "expect": "^29.4.1",
     "globby": "^11.0.2",
     "http-server": "14.1.1",

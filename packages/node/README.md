@@ -1,6 +1,6 @@
-# @segment/analytics-node
+# @fernohq/analytics-node
 
-https://www.npmjs.com/package/@segment/analytics-node
+https://www.npmjs.com/package/@fernohq/analytics-node
 
 ### OFFICIAL DOCUMENTATION (FULL)
 - https://segment.com/docs/connections/sources/catalog/libraries/server/node
@@ -24,7 +24,7 @@ Ferno authenticates project API keys as Bearer tokens and ingests SDK batches
 at `POST /events`. Configure the Node SDK as follows:
 
 ```ts
-import { Analytics } from '@segment/analytics-node'
+import { Analytics } from '@fernohq/analytics-node'
 
 const analytics = new Analytics({
   writeKey: process.env.FERNO_API_KEY!,
@@ -43,19 +43,19 @@ keys use the `ferno_pk_` prefix; keep them in environment variables.
 ### Install library
 ```bash
 # npm
-npm install @segment/analytics-node
+npm install @fernohq/analytics-node
 # yarn
-yarn add @segment/analytics-node
+yarn add @fernohq/analytics-node
 # pnpm
-pnpm install @segment/analytics-node
+pnpm install @fernohq/analytics-node
 ```
 
 ### Usage
 Assuming some express-like web framework.
 ```ts
-import { Analytics } from '@segment/analytics-node'
+import { Analytics } from '@fernohq/analytics-node'
 // or, if you use require:
-const { Analytics } = require('@segment/analytics-node')
+const { Analytics } = require('@fernohq/analytics-node')
 
 // instantiation
 const analytics = new Analytics({ writeKey: '<MY_WRITE_KEY>' })

@@ -1,4 +1,4 @@
-import type { CDNSettings } from '@segment/analytics-next'
+import type { CDNSettings } from '@fernohq/analytics-next'
 type RemotePlugin = NonNullable<CDNSettings['remotePlugins']>[0]
 
 export type DestinationSettingsBuilderConfig = Partial<RemotePlugin> & {

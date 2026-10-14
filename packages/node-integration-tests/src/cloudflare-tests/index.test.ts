@@ -10,7 +10,7 @@ const snapshotMatchers = {
       messageId: expect.any(String),
       context: {
         library: {
-          name: '@segment/analytics-node',
+          name: '@fernohq/analytics-node',
           version: expect.any(String),
         },
       },
@@ -77,7 +77,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -138,7 +138,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -193,7 +193,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -210,7 +210,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -228,7 +228,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -247,7 +247,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -265,7 +265,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -283,7 +283,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -341,7 +341,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -361,7 +361,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -387,7 +387,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -407,7 +407,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -433,7 +433,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },
@@ -453,7 +453,7 @@ describe('Analytics in Cloudflare workers', () => {
               },
               "context": {
                 "library": {
-                  "name": "@segment/analytics-node",
+                  "name": "@fernohq/analytics-node",
                   "version": Any<String>,
                 },
               },

@@ -2,9 +2,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: analytics-next
-  description: Analytics.js 2.0 — Segment's browser analytics SDK (@segment/analytics-next).
+  description: Ferno browser analytics SDK (@fernohq/analytics-next).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -14,8 +14,8 @@ metadata:
     - javascript
     - sdk
   links:
-    - title: npm — @segment/analytics-next
-      url: https://www.npmjs.com/package/@segment/analytics-next
+    - title: npm — @fernohq/analytics-next
+      url: https://www.npmjs.com/package/@fernohq/analytics-next
 spec:
   type: library
   lifecycle: production
@@ -27,7 +27,7 @@ metadata:
   name: analytics-core
   description: Shared core used by Segment's analytics SDKs (@segment/analytics-core).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -47,9 +47,9 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: analytics-node
-  description: Server-side Node analytics SDK (@segment/analytics-node).
+  description: Ferno server-side Node analytics SDK (@fernohq/analytics-node).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -58,8 +58,8 @@ metadata:
     - typescript
     - sdk
   links:
-    - title: npm — @segment/analytics-node
-      url: https://www.npmjs.com/package/@segment/analytics-node
+    - title: npm — @fernohq/analytics-node
+      url: https://www.npmjs.com/package/@fernohq/analytics-node
 spec:
   type: library
   lifecycle: production
@@ -71,7 +71,7 @@ metadata:
   name: analytics-consent-tools
   description: Consent-management tooling for Analytics.js (@segment/analytics-consent-tools).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -93,7 +93,7 @@ metadata:
   name: analytics-consent-wrapper-onetrust
   description: OneTrust consent wrapper for Analytics.js (@segment/analytics-consent-wrapper-onetrust).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -115,7 +115,7 @@ metadata:
   name: analytics-generic-utils
   description: Shared generic utilities for Segment analytics SDKs (@segment/analytics-generic-utils).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ
@@ -136,7 +136,7 @@ metadata:
   name: analytics-page-tools
   description: Page/URL helper utilities for Analytics.js (@segment/analytics-page-tools).
   annotations:
-    github.com/project-slug: segmentio/analytics-next
+    github.com/project-slug: fernoHQ/sdk
     github.com/team-slug: segmentio/data-collection
     jira/project-key: LIBRARIES
     pagerduty.com/service-id: POJL6ZQ

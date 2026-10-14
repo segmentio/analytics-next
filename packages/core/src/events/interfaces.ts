@@ -36,7 +36,7 @@ export interface CoreOptions {
   /**
    * Override the messageId. Under normal circumstances, this is not recommended -- but neccessary for deduping events.
    *
-   * **Currently, This option only works in `@segment/analytics-node`.**
+   * **Currently, This option only works in `@fernohq/analytics-node`.**
    */
   messageId?: string | undefined
   // ugh, this is ugly, but we allow literally any property to be passed to options (which get spread onto the event)

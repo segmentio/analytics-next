@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@fernohq/analytics-next'
 import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
 
 const analytics = new AnalyticsBrowser()

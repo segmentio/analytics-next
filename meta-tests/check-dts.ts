@@ -15,9 +15,9 @@ const execa = promisify(exec)
 // Get public packages programmatically
 const packages = getPackages(path.join(__dirname, '..'))
 const publicPackageNames = [
-  '@segment/analytics-next',
+  '@fernohq/analytics-next',
   '@segment/analytics-core',
-  '@segment/analytics-node',
+  '@fernohq/analytics-node',
 ]
 
 const allPublicPackageDirNames = packages

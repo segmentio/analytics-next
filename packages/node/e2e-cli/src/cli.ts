@@ -6,7 +6,7 @@
  * sends events through the analytics SDK, and outputs results as JSON.
  */
 
-import { Analytics } from '@segment/analytics-node'
+import { Analytics } from '@fernohq/analytics-node'
 
 interface AnalyticsEvent {
   type: 'identify' | 'track' | 'page' | 'screen' | 'alias' | 'group'

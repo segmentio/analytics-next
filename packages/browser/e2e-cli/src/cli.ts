@@ -220,7 +220,7 @@ async function main(): Promise<void> {
     ;(global as any).XMLHttpRequest = window.XMLHttpRequest
 
     // Import the browser SDK after setting up globals
-    const { AnalyticsBrowser } = await import('@segment/analytics-next')
+    const { AnalyticsBrowser } = await import('@fernohq/analytics-next')
 
     // Check if batching mode is enabled via environment variable
     const useBatching = process.env.BROWSER_BATCHING === 'true'
@@ -332,7 +332,7 @@ async function main(): Promise<void> {
 }
 
 async function sendEvent(
-  analytics: import('@segment/analytics-next').Analytics,
+  analytics: import('@fernohq/analytics-next').Analytics,
   event: AnalyticsEvent
 ): Promise<void> {
   switch (event.type) {

@@ -1,6 +1,6 @@
 # analytics-browser e2e-cli
 
-E2E test CLI for the [@segment/analytics-next](https://github.com/segmentio/analytics-next) browser SDK. Runs the browser SDK inside a jsdom environment, accepts a JSON input describing events and SDK configuration, and outputs results as JSON.
+E2E test CLI for the [@fernohq/analytics-next](https://github.com/fernohq/sdk) browser SDK. Runs the browser SDK inside a jsdom environment, accepts a JSON input describing events and SDK configuration, and outputs results as JSON.
 
 ## Setup
 

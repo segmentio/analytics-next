@@ -38,7 +38,7 @@ export interface SegmentEventStub {
   }
 }
 /**
- * Note: we aren't importing from @segment/analytics-next in src code, because we don't want
+ * Note: we aren't importing from @fernohq/analytics-next in src code, because we don't want
  * to introduce a doependency on the analytics-next package, which would trigger errors for customers if they have skipLibCheck set to false (which is default).
  * @example { "Amplitude (Actions)":  { .... }}
  */

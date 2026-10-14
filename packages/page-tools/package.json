@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/segmentio/analytics-next",
+    "url": "https://github.com/fernohq/sdk",
     "directory": "packages/page-tools"
   },
   "license": "MIT",

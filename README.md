@@ -30,8 +30,8 @@ the Segment Analytics SDK packages.
 
 ## Packages
 
-- [@segment/analytics-next](packages/browser#readme): Analytics.js SDK for **web browsers**
-- [@segment/analytics-node](packages/node#readme): Analytics.js SDK for **Node.js**
+- [@fernohq/analytics-next](packages/browser#readme): Ferno SDK for **web browsers**
+- [@fernohq/analytics-node](packages/node#readme): Ferno SDK for **Node.js**
 
 ## Using with Ferno
 
@@ -47,14 +47,14 @@ URL; for local development use `http://localhost:8080`.
 Install the browser SDK:
 
 ```sh
-npm install @segment/analytics-next
+npm install @fernohq/analytics-next
 ```
 
 Configure Ferno as the Segment.io transport. Supplying `cdnSettings` keeps the
 SDK from requesting source settings from Segment's CDN.
 
 ```ts
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@fernohq/analytics-next'
 
 const FERNO_API_URL = 'https://api.useferno.com'
 const FERNO_API_KEY = 'ferno_pk_your_project_key'
@@ -95,14 +95,14 @@ embed a credential that is not intended for browser use.
 Install the Node SDK:
 
 ```sh
-npm install @segment/analytics-node
+npm install @fernohq/analytics-node
 ```
 
 Use the Ferno project API key as a Bearer token and route batches to
 `/events`:
 
 ```ts
-import { Analytics } from '@segment/analytics-node'
+import { Analytics } from '@fernohq/analytics-node'
 
 const analytics = new Analytics({
   writeKey: process.env.FERNO_API_KEY!,

@@ -20,7 +20,7 @@ export type Tag = {
 /**
  *
  * @returns list of tags
- * @example ["@segment/analytics-core@1.0.0", "@segment/analytics-next@2.1.1"]
+ * @example ["@segment/analytics-core@1.0.0", "@fernohq/analytics-next@2.1.1"]
  */
 export const getCurrentGitTags = async (): Promise<Tag[]> => {
   const { stdout, stderr, code } = await spawn('git', [
@@ -85,7 +85,7 @@ export const getChangelogPath = (packageName: string): string | undefined => {
 /**
  *
  * @returns list of tags
- * @example ["@segment/analytics-core@1.0.0", "@segment/analytics-next@2.1.1"]
+ * @example ["@segment/analytics-core@1.0.0", "@fernohq/analytics-next@2.1.1"]
  */
 const createGithubRelease = async (
   tag: string,
@@ -141,13 +141,13 @@ const packTarball = async (tag: Tag): Promise<string | undefined> => {
 }
 
 /**
- * For @segment/analytics-next specifically, also attach the built browser
+ * For @fernohq/analytics-next specifically, also attach the built browser
  * UMD/standalone bundles - the CDN-loadable <script> artifacts, distinct
  * from the npm tarball, that consumers commonly want a direct download link
  * for pinned to a specific tagged release.
  */
 const getBrowserBundleAssets = (tag: Tag): string[] => {
-  if (tag.name !== '@segment/analytics-next') return []
+  if (tag.name !== '@fernohq/analytics-next') return []
 
   const result = packages.find((p) => p.package.name === tag.name)
   if (!result) return []
@@ -178,7 +178,7 @@ const extractPartsFromTag = (rawTag: string): Tag | undefined => {
 
 /**
  *
- * @param rawTags - string delimited list of tags (e.g. `@segment/analytics-next@2.1.1 @segment/analytics-core@1.0.0`)
+ * @param rawTags - string delimited list of tags (e.g. `@fernohq/analytics-next@2.1.1 @segment/analytics-core@1.0.0`)
  */
 export const parseRawTags = (rawTags: string): Tag[] => {
   return rawTags

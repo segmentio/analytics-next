@@ -9,12 +9,12 @@
     "start": "yarn http-server . -o /pages",
     "dev": "yarn concurrently 'yarn start' 'yarn watch'",
     "watch": "yarn concurrently 'yarn:watch:*'",
-    "watch:ajs": "ASSET_PATH='/node_modules/@segment/analytics-next/dist/umd/' yarn workspace @segment/analytics-next watch",
+    "watch:ajs": "ASSET_PATH='/node_modules/@fernohq/analytics-next/dist/umd/' yarn workspace @fernohq/analytics-next watch",
     "concurrently": "yarn run -T concurrently"
   },
   "dependencies": {
-    "@segment/analytics-consent-wrapper-onetrust": "workspace:^",
-    "@segment/analytics-next": "workspace:^"
+    "@fernohq/analytics-next": "workspace:^",
+    "@segment/analytics-consent-wrapper-onetrust": "workspace:^"
   },
   "devDependencies": {
     "http-server": "14.1.1"

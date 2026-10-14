@@ -47,10 +47,10 @@
     "tslib": "^2.4.1"
   },
   "peerDependencies": {
-    "@segment/analytics-next": ">=1.67.0"
+    "@fernohq/analytics-next": ">=1.67.0"
   },
   "peerDependenciesMeta": {
-    "@segment/analytics-next": {
+    "@fernohq/analytics-next": {
       "optional": true
     }
   },
@@ -59,7 +59,7 @@
   "repository": {
     "directory": "packages/consent/consent-wrapper-onetrust",
     "type": "git",
-    "url": "https://github.com/segmentio/analytics-next"
+    "url": "https://github.com/fernohq/sdk"
   },
   "devDependencies": {
     "@internal/config-webpack": "workspace:^",

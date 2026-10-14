@@ -74,7 +74,7 @@ pnpm add @segment/analytics-consent-wrapper-onetrust
 
 ```ts
 import { withOneTrust } from '@segment/analytics-consent-wrapper-onetrust'
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@fernohq/analytics-next'
 
 export const analytics = new AnalyticsBrowser()
 

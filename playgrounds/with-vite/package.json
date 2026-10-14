@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@segment/analytics-next": "workspace:^",
+    "@fernohq/analytics-next": "workspace:^",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },

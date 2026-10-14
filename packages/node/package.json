@@ -1,14 +1,17 @@
 {
-  "name": "@segment/analytics-node",
+  "name": "@fernohq/analytics-node",
   "version": "3.1.0",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "directory": "packages/node",
     "type": "git",
-    "url": "https://github.com/segmentio/analytics-next"
+    "url": "https://github.com/fernohq/sdk"
   },
   "files": [
     "dist/",
@@ -20,7 +23,7 @@
     "node": ">=20"
   },
   "scripts": {
-    ".": "yarn run -T turbo run --filter=@segment/analytics-node",
+    ".": "yarn run -T turbo run --filter=@fernohq/analytics-node",
     "test": "yarn jest",
     "lint": "yarn concurrently 'yarn:eslint .' 'yarn:tsc --noEmit'",
     "build": "rm -rf dist && yarn concurrently 'yarn:build:*'",

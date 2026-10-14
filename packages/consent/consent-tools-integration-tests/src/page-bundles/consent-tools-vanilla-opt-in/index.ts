@@ -1,4 +1,4 @@
-import { AnalyticsBrowser } from '@segment/analytics-next'
+import { AnalyticsBrowser } from '@fernohq/analytics-next'
 import { initMockConsentManager } from '../helpers/mock-cmp'
 import { withMockCMP } from '../helpers/mock-cmp-wrapper'
 

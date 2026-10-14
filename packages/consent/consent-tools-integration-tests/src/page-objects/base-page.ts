@@ -1,6 +1,6 @@
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 import { Page, Route, Request } from '@playwright/test'
-import { SegmentEvent } from '@segment/analytics-next'
+import { SegmentEvent } from '@fernohq/analytics-next'
 import { CoreExtraContext } from '@segment/analytics-core'
 
 export abstract class BasePage {

@@ -20,7 +20,7 @@ You have a couple options:
 
 For example: 
 ```
-yarn run -T turbo run build --filter=@segment/analytics-next
+yarn run -T turbo run build --filter=@fernohq/analytics-next
 ```
 or
 ```

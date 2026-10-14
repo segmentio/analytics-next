@@ -28,8 +28,8 @@
     "release:publish-only": "changeset publish && git push origin HEAD:master --follow-tags --no-verify && yarn scripts purge-cdn-cache",
     "version-run-all": "yarn workspaces foreach -vpt --no-private run version",
     "core": "yarn workspace @segment/analytics-core",
-    "browser": "yarn workspace @segment/analytics-next",
-    "node": "yarn workspace @segment/analytics-node",
+    "browser": "yarn workspace @fernohq/analytics-next",
+    "node": "yarn workspace @fernohq/analytics-node",
     "scripts": "yarn workspace @internal/scripts",
     "clean": "bash scripts/clean.sh",
     "turbo": "turbo"
@@ -72,8 +72,8 @@
     "webpack-dev-server": "^4.15.1"
   },
   "resolutions": {
-    "@segment/analytics-next": "workspace:*",
-    "@segment/analytics-node": "workspace:*",
+    "@fernohq/analytics-next": "workspace:*",
+    "@fernohq/analytics-node": "workspace:*",
     "@segment/analytics-core": "workspace:*",
     "js-cookie@^3.0.7": "patch:js-cookie@npm%3A3.0.7#./.yarn/patches/js-cookie-npm-3.0.7-a7a36a5505.patch",
     "@babel/traverse": "^7.29.7",

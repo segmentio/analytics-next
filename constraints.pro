@@ -22,8 +22,8 @@ gen_enforced_dependency(WorkspaceCwd, DependencyIdent, DependencyRange2, Depende
     'react', 'react-dom',
     '@types/react',
     % Allow the usage of workspace^ -- there is a better way to do this =)
-    '@segment/analytics-next',
-    '@segment/analytics-node',
+    '@fernohq/analytics-next',
+    '@fernohq/analytics-node',
     '@segment/analytics-core',
     '@segment/analytics-consent-wrapper-onetrust',
     '@segment/analytics-consent-tools',
@@ -56,7 +56,7 @@ gen_enforced_field(WorkspaceCwd, 'lint-staged', null) :-
 % Enforces the repository field for all public workspaces while removing it from private workspaces
 gen_enforced_field(WorkspaceCwd, 'repository.type', 'git') :-
   \+ workspace_field(WorkspaceCwd, 'private', true).
-gen_enforced_field(WorkspaceCwd, 'repository.url', 'https://github.com/segmentio/analytics-next') :-
+gen_enforced_field(WorkspaceCwd, 'repository.url', 'https://github.com/fernohq/sdk') :-
   \+ workspace_field(WorkspaceCwd, 'private', true).
 gen_enforced_field(WorkspaceCwd, 'repository.directory', WorkspaceCwd) :-
   \+ workspace_field(WorkspaceCwd, 'private', true).

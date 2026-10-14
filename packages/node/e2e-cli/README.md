@@ -1,6 +1,6 @@
 # analytics-node e2e-cli
 
-E2E test CLI for the [@segment/analytics-node](https://github.com/segmentio/analytics-next) Node.js SDK. Accepts a JSON input describing events and SDK configuration, sends them through the real SDK, and outputs results as JSON.
+E2E test CLI for the [@fernohq/analytics-node](https://github.com/fernohq/sdk) Node.js SDK. Accepts a JSON input describing events and SDK configuration, sends them through the real SDK, and outputs results as JSON.
 
 ## Setup
 

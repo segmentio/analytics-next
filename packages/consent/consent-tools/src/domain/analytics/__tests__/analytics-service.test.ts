@@ -1,7 +1,7 @@
 import { AnalyticsService, getInitializedAnalytics } from '../analytics-service'
 import { analyticsMock } from '../../../test-helpers/mocks'
 import { ValidationError } from '../../validation/validation-error'
-import { Context } from '@segment/analytics-next'
+import { Context } from '@fernohq/analytics-next'
 import { CDNSettingsBuilder } from '@internal/test-helpers'
 
 const minimalCDNSettings = new CDNSettingsBuilder().build()

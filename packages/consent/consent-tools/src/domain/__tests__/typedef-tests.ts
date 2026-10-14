@@ -1,7 +1,7 @@
 import type {
   AnalyticsSnippet,
   AnalyticsBrowser,
-} from '@segment/analytics-next'
+} from '@fernohq/analytics-next'
 import { createWrapper, AnyAnalytics } from '../../index'
 
 type Extends<T, U> = T extends U ? true : false

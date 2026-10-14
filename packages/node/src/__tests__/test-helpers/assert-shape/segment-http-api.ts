@@ -12,7 +12,7 @@ export const httpClientOptionsBodyMatcher = {
   _metadata: expect.any(Object),
   context: {
     library: {
-      name: '@segment/analytics-node',
+      name: '@fernohq/analytics-node',
       version: expect.any(String),
     },
   },
