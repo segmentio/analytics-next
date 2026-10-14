@@ -15,7 +15,11 @@ export function normalize(
 
   delete json.options
 
-  json.writeKey = settings?.apiKey
+  if (settings?.authMode === 'bearer') {
+    delete json.writeKey
+  } else {
+    json.writeKey = settings?.apiKey
+  }
 
   json.userId = json.userId || user.id()
   json.anonymousId = json.anonymousId || user.anonymousId()

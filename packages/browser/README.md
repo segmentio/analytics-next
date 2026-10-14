@@ -14,6 +14,43 @@ Analytics Next (aka Analytics 2.0) is the latest version of Segment’s JavaScri
 
 # 🏎️ Quickstart
 
+## Ferno
+
+Use a Ferno project API key (`ferno_pk_...`) as a Bearer token and point the
+Segment.io integration at Ferno's `/events` endpoint. Ferno expects batched
+requests, so enable the browser batching strategy.
+
+```ts
+import { AnalyticsBrowser } from '@segment/analytics-next'
+
+const analytics = AnalyticsBrowser.load(
+  {
+    writeKey: 'ferno_pk_your_project_key',
+    cdnSettings: {
+      integrations: {
+        'Segment.io': { apiKey: 'ferno_pk_your_project_key' },
+      },
+    },
+  },
+  {
+    integrations: {
+      'Segment.io': {
+        apiHost: 'https://api.useferno.com',
+        apiPath: '/events',
+        authMode: 'bearer',
+        deliveryStrategy: {
+          strategy: 'batching',
+          config: { size: 10, timeout: 5000 },
+        },
+      },
+    },
+  }
+)
+```
+
+For local API development, use `apiHost: 'http://localhost:8080'`. Configure
+the API's CORS allowlist for the browser origin.
+
 The easiest and quickest way to get started with Analytics 2.0 is to [use it through Segment](#-using-with-segment). Alternatively, you can [install it through NPM](#-using-as-an-npm-package) and do the instrumentation yourself.
 
 ## 💡 Using with Segment

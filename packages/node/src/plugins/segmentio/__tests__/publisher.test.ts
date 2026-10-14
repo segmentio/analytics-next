@@ -114,6 +114,22 @@ it('supports multiple events in a batch', async () => {
   validateMakeReqInputs(...contexts)
 })
 
+it('sends all Segment event types in the existing batch envelope', async () => {
+  const { plugin: segmentPlugin } = createTestNodePlugin({ flushAt: 6 })
+  const contexts = [
+    new Context(eventFactory.track('track', {}, { userId: 'user' })),
+    new Context(eventFactory.identify('user', {})),
+    new Context(eventFactory.page(null, 'page', {}, { userId: 'user' })),
+    new Context(eventFactory.screen(null, 'screen', {}, { userId: 'user' })),
+    new Context(eventFactory.group('group', {}, { userId: 'user' })),
+    new Context(eventFactory.alias('user', 'previous')),
+  ]
+  contexts.forEach((context) => void segmentPlugin[context.event.type](context))
+
+  expect(makeReqSpy).toHaveBeenCalledTimes(1)
+  expect(JSON.parse(getLastRequest().body).batch).toHaveLength(6)
+})
+
 it('supports waiting a max amount of time before sending', async () => {
   const { plugin: segmentPlugin } = createTestNodePlugin({
     maxRetries: 3,
@@ -1070,6 +1086,27 @@ describe('retry semantics', () => {
     expect(makeReqSpy).toHaveBeenCalledTimes(1)
     const [first] = getAllRequests()
     expect(first.headers['Authorization']).toMatch(/^Basic /)
+    expect(JSON.parse(first.body).writeKey).toBe('test-write-key')
+  })
+
+  it('uses bearer auth and omits writeKey from the payload', async () => {
+    const { plugin: segmentPlugin } = createTestNodePlugin({
+      writeKey: 'ferno_pk_example',
+      authMode: 'bearer',
+      path: '/events',
+      host: 'https://api.example.com',
+      flushAt: 1,
+    })
+
+    await segmentPlugin.track(trackEvent())
+
+    const [request] = getAllRequests()
+    expect(request.url).toBe('https://api.example.com/events')
+    expect(request.headers['Authorization']).toBe('Bearer ferno_pk_example')
+    const body = JSON.parse(request.body)
+    expect(body.batch).toHaveLength(1)
+    expect(body.writeKey).toBeUndefined()
+    expect(body.sentAt).toBeTruthy()
   })
 
   it('T21 Safety cap: persistent 429 with Retry-After eventually fails', async () => {

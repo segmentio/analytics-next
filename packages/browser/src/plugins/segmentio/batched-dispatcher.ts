@@ -85,7 +85,10 @@ export default function batch(
   apiHost: string,
   config?: BatchingDispatchConfig,
   httpConfig?: ResolvedHttpConfig,
-  protocol: 'http' | 'https' = 'https'
+  protocol: 'http' | 'https' = 'https',
+  apiPath?: string,
+  authMode: 'segment-basic' | 'bearer' = 'segment-basic',
+  apiKey?: string
 ) {
   let buffer: object[] = []
   let pageUnloaded = false
@@ -108,17 +111,24 @@ export default function batch(
 
     const writeKey = (batch[0] as SegmentEvent)?.writeKey
 
-    // Remove sentAt from every event as batching only needs a single timestamp
-    const updatedBatch = batch.map((event) => {
-      const { sentAt, ...newEvent } = event as SegmentEvent
-      return newEvent
-    })
+    const updatedBatch = apiPath
+      ? batch
+      : batch.map((event) => {
+          const { sentAt, ...newEvent } = event as SegmentEvent
+          return newEvent
+        })
 
-    const headers = createHeaders(config?.headers)
+    const customAuth = authMode === 'bearer'
+    const headers = createHeaders(
+      config?.headers,
+      apiPath !== undefined || customAuth
+    )
     if (retryCount > 0) {
       headers['X-Retry-Count'] = String(retryCount)
     }
-    if (writeKey) {
+    if (customAuth && apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`
+    } else if (writeKey) {
       const authtoken = btoa(writeKey + ':')
       headers['Authorization'] = `Basic ${authtoken}`
     }
@@ -127,13 +137,13 @@ export default function batch(
       apiHost.startsWith('http://') || apiHost.startsWith('https://')
         ? ''
         : `${protocol}://`
-    return fetch(`${scheme}${apiHost}/b`, {
+    return fetch(`${scheme}${apiHost}${apiPath ?? '/b'}`, {
       credentials: config?.credentials,
       keepalive: config?.keepalive || pageUnloaded,
       headers,
       method: 'post',
       body: JSON.stringify({
-        writeKey,
+        ...(customAuth ? {} : { writeKey }),
         batch: updatedBatch,
         sentAt: new Date().toISOString(),
       }),

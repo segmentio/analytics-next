@@ -17,6 +17,29 @@ https://www.npmjs.com/package/@segment/analytics-node
 - Web Workers / Browser (no device mode destination support)
 
 ## Quick Start
+
+### Ferno
+
+Ferno authenticates project API keys as Bearer tokens and ingests SDK batches
+at `POST /events`. Configure the Node SDK as follows:
+
+```ts
+import { Analytics } from '@segment/analytics-node'
+
+const analytics = new Analytics({
+  writeKey: process.env.FERNO_API_KEY!,
+  host: process.env.FERNO_API_URL ?? 'https://api.useferno.com',
+  path: '/events',
+  authMode: 'bearer',
+})
+
+analytics.track({ userId: 'user-123', event: 'signup' })
+await analytics.closeAndFlush()
+```
+
+For local development, set `FERNO_API_URL=http://localhost:8080`. Ferno API
+keys use the `ferno_pk_` prefix; keep them in environment variables.
+
 ### Install library
 ```bash
 # npm

@@ -51,6 +51,7 @@ export class Analytics extends NodeEmitter implements CoreAnalytics {
         writeKey: settings.writeKey,
         host: settings.host,
         path: settings.path,
+        authMode: settings.authMode,
         maxRetries: settings.maxRetries ?? 10,
         flushAt: settings.flushAt ?? settings.maxEventsInBatch ?? 15,
         httpRequestTimeout: settings.httpRequestTimeout,

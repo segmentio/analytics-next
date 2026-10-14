@@ -15,6 +15,8 @@ export interface AnalyticsSettings {
    * The API path route. Default: "/v1/batch"
    */
   path?: string
+  /** Authentication mode. Defaults to Segment Basic auth. */
+  authMode?: 'segment-basic' | 'bearer'
   /**
    * The number of times to retry flushing a batch. Default: 10
    */
