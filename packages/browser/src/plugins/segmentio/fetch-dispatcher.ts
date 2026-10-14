@@ -18,7 +18,10 @@ export type Dispatcher = (
 
 export default function (
   config?: StandardDispatcherConfig,
-  httpConfig?: ResolvedHttpConfig
+  httpConfig?: ResolvedHttpConfig,
+  authMode: 'segment-basic' | 'bearer' = 'segment-basic',
+  apiKey?: string,
+  jsonContentType = authMode === 'bearer'
 ): {
   dispatch: Dispatcher
 } {
@@ -27,9 +30,12 @@ export default function (
     body: object,
     retryCountHeader?: number
   ): Promise<unknown> {
-    const headers = createHeaders(config?.headers)
+    const customAuth = authMode === 'bearer'
+    const headers = createHeaders(config?.headers, jsonContentType)
     const writeKey = (body as SegmentEvent)?.writeKey
-    if (writeKey) {
+    if (customAuth && apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`
+    } else if (writeKey) {
       const authtoken = btoa(writeKey + ':')
       headers['Authorization'] = `Basic ${authtoken}`
     }

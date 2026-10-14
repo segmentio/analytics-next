@@ -196,7 +196,12 @@ export interface AnalyticsSettings {
  */
 export type SegmentioIntegrationInitOptions = Pick<
   SegmentioSettings,
-  'apiHost' | 'protocol' | 'deliveryStrategy' | 'httpConfig'
+  | 'apiHost'
+  | 'apiPath'
+  | 'authMode'
+  | 'protocol'
+  | 'deliveryStrategy'
+  | 'httpConfig'
 >
 
 /**

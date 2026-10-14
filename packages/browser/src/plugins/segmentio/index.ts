@@ -21,6 +21,8 @@ import {
 export type SegmentioSettings = {
   apiKey: string
   apiHost?: string
+  apiPath?: string
+  authMode?: 'segment-basic' | 'bearer'
   protocol?: 'http' | 'https'
 
   addBundledMetadata?: boolean
@@ -86,8 +88,13 @@ export function segmentio(
   const flushing = false
 
   const apiHost = settings?.apiHost ?? SEGMENT_API_HOST
+  const apiPath = settings?.apiPath
+  const authMode = settings?.authMode ?? 'segment-basic'
   const protocol = settings?.protocol ?? 'https'
-  const remote = `${protocol}://${apiHost}`
+  const remote =
+    apiHost.startsWith('http://') || apiHost.startsWith('https://')
+      ? apiHost
+      : `${protocol}://${apiHost}`
 
   const cdnHttpConfig = (
     integrations?.['Segment.io'] as Record<string, unknown> | undefined
@@ -111,8 +118,22 @@ export function segmentio(
     deliveryStrategy &&
     'strategy' in deliveryStrategy &&
     deliveryStrategy.strategy === 'batching'
-      ? batch(apiHost, deliveryStrategy.config, resolvedHttpConfig, protocol)
-      : standard(deliveryStrategy?.config, resolvedHttpConfig)
+      ? batch(
+          apiHost,
+          deliveryStrategy.config,
+          resolvedHttpConfig,
+          protocol,
+          apiPath,
+          authMode,
+          writeKey
+        )
+      : standard(
+          deliveryStrategy?.config,
+          resolvedHttpConfig,
+          authMode,
+          writeKey,
+          apiPath !== undefined
+        )
 
   async function send(ctx: Context): Promise<Context> {
     if (isOffline()) {
@@ -124,7 +145,7 @@ export function segmentio(
 
     inflightEvents.add(ctx)
 
-    const path = ctx.event.type.charAt(0)
+    const path = apiPath ?? `/${ctx.event.type.charAt(0)}`
 
     let json = toFacade(ctx.event).json()
 
@@ -154,7 +175,7 @@ export function segmentio(
 
     return client
       .dispatch(
-        `${remote}/${path}`,
+        `${remote}${path}`,
         normalize(analytics, json, settings, integrations, ctx),
         attempts
       )

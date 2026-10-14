@@ -1,8 +1,9 @@
 export const createHeaders = (
-  headerSettings: AdditionalHeaders | undefined
+  headerSettings: AdditionalHeaders | undefined,
+  json = false
 ): Record<string, string> => {
   return {
-    'Content-Type': 'text/plain',
+    'Content-Type': json ? 'application/json' : 'text/plain',
     ...(typeof headerSettings === 'function'
       ? headerSettings()
       : headerSettings),

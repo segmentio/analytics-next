@@ -77,6 +77,7 @@ interface PendingItem {
 export interface PublisherProps {
   host?: string
   path?: string
+  authMode?: 'segment-basic' | 'bearer'
   flushInterval: number
   flushAt: number
   maxRetries: number
@@ -107,6 +108,7 @@ export class Publisher {
   private _httpClient: HTTPClient
   private _writeKey: string
   private _basicAuth: string
+  private _authMode: 'segment-basic' | 'bearer'
   private _tokenManager: TokenManager | undefined
   private _maxTotalBackoffDuration: number
   private _maxRateLimitDuration: number
@@ -121,6 +123,7 @@ export class Publisher {
     {
       host,
       path,
+      authMode,
       maxRetries,
       flushAt,
       flushInterval,
@@ -147,6 +150,7 @@ export class Publisher {
     this._httpClient = httpClient
     this._writeKey = writeKey
     this._basicAuth = b64encode(`${writeKey}:`)
+    this._authMode = authMode ?? 'segment-basic'
     this._maxTotalBackoffDuration = maxTotalBackoffDuration ?? 43200
     this._maxRateLimitDuration = maxRateLimitDuration ?? 43200
 
@@ -398,21 +402,27 @@ export class Publisher {
           ...(totalAttempts > 1
             ? { 'X-Retry-Count': String(totalAttempts - 1) }
             : {}),
-          // Prefer OAuth Bearer token when available; otherwise fall back to Basic auth with write key.
+          // OAuth takes precedence over configured auth mode.
           ...(authString
             ? { Authorization: authString }
+            : this._authMode === 'bearer'
+            ? { Authorization: `Bearer ${this._writeKey}` }
             : { Authorization: `Basic ${this._basicAuth}` }),
+        }
+
+        const body: Record<string, unknown> = {
+          batch: events,
+          sentAt: new Date(),
+        }
+        if (this._authMode === 'segment-basic') {
+          body.writeKey = this._writeKey
         }
 
         const request: HTTPClientRequest = {
           url: this._url,
           method: 'POST',
           headers: headers,
-          body: JSON.stringify({
-            batch: events,
-            writeKey: this._writeKey,
-            sentAt: new Date(),
-          }),
+          body: JSON.stringify(body),
           httpRequestTimeout: this._httpRequestTimeout,
         }
 
