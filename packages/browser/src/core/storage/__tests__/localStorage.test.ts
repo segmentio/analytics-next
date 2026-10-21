@@ -13,6 +13,16 @@ describe('LocalStorage', function () {
   })
 
   describe('#get', function () {
+    it('does not round a raw numeric string beyond Number.MAX_SAFE_INTEGER', function () {
+      localStorage.setItem('id', '7689174720735493772')
+      expect(store.get('id')).toBe('7689174720735493772')
+    })
+
+    it('round-trips a numeric string written through #set', function () {
+      store.set('id', '7689174720735493772')
+      expect(store.get('id')).toBe('7689174720735493772')
+    })
+
     it('should return null if localStorage throws an error (or does not exist)', function () {
       const getItemSpy = jest
         .spyOn(global.Storage.prototype, 'getItem')

@@ -1,6 +1,7 @@
 import { Store, StorageObject } from './types'
 import jar from 'js-cookie'
 import { tld } from '../user/tld'
+import { parseStoredValue } from './parseStoredValue'
 
 const ONE_YEAR = 365
 
@@ -54,11 +55,7 @@ export class CookieStorage<Data extends StorageObject = StorageObject>
         return null
       }
 
-      try {
-        return JSON.parse(value) ?? null
-      } catch (e) {
-        return (value ?? null) as unknown as Data[K] | null
-      }
+      return parseStoredValue(value) as Data[K] | null
     } catch (e) {
       return null
     }

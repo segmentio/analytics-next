@@ -40,6 +40,42 @@ beforeEach(function () {
 })
 
 describe('user', () => {
+  describe('numeric anonymous ids larger than Number.MAX_SAFE_INTEGER', () => {
+    const aid = '7689174720735493772'
+
+    it('survives a round trip through the cookie', () => {
+      new User().anonymousId(aid)
+      expect(new User().anonymousId()).toBe(aid)
+    })
+
+    it('is read back unchanged from a pre-existing cookie', () => {
+      jar.set('ajs_anonymous_id', aid)
+      expect(new User().anonymousId()).toBe(aid)
+    })
+
+    // localStorage JSON-quotes strings, so only the cookie path (the sole store
+    // when localStorage is unavailable or excluded) can mangle ids.
+    const cookieOnly = { storage: { stores: [StoreType.Cookie] } }
+
+    it('applies to user ids as well', () => {
+      new User(cookieOnly).id(aid)
+      expect(new User(cookieOnly).id()).toBe(aid)
+    })
+
+    it('applies to group ids as well', () => {
+      new Group(cookieOnly).id(aid)
+      expect(new Group(cookieOnly).id()).toBe(aid)
+    })
+
+    it('does not reset the anonymousId when the same large user id is set again', () => {
+      const user = new User(cookieOnly)
+      user.id(aid)
+      const anonId = user.anonymousId()
+      user.id(aid)
+      expect(user.anonymousId()).toBe(anonId)
+    })
+  })
+
   const cookieKey = User.defaults.cookie.key
   const localStorageKey = User.defaults.localStorage.key
 
