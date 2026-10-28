@@ -208,6 +208,21 @@ describe('High level "integration" tests', () => {
         C0005: false,
       })
     })
+
+    it('should remap group ids when groupIdMap is configured', async () => {
+      const groupIdMap = { '1': 'necessary', '2': 'performance' }
+      withOneTrust(analyticsMock, { groupIdMap })
+      OneTrustMockGlobal.GetDomainData.mockReturnValue({
+        ...domainDataMock,
+        Groups: [{ CustomGroupId: '1' }, { CustomGroupId: '2' }],
+      })
+      getNormalizedActiveGroupIds.mockImplementation(() => ['1'])
+      const categories = createWrapperSpyHelper.getCategories()
+      expect(categories).toEqual({
+        necessary: true,
+        performance: false,
+      })
+    })
   })
 
   describe('Consent changed', () => {
@@ -248,6 +263,34 @@ describe('High level "integration" tests', () => {
         [domainGroupMock.StrictlyNeccessary.CustomGroupId]: true,
         [domainGroupMock.Performance.CustomGroupId]: true,
         [domainGroupMock.Targeting.CustomGroupId]: false,
+      })
+    })
+
+    it('should remap group ids on consent changed when groupIdMap is configured', async () => {
+      const groupIdMap = { '1': 'necessary', '2': 'performance' }
+      withOneTrust(analyticsMock, { groupIdMap })
+      OneTrustMockGlobal.GetDomainData.mockReturnValue({
+        ...domainDataMock,
+        Groups: [{ CustomGroupId: '1' }, { CustomGroupId: '2' }],
+      })
+      const onCategoriesChangedCb = jest.fn()
+
+      void createWrapperSpyHelper.shouldLoadWrapper()
+      createWrapperSpyHelper.registerOnConsentChanged(onCategoriesChangedCb)
+      onCategoriesChangedCb()
+
+      checkResolveWhen() // wait for OneTrust global to be available
+      await sleep(0)
+
+      analyticsMock.track.mockImplementationOnce(() => {}) // ignore track event sent by consent changed
+
+      const onConsentChangedArg =
+        OneTrustMockGlobal.OnConsentChanged.mock.lastCall![0]
+      onConsentChangedArg(new CustomEvent('', { detail: ['1', '2'] }))
+
+      expect(onCategoriesChangedCb.mock.lastCall[0]).toEqual({
+        necessary: true,
+        performance: true,
       })
     })
   })

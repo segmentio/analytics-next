@@ -106,12 +106,18 @@ export const getAllGroups = (): GroupInfo[] => {
 }
 
 export const getNormalizedCategories = (
-  activeGroupIds = getNormalizedActiveGroupIds()
+  activeGroupIds = getNormalizedActiveGroupIds(),
+  /**
+   * Rename onetrust group ids to consent category names,
+   * e.g: { '1': 'performance' }
+   */
+  groupIdMap?: Record<string, string>
 ): Categories => {
   return getAllGroups().reduce<Categories>((acc, group) => {
+    const groupId = groupIdMap?.[group.groupId] ?? group.groupId
     return {
       ...acc,
-      [group.groupId]: activeGroupIds.includes(group.groupId),
+      [groupId]: activeGroupIds.includes(group.groupId),
     }
   }, {})
 }
