@@ -88,6 +88,17 @@ describe('CSP Detection', () => {
     documentSpy.mockImplementation(
       () => jsd.window.document as unknown as Document
     )
+
+    // SECOPS-25767: the SDK now trusts only the tag that loaded it. Model that
+    // by pointing document.currentScript at the analytics.min.js tag the
+    // snippet inserted, as the browser would during the bundle's boot.
+    const loaderTag = jsd.window.document.querySelector(
+      'script[src*="/analytics.js/v1/"]'
+    )
+    Object.defineProperty(jsd.window.document, 'currentScript', {
+      configurable: true,
+      get: () => loaderTag,
+    })
   })
 
   it('reverts to ajs classic in case of CSP errors', async () => {
