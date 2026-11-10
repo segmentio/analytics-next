@@ -217,11 +217,7 @@ async function registerPlugins(
     await import(
       /* webpackChunkName: "remoteMiddleware" */ '../plugins/remote-middleware'
     ).then(async ({ remoteMiddlewares }) => {
-      const middleware = await remoteMiddlewares(
-        ctx,
-        cdnSettings,
-        options.obfuscate
-      )
+      const middleware = await remoteMiddlewares(ctx, cdnSettings, options)
       const promises = middleware.map((mdw) =>
         analytics.addSourceMiddleware(mdw)
       )
@@ -243,6 +239,12 @@ async function loadAnalytics(
   // return no-op analytics instance if disabled
   if (options.disable === true) {
     return [new NullAnalytics(), Context.system()]
+  }
+
+  if (options.nonce && process.env.IS_WEBPACK_BUILD) {
+    // Webpack applies this nonce to the lazy chunks it injects (e.g. remote middleware).
+    // @ts-ignore
+    __webpack_nonce__ = options.nonce
   }
 
   if (options.globalAnalyticsKey)
