@@ -60,6 +60,24 @@ describe('Remote Middleware', () => {
     expect(md[0]).toMatchInlineSnapshot(`[Function]`)
   })
 
+  it('adds the nonce attribute to the injected script tags', async () => {
+    await remoteMiddlewares(
+      Context.system(),
+      {
+        ...cdnSettingsMinimal,
+        enabledMiddleware: {
+          '@segment/analytics.js-middleware-braze-deduplicate': true,
+        },
+      },
+      { nonce: 'my-foo-nonce' }
+    )
+
+    const injected = Array.from(
+      window.document.querySelectorAll('script')
+    ).find((s) => s.src.includes('/middleware/'))
+    expect(injected?.getAttribute('nonce')).toBe('my-foo-nonce')
+  })
+
   it('ignores segment namespace', async () => {
     const md = await remoteMiddlewares(Context.system(), {
       ...cdnSettingsMinimal,

@@ -1,7 +1,7 @@
 import { CDNSettings } from '../../browser'
 import { JSONObject, JSONValue } from '../../core/events'
 import { Plugin, InternalPluginWithAddMiddleware } from '../../core/plugin'
-import { loadScript } from '../../lib/load-script'
+import { loadScript, nonceAttributes } from '../../lib/load-script'
 import { getCDN } from '../../lib/parse-cdn'
 import {
   applyDestinationMiddleware,
@@ -228,7 +228,7 @@ async function loadPluginFactory(
   try {
     const defaultCdn = new RegExp('https://cdn.segment.(com|build)')
     const cdn = getCDN()
-    const nonceAttr = options?.nonce ? { nonce: options.nonce } : undefined
+    const nonceAttr = nonceAttributes(options)
 
     if (options?.obfuscate) {
       const urlSplit = remotePlugin.url.split('/')

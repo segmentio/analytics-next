@@ -2,7 +2,11 @@ import { Analytics } from '../../core/analytics'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
-import { loadScript, unloadScript } from '../../lib/load-script'
+import {
+  loadScript,
+  unloadScript,
+  nonceAttributes,
+} from '../../lib/load-script'
 import {
   LegacyIntegration,
   ClassicIntegrationBuilder,
@@ -73,7 +77,7 @@ export async function loadIntegration(
   version: string,
   options?: { obfuscate?: boolean; nonce?: string }
 ): Promise<ClassicIntegrationSource> {
-  const nonceAttr = options?.nonce ? { nonce: options.nonce } : undefined
+  const nonceAttr = nonceAttributes(options)
   const pathName = normalizeName(name)
   const obfuscatedPathName = obfuscatePathName(pathName, options?.obfuscate)
   const path = getNextIntegrationsURL()

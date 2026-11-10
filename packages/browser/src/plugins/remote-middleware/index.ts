@@ -1,7 +1,7 @@
 import { CDNSettings } from '../../browser'
 import { Context } from '../../core/context'
 import { isServer } from '../../core/environment'
-import { loadScript } from '../../lib/load-script'
+import { loadScript, nonceAttributes } from '../../lib/load-script'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { MiddlewareFunction } from '../middleware'
 
@@ -28,7 +28,7 @@ export async function remoteMiddlewares(
     const fullPath = `${path}/middleware/${bundleName}/latest/${bundleName}.js.gz`
 
     try {
-      const nonceAttr = options?.nonce ? { nonce: options.nonce } : undefined
+      const nonceAttr = nonceAttributes(options)
       await loadScript(fullPath, nonceAttr)
       // @ts-ignore
       return window[`${nonNamespaced}Middleware`] as MiddlewareFunction

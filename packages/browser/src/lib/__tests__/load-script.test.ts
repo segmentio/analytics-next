@@ -1,4 +1,4 @@
-import { loadScript } from '../load-script'
+import { loadScript, nonceAttributes } from '../load-script'
 
 describe(loadScript, () => {
   const clearDocumentHTML = () => {
@@ -94,5 +94,17 @@ describe(loadScript, () => {
     expect(document.head.innerHTML).toMatchInlineSnapshot(
       `"<title>Some Title</title><script type="text/javascript" src="https://example.com/bar.js" status="loaded"></script>"`
     )
+  })
+})
+
+describe(nonceAttributes, () => {
+  it('returns a nonce attribute when a nonce is set', () => {
+    expect(nonceAttributes({ nonce: 'abc' })).toEqual({ nonce: 'abc' })
+  })
+
+  it('returns undefined when there is no nonce', () => {
+    expect(nonceAttributes()).toBeUndefined()
+    expect(nonceAttributes({})).toBeUndefined()
+    expect(nonceAttributes({ nonce: '' })).toBeUndefined()
   })
 })

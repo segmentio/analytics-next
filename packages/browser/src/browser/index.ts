@@ -241,6 +241,12 @@ async function loadAnalytics(
     return [new NullAnalytics(), Context.system()]
   }
 
+  if (options.nonce && process.env.IS_WEBPACK_BUILD) {
+    // Webpack applies this nonce to the lazy chunks it injects (e.g. remote middleware).
+    // @ts-ignore
+    __webpack_nonce__ = options.nonce
+  }
+
   if (options.globalAnalyticsKey)
     setGlobalAnalyticsKey(options.globalAnalyticsKey)
   // this is an ugly side-effect, but it's for the benefits of the plugins that get their cdn via getCDN()
