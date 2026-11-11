@@ -1,5 +1,11 @@
 # @segment/analytics-next
 
+## 1.84.4
+
+### Patch Changes
+
+- [#1403](https://github.com/segmentio/analytics-next/pull/1403) [`da74074e`](https://github.com/segmentio/analytics-next/commit/da74074e5a06b774d2b728814a56dfcaf01a2a45) Thanks [@MichaelGHSeg](https://github.com/MichaelGHSeg)! - Fix numeric-looking string values (e.g. an `anonymousId` of `"7689174720735493772"`, as set via `?ajs_aid=`) being rounded when read back from the cookie. The cookie and localStorage stores now only return a number if it prints back to exactly the stored text; otherwise the original string is returned. Numbers that round-trip exactly (e.g. `12345`) are still returned as numbers, so AJS 1.0 numeric ids continue to be coerced to strings as before.
+
 ## 1.84.3
 
 ### Patch Changes
