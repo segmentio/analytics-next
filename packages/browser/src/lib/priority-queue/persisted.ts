@@ -16,6 +16,17 @@ try {
   console.warn('Unable to access localStorage', err)
 }
 
+function safeSetItem(key: string, value: string): boolean {
+  try {
+    loc.setItem(key, value)
+    return true
+  } catch (err) {
+    // e.g. QuotaExceededError (full storage, Safari private mode, etc.)
+    console.warn(`Unable to write to localStorage key "${key}"`, err)
+    return false
+  }
+}
+
 function persisted(key: string): Context[] {
   const items = loc.getItem(key)
   return (items ? JSON.parse(items) : []).map(
@@ -34,7 +45,7 @@ function persistItems(key: string, items: Context[]): void {
     }
   }, {} as Record<string, Context>)
 
-  loc.setItem(key, JSON.stringify(Object.values(merged)))
+  safeSetItem(key, JSON.stringify(Object.values(merged)))
 }
 
 function seen(key: string): Record<string, number> {
@@ -45,7 +56,7 @@ function seen(key: string): Record<string, number> {
 function persistSeen(key: string, memory: Record<string, number>): void {
   const stored = seen(key)
 
-  loc.setItem(
+  safeSetItem(
     key,
     JSON.stringify({
       ...stored,
@@ -70,9 +81,12 @@ function mutex(key: string, onUnlock: Function, attempt = 0): void {
 
   const allowed = lock === null || expired(lock)
   if (allowed) {
-    loc.setItem(lockKey, JSON.stringify(now() + lockTimeout))
-    onUnlock()
-    loc.removeItem(lockKey)
+    safeSetItem(lockKey, JSON.stringify(now() + lockTimeout))
+    try {
+      onUnlock()
+    } finally {
+      loc.removeItem(lockKey)
+    }
     return
   }
 
