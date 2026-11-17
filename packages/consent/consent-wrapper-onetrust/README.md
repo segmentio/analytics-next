@@ -99,6 +99,23 @@ withOneTrust(analytics, { consentModel: () => 'opt-in' | 'opt-out' })
   .load({ writeKey: '<MY_WRITE_KEY>' })
 ```
 
+### Remapping Group IDs
+
+If your OneTrust instance uses group ids that cannot be mapped in the Segment UI (e.g: `'1'`, `'2'`), you can remap them to consent category names:
+
+```ts
+withOneTrust(analytics, {
+  groupIdMap: {
+    '1': 'necessary',
+    '2': 'performance',
+    '3': 'functional',
+    '4': 'targeting',
+    '5': 'other',
+  },
+})
+  .load({ writeKey: '<MY_WRITE_KEY>' })
+```
+
 ## Environments
 
 ### Build Artifacts

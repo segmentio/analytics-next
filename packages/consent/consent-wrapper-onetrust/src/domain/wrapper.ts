@@ -25,6 +25,12 @@ export interface OneTrustSettings {
    * Enable debug logging for OneTrust wrapper
    */
   enableDebugLogging?: boolean
+  /**
+   * Remap OneTrust group ids to consent category names, for cases where
+   * OneTrust group ids (e.g: '1', '2') cannot be mapped in the Segment UI.
+   * @example { '1': 'necessary', '2': 'performance', '3': 'functional', '4': 'targeting', '5': 'other' }
+   */
+  groupIdMap?: Record<string, string>
 }
 
 /**
@@ -66,14 +72,17 @@ export const withOneTrust = <Analytics extends AnyAnalytics>(
       }
     },
     getCategories: () => {
-      const results = getNormalizedCategories()
+      const results = getNormalizedCategories(undefined, settings.groupIdMap)
       return results
     },
     registerOnConsentChanged: settings.disableConsentChangedEvent
       ? undefined
       : (setCategories) => {
           getOneTrustGlobal()!.OnConsentChanged((event) => {
-            const normalizedCategories = getNormalizedCategories(event.detail)
+            const normalizedCategories = getNormalizedCategories(
+              event.detail,
+              settings.groupIdMap
+            )
             setCategories(normalizedCategories)
           })
         },
