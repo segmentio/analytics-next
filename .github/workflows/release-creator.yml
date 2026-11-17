@@ -7,6 +7,7 @@ on:
       - "packages/**"
     branches:
       - master
+  workflow_dispatch: {}
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -14,26 +15,88 @@ jobs:
   release-pr:
     name: Create or Update Release PR
     runs-on: ubuntu-latest-large
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_BRANCH: changeset-release/master
     steps:
       - name: Checkout Repo
         uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # v3
         with:
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
+          # Full history so changesets can generate changelogs with the
+          # correct commits, and so we can reset the release branch to
+          # master below.
           fetch-depth: 0
 
       - name: Setup Node.js 20.x
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610  # v3
         with:
           node-version: 20.x
-          cache: "yarn"
+          cache: 'yarn'
 
       - name: Install Dependencies
         run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 HUSKY=0 yarn install --immutable
 
-      - name: Create or Update Release PR
-        id: changesets
-        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d  # v1
-        with:
-          version: yarn update-versions-and-changelogs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # No pending changesets: nothing to release. Close a stale release
+      # PR if one is somehow still open (e.g. the last changeset was
+      # removed by hand rather than by a version bump).
+      - name: Check for pending changesets
+        id: pending
+        run: |
+          if find .changeset -maxdepth 1 -name '*.md' ! -name 'README.md' | grep -q .; then
+            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Close stale release PR (no pending changesets)
+        if: steps.pending.outputs.has_changesets == 'false'
+        run: |
+          PR_NUMBER=$(gh pr list --head "$RELEASE_BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr close "$PR_NUMBER" --comment "Closing: no pending changesets remain."
+          fi
+
+      - name: Configure git
+        if: steps.pending.outputs.has_changesets == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Reset release branch to master
+        if: steps.pending.outputs.has_changesets == 'true'
+        run: git checkout -B "$RELEASE_BRANCH"
+
+      - name: Bump versions and changelogs
+        if: steps.pending.outputs.has_changesets == 'true'
+        run: yarn update-versions-and-changelogs
+
+      - name: Commit and push release branch
+        id: commit
+        if: steps.pending.outputs.has_changesets == 'true'
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Nothing changed after version bump; skipping commit/push."
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git add -A
+          git commit -m "Version Packages"
+          git push --force origin "$RELEASE_BRANCH"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create release PR if none exists
+        if: steps.pending.outputs.has_changesets == 'true' && steps.commit.outputs.pushed == 'true'
+        run: |
+          PR_NUMBER=$(gh pr list --head "$RELEASE_BRANCH" --state open --json number --jq '.[0].number')
+          if [ -z "$PR_NUMBER" ]; then
+            gh pr create \
+              --base master \
+              --head "$RELEASE_BRANCH" \
+              --title "Version Packages" \
+              --body "Automated release PR. Review the changelog/version diffs in this PR, then merge to publish via release.yml."
+          else
+            echo "PR #$PR_NUMBER already open for $RELEASE_BRANCH; push already updated it."
+          fi
