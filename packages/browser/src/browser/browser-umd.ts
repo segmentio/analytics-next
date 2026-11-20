@@ -1,5 +1,13 @@
-import { getCDN, setGlobalCDNUrl } from '../lib/parse-cdn'
+import {
+  captureInitialScriptSrc,
+  getCDN,
+  setGlobalCDNUrl,
+} from '../lib/parse-cdn'
 import { setVersionType } from '../lib/version-type'
+
+// SECOPS-25767: snapshot the loading tag's src at boot, while
+// document.currentScript is still valid, before any async work runs.
+captureInitialScriptSrc()
 
 if (process.env.IS_WEBPACK_BUILD) {
   if (process.env.ASSET_PATH) {
