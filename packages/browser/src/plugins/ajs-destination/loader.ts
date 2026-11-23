@@ -2,7 +2,11 @@ import { Analytics } from '../../core/analytics'
 import { getNextIntegrationsURL } from '../../lib/parse-cdn'
 import { Context } from '../../core/context'
 import { User } from '../../core/user'
-import { loadScript, unloadScript } from '../../lib/load-script'
+import {
+  loadScript,
+  unloadScript,
+  nonceAttributes,
+} from '../../lib/load-script'
 import {
   LegacyIntegration,
   ClassicIntegrationBuilder,
@@ -71,10 +75,11 @@ export async function loadIntegration(
   ctx: Context,
   name: string,
   version: string,
-  obfuscate?: boolean
+  options?: { obfuscate?: boolean; nonce?: string }
 ): Promise<ClassicIntegrationSource> {
+  const nonceAttr = nonceAttributes(options)
   const pathName = normalizeName(name)
-  const obfuscatedPathName = obfuscatePathName(pathName, obfuscate)
+  const obfuscatedPathName = obfuscatePathName(pathName, options?.obfuscate)
   const path = getNextIntegrationsURL()
 
   const fullPath = `${path}/integrations/${
@@ -82,7 +87,7 @@ export async function loadIntegration(
   }/${version}/${obfuscatedPathName ?? pathName}.dynamic.js.gz`
 
   try {
-    await loadScript(fullPath)
+    await loadScript(fullPath, nonceAttr)
     recordLoadMetrics(fullPath, ctx, name)
   } catch (err) {
     ctx.stats.gauge('legacy_destination_time', -1, [`plugin:${name}`, `failed`])
@@ -91,7 +96,9 @@ export async function loadIntegration(
 
   // @ts-ignore
   const deps: string[] = window[`${pathName}Deps`]
-  await Promise.all(deps.map((dep) => loadScript(path + dep + '.gz')))
+  await Promise.all(
+    deps.map((dep) => loadScript(path + dep + '.gz', nonceAttr))
+  )
 
   // @ts-ignore
   window[`${pathName}Loader`]()

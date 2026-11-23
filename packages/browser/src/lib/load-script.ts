@@ -6,6 +6,15 @@ function findScript(src: string): HTMLScriptElement | undefined {
 }
 
 /**
+ * Build the script attributes for a CSP nonce, or undefined if there is none.
+ */
+export function nonceAttributes(options?: {
+  nonce?: string
+}): Record<string, string> | undefined {
+  return options?.nonce ? { nonce: options.nonce } : undefined
+}
+
+/**
  * Load a script from a URL and append it to the document.
  */
 export function loadScript(

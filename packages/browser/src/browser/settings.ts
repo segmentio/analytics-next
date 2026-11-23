@@ -233,6 +233,16 @@ export interface InitOptions {
   retryQueue?: boolean
   obfuscate?: boolean
   /**
+   * CSP nonce applied to the scripts Analytics.js injects at runtime: device-mode
+   * destinations, action destinations, remote middleware, and webpack lazy chunks.
+   *
+   * Not covered: scripts injected before `load()` runs, i.e. the AJS 1.0 CSP fallback
+   * and the old-browser polyfill in the standalone bundle.
+   *
+   * @example analytics.load({ writeKey }, { nonce: 'abc123' })
+   */
+  nonce?: string
+  /**
    * This callback allows you to update/mutate CDN Settings.
    * This is called directly after settings are fetched from the CDN.
    * @internal
