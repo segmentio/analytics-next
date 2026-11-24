@@ -1,5 +1,5 @@
 import { Context } from '../../../core/context'
-import { PersistedPriorityQueue } from '../persisted'
+import { PersistedPriorityQueue, MAX_PERSISTED_ITEMS } from '../persisted'
 
 describe('Persisted Priority Queue', () => {
   beforeEach(() => {
@@ -224,5 +224,35 @@ describe('Persisted Priority Queue', () => {
       )
       expect(stored.length).toBe(2)
     })
+  })
+  it('caps persisted items, dropping the oldest, and prunes seen', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let onUnload: any = jest.fn()
+    jest
+      .spyOn(window, 'addEventListener')
+      .mockImplementation((evt, handler) => {
+        if (evt === 'pagehide') onUnload = handler
+      })
+
+    const queue = new PersistedPriorityQueue(3, key)
+    const total = MAX_PERSISTED_ITEMS + 50
+    for (let i = 0; i < total; i++) {
+      queue.push(new Context({ type: 'track' }, `id-${i}`))
+    }
+
+    onUnload()
+
+    const items = JSON.parse(
+      localStorage.getItem(`persisted-queue:v1:${key}:items`) ?? ''
+    )
+    const seen = JSON.parse(
+      localStorage.getItem(`persisted-queue:v1:${key}:seen`) ?? ''
+    )
+
+    expect(items).toHaveLength(MAX_PERSISTED_ITEMS)
+    expect(items[items.length - 1].id).toBe(`id-${total - 1}`)
+    expect(items.map((i: { id: string }) => i.id)).not.toContain('id-0')
+    expect(Object.keys(seen)).toHaveLength(MAX_PERSISTED_ITEMS)
+    expect(seen['id-0']).toBeUndefined()
   })
 })
