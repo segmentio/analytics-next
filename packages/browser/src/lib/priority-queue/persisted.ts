@@ -23,9 +23,17 @@ function persisted(key: string): Context[] {
   )
 }
 
-function persistItems(key: string, items: Context[]): void {
+/**
+ * Max number of items persisted per queue. Queues for destinations that never
+ * become ready (e.g. blocked by an ad blocker) are never flushed, and would
+ * otherwise grow across page loads until they exhaust the localStorage quota.
+ */
+export const MAX_PERSISTED_ITEMS = 500
+
+function persistItems(key: string, items: Context[]): string[] {
   const existing = persisted(key)
-  const all = [...items, ...existing]
+  // newest last, so that the oldest items are dropped first
+  const all = [...existing, ...items]
 
   const merged = all.reduce((acc, item) => {
     return {
@@ -34,7 +42,9 @@ function persistItems(key: string, items: Context[]): void {
     }
   }, {} as Record<string, Context>)
 
-  loc.setItem(key, JSON.stringify(Object.values(merged)))
+  const kept = Object.values(merged).slice(-MAX_PERSISTED_ITEMS)
+  loc.setItem(key, JSON.stringify(kept))
+  return kept.map((item) => item.id)
 }
 
 function seen(key: string): Record<string, number> {
@@ -42,16 +52,21 @@ function seen(key: string): Record<string, number> {
   return stored ? JSON.parse(stored) : {}
 }
 
-function persistSeen(key: string, memory: Record<string, number>): void {
+function persistSeen(
+  key: string,
+  memory: Record<string, number>,
+  keepIds: string[]
+): void {
   const stored = seen(key)
+  const all = { ...stored, ...memory }
 
-  loc.setItem(
-    key,
-    JSON.stringify({
-      ...stored,
-      ...memory,
-    })
-  )
+  // only keep attempt counts for items that are still persisted
+  const pruned = keepIds.reduce((acc, id) => {
+    if (id in all) acc[id] = all[id]
+    return acc
+  }, {} as Record<string, number>)
+
+  loc.setItem(key, JSON.stringify(pruned))
 }
 
 function remove(key: string): void {
@@ -115,8 +130,8 @@ export class PersistedPriorityQueue extends PriorityQueue<Context> {
         const items = [...this.queue, ...this.future]
         try {
           mutex(key, () => {
-            persistItems(itemsKey, items)
-            persistSeen(seenKey, this.seen)
+            const keptIds = persistItems(itemsKey, items)
+            persistSeen(seenKey, this.seen, keptIds)
           })
         } catch (err) {
           console.error(err)
