@@ -1,5 +1,4 @@
 export * from './interfaces'
-import { dset } from 'dset'
 import { ID } from '../user'
 import {
   IntegrationsOptions,
@@ -10,6 +9,7 @@ import {
   UserTraits,
   GroupTraits,
 } from './interfaces'
+import { dset } from '../utils/dset'
 import { pickBy } from '../utils/pick'
 import type { RemoveIndexSignature } from '../utils/ts-helpers'
 import { validateEvent } from '../validation/assertions'
