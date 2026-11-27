@@ -225,4 +225,27 @@ describe('Persisted Priority Queue', () => {
       expect(stored.length).toBe(2)
     })
   })
+
+  it('does not throw when localStorage quota is exceeded on pagehide', () => {
+    const handlers: Function[] = []
+    jest
+      .spyOn(window, 'addEventListener')
+      .mockImplementation((evt, handler) => {
+        if (evt === 'pagehide') handlers.push(handler as Function)
+      })
+    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const queue = new PersistedPriorityQueue(3, key)
+    queue.push(new Context({ type: 'track' }, 'a'))
+
+    jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota', 'QuotaExceededError')
+    })
+
+    expect(() => handlers[0]()).not.toThrow()
+    jest.restoreAllMocks()
+    // lock must be released
+    expect(
+      window.localStorage.getItem(`persisted-queue:v1:${key}:lock`)
+    ).toBeNull()
+  })
 })
