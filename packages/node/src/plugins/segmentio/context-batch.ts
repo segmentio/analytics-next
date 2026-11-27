@@ -53,7 +53,7 @@ export class ContextBatch {
   }
 
   private calculateSize(ctx: Context): number {
-    return encodeURI(JSON.stringify(ctx.event)).split(/%..|i/).length
+    return encodeURI(JSON.stringify(ctx.event)).split(/%..|./).length - 1
   }
 
   getEvents(): SegmentEvent[] {
